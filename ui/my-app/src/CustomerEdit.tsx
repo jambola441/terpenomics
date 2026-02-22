@@ -2,6 +2,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import supabase  from './utils/supabase'
+import api from './api/client'
+import { ProductSearch } from './components/ProductSearch'
+import type { Product, RecommendedProduct } from './types'
 
 type Feedback = 'like' | 'dislike' | 'neutral' | null
 
@@ -106,6 +109,21 @@ export default function CustomerEdit() {
   const [rowFeedback, setRowFeedback] = useState<Record<string, Feedback>>({})
   const [rowSaving, setRowSaving] = useState<Record<string, boolean>>({})
   const [rowError, setRowError] = useState<Record<string, string | null>>({})
+
+  // order creation state
+  const [isOrderFormOpen, setIsOrderFormOpen] = useState(false)
+  const [orderItems, setOrderItems] = useState<Array<{
+    product: Product
+    quantity: number
+    price_cents: number
+  }>>([])
+  const [orderSubmitting, setOrderSubmitting] = useState(false)
+  const [orderError, setOrderError] = useState<string | null>(null)
+
+  // recommendations state
+  const [recommendations, setRecommendations] = useState<RecommendedProduct[]>([])
+  const [recsLoading, setRecsLoading] = useState(false)
+  const [recsError, setRecsError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!cid) return
@@ -308,6 +326,94 @@ export default function CustomerEdit() {
     }
   }
 
+  // Load recommendations
+  async function loadRecommendations() {
+    if (!cid) return
+    setRecsLoading(true)
+    setRecsError(null)
+    try {
+      const data = await api.customers.getRecommendedProducts(cid, { 
+        limit: 10, 
+        window_days: windowDays 
+      })
+      setRecommendations(data)
+    } catch (e: any) {
+      setRecsError(e?.message ?? String(e))
+    } finally {
+      setRecsLoading(false)
+    }
+  }
+
+  // Load recommendations when terpene window changes
+  useEffect(() => {
+    if (!cid) return
+    void loadRecommendations()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cid, windowDays])
+
+  // Order creation functions
+  function addOrderItem(product: Product) {
+    setOrderItems(prev => [...prev, {
+      product,
+      quantity: 1,
+      price_cents: 0,
+    }])
+  }
+
+  function removeOrderItem(index: number) {
+    setOrderItems(prev => prev.filter((_, i) => i !== index))
+  }
+
+  function updateOrderItem(index: number, field: 'quantity' | 'price_cents', value: number) {
+    setOrderItems(prev => prev.map((item, i) =>
+      i === index ? { ...item, [field]: value } : item
+    ))
+  }
+
+  const orderTotal = useMemo(() => {
+    return orderItems.reduce((sum, item) => sum + (item.quantity * item.price_cents), 0)
+  }, [orderItems])
+
+  async function submitOrder() {
+    if (!cid || orderItems.length === 0) return
+    
+    setOrderSubmitting(true)
+    setOrderError(null)
+    
+    try {
+      // Step 1: Create purchase
+      const purchase = await api.purchases.create({
+        customer_id: cid,
+        source: 'manual',
+      })
+
+      // Step 2: Add items (batch)
+      const items = orderItems.map(item => ({
+        product_id: item.product.id,
+        quantity: item.quantity,
+        line_amount_cents: item.price_cents,
+      }))
+
+      await api.purchaseItems.createBatch(purchase.id, items)
+
+      // Step 3: Finalize purchase
+      await api.purchases.finalize(purchase.id)
+
+      // Success - clear form and refresh purchases
+      setOrderItems([])
+      setIsOrderFormOpen(false)
+      setMsg('Order created successfully!')
+      
+      // Refresh purchases list
+      const headers = await authHeader()
+      await loadPurchases(headers, 0, true)
+    } catch (e: any) {
+      setOrderError(e?.message ?? String(e))
+    } finally {
+      setOrderSubmitting(false)
+    }
+  }
+
   if (loading) return <div style={{ padding: 24 }}>Loading…</div>
   if (error) return <div style={{ padding: 24 }}>Error: {error}</div>
   if (!customer) return <div style={{ padding: 24 }}>Not found</div>
@@ -346,6 +452,182 @@ export default function CustomerEdit() {
           </div>
         </div>
       </form>
+
+      {/* Order Creation Section */}
+      <div style={{ border: '1px solid #ddd', padding: 12, marginBottom: 24 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <h2 style={{ margin: 0 }}>Create New Order</h2>
+          <button
+            type="button"
+            onClick={() => setIsOrderFormOpen(!isOrderFormOpen)}
+          >
+            {isOrderFormOpen ? 'Hide' : 'Show'}
+          </button>
+        </div>
+
+        {isOrderFormOpen && (
+          <div style={{ display: 'grid', gap: 12 }}>
+            <ProductSearch
+              onSelect={addOrderItem}
+              disabled={orderSubmitting}
+              placeholder="Search products to add..."
+            />
+
+            {orderError && (
+              <div style={{ color: 'crimson' }}>{orderError}</div>
+            )}
+
+            {orderItems.length > 0 ? (
+              <>
+                <table border={1} cellPadding={8} style={{ borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr>
+                      <th align="left">Product</th>
+                      <th align="center">Quantity</th>
+                      <th align="right">Price (cents)</th>
+                      <th align="right">Line Total</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {orderItems.map((item, index) => (
+                      <tr key={index}>
+                        <td>
+                          <div><strong>{item.product.name}</strong></div>
+                          {item.product.brand && (
+                            <div style={{ fontSize: 12, opacity: 0.7 }}>{item.product.brand}</div>
+                          )}
+                        </td>
+                        <td align="center">
+                          <input
+                            type="number"
+                            min={1}
+                            value={item.quantity}
+                            onChange={(e) => updateOrderItem(index, 'quantity', Number(e.target.value))}
+                            style={{ width: 60 }}
+                            disabled={orderSubmitting}
+                          />
+                        </td>
+                        <td align="right">
+                          <input
+                            type="number"
+                            min={0}
+                            value={item.price_cents}
+                            onChange={(e) => updateOrderItem(index, 'price_cents', Number(e.target.value))}
+                            style={{ width: 100 }}
+                            disabled={orderSubmitting}
+                          />
+                        </td>
+                        <td align="right">
+                          {dollars(item.quantity * item.price_cents)}
+                        </td>
+                        <td>
+                          <button
+                            type="button"
+                            onClick={() => removeOrderItem(index)}
+                            disabled={orderSubmitting}
+                          >
+                            Remove
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colSpan={3} align="right"><strong>Total:</strong></td>
+                      <td align="right"><strong>{dollars(orderTotal)}</strong></td>
+                      <td></td>
+                    </tr>
+                  </tfoot>
+                </table>
+
+                <div>
+                  <button
+                    type="button"
+                    onClick={submitOrder}
+                    disabled={orderSubmitting || orderItems.length === 0}
+                  >
+                    {orderSubmitting ? 'Creating Order...' : 'Create Order'}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <p style={{ margin: 0, opacity: 0.7 }}>
+                Search for products above to add them to the order.
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Recommendations Section */}
+      <div style={{ border: '1px solid #ddd', padding: 12, marginBottom: 24 }}>
+        <h2 style={{ margin: '0 0 12px 0' }}>Recommended Products (Based on Terpene Preferences)</h2>
+        
+        {recsLoading && <div>Loading recommendations...</div>}
+        {recsError && <div style={{ color: 'crimson' }}>Error: {recsError}</div>}
+        
+        {!recsLoading && recommendations.length === 0 && (
+          <p style={{ margin: 0, opacity: 0.7 }}>
+            No recommendations available. Customer needs purchase history with feedback to generate recommendations.
+          </p>
+        )}
+
+        {!recsLoading && recommendations.length > 0 && (
+          <div style={{ display: 'grid', gap: 12 }}>
+            {recommendations.map((rec) => (
+              <div key={rec.id} style={{ border: '1px solid #eee', padding: 12, borderRadius: 4 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <strong>{rec.name}</strong>
+                      {rec.purchased_count > 0 && (
+                        <span style={{ 
+                          fontSize: 11, 
+                          backgroundColor: '#e3f2fd', 
+                          color: '#1976d2',
+                          padding: '2px 6px',
+                          borderRadius: 3,
+                        }}>
+                          Purchased {rec.purchased_count}x
+                        </span>
+                      )}
+                    </div>
+                    {rec.brand && (
+                      <div style={{ fontSize: 12, opacity: 0.7 }}>{rec.brand} · {rec.category}</div>
+                    )}
+                    <div style={{ fontSize: 12, marginTop: 4 }}>
+                      <strong>Top Terpenes:</strong> {fmtTerpenes(rec.terpenes.slice(0, 5))}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: 14, fontWeight: 'bold', color: '#2e7d32' }}>
+                      {rec.score.toFixed(2)} match score
+                    </div>
+                    {isOrderFormOpen && (
+                      <button
+                        type="button"
+                        onClick={() => addOrderItem({
+                          id: rec.id,
+                          name: rec.name,
+                          brand: rec.brand,
+                          category: rec.category,
+                          is_active: true,
+                          terpenes: rec.terpenes,
+                        })}
+                        style={{ marginTop: 4, fontSize: 12 }}
+                      >
+                        Add to Order
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       <div style={{ border: '1px solid #ddd', padding: 12, marginBottom: 24 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>

@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from typing import Optional, List
+from typing import Optional
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -17,7 +17,9 @@ from models import (
     Terpene,
 )
 from .auth import require_admin
-from .serializers import serialize_customer
+from .serializers import serialize_customer, serialize_purchase_item
+
+DEFAULT_TERPENE_PERCENT = 0.10
 
 router = APIRouter()
 
@@ -152,18 +154,8 @@ def get_customer_purchases(
 
         item_id = str(item.id)
         items = purchases_by_id[pur_id]["items"]
-        item_entry = next((x for x in items if x["id"] == item_id), None)
-        if item_entry is None:
-            item_entry = {
-                "id": item_id,
-                "product_id": str(product.id),
-                "product_name": product.name,
-                "quantity": item.quantity,
-                "line_amount_cents": item.line_amount_cents,
-                "feedback": getattr(item, "feedback", None),
-                "feedback_at": item.feedback_at.isoformat() if getattr(item, "feedback_at", None) else None,
-            }
-            items.append(item_entry)
+        if not any(x["id"] == item_id for x in items):
+            items.append(serialize_purchase_item(item, product.name))
 
     # Preserve ordering from purchase_ids
     order = {str(pid): i for i, pid in enumerate(purchase_ids)}
@@ -182,11 +174,11 @@ def update_customer(
         raise HTTPException(status_code=404, detail="customer not found")
 
     if payload.name is not None:
-        c.name = payload.name.strip() if payload.name else None
+        c.name = payload.name.strip() or None
     if payload.phone is not None:
-        c.phone = payload.phone.strip() if payload.phone else None
+        c.phone = payload.phone.strip() or None
     if payload.email is not None:
-        c.email = payload.email.strip() if payload.email else None
+        c.email = payload.email.strip() or None
     if payload.marketing_opt_in is not None:
         c.marketing_opt_in = payload.marketing_opt_in
 
@@ -214,18 +206,20 @@ def get_customer_terpene_scores(
 
     cutoff = datetime.now(timezone.utc) - timedelta(days=window_days)
 
-    # Calculate scores using SQL aggregation (moved from Python)
-    # Use COALESCE for percent (default 0.10 if NULL)
+    # Calculate scores using SQL aggregation.
+    # COALESCE uses DEFAULT_TERPENE_PERCENT when percent is NULL.
+    weighted_score = func.sum(
+        case(
+            (PurchaseItem.feedback == "like", func.coalesce(ProductTerpene.percent, DEFAULT_TERPENE_PERCENT)),
+            (PurchaseItem.feedback == "dislike", -func.coalesce(ProductTerpene.percent, DEFAULT_TERPENE_PERCENT)),
+            else_=0.0,
+        )
+    ).label("score")
+
     stmt = (
         select(
             Terpene.name,
-            func.sum(
-                case(
-                    (PurchaseItem.feedback == "like", func.coalesce(ProductTerpene.percent, 0.10)),
-                    (PurchaseItem.feedback == "dislike", -func.coalesce(ProductTerpene.percent, 0.10)),
-                    else_=0.0,
-                )
-            ).label("score"),
+            weighted_score,
             func.count(case((PurchaseItem.feedback == "like", 1))).label("likes"),
             func.count(case((PurchaseItem.feedback == "dislike", 1))).label("dislikes"),
             func.count(case((PurchaseItem.feedback == "neutral", 1))).label("neutrals"),
@@ -236,15 +230,9 @@ def get_customer_terpene_scores(
         .join(Terpene, Terpene.id == ProductTerpene.terpene_id)
         .where(Purchase.customer_id == customer_id)
         .where(Purchase.purchased_at >= cutoff)
-        .where(PurchaseItem.feedback.isnot(None))  # Only items with feedback
+        .where(PurchaseItem.feedback.isnot(None))
         .group_by(Terpene.id, Terpene.name)
-        .order_by(func.sum(
-            case(
-                (PurchaseItem.feedback == "like", func.coalesce(ProductTerpene.percent, 0.10)),
-                (PurchaseItem.feedback == "dislike", -func.coalesce(ProductTerpene.percent, 0.10)),
-                else_=0.0,
-            )
-        ).desc())
+        .order_by(weighted_score.desc())
     )
 
     rows = session.exec(stmt).all()
@@ -266,3 +254,110 @@ def get_customer_terpene_scores(
         "cutoff": cutoff.isoformat(),
         "scores": scores,
     }
+
+
+@router.get("/customers/{customer_id}/recommended-products")
+def get_recommended_products(
+    customer_id: UUID,
+    session: Session = Depends(get_session),
+    _: SupabaseAuthUser = Depends(require_admin),
+    limit: int = Query(default=10, ge=1, le=50),
+    window_days: int = Query(default=180, ge=1, le=3650),
+):
+    """
+    Get product recommendations based on customer's terpene preferences.
+    Returns products ranked by terpene similarity score.
+    """
+    c = session.get(Customer, customer_id)
+    if not c:
+        raise HTTPException(status_code=404, detail="customer not found")
+
+    cutoff = datetime.now(timezone.utc) - timedelta(days=window_days)
+
+    # Step 1: Get customer's terpene scores
+    terpene_scores_stmt = (
+        select(
+            Terpene.id,
+            Terpene.name,
+            func.sum(
+                case(
+                    (PurchaseItem.feedback == "like", func.coalesce(ProductTerpene.percent, DEFAULT_TERPENE_PERCENT)),
+                    (PurchaseItem.feedback == "dislike", -func.coalesce(ProductTerpene.percent, DEFAULT_TERPENE_PERCENT)),
+                    else_=0.0,
+                )
+            ).label("score"),
+        )
+        .select_from(PurchaseItem)
+        .join(Purchase, Purchase.id == PurchaseItem.purchase_id)
+        .join(ProductTerpene, ProductTerpene.product_id == PurchaseItem.product_id)
+        .join(Terpene, Terpene.id == ProductTerpene.terpene_id)
+        .where(Purchase.customer_id == customer_id)
+        .where(Purchase.purchased_at >= cutoff)
+        .where(PurchaseItem.feedback.isnot(None))
+        .group_by(Terpene.id, Terpene.name)
+    )
+    
+    terpene_score_rows = session.exec(terpene_scores_stmt).all()
+    terpene_scores_by_id = {row[0]: float(row[2]) if row[2] else 0.0 for row in terpene_score_rows}
+    
+    if not terpene_scores_by_id:
+        # No feedback data, return empty list
+        return []
+
+    # Step 2: Get purchase history for this customer
+    purchase_history_stmt = (
+        select(PurchaseItem.product_id, func.count().label("count"))
+        .select_from(PurchaseItem)
+        .join(Purchase, Purchase.id == PurchaseItem.purchase_id)
+        .where(Purchase.customer_id == customer_id)
+        .group_by(PurchaseItem.product_id)
+    )
+    
+    purchase_history_rows = session.exec(purchase_history_stmt).all()
+    purchased_counts = {row[0]: row[1] for row in purchase_history_rows}
+
+    # Step 3: Calculate similarity score for all active products
+    # Get all active products with their terpenes
+    products_stmt = (
+        select(Product, ProductTerpene, Terpene)
+        .join(ProductTerpene, ProductTerpene.product_id == Product.id, isouter=True)
+        .join(Terpene, Terpene.id == ProductTerpene.terpene_id, isouter=True)
+        .where(Product.is_active == True)
+        .order_by(Product.name)
+    )
+    
+    products_rows = session.exec(products_stmt).all()
+    
+    # Group by product and calculate scores
+    products_dict = {}
+    for product, pt_link, terpene in products_rows:
+        pid = product.id
+        if pid not in products_dict:
+            products_dict[pid] = {
+                "id": str(pid),
+                "name": product.name,
+                "brand": product.brand,
+                "category": product.category,
+                "score": 0.0,
+                "terpenes": [],
+                "purchased_count": purchased_counts.get(pid, 0),
+            }
+        
+        if terpene and pt_link:
+            terpene_percent = pt_link.percent or DEFAULT_TERPENE_PERCENT
+            terpene_score = terpene_scores_by_id.get(terpene.id, 0.0)
+            
+            # Weighted score: product's terpene percent * customer's terpene preference
+            products_dict[pid]["score"] += terpene_percent * terpene_score
+            
+            products_dict[pid]["terpenes"].append({
+                "name": terpene.name,
+                "percent": terpene_percent,
+            })
+    
+    # Convert to list and sort by score
+    products_list = list(products_dict.values())
+    products_list.sort(key=lambda x: x["score"], reverse=True)
+    
+    # Return top N
+    return products_list[:limit]

@@ -13,7 +13,6 @@ from .auth import require_admin
 from .serializers import serialize_product
 
 
-
 router = APIRouter()
 
 
@@ -39,13 +38,12 @@ class ProductUpdate(BaseModel):
 
 
 def _load_product_terpenes(session: Session, product_id: UUID) -> list:
-    links = session.exec(select(ProductTerpene).where(ProductTerpene.product_id == product_id)).all()
-    terpenes = []
-    for link in links:
-        terp = session.get(Terpene, link.terpene_id)
-        if terp:
-            terpenes.append({"name": terp.name, "percent": link.percent})
-    return terpenes
+    rows = session.exec(
+        select(ProductTerpene, Terpene)
+        .join(Terpene, Terpene.id == ProductTerpene.terpene_id)
+        .where(ProductTerpene.product_id == product_id)
+    ).all()
+    return [{"name": terp.name, "percent": link.percent} for link, terp in rows]
 
 
 @router.get("/products")
@@ -61,13 +59,13 @@ def list_products(
 
     if q:
         like = f"%{q.strip()}%"
-        filters = [Product.name.ilike(like)]
-        # keep safe if fields exist
-        if hasattr(Product, "brand"):
-            filters.append(Product.brand.ilike(like))
-        if hasattr(Product, "category"):
-            filters.append(cast(Product.category, String).ilike(like))
-        id_stmt = id_stmt.where(or_(*filters))
+        id_stmt = id_stmt.where(
+            or_(
+                Product.name.ilike(like),
+                Product.brand.ilike(like),
+                cast(Product.category, String).ilike(like),
+            )
+        )
 
     id_stmt = id_stmt.order_by(Product.created_at.desc()).offset(offset).limit(limit)
     product_ids = session.exec(id_stmt).all()
@@ -105,6 +103,7 @@ def list_products(
     order = {str(pid): i for i, pid in enumerate(product_ids)}
     return sorted(by_id.values(), key=lambda x: order.get(x["id"], 10**9))
 
+
 @router.post("/products")
 def create_product(
     payload: ProductCreate,
@@ -118,8 +117,7 @@ def create_product(
         is_active=payload.is_active,
     )
     session.add(p)
-    session.commit()
-    session.refresh(p)
+    session.flush()
 
     for t_in in payload.terpenes:
         tname = t_in.name.strip()
@@ -129,8 +127,7 @@ def create_product(
         if not terp:
             terp = Terpene(name=tname)
             session.add(terp)
-            session.commit()
-            session.refresh(terp)
+            session.flush()
 
         link = ProductTerpene(
             product_id=p.id,
@@ -140,6 +137,7 @@ def create_product(
         session.add(link)
 
     session.commit()
+    session.refresh(p)
     return {"id": str(p.id)}
 
 

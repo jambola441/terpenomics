@@ -94,3 +94,28 @@ export type CustomerPurchasesParams = {
 export type TerpeneScoresParams = {
   window_days?: number
 }
+
+export type RecommendedProduct = {
+  id: string
+  name: string
+  brand?: string | null
+  category: string
+  score: number
+  terpenes: Terpene[]
+  purchased_count: number
+}
+
+export type PurchaseCreateParams = {
+  customer_id: string
+  purchased_at?: string
+  source?: 'manual' | 'pos_import'
+  external_id?: string
+  notes?: string
+}
+
+export type PurchaseItemCreateParams = {
+  product_id: string
+  quantity: number
+  line_amount_cents: number
+  external_id?: string
+}

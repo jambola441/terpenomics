@@ -1,4 +1,4 @@
-from models import Customer, Product, Purchase
+from models import Customer, Product, Purchase, PurchaseItem
 
 
 def serialize_customer(c: Customer) -> dict:
@@ -9,7 +9,7 @@ def serialize_customer(c: Customer) -> dict:
         "email": c.email,
         "marketing_opt_in": c.marketing_opt_in,
         "last_visit_at": c.last_visit_at.isoformat() if c.last_visit_at else None,
-        "auth_user_id": str(c.auth_user_id) if getattr(c, "auth_user_id", None) else None,
+        "auth_user_id": str(c.auth_user_id) if c.auth_user_id else None,
     }
 
 
@@ -31,6 +31,19 @@ def serialize_purchase(p: Purchase) -> dict:
         "purchased_at": p.purchased_at.isoformat(),
         "total_amount_cents": p.total_amount_cents,
         "source": p.source,
-        "external_id": getattr(p, "external_id", None),
+        "external_id": p.external_id,
         "notes": p.notes,
+    }
+
+
+def serialize_purchase_item(item: PurchaseItem, product_name: str) -> dict:
+    return {
+        "id": str(item.id),
+        "purchase_id": str(item.purchase_id),
+        "product_id": str(item.product_id),
+        "product_name": product_name,
+        "quantity": item.quantity,
+        "line_amount_cents": item.line_amount_cents,
+        "feedback": item.feedback,
+        "feedback_at": item.feedback_at.isoformat() if item.feedback_at else None,
     }

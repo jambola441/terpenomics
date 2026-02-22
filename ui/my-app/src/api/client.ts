@@ -10,6 +10,10 @@ import type {
   PurchaseListParams,
   CustomerPurchasesParams,
   TerpeneScoresParams,
+  RecommendedProduct,
+  PurchaseCreateParams,
+  PurchaseItemCreateParams,
+  PurchaseItem,
 } from '../types'
 
 // Get API base URL from environment variable or use default
@@ -85,6 +89,9 @@ export const api = {
     
     getTerpeneScores: (id: string, params?: TerpeneScoresParams) =>
       authenticatedFetch<TerpeneScoresResponse>(`/admin/customers/${id}/terpene-scores${buildQueryString(params)}`),
+    
+    getRecommendedProducts: (id: string, params?: { limit?: number, window_days?: number }) =>
+      authenticatedFetch<RecommendedProduct[]>(`/admin/customers/${id}/recommended-products${buildQueryString(params)}`),
   },
 
   products: {
@@ -113,9 +120,32 @@ export const api = {
   purchases: {
     list: (params?: PurchaseListParams) =>
       authenticatedFetch<PurchaseRow[]>(`/admin/purchases${buildQueryString(params)}`),
+    
+    create: (data: PurchaseCreateParams) =>
+      authenticatedFetch<Purchase>(`/admin/purchases`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    
+    finalize: (id: string) =>
+      authenticatedFetch<Purchase>(`/admin/purchases/${id}/finalize`, {
+        method: 'POST',
+      }),
   },
 
   purchaseItems: {
+    create: (purchaseId: string, data: PurchaseItemCreateParams) =>
+      authenticatedFetch<PurchaseItem>(`/admin/purchases/${purchaseId}/items`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    
+    createBatch: (purchaseId: string, items: PurchaseItemCreateParams[]) =>
+      authenticatedFetch<PurchaseItem[]>(`/admin/purchases/${purchaseId}/items/batch`, {
+        method: 'POST',
+        body: JSON.stringify(items),
+      }),
+    
     updateFeedback: (itemId: string, feedback: string | null) =>
       authenticatedFetch<any>(`/admin/purchase-items/${itemId}/feedback`, {
         method: 'POST',

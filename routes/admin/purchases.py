@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Literal, Optional
+from typing import Literal, Optional, List
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -10,7 +10,7 @@ from auth import SupabaseAuthUser
 from database import get_session
 from models import Customer, Product, Purchase, PurchaseItem
 from .auth import require_admin
-from .serializers import serialize_purchase
+from .serializers import serialize_purchase, serialize_purchase_item
 
 router = APIRouter()
 
@@ -68,9 +68,6 @@ def list_purchases(
             Customer.name,
             Customer.phone,
         )
-        .order_by(Purchase.purchased_at.desc())
-        .offset(offset)
-        .limit(limit)
     )
 
     if source:
@@ -86,19 +83,21 @@ def list_purchases(
             )
         )
 
+    stmt = stmt.order_by(Purchase.purchased_at.desc()).offset(offset).limit(limit)
+
     rows = session.exec(stmt).all()
 
     return [
         {
-            "id": str(r[0]),
-            "customer_id": str(r[1]),
-            "purchased_at": r[2].isoformat(),
-            "total_amount_cents": r[3],
-            "source": r[4],
-            "external_id": r[5],
-            "customer_name": r[6],
-            "customer_phone": r[7],
-            "item_count": r[8],
+            "id": str(r.id),
+            "customer_id": str(r.customer_id),
+            "purchased_at": r.purchased_at.isoformat(),
+            "total_amount_cents": r.total_amount_cents,
+            "source": r.source,
+            "external_id": r.external_id,
+            "customer_name": r.name,
+            "customer_phone": r.phone,
+            "item_count": r.item_count,
         }
         for r in rows
     ]
@@ -165,16 +164,72 @@ def add_purchase_item(
     session.commit()
     session.refresh(item)
 
-    return {
-        "id": str(item.id),
-        "purchase_id": str(item.purchase_id),
-        "product_id": str(item.product_id),
-        "product_name": product.name,
-        "quantity": item.quantity,
-        "line_amount_cents": item.line_amount_cents,
-        "feedback": getattr(item, "feedback", None),
-        "feedback_at": item.feedback_at.isoformat() if getattr(item, "feedback_at", None) else None,
-    }
+    return serialize_purchase_item(item, product.name)
+
+
+@router.post("/purchases/{purchase_id}/items/batch")
+def add_purchase_items_batch(
+    purchase_id: UUID,
+    items: List[PurchaseItemAdd],
+    session: Session = Depends(get_session),
+    _: SupabaseAuthUser = Depends(require_admin),
+):
+    """
+    Batch create multiple purchase items for a purchase.
+    Validates all products exist before creating any items.
+    """
+    purchase = session.get(Purchase, purchase_id)
+    if not purchase:
+        raise HTTPException(status_code=404, detail="purchase not found")
+    
+    if not items:
+        raise HTTPException(status_code=400, detail="items list cannot be empty")
+    
+    if len(items) > 100:
+        raise HTTPException(status_code=400, detail="Maximum 100 items allowed per batch")
+    
+    # Validate all products exist before creating any items
+    product_ids = [item.product_id for item in items]
+    products = session.exec(
+        select(Product).where(Product.id.in_(product_ids))
+    ).all()
+    
+    products_by_id = {p.id: p for p in products}
+    
+    for item in items:
+        if item.product_id not in products_by_id:
+            raise HTTPException(
+                status_code=404,
+                detail=f"product not found: {item.product_id}"
+            )
+    
+    # Create all items
+    created_items = []
+    now = datetime.now(timezone.utc)
+    
+    for item_data in items:
+        item = PurchaseItem(
+            id=uuid4(),
+            purchase_id=purchase_id,
+            product_id=item_data.product_id,
+            quantity=item_data.quantity,
+            line_amount_cents=item_data.line_amount_cents,
+            external_id=item_data.external_id,
+            created_at=now,
+            updated_at=now,
+        )
+        session.add(item)
+        created_items.append((item, products_by_id[item_data.product_id]))
+    
+    session.commit()
+    
+    # Refresh and return all items
+    result = []
+    for item, product in created_items:
+        session.refresh(item)
+        result.append(serialize_purchase_item(item, product.name))
+
+    return result
 
 
 @router.post("/purchases/{purchase_id}/finalize")
