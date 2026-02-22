@@ -20,6 +20,7 @@ from .auth import require_admin
 from .serializers import serialize_customer, serialize_purchase_item
 
 DEFAULT_TERPENE_PERCENT = 0.10
+BRAND_WEIGHT = 1000
 
 router = APIRouter()
 
@@ -312,9 +313,31 @@ def get_recommended_products(
         .where(Purchase.customer_id == customer_id)
         .group_by(PurchaseItem.product_id)
     )
-    
+
     purchase_history_rows = session.exec(purchase_history_stmt).all()
     purchased_counts = {row[0]: row[1] for row in purchase_history_rows}
+
+    # Step 2b: Get brand affinity scores (likes - dislikes per brand, within window)
+    brand_affinity_stmt = (
+        select(
+            Product.brand,
+            func.count(case((PurchaseItem.feedback == "like", 1))).label("likes"),
+            func.count(case((PurchaseItem.feedback == "dislike", 1))).label("dislikes"),
+        )
+        .select_from(PurchaseItem)
+        .join(Purchase, Purchase.id == PurchaseItem.purchase_id)
+        .join(Product, Product.id == PurchaseItem.product_id)
+        .where(Purchase.customer_id == customer_id)
+        .where(Purchase.purchased_at >= cutoff)
+        .where(PurchaseItem.feedback.isnot(None))
+        .where(Product.brand.isnot(None))
+        .group_by(Product.brand)
+    )
+    brand_affinity_rows = session.exec(brand_affinity_stmt).all()
+    brand_scores_by_name = {
+        row.brand: (row.likes - row.dislikes)
+        for row in brand_affinity_rows
+    }
 
     # Step 3: Calculate similarity score for all active products
     # Get all active products with their terpenes
@@ -346,15 +369,20 @@ def get_recommended_products(
         if terpene and pt_link:
             terpene_percent = pt_link.percent or DEFAULT_TERPENE_PERCENT
             terpene_score = terpene_scores_by_id.get(terpene.id, 0.0)
-            
+
             # Weighted score: product's terpene percent * customer's terpene preference
             products_dict[pid]["score"] += terpene_percent * terpene_score
-            
+
             products_dict[pid]["terpenes"].append({
                 "name": terpene.name,
                 "percent": terpene_percent,
             })
-    
+
+    # Apply brand affinity boost/penalty
+    for pid, prod in products_dict.items():
+        if prod["brand"] and prod["brand"] in brand_scores_by_name:
+            prod["score"] += brand_scores_by_name[prod["brand"]] * BRAND_WEIGHT
+
     # Convert to list and sort by score
     products_list = list(products_dict.values())
     products_list.sort(key=lambda x: x["score"], reverse=True)
