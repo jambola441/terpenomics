@@ -18,7 +18,6 @@ type PurchaseItem = {
   line_amount_cents?: number | null
   feedback?: Feedback
   feedback_at?: string | null
-  terpenes?: ItemTerpene[]
 }
 
 type Purchase = {
@@ -39,10 +38,7 @@ type Customer = {
   last_visit_at?: string | null
 }
 
-type CustomerDetail = {
-  customer: Customer
-  purchases: Purchase[]
-}
+type ProductTerpenesMap = Record<string, ItemTerpene[]>
 
 type TerpeneScoreRow = {
   terpene: string
@@ -91,6 +87,9 @@ export default function CustomerEdit() {
 
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [purchases, setPurchases] = useState<Purchase[]>([])
+  const [productTerpenes, setProductTerpenes] = useState<ProductTerpenesMap>({})
+  const [hasMorePurchases, setHasMorePurchases] = useState(true)
+  const [purchasesLimit] = useState(20)
 
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
@@ -134,27 +133,86 @@ export default function CustomerEdit() {
 
     try {
       const headers = await authHeader()
-      const res = await fetch(`${API_BASE}/admin/customers/${cid}`, { headers })
-      if (!res.ok) throw new Error(await res.text())
-      const data: CustomerDetail = await res.json()
+      
+      // 1. Load basic customer info
+      const custRes = await fetch(`${API_BASE}/admin/customers/${cid}`, { headers })
+      if (!custRes.ok) throw new Error(await custRes.text())
+      const customerData: Customer = await custRes.json()
 
-      setCustomer(data.customer)
-      setPurchases(data.purchases ?? [])
+      setCustomer(customerData)
+      setName(customerData.name ?? '')
+      setPhone(customerData.phone ?? '')
+      setEmail(customerData.email ?? '')
+      setMarketing(Boolean(customerData.marketing_opt_in))
 
-      setName(data.customer.name ?? '')
-      setPhone(data.customer.phone ?? '')
-      setEmail(data.customer.email ?? '')
-      setMarketing(Boolean(data.customer.marketing_opt_in))
+      // 2. Load purchases (paginated)
+      await loadPurchases(headers, 0, true)
 
+    } catch (e: any) {
+      setError(e?.message ?? String(e))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function loadPurchases(headers: Record<string, string>, offset: number, reset: boolean = false) {
+    try {
+      const purchasesRes = await fetch(
+        `${API_BASE}/admin/customers/${cid}/purchases?limit=${purchasesLimit}&offset=${offset}`,
+        { headers }
+      )
+      if (!purchasesRes.ok) throw new Error(await purchasesRes.text())
+      const purchasesData: Purchase[] = await purchasesRes.json()
+
+      // Update purchases state
+      setPurchases(prev => reset ? purchasesData : [...prev, ...purchasesData])
+      setHasMorePurchases(purchasesData.length === purchasesLimit)
+
+      // 3. Load product terpenes for all products in these purchases
+      const productIds = new Set<string>()
+      for (const p of purchasesData) {
+        for (const it of p.items ?? []) {
+          productIds.add(it.product_id)
+        }
+      }
+
+      if (productIds.size > 0) {
+        const terpenesRes = await fetch(
+          `${API_BASE}/admin/products/terpenes?product_ids=${Array.from(productIds).join(',')}`,
+          { headers }
+        )
+        if (!terpenesRes.ok) throw new Error(await terpenesRes.text())
+        const terpenesData: ProductTerpenesMap = await terpenesRes.json()
+        
+        setProductTerpenes(prev => ({ ...prev, ...terpenesData }))
+      }
+
+      // 4. Initialize feedback state
       const fb: Record<string, Feedback> = {}
-      for (const p of data.purchases ?? []) {
+      for (const p of purchasesData) {
         for (const it of p.items ?? []) {
           fb[it.id] = (it.feedback ?? null) as Feedback
         }
       }
-      setRowFeedback(fb)
-      setRowError({})
-      setRowSaving({})
+      
+      if (reset) {
+        setRowFeedback(fb)
+        setRowError({})
+        setRowSaving({})
+      } else {
+        setRowFeedback(prev => ({ ...prev, ...fb }))
+      }
+
+    } catch (e: any) {
+      setError(e?.message ?? String(e))
+    }
+  }
+
+  async function loadMorePurchases() {
+    setLoading(true)
+    try {
+      const headers = await authHeader()
+      await loadPurchases(headers, purchases.length, false)
     } catch (e: any) {
       setError(e?.message ?? String(e))
     } finally {
@@ -381,11 +439,12 @@ export default function CustomerEdit() {
                       const current = rowFeedback[it.id] ?? (it.feedback ?? null)
                       const savingRow = Boolean(rowSaving[it.id])
                       const errRow = rowError[it.id]
+                      const terpenes = productTerpenes[it.product_id] ?? []
 
                       return (
                         <tr key={it.id}>
                           <td>{it.product_name}</td>
-                          <td style={{ maxWidth: 420 }}>{fmtTerpenes(it.terpenes)}</td>
+                          <td style={{ maxWidth: 420 }}>{fmtTerpenes(terpenes)}</td>
                           <td align="right">{it.quantity}</td>
                           <td align="right">{dollars(it.line_amount_cents)}</td>
                           <td>{fmtFeedback(it.feedback ?? null)}</td>
@@ -425,6 +484,14 @@ export default function CustomerEdit() {
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {hasMorePurchases && purchases.length > 0 && (
+        <div style={{ marginTop: 16, textAlign: 'center' }}>
+          <button type="button" onClick={loadMorePurchases} disabled={loading}>
+            {loading ? 'Loading…' : 'Load More Purchases'}
+          </button>
         </div>
       )}
     </div>

@@ -1,47 +1,43 @@
 // src/Customers.tsx
 import { useEffect, useState } from 'react'
-import supabase  from './utils/supabase'
-
-type Customer = {
-  id: string
-  name?: string | null
-  phone?: string | null
-  email?: string | null
-  marketing_opt_in: boolean
-  last_visit_at?: string | null
-}
+import { usePagination } from './hooks/usePagination'
+import { useSearch } from './hooks/useSearch'
+import { SearchBar } from './components/SearchBar'
+import api from './api/client'
+import type { Customer } from './types'
 
 export default function Customers() {
   const [customers, setCustomers] = useState<Customer[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  
+  const { hasMore, limit, offset, loadMore, reset: resetPagination, updateHasMore } = usePagination(50)
+  const { search, searchInput, setSearchInput, handleSearch, clearSearch } = useSearch()
 
   useEffect(() => {
-    fetchCustomers()
-  }, [])
+    fetchCustomers(true)
+  }, [search])
 
-  async function fetchCustomers() {
+  async function fetchCustomers(reset: boolean = false) {
     setLoading(true)
     setError(null)
 
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-
     try {
-      const res = await fetch('https://sturdy-parakeet-qg59j4pjp9q29j9j-8000.app.github.dev/admin/customers', {
-        headers: {
-          Authorization: `Bearer ${session?.access_token ?? ''}`,
-        },
+      const currentOffset = reset ? 0 : offset
+      const data = await api.customers.list({
+        q: search || undefined,
+        limit,
+        offset: currentOffset,
       })
 
-      if (!res.ok) {
-        const text = await res.text()
-        throw new Error(text || 'Failed to fetch customers')
+      setCustomers(prev => reset ? data : [...prev, ...data])
+      updateHasMore(data.length)
+      
+      if (reset) {
+        resetPagination()
+      } else {
+        loadMore()
       }
-
-      const data = await res.json()
-      setCustomers(data)
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -49,15 +45,44 @@ export default function Customers() {
     }
   }
 
-  if (loading) return <p style={{ padding: 24 }}>Loading…</p>
-  if (error) return <p style={{ padding: 24 }}>Error: {error}</p>
+  async function loadMoreCustomers() {
+    await fetchCustomers(false)
+  }
 
   return (
     <div style={{ padding: 24 }}>
-      <h1>Customers</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <h1 style={{ margin: 0 }}>Customers</h1>
+        <SearchBar
+          value={searchInput}
+          onChange={setSearchInput}
+          onSearch={handleSearch}
+          onClear={clearSearch}
+          placeholder="Search by name, email, or phone..."
+          disabled={loading}
+          showClearButton={!!search}
+        />
+      </div>
 
-      {customers.length === 0 ? (
-        <p>No customers found.</p>
+      {error && (
+        <div style={{ color: 'crimson', marginBottom: 12 }}>Error: {error}</div>
+      )}
+
+      {search && (
+        <p style={{ marginBottom: 12, opacity: 0.8 }}>
+          Searching for: <strong>{search}</strong> — Showing {customers.length} result(s)
+        </p>
+      )}
+      {!search && (
+        <p style={{ marginBottom: 12, opacity: 0.8 }}>
+          Showing {customers.length} customer(s)
+        </p>
+      )}
+
+      {loading && customers.length === 0 ? (
+        <div>Loading…</div>
+      ) : customers.length === 0 ? (
+        <div>No customers found.</div>
       ) : (
         <table border={1} cellPadding={8} style={{ borderCollapse: 'collapse', width: '100%' }}>
           <thead>
@@ -81,6 +106,20 @@ export default function Customers() {
             ))}
           </tbody>
         </table>
+      )}
+
+      {hasMore && customers.length > 0 && !loading && (
+        <div style={{ marginTop: 16, textAlign: 'center' }}>
+          <button type="button" onClick={loadMoreCustomers}>
+            Load More Customers
+          </button>
+        </div>
+      )}
+
+      {loading && customers.length > 0 && (
+        <div style={{ marginTop: 16, textAlign: 'center', opacity: 0.7 }}>
+          Loading more...
+        </div>
       )}
     </div>
   )

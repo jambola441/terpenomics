@@ -38,7 +38,6 @@ def _build_database_url() -> str:
 
 def _create_engine() -> Engine:
     database_url = _build_database_url()
-    print(database_url)
     echo = os.getenv("SQL_ECHO", "false").lower() == "true"
 
     return create_engine(
@@ -49,9 +48,6 @@ def _create_engine() -> Engine:
 
 
 engine: Engine = _create_engine()
-print("DB USER IN ENGINE:", engine.url.username)
-print("DB HOST IN ENGINE:", engine.url.host)
-print("DB NAME IN ENGINE:", engine.url.database)
 
 
 

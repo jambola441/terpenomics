@@ -131,6 +131,8 @@ class Purchase(SQLModel, TimestampMixin, table=True):
     customer: Customer = Relationship(back_populates="purchases")
     items: list["PurchaseItem"] = Relationship(back_populates="purchase")
 
+    external_id: Optional[str] = Field(default=None, max_length=200, index=True)  # e.g. POS order ID, for idempotency
+
 class ItemFeedback(str, Enum):
     like = "like"
     dislike = "dislike"

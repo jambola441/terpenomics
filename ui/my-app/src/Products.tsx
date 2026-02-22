@@ -1,52 +1,43 @@
 // src/Products.tsx
 import { useEffect, useState } from 'react'
-import supabase from './utils/supabase'
-
-type Terpene = {
-  name: string
-  percent?: number | null
-}
-
-type Product = {
-  id: string
-  name: string
-  brand?: string | null
-  category: string
-  is_active: boolean
-  terpenes?: Terpene[]
-}
+import { usePagination } from './hooks/usePagination'
+import { useSearch } from './hooks/useSearch'
+import { SearchBar } from './components/SearchBar'
+import api from './api/client'
+import type { Product } from './types'
 
 export default function Products() {
   const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  
+  const { hasMore, limit, offset, loadMore, reset: resetPagination, updateHasMore } = usePagination(50)
+  const { search, searchInput, setSearchInput, handleSearch, clearSearch } = useSearch()
 
   useEffect(() => {
-    fetchProducts()
-  }, [])
+    fetchProducts(true)
+  }, [search])
 
-  async function fetchProducts() {
+  async function fetchProducts(reset: boolean = false) {
     setLoading(true)
     setError(null)
 
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-
     try {
-      const res = await fetch('https://sturdy-parakeet-qg59j4pjp9q29j9j-8000.app.github.dev/admin/products', {
-        headers: {
-          Authorization: `Bearer ${session?.access_token ?? ''}`,
-        },
+      const currentOffset = reset ? 0 : offset
+      const data = await api.products.list({
+        q: search || undefined,
+        limit,
+        offset: currentOffset,
       })
 
-      if (!res.ok) {
-        const text = await res.text()
-        throw new Error(text || 'Failed to fetch products')
+      setProducts(prev => reset ? data : [...prev, ...data])
+      updateHasMore(data.length)
+      
+      if (reset) {
+        resetPagination()
+      } else {
+        loadMore()
       }
-
-      const data = await res.json()
-      setProducts(data)
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -54,15 +45,44 @@ export default function Products() {
     }
   }
 
-  if (loading) return <p style={{ padding: 24 }}>Loading…</p>
-  if (error) return <p style={{ padding: 24 }}>Error: {error}</p>
+  async function loadMoreProducts() {
+    await fetchProducts(false)
+  }
 
   return (
     <div style={{ padding: 24 }}>
-      <h1>Products</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <h1 style={{ margin: 0 }}>Products</h1>
+        <SearchBar
+          value={searchInput}
+          onChange={setSearchInput}
+          onSearch={handleSearch}
+          onClear={clearSearch}
+          placeholder="Search by name, brand, or category..."
+          disabled={loading}
+          showClearButton={!!search}
+        />
+      </div>
 
-      {products.length === 0 ? (
-        <p>No products found.</p>
+      {error && (
+        <div style={{ color: 'crimson', marginBottom: 12 }}>Error: {error}</div>
+      )}
+
+      {search && (
+        <p style={{ marginBottom: 12, opacity: 0.8 }}>
+          Searching for: <strong>{search}</strong> — Showing {products.length} result(s)
+        </p>
+      )}
+      {!search && (
+        <p style={{ marginBottom: 12, opacity: 0.8 }}>
+          Showing {products.length} product(s)
+        </p>
+      )}
+
+      {loading && products.length === 0 ? (
+        <div>Loading…</div>
+      ) : products.length === 0 ? (
+        <div>No products found.</div>
       ) : (
         <table border={1} cellPadding={8} style={{ borderCollapse: 'collapse', width: '100%' }}>
           <thead>
@@ -99,6 +119,20 @@ export default function Products() {
             ))}
           </tbody>
         </table>
+      )}
+
+      {hasMore && products.length > 0 && !loading && (
+        <div style={{ marginTop: 16, textAlign: 'center' }}>
+          <button type="button" onClick={loadMoreProducts}>
+            Load More Products
+          </button>
+        </div>
+      )}
+
+      {loading && products.length > 0 && (
+        <div style={{ marginTop: 16, textAlign: 'center', opacity: 0.7 }}>
+          Loading more...
+        </div>
       )}
     </div>
   )

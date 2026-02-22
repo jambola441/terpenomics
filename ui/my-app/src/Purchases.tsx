@@ -1,22 +1,10 @@
 // src/Purchases.tsx
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import supabase  from './utils/supabase'
-
-type PurchaseRow = {
-  id: string
-  purchased_at: string
-  total_amount_cents: number
-  source: string
-  external_id?: string | null
-  notes?: string | null
-  customer_id: string
-  customer_name?: string | null
-  customer_phone?: string | null
-  item_count?: number | null
-}
-
-const API_BASE = 'https://sturdy-parakeet-qg59j4pjp9q29j9j-8000.app.github.dev'
+import api from './api/client'
+import type { PurchaseRow } from './types'
+import { SearchBar } from './components/SearchBar'
+import { useSearch } from './hooks/useSearch'
 
 function dollars(cents: number | null | undefined) {
   if (cents == null) return '—'
@@ -25,66 +13,82 @@ function dollars(cents: number | null | undefined) {
 
 export default function Purchases() {
   const [rows, setRows] = useState<PurchaseRow[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [hasMorePurchases, setHasMorePurchases] = useState(true)
 
   // filters
-  const [q, setQ] = useState('')
+  const { search, searchInput, setSearchInput, handleSearch, clearSearch } = useSearch()
   const [source, setSource] = useState<string>('')
   const [limit, setLimit] = useState<number>(50)
 
   const queryString = useMemo(() => {
     const params = new URLSearchParams()
-    if (q.trim()) params.set('q', q.trim())
+    if (search.trim()) params.set('q', search.trim())
     if (source) params.set('source', source)
     params.set('limit', String(limit))
     return params.toString()
-  }, [q, source, limit])
+  }, [search, source, limit])
 
   useEffect(() => {
-    void load()
+    void load(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryString])
 
-  async function authHeader() {
-    const { data } = await supabase.auth.getSession()
-    const token = data.session?.access_token
-    if (!token) throw new Error('Not authenticated')
-    return { Authorization: `Bearer ${token}` }
-  }
-
-  async function load() {
+  async function load(reset: boolean = true) {
     setLoading(true)
     setError(null)
     try {
-      const headers = await authHeader()
-      const res = await fetch(`${API_BASE}/admin/purchases?${queryString}`, { headers })
-      if (!res.ok) throw new Error(await res.text())
-      const data = await res.json()
-      setRows(data)
+      const offset = reset ? 0 : rows.length
+      const data = await api.purchases.list({
+        q: search.trim() || undefined,
+        source: source || undefined,
+        limit,
+        offset,
+      })
+
+      setRows(prev => reset ? data : [...prev, ...data])
+      setHasMorePurchases(data.length === limit)
     } catch (e: any) {
       setError(e?.message ?? String(e))
-      setRows([])
+      if (reset) setRows([])
     } finally {
       setLoading(false)
     }
+  }
+
+  async function loadMorePurchases() {
+    await load(false)
+  }
+
+  function onSearchSubmit(e: React.FormEvent) {
+    handleSearch(e)
+    void load(true)
+  }
+
+  function onSearchClear() {
+    clearSearch()
+    void load(true)
   }
 
   return (
     <div style={{ padding: 24 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
         <h1>Purchases</h1>
-        <button type="button" onClick={() => load()} disabled={loading}>
+        <button type="button" onClick={() => load(true)} disabled={loading}>
           {loading ? 'Refreshing…' : 'Refresh'}
         </button>
       </div>
 
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
-        <input
-          placeholder="Search customer name/phone/email or external id"
-          value={q}
-          onChange={e => setQ(e.target.value)}
-          style={{ minWidth: 320, flex: 1 }}
+        <SearchBar
+          value={searchInput}
+          onChange={setSearchInput}
+          onSearch={onSearchSubmit}
+          onClear={onSearchClear}
+          placeholder="Search by customer name, email, phone, or external ID..."
+          disabled={loading}
+          showClearButton={!!search}
         />
 
         <select value={source} onChange={e => setSource(e.target.value)}>
@@ -103,7 +107,13 @@ export default function Purchases() {
 
       {error ? <div style={{ color: 'crimson', marginBottom: 12 }}>Error: {error}</div> : null}
 
-      {loading ? (
+      {!loading && rows.length > 0 && (
+        <p style={{ marginBottom: 12, opacity: 0.8 }}>
+          Showing {rows.length} purchase(s)
+        </p>
+      )}
+
+      {loading && rows.length === 0 ? (
         <div>Loading…</div>
       ) : rows.length === 0 ? (
         <div>No purchases found.</div>
@@ -142,6 +152,20 @@ export default function Purchases() {
             ))}
           </tbody>
         </table>
+      )}
+
+      {hasMorePurchases && rows.length > 0 && !loading && (
+        <div style={{ marginTop: 16, textAlign: 'center' }}>
+          <button type="button" onClick={loadMorePurchases}>
+            Load More Purchases
+          </button>
+        </div>
+      )}
+
+      {loading && rows.length > 0 && (
+        <div style={{ marginTop: 16, textAlign: 'center', opacity: 0.7 }}>
+          Loading more...
+        </div>
       )}
     </div>
   )

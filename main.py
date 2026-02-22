@@ -3,7 +3,7 @@ from fastapi import FastAPI, Response
 
 from database import create_db_and_tables
 from routes_me import router as me_router
-from routes_admin import router as admin_router
+from routes.admin import router as admin_router
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Dispensary MVP API")
