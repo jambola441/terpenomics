@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import supabase  from './utils/supabase'
 
 type Terpene = { name: string; percent?: number | null }
+type Cannabinoid = { name: string; family: 'thc' | 'cbd'; percent?: number | null }
 
 type Product = {
   id: string
@@ -12,6 +13,7 @@ type Product = {
   category: string
   is_active: boolean
   terpenes: Terpene[]
+  cannabinoids: Cannabinoid[]
 }
 
 const API_BASE = 'https://sturdy-parakeet-qg59j4pjp9q29j9j-8000.app.github.dev'
@@ -30,6 +32,10 @@ export default function ProductEdit() {
   const [category, setCategory] = useState('flower')
   const [isActive, setIsActive] = useState(true)
   const [terpenes, setTerpenes] = useState<Terpene[]>([{ name: '' }])
+  const [cannabinoids, setCannabinoids] = useState<Cannabinoid[]>([{ name: '', family: 'thc' }])
+
+  const [allTerpenes, setAllTerpenes] = useState<{ name: string }[]>([])
+  const [allCannabinoids, setAllCannabinoids] = useState<Cannabinoid[]>([])
 
   const pid = useMemo(() => (productId ?? '').trim(), [productId])
 
@@ -52,15 +58,29 @@ export default function ProductEdit() {
     setMsg(null)
     try {
       const headers = await authHeader()
-      const res = await fetch(`${API_BASE}/admin/products/${pid}`, { headers })
-      if (!res.ok) throw new Error(await res.text())
-      const p: Product = await res.json()
+      const [productRes, terpenesRes, cannabinoidsRes] = await Promise.all([
+        fetch(`${API_BASE}/admin/products/${pid}`, { headers }),
+        fetch(`${API_BASE}/admin/products/terpenes`, { headers }),
+        fetch(`${API_BASE}/admin/products/cannabinoids`, { headers }),
+      ])
+
+      if (!productRes.ok) throw new Error(await productRes.text())
+      if (!terpenesRes.ok) throw new Error(await terpenesRes.text())
+      if (!cannabinoidsRes.ok) throw new Error(await cannabinoidsRes.text())
+
+      const p: Product = await productRes.json()
+      const terps: { name: string }[] = await terpenesRes.json()
+      const cannabs: Cannabinoid[] = await cannabinoidsRes.json()
+
+      setAllTerpenes(terps)
+      setAllCannabinoids(cannabs)
 
       setName(p.name ?? '')
       setBrand(p.brand ?? '')
       setCategory(p.category ?? 'other')
       setIsActive(Boolean(p.is_active))
       setTerpenes(p.terpenes?.length ? p.terpenes.map(t => ({ name: t.name, percent: t.percent ?? null })) : [{ name: '' }])
+      setCannabinoids(p.cannabinoids?.length ? p.cannabinoids.map(c => ({ name: c.name, family: c.family, percent: c.percent ?? null })) : [{ name: '', family: 'thc' }])
     } catch (e: any) {
       setError(e?.message ?? String(e))
     } finally {
@@ -78,6 +98,25 @@ export default function ProductEdit() {
 
   function removeTerpeneRow(idx: number) {
     setTerpenes(prev => prev.filter((_, i) => i !== idx))
+  }
+
+  function handleCannabinoidNameChange(idx: number, value: string) {
+    const match = allCannabinoids.find(c => c.name === value)
+    setCannabinoids(prev => prev.map((c, i) =>
+      i === idx ? { ...c, name: value, family: match ? match.family : c.family } : c
+    ))
+  }
+
+  function updateCannabinoidPercent(idx: number, value: number | null) {
+    setCannabinoids(prev => prev.map((c, i) => (i === idx ? { ...c, percent: value } : c)))
+  }
+
+  function addCannabinoidRow() {
+    setCannabinoids(prev => [...prev, { name: '', family: 'thc' }])
+  }
+
+  function removeCannabinoidRow(idx: number) {
+    setCannabinoids(prev => prev.filter((_, i) => i !== idx))
   }
 
   async function save(e: React.FormEvent) {
@@ -98,6 +137,13 @@ export default function ProductEdit() {
           .map(t => ({
             name: t.name.trim(),
             percent: t.percent === '' ? null : t.percent ?? null,
+          })),
+        cannabinoids: cannabinoids
+          .filter(c => allCannabinoids.some(ac => ac.name === c.name.trim()))
+          .map(c => ({
+            name: c.name.trim(),
+            family: c.family,
+            percent: c.percent === '' ? null : c.percent ?? null,
           })),
       }
 
@@ -126,6 +172,14 @@ export default function ProductEdit() {
         <h1>Edit Product</h1>
         <button type="button" onClick={() => navigate(-1)}>Back</button>
       </div>
+
+      <datalist id="terpene-options">
+        {allTerpenes.map(t => <option key={t.name} value={t.name} />)}
+      </datalist>
+
+      <datalist id="cannabinoid-options">
+        {allCannabinoids.map(c => <option key={c.name} value={c.name} />)}
+      </datalist>
 
       <form onSubmit={save}>
         <div style={{ marginBottom: 10 }}>
@@ -165,6 +219,7 @@ export default function ProductEdit() {
         {terpenes.map((t, i) => (
           <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
             <input
+              list="terpene-options"
               placeholder="Name"
               value={t.name}
               onChange={e => updateTerpene(i, 'name', e.target.value)}
@@ -187,6 +242,41 @@ export default function ProductEdit() {
         ))}
 
         <button type="button" onClick={addTerpeneRow}>+ Add terpene</button>
+
+        <h3>Cannabinoids</h3>
+
+        {cannabinoids.map((c, i) => {
+          const knownFamily = allCannabinoids.find(ac => ac.name === c.name.trim())?.family
+          return (
+            <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center' }}>
+              <input
+                list="cannabinoid-options"
+                placeholder="Name"
+                value={c.name}
+                onChange={e => handleCannabinoidNameChange(i, e.target.value)}
+                style={{ flex: 2 }}
+              />
+              <span style={{ width: 60, textAlign: 'center', fontWeight: 600, opacity: knownFamily ? 1 : 0.3 }}>
+                {knownFamily ? knownFamily.toUpperCase() : '—'}
+              </span>
+              <input
+                placeholder="%"
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                value={c.percent ?? ''}
+                onChange={e => updateCannabinoidPercent(i, e.target.value === '' ? null : Number(e.target.value))}
+                style={{ width: 120 }}
+              />
+              {cannabinoids.length > 1 && (
+                <button type="button" onClick={() => removeCannabinoidRow(i)}>✕</button>
+              )}
+            </div>
+          )
+        })}
+
+        <button type="button" onClick={addCannabinoidRow}>+ Add cannabinoid</button>
 
         <div style={{ marginTop: 16 }}>
           <button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>

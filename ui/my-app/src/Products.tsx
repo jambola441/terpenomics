@@ -92,6 +92,7 @@ export default function Products() {
               <th>Category</th>
               <th>Active</th>
               <th>Terpenes</th>
+              <th>Cannabinoids</th>
             </tr>
           </thead>
           <tbody>
@@ -108,6 +109,20 @@ export default function Products() {
                         <li key={i}>
                           {t.name}
                           {t.percent != null ? ` (${t.percent}%)` : ''}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    '—'
+                  )}
+                </td>
+                <td>
+                  {p.cannabinoids && p.cannabinoids.length > 0 ? (
+                    <ul style={{ margin: 0, paddingLeft: 16 }}>
+                      {p.cannabinoids.map((c, i) => (
+                        <li key={i}>
+                          {c.name} ({c.family.toUpperCase()})
+                          {c.percent != null ? ` — ${c.percent}%` : ''}
                         </li>
                       ))}
                     </ul>

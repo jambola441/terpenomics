@@ -76,6 +76,7 @@ class Product(ProductBase, TimestampMixin, table=True):
 
     purchase_items: list["PurchaseItem"] = Relationship(back_populates="product")
     terpene_links: list["ProductTerpene"] = Relationship(back_populates="product")
+    cannabinoid_links: list["ProductCannabinoid"] = Relationship(back_populates="product")
 
 
 class Terpene(SQLModel, TimestampMixin, table=True):
@@ -102,6 +103,42 @@ class ProductTerpene(SQLModel, table=True):
 
     product: Product = Relationship(back_populates="terpene_links")
     terpene: Terpene = Relationship(back_populates="product_links")
+
+
+# ---------------------------
+# Cannabinoids
+# ---------------------------
+
+class CannabinoidFamily(str, Enum):
+    thc = "thc"
+    cbd = "cbd"
+
+
+class Cannabinoid(SQLModel, TimestampMixin, table=True):
+    __tablename__ = "cannabinoids"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    name: str = Field(max_length=120, index=True, sa_column_kwargs={"unique": True})
+    family: CannabinoidFamily = Field(nullable=False, index=True)
+    description: Optional[str] = Field(default=None, max_length=1000)
+
+    product_links: list["ProductCannabinoid"] = Relationship(back_populates="cannabinoid")
+
+
+class ProductCannabinoid(SQLModel, table=True):
+    """
+    Join table: Product <-> Cannabinoid
+    percent is optional.
+    """
+    __tablename__ = "product_cannabinoids"
+
+    product_id: UUID = Field(foreign_key="products.id", primary_key=True)
+    cannabinoid_id: UUID = Field(foreign_key="cannabinoids.id", primary_key=True)
+
+    percent: Optional[float] = Field(default=None, ge=0.0, le=100.0)
+
+    product: Product = Relationship(back_populates="cannabinoid_links")
+    cannabinoid: Cannabinoid = Relationship(back_populates="product_links")
 
 
 # ---------------------------
