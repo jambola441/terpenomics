@@ -19,6 +19,7 @@ import type {
   PortalProduct,
   FeedbackResponse,
   Feedback,
+  LabReportResult,
 } from '../types'
 
 // Get API base URL from environment variable or use default
@@ -186,6 +187,35 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ feedback }),
       }),
+  },
+
+  labReports: {
+    upload: async (file: File, productId?: string): Promise<LabReportResult> => {
+      const { data } = await supabase.auth.getSession()
+      const token = data.session?.access_token
+      if (!token) throw new Error('Not authenticated')
+
+      const form = new FormData()
+      form.append('file', file)
+
+      const url = productId
+        ? `${API_BASE}/admin/lab-reports/upload?product_id=${productId}`
+        : `${API_BASE}/admin/lab-reports/upload`
+
+      // Do NOT set Content-Type — the browser sets it with the multipart boundary
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
+      })
+
+      if (!res.ok) {
+        const text = await res.text()
+        throw new Error(text || `Upload failed with status ${res.status}`)
+      }
+
+      return res.json()
+    },
   },
 
   portal: {

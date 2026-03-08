@@ -162,3 +162,19 @@ export type PortalProduct = {
   terpenes: Terpene[]
   cannabinoids: Cannabinoid[]
 }
+
+export type LabReportResult = {
+  lab_report_id: string
+  lab_name: string | null
+  lab_license: string | null
+  test_date: string | null
+  batch_id: string | null
+  product_name: string | null
+  total_terpenes: number | null
+  pass_fail: string | null
+  terpenes: Terpene[]
+  confidence: number
+  confidence_notes: string | null
+  status: 'pending' | 'extracted' | 'applied' | 'failed'
+  applied_to_product: boolean
+}
