@@ -13,7 +13,7 @@ def serialize_customer(c: Customer) -> dict:
     }
 
 
-def serialize_product(p: Product, terpenes: list) -> dict:
+def serialize_product(p: Product, terpenes: list, cannabinoids: list = []) -> dict:
     return {
         "id": str(p.id),
         "name": p.name,
@@ -21,6 +21,7 @@ def serialize_product(p: Product, terpenes: list) -> dict:
         "category": p.category,
         "is_active": p.is_active,
         "terpenes": terpenes,
+        "cannabinoids": cannabinoids,
     }
 
 

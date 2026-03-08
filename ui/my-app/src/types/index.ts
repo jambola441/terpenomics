@@ -7,6 +7,12 @@ export type Terpene = {
   percent?: number | null
 }
 
+export type Cannabinoid = {
+  name: string
+  family: 'thc' | 'cbd'
+  percent?: number | null
+}
+
 export type Product = {
   id: string
   name: string
@@ -14,6 +20,7 @@ export type Product = {
   category: string
   is_active: boolean
   terpenes?: Terpene[]
+  cannabinoids?: Cannabinoid[]
 }
 
 export type Customer = {
@@ -118,4 +125,40 @@ export type PurchaseItemCreateParams = {
   quantity: number
   line_amount_cents: number
   external_id?: string
+}
+
+export type PortalPurchaseItem = {
+  id: string
+  purchase_id: string
+  product_id: string
+  product_name: string
+  product_category: string
+  quantity: number
+  line_amount_cents?: number | null
+  feedback?: Feedback
+  feedback_at?: string | null
+}
+
+export type PortalPurchase = {
+  id: string
+  purchased_at: string
+  total_amount_cents: number
+  source: string
+  notes?: string | null
+  items: PortalPurchaseItem[]
+}
+
+export type FeedbackResponse = {
+  id: string
+  feedback: Feedback
+  feedback_at: string | null
+}
+
+export type PortalProduct = {
+  id: string
+  name: string
+  brand?: string | null
+  category: string
+  terpenes: Terpene[]
+  cannabinoids: Cannabinoid[]
 }

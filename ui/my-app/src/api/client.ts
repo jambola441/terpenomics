@@ -6,6 +6,7 @@ import type {
   PurchaseRow,
   TerpeneScoresResponse,
   ProductTerpenesMap,
+  Cannabinoid,
   ListParams,
   PurchaseListParams,
   CustomerPurchasesParams,
@@ -14,6 +15,10 @@ import type {
   PurchaseCreateParams,
   PurchaseItemCreateParams,
   PurchaseItem,
+  PortalPurchase,
+  PortalProduct,
+  FeedbackResponse,
+  Feedback,
 } from '../types'
 
 // Get API base URL from environment variable or use default
@@ -38,6 +43,27 @@ async function getAuthHeaders() {
   const token = data.session?.access_token
   if (!token) throw new Error('Not authenticated')
   return { Authorization: `Bearer ${token}` }
+}
+
+// Unauthenticated fetch for customer portal (no Supabase session needed)
+async function portalFetch<T>(
+  path: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(text || `Request failed with status ${res.status}`)
+  }
+
+  return res.json()
 }
 
 // Generic fetch wrapper
@@ -115,6 +141,15 @@ export const api = {
     
     getTerpenes: (productIds: string[]) =>
       authenticatedFetch<ProductTerpenesMap>(`/admin/products/terpenes?product_ids=${productIds.join(',')}`),
+
+    getCannabinoids: (productIds: string[]) =>
+      authenticatedFetch<Record<string, Cannabinoid[]>>(`/admin/products/cannabinoids?product_ids=${productIds.join(',')}`),
+
+    listAllTerpenes: () =>
+      authenticatedFetch<{ name: string }[]>(`/admin/products/terpenes`),
+
+    listAllCannabinoids: () =>
+      authenticatedFetch<Cannabinoid[]>(`/admin/products/cannabinoids`),
   },
 
   purchases: {
@@ -151,6 +186,26 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ feedback }),
       }),
+  },
+
+  portal: {
+    getPurchases: (customerId: string, params?: { limit?: number; offset?: number }) =>
+      portalFetch<PortalPurchase[]>(`/customer/${customerId}/purchases${buildQueryString(params)}`),
+
+    setFeedback: (customerId: string, itemId: string, feedback: Feedback | null) =>
+      portalFetch<FeedbackResponse>(`/customer/${customerId}/purchase-items/${itemId}/feedback`, {
+        method: 'POST',
+        body: JSON.stringify({ feedback }),
+      }),
+
+    getRecommendations: (customerId: string, params?: { limit?: number; window_days?: number }) =>
+      portalFetch<RecommendedProduct[]>(`/customer/${customerId}/recommendations${buildQueryString(params)}`),
+
+    getProducts: (params?: { q?: string; limit?: number; offset?: number }) =>
+      portalFetch<PortalProduct[]>(`/customer/products${buildQueryString(params)}`),
+
+    getProduct: (productId: string) =>
+      portalFetch<PortalProduct>(`/customer/products/${productId}`),
   },
 }
 
