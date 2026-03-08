@@ -106,6 +106,41 @@ class ProductTerpene(SQLModel, table=True):
 
 
 # ---------------------------
+# Lab Reports (COA ingestion)
+# ---------------------------
+
+class LabReportStatus(str, Enum):
+    pending   = "pending"    # uploaded, not yet processed
+    extracted = "extracted"  # Claude returned data, not yet saved to product
+    applied   = "applied"    # ProductTerpene records written
+    failed    = "failed"     # extraction error or validation failure
+
+
+class LabReport(SQLModel, TimestampMixin, table=True):
+    __tablename__ = "lab_reports"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    # Which product these terpenes belong to (optional at upload time)
+    product_id: Optional[UUID] = Field(default=None, foreign_key="products.id", index=True)
+
+    # Metadata extracted from the COA
+    lab_name:               Optional[str]   = Field(default=None, max_length=300)
+    lab_license:            Optional[str]   = Field(default=None, max_length=100)
+    test_date:              Optional[str]   = Field(default=None, max_length=50)
+    batch_id:               Optional[str]   = Field(default=None, max_length=200)
+    product_name_on_report: Optional[str]   = Field(default=None, max_length=300)
+    total_terpenes:         Optional[float] = Field(default=None, ge=0.0, le=100.0)
+    pass_fail:              Optional[str]   = Field(default=None, max_length=20)
+
+    # Extraction quality
+    confidence: Optional[int] = Field(default=None, ge=1, le=5)
+
+    # Raw JSON blob of terpenes as extracted — list of {name, percent}
+    raw_terpenes_json: Optional[str] = Field(default=None)
+
+    status:        LabReportStatus = Field(default=LabReportStatus.pending)
+    error_message: Optional[str]   = Field(default=None, max_length=1000)
 # Cannabinoids
 # ---------------------------
 
