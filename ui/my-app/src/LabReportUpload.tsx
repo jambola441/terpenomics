@@ -576,7 +576,7 @@ export default function LabReportUpload() {
 
             <table border={1} cellPadding={8} style={{ borderCollapse: 'collapse', width: '100%', fontSize: 14 }}>
               <thead>
-                <tr style={{ background: '#f6f8fa' }}>
+                <tr>
                   <th style={{ textAlign: 'center', width: 36 }}>
                     <input
                       type="checkbox"
