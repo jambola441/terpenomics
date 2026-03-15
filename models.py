@@ -4,6 +4,7 @@ from enum import Enum
 from typing import Optional
 from uuid import UUID, uuid4
 
+from sqlalchemy import Column, LargeBinary
 from sqlmodel import SQLModel, Field, Relationship
 
 
@@ -135,6 +136,9 @@ class LabReport(SQLModel, TimestampMixin, table=True):
 
     # Extraction quality
     confidence: Optional[int] = Field(default=None, ge=1, le=5)
+
+    # Raw PDF bytes — stored at upload time, cleared after successful extraction
+    pdf_bytes: Optional[bytes] = Field(default=None, sa_column=Column("pdf_bytes", LargeBinary, nullable=True))
 
     # Raw JSON blob of terpenes as extracted — list of {name, percent}
     raw_terpenes_json: Optional[str] = Field(default=None)
