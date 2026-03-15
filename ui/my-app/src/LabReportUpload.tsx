@@ -205,6 +205,11 @@ export default function LabReportUpload() {
   const [listOffset, setListOffset] = useState(0)
   const LIST_LIMIT = 50
 
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [listProcessing, setListProcessing] = useState(false)
+  const [listProductId, setListProductId] = useState('')
+  const [listResults, setListResults] = useState<LabReportResult[]>([])
+
   function loadLabReports(offset = 0) {
     setListLoading(true)
     setListError(null)
@@ -294,6 +299,43 @@ export default function LabReportUpload() {
   }
 
   const step = uploaded.length > 0 ? 2 : 1
+
+  const pendingIds = labReports.filter(r => r.status === 'pending').map(r => r.id)
+  const allPendingSelected = pendingIds.length > 0 && pendingIds.every(id => selectedIds.has(id))
+
+  function toggleSelectAll() {
+    if (allPendingSelected) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(pendingIds))
+    }
+  }
+
+  function toggleSelected(id: string) {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  async function handleListProcess() {
+    if (selectedIds.size === 0) return
+    setListProcessing(true)
+    setListResults([])
+    try {
+      const ids: string[] = Array.from(selectedIds)
+      const res = await api.labReports.process(ids, listProductId || undefined)
+      setListResults(res)
+      setSelectedIds(new Set())
+      loadLabReports(0)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setListProcessing(false)
+    }
+  }
 
   return (
     <div style={{ padding: 24, maxWidth: 720 }}>
@@ -491,44 +533,123 @@ export default function LabReportUpload() {
         )}
 
         {labReports.length > 0 && (
-          <table border={1} cellPadding={8} style={{ borderCollapse: 'collapse', width: '100%', fontSize: 14 }}>
-            <thead>
-              <tr style={{ background: '#f6f8fa' }}>
-                <th style={{ textAlign: 'left' }}>Date</th>
-                <th style={{ textAlign: 'left' }}>Status</th>
-                <th style={{ textAlign: 'left' }}>Lab</th>
-                <th style={{ textAlign: 'left' }}>Product (on report)</th>
-                <th style={{ textAlign: 'left' }}>Batch ID</th>
-                <th style={{ textAlign: 'left' }}>Test date</th>
-                <th style={{ textAlign: 'right' }}>Total terpenes</th>
-                <th style={{ textAlign: 'left' }}>Pass/Fail</th>
-                <th style={{ textAlign: 'left' }}>Confidence</th>
-              </tr>
-            </thead>
-            <tbody>
-              {labReports.map(r => (
-                <tr key={r.id}>
-                  <td style={{ whiteSpace: 'nowrap', color: '#57606a' }}>
-                    {r.created_at ? new Date(r.created_at).toLocaleDateString() : '—'}
-                  </td>
-                  <td><StatusBadge status={r.status} /></td>
-                  <td>{r.lab_name ?? <span style={{ opacity: 0.4 }}>—</span>}</td>
-                  <td>{r.product_name_on_report ?? <span style={{ opacity: 0.4 }}>—</span>}</td>
-                  <td>{r.batch_id ?? <span style={{ opacity: 0.4 }}>—</span>}</td>
-                  <td>{r.test_date ?? <span style={{ opacity: 0.4 }}>—</span>}</td>
-                  <td style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
-                    {r.total_terpenes != null ? `${r.total_terpenes}%` : <span style={{ opacity: 0.4 }}>—</span>}
-                  </td>
-                  <td><PassFailBadge value={r.pass_fail} /></td>
-                  <td>
-                    {r.confidence != null
-                      ? <ConfidenceBadge score={r.confidence} />
-                      : <span style={{ opacity: 0.4 }}>—</span>}
-                  </td>
+          <>
+            {/* Process toolbar */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
+              marginBottom: 12, padding: '10px 14px',
+              background: '#f6f8fa', border: '1px solid #d0d7de', borderRadius: 6,
+            }}>
+              <span style={{ fontSize: 14, color: '#57606a', minWidth: 120 }}>
+                {selectedIds.size > 0
+                  ? `${selectedIds.size} selected`
+                  : 'Select pending reports to process'}
+              </span>
+              <select
+                value={listProductId}
+                onChange={e => setListProductId(e.target.value)}
+                disabled={listProcessing}
+                style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid #d0d7de', fontSize: 14, flex: 1, minWidth: 200 }}
+              >
+                <option value="">— extract only, don't write to a product —</option>
+                {products.map(p => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}{p.brand ? ` — ${p.brand}` : ''} ({p.category})
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={handleListProcess}
+                disabled={selectedIds.size === 0 || listProcessing}
+                style={{
+                  padding: '6px 18px', fontSize: 14, fontWeight: 600,
+                  borderRadius: 6, border: 'none',
+                  background: selectedIds.size === 0 || listProcessing ? '#d0d7de' : '#1f6feb',
+                  color: selectedIds.size === 0 || listProcessing ? '#57606a' : '#fff',
+                  cursor: selectedIds.size === 0 || listProcessing ? 'not-allowed' : 'pointer',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {listProcessing ? 'Analyzing COAs…' : 'Process Selected'}
+              </button>
+            </div>
+
+            <table border={1} cellPadding={8} style={{ borderCollapse: 'collapse', width: '100%', fontSize: 14 }}>
+              <thead>
+                <tr style={{ background: '#f6f8fa' }}>
+                  <th style={{ textAlign: 'center', width: 36 }}>
+                    <input
+                      type="checkbox"
+                      title="Select all pending"
+                      checked={allPendingSelected}
+                      disabled={pendingIds.length === 0}
+                      onChange={toggleSelectAll}
+                    />
+                  </th>
+                  <th style={{ textAlign: 'left' }}>Date</th>
+                  <th style={{ textAlign: 'left' }}>Status</th>
+                  <th style={{ textAlign: 'left' }}>Lab</th>
+                  <th style={{ textAlign: 'left' }}>Product (on report)</th>
+                  <th style={{ textAlign: 'left' }}>Batch ID</th>
+                  <th style={{ textAlign: 'left' }}>Test date</th>
+                  <th style={{ textAlign: 'right' }}>Total terpenes</th>
+                  <th style={{ textAlign: 'left' }}>Pass/Fail</th>
+                  <th style={{ textAlign: 'left' }}>Confidence</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {labReports.map(r => {
+                  const canSelect = r.status === 'pending'
+                  const isSelected = selectedIds.has(r.id)
+                  return (
+                    <tr key={r.id} style={{ background: isSelected ? '#ddf4ff' : undefined }}>
+                      <td style={{ textAlign: 'center' }}>
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          disabled={!canSelect || listProcessing}
+                          title={canSelect ? undefined : 'Only pending reports can be processed'}
+                          onChange={() => toggleSelected(r.id)}
+                        />
+                      </td>
+                      <td style={{ whiteSpace: 'nowrap', color: '#57606a' }}>
+                        {r.created_at ? new Date(r.created_at).toLocaleDateString() : '—'}
+                      </td>
+                      <td><StatusBadge status={r.status} /></td>
+                      <td>{r.lab_name ?? <span style={{ opacity: 0.4 }}>—</span>}</td>
+                      <td>{r.product_name_on_report ?? <span style={{ opacity: 0.4 }}>—</span>}</td>
+                      <td>{r.batch_id ?? <span style={{ opacity: 0.4 }}>—</span>}</td>
+                      <td>{r.test_date ?? <span style={{ opacity: 0.4 }}>—</span>}</td>
+                      <td style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                        {r.total_terpenes != null ? `${r.total_terpenes}%` : <span style={{ opacity: 0.4 }}>—</span>}
+                      </td>
+                      <td><PassFailBadge value={r.pass_fail} /></td>
+                      <td>
+                        {r.confidence != null
+                          ? <ConfidenceBadge score={r.confidence} />
+                          : <span style={{ opacity: 0.4 }}>—</span>}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+
+            {/* Results from list processing */}
+            {listResults.length > 0 && (
+              <div style={{ marginTop: 24 }}>
+                <h3 style={{ margin: '0 0 12px', fontSize: 16 }}>Processing Results</h3>
+                {listResults.map(r => (
+                  <div key={r.lab_report_id} style={{
+                    border: '1px solid #d0d7de', borderRadius: 8, padding: '16px 20px', marginBottom: 16,
+                  }}>
+                    <h4 style={{ margin: '0 0 4px', fontSize: 15 }}>{r.lab_report_id}</h4>
+                    <ResultsPanel result={r} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
 
         {listLoading && (
