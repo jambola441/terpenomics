@@ -19,6 +19,7 @@ import type {
   PortalProduct,
   FeedbackResponse,
   Feedback,
+  LabReport,
   LabReportUpload,
   LabReportResult,
 } from '../types'
@@ -191,6 +192,9 @@ export const api = {
   },
 
   labReports: {
+    list: (params?: { limit?: number; offset?: number }) =>
+      authenticatedFetch<LabReport[]>(`/admin/lab-reports${buildQueryString(params)}`),
+
     upload: async (files: File[]): Promise<LabReportUpload[]> => {
       const { data } = await supabase.auth.getSession()
       const token = data.session?.access_token

@@ -2,9 +2,9 @@ import json
 from typing import List, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Body, Depends, HTTPException, UploadFile, File
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, UploadFile, File
 from pydantic import BaseModel
-from sqlmodel import Session, select, delete
+from sqlmodel import Session, select, delete, func
 
 from auth import SupabaseAuthUser
 from database import get_session
@@ -15,6 +15,36 @@ from .auth import require_admin
 router = APIRouter()
 
 _MAX_PDF_BYTES = 20 * 1024 * 1024  # 20 MB
+
+
+@router.get("/lab-reports")
+def list_lab_reports(
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    session: Session = Depends(get_session),
+    _: SupabaseAuthUser = Depends(require_admin),
+):
+    """Return paginated list of all lab reports, newest first."""
+    reports = session.exec(
+        select(LabReport).order_by(LabReport.created_at.desc()).offset(offset).limit(limit)
+    ).all()
+    return [
+        {
+            "id": str(r.id),
+            "status": r.status,
+            "lab_name": r.lab_name,
+            "lab_license": r.lab_license,
+            "test_date": r.test_date,
+            "batch_id": r.batch_id,
+            "product_name_on_report": r.product_name_on_report,
+            "total_terpenes": r.total_terpenes,
+            "pass_fail": r.pass_fail,
+            "confidence": r.confidence,
+            "product_id": str(r.product_id) if r.product_id else None,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+        }
+        for r in reports
+    ]
 
 
 def _apply_terpenes_to_product(
