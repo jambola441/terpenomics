@@ -163,6 +163,11 @@ export type PortalProduct = {
   cannabinoids: Cannabinoid[]
 }
 
+export type LabReportUpload = {
+  lab_report_id: string
+  filename: string | null
+}
+
 export type LabReportResult = {
   lab_report_id: string
   lab_name: string | null

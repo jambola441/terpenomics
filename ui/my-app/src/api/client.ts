@@ -19,6 +19,7 @@ import type {
   PortalProduct,
   FeedbackResponse,
   Feedback,
+  LabReportUpload,
   LabReportResult,
 } from '../types'
 
@@ -190,20 +191,18 @@ export const api = {
   },
 
   labReports: {
-    upload: async (file: File, productId?: string): Promise<LabReportResult> => {
+    upload: async (files: File[]): Promise<LabReportUpload[]> => {
       const { data } = await supabase.auth.getSession()
       const token = data.session?.access_token
       if (!token) throw new Error('Not authenticated')
 
       const form = new FormData()
-      form.append('file', file)
-
-      const url = productId
-        ? `${API_BASE}/admin/lab-reports/upload?product_id=${productId}`
-        : `${API_BASE}/admin/lab-reports/upload`
+      for (const file of files) {
+        form.append('files', file)
+      }
 
       // Do NOT set Content-Type — the browser sets it with the multipart boundary
-      const res = await fetch(url, {
+      const res = await fetch(`${API_BASE}/admin/lab-reports/upload`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: form,
@@ -212,6 +211,31 @@ export const api = {
       if (!res.ok) {
         const text = await res.text()
         throw new Error(text || `Upload failed with status ${res.status}`)
+      }
+
+      return res.json()
+    },
+
+    process: async (labReportIds: string[], productId?: string): Promise<LabReportResult[]> => {
+      const { data } = await supabase.auth.getSession()
+      const token = data.session?.access_token
+      if (!token) throw new Error('Not authenticated')
+
+      const res = await fetch(`${API_BASE}/admin/lab-reports/process`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          lab_report_ids: labReportIds,
+          product_id: productId ?? null,
+        }),
+      })
+
+      if (!res.ok) {
+        const text = await res.text()
+        throw new Error(text || `Processing failed with status ${res.status}`)
       }
 
       return res.json()
