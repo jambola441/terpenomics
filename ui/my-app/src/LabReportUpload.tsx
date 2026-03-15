@@ -262,7 +262,6 @@ export default function LabReportUpload() {
         border: '1px solid #d0d7de',
         borderRadius: 8,
         marginBottom: 16,
-        background: step === 1 ? '#fff' : '#f6f8fa',
       }}>
         <h2 style={{ margin: '0 0 12px', fontSize: 16 }}>
           Step 1 — Upload PDFs
@@ -280,7 +279,7 @@ export default function LabReportUpload() {
             padding: '24px',
             textAlign: 'center',
             cursor: 'pointer',
-            background: dragging ? '#f0f6ff' : '#f6f8fa',
+            background: '#525252',
             transition: 'all 0.15s',
             marginBottom: 12,
           }}
@@ -295,7 +294,7 @@ export default function LabReportUpload() {
           />
           <div style={{ fontSize: 24, marginBottom: 4 }}>⬆</div>
           <div style={{ fontWeight: 500, fontSize: 14 }}>Drop PDFs here or click to browse</div>
-          <div style={{ fontSize: 13, color: '#57606a', marginTop: 2 }}>Multiple files supported · Max 20 MB each</div>
+          <div style={{ fontSize: 13, color: '#ffffff', marginTop: 2 }}>Multiple files supported · Max 20 MB each</div>
         </div>
 
         {/* Selected files list */}
@@ -304,16 +303,16 @@ export default function LabReportUpload() {
             {files.map(f => (
               <li key={f.name} style={{
                 display: 'flex', alignItems: 'center', gap: 8,
-                padding: '6px 10px', background: '#f6f8fa',
+                padding: '6px 10px', background: '#525252',
                 borderRadius: 6, marginBottom: 4, fontSize: 14,
               }}>
                 <span>📄</span>
                 <span style={{ flex: 1 }}>{f.name}</span>
-                <span style={{ color: '#57606a', fontSize: 12 }}>{(f.size / 1024).toFixed(1)} KB</span>
+                <span style={{ color: '#ffffff', fontSize: 12 }}>{(f.size / 1024).toFixed(1)} KB</span>
                 {uploaded.length === 0 && (
                   <button
                     onClick={e => { e.stopPropagation(); removeFile(f.name) }}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#cf222e', fontSize: 16, lineHeight: 1 }}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ffffff', fontSize: 16, lineHeight: 1 }}
                   >×</button>
                 )}
               </li>
@@ -354,7 +353,6 @@ export default function LabReportUpload() {
         border: `1px solid ${step === 2 ? '#d0d7de' : '#e8ecef'}`,
         borderRadius: 8,
         marginBottom: 16,
-        background: step === 2 ? '#fff' : '#f6f8fa',
         opacity: step === 2 ? 1 : 0.6,
       }}>
         <h2 style={{ margin: '0 0 12px', fontSize: 16 }}>
