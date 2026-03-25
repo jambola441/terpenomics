@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import api from './api/client'
 import type { LabReport, LabReportResult, LabReportUpload, Product } from './types'
 
@@ -188,10 +189,10 @@ function StatusBadge({ status }: { status: LabReport['status'] }) {
 // Main page
 // ---------------------------------------------------------------------------
 export default function LabReportUpload() {
+  const navigate = useNavigate()
   const [files, setFiles] = useState<File[]>([])
   const [dragging, setDragging] = useState(false)
   const [products, setProducts] = useState<Product[]>([])
-  const [productId, setProductId] = useState('')
   const [uploading, setUploading] = useState(false)
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -207,7 +208,6 @@ export default function LabReportUpload() {
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [listProcessing, setListProcessing] = useState(false)
-  const [listProductId, setListProductId] = useState('')
   const [listResults, setListResults] = useState<LabReportResult[]>([])
 
   function loadLabReports(offset = 0) {
@@ -288,7 +288,7 @@ export default function LabReportUpload() {
     setResults([])
     try {
       const ids = uploaded.map(u => u.lab_report_id)
-      const res = await api.labReports.process(ids, productId || undefined)
+      const res = await api.labReports.process(ids)
       setResults(res)
       loadLabReports(0)
     } catch (err: any) {
@@ -326,7 +326,7 @@ export default function LabReportUpload() {
     setListResults([])
     try {
       const ids: string[] = Array.from(selectedIds)
-      const res = await api.labReports.process(ids, listProductId || undefined)
+      const res = await api.labReports.process(ids)
       setListResults(res)
       setSelectedIds(new Set())
       loadLabReports(0)
@@ -447,26 +447,6 @@ export default function LabReportUpload() {
           Step 2 — Extract Terpenes
         </h2>
 
-        {/* Product selector */}
-        <div style={{ marginBottom: 12 }}>
-          <label style={{ display: 'block', marginBottom: 4, fontSize: 14, fontWeight: 500 }}>
-            Apply terpenes to product <span style={{ fontWeight: 400, color: '#57606a' }}>(optional)</span>
-          </label>
-          <select
-            value={productId}
-            onChange={e => setProductId(e.target.value)}
-            disabled={step !== 2 || processing}
-            style={{ width: '100%', padding: '6px 10px', borderRadius: 6, border: '1px solid #d0d7de', fontSize: 14 }}
-          >
-            <option value="">— extract only, don't write to a product —</option>
-            {products.map(p => (
-              <option key={p.id} value={p.id}>
-                {p.name}{p.brand ? ` — ${p.brand}` : ''} ({p.category})
-              </option>
-            ))}
-          </select>
-        </div>
-
         <button
           onClick={handleProcess}
           disabled={step !== 2 || processing || results.length > 0}
@@ -545,19 +525,6 @@ export default function LabReportUpload() {
                   ? `${selectedIds.size} selected`
                   : 'Select pending reports to process'}
               </span>
-              <select
-                value={listProductId}
-                onChange={e => setListProductId(e.target.value)}
-                disabled={listProcessing}
-                style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid #d0d7de', fontSize: 14, flex: 1, minWidth: 200 }}
-              >
-                <option value="">— extract only, don't write to a product —</option>
-                {products.map(p => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}{p.brand ? ` — ${p.brand}` : ''} ({p.category})
-                  </option>
-                ))}
-              </select>
               <button
                 onClick={handleListProcess}
                 disabled={selectedIds.size === 0 || listProcessing}
@@ -589,6 +556,7 @@ export default function LabReportUpload() {
                   <th style={{ textAlign: 'left' }}>Date</th>
                   <th style={{ textAlign: 'left' }}>Status</th>
                   <th style={{ textAlign: 'left' }}>Lab</th>
+                  <th style={{ textAlign: 'left' }}>Assigned product</th>
                   <th style={{ textAlign: 'left' }}>Product (on report)</th>
                   <th style={{ textAlign: 'left' }}>Batch ID</th>
                   <th style={{ textAlign: 'left' }}>Test date</th>
@@ -598,12 +566,19 @@ export default function LabReportUpload() {
                 </tr>
               </thead>
               <tbody>
-                {labReports.map(r => {
+                {(() => {
+                  const productMap = new Map(products.map(p => [p.id, p]))
+                  return labReports.map(r => {
                   const canSelect = r.status === 'pending'
                   const isSelected = selectedIds.has(r.id)
+                  const assignedProduct = r.product_id ? productMap.get(r.product_id) : undefined
                   return (
-                    <tr key={r.id} style={{ background: isSelected ? '#ddf4ff' : undefined }}>
-                      <td style={{ textAlign: 'center' }}>
+                    <tr
+                      key={r.id}
+                      style={{ background: isSelected ? '#ddf4ff' : undefined, cursor: 'pointer' }}
+                      onClick={() => navigate(`/lab-reports/${r.id}`)}
+                    >
+                      <td style={{ textAlign: 'center' }} onClick={e => e.stopPropagation()}>
                         <input
                           type="checkbox"
                           checked={isSelected}
@@ -617,6 +592,11 @@ export default function LabReportUpload() {
                       </td>
                       <td><StatusBadge status={r.status} /></td>
                       <td>{r.lab_name ?? <span style={{ opacity: 0.4 }}>—</span>}</td>
+                      <td>
+                        {assignedProduct
+                          ? <span style={{ fontWeight: 500 }}>{assignedProduct.name}</span>
+                          : <span style={{ opacity: 0.4 }}>—</span>}
+                      </td>
                       <td>{r.product_name_on_report ?? <span style={{ opacity: 0.4 }}>—</span>}</td>
                       <td>{r.batch_id ?? <span style={{ opacity: 0.4 }}>—</span>}</td>
                       <td>{r.test_date ?? <span style={{ opacity: 0.4 }}>—</span>}</td>
@@ -631,7 +611,7 @@ export default function LabReportUpload() {
                       </td>
                     </tr>
                   )
-                })}
+                })})()}
               </tbody>
             </table>
 

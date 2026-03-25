@@ -33,6 +33,18 @@ class TerpeneReading(BaseModel):
         return round(v, 4)
 
 
+class CannabinoidReading(BaseModel):
+    name: str
+    percent: float
+
+    @field_validator("percent")
+    @classmethod
+    def percent_in_range(cls, v: float) -> float:
+        if not (0.0 <= v <= 100.0):
+            raise ValueError(f"Cannabinoid percent {v} out of range 0–100")
+        return round(v, 4)
+
+
 class COAExtraction(BaseModel):
     lab_name:         Optional[str]   = None
     lab_license:      Optional[str]   = None
@@ -41,7 +53,8 @@ class COAExtraction(BaseModel):
     product_name:     Optional[str]   = None
     total_terpenes:   Optional[float] = None
     pass_fail:        Optional[str]   = None
-    terpenes:         list[TerpeneReading] = []
+    terpenes:         list[TerpeneReading]     = []
+    cannabinoids:     list[CannabinoidReading] = []
     confidence:       int             = 1   # 1–5
     confidence_notes: Optional[str]   = None
 
@@ -88,28 +101,68 @@ containing terpene percentages and report metadata.
 
 Always normalize terpene names to this canonical list. Map common aliases accordingly.
 
-| Canonical Name  | Common Aliases                        |
-|-----------------|---------------------------------------|
-| Myrcene         | β-Myrcene, beta-Myrcene               |
-| Limonene        | d-Limonene                            |
-| Caryophyllene   | β-Caryophyllene, BCP, b-Caryophyllene |
-| Linalool        |                                       |
-| α-Pinene        | alpha-Pinene, Pinene, a-Pinene        |
-| β-Pinene        | beta-Pinene, b-Pinene                 |
-| Terpinolene     |                                       |
-| Ocimene         | β-Ocimene, b-Ocimene                  |
-| Humulene        | α-Humulene, a-Humulene                |
-| Bisabolol       | α-Bisabolol, a-Bisabolol              |
-| Valencene       |                                       |
-| Terpineol       | α-Terpineol, a-Terpineol             |
-| Geraniol        |                                       |
-| Camphene        |                                       |
-| Borneol         |                                       |
-| Nerolidol       | trans-Nerolidol                       |
-| Guaiol          |                                       |
-| Eucalyptol      | 1,8-Cineole                           |
-| Fenchol         |                                       |
-| Phytol          |                                       |
+| Canonical Name     | Common Aliases                                                    |
+|--------------------|-------------------------------------------------------------------|
+| Myrcene            | β-Myrcene, beta-Myrcene, b-Myrcene                               |
+| Limonene           | d-Limonene                                                        |
+| β-Caryophyllene    | BCP, b-Caryophyllene, Beta-Caryophyllene, Caryophyllene          |
+| Linalool           |                                                                   |
+| α-Pinene           | alpha-Pinene, Pinene, a-Pinene                                    |
+| β-Pinene           | beta-Pinene, b-Pinene                                             |
+| Terpinolene        |                                                                   |
+| Ocimene            | β-Ocimene, b-Ocimene, trans-b-Ocimene                            |
+| Humulene           | α-Humulene, a-Humulene, α-Caryophyllene, alpha-Humulene          |
+| Bisabolol          | α-Bisabolol, a-Bisabolol, alpha-Bisabolol                         |
+| Valencene          |                                                                   |
+| Terpineol          | α-Terpineol, a-Terpineol, Alpha Terpineol                        |
+| Geraniol           |                                                                   |
+| Camphene           |                                                                   |
+| Borneol            |                                                                   |
+| Nerolidol          | trans-Nerolidol, cis-Nerolidol                                    |
+| Guaiol             |                                                                   |
+| Eucalyptol         | 1,8-Cineole                                                       |
+| Fenchol            | Fenchyl Alcohol                                                   |
+| Phytol             |                                                                   |
+| p-Cymene           |                                                                   |
+| γ-Terpinene        | gamma-Terpinene, g-Terpinene                                      |
+| Farnesene          | trans-β-Farnesene, trans-b-Farnesene                              |
+| Sabinene Hydrate   |                                                                   |
+| Sabinene           |                                                                   |
+| Fenchone           |                                                                   |
+| Isopulegol         |                                                                   |
+| Caryophyllene Oxide| Caryophyllene oxide                                               |
+| Camphor            |                                                                   |
+| Isoborneol         |                                                                   |
+| Menthol            | DL-Menthol                                                        |
+| Nerol              |                                                                   |
+| Pulegone           |                                                                   |
+| Geranyl Acetate    |                                                                   |
+| α-Cedrene          | a-Cedrene, Alpha-cedrene                                          |
+| α-Phellandrene     | a-Phellandrene, Alpha-phellandrene                                |
+| Δ3-Carene          | d-3-Carene, Carene                                                |
+| Cedrol             |                                                                   |
+| α-Terpinene        | a-Terpinene, alpha-Terpinene                                      |
+| Citronellol        |                                                                   |
+
+## Canonical cannabinoid names
+
+Always normalize cannabinoid names to this canonical list. Map common aliases accordingly.
+
+| Canonical Name        | Common Aliases                                          |
+|-----------------------|---------------------------------------------------------|
+| CBDV                  | Cannabidivarin                                          |
+| CBDa                  | CBD-A, CBDA, Cannabidiolic Acid                         |
+| CBGa                  | CBG-A, CBGA, Cannabigerolic Acid                        |
+| CBG                   | Cannabigerol                                            |
+| CBD                   | Cannabidiol                                             |
+| THCV                  | THC-V, Tetrahydrocannabivarin                           |
+| CBN                   | Cannabinol                                              |
+| D9-THC                | Δ9-THC, Delta-9-THC, Delta 9 THC, THC, d9-THC          |
+| D8-THC                | Δ8-THC, Delta-8-THC, d8-THC                             |
+| (6aR,9S)-d10-THC      | Δ10-THC (9S isomer), Delta-10-THC, d10-THC             |
+| (6aR,9R)-d10-THC      | Δ10-THC (9R isomer)                                     |
+| CBC                   | Cannabichromene                                         |
+| THCa                  | THC-A, THCA, Tetrahydrocannabinolic Acid                |
 
 ## JSON output schema
 
@@ -126,6 +179,9 @@ Return ONLY valid JSON matching this schema — no markdown fences, no extra tex
   "terpenes": [
     {"name": "<canonical name>", "percent": <float>}
   ],
+  "cannabinoids": [
+    {"name": "<canonical name>", "percent": <float>}
+  ],
   "confidence": <integer 1-5>,
   "confidence_notes": string | null
 }
@@ -134,6 +190,8 @@ Return ONLY valid JSON matching this schema — no markdown fences, no extra tex
 
 - `terpenes`: include only terpenes actually present in the report with a numeric value.
   Omit any terpene listed as "ND" (not detected) or "<LOQ".
+- `cannabinoids`: include only cannabinoids actually present in the report with a numeric value.
+  Omit any cannabinoid listed as "ND" or "<LOQ". Use an empty array if the report has no cannabinoid panel.
 - `percent` values are percentage points (e.g. 0.42, not 0.0042). If the report shows
   mg/g, convert: divide by 10.
 - `total_terpenes`: the sum reported on the document, NOT your own calculation.
@@ -188,7 +246,7 @@ def _make_client() -> anthropic.Anthropic:
 def _extract_from_page(client: anthropic.Anthropic, b64_image: str) -> COAExtraction:
     """Send a single page image to Claude and return a validated COAExtraction."""
     response = client.messages.create(
-        model="claude-sonnet-4-6",
+        model="claude-haiku-4-5",
         max_tokens=1024,
         system=[
             {
@@ -243,6 +301,12 @@ def _merge_extractions(primary: COAExtraction, secondary: COAExtraction) -> COAE
         merged_terpenes = primary.terpenes
         merged_total = primary.total_terpenes or secondary.total_terpenes
 
+    merged_cannabinoids = (
+        secondary.cannabinoids
+        if len(secondary.cannabinoids) > len(primary.cannabinoids)
+        else primary.cannabinoids
+    )
+
     return COAExtraction(
         lab_name=primary.lab_name or secondary.lab_name,
         lab_license=primary.lab_license or secondary.lab_license,
@@ -252,6 +316,7 @@ def _merge_extractions(primary: COAExtraction, secondary: COAExtraction) -> COAE
         total_terpenes=merged_total,
         pass_fail=primary.pass_fail or secondary.pass_fail,
         terpenes=merged_terpenes,
+        cannabinoids=merged_cannabinoids,
         confidence=max(primary.confidence, secondary.confidence),
         confidence_notes="; ".join(
             filter(None, [primary.confidence_notes, secondary.confidence_notes])
@@ -274,7 +339,7 @@ def extract_from_pdf(pdf_bytes: bytes) -> COAExtraction:
 
     # If page 1 gave us nothing useful, try subsequent pages
     for page_b64 in pages[1:]:
-        if result.terpenes and result.confidence >= 3:
+        if result.terpenes and result.cannabinoids and result.confidence >= 3:
             break
         page_result = _extract_from_page(client, page_b64)
         result = _merge_extractions(result, page_result)

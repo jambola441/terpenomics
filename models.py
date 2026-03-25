@@ -143,6 +143,9 @@ class LabReport(SQLModel, TimestampMixin, table=True):
     # Raw JSON blob of terpenes as extracted — list of {name, percent}
     raw_terpenes_json: Optional[str] = Field(default=None)
 
+    # Raw JSON blob of cannabinoids as extracted — list of {name, family, percent}
+    raw_cannabinoids_json: Optional[str] = Field(default=None)
+
     status:        LabReportStatus = Field(default=LabReportStatus.pending)
     error_message: Optional[str]   = Field(default=None, max_length=1000)
 # Cannabinoids
@@ -151,6 +154,9 @@ class LabReport(SQLModel, TimestampMixin, table=True):
 class CannabinoidFamily(str, Enum):
     thc = "thc"
     cbd = "cbd"
+    cbg = "cbg"
+    cbc = "cbc"
+    other = "other"
 
 
 class Cannabinoid(SQLModel, TimestampMixin, table=True):

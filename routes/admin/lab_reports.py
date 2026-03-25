@@ -8,7 +8,7 @@ from sqlmodel import Session, select, delete, func
 
 from auth import SupabaseAuthUser
 from database import get_session
-from models import LabReport, LabReportStatus, Product, ProductTerpene, Terpene
+from models import LabReport, LabReportStatus, Product, ProductTerpene, Terpene, ProductCannabinoid, Cannabinoid
 from services.lab_report_parser import COAExtraction, extract_from_pdf
 from .auth import require_admin
 
@@ -28,23 +28,9 @@ def list_lab_reports(
     reports = session.exec(
         select(LabReport).order_by(LabReport.created_at.desc()).offset(offset).limit(limit)
     ).all()
-    return [
-        {
-            "id": str(r.id),
-            "status": r.status,
-            "lab_name": r.lab_name,
-            "lab_license": r.lab_license,
-            "test_date": r.test_date,
-            "batch_id": r.batch_id,
-            "product_name_on_report": r.product_name_on_report,
-            "total_terpenes": r.total_terpenes,
-            "pass_fail": r.pass_fail,
-            "confidence": r.confidence,
-            "product_id": str(r.product_id) if r.product_id else None,
-            "created_at": r.created_at.isoformat() if r.created_at else None,
-        }
-        for r in reports
-    ]
+    return [_serialize_report(r) for r in reports]
+
+
 
 
 def _apply_terpenes_to_product(
@@ -73,6 +59,28 @@ def _apply_terpenes_to_product(
                 product_id=product_id,
                 terpene_id=terp.id,
                 percent=t.percent,
+            )
+        )
+
+
+def _apply_cannabinoids_to_product(
+    session: Session,
+    product_id: UUID,
+    extraction: COAExtraction,
+) -> None:
+    """Replace all ProductCannabinoid rows for this product with the extracted data."""
+    session.exec(delete(ProductCannabinoid).where(ProductCannabinoid.product_id == product_id))
+
+    for c in extraction.cannabinoids:
+        cname = c.name.strip()
+        if not cname:
+            continue
+        cannabinoid = session.exec(select(Cannabinoid).where(Cannabinoid.name == cname)).first()
+        session.add(
+            ProductCannabinoid(
+                product_id=product_id,
+                cannabinoid_id=cannabinoid.id,
+                percent=c.percent,
             )
         )
 
@@ -124,6 +132,40 @@ async def upload_lab_reports(
 
     session.commit()
     return results
+
+
+def _serialize_report(r: LabReport) -> dict:
+    terpenes = []
+    if r.raw_terpenes_json:
+        try:
+            terpenes = json.loads(r.raw_terpenes_json)
+        except Exception:
+            pass
+    cannabinoids = []
+    if r.raw_cannabinoids_json:
+        try:
+            cannabinoids = json.loads(r.raw_cannabinoids_json)
+        except Exception:
+            pass
+    return {
+        "id": str(r.id),
+        "status": r.status,
+        "lab_name": r.lab_name,
+        "lab_license": r.lab_license,
+        "test_date": r.test_date,
+        "batch_id": r.batch_id,
+        "product_name_on_report": r.product_name_on_report,
+        "product_name": r.product_name_on_report,
+        "total_terpenes": r.total_terpenes,
+        "pass_fail": r.pass_fail,
+        "confidence": r.confidence,
+        "confidence_notes": None,
+        "product_id": str(r.product_id) if r.product_id else None,
+        "created_at": r.created_at.isoformat() if r.created_at else None,
+        "terpenes": terpenes,
+        "cannabinoids": cannabinoids,
+    }
+
 
 
 class ProcessRequest(BaseModel):
@@ -188,12 +230,15 @@ async def process_lab_reports(
         report.raw_terpenes_json      = json.dumps(
             [{"name": t.name, "percent": t.percent} for t in extraction.terpenes]
         )
+        report.raw_cannabinoids_json  = json.dumps(
+            [{"name": c.name, "percent": c.percent} for c in extraction.cannabinoids]
+        )
         report.status    = LabReportStatus.extracted
-        report.pdf_bytes = None  # clear stored bytes after successful extraction
 
         applied = False
-        if body.product_id is not None and extraction.terpenes:
+        if body.product_id is not None and (extraction.terpenes or extraction.cannabinoids):
             _apply_terpenes_to_product(session, body.product_id, extraction)
+            _apply_cannabinoids_to_product(session, body.product_id, extraction)
             report.status = LabReportStatus.applied
             applied = True
 
@@ -211,6 +256,7 @@ async def process_lab_reports(
             "total_terpenes":     report.total_terpenes,
             "pass_fail":          report.pass_fail,
             "terpenes":           [{"name": t.name, "percent": t.percent} for t in extraction.terpenes],
+            "cannabinoids":       [{"name": c.name, "percent": c.percent} for c in extraction.cannabinoids],
             "confidence":         report.confidence,
             "confidence_notes":   extraction.confidence_notes,
             "status":             report.status,
@@ -218,3 +264,42 @@ async def process_lab_reports(
         })
 
     return results
+
+@router.get("/lab-reports/{report_id}")
+def get_lab_report(
+    report_id: UUID,
+    session: Session = Depends(get_session),
+    _: SupabaseAuthUser = Depends(require_admin),
+):
+    report = session.get(LabReport, report_id)
+    if report is None:
+        raise HTTPException(status_code=404, detail="lab_report not found")
+    return _serialize_report(report)
+
+
+class AssignProductRequest(BaseModel):
+    product_id: Optional[UUID] = None
+
+
+@router.post("/lab-reports/{report_id}")
+def assign_lab_report_product(
+    report_id: UUID,
+    body: AssignProductRequest = Body(...),
+    session: Session = Depends(get_session),
+    _: SupabaseAuthUser = Depends(require_admin),
+):
+    """Assign (or unassign) a product to a lab report."""
+    report = session.get(LabReport, report_id)
+    if report is None:
+        raise HTTPException(status_code=404, detail="lab_report not found")
+
+    if body.product_id is not None:
+        if not session.get(Product, body.product_id):
+            raise HTTPException(status_code=404, detail="product not found")
+
+    report.product_id = body.product_id
+    session.add(report)
+    session.commit()
+    session.refresh(report)
+    return _serialize_report(report)
+

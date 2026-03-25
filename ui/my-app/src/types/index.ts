@@ -193,8 +193,16 @@ export type LabReportResult = {
   total_terpenes: number | null
   pass_fail: string | null
   terpenes: Terpene[]
+  cannabinoids: Terpene[]
   confidence: number
   confidence_notes: string | null
   status: 'pending' | 'extracted' | 'applied' | 'failed'
   applied_to_product: boolean
+}
+
+export type LabReportDetail = LabReport & {
+  terpenes: Terpene[]
+  cannabinoids: Terpene[]
+  confidence_notes: string | null
+  product_name: string | null
 }

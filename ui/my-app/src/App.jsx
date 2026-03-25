@@ -11,6 +11,7 @@ import CustomerEdit from './CustomerEdit'
 import Purchases from './Purchases'
 import CustomerPortal from './CustomerPortal'
 import LabReportUpload from './LabReportUpload'
+import LabReportDetail from './LabReportDetail'
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
@@ -31,6 +32,7 @@ function App() {
         <Route path="/purchases" element={<Purchases />} />
         <Route path="/portal/:customerId" element={<CustomerPortal />} />
         <Route path="/lab-reports" element={<LabReportUpload />} />
+        <Route path="/lab-reports/:reportId" element={<LabReportDetail />} />
       </Routes>
       </BrowserRouter>
   </>

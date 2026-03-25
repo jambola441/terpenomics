@@ -20,6 +20,7 @@ import type {
   FeedbackResponse,
   Feedback,
   LabReport,
+  LabReportDetail,
   LabReportUpload,
   LabReportResult,
 } from '../types'
@@ -194,6 +195,15 @@ export const api = {
   labReports: {
     list: (params?: { limit?: number; offset?: number }) =>
       authenticatedFetch<LabReport[]>(`/admin/lab-reports${buildQueryString(params)}`),
+
+    get: (id: string) =>
+      authenticatedFetch<LabReportDetail>(`/admin/lab-reports/${id}`),
+
+    assign: (id: string, productId: string | null) =>
+      authenticatedFetch<LabReport>(`/admin/lab-reports/${id}`, {
+        method: 'POST',
+        body: JSON.stringify({ product_id: productId }),
+      }),
 
     upload: async (files: File[]): Promise<LabReportUpload[]> => {
       const { data } = await supabase.auth.getSession()
