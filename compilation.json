@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-03-25T17:18:15.165Z",
-  "claims_hash": "04a4c17",
+  "compiled_at": "2026-03-25T17:28:00.662Z",
+  "claims_hash": "5d9c902",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -70,6 +70,13 @@
     },
     {
       "code": "W_TYPE_MONOCULTURE",
+      "message": "Topic \"files-api-message-sdk-path\" has only 1 claim type(s): factual. Missing: constraint, estimate, risk, recommendation, feedback",
+      "claims": [
+        "r016"
+      ]
+    },
+    {
+      "code": "W_TYPE_MONOCULTURE",
       "message": "Topic \"files-api-model-support\" has only 1 claim type(s): factual. Missing: constraint, estimate, risk, recommendation, feedback",
       "claims": [
         "r006"
@@ -94,6 +101,13 @@
       "message": "Topic \"files-api-upload-sdk-method\" has only 1 claim type(s): factual. Missing: constraint, estimate, risk, recommendation, feedback",
       "claims": [
         "r002"
+      ]
+    },
+    {
+      "code": "W_TYPE_MONOCULTURE",
+      "message": "Topic \"messages-sdk-path-distinction\" has only 1 claim type(s): factual. Missing: constraint, estimate, risk, recommendation, feedback",
+      "claims": [
+        "r017"
       ]
     },
     {
@@ -453,6 +467,49 @@
         "citations",
         "optional-fields"
       ]
+    },
+    {
+      "id": "r016",
+      "type": "factual",
+      "topic": "files-api-message-sdk-path",
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "source": {
+        "origin": "https://platform.claude.com/docs/en/docs/build-with-claude/files",
+        "artifact": "Files API docs — 'Using a file in messages' section",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "files-api",
+        "sdk",
+        "beta",
+        "messages-path"
+      ]
+    },
+    {
+      "id": "r017",
+      "type": "factual",
+      "topic": "messages-sdk-path-distinction",
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "source": {
+        "origin": "https://platform.claude.com/docs/en/docs/build-with-claude/files",
+        "artifact": "Files API docs",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "sdk",
+        "messages",
+        "beta",
+        "base64",
+        "file-id"
+      ]
     }
   ],
   "conflict_graph": {
@@ -652,6 +709,30 @@
         "feedback"
       ]
     },
+    "files-api-message-sdk-path": {
+      "claims": 1,
+      "max_evidence": "documented",
+      "status": "moderate",
+      "types": [
+        "factual"
+      ],
+      "claim_ids": [
+        "r016"
+      ],
+      "constraint_count": 0,
+      "source_origins": [
+        "https://platform.claude.com/docs/en/docs/build-with-claude/files"
+      ],
+      "source_count": 1,
+      "type_diversity": 1,
+      "missing_types": [
+        "constraint",
+        "estimate",
+        "risk",
+        "recommendation",
+        "feedback"
+      ]
+    },
     "files-api-model-support": {
       "claims": 1,
       "max_evidence": "documented",
@@ -733,6 +814,30 @@
       ],
       "claim_ids": [
         "r002"
+      ],
+      "constraint_count": 0,
+      "source_origins": [
+        "https://platform.claude.com/docs/en/docs/build-with-claude/files"
+      ],
+      "source_count": 1,
+      "type_diversity": 1,
+      "missing_types": [
+        "constraint",
+        "estimate",
+        "risk",
+        "recommendation",
+        "feedback"
+      ]
+    },
+    "messages-sdk-path-distinction": {
+      "claims": 1,
+      "max_evidence": "documented",
+      "status": "moderate",
+      "types": [
+        "factual"
+      ],
+      "claim_ids": [
+        "r017"
       ],
       "constraint_count": 0,
       "source_origins": [
@@ -861,7 +966,9 @@
     "r012": 0,
     "r013": 0,
     "r014": 0,
-    "r015": 0
+    "r015": 0,
+    "r016": 0,
+    "r017": 0
   },
   "phase_summary": {
     "define": {
@@ -869,7 +976,7 @@
       "complete": true
     },
     "research": {
-      "claims": 15,
+      "claims": 17,
       "complete": true
     },
     "prototype": {
@@ -892,8 +999,8 @@
       "status": "active",
       "phase": "research",
       "question": "Lab report parser should upload pdf's using anthropic's upload functionality and then sending messages instead of just sending message with b64_image of each page sequentially like it does here https://platform.claude.com/docs/en/build-with-claude/pdf-support#send-your-first-pdf-request",
-      "claims_count": 16,
-      "active_claims": 16,
+      "claims_count": 18,
+      "active_claims": 18,
       "last_git_activity": "2026-03-25T17:09:52Z",
       "git_commit_count": 1
     }
@@ -905,14 +1012,14 @@
     ],
     "initiated": "2026-03-25",
     "phase": "research",
-    "total_claims": 16,
-    "active_claims": 16,
+    "total_claims": 18,
+    "active_claims": 18,
     "conflicted_claims": 0,
     "superseded_claims": 0,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:04a4c1744b99c3541a2bde63528937db6cc4bad504dd95b16261d64297158116",
+    "input_hash": "sha256:5d9c9025358f44efc91e7a2507fce64da249e2776d7b014f70b517087fe10983",
     "compiler_version": "0.2.0",
     "deterministic": true
   }

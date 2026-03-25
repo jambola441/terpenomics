@@ -1,7 +1,7 @@
 {
-  "generated": "2026-03-25T17:18:15.169Z",
+  "generated": "2026-03-25T17:28:00.666Z",
   "generator": "generate-manifest.js",
-  "claims_hash": "04a4c17",
+  "claims_hash": "5d9c902",
   "topics": {
     "done-criteria": {
       "claims": [
@@ -130,14 +130,30 @@
       "files": [],
       "sprint": "current",
       "evidence_level": "documented"
+    },
+    "files-api-message-sdk-path": {
+      "claims": [
+        "r016"
+      ],
+      "files": [],
+      "sprint": "current",
+      "evidence_level": "documented"
+    },
+    "messages-sdk-path-distinction": {
+      "claims": [
+        "r017"
+      ],
+      "files": [],
+      "sprint": "current",
+      "evidence_level": "documented"
     }
   },
   "sprints": {
     "lab-report-parser-should": {
       "question": "Lab report parser should upload pdf's using anthropic's upload functionality and then sending messages instead of just sending message with b64_image of each page sequentially like it does here https://platform.claude.com/docs/en/build-with-claude/pdf-support#send-your-first-pdf-request",
       "phase": "research",
-      "claims_count": 16,
-      "active_claims": 16,
+      "claims_count": 18,
+      "active_claims": 18,
       "path": ".",
       "status": "active",
       "last_git_activity": "2026-03-25T17:09:52Z",

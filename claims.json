@@ -299,6 +299,42 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["document-block", "citations", "optional-fields"]
+    },
+    {
+      "id": "r016",
+      "type": "factual",
+      "topic": "files-api-message-sdk-path",
+      "content": "Confirmed via official docs: sending a file_id in a messages call requires `client.beta.messages.create(...)` with `betas=[\"files-api-2025-04-14\"]`. The standard `client.messages.create` does NOT support the `file` source type. The `client.beta` path is required specifically because the Files API is a beta feature — it is NOT an optional convention.",
+      "source": {
+        "origin": "https://platform.claude.com/docs/en/docs/build-with-claude/files",
+        "artifact": "Files API docs — 'Using a file in messages' section",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-25T17:30:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["files-api", "sdk", "beta", "messages-path"]
+    },
+    {
+      "id": "r017",
+      "type": "factual",
+      "topic": "messages-sdk-path-distinction",
+      "content": "The distinction between client.messages.create and client.beta.messages.create depends on what source type is used: (1) Sending a PDF as `type: \"base64\"` in a document block uses `client.messages.create` — no beta needed. (2) Sending a PDF via `type: \"file\"` with a file_id from the Files API requires `client.beta.messages.create` + `betas=[\"files-api-2025-04-14\"]`. The beta path is only required when referencing an uploaded file_id.",
+      "source": {
+        "origin": "https://platform.claude.com/docs/en/docs/build-with-claude/files",
+        "artifact": "Files API docs",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-25T17:30:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["sdk", "messages", "beta", "base64", "file-id"]
     }
   ]
 }
