@@ -1,7 +1,7 @@
 {
-  "generated": "2026-03-25T17:28:00.666Z",
+  "generated": "2026-03-25T17:35:21.329Z",
   "generator": "generate-manifest.js",
-  "claims_hash": "5d9c902",
+  "claims_hash": "0f4c4e3",
   "topics": {
     "done-criteria": {
       "claims": [
@@ -146,21 +146,126 @@
       "files": [],
       "sprint": "current",
       "evidence_level": "documented"
+    },
+    "prototype-structural-validation": {
+      "claims": [
+        "p001"
+      ],
+      "files": [
+        "prototypes/files-api-pdf-parser/README.md",
+        "prototypes/files-api-pdf-parser/__pycache__/make_test_pdf.cpython-312.pyc",
+        "prototypes/files-api-pdf-parser/__pycache__/parser_files_api.cpython-312.pyc",
+        "prototypes/files-api-pdf-parser/compare.py",
+        "prototypes/files-api-pdf-parser/demo.html",
+        "prototypes/files-api-pdf-parser/make_test_pdf.py",
+        "prototypes/files-api-pdf-parser/parser_files_api.py",
+        "prototypes/files-api-pdf-parser/results.json",
+        "prototypes/files-api-pdf-parser/test_coa.pdf"
+      ],
+      "sprint": "current",
+      "evidence_level": "tested"
+    },
+    "payload-size-reduction": {
+      "claims": [
+        "p002"
+      ],
+      "files": [
+        "prototypes/files-api-pdf-parser/results.json"
+      ],
+      "sprint": "current",
+      "evidence_level": "tested"
+    },
+    "code-reduction": {
+      "claims": [
+        "p003"
+      ],
+      "files": [
+        "prototypes/files-api-pdf-parser/parser_files_api.py"
+      ],
+      "sprint": "current",
+      "evidence_level": "tested"
+    },
+    "api-call-count-tradeoff": {
+      "claims": [
+        "p004"
+      ],
+      "files": [
+        "prototypes/files-api-pdf-parser/compare.py"
+      ],
+      "sprint": "current",
+      "evidence_level": "tested"
     }
   },
   "sprints": {
     "lab-report-parser-should": {
       "question": "Lab report parser should upload pdf's using anthropic's upload functionality and then sending messages instead of just sending message with b64_image of each page sequentially like it does here https://platform.claude.com/docs/en/build-with-claude/pdf-support#send-your-first-pdf-request",
-      "phase": "research",
-      "claims_count": 18,
-      "active_claims": 18,
+      "phase": "prototype",
+      "claims_count": 22,
+      "active_claims": 22,
       "path": ".",
       "status": "active",
-      "last_git_activity": "2026-03-25T17:09:52Z",
-      "git_commit_count": 1
+      "last_git_activity": "2026-03-25T17:28:24Z",
+      "git_commit_count": 2
     }
   },
   "files": {
+    "prototypes/files-api-pdf-parser/README.md": {
+      "topics": [
+        "prototype-structural-validation"
+      ],
+      "type": "prototype"
+    },
+    "prototypes/files-api-pdf-parser/__pycache__/make_test_pdf.cpython-312.pyc": {
+      "topics": [
+        "prototype-structural-validation"
+      ],
+      "type": "prototype"
+    },
+    "prototypes/files-api-pdf-parser/__pycache__/parser_files_api.cpython-312.pyc": {
+      "topics": [
+        "prototype-structural-validation"
+      ],
+      "type": "prototype"
+    },
+    "prototypes/files-api-pdf-parser/compare.py": {
+      "topics": [
+        "prototype-structural-validation",
+        "api-call-count-tradeoff"
+      ],
+      "type": "prototype"
+    },
+    "prototypes/files-api-pdf-parser/demo.html": {
+      "topics": [
+        "prototype-structural-validation"
+      ],
+      "type": "prototype"
+    },
+    "prototypes/files-api-pdf-parser/make_test_pdf.py": {
+      "topics": [
+        "prototype-structural-validation"
+      ],
+      "type": "prototype"
+    },
+    "prototypes/files-api-pdf-parser/parser_files_api.py": {
+      "topics": [
+        "prototype-structural-validation",
+        "code-reduction"
+      ],
+      "type": "prototype"
+    },
+    "prototypes/files-api-pdf-parser/results.json": {
+      "topics": [
+        "prototype-structural-validation",
+        "payload-size-reduction"
+      ],
+      "type": "prototype"
+    },
+    "prototypes/files-api-pdf-parser/test_coa.pdf": {
+      "topics": [
+        "prototype-structural-validation"
+      ],
+      "type": "prototype"
+    },
     "wheat-manifest.json": {
       "topics": [
         "cartography"

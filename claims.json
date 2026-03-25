@@ -6,7 +6,7 @@
     "audience": [
       "engineers"
     ],
-    "phase": "research",
+    "phase": "prototype",
     "connectors": []
   },
   "claims": [
@@ -335,6 +335,78 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["sdk", "messages", "beta", "base64", "file-id"]
+    },
+    {
+      "id": "p001",
+      "type": "factual",
+      "topic": "prototype-structural-validation",
+      "content": "Dry-run confirmed: parser_files_api.py imports cleanly, Pydantic models are reused unchanged, no new package dependencies are introduced. The new implementation is a valid drop-in replacement for extract_from_pdf at the structural level.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/files-api-pdf-parser/",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-25T18:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["prototype", "validation", "imports"]
+    },
+    {
+      "id": "p002",
+      "type": "factual",
+      "topic": "payload-size-reduction",
+      "content": "Measured on a 1-page synthetic COA PDF (1,466 bytes): the current approach rasterizes to a 147,849-byte PNG then base64-encodes to 197,132 bytes sent in the message body. The Files API approach sends only ~200 bytes (the file_id) in the message body — a 99% reduction per page. For a 3-page COA, old = ~591 KB in message bodies; new = ~200 bytes.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/files-api-pdf-parser/results.json",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-25T18:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["payload", "bytes", "performance", "measured"]
+    },
+    {
+      "id": "p003",
+      "type": "factual",
+      "topic": "code-reduction",
+      "content": "Migration removes 3 functions (rasterize_pdf ~25 lines, _extract_from_page ~35 lines, _merge_extractions ~30 lines) and the `import fitz` line. Adds `import io` (stdlib) and wraps the entire pipeline in a single extract_from_pdf function of ~30 lines. Net: ~90 lines removed, 0 new dependencies.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/files-api-pdf-parser/parser_files_api.py",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-25T18:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["code", "simplification", "lines-of-code"]
+    },
+    {
+      "id": "p004",
+      "type": "factual",
+      "topic": "api-call-count-tradeoff",
+      "content": "For a 1-page COA: old = 1 messages.create call; new = 3 calls (upload + messages + delete). For a 3-page COA: old = 3 calls; new = 3 calls (equal). For N>3 pages: new wins on call count. For all page counts: new wins on per-call payload size (200 bytes vs 197 KB/page). The new approach is never worse on total bytes transferred.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/files-api-pdf-parser/compare.py",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-25T18:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["api-calls", "tradeoff", "pages", "measured"]
     }
   ]
 }

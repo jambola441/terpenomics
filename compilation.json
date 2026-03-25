@@ -1,10 +1,24 @@
 {
-  "compiled_at": "2026-03-25T17:28:00.662Z",
-  "claims_hash": "5d9c902",
+  "compiled_at": "2026-03-25T17:35:21.326Z",
+  "claims_hash": "0f4c4e3",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
   "warnings": [
+    {
+      "code": "W_TYPE_MONOCULTURE",
+      "message": "Topic \"api-call-count-tradeoff\" has only 1 claim type(s): factual. Missing: constraint, estimate, risk, recommendation, feedback",
+      "claims": [
+        "p004"
+      ]
+    },
+    {
+      "code": "W_TYPE_MONOCULTURE",
+      "message": "Topic \"code-reduction\" has only 1 claim type(s): factual. Missing: constraint, estimate, risk, recommendation, feedback",
+      "claims": [
+        "p003"
+      ]
+    },
     {
       "code": "W_TYPE_MONOCULTURE",
       "message": "Topic \"current-parser-approach\" has only 1 claim type(s): factual. Missing: constraint, estimate, risk, recommendation, feedback",
@@ -126,6 +140,13 @@
     },
     {
       "code": "W_TYPE_MONOCULTURE",
+      "message": "Topic \"payload-size-reduction\" has only 1 claim type(s): factual. Missing: constraint, estimate, risk, recommendation, feedback",
+      "claims": [
+        "p002"
+      ]
+    },
+    {
+      "code": "W_TYPE_MONOCULTURE",
       "message": "Topic \"pdf-limits\" has only 1 claim type(s): factual. Missing: constraint, estimate, risk, recommendation, feedback",
       "claims": [
         "r008"
@@ -136,6 +157,13 @@
       "message": "Topic \"pdf-three-source-options\" has only 1 claim type(s): factual. Missing: constraint, estimate, risk, recommendation, feedback",
       "claims": [
         "r009"
+      ]
+    },
+    {
+      "code": "W_TYPE_MONOCULTURE",
+      "message": "Topic \"prototype-structural-validation\" has only 1 claim type(s): factual. Missing: constraint, estimate, risk, recommendation, feedback",
+      "claims": [
+        "p001"
       ]
     }
   ],
@@ -510,6 +538,88 @@
         "base64",
         "file-id"
       ]
+    },
+    {
+      "id": "p001",
+      "type": "factual",
+      "topic": "prototype-structural-validation",
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/files-api-pdf-parser/",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "prototype",
+        "validation",
+        "imports"
+      ]
+    },
+    {
+      "id": "p002",
+      "type": "factual",
+      "topic": "payload-size-reduction",
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/files-api-pdf-parser/results.json",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "payload",
+        "bytes",
+        "performance",
+        "measured"
+      ]
+    },
+    {
+      "id": "p003",
+      "type": "factual",
+      "topic": "code-reduction",
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/files-api-pdf-parser/parser_files_api.py",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "code",
+        "simplification",
+        "lines-of-code"
+      ]
+    },
+    {
+      "id": "p004",
+      "type": "factual",
+      "topic": "api-call-count-tradeoff",
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/files-api-pdf-parser/compare.py",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "api-calls",
+        "tradeoff",
+        "pages",
+        "measured"
+      ]
     }
   ],
   "conflict_graph": {
@@ -517,6 +627,54 @@
     "unresolved": []
   },
   "coverage": {
+    "api-call-count-tradeoff": {
+      "claims": 1,
+      "max_evidence": "tested",
+      "status": "strong",
+      "types": [
+        "factual"
+      ],
+      "claim_ids": [
+        "p004"
+      ],
+      "constraint_count": 0,
+      "source_origins": [
+        "prototype"
+      ],
+      "source_count": 1,
+      "type_diversity": 1,
+      "missing_types": [
+        "constraint",
+        "estimate",
+        "risk",
+        "recommendation",
+        "feedback"
+      ]
+    },
+    "code-reduction": {
+      "claims": 1,
+      "max_evidence": "tested",
+      "status": "strong",
+      "types": [
+        "factual"
+      ],
+      "claim_ids": [
+        "p003"
+      ],
+      "constraint_count": 0,
+      "source_origins": [
+        "prototype"
+      ],
+      "source_count": 1,
+      "type_diversity": 1,
+      "missing_types": [
+        "constraint",
+        "estimate",
+        "risk",
+        "recommendation",
+        "feedback"
+      ]
+    },
     "current-parser-approach": {
       "claims": 1,
       "max_evidence": "documented",
@@ -901,6 +1059,30 @@
         "feedback"
       ]
     },
+    "payload-size-reduction": {
+      "claims": 1,
+      "max_evidence": "tested",
+      "status": "strong",
+      "types": [
+        "factual"
+      ],
+      "claim_ids": [
+        "p002"
+      ],
+      "constraint_count": 0,
+      "source_origins": [
+        "prototype"
+      ],
+      "source_count": 1,
+      "type_diversity": 1,
+      "missing_types": [
+        "constraint",
+        "estimate",
+        "risk",
+        "recommendation",
+        "feedback"
+      ]
+    },
     "pdf-limits": {
       "claims": 1,
       "max_evidence": "documented",
@@ -948,6 +1130,30 @@
         "recommendation",
         "feedback"
       ]
+    },
+    "prototype-structural-validation": {
+      "claims": 1,
+      "max_evidence": "tested",
+      "status": "strong",
+      "types": [
+        "factual"
+      ],
+      "claim_ids": [
+        "p001"
+      ],
+      "constraint_count": 0,
+      "source_origins": [
+        "prototype"
+      ],
+      "source_count": 1,
+      "type_diversity": 1,
+      "missing_types": [
+        "constraint",
+        "estimate",
+        "risk",
+        "recommendation",
+        "feedback"
+      ]
     }
   },
   "corroboration": {
@@ -968,7 +1174,11 @@
     "r014": 0,
     "r015": 0,
     "r016": 0,
-    "r017": 0
+    "r017": 0,
+    "p001": 0,
+    "p002": 0,
+    "p003": 0,
+    "p004": 0
   },
   "phase_summary": {
     "define": {
@@ -980,8 +1190,8 @@
       "complete": true
     },
     "prototype": {
-      "claims": 0,
-      "complete": false
+      "claims": 4,
+      "complete": true
     },
     "evaluate": {
       "claims": 0,
@@ -997,12 +1207,12 @@
       "name": "lab-report-parser-should",
       "path": ".",
       "status": "active",
-      "phase": "research",
+      "phase": "prototype",
       "question": "Lab report parser should upload pdf's using anthropic's upload functionality and then sending messages instead of just sending message with b64_image of each page sequentially like it does here https://platform.claude.com/docs/en/build-with-claude/pdf-support#send-your-first-pdf-request",
-      "claims_count": 18,
-      "active_claims": 18,
-      "last_git_activity": "2026-03-25T17:09:52Z",
-      "git_commit_count": 1
+      "claims_count": 22,
+      "active_claims": 22,
+      "last_git_activity": "2026-03-25T17:28:24Z",
+      "git_commit_count": 2
     }
   ],
   "sprint_meta": {
@@ -1011,15 +1221,15 @@
       "engineers"
     ],
     "initiated": "2026-03-25",
-    "phase": "research",
-    "total_claims": 18,
-    "active_claims": 18,
+    "phase": "prototype",
+    "total_claims": 22,
+    "active_claims": 22,
     "conflicted_claims": 0,
     "superseded_claims": 0,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:5d9c9025358f44efc91e7a2507fce64da249e2776d7b014f70b517087fe10983",
+    "input_hash": "sha256:0f4c4e3f6063fd4cd618743d2a36b96934a225dedec84839312334dcf0d6ea94",
     "compiler_version": "0.2.0",
     "deterministic": true
   }

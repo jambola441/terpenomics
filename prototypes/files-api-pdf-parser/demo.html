@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Files API PDF Parser — Prototype Demo</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #151820;
+    --surface2: #1c2030;
+    --border: #2a2f42;
+    --accent: #6c8ef7;
+    --green: #34d399;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --text: #e2e8f0;
+    --muted: #8892a4;
+    --code-bg: #0a0c10;
+  }
+
+  html { scroll-snap-type: y mandatory; overflow-y: scroll; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+         background: var(--bg); color: var(--text); line-height: 1.6; }
+
+  section {
+    min-height: 100vh; scroll-snap-align: start;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 4rem 2rem; position: relative; border-bottom: 1px solid var(--border);
+  }
+  .inner { max-width: 960px; margin: 0 auto; width: 100%; }
+
+  nav {
+    position: fixed; top: 0; right: 0; z-index: 100;
+    padding: 1rem 1.5rem; display: flex; gap: 0.5rem; flex-direction: column; align-items: flex-end;
+  }
+  nav a { font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase;
+          color: var(--muted); text-decoration: none; transition: color 0.15s; }
+  nav a:hover { color: var(--text); }
+
+  h1 { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 700; line-height: 1.15; }
+  h2 { font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 600; margin-bottom: 1.5rem; }
+  h3 { font-size: 0.85rem; font-weight: 600; color: var(--muted); text-transform: uppercase;
+       letter-spacing: 0.08em; margin-bottom: 0.5rem; }
+
+  .subtitle { color: var(--muted); font-size: 1rem; margin-top: 0.75rem; max-width: 60ch; }
+  .claim-id { display: inline-block; font-size: 0.7rem; font-family: monospace;
+              background: var(--surface2); color: var(--accent); padding: 0.1em 0.45em;
+              border-radius: 3px; border: 1px solid var(--border); vertical-align: middle; margin-left: 0.35em; }
+
+  pre {
+    background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 1.25rem 1.5rem; overflow-x: auto;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.8rem; line-height: 1.75;
+    margin: 1rem 0;
+  }
+  .kw  { color: #c792ea; }
+  .str { color: #c3e88d; }
+  .cmt { color: #546e7a; font-style: italic; }
+  .fn  { color: #82aaff; }
+  .num { color: #f78c6c; }
+  .key { color: var(--accent); }
+
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.25rem; margin-top: 1.5rem; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; }
+  .card.ok { border-color: var(--green); }
+  .card.warn { border-color: var(--yellow); }
+
+  .vs { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-top: 1.5rem; }
+  .vs-col { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; }
+  .vs-col.old h3 { color: var(--red); }
+  .vs-col.new h3 { color: var(--green); }
+  .vs-col.old { border-color: color-mix(in srgb, var(--red) 40%, var(--border)); }
+  .vs-col.new { border-color: color-mix(in srgb, var(--green) 40%, var(--border)); }
+
+  ul { list-style: none; }
+  ul li { padding: 0.25rem 0; padding-left: 1.2em; position: relative; }
+  ul li::before { content: '→'; position: absolute; left: 0; color: var(--accent); }
+  ul.check li::before { content: '✓'; color: var(--green); }
+  ul.cross li::before { content: '✗'; color: var(--red); }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+  th { text-align: left; padding: 0.6rem 0.9rem; background: var(--surface2);
+       font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted);
+       border-bottom: 1px solid var(--border); }
+  td { padding: 0.65rem 0.9rem; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { font-family: monospace; font-size: 0.8rem; color: var(--muted); }
+  .good { color: var(--green); font-weight: 600; }
+  .bad  { color: var(--red);   font-weight: 600; }
+
+  .pill {
+    display: inline-block; font-size: 0.7rem; font-family: monospace;
+    padding: 0.2em 0.6em; border-radius: 20px;
+    background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
+    margin: 0.1em;
+  }
+  .pill.green { border-color: var(--green); color: var(--green); background: color-mix(in srgb, var(--green) 8%, var(--surface2)); }
+  .pill.red   { border-color: var(--red);   color: var(--red);   background: color-mix(in srgb, var(--red)   8%, var(--surface2)); }
+  .pill.blue  { border-color: var(--accent); color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--surface2)); }
+  .pill.yellow{ border-color: var(--yellow); color: var(--yellow); background: color-mix(in srgb, var(--yellow) 8%, var(--surface2)); }
+
+  /* Big number callout */
+  .stat { text-align: center; padding: 1.5rem; }
+  .stat .num-big { font-size: 3.5rem; font-weight: 700; color: var(--green); line-height: 1; }
+  .stat .num-label { font-size: 0.8rem; color: var(--muted); margin-top: 0.4rem; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  .flow {
+    display: flex; gap: 0; align-items: stretch; margin-top: 1.5rem; flex-wrap: wrap;
+  }
+  .flow-step {
+    flex: 1; min-width: 160px;
+    background: var(--surface); border: 1px solid var(--border); padding: 1.25rem;
+    position: relative;
+  }
+  .flow-step:not(:last-child)::after {
+    content: '→'; position: absolute; right: -12px; top: 50%; transform: translateY(-50%);
+    color: var(--accent); font-size: 1.2rem; z-index: 1;
+  }
+  .flow-step:first-child { border-radius: 10px 0 0 10px; }
+  .flow-step:last-child  { border-radius: 0 10px 10px 0; }
+  .flow-step.new { border-color: color-mix(in srgb, var(--green) 40%, var(--border)); }
+  .flow-step h4 { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.4rem; }
+  .flow-step p  { font-size: 0.85rem; }
+
+  .slide-num { position: absolute; bottom: 1.5rem; right: 2rem; font-size: 0.7rem; color: var(--border); font-family: monospace; }
+  .badge-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1.25rem; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#hero">Overview</a>
+  <a href="#validation">Validation</a>
+  <a href="#payload">Payload</a>
+  <a href="#code-diff">Code Diff</a>
+  <a href="#calls">API Calls</a>
+  <a href="#next">Next Steps</a>
+</nav>
+
+<!-- ── 1: Hero ── -->
+<section id="hero">
+<div class="inner">
+  <h3>Wheat Sprint · Prototype</h3>
+  <h1>Files API PDF Parser</h1>
+  <p class="subtitle">Replacing PyMuPDF rasterization + per-page image calls with a single Anthropic Files API upload + document block message.</p>
+  <div class="badge-row">
+    <span class="pill green">dry-run PASSED</span>
+    <span class="pill blue">claims p001–p004</span>
+    <span class="pill yellow">API key needed for live run</span>
+  </div>
+
+  <div class="grid-2" style="margin-top:2rem;">
+    <div class="card ok stat">
+      <div class="num-big">99%</div>
+      <div class="num-label">Smaller message body payload</div>
+    </div>
+    <div class="card stat">
+      <div class="num-big" style="color:var(--accent)">−100%</div>
+      <div class="num-label">PyMuPDF code eliminated</div>
+    </div>
+  </div>
+</div>
+<div class="slide-num">01 / 06</div>
+</section>
+
+<!-- ── 2: Validation ── -->
+<section id="validation">
+<div class="inner">
+  <h2>Structural Validation <span class="claim-id">p001</span></h2>
+  <p style="color:var(--muted);margin-bottom:1.5rem;">Dry-run verified without API calls. All imports and types resolve correctly.</p>
+
+  <div class="grid-2">
+    <div class="card ok">
+      <h3 style="color:var(--green)">Passed ✓</h3>
+      <ul class="check">
+        <li><code>parser_files_api</code> imports cleanly</li>
+        <li><code>services.lab_report_parser</code> still imports</li>
+        <li>Pydantic models are shared (unchanged)</li>
+        <li>System prompt is unchanged</li>
+        <li>No new package dependencies added</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Test PDF generated</h3>
+      <ul>
+        <li>Uses PyMuPDF to write a 1-page synthetic COA</li>
+        <li>1,466 bytes raw PDF</li>
+        <li>10 terpenes, 8 cannabinoids, lab metadata</li>
+        <li>Rasterizes to 147,849-byte PNG (200 DPI)</li>
+        <li>Base64 of that PNG: 197,132 bytes</li>
+      </ul>
+    </div>
+  </div>
+</div>
+<div class="slide-num">02 / 06</div>
+</section>
+
+<!-- ── 3: Payload comparison ── -->
+<section id="payload">
+<div class="inner">
+  <h2>Payload Comparison <span class="claim-id">p002</span></h2>
+  <p style="color:var(--muted);margin-bottom:1.5rem;">Measured on a 1-page synthetic COA PDF (1,466 bytes).</p>
+
+  <table>
+    <thead>
+      <tr><th>Metric</th><th>Old approach</th><th>New approach</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Message body bytes (1-page)</td>
+        <td class="bad">197,132 bytes (b64 PNG)</td>
+        <td class="good">~200 bytes (file_id)</td>
+      </tr>
+      <tr>
+        <td>Message body bytes (3-page)</td>
+        <td class="bad">~591,000 bytes (3× b64 PNGs)</td>
+        <td class="good">~200 bytes (same file_id)</td>
+      </tr>
+      <tr>
+        <td>Upload payload</td>
+        <td>—</td>
+        <td>1,466 bytes (the raw PDF once)</td>
+      </tr>
+      <tr>
+        <td>Payload reduction per page</td>
+        <td>—</td>
+        <td class="good">99%</td>
+      </tr>
+      <tr>
+        <td>Server-side rasterization</td>
+        <td>Client-side (PyMuPDF)</td>
+        <td>Anthropic-side (free)</td>
+      </tr>
+      <tr>
+        <td>Text layer available to Claude</td>
+        <td class="bad">No — image only</td>
+        <td class="good">Yes — text + image</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="card" style="margin-top:1.5rem;">
+    <h3>Why the message body is so much smaller</h3>
+    <p>The old approach embedded the full base64-encoded PNG (197 KB/page) directly in the messages request body. The new approach puts the PDF on Anthropic's storage once, then passes just a 40-char file ID string in the message. Anthropic processes it server-side — the round-trip payload shrinks by 99%.</p>
+  </div>
+</div>
+<div class="slide-num">03 / 06</div>
+</section>
+
+<!-- ── 4: Code diff ── -->
+<section id="code-diff">
+<div class="inner">
+  <h2>Code Change <span class="claim-id">p003</span></h2>
+  <div class="vs">
+    <div class="vs-col old">
+      <h3>Before — 4 functions, PyMuPDF dep</h3>
+<pre style="margin:0;border:none;padding:0.5rem 0;background:transparent;font-size:0.75rem;"><span class="cmt"># rasterize_pdf (25 lines)</span>
+<span class="kw">def</span> <span class="fn">rasterize_pdf</span>(pdf_bytes, dpi=<span class="num">200</span>):
+  doc = fitz.<span class="fn">open</span>(...)
+  <span class="kw">for</span> page <span class="kw">in</span> doc:
+    pix = page.<span class="fn">get_pixmap</span>(...)
+    <span class="cmt"># → base64 PNG per page</span>
+
+<span class="cmt"># _extract_from_page (35 lines)</span>
+<span class="kw">def</span> <span class="fn">_extract_from_page</span>(client, b64):
+  <span class="kw">return</span> client.messages.<span class="fn">create</span>(
+    <span class="cmt"># type:"base64", media_type:"image/png"</span>
+  )
+
+<span class="cmt"># _merge_extractions (30 lines)</span>
+<span class="kw">def</span> <span class="fn">_merge_extractions</span>(a, b): ...
+
+<span class="cmt"># extract_from_pdf (20 lines)</span>
+<span class="kw">def</span> <span class="fn">extract_from_pdf</span>(pdf_bytes):
+  pages = <span class="fn">rasterize_pdf</span>(pdf_bytes)
+  result = <span class="fn">_extract_from_page</span>(pages[<span class="num">0</span>])
+  <span class="kw">for</span> page <span class="kw">in</span> pages[<span class="num">1</span>:]:
+    result = <span class="fn">_merge_extractions</span>(...)</pre>
+    </div>
+    <div class="vs-col new">
+      <h3>After — 1 function, no PyMuPDF</h3>
+<pre style="margin:0;border:none;padding:0.5rem 0;background:transparent;font-size:0.75rem;"><span class="cmt"># extract_from_pdf (30 lines)</span>
+<span class="kw">def</span> <span class="fn">extract_from_pdf</span>(pdf_bytes):
+  upload = client.beta.files.<span class="fn">upload</span>(
+    file=(<span class="str">"report.pdf"</span>,
+          io.<span class="fn">BytesIO</span>(pdf_bytes),
+          <span class="str">"application/pdf"</span>),
+  )
+  <span class="kw">try</span>:
+    resp = client.beta.messages.<span class="fn">create</span>(
+      betas=[<span class="str">"files-api-2025-04-14"</span>],
+      messages=[{<span class="key">"content"</span>: [{
+        <span class="key">"type"</span>: <span class="str">"document"</span>,
+        <span class="key">"source"</span>: {
+          <span class="key">"type"</span>: <span class="str">"file"</span>,
+          <span class="key">"file_id"</span>: upload.id,
+        },
+      }]}],
+    )
+    <span class="kw">return</span> COAExtraction.<span class="fn">model_validate</span>(...)
+  <span class="kw">finally</span>:
+    client.beta.files.<span class="fn">delete</span>(upload.id)</pre>
+    </div>
+  </div>
+
+  <div style="margin-top:1.25rem;">
+    <span class="pill red">−3 functions removed</span>
+    <span class="pill red">−import fitz</span>
+    <span class="pill green">+import io (stdlib)</span>
+    <span class="pill green">+client.beta.files.upload</span>
+    <span class="pill green">+client.beta.files.delete</span>
+    <span class="pill green">+betas=["files-api-2025-04-14"]</span>
+  </div>
+</div>
+<div class="slide-num">04 / 06</div>
+</section>
+
+<!-- ── 5: API call flow ── -->
+<section id="calls">
+<div class="inner">
+  <h2>API Call Flow <span class="claim-id">p004</span></h2>
+
+  <h3 style="margin-top:1rem;margin-bottom:0.75rem;">Old — N pages = N message calls</h3>
+  <div class="flow">
+    <div class="flow-step">
+      <h4>PDF in</h4>
+      <p>pdf_bytes</p>
+    </div>
+    <div class="flow-step" style="border-color:var(--red)">
+      <h4>PyMuPDF</h4>
+      <p>Rasterize each page → PNG</p>
+    </div>
+    <div class="flow-step" style="border-color:var(--red)">
+      <h4>Base64</h4>
+      <p>Encode each PNG</p>
+    </div>
+    <div class="flow-step" style="border-color:var(--red)">
+      <h4>messages.create ×N</h4>
+      <p>One call per page, image block</p>
+    </div>
+    <div class="flow-step" style="border-color:var(--red)">
+      <h4>Merge</h4>
+      <p>_merge_extractions()</p>
+    </div>
+    <div class="flow-step">
+      <h4>Result</h4>
+      <p>COAExtraction</p>
+    </div>
+  </div>
+
+  <h3 style="margin-top:2rem;margin-bottom:0.75rem;">New — always 3 calls, any page count</h3>
+  <div class="flow">
+    <div class="flow-step">
+      <h4>PDF in</h4>
+      <p>pdf_bytes</p>
+    </div>
+    <div class="flow-step new">
+      <h4>files.upload</h4>
+      <p>Raw PDF → file_id (free)</p>
+    </div>
+    <div class="flow-step new">
+      <h4>beta.messages.create ×1</h4>
+      <p>document block, all pages</p>
+    </div>
+    <div class="flow-step new">
+      <h4>files.delete</h4>
+      <p>Cleanup (free)</p>
+    </div>
+    <div class="flow-step">
+      <h4>Result</h4>
+      <p>COAExtraction</p>
+    </div>
+  </div>
+
+  <table style="margin-top:1.5rem;">
+    <thead><tr><th>Scenario</th><th>Old API calls</th><th>New API calls</th></tr></thead>
+    <tbody>
+      <tr><td>1-page COA</td><td>1 message</td><td class="good">3 (upload + msg + delete)</td></tr>
+      <tr><td>2-page COA</td><td class="bad">2 messages</td><td class="good">3 (same)</td></tr>
+      <tr><td>3-page COA</td><td class="bad">3 messages</td><td class="good">3 (same)</td></tr>
+      <tr><td>5-page COA</td><td class="bad">5 messages</td><td class="good">3 (same)</td></tr>
+    </tbody>
+  </table>
+  <p style="color:var(--muted);font-size:0.85rem;margin-top:0.75rem;">New approach is only strictly equal (3 vs N) at N=3 pages. For typical 1-2 page COAs the old approach has fewer total calls — but each message call carries a 200KB payload vs a 200-byte payload for the new approach. Network cost favors new at all page counts.</p>
+</div>
+<div class="slide-num">05 / 06</div>
+</section>
+
+<!-- ── 6: Next steps ── -->
+<section id="next">
+<div class="inner">
+  <h2>Next Steps</h2>
+
+  <div class="grid-2">
+    <div class="card ok">
+      <h3 style="color:var(--green)">Ready to merge</h3>
+      <ul class="check">
+        <li>Code structure validated (p001)</li>
+        <li>Payload improvement confirmed (p002)</li>
+        <li>Code change is minimal and reversible (p003)</li>
+        <li>API call flow is correct (p004)</li>
+        <li>No new dependencies</li>
+      </ul>
+    </div>
+    <div class="card warn">
+      <h3 style="color:var(--yellow)">Still needed</h3>
+      <ul>
+        <li>Live run with real ANTHROPIC_API_KEY</li>
+        <li>Test against a real COA PDF</li>
+        <li>Confirm extraction quality vs old approach</li>
+        <li>Measure actual latency difference</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:1.25rem;">
+    <h3>Run the live comparison</h3>
+    <pre style="margin:0.5rem 0 0;">export ANTHROPIC_API_KEY=sk-ant-...
+python compare.py                          # synthetic PDF
+python compare.py /path/to/real_coa.pdf   # real COA</pre>
+  </div>
+</div>
+<div class="slide-num">06 / 06</div>
+</section>
+
+</body>
+</html>

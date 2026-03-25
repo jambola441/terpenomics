@@ -1,0 +1,21 @@
+{
+  "run_type": "dry-run",
+  "note": "API calls not made — no ANTHROPIC_API_KEY. Payload sizes measured from real rasterization.",
+  "pdf_bytes": 1466,
+  "pages": 1,
+  "old_api_calls_for_1_page": 1,
+  "old_api_calls_for_3_page": 3,
+  "new_api_calls_always": 3,
+  "payload": {
+    "old_b64_message_bytes": 197132,
+    "old_raw_png_bytes": 147849,
+    "new_upload_bytes": 1466,
+    "new_message_bytes_approx": 200,
+    "reduction_pct": 99
+  },
+  "structural_validation": {
+    "parser_files_api_imports": true,
+    "lab_report_parser_imports": true,
+    "pydantic_models_compatible": true
+  }
+}
