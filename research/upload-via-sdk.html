@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anthropic Files API — Upload PDFs via SDK</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #151820;
+    --surface2: #1c2030;
+    --border: #2a2f42;
+    --accent: #6c8ef7;
+    --accent2: #a78bfa;
+    --green: #34d399;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --text: #e2e8f0;
+    --muted: #8892a4;
+    --code-bg: #0a0c10;
+  }
+
+  html { scroll-snap-type: y mandatory; overflow-y: scroll; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  section {
+    min-height: 100vh;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 4rem 2rem;
+    position: relative;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .inner { max-width: 900px; margin: 0 auto; width: 100%; }
+
+  /* ── Nav ── */
+  nav {
+    position: fixed; top: 0; right: 0; z-index: 100;
+    padding: 1rem 1.5rem;
+    display: flex; gap: 0.5rem; flex-direction: column; align-items: flex-end;
+  }
+  nav a {
+    font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted); text-decoration: none;
+    transition: color 0.15s;
+  }
+  nav a:hover { color: var(--text); }
+
+  /* ── Typography ── */
+  h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700; line-height: 1.15; }
+  h2 { font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 600; margin-bottom: 1.5rem; }
+  h3 { font-size: 1rem; font-weight: 600; color: var(--muted); text-transform: uppercase;
+       letter-spacing: 0.08em; margin-bottom: 0.5rem; }
+
+  .subtitle { color: var(--muted); font-size: 1.1rem; margin-top: 0.75rem; max-width: 60ch; }
+  .claim-id { display: inline-block; font-size: 0.7rem; font-family: monospace;
+              background: var(--surface2); color: var(--accent); padding: 0.1em 0.45em;
+              border-radius: 3px; border: 1px solid var(--border); vertical-align: middle; margin-left: 0.4em; }
+
+  /* ── Code blocks ── */
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    margin: 1rem 0;
+  }
+  code { font-family: inherit; }
+  .keyword { color: #c792ea; }
+  .string  { color: #c3e88d; }
+  .comment { color: #546e7a; font-style: italic; }
+  .func    { color: #82aaff; }
+  .const   { color: #ffcb6b; }
+  .key     { color: var(--accent); }
+
+  /* ── Cards / grids ── */
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.25rem; margin-top: 1.5rem; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.5rem;
+  }
+  .card.highlight { border-color: var(--accent); }
+  .card h3 { color: var(--accent); margin-bottom: 0.75rem; }
+
+  /* ── Comparison ── */
+  .vs { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-top: 1.5rem; }
+  .vs-col {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.5rem;
+  }
+  .vs-col.old { border-color: var(--red); }
+  .vs-col.new { border-color: var(--green); }
+  .vs-col h3 { margin-bottom: 0.75rem; }
+  .vs-col.old h3 { color: var(--red); }
+  .vs-col.new h3 { color: var(--green); }
+
+  ul { list-style: none; }
+  ul li { padding: 0.25rem 0; padding-left: 1.2em; position: relative; }
+  ul li::before { content: '→'; position: absolute; left: 0; color: var(--accent); }
+  ul.checklist li::before { content: '✓'; color: var(--green); }
+  ul.risk li::before     { content: '⚠'; color: var(--yellow); }
+
+  /* ── Table ── */
+  table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+  th { text-align: left; padding: 0.6rem 0.9rem; background: var(--surface2);
+       font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted);
+       border-bottom: 1px solid var(--border); }
+  td { padding: 0.65rem 0.9rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { font-family: monospace; font-size: 0.82rem; color: var(--accent); }
+
+  /* ── Steps ── */
+  .steps { counter-reset: step; margin-top: 1.5rem; }
+  .step {
+    counter-increment: step;
+    display: flex; gap: 1.25rem; align-items: flex-start;
+    padding: 1.25rem; margin-bottom: 0.75rem;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  }
+  .step-num {
+    flex-shrink: 0; width: 2rem; height: 2rem;
+    background: var(--accent); color: #fff;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.9rem;
+  }
+  .step-num::after { content: counter(step); }
+  .step-body { flex: 1; }
+  .step-body strong { display: block; margin-bottom: 0.35rem; }
+
+  /* ── Tag ── */
+  .tag {
+    display: inline-block; font-size: 0.7rem; font-family: monospace;
+    padding: 0.15em 0.55em; border-radius: 3px;
+    background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
+    margin: 0.1em;
+  }
+  .tag.green { border-color: var(--green); color: var(--green); }
+  .tag.red   { border-color: var(--red);   color: var(--red); }
+  .tag.yellow{ border-color: var(--yellow);color: var(--yellow); }
+  .tag.blue  { border-color: var(--accent); color: var(--accent); }
+
+  /* ── Hero decoration ── */
+  .hero-badges { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1.5rem; }
+
+  /* ── Slide numbering ── */
+  .slide-num {
+    position: absolute; bottom: 1.5rem; right: 2rem;
+    font-size: 0.7rem; color: var(--border); font-family: monospace;
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#hero">Overview</a>
+  <a href="#current">Current</a>
+  <a href="#approach">New Approach</a>
+  <a href="#how-it-works">How It Works</a>
+  <a href="#sources">Source Types</a>
+  <a href="#limits">Limits</a>
+  <a href="#costs">Costs</a>
+  <a href="#risks">Risks</a>
+  <a href="#migration">Migration</a>
+</nav>
+
+<!-- ── SLIDE 1: Hero ── -->
+<section id="hero">
+<div class="inner">
+  <h3>Wheat Research Sprint</h3>
+  <h1>Anthropic Files API<br>for PDF Upload</h1>
+  <p class="subtitle">Should the lab report parser upload PDFs using the Files API instead of rasterizing pages and sending base64 images sequentially?</p>
+  <div class="hero-badges">
+    <span class="tag blue">Files API</span>
+    <span class="tag blue">PDF support</span>
+    <span class="tag green">12 claims · r001–r015</span>
+    <span class="tag yellow">beta: files-api-2025-04-14</span>
+  </div>
+</div>
+<div class="slide-num">01 / 09</div>
+</section>
+
+<!-- ── SLIDE 2: Current approach ── -->
+<section id="current">
+<div class="inner">
+  <h2>Current Approach <span class="claim-id">r010</span></h2>
+  <p style="color:var(--muted);margin-bottom:1.5rem;">What <code>services/lab_report_parser.py</code> does today</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Rasterize with PyMuPDF</strong>
+        Each page rendered to a 200 DPI PNG via <code>fitz.open(...)</code>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Base64-encode each PNG</strong>
+        <code>base64.standard_b64encode(png_bytes)</code>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>One API call per page</strong>
+        <code>client.messages.create</code> with <code>type:"base64", media_type:"image/png"</code> — per page, in a loop
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Merge results across pages</strong>
+        <code>_merge_extractions()</code> picks the page with the most terpenes
+      </div>
+    </div>
+  </div>
+
+  <p style="margin-top:1.5rem;"><strong style="color:var(--red)">N pages = N API calls. Image-only. No text layer.</strong></p>
+</div>
+<div class="slide-num">02 / 09</div>
+</section>
+
+<!-- ── SLIDE 3: New approach overview ── -->
+<section id="approach">
+<div class="inner">
+  <h2>Files API Approach</h2>
+
+  <div class="vs">
+    <div class="vs-col old">
+      <h3>Before</h3>
+      <ul>
+        <li>PyMuPDF dependency</li>
+        <li>200 DPI rasterization</li>
+        <li>Per-page base64 encoding</li>
+        <li>N separate API calls</li>
+        <li>Manual page merging</li>
+        <li>Image-only (no text layer)</li>
+      </ul>
+    </div>
+    <div class="vs-col new">
+      <h3>After</h3>
+      <ul>
+        <li>No rasterization needed</li>
+        <li>1 upload call (free)</li>
+        <li>1 message call (all pages)</li>
+        <li>1 delete call (cleanup)</li>
+        <li>Text + image per page</li>
+        <li>Simpler, more accurate</li>
+      </ul>
+    </div>
+  </div>
+</div>
+<div class="slide-num">03 / 09</div>
+</section>
+
+<!-- ── SLIDE 4: How native PDF works ── -->
+<section id="how-it-works">
+<div class="inner">
+  <h2>How Native PDF Processing Works <span class="claim-id">r007</span></h2>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Text extraction</strong>
+        Anthropic extracts the embedded text layer from each page of the PDF
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Visual rendering</strong>
+        Anthropic renders each page as an image (like rasterization — but done server-side)
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Claude sees both</strong>
+        Claude receives text + image for every page simultaneously in a single <code>document</code> block
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:1.5rem;">
+    <h3>Why this matters for lab reports</h3>
+    <p>Cannabis COAs are text-heavy PDFs (tables of terpene names + percentages). With the current approach Claude must OCR rasterized pixels. With native PDF, Claude reads the structured text layer directly — significantly more accurate for column values, terpene names, and lab metadata.</p>
+  </div>
+</div>
+<div class="slide-num">04 / 09</div>
+</section>
+
+<!-- ── SLIDE 5: Source types ── -->
+<section id="sources">
+<div class="inner">
+  <h2>Three Ways to Send a PDF <span class="claim-id">r009</span></h2>
+  <p style="color:var(--muted);margin-bottom:1.5rem;">All three use a <code>document</code> block and trigger the same native PDF processing.</p>
+
+  <table>
+    <thead>
+      <tr><th>source.type</th><th>How it works</th><th>Best for</th><th>Request payload</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>"file"</td>
+        <td>Reference an uploaded file by ID</td>
+        <td>Lab report parser (repeated uploads, batch)</td>
+        <td><span class="tag green">Tiny — just the ID</span></td>
+      </tr>
+      <tr>
+        <td>"base64"</td>
+        <td>Embed PDF bytes directly in the request</td>
+        <td>One-shot, no upload step wanted</td>
+        <td><span class="tag yellow">Entire PDF in body</span></td>
+      </tr>
+      <tr>
+        <td>"url"</td>
+        <td>Point to a publicly hosted PDF URL</td>
+        <td>PDFs already on a CDN</td>
+        <td><span class="tag green">Just the URL</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="card" style="margin-top:1.5rem;">
+    <h3>Recommendation for the lab report parser</h3>
+    <p>Use <code>type: "file"</code>. The PDF comes in from a user upload, so it's available as bytes. Upload → extract → delete keeps storage clean and payload tiny.</p>
+  </div>
+</div>
+<div class="slide-num">05 / 09</div>
+</section>
+
+<!-- ── SLIDE 6: Limits ── -->
+<section id="limits">
+<div class="inner">
+  <h2>API Limits <span class="claim-id">r006</span> <span class="claim-id">r008</span></h2>
+
+  <table>
+    <thead><tr><th>Dimension</th><th>Limit</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Max file size</td><td>500 MB</td><td>Well above any COA PDF</td></tr>
+      <tr><td>Total org storage</td><td>500 GB</td><td>Use delete after extraction to stay clean</td></tr>
+      <tr><td>Max PDF pages</td><td>600 / request</td><td>100 for 200k-context models; COAs are 1–4 pages</td></tr>
+      <tr><td>Request payload</td><td>32 MB</td><td>Only relevant for base64 source type</td></tr>
+      <tr><td>File retention</td><td>Indefinite</td><td>Until explicitly deleted</td></tr>
+      <tr><td>Platform availability</td><td>Direct API only</td><td>NOT on Bedrock or Vertex AI</td></tr>
+      <tr><td>File API rate limit</td><td>~100 req/min (beta)</td><td>May tighten at GA</td></tr>
+    </tbody>
+  </table>
+</div>
+<div class="slide-num">06 / 09</div>
+</section>
+
+<!-- ── SLIDE 7: Cost ── -->
+<section id="costs">
+<div class="inner">
+  <h2>Cost Tradeoff <span class="claim-id">r012</span></h2>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Current approach</h3>
+      <ul>
+        <li>Image tokens only (per page)</li>
+        <li>Upload/delete: N/A</li>
+        <li>PyMuPDF compute cost (local)</li>
+        <li>N API calls = N × latency</li>
+      </ul>
+    </div>
+    <div class="card highlight">
+      <h3>Files API approach</h3>
+      <ul>
+        <li>Image tokens + text tokens per page</li>
+        <li>~1,500–3,000 text tokens/page additive</li>
+        <li>Upload / delete operations free</li>
+        <li>1 API call = lower total latency</li>
+        <li>No PyMuPDF compute</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:1.25rem;">
+    <h3>Bottom line</h3>
+    <p>Native PDF costs slightly more per page in tokens (due to text layer), but eliminates N-1 extra API round-trips, reduces latency, and improves accuracy — a net win for a document extraction workload like lab report parsing.</p>
+  </div>
+</div>
+<div class="slide-num">07 / 09</div>
+</section>
+
+<!-- ── SLIDE 8: Risks ── -->
+<section id="risks">
+<div class="inner">
+  <h2>Risks <span class="claim-id">r014</span> <span class="claim-id">r011</span></h2>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3 style="color:var(--yellow)">Beta instability</h3>
+      <p>The <code>files-api-2025-04-14</code> header signals this is a beta API. Breaking changes are possible before GA. Rate limits may tighten.</p>
+    </div>
+    <div class="card">
+      <h3 style="color:var(--yellow)">ZDR ineligibility</h3>
+      <p>Files API is NOT eligible for Zero Data Retention. Organizations with ZDR requirements cannot use this beta feature — files remain on Anthropic infrastructure until deleted.</p>
+    </div>
+    <div class="card">
+      <h3 style="color:var(--red)">Platform lock-in</h3>
+      <p>Only works with the direct Anthropic API. If this project ever needs to move to AWS Bedrock or Google Vertex AI, the Files API upload step would need to be removed.</p>
+    </div>
+    <div class="card">
+      <h3 style="color:var(--green)">Mitigation</h3>
+      <p>Delete files immediately after extraction. The upload-extract-delete pattern minimizes retention exposure. Watch the changelog for GA announcement.</p>
+    </div>
+  </div>
+</div>
+<div class="slide-num">08 / 09</div>
+</section>
+
+<!-- ── SLIDE 9: Migration ── -->
+<section id="migration">
+<div class="inner">
+  <h2>Migration Plan <span class="claim-id">r013</span></h2>
+  <p style="color:var(--muted);margin-bottom:1.5rem;">Changes to <code>services/lab_report_parser.py</code></p>
+
+  <div class="vs">
+    <div class="vs-col old">
+      <h3>Remove</h3>
+      <ul>
+        <li><code>import fitz</code> (PyMuPDF)</li>
+        <li><code>rasterize_pdf()</code></li>
+        <li><code>_extract_from_page()</code></li>
+        <li><code>_merge_extractions()</code></li>
+        <li>Per-page loop in <code>extract_from_pdf</code></li>
+      </ul>
+    </div>
+    <div class="vs-col new">
+      <h3>Add / change</h3>
+      <ul class="checklist">
+        <li><code>import io</code></li>
+        <li><code>client.beta.files.upload(...)</code></li>
+        <li><code>client.beta.messages.create(...)</code> once</li>
+        <li><code>betas=["files-api-2025-04-14"]</code></li>
+        <li><code>document</code> block with <code>type:"file"</code></li>
+        <li><code>client.beta.files.delete(file_id)</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <pre><code><span class="keyword">def</span> <span class="func">extract_from_pdf</span>(pdf_bytes: <span class="const">bytes</span>) -> COAExtraction:
+    client = _make_client()
+    <span class="keyword">import</span> io
+
+    <span class="comment"># 1. Upload the PDF</span>
+    upload = client.beta.files.upload(
+        file=(<span class="string">"report.pdf"</span>, io.BytesIO(pdf_bytes), <span class="string">"application/pdf"</span>),
+    )
+
+    <span class="keyword">try</span>:
+        <span class="comment"># 2. Single message call — all pages, text + image</span>
+        response = client.beta.messages.create(
+            model=<span class="string">"claude-haiku-4-5"</span>,
+            max_tokens=<span class="const">1024</span>,
+            betas=[<span class="string">"files-api-2025-04-14"</span>],
+            system=[{<span class="key">"type"</span>: <span class="string">"text"</span>, <span class="key">"text"</span>: SYSTEM_PROMPT, <span class="key">"cache_control"</span>: {<span class="key">"type"</span>: <span class="string">"ephemeral"</span>}}],
+            messages=[{
+                <span class="key">"role"</span>: <span class="string">"user"</span>,
+                <span class="key">"content"</span>: [
+                    {<span class="key">"type"</span>: <span class="string">"document"</span>, <span class="key">"source"</span>: {<span class="key">"type"</span>: <span class="string">"file"</span>, <span class="key">"file_id"</span>: upload.id}},
+                    {<span class="key">"type"</span>: <span class="string">"text"</span>, <span class="key">"text"</span>: <span class="string">"Extract all terpene data and report metadata. Return only the JSON object as specified."</span>},
+                ],
+            }],
+        )
+        raw_text = response.content[<span class="const">0</span>].text.strip()
+        raw_text = re.sub(<span class="string">r"^```(?:json)?\s*"</span>, <span class="string">""</span>, raw_text)
+        raw_text = re.sub(<span class="string">r"\s*```$"</span>, <span class="string">""</span>, raw_text)
+        data = json.loads(raw_text)
+        <span class="keyword">return</span> COAExtraction.model_validate(data)
+    <span class="keyword">finally</span>:
+        <span class="comment"># 3. Clean up — don't accumulate stored files</span>
+        client.beta.files.delete(upload.id)</code></pre>
+</div>
+<div class="slide-num">09 / 09</div>
+</section>
+
+</body>
+</html>
