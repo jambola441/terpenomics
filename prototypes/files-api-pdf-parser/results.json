@@ -1,21 +1,30 @@
 {
-  "run_type": "dry-run",
-  "note": "API calls not made — no ANTHROPIC_API_KEY. Payload sizes measured from real rasterization.",
+  "run_type": "live",
+  "pdf": "test_coa.pdf (synthetic 1-page COA)",
   "pdf_bytes": 1466,
   "pages": 1,
-  "old_api_calls_for_1_page": 1,
-  "old_api_calls_for_3_page": 3,
-  "new_api_calls_always": 3,
-  "payload": {
-    "old_b64_message_bytes": 197132,
-    "old_raw_png_bytes": 147849,
-    "new_upload_bytes": 1466,
-    "new_message_bytes_approx": 200,
-    "reduction_pct": 99
+  "old": {
+    "elapsed_s": 5.08,
+    "terpenes": 10,
+    "cannabinoids": 8,
+    "confidence": 5,
+    "total_terpenes": 1.561,
+    "lab_name": "Green Leaf Analytics LLC",
+    "pass_fail": "PASS",
+    "api_calls": 1
   },
-  "structural_validation": {
-    "parser_files_api_imports": true,
-    "lab_report_parser_imports": true,
-    "pydantic_models_compatible": true
-  }
+  "new": {
+    "elapsed_s": 6.01,
+    "terpenes": 10,
+    "cannabinoids": 8,
+    "confidence": 5,
+    "total_terpenes": 1.561,
+    "lab_name": "Green Leaf Analytics LLC",
+    "pass_fail": "PASS",
+    "api_calls": 3
+  },
+  "latency_delta_s": 0.93,
+  "extraction_match": true,
+  "payload_reduction_pct": 99,
+  "note": "1-page PDF: new makes 2 extra calls (upload+delete) vs old making 1. Latency delta expected to shrink or reverse on multi-page PDFs where old scales to N message calls."
 }

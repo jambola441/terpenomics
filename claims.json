@@ -407,6 +407,42 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["api-calls", "tradeoff", "pages", "measured"]
+    },
+    {
+      "id": "p005",
+      "type": "factual",
+      "topic": "extraction-quality-parity",
+      "content": "Live run on a 1-page synthetic COA: both approaches extracted identical results — 10 terpenes, 8 cannabinoids, confidence=5, total_terpenes=1.561, lab_name='Green Leaf Analytics LLC', pass_fail='PASS'. Extraction quality is at parity for a clean text-layer PDF.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/files-api-pdf-parser/results.json",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-25T18:30:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["extraction-quality", "parity", "live-run", "measured"]
+    },
+    {
+      "id": "p006",
+      "type": "factual",
+      "topic": "latency-1-page",
+      "content": "Live run on a 1-page synthetic COA: old approach 5.08s, new approach 6.01s (+0.93s). The overhead is the 2 extra calls (upload + delete). On single-page PDFs the new approach is slower. For multi-page PDFs (N>1) the latency advantage shifts toward new because old must make N sequential message calls while new stays at 3.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/files-api-pdf-parser/results.json",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-25T18:30:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["latency", "performance", "1-page", "measured"]
     }
   ]
 }
