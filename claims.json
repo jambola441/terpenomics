@@ -430,7 +430,7 @@
       "id": "p006",
       "type": "factual",
       "topic": "latency-1-page",
-      "content": "Live run on a 1-page synthetic COA: old approach 5.08s, new approach 6.01s (+0.93s). The overhead is the 2 extra calls (upload + delete). On single-page PDFs the new approach is slower. For multi-page PDFs (N>1) the latency advantage shifts toward new because old must make N sequential message calls while new stays at 3.",
+      "content": "Live run on a 1-page synthetic COA: old approach 5.08s, new approach 6.01s (+0.93s). The new approach is slower on 1-page PDFs due to 2 extra calls (upload + delete). NOTE: original projection that 'latency shifts for N>1 pages' was refuted by x001 — see x001 for corrected multi-page analysis.",
       "source": {
         "origin": "prototype",
         "artifact": "prototypes/files-api-pdf-parser/results.json",
@@ -441,8 +441,46 @@
       "phase_added": "prototype",
       "timestamp": "2026-03-25T18:30:00.000Z",
       "conflicts_with": [],
-      "resolved_by": null,
+      "resolved_by": "x001",
       "tags": ["latency", "performance", "1-page", "measured"]
+    },
+    {
+      "id": "x001",
+      "type": "factual",
+      "topic": "latency-1-page",
+      "content": "Tested on a 3-page synthetic COA: the old parser made exactly 1 API call (early exit fired at line 342 of lab_report_parser.py: `if result.terpenes and result.cannabinoids and result.confidence >= 3: break`). Old elapsed: 4.72s. New elapsed: 6.86s. Old was still faster by 2.15s on a 3-page PDF. p006's claim that 'latency advantage shifts toward new for N>1' is false for typical well-formatted COAs — early exit means old stays at 1 call regardless of page count as long as page 1 yields confidence≥3 with terpenes+cannabinoids.",
+      "source": {
+        "origin": "challenge",
+        "challenged_claim": "p006",
+        "artifact": "prototypes/files-api-pdf-parser/results_challenge_p006.json",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-25T19:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["challenge", "latency", "early-exit", "multi-page", "measured"]
+    },
+    {
+      "id": "x002",
+      "type": "factual",
+      "topic": "latency-1-page",
+      "content": "The latency crossover (where new approach becomes faster) only occurs when old approach processes 2+ pages — i.e. when page 1 yields: no terpenes, OR no cannabinoids, OR confidence < 3. This is the exception (bad/unusual COA), not the norm. For all typical well-formatted COAs the old approach remains faster due to early exit keeping it at 1 message call (~5s) vs new always at 3 calls (~6s).",
+      "source": {
+        "origin": "challenge",
+        "challenged_claim": "p006",
+        "artifact": "prototypes/files-api-pdf-parser/challenge_p006.py",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-03-25T19:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["challenge", "latency", "early-exit", "edge-case"]
     }
   ]
 }
