@@ -576,7 +576,7 @@
       "id": "r023",
       "type": "factual",
       "topic": "checkweedny-filter-params",
-      "content": "Confirmed working filter: `brand` (e.g. `?brand=Ayrloom`). NOT working as filters (returned full 32,518 result set instead of filtered): `product_name`, `license_number`, `product_type`. `batch_number` also did not filter. The `limit` and presumably `offset` params work for pagination. The only reliable search axis confirmed via testing is `brand`.",
+      "content": "SUPERSEDED BY x003. Original test used wrong param names (field names instead of short names). `brand`, `batch_number`, `license_number`, `product_name` all returned full dataset — but these are not the correct param names. See x003 for correct filter params.",
       "source": {
         "origin": "https://api.checkweedny.com/v1/coas",
         "artifact": "research/checkweedny-api.md",
@@ -586,7 +586,7 @@
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-04-12T00:00:00.000Z",
-      "conflicts_with": [],
+      "conflicts_with": ["x003"],
       "resolved_by": null,
       "tags": ["checkweedny", "filters", "search", "brand"]
     },
@@ -648,7 +648,7 @@
       "id": "r027",
       "type": "risk",
       "topic": "checkweedny-filter-limitation",
-      "content": "Risk: `brand` is the only confirmed working filter. For a store with many brands, lookup requires either knowing the exact brand name OR paginating through large result sets to match by batch_number client-side. If the product's brand name in our DB doesn't match CheckWeedNY's `brand_name` exactly, lookup will fail. The API does not expose a search-by-batch endpoint.",
+      "content": "Risk (PARTIALLY SUPERSEDED by x003): `brand` is NOT the only filter — `?batch=`, `?license=`, `?product=` also work with correct short param names. Residual risk: exact-match semantics are unknown for `?product=` (may be substring). `?brand=` exact-match sensitivity is also unconfirmed. If brand/batch values in our DB use different casing or formatting than CheckWeedNY's values, lookup will silently return wrong results.",
       "source": {
         "origin": "research",
         "artifact": "research/checkweedny-api.md",
@@ -679,6 +679,25 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["checkweedny", "risk", "terpenes", "null", "ingestibles"]
+    },
+    {
+      "id": "x003",
+      "type": "factual",
+      "topic": "checkweedny-filter-params",
+      "content": "CONTRADICTS r023: The API DOES support batch, license, and product server-side filters — but uses short param names, not the field names tested in r023. Confirmed working: `?batch=<batch_number>` (total: 1 for exact match), `?license=<license_number>` (total: 214 for OCM-PROC-24-000068), `?product=Gelato` (total: 685). NOT working: `?batch_number=`, `?license_number=`, `?product_name=`, `?name=`, `?client=`, `?client_id=`, `?q=`, `?search=`. Pattern: API uses abbreviated param names. This substantially changes the integration strategy — batch-level exact lookup is possible without client-side scanning.",
+      "source": {
+        "origin": "challenge",
+        "challenged_claim": "r023",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-04-12T00:01:00.000Z",
+      "conflicts_with": ["r023"],
+      "resolved_by": null,
+      "tags": ["challenge", "checkweedny", "filters", "batch", "license", "product"]
     }
   ]
 }
