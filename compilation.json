@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-04-12T21:31:13.175Z",
-  "claims_hash": "37dd67b",
+  "compiled_at": "2026-04-12T22:13:50.665Z",
+  "claims_hash": "b6d299e",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -58,12 +58,15 @@
     },
     {
       "code": "W_ECHO_CHAMBER",
-      "message": "Topic \"checkweedny-integration-strategy\" has 4 claims but all from a single source origin: challenge",
+      "message": "Topic \"checkweedny-integration-strategy\" has 7 claims but all from a single source origin: challenge",
       "claims": [
         "x004",
         "x005",
         "x006",
-        "x007"
+        "x007",
+        "x008",
+        "x009",
+        "x010"
       ]
     },
     {
@@ -1203,6 +1206,75 @@
         "bulk-sync",
         "cli"
       ]
+    },
+    {
+      "id": "x008",
+      "type": "factual",
+      "topic": "checkweedny-integration-strategy",
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "prototype",
+      "source": {
+        "origin": "challenge",
+        "challenged_claim": "r026",
+        "artifact": "routes/admin/lab_reports.py",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "challenge",
+        "checkweedny",
+        "upload-flow",
+        "batch-id",
+        "chicken-and-egg"
+      ]
+    },
+    {
+      "id": "x009",
+      "type": "risk",
+      "topic": "checkweedny-integration-strategy",
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "prototype",
+      "source": {
+        "origin": "challenge",
+        "challenged_claim": "r026",
+        "artifact": "routes/admin/lab_reports.py",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "challenge",
+        "checkweedny",
+        "upload-flow",
+        "failure-surface",
+        "product-id"
+      ]
+    },
+    {
+      "id": "x010",
+      "type": "recommendation",
+      "topic": "checkweedny-integration-strategy",
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "prototype",
+      "source": {
+        "origin": "challenge",
+        "challenged_claim": "r026",
+        "artifact": null,
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "challenge",
+        "checkweedny",
+        "architecture",
+        "separation-of-concerns",
+        "recommendation"
+      ]
     }
   ],
   "conflict_graph": {
@@ -1382,29 +1454,32 @@
       ]
     },
     "checkweedny-integration-strategy": {
-      "claims": 4,
+      "claims": 7,
       "max_evidence": "tested",
       "status": "strong",
       "types": [
         "factual",
+        "recommendation",
         "risk"
       ],
       "claim_ids": [
         "x004",
         "x005",
         "x006",
-        "x007"
+        "x007",
+        "x008",
+        "x009",
+        "x010"
       ],
       "constraint_count": 0,
       "source_origins": [
         "challenge"
       ],
       "source_count": 1,
-      "type_diversity": 2,
+      "type_diversity": 3,
       "missing_types": [
         "constraint",
         "estimate",
-        "recommendation",
         "feedback"
       ]
     },
@@ -2152,7 +2227,10 @@
     "r029": 0,
     "p007": 0,
     "p008": 0,
-    "p009": 0
+    "p009": 0,
+    "x008": 0,
+    "x009": 0,
+    "x010": 0
   },
   "phase_summary": {
     "define": {
@@ -2164,7 +2242,7 @@
       "complete": true
     },
     "prototype": {
-      "claims": 11,
+      "claims": 14,
       "complete": true
     },
     "evaluate": {
@@ -2183,10 +2261,10 @@
       "status": "active",
       "phase": "prototype",
       "question": "Lab report parser should upload pdf's using anthropic's upload functionality and then sending messages instead of just sending message with b64_image of each page sequentially like it does here https://platform.claude.com/docs/en/build-with-claude/pdf-support#send-your-first-pdf-request",
-      "claims_count": 46,
-      "active_claims": 44,
-      "last_git_activity": "2026-04-12T21:18:13Z",
-      "git_commit_count": 11
+      "claims_count": 49,
+      "active_claims": 47,
+      "last_git_activity": "2026-04-12T21:31:16Z",
+      "git_commit_count": 12
     }
   ],
   "sprint_meta": {
@@ -2196,14 +2274,14 @@
     ],
     "initiated": "2026-03-25",
     "phase": "prototype",
-    "total_claims": 46,
-    "active_claims": 44,
+    "total_claims": 49,
+    "active_claims": 47,
     "conflicted_claims": 0,
     "superseded_claims": 2,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:37dd67b2ca62bf488cce28b0e1d449c953f05067c63689012971a74312fa3c28",
+    "input_hash": "sha256:b6d299ea2e57136dbafcc193a110ab3083fdf728e919564046ee3f003f38360c",
     "compiler_version": "0.2.0",
     "deterministic": true
   }

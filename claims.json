@@ -1067,6 +1067,81 @@
         "bulk-sync",
         "cli"
       ]
+    },
+    {
+      "id": "x008",
+      "type": "factual",
+      "topic": "checkweedny-integration-strategy",
+      "content": "CHALLENGES brief recommendation to insert CheckWeedNY lookup into the upload/process flow: batch_id — the primary lookup key per x004 — is extracted by Claude at lab_reports.py:225 (report.batch_id = extraction.batch_id). It does not exist before extract_from_pdf() runs. The ?batch= lookup therefore cannot precede Claude in the upload flow; it is only usable after a prior parse has already populated LabReport.batch_id.",
+      "source": {
+        "origin": "challenge",
+        "challenged_claim": "r026",
+        "artifact": "routes/admin/lab_reports.py",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-04-12T00:20:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "challenge",
+        "checkweedny",
+        "upload-flow",
+        "batch-id",
+        "chicken-and-egg"
+      ]
+    },
+    {
+      "id": "x009",
+      "type": "risk",
+      "topic": "checkweedny-integration-strategy",
+      "content": "CHALLENGES brief recommendation to insert CheckWeedNY lookup into the upload/process flow: product_id is optional in ProcessRequest (lab_reports.py:173) and often absent when the admin is processing a newly uploaded PDF. Without product_id, there is no brand or product_name to query ?brand=&product= with. Even when product_id is provided, adding a remote API call to a user-facing endpoint creates a new failure mode: CheckWeedNY downtime or rate limiting would surface as 502 errors on what should be a reliable admin action.",
+      "source": {
+        "origin": "challenge",
+        "challenged_claim": "r026",
+        "artifact": "routes/admin/lab_reports.py",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-04-12T00:20:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "challenge",
+        "checkweedny",
+        "upload-flow",
+        "failure-surface",
+        "product-id"
+      ]
+    },
+    {
+      "id": "x010",
+      "type": "recommendation",
+      "topic": "checkweedny-integration-strategy",
+      "content": "CheckWeedNY enrichment belongs in the bulk sync script (prototypes/checkweedny-bulk-sync/sync.py), NOT the upload/process flow. Reasons: (1) batch_id is unavailable before parsing (x008), (2) product_id is often absent at process time (x009), (3) the admin uploading a PDF already has the document and intends it to be parsed — a pre-parse lookup adds latency with no benefit, (4) the bulk sync script runs asynchronously, can be retried on failure, and targets the entire product catalog rather than coupling enrichment to individual upload events. Recommended separation of concerns: upload/process = parse PDFs the admin deliberately submitted; sync script = proactively enrich all products from the API.",
+      "source": {
+        "origin": "challenge",
+        "challenged_claim": "r026",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-04-12T00:20:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "challenge",
+        "checkweedny",
+        "architecture",
+        "separation-of-concerns",
+        "recommendation"
+      ]
     }
   ]
 }
