@@ -630,7 +630,7 @@
       "id": "r026",
       "type": "recommendation",
       "topic": "checkweedny-integration-strategy",
-      "content": "Integration strategy: use CheckWeedNY as a 'try first' lookup before running Claude PDF parsing. Flow: (1) search by brand (required) + paginate through results to match by batch_number client-side, (2) if found with parse_confidence >= 0.7 AND terpene_count > 0, map API fields directly to COAExtraction model — skip Claude entirely, (3) if found but terpene_count is null (common for non-flower), fetch pdf_url and run through Claude PDF parser, (4) if not found, fall back to existing upload+parse flow. This can eliminate Claude calls for a significant share of well-documented flower/concentrate products.",
+      "content": "Integration strategy: use CheckWeedNY as a 'try first' lookup before running Claude PDF parsing. Flow: (1) search by brand (required) + paginate through results to match by batch_number client-side [CONTRADICTED by x004 — use ?batch= directly], (2) if found with parse_confidence >= 0.7 AND terpene_count > 0, map API fields directly to COAExtraction model — skip Claude entirely, (3) if found but terpene_count is null (common for non-flower), fetch pdf_url and run through Claude PDF parser, (4) if not found, fall back to existing upload+parse flow. This can eliminate Claude calls for a significant share of well-documented flower/concentrate products.",
       "source": {
         "origin": "research",
         "artifact": "research/checkweedny-api.md",
@@ -640,7 +640,7 @@
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-04-12T00:00:00.000Z",
-      "conflicts_with": [],
+      "conflicts_with": ["x004"],
       "resolved_by": null,
       "tags": ["checkweedny", "integration", "recommendation", "fallback"]
     },
@@ -698,6 +698,82 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["challenge", "checkweedny", "filters", "batch", "license", "product"]
+    },
+    {
+      "id": "x004",
+      "type": "factual",
+      "topic": "checkweedny-integration-strategy",
+      "content": "CONTRADICTS r026 step (1): r026 says 'search by brand (required) + paginate through results to match by batch_number client-side'. This is wrong — x003 confirmed `?batch=<batch_number>` returns exactly 1 result directly. No brand filter needed, no client-side scanning. The correct primary lookup is `GET /v1/coas?batch=<batch_number>`, and brand can be omitted entirely. This removes an entire step from the integration flow.",
+      "source": {
+        "origin": "challenge",
+        "challenged_claim": "r026",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-04-12T00:02:00.000Z",
+      "conflicts_with": ["r026"],
+      "resolved_by": null,
+      "tags": ["challenge", "checkweedny", "integration", "batch-lookup"]
+    },
+    {
+      "id": "x005",
+      "type": "risk",
+      "topic": "checkweedny-integration-strategy",
+      "content": "r026's parse_confidence >= 0.7 threshold has a 28% miss rate in the flower category (14/50 sampled COAs had confidence < 0.7; values seen: 0.3, 0.5, 0.6). These records would fall back to Claude parsing even though they exist in the dataset. This is not a contradiction of r026 (the threshold still works as a quality gate) but the 28% figure is evidence that the threshold significantly constrains hit rate for the most terpene-rich category.",
+      "source": {
+        "origin": "challenge",
+        "challenged_claim": "r026",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-04-12T00:02:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["challenge", "checkweedny", "parse-confidence", "miss-rate"]
+    },
+    {
+      "id": "x006",
+      "type": "risk",
+      "topic": "checkweedny-integration-strategy",
+      "content": "~2% of COAs in the dataset have null `batch_number`. r026 relies on batch_number as the lookup key, but these records cannot be found by `?batch=` at all. For products where our DB has a batch number but the COA has none, the lookup silently returns 0 results and falls back to Claude — which is acceptable. For products where our DB has no batch number, no lookup is possible at all via any confirmed filter.",
+      "source": {
+        "origin": "challenge",
+        "challenged_claim": "r026",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-04-12T00:02:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["challenge", "checkweedny", "null-batch", "coverage"]
+    },
+    {
+      "id": "x007",
+      "type": "risk",
+      "topic": "checkweedny-integration-strategy",
+      "content": "Terpene compound names in the API use a specific capitalization/format: 'Alpha-Pinene', 'Beta-Pinene', 'Caryophyllene Oxide', 'Bisabolol', 'Fenchol', 'Sabinene', 'Borneol', 'Nerol'. Claude may return different variants (e.g. 'β-Caryophyllene', 'β-Pinene', 'trans-Nerolidol'). COAExtraction.name is unconstrained (plain str), so no validation errors occur, but inconsistent names between API-sourced and Claude-sourced records will break any downstream terpene aggregation or deduplication that relies on name equality.",
+      "source": {
+        "origin": "challenge",
+        "challenged_claim": "r026",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-04-12T00:02:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["challenge", "checkweedny", "terpene-names", "normalization"]
     }
   ]
 }
