@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CheckWeedNY COA API — Research</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0f14;
+    --surface: #161920;
+    --border: #2a2d3a;
+    --accent: #6ee7b7;
+    --accent2: #818cf8;
+    --accent3: #f59e0b;
+    --warn: #f87171;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --code-bg: #1e2230;
+  }
+  html { scroll-snap-type: y mandatory; overflow-y: scroll; background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; }
+  section {
+    min-height: 100vh;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 4rem 6rem;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .claim-id {
+    font-family: monospace;
+    font-size: 0.7rem;
+    color: var(--accent2);
+    background: #1e2030;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  h1 { font-size: 3.5rem; font-weight: 800; line-height: 1.1; }
+  h2 { font-size: 2rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--accent); }
+  h3 { font-size: 1.2rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--accent2); }
+  p { color: var(--muted); line-height: 1.7; margin-bottom: 1rem; max-width: 72ch; }
+  .subtitle { font-size: 1.2rem; color: var(--muted); margin-top: 1rem; }
+  .tag { display: inline-block; background: #1e2230; border: 1px solid var(--border); color: var(--muted); font-size: 0.75rem; padding: 3px 10px; border-radius: 999px; margin: 3px; }
+  .tag.green { border-color: var(--accent); color: var(--accent); }
+  .tag.purple { border-color: var(--accent2); color: var(--accent2); }
+  .tag.yellow { border-color: var(--accent3); color: var(--accent3); }
+  .tag.red { border-color: var(--warn); color: var(--warn); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+  .card .num { font-size: 2.5rem; font-weight: 800; color: var(--accent); }
+  .card .label { color: var(--muted); font-size: 0.85rem; margin-top: 0.25rem; }
+  table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.9rem; }
+  th { text-align: left; padding: 0.6rem 1rem; background: var(--surface); color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--border); }
+  td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); color: var(--text); }
+  tr:last-child td { border-bottom: none; }
+  .yes { color: var(--accent); font-weight: 700; }
+  .no { color: var(--warn); font-weight: 700; }
+  code, pre { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    font-size: 0.82rem;
+    overflow-x: auto;
+    color: #a5f3fc;
+    line-height: 1.6;
+    margin-top: 0.75rem;
+  }
+  .flow-step {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-bottom: 1.25rem;
+  }
+  .step-num {
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--accent2);
+    color: #0d0f14;
+    font-weight: 800;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .step-body h3 { margin-bottom: 0.25rem; }
+  .step-body p { margin: 0; font-size: 0.9rem; }
+  .risk-card {
+    background: var(--surface);
+    border: 1px solid #7f1d1d;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .risk-card h3 { color: var(--warn); margin-bottom: 0.5rem; }
+  .risk-card p { font-size: 0.9rem; margin: 0; }
+  .slide-label {
+    position: absolute;
+    top: 1.5rem;
+    right: 2rem;
+    font-size: 0.7rem;
+    color: var(--border);
+    font-family: monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .field-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.5rem; margin-top: 0.75rem; }
+  .field-chip {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.4rem 0.75rem;
+    font-family: monospace;
+    font-size: 0.78rem;
+    color: #a5f3fc;
+  }
+  .field-chip.highlight { border-color: var(--accent); color: var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- SLIDE 1: Title -->
+<section style="background: radial-gradient(ellipse at 30% 50%, #0f2a1f 0%, var(--bg) 70%);">
+  <div class="slide-label">01 / overview</div>
+  <div class="tag green">CheckWeedNY API Research</div>
+  <h1 style="margin-top: 1rem;">COA Lookup<br><span style="color: var(--accent);">Before Claude</span></h1>
+  <p class="subtitle">32,518 structured NY cannabis COAs available via REST API — potential to skip Claude PDF parsing for a significant share of lab reports</p>
+  <div style="margin-top: 2rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+    <span class="tag green">32,518 COAs</span>
+    <span class="tag purple">532 brands</span>
+    <span class="tag yellow">26 labs</span>
+    <span class="tag">671 clients</span>
+    <span class="tag">Live as of April 2026</span>
+  </div>
+</section>
+
+<!-- SLIDE 2: Dataset -->
+<section>
+  <div class="slide-label">02 / dataset</div>
+  <h2>Dataset Scale <span class="claim-id">r018</span></h2>
+  <div class="grid">
+    <div class="card"><div class="num">32,518</div><div class="label">Total COAs in database</div></div>
+    <div class="card"><div class="num">532</div><div class="label">Unique brands</div></div>
+    <div class="card"><div class="num">671</div><div class="label">Licensed clients</div></div>
+    <div class="card"><div class="num">26</div><div class="label">Testing labs</div></div>
+    <div class="card"><div class="num">37.4%</div><div class="label">Average THC across all records</div></div>
+    <div class="card"><div class="num">2008–2026</div><div class="label">Date range of test data</div></div>
+  </div>
+  <p style="margin-top: 1.5rem;">Auth: <code style="color: var(--accent2);">X-API-Key: cwny_live_...</code> header. No OAuth. Base URL: <code style="color: var(--accent2);">https://api.checkweedny.com/v1</code> <span class="claim-id">r019</span></p>
+</section>
+
+<!-- SLIDE 3: Endpoints -->
+<section>
+  <div class="slide-label">03 / endpoints</div>
+  <h2>API Endpoints</h2>
+  <table>
+    <thead><tr><th>Endpoint</th><th>Returns</th><th>Key use</th></tr></thead>
+    <tbody>
+      <tr><td><code>GET /v1/coas</code></td><td>Paginated list + <code>total</code></td><td>Search by brand, scan for batch match</td></tr>
+      <tr><td><code>GET /v1/coas/:id</code></td><td>Full record + nested arrays</td><td>Individual terpene compounds, pesticides, solvents, microbials</td></tr>
+      <tr><td><code>GET /v1/labs</code></td><td>Lab stats array</td><td>Lab coverage, pass rates</td></tr>
+      <tr><td><code>GET /v1/stats</code></td><td>Dataset summary</td><td>Scale check, avg THC</td></tr>
+    </tbody>
+  </table>
+  <p style="margin-top: 1.5rem; font-size: 0.9rem; color: var(--muted);">The list endpoint includes cannabinoid percentages inline. Terpene compounds (individual) are <strong style="color: var(--text);">only in the detail endpoint</strong>. <span class="claim-id">r021</span></p>
+</section>
+
+<!-- SLIDE 4: List Schema -->
+<section>
+  <div class="slide-label">04 / schema</div>
+  <h2>List Record Fields <span class="claim-id">r020</span></h2>
+  <h3>Identity</h3>
+  <div class="field-grid">
+    <div class="field-chip highlight">id</div>
+    <div class="field-chip highlight">brand_name</div>
+    <div class="field-chip highlight">product_name</div>
+    <div class="field-chip highlight">batch_number</div>
+    <div class="field-chip">product_type</div>
+    <div class="field-chip">normalized_product_type</div>
+    <div class="field-chip">lab_name</div>
+    <div class="field-chip">test_date</div>
+    <div class="field-chip">license_number</div>
+    <div class="field-chip highlight">pdf_url</div>
+    <div class="field-chip highlight">parse_confidence</div>
+  </div>
+  <h3 style="margin-top: 1rem;">Cannabinoids (inline)</h3>
+  <div class="field-grid">
+    <div class="field-chip">d9_thc_pct</div>
+    <div class="field-chip">thca_pct</div>
+    <div class="field-chip">total_thc_pct</div>
+    <div class="field-chip">cbd_pct</div>
+    <div class="field-chip">total_cbd_pct</div>
+    <div class="field-chip">cbg_pct</div>
+    <div class="field-chip">cbn_pct</div>
+    <div class="field-chip">cbc_pct</div>
+    <div class="field-chip">thcv_pct</div>
+    <div class="field-chip">total_cannabinoids_pct</div>
+  </div>
+  <h3 style="margin-top: 1rem;">Terpene summary (detail compounds only in /:id)</h3>
+  <div class="field-grid">
+    <div class="field-chip highlight">terpene_count</div>
+    <div class="field-chip">total_terpenes_pct</div>
+    <div class="field-chip">dominant_terpene</div>
+  </div>
+</section>
+
+<!-- SLIDE 5: Detail Schema -->
+<section>
+  <div class="slide-label">05 / detail</div>
+  <h2>Detail Endpoint Additions <span class="claim-id">r021</span></h2>
+  <p>Only available via <code>GET /v1/coas/:id</code>:</p>
+  <div class="grid" style="margin-top: 1rem;">
+    <div class="card">
+      <h3>terpenes[]</h3>
+      <pre style="margin-top: 0.5rem; font-size: 0.75rem;">[
+  { "compound": "Myrcene",
+    "value_pct": 0.8581 },
+  { "compound": "Caryophyllene",
+    "value_pct": 0.8010 },
+  ...13 compounds
+]</pre>
+    </div>
+    <div class="card">
+      <h3>pesticides[]</h3>
+      <pre style="margin-top: 0.5rem; font-size: 0.75rem;">[
+  { "compound": "Abamectin",
+    "result_ppm": null,
+    "loq_ppm": 0.37,
+    "action_limit_ppm": 0.5,
+    "pass": 1 },
+  ...40+ compounds
+]</pre>
+    </div>
+    <div class="card">
+      <h3>heavy_metals + microbials + mycotoxins</h3>
+      <pre style="margin-top: 0.5rem; font-size: 0.75rem;">{
+  "arsenic_ug_g": null,
+  "lead_ug_g": null,
+  "mercury_ug_g": null,
+  "overall_pass": 1
+}</pre>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 6: Filters -->
+<section>
+  <div class="slide-label">06 / filters</div>
+  <h2>Search Filter Reality <span class="claim-id">r023</span></h2>
+  <p>Only <code>brand</code> confirmed working as a server-side filter. All other params return the full 32,518-record dataset.</p>
+  <table style="margin-top: 1rem;">
+    <thead><tr><th>Parameter</th><th>Works?</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>brand</code></td><td class="yes">✅ Yes</td><td>Exact match, e.g. <code>?brand=Ayrloom</code></td></tr>
+      <tr><td><code>limit</code></td><td class="yes">✅ Yes</td><td>Pagination size</td></tr>
+      <tr><td><code>product_name</code></td><td class="no">❌ No</td><td>Returns full dataset</td></tr>
+      <tr><td><code>license_number</code></td><td class="no">❌ No</td><td>Returns full dataset</td></tr>
+      <tr><td><code>product_type</code></td><td class="no">❌ No</td><td>Returns full dataset</td></tr>
+      <tr><td><code>batch_number</code></td><td class="no">❌ No</td><td>Returns full dataset</td></tr>
+    </tbody>
+  </table>
+  <p style="margin-top: 1rem; font-size: 0.9rem;">Implication: batch matching must be done <strong style="color: var(--text);">client-side</strong> after fetching brand results.</p>
+</section>
+
+<!-- SLIDE 7: Terpene Coverage -->
+<section>
+  <div class="slide-label">07 / terpenes</div>
+  <h2>Terpene Coverage Reality <span class="claim-id">r022</span></h2>
+  <div class="grid">
+    <div class="card" style="border-color: var(--accent);">
+      <h3>✅ Flower / Concentrate</h3>
+      <p style="margin-top: 0.5rem; font-size: 0.9rem;">Terpene data present. Example: Berry Haze by Tyson 2.0 — 12 compounds, 3.95% total terpenes. Dominant: Myrcene.</p>
+    </div>
+    <div class="card" style="border-color: var(--warn);">
+      <h3>❌ Ingestibles / Tinctures / Topicals / Beverages</h3>
+      <p style="margin-top: 0.5rem; font-size: 0.9rem;"><code>terpene_count: null</code> for all tested samples in these categories. Terpenes are stripped in processing.</p>
+    </div>
+  </div>
+  <p style="margin-top: 1.5rem;">Use <code>terpene_count</code> in the list response as a zero-cost null-check before fetching the detail endpoint. <span class="claim-id">r022</span></p>
+  <p>The <code>parse_confidence</code> field (0.0–1.0) indicates extraction quality: ≥0.7 = usable, 0.5 = garbled/fallback needed. <span class="claim-id">r025</span></p>
+</section>
+
+<!-- SLIDE 8: Integration Strategy -->
+<section>
+  <div class="slide-label">08 / strategy</div>
+  <h2>Integration Strategy <span class="claim-id">r026</span></h2>
+  <div style="margin-top: 0.5rem;">
+    <div class="flow-step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>Lookup by brand</h3>
+        <p><code>GET /v1/coas?brand=&lt;brand&gt;&amp;limit=200</code> — paginate, match <code>batch_number</code> client-side. Brand must be known at lookup time.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>Hit with terpenes → skip Claude entirely</h3>
+        <p>If <code>parse_confidence ≥ 0.7</code> AND <code>terpene_count &gt; 0</code>: fetch <code>/v1/coas/:id</code>, map <code>terpenes[].value_pct</code> to <code>COAExtraction</code>. Zero Claude calls. ✅</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>Hit without terpenes → auto-fetch PDF</h3>
+        <p>If <code>terpene_count</code> is null: grab <code>pdf_url</code> from the record → run through existing Claude parser. Saves manual upload step even if Claude is still needed. ✅</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h3>Miss → existing upload flow</h3>
+        <p>Brand not in dataset or brand name mismatch. Fall back to the current upload+parse route unchanged.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 9: Risks -->
+<section>
+  <div class="slide-label">09 / risks</div>
+  <h2>Risks</h2>
+  <div class="risk-card">
+    <h3>r027 — Brand filter is the only key</h3>
+    <p>No batch-level or license-level server-side filter. Lookup requires exact brand name match. Client-side batch matching across potentially large result sets. Brand name in our DB may not match CheckWeedNY's <code>brand_name</code> exactly.</p>
+  </div>
+  <div class="risk-card">
+    <h3>r028 — Terpene data sparse for non-flower</h3>
+    <p>The terpenomics app is terpene-focused, but terpenes are null for most ingestibles, tinctures, and topicals. API lookup provides zero benefit (beyond auto-fetching the PDF URL) for those categories. Highest value for flower and concentrate SKUs.</p>
+  </div>
+</section>
+
+<!-- SLIDE 10: Next Steps -->
+<section>
+  <div class="slide-label">10 / next</div>
+  <h2>Next Steps</h2>
+  <p>The API data quality is solid for flower/concentrate. The filter limitation (brand-only) needs validation against the actual product mix in the app.</p>
+  <div class="grid">
+    <div class="card">
+      <h3>Prototype a lookup service</h3>
+      <p style="font-size: 0.85rem; margin-top: 0.5rem;">Build <code>services/checkweedny_lookup.py</code> — given a brand + batch_number, return structured COAExtraction or None.</p>
+      <div style="margin-top: 0.75rem;"><span class="tag purple">/prototype</span></div>
+    </div>
+    <div class="card">
+      <h3>Audit product brand coverage</h3>
+      <p style="font-size: 0.85rem; margin-top: 0.5rem;">Check what % of products in our DB have brand names that match brands in the CheckWeedNY dataset (532 brands).</p>
+      <div style="margin-top: 0.75rem;"><span class="tag yellow">/research brand coverage</span></div>
+    </div>
+    <div class="card">
+      <h3>Stress-test brand matching</h3>
+      <p style="font-size: 0.85rem; margin-top: 0.5rem;">Brand names may have casing/spacing differences. Test fuzzy matching vs exact match hit rate.</p>
+      <div style="margin-top: 0.75rem;"><span class="tag red">/challenge r023</span></div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

@@ -481,6 +481,204 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["challenge", "latency", "early-exit", "edge-case"]
+    },
+    {
+      "id": "r018",
+      "type": "factual",
+      "topic": "checkweedny-dataset-scale",
+      "content": "CheckWeedNY API dataset (as of 2026-04-12): 32,518 total COAs, 671 unique clients (dispensaries/processors), 532 unique brands, 26 unique labs. Dataset spans tests from 2008 through April 2026. Average THC across all records: 37.4%.",
+      "source": {
+        "origin": "https://api.checkweedny.com/v1/stats",
+        "artifact": "research/checkweedny-api.md",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-04-12T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["checkweedny", "dataset", "scale"]
+    },
+    {
+      "id": "r019",
+      "type": "factual",
+      "topic": "checkweedny-auth",
+      "content": "CheckWeedNY API authenticates via `X-API-Key` request header. Base URL: `https://api.checkweedny.com/v1`. No OAuth or session tokens needed. Key format observed: `cwny_live_<hex>`.",
+      "source": {
+        "origin": "https://api.checkweedny.com/v1/coas",
+        "artifact": "research/checkweedny-api.md",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-04-12T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["checkweedny", "auth", "api-key"]
+    },
+    {
+      "id": "r020",
+      "type": "factual",
+      "topic": "checkweedny-list-schema",
+      "content": "GET /v1/coas returns `{data: [...], total: N}`. Each record includes: `id` (string, e.g. `buddega-23236`), `brand_name`, `product_name`, `product_type`, `normalized_product_type`, `batch_number`, `lab_name`, `test_date`, `license_number`, `client_name`, `pdf_url` (direct link to source PDF), `parse_confidence` (0.0–1.0), `is_duplicate` (int), `total_terpenes_pct`, `dominant_terpene`, `terpene_count`, plus inline cannabinoid fields: `d9_thc_pct`, `thca_pct`, `total_thc_pct`, `cbd_pct`, `cbda_pct`, `total_cbd_pct`, `cbg_pct`, `cbn_pct`, `cbc_pct`, `thcv_pct`, `d8_thc_pct`, `total_cannabinoids_pct`, and pass/fail booleans for metals, microbials, mycotoxins, pesticides, solvents.",
+      "source": {
+        "origin": "https://api.checkweedny.com/v1/coas",
+        "artifact": "research/checkweedny-api.md",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-04-12T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["checkweedny", "schema", "list", "cannabinoids"]
+    },
+    {
+      "id": "r021",
+      "type": "factual",
+      "topic": "checkweedny-detail-schema",
+      "content": "GET /v1/coas/:id returns the full list schema PLUS nested arrays: `terpenes: [{compound, value_pct}]`, `pesticides: [{compound, result_ppm, loq_ppm, action_limit_ppm, pass}]`, `solvents: [{compound, result_ppm, loq_ppm, action_limit_ppm, pass}]`, `heavy_metals: {arsenic_ug_g, cadmium_ug_g, lead_ug_g, mercury_ug_g, chromium_ug_g, nickel_ug_g, copper_ug_g, antimony_ug_g, overall_pass}`, `microbials: {total_aerobic_bacteria_cfu_g, total_yeast_mold_cfu_g, e_coli_detected, salmonella_detected, aspergillus_*_detected, overall_microbial_pass}`, `mycotoxins: {aflatoxin_b1_ppm, aflatoxin_b2_ppm, ..., ochratoxin_a_ppm, overall_pass}`. Individual terpene compound data is ONLY available in the detail endpoint, not the list.",
+      "source": {
+        "origin": "https://api.checkweedny.com/v1/coas/fernway-2092808000",
+        "artifact": "research/checkweedny-api.md",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-04-12T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["checkweedny", "schema", "detail", "terpenes", "pesticides"]
+    },
+    {
+      "id": "r022",
+      "type": "factual",
+      "topic": "checkweedny-terpene-coverage",
+      "content": "Terpene data is sparse: in the Ayrloom brand sample (393 COAs), all 5 sampled records had `total_terpenes_pct: null` and `terpene_count: null`. Flower/concentrate COAs from other brands (e.g. Fernway/Tyson 2.0) do have terpene data (3.95% total, 12–13 compounds). Terpenes are absent for most ingestibles, tinctures, and topicals. The `terpene_count` field in the list response is a reliable null-check before fetching the detail endpoint.",
+      "source": {
+        "origin": "https://api.checkweedny.com/v1/coas",
+        "artifact": "research/checkweedny-api.md",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-04-12T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["checkweedny", "terpenes", "coverage", "sparse"]
+    },
+    {
+      "id": "r023",
+      "type": "factual",
+      "topic": "checkweedny-filter-params",
+      "content": "Confirmed working filter: `brand` (e.g. `?brand=Ayrloom`). NOT working as filters (returned full 32,518 result set instead of filtered): `product_name`, `license_number`, `product_type`. `batch_number` also did not filter. The `limit` and presumably `offset` params work for pagination. The only reliable search axis confirmed via testing is `brand`.",
+      "source": {
+        "origin": "https://api.checkweedny.com/v1/coas",
+        "artifact": "research/checkweedny-api.md",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-04-12T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["checkweedny", "filters", "search", "brand"]
+    },
+    {
+      "id": "r024",
+      "type": "factual",
+      "topic": "checkweedny-pdf-url",
+      "content": "Every COA record includes a `pdf_url` field pointing to the source PDF (hosted by the originating retailer/processor). This URL can be used to fetch the actual COA PDF for downstream processing (e.g. passing to the existing Claude PDF parser). Some URLs are alleaves.com CDN links; others are direct processor-hosted URLs (e.g. fernway.com/wp-content/).",
+      "source": {
+        "origin": "https://api.checkweedny.com/v1/coas",
+        "artifact": "research/checkweedny-api.md",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-04-12T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["checkweedny", "pdf-url", "source-pdf"]
+    },
+    {
+      "id": "r025",
+      "type": "factual",
+      "topic": "checkweedny-parse-confidence",
+      "content": "`parse_confidence` field (0.0–1.0) reflects how well CheckWeedNY's own parser extracted data from the source PDF. Observed range: 0.5 (garbled product name, low quality), 0.7 (good — most Ayrloom records), ~1.0 (excellent — Fernway/Smithers CTS records). Can be used as a pre-filter: records with confidence < 0.7 should fall back to Claude parsing.",
+      "source": {
+        "origin": "https://api.checkweedny.com/v1/coas",
+        "artifact": "research/checkweedny-api.md",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-04-12T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["checkweedny", "parse-confidence", "quality"]
+    },
+    {
+      "id": "r026",
+      "type": "recommendation",
+      "topic": "checkweedny-integration-strategy",
+      "content": "Integration strategy: use CheckWeedNY as a 'try first' lookup before running Claude PDF parsing. Flow: (1) search by brand (required) + paginate through results to match by batch_number client-side, (2) if found with parse_confidence >= 0.7 AND terpene_count > 0, map API fields directly to COAExtraction model — skip Claude entirely, (3) if found but terpene_count is null (common for non-flower), fetch pdf_url and run through Claude PDF parser, (4) if not found, fall back to existing upload+parse flow. This can eliminate Claude calls for a significant share of well-documented flower/concentrate products.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/checkweedny-api.md",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-04-12T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["checkweedny", "integration", "recommendation", "fallback"]
+    },
+    {
+      "id": "r027",
+      "type": "risk",
+      "topic": "checkweedny-filter-limitation",
+      "content": "Risk: `brand` is the only confirmed working filter. For a store with many brands, lookup requires either knowing the exact brand name OR paginating through large result sets to match by batch_number client-side. If the product's brand name in our DB doesn't match CheckWeedNY's `brand_name` exactly, lookup will fail. The API does not expose a search-by-batch endpoint.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/checkweedny-api.md",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-04-12T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["checkweedny", "risk", "filter", "brand-matching"]
+    },
+    {
+      "id": "r028",
+      "type": "risk",
+      "topic": "checkweedny-terpene-gap",
+      "content": "Risk: terpenes are null for most ingestibles, tinctures, topicals, and beverages in the CheckWeedNY dataset. The terpenomics app is terpene-focused. For the product categories most likely to lack terpene data, CheckWeedNY lookup would always fall through to Claude PDF parsing — providing no benefit for those SKUs. The value proposition is highest for flower and concentrate products.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/checkweedny-api.md",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-04-12T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["checkweedny", "risk", "terpenes", "null", "ingestibles"]
     }
   ]
 }
