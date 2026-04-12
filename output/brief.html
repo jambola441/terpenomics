@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decision Brief — Lab Report Parser & CheckWeedNY Integration</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1a1a1a;
+    --subtle: #555;
+    --rule: #ddd;
+    --accent: #2563eb;
+    --warn-bg: #fffbeb;
+    --warn-border: #f59e0b;
+    --risk-bg: #fef2f2;
+    --risk-border: #ef4444;
+    --ok-bg: #f0fdf4;
+    --ok-border: #22c55e;
+    --code-bg: #f5f5f5;
+    --sidebar-w: 220px;
+    font-size: 15px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    line-height: 1.65;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* Sidebar */
+  nav {
+    width: var(--sidebar-w);
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    border-right: 1px solid var(--rule);
+    padding: 1.5rem 1rem;
+    background: #fafafa;
+  }
+
+  nav h3 {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--subtle);
+    margin-bottom: 0.75rem;
+  }
+
+  nav a {
+    display: block;
+    color: var(--subtle);
+    text-decoration: none;
+    font-size: 0.8rem;
+    padding: 0.2rem 0;
+    border-left: 2px solid transparent;
+    padding-left: 0.5rem;
+    margin-bottom: 0.1rem;
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  nav a:hover { color: var(--accent); border-left-color: var(--accent); }
+
+  /* Main content */
+  main {
+    flex: 1;
+    max-width: 860px;
+    padding: 2.5rem 3rem;
+    overflow-x: hidden;
+  }
+
+  header {
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 0.5rem;
+  }
+
+  .meta {
+    font-size: 0.8rem;
+    color: var(--subtle);
+  }
+
+  h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 2.5rem 0 0.75rem;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 1.5rem 0 0.5rem;
+    color: var(--ink);
+  }
+
+  p { margin-bottom: 0.9rem; }
+
+  ul, ol {
+    margin: 0.5rem 0 0.9rem 1.5rem;
+  }
+
+  li { margin-bottom: 0.2rem; }
+
+  code {
+    font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+    font-size: 0.82em;
+    background: var(--code-bg);
+    padding: 0.1em 0.35em;
+    border-radius: 3px;
+  }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 1rem 1.25rem;
+    overflow-x: auto;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    margin: 0.75rem 0 1rem;
+  }
+
+  pre code { background: none; padding: 0; }
+
+  /* Callout boxes */
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: #eff6ff;
+    padding: 0.75rem 1rem;
+    margin: 1rem 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 0.9rem;
+  }
+
+  /* Tables */
+  .table-wrap { overflow-x: auto; margin: 0.75rem 0 1.25rem; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+
+  th {
+    text-align: left;
+    font-weight: 600;
+    padding: 0.45rem 0.75rem;
+    background: #f5f5f5;
+    border: 1px solid var(--rule);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 0.4rem 0.75rem;
+    border: 1px solid var(--rule);
+    vertical-align: top;
+  }
+
+  tr:nth-child(even) td { background: #fafafa; }
+
+  /* Risk severity cells */
+  .sev-low   { color: #16a34a; font-weight: 600; }
+  .sev-med   { color: #d97706; font-weight: 600; }
+  .sev-high  { color: #dc2626; font-weight: 600; }
+
+  /* Claim citation */
+  .cite {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    background: #e0e7ff;
+    color: #3730a3;
+    border-radius: 3px;
+    padding: 0.05em 0.35em;
+    vertical-align: middle;
+    font-family: "SF Mono", monospace;
+  }
+
+  /* Certificate */
+  footer {
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--rule);
+    font-size: 0.75rem;
+    color: var(--subtle);
+    font-family: "SF Mono", monospace;
+  }
+
+  @media print {
+    nav { display: none; }
+    main { max-width: 100%; padding: 1cm; }
+    body { display: block; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <h3>Contents</h3>
+  <a href="#summary">Executive Summary</a>
+  <a href="#recommendation">Recommendation</a>
+  <a href="#rec-files-api">→ Files API migration</a>
+  <a href="#rec-cwny">→ CheckWeedNY layer</a>
+  <a href="#rec-bulk">→ Bulk sync</a>
+  <a href="#evidence">Evidence Summary</a>
+  <a href="#ev-files">→ Files API</a>
+  <a href="#ev-cwny">→ CheckWeedNY API</a>
+  <a href="#ev-proto">→ Prototypes</a>
+  <a href="#risks">Tradeoffs &amp; Risks</a>
+  <a href="#conflicts">Resolved Conflicts</a>
+  <a href="#appendix">Claim Inventory</a>
+</nav>
+
+<main>
+  <header>
+    <h1>Decision Brief: Lab Report Parser — Files API Migration &amp; CheckWeedNY Integration</h1>
+    <p class="meta"><strong>Date:</strong> 2026-04-12 &nbsp;|&nbsp; <strong>Audience:</strong> engineers &nbsp;|&nbsp; <strong>Phase:</strong> Compiled &nbsp;|&nbsp; <strong>Claims:</strong> 44 active</p>
+  </header>
+
+  <!-- Executive Summary -->
+  <section id="summary">
+    <h2>Executive Summary</h2>
+    <p>Migrate the COA lab report parser to use the Anthropic Files API (upload + single <code>document</code> block) instead of per-page base64 image batching — this has shipped as a working prototype with extraction parity confirmed. In parallel, integrate the CheckWeedNY API as a "lookup first" layer: use <code>?batch=&lt;batch_id&gt;</code> as the primary key, falling back to <code>?brand=&amp;product=</code>, and skip Claude entirely for records with <code>parse_confidence &ge; 0.7</code> and <code>terpene_count &gt; 0</code>. A bulk-sync script prototype exists to backfill existing products. Two open risks — terpene name normalization and the 28% confidence miss rate on flowers — require attention before production rollout.</p>
+  </section>
+
+  <!-- Recommendation -->
+  <section id="recommendation">
+    <h2>Recommendation</h2>
+
+    <h3 id="rec-files-api">1. Ship the Files API migration (ready now)</h3>
+    <p>Replace <code>services/lab_report_parser.py</code> with the Files API approach <span class="cite">r013</span>:</p>
+    <ol>
+      <li>Remove PyMuPDF rasterization entirely (<code>rasterize_pdf</code>, <code>_extract_from_page</code>, <code>_merge_extraction</code> — ~60 lines removed <span class="cite">p003</span>)</li>
+      <li>Upload raw PDF bytes via <code>client.beta.files.upload(file=("report.pdf", BytesIO(pdf_bytes), "application/pdf"))</code> <span class="cite">r002</span></li>
+      <li>Send ONE <code>client.beta.messages.create</code> call with a <code>document</code> block, <code>source.type = "file"</code>, <code>file_id = upload.id</code> <span class="cite">r003</span> <span class="cite">r016</span></li>
+      <li>Delete the file in the <code>finally</code> block</li>
+      <li>Retain all Pydantic models unchanged <span class="cite">p001</span></li>
+    </ol>
+    <div class="callout">
+      <strong>Required:</strong> Add <code>betas=["files-api-2025-04-14"]</code> to every <code>messages.create</code> call that uses a <code>file_id</code> source <span class="cite">r001</span> <span class="cite">r016</span>.
+    </div>
+    <p>1-page latency is ~0.9s worse <span class="cite">p006</span>; crossover to faster occurs at 2+ pages where the old approach fires an early exit after page 1 <span class="cite">x001</span> <span class="cite">x002</span>.</p>
+
+    <h3 id="rec-cwny">2. Integrate CheckWeedNY as a lookup-first layer</h3>
+    <p>Before invoking the Claude parser, attempt a CheckWeedNY lookup:</p>
+    <pre><code>1. If product has a LabReport with batch_id:
+      GET /v1/coas?batch=&lt;batch_id&gt;          → 1 exact result (x004)
+
+2. Else if product.brand is set:
+      GET /v1/coas?brand=&lt;brand&gt;&amp;product=&lt;name&gt;
+      → pick highest parse_confidence with terpene_count &gt; 0
+
+3. If found AND parse_confidence &ge; 0.7 AND terpene_count &gt; 0:
+      GET /v1/coas/&lt;id&gt;   → terpenes [{compound, value_pct}]
+      → map to ProductTerpene, skip Claude entirely
+
+4. If found but terpene_count = 0 AND pdf_url is set:
+      Download pdf_url → run through Files API parser
+      → saves user from uploading PDF manually
+
+5. Miss / low confidence → existing upload+parse flow unchanged</code></pre>
+    <p>Auth: <code>X-API-Key</code> header <span class="cite">r019</span>. All filter params are partial and case-insensitive <span class="cite">r029</span>.</p>
+
+    <h3 id="rec-bulk">3. Run the bulk-sync script to backfill existing products</h3>
+    <p><code>prototypes/checkweedny-bulk-sync/sync.py</code> implements the above flow as a standalone CLI script <span class="cite">p007</span> <span class="cite">p009</span>:</p>
+    <pre><code># Dry run first (no DB writes — default)
+python sync.py --brand "Ayrloom"
+
+# Write terpenes, skip products that already have them
+python sync.py --write --skip-existing</code></pre>
+    <p><strong>Before running at scale</strong>, resolve the normalization gap (see Risks — <span class="cite">x007</span> <span class="cite">p008</span>).</p>
+  </section>
+
+  <!-- Evidence Summary -->
+  <section id="evidence">
+    <h2>Evidence Summary</h2>
+
+    <h3 id="ev-files">Files API — core mechanics</h3>
+    <ul>
+      <li><strong>Upload</strong> <span class="cite">r002</span> (documented): <code>client.beta.files.upload(file=("document.pdf", open(...), "application/pdf"))</code> returns a <code>file_id</code>.</li>
+      <li><strong>Message reference</strong> <span class="cite">r003</span> <span class="cite">r016</span> (documented): Use <code>client.beta.messages.create</code> with <code>document</code> block, <code>source.type = "file"</code>, and the beta header.</li>
+      <li><strong>Mechanism</strong> <span class="cite">r007</span> (documented): Anthropic extracts text + converts each page to an image — identical to what the old rasterization loop did manually, but server-side.</li>
+      <li><strong>Limits</strong> <span class="cite">r004</span> <span class="cite">r008</span> (documented): 500 MB/file, 600 pages/request (100 for base64), ~100 req/min, 32 MB payload cap.</li>
+      <li><strong>Billing</strong> <span class="cite">r012</span> (documented): Upload/list/delete are free. File content in messages billed identically to inline content.</li>
+      <li><strong>Beta constraints</strong> <span class="cite">r011</span> <span class="cite">r014</span> (documented): Not ZDR-eligible. Breaking changes possible before GA.</li>
+    </ul>
+
+    <h3>Files API — prototype results</h3>
+    <ul>
+      <li><strong>Payload reduction</strong> <span class="cite">p002</span> (tested): 1-page COA → current sends 147,849-byte base64 PNG; Files API sends 1,977 bytes at message time. 99% reduction.</li>
+      <li><strong>Extraction parity</strong> <span class="cite">p005</span> (tested): Identical results on a live 1-page COA — 10 terpenes, 8 cannabinoids, same confidence score.</li>
+      <li><strong>Latency</strong> <span class="cite">p006</span> <span class="cite">x001</span> <span class="cite">x002</span> (tested): 1-page: old 5.08s, new 6.01s (+0.93s). Crossover at 2+ pages because old approach exits on first match; new always processes whole PDF in 1 call.</li>
+      <li><strong>Code reduction</strong> <span class="cite">p003</span> (tested): Removes 3 functions (~60 lines). No new dependencies.</li>
+      <li><strong>API call count</strong> <span class="cite">p004</span> (tested): Old = 1 call (single-page). New = 3 calls always (upload + messages + delete). Net reduction for multi-page PDFs.</li>
+    </ul>
+
+    <h3 id="ev-cwny">CheckWeedNY API</h3>
+    <ul>
+      <li><strong>Dataset</strong> <span class="cite">r018</span> (tested): 32,518 COAs, 671 clients, 532 brands, 26 labs. Spans 2008–April 2026.</li>
+      <li><strong>Filter params</strong> <span class="cite">r029</span> <span class="cite">x003</span> (tested): <code>?batch=</code>, <code>?brand=</code>, <code>?product=</code>, <code>?lab=</code> — all partial, case-insensitive. <code>?batch=</code> returns exactly 1 result for a full batch string <span class="cite">x004</span>.</li>
+      <li><strong>List schema</strong> <span class="cite">r020</span> (tested): <code>id</code>, <code>brand_name</code>, <code>product_name</code>, <code>batch_number</code>, <code>terpene_count</code>, <code>parse_confidence</code>, <code>pdf_url</code>, inline cannabinoid pct fields, pass/fail booleans.</li>
+      <li><strong>Detail schema</strong> <span class="cite">r021</span> (tested): Adds <code>terpenes: [{compound, value_pct}]</code> plus pesticides, solvents, heavy metals, microbials, mycotoxins nested arrays.</li>
+      <li><strong>parse_confidence</strong> <span class="cite">r025</span> (tested): 0.0–1.0. ≥ 0.7 reliable; ≤ 0.5 garbled — fall back to Claude.</li>
+      <li><strong>pdf_url</strong> <span class="cite">r024</span> (tested): Present on every record. Can be piped directly into the Files API parser.</li>
+      <li><strong>Terpene coverage</strong> <span class="cite">r022</span> (tested): Flower and concentrate records typically have terpene data. Ingestibles/tinctures/topicals have <code>terpene_count = null</code>.</li>
+    </ul>
+
+    <h3 id="ev-proto">Bulk sync prototype</h3>
+    <ul>
+      <li><strong>Lookup logic</strong> <span class="cite">p007</span> (tested): Batch-first, brand+product fallback. Dry-run default.</li>
+      <li><strong>Normalization</strong> <span class="cite">p008</span> (tested): 30-entry map converts API names to canonical names. Unmapped names pass through as-is.</li>
+      <li><strong>CLI</strong> <span class="cite">p009</span> (tested): Flags — <code>--write</code>, <code>--skip-existing</code>, <code>--product-id</code>, <code>--brand</code>, <code>--min-confidence</code>.</li>
+    </ul>
+  </section>
+
+  <!-- Risks -->
+  <section id="risks">
+    <h2>Tradeoffs and Risks</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Risk</th><th>Evidence</th><th>Severity</th><th>Mitigation</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Files API beta instability</strong> <span class="cite">r014</span></td>
+            <td>documented</td>
+            <td class="sev-med">Medium</td>
+            <td>Pin the beta header string; monitor Anthropic changelog before GA</td>
+          </tr>
+          <tr>
+            <td><strong>1-page latency regression</strong> <span class="cite">p006</span> <span class="cite">x002</span></td>
+            <td>tested</td>
+            <td class="sev-low">Low</td>
+            <td>Most COAs are multi-page; 1-page case is rare in production</td>
+          </tr>
+          <tr>
+            <td><strong>Not ZDR-eligible</strong> <span class="cite">r011</span></td>
+            <td>documented</td>
+            <td class="sev-med">Medium</td>
+            <td>Assess with legal/compliance if ZDR is a customer requirement</td>
+          </tr>
+          <tr>
+            <td><strong>28% confidence miss rate on flowers</strong> <span class="cite">x005</span></td>
+            <td>tested</td>
+            <td class="sev-med">Medium</td>
+            <td>14/50 sampled flower COAs had parse_confidence &lt; 0.7 — fall through to Claude</td>
+          </tr>
+          <tr>
+            <td><strong>~2% null batch_number</strong> <span class="cite">x006</span></td>
+            <td>tested</td>
+            <td class="sev-low">Low</td>
+            <td>Products without a linked LabReport fall back to brand+name match</td>
+          </tr>
+          <tr>
+            <td><strong>Terpene name normalization gap</strong> <span class="cite">x007</span> <span class="cite">p008</span></td>
+            <td>tested</td>
+            <td class="sev-med">Medium</td>
+            <td>Prototype has 30-entry map; unmapped names silently create duplicates. Expand map or add post-write dedup before production.</td>
+          </tr>
+          <tr>
+            <td><strong>Ingestibles/tinctures coverage</strong> <span class="cite">r028</span></td>
+            <td>tested</td>
+            <td class="sev-low">Low</td>
+            <td><code>terpene_count = null</code> for these categories — CheckWeedNY provides no benefit; always falls through to Claude</td>
+          </tr>
+          <tr>
+            <td><strong>Brand name matching</strong> <span class="cite">r027</span></td>
+            <td>tested</td>
+            <td class="sev-low">Low</td>
+            <td>All filters are partial+case-insensitive <span class="cite">r029</span>; verify brand strings in products table match CheckWeedNY's <code>brand_name</code> format</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Resolved Conflicts -->
+  <section id="conflicts">
+    <h2>Resolved Conflicts</h2>
+    <h3><span class="cite">x004</span> supersedes <span class="cite">r026</span> step 1</h3>
+    <p><strong>What disagreed:</strong> r026 described the primary lookup as "search by brand (required) + paginate through results to match by batch_number client-side." x004 showed this was wrong — <code>?batch=&lt;batch_number&gt;</code> returns exactly 1 result directly; no brand filter needed, no client-side scanning.</p>
+    <p><strong>How resolved:</strong> Both claims were <code>tested</code> tier. Manual adjudication favored x004 because x003 had already confirmed <code>?batch=</code> works, and x004 is a narrower factual finding that directly contradicts an untested assumption in r026 step 1.</p>
+    <p><strong>Winner:</strong> x004. The correct primary lookup is <code>GET /v1/coas?batch=&lt;batch_number&gt;</code>.</p>
+  </section>
+
+  <!-- Appendix -->
+  <section id="appendix">
+    <h2>Appendix: Claim Inventory</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>ID</th><th>Type</th><th>Topic</th><th>Evidence</th><th>Content</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>d001</td><td>constraint</td><td>done-criteria</td><td>stated</td><td>Done looks like: Decision-ready brief with evidence</td></tr>
+          <tr><td>r001</td><td>factual</td><td>files-api-beta-header</td><td>documented</td><td>Files API requires beta header <code>anthropic-beta: files-api-2025-04-14</code></td></tr>
+          <tr><td>r002</td><td>factual</td><td>files-api-upload-sdk-method</td><td>documented</td><td>Python SDK upload method signature and return value</td></tr>
+          <tr><td>r003</td><td>factual</td><td>files-api-message-reference</td><td>documented</td><td>Reference uploaded PDF via <code>document</code> block with <code>source.type = "file"</code></td></tr>
+          <tr><td>r004</td><td>factual</td><td>files-api-limits</td><td>documented</td><td>500 MB/file, 600 pages/request, ~100 req/min (beta)</td></tr>
+          <tr><td>r005</td><td>factual</td><td>files-api-supported-types</td><td>documented</td><td>PDF → document block; plain text → document block; images → image block</td></tr>
+          <tr><td>r006</td><td>factual</td><td>files-api-model-support</td><td>documented</td><td>file_id references supported in all models that support the given file type</td></tr>
+          <tr><td>r007</td><td>factual</td><td>native-pdf-support-mechanism</td><td>documented</td><td>Anthropic extracts text + converts each page to image server-side</td></tr>
+          <tr><td>r008</td><td>factual</td><td>pdf-limits</td><td>documented</td><td>Max 600 pages/request (100 for base64), 32 MB payload cap</td></tr>
+          <tr><td>r009</td><td>factual</td><td>pdf-three-source-options</td><td>documented</td><td>Three source types: url, base64, file (file_id)</td></tr>
+          <tr><td>r010</td><td>factual</td><td>current-parser-approach</td><td>documented</td><td>Current parser uses PyMuPDF at 200 DPI, per-page base64 PNG batching</td></tr>
+          <tr><td>r011</td><td>factual</td><td>files-api-not-zdr</td><td>documented</td><td>Files API is NOT eligible for Zero Data Retention</td></tr>
+          <tr><td>r012</td><td>factual</td><td>files-api-billing</td><td>documented</td><td>Upload/list/delete free; file content in messages billed as input tokens</td></tr>
+          <tr><td>r013</td><td>recommendation</td><td>migration-approach</td><td>documented</td><td>Remove PyMuPDF → upload PDF → send document block → delete after</td></tr>
+          <tr><td>r014</td><td>risk</td><td>files-api-beta-instability</td><td>documented</td><td>Beta API — breaking changes possible before GA</td></tr>
+          <tr><td>r015</td><td>factual</td><td>document-block-optional-fields</td><td>documented</td><td><code>document</code> block supports optional <code>title</code> and <code>context</code> fields</td></tr>
+          <tr><td>r016</td><td>factual</td><td>files-api-message-sdk-path</td><td>documented</td><td>Must use <code>client.beta.messages.create</code> with files-api beta</td></tr>
+          <tr><td>r017</td><td>factual</td><td>messages-sdk-path-distinction</td><td>documented</td><td><code>client.messages.create</code> vs <code>client.beta.messages.create</code> depends on source type</td></tr>
+          <tr><td>r018</td><td>factual</td><td>checkweedny-dataset-scale</td><td>tested</td><td>32,518 COAs, 671 clients, 532 brands, 26 labs as of 2026-04-12</td></tr>
+          <tr><td>r019</td><td>factual</td><td>checkweedny-auth</td><td>tested</td><td>Auth via <code>X-API-Key</code> header; base URL <code>https://api.checkweedny.com/v1</code></td></tr>
+          <tr><td>r020</td><td>factual</td><td>checkweedny-list-schema</td><td>tested</td><td>List schema: id, brand_name, batch_number, terpene_count, parse_confidence, pdf_url…</td></tr>
+          <tr><td>r021</td><td>factual</td><td>checkweedny-detail-schema</td><td>tested</td><td>Detail adds: terpenes[], pesticides[], solvents[], heavy_metals{}, microbials{}</td></tr>
+          <tr><td>r022</td><td>factual</td><td>checkweedny-terpene-coverage</td><td>tested</td><td>Flower/concentrate have terpene data; ingestibles/tinctures/topicals do not</td></tr>
+          <tr><td>r024</td><td>factual</td><td>checkweedny-pdf-url</td><td>tested</td><td><code>pdf_url</code> present on every COA record</td></tr>
+          <tr><td>r025</td><td>factual</td><td>checkweedny-parse-confidence</td><td>tested</td><td>parse_confidence 0.0–1.0; ≥0.7 reliable; ≤0.5 garbled</td></tr>
+          <tr><td>r027</td><td>risk</td><td>checkweedny-filter-limitation</td><td>tested</td><td>Partial risk: brand not the only filter; all short params work (r029 supersedes)</td></tr>
+          <tr><td>r028</td><td>risk</td><td>checkweedny-terpene-gap</td><td>tested</td><td>Terpenes null for ingestibles/tinctures/topicals/beverages</td></tr>
+          <tr><td>r029</td><td>factual</td><td>checkweedny-filter-params</td><td>tested</td><td><code>?brand=</code>, <code>?batch=</code>, <code>?product=</code>, <code>?lab=</code> — partial, case-insensitive</td></tr>
+          <tr><td>x003</td><td>factual</td><td>checkweedny-filter-params</td><td>tested</td><td>Short param names work (<code>?batch=</code>, not <code>?batch_number=</code>)</td></tr>
+          <tr><td>x004</td><td>factual</td><td>checkweedny-integration-strategy</td><td>tested</td><td><code>?batch=&lt;batch_number&gt;</code> returns exactly 1 result; no brand filter needed</td></tr>
+          <tr><td>x005</td><td>risk</td><td>checkweedny-integration-strategy</td><td>tested</td><td>28% miss rate: 14/50 flower COAs had parse_confidence &lt; 0.7</td></tr>
+          <tr><td>x006</td><td>risk</td><td>checkweedny-integration-strategy</td><td>tested</td><td>~2% of COAs have null batch_number</td></tr>
+          <tr><td>x007</td><td>risk</td><td>checkweedny-integration-strategy</td><td>tested</td><td>API terpene names differ from canonical (e.g. "Alpha-Pinene" vs "α-Pinene")</td></tr>
+          <tr><td>p001</td><td>factual</td><td>prototype-structural-validation</td><td>tested</td><td>Files API parser imports cleanly; Pydantic models reused unchanged</td></tr>
+          <tr><td>p002</td><td>factual</td><td>payload-size-reduction</td><td>tested</td><td>1-page COA: current 147,849-byte PNG → Files API 1,977 bytes (99% reduction)</td></tr>
+          <tr><td>p003</td><td>factual</td><td>code-reduction</td><td>tested</td><td>Removes 3 functions (~60 lines); no new dependencies</td></tr>
+          <tr><td>p004</td><td>factual</td><td>api-call-count-tradeoff</td><td>tested</td><td>Old = 1 call (single-page); New = 3 calls always (upload + messages + delete)</td></tr>
+          <tr><td>p005</td><td>factual</td><td>extraction-quality-parity</td><td>tested</td><td>Identical extraction results on live 1-page COA</td></tr>
+          <tr><td>p006</td><td>factual</td><td>latency-1-page</td><td>tested</td><td>1-page: old 5.08s, new 6.01s (+0.93s)</td></tr>
+          <tr><td>x001</td><td>factual</td><td>latency-1-page</td><td>tested</td><td>Old parser exits early at page 1 for single-page COAs (1 API call total)</td></tr>
+          <tr><td>x002</td><td>factual</td><td>latency-1-page</td><td>tested</td><td>Latency crossover occurs at 2+ page COAs</td></tr>
+          <tr><td>p007</td><td>factual</td><td>checkweedny-bulk-sync-design</td><td>tested</td><td>Prototype sync.py: batch-first lookup, brand+product fallback, confidence gate</td></tr>
+          <tr><td>p008</td><td>factual</td><td>checkweedny-terpene-normalization</td><td>tested</td><td>30-entry normalization map; unmapped names pass through (silent duplicate risk)</td></tr>
+          <tr><td>p009</td><td>factual</td><td>checkweedny-bulk-sync-design</td><td>tested</td><td>CLI: --write, --skip-existing, --product-id, --brand, --min-confidence</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    Compilation certificate: sha256:37dd67b2ca62bf488cce28b0e1d449c953f05067c63689012971a74312fa3c28
+    &nbsp;|&nbsp; Compiler: wheat v0.2.0 &nbsp;|&nbsp; Claims: 44 active &nbsp;|&nbsp; Compiled: 2026-04-12T21:31:16.732Z
+  </footer>
+</main>
+</body>
+</html>
