@@ -583,11 +583,11 @@
         "connector": null
       },
       "evidence": "tested",
-      "status": "active",
+      "status": "superseded",
       "phase_added": "research",
       "timestamp": "2026-04-12T00:00:00.000Z",
-      "conflicts_with": ["x003"],
-      "resolved_by": null,
+      "conflicts_with": [],
+      "resolved_by": "x003",
       "tags": ["checkweedny", "filters", "search", "brand"]
     },
     {
@@ -695,7 +695,7 @@
       "status": "active",
       "phase_added": "research",
       "timestamp": "2026-04-12T00:01:00.000Z",
-      "conflicts_with": ["r023"],
+      "conflicts_with": [],
       "resolved_by": null,
       "tags": ["challenge", "checkweedny", "filters", "batch", "license", "product"]
     }
