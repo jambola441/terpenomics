@@ -774,6 +774,24 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["challenge", "checkweedny", "terpene-names", "normalization"]
+    },
+    {
+      "id": "r029",
+      "type": "factual",
+      "topic": "checkweedny-filter-params",
+      "content": "Confirmed working /v1/coas filter params (live-tested 2026-04-12): `brand` (partial, case-insensitive — 'ayrl'/'AYRLOOM'/'Ayrloom' all return same 393 results), `lab` (partial, case-insensitive), `product` (partial, case-insensitive), `batch` (partial, case-insensitive — full batch string returns 0–1 results in practice), `license` (exact match), `matrix` (Title Case values: 'Flower'=15420, 'Edible'=6054, 'Concentrate'; docs incorrectly state lowercase), `min_thc`, `max_thc` (numeric range filters, both working), `sort` ('test_date'|'total_thc_pct'|'brand_name'), `order` ('asc'|'desc'), `page` (1-indexed), `limit` (1–100). NOT working: `since`, `until` (both return full 32,518-record set — date range filtering is broken in the current API).",
+      "source": {
+        "origin": "https://api.checkweedny.com/v1/coas",
+        "artifact": "research/checkweedny-api.md",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-04-12T00:03:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["checkweedny", "filters", "confirmed", "since-until-broken", "matrix-title-case"]
     }
   ]
 }
