@@ -998,6 +998,75 @@
         "since-until-broken",
         "matrix-title-case"
       ]
+    },
+    {
+      "id": "p007",
+      "type": "factual",
+      "topic": "checkweedny-bulk-sync-design",
+      "content": "Prototype sync.py implements a two-step lookup: (1) ?batch=<batch_id> via linked LabReport (exact, 1 result), (2) ?brand=<brand>&product=<name> substring fallback. Only writes when parse_confidence >= 0.7 and terpene_count > 0. Mirrors _apply_terpenes_to_product upsert pattern from lab_reports.py.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/checkweedny-bulk-sync/sync.py",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-04-12T00:10:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "prototype",
+        "checkweedny",
+        "bulk-sync",
+        "lookup-strategy"
+      ]
+    },
+    {
+      "id": "p008",
+      "type": "factual",
+      "topic": "checkweedny-terpene-normalization",
+      "content": "Prototype includes a 30-entry normalization map converting CheckWeedNY compound names to our canonical terpene names (e.g. \"Caryophyllene\" -> \"β-Caryophyllene\", \"Alpha-Pinene\" -> \"α-Pinene\"). Unmapped names pass through as-is, which risks silent duplicates in product_terpenes if the same compound appears under two names across API-sourced and Claude-sourced records.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/checkweedny-bulk-sync/sync.py",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-04-12T00:10:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "prototype",
+        "checkweedny",
+        "terpene-names",
+        "normalization"
+      ]
+    },
+    {
+      "id": "p009",
+      "type": "factual",
+      "topic": "checkweedny-bulk-sync-design",
+      "content": "Sync script supports --dry-run (default), --write, --skip-existing, --product-id, --brand, and --min-confidence flags. Output statuses: written, dry_run, skipped, not_found, low_confidence, no_terpenes, error. Batch lookup requires a linked LabReport with batch_id — products without lab reports can only be found by brand+name substring match.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "prototypes/checkweedny-bulk-sync/sync.py",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-04-12T00:10:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "prototype",
+        "checkweedny",
+        "bulk-sync",
+        "cli"
+      ]
     }
   ]
 }

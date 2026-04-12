@@ -1,7 +1,7 @@
 {
-  "generated": "2026-03-25T18:01:34.913Z",
+  "generated": "2026-04-12T21:31:13.181Z",
   "generator": "generate-manifest.js",
-  "claims_hash": "236153d",
+  "claims_hash": "37dd67b",
   "topics": {
     "done-criteria": {
       "claims": [
@@ -223,21 +223,181 @@
       ],
       "sprint": "current",
       "evidence_level": "tested"
+    },
+    "checkweedny-dataset-scale": {
+      "claims": [
+        "r018"
+      ],
+      "files": [
+        "research/checkweedny-api.md"
+      ],
+      "sprint": "current",
+      "evidence_level": "tested"
+    },
+    "checkweedny-auth": {
+      "claims": [
+        "r019"
+      ],
+      "files": [
+        "research/checkweedny-api.md"
+      ],
+      "sprint": "current",
+      "evidence_level": "tested"
+    },
+    "checkweedny-list-schema": {
+      "claims": [
+        "r020"
+      ],
+      "files": [
+        "research/checkweedny-api.md"
+      ],
+      "sprint": "current",
+      "evidence_level": "tested"
+    },
+    "checkweedny-detail-schema": {
+      "claims": [
+        "r021"
+      ],
+      "files": [
+        "research/checkweedny-api.md"
+      ],
+      "sprint": "current",
+      "evidence_level": "tested"
+    },
+    "checkweedny-terpene-coverage": {
+      "claims": [
+        "r022"
+      ],
+      "files": [
+        "research/checkweedny-api.md"
+      ],
+      "sprint": "current",
+      "evidence_level": "tested"
+    },
+    "checkweedny-filter-params": {
+      "claims": [
+        "r023",
+        "x003",
+        "r029"
+      ],
+      "files": [
+        "research/checkweedny-api.md"
+      ],
+      "sprint": "current",
+      "evidence_level": "tested"
+    },
+    "checkweedny-pdf-url": {
+      "claims": [
+        "r024"
+      ],
+      "files": [
+        "research/checkweedny-api.md"
+      ],
+      "sprint": "current",
+      "evidence_level": "tested"
+    },
+    "checkweedny-parse-confidence": {
+      "claims": [
+        "r025"
+      ],
+      "files": [
+        "research/checkweedny-api.md"
+      ],
+      "sprint": "current",
+      "evidence_level": "tested"
+    },
+    "checkweedny-integration-strategy": {
+      "claims": [
+        "r026",
+        "x004",
+        "x005",
+        "x006",
+        "x007"
+      ],
+      "files": [
+        "research/checkweedny-api.md"
+      ],
+      "sprint": "current",
+      "evidence_level": "tested"
+    },
+    "checkweedny-filter-limitation": {
+      "claims": [
+        "r027"
+      ],
+      "files": [
+        "research/checkweedny-api.md"
+      ],
+      "sprint": "current",
+      "evidence_level": "tested"
+    },
+    "checkweedny-terpene-gap": {
+      "claims": [
+        "r028"
+      ],
+      "files": [
+        "research/checkweedny-api.md"
+      ],
+      "sprint": "current",
+      "evidence_level": "tested"
+    },
+    "checkweedny-bulk-sync-design": {
+      "claims": [
+        "p007",
+        "p009"
+      ],
+      "files": [
+        "prototypes/checkweedny-bulk-sync/sync.py"
+      ],
+      "sprint": "current",
+      "evidence_level": "tested"
+    },
+    "checkweedny-terpene-normalization": {
+      "claims": [
+        "p008"
+      ],
+      "files": [
+        "prototypes/checkweedny-bulk-sync/sync.py"
+      ],
+      "sprint": "current",
+      "evidence_level": "tested"
     }
   },
   "sprints": {
     "lab-report-parser-should": {
       "question": "Lab report parser should upload pdf's using anthropic's upload functionality and then sending messages instead of just sending message with b64_image of each page sequentially like it does here https://platform.claude.com/docs/en/build-with-claude/pdf-support#send-your-first-pdf-request",
       "phase": "prototype",
-      "claims_count": 26,
-      "active_claims": 26,
+      "claims_count": 46,
+      "active_claims": 44,
       "path": ".",
       "status": "active",
-      "last_git_activity": "2026-03-25T17:43:11Z",
-      "git_commit_count": 4
+      "last_git_activity": "2026-04-12T21:18:13Z",
+      "git_commit_count": 11
     }
   },
   "files": {
+    "research/checkweedny-api.md": {
+      "topics": [
+        "checkweedny-dataset-scale",
+        "checkweedny-auth",
+        "checkweedny-list-schema",
+        "checkweedny-detail-schema",
+        "checkweedny-terpene-coverage",
+        "checkweedny-filter-params",
+        "checkweedny-pdf-url",
+        "checkweedny-parse-confidence",
+        "checkweedny-integration-strategy",
+        "checkweedny-filter-limitation",
+        "checkweedny-terpene-gap"
+      ],
+      "type": "research"
+    },
+    "prototypes/checkweedny-bulk-sync/sync.py": {
+      "topics": [
+        "checkweedny-bulk-sync-design",
+        "checkweedny-terpene-normalization"
+      ],
+      "type": "prototype"
+    },
     "prototypes/files-api-pdf-parser/README.md": {
       "topics": [
         "prototype-structural-validation"
