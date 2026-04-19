@@ -78,6 +78,7 @@ class Product(ProductBase, TimestampMixin, table=True):
     purchase_items: list["PurchaseItem"] = Relationship(back_populates="product")
     terpene_links: list["ProductTerpene"] = Relationship(back_populates="product")
     cannabinoid_links: list["ProductCannabinoid"] = Relationship(back_populates="product")
+    listings: list["Listing"] = Relationship(back_populates="product")
 
 
 class Terpene(SQLModel, TimestampMixin, table=True):
@@ -187,6 +188,56 @@ class ProductCannabinoid(SQLModel, table=True):
 
 
 # ---------------------------
+# Dispensaries + Listings
+# ---------------------------
+
+class PosType(str, Enum):
+    none      = "none"
+    alleaves  = "alleaves"
+    leaflogix = "leaflogix"
+
+
+class DispensaryBase(SQLModel):
+    name: str = Field(max_length=200)
+    slug: str = Field(max_length=100, index=True, sa_column_kwargs={"unique": True})
+    website_url: Optional[str] = Field(default=None, max_length=500)
+    location: Optional[str] = Field(default=None, max_length=200)
+    is_active: bool = Field(default=True, nullable=False)
+    pos_type: PosType = Field(default=PosType.none)
+    pos_tenant_id: Optional[str] = Field(default=None, max_length=200)
+
+
+class Dispensary(DispensaryBase, TimestampMixin, table=True):
+    __tablename__ = "dispensaries"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    listings: list["Listing"] = Relationship(back_populates="dispensary")
+
+
+class ListingBase(SQLModel):
+    product_id: UUID = Field(foreign_key="products.id", index=True, nullable=False)
+    dispensary_id: UUID = Field(foreign_key="dispensaries.id", index=True, nullable=False)
+    price_cents: Optional[int] = Field(default=None, ge=0)
+    variant: Optional[str] = Field(default=None, max_length=100)
+    sku: Optional[str] = Field(default=None, max_length=200)
+    url: Optional[str] = Field(default=None, max_length=1000)
+    in_stock: bool = Field(default=True, nullable=False)
+    is_active: bool = Field(default=True, nullable=False)
+    scraped_at: Optional[datetime] = Field(default=None)
+
+
+class Listing(ListingBase, TimestampMixin, table=True):
+    __tablename__ = "listings"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    product: "Product" = Relationship(back_populates="listings")
+    dispensary: Dispensary = Relationship(back_populates="listings")
+    purchase_items: list["PurchaseItem"] = Relationship(back_populates="listing")
+
+
+# ---------------------------
 # Purchases (Orders)
 # ---------------------------
 
@@ -226,13 +277,15 @@ class PurchaseItem(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
 
     purchase_id: UUID = Field(foreign_key="purchases.id", index=True, nullable=False)
-    product_id: UUID = Field(foreign_key="products.id", index=True, nullable=False)
+    product_id: Optional[UUID] = Field(default=None, foreign_key="products.id", index=True)
+    listing_id: Optional[UUID] = Field(default=None, foreign_key="listings.id", index=True)
 
     quantity: int = Field(default=1, ge=1, nullable=False)
     line_amount_cents: Optional[int] = Field(default=None, ge=0)
 
     purchase: Purchase = Relationship(back_populates="items")
-    product: Product = Relationship(back_populates="purchase_items")
+    product: Optional[Product] = Relationship(back_populates="purchase_items")
+    listing: Optional["Listing"] = Relationship(back_populates="purchase_items")
     
     feedback: Optional[ItemFeedback] = Field(default=None, index=True)
     feedback_at: Optional[datetime] = Field(default=None)
