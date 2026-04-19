@@ -81,6 +81,25 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["done-criteria"]
+    },
+    {
+      "id": "x001",
+      "type": "factual",
+      "topic": "api-consumer-context",
+      "content": "PARTIALLY CONTRADICTS d001: A customer-facing portal exists (routes/customer/portal.py) and reads directly from the products, listings, terpenes, and purchases tables. It is an external consumer. However, all 4 of its product/listing endpoints are GET-only. The single POST endpoint (/{customer_id}/purchase-items/{item_id}/feedback) writes only customer purchase feedback — not products or listings. Conclusion: d001's assertion 'no external consumers' is factually wrong, but its implication for write/batch endpoint design holds — the customer portal creates no pressure to expose batch write operations.",
+      "source": {
+        "origin": "challenge",
+        "challenged_claim": "d001",
+        "artifact": "routes/customer/portal.py",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-04-19T00:01:00.000Z",
+      "conflicts_with": ["d001"],
+      "resolved_by": null,
+      "tags": ["challenge", "customer-portal", "readonly", "api-consumers"]
     }
   ]
 }

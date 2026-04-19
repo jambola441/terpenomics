@@ -1,15 +1,16 @@
 {
-  "generated": "2026-04-19T14:38:10.533Z",
+  "generated": "2026-04-19T14:47:02.738Z",
   "generator": "generate-manifest.js",
-  "claims_hash": "97b2a4a",
+  "claims_hash": "4821644",
   "topics": {
     "api-consumer-context": {
       "claims": [
-        "d001"
+        "d001",
+        "x001"
       ],
       "files": [],
       "sprint": "current",
-      "evidence_level": "stated"
+      "evidence_level": "documented"
     },
     "maintainer-context": {
       "claims": [
@@ -40,12 +41,12 @@
     "should-the-terpenomics-api": {
       "question": "Should the terpenomics API expose only simple CRUD operations, with all batch/complex write logic living in standalone scripts?",
       "phase": "define",
-      "claims_count": 4,
-      "active_claims": 4,
+      "claims_count": 5,
+      "active_claims": 5,
       "path": ".",
       "status": "active",
-      "last_git_activity": "2026-04-12T22:13:54Z",
-      "git_commit_count": 13
+      "last_git_activity": "2026-04-19T14:39:13Z",
+      "git_commit_count": 14
     }
   },
   "files": {
