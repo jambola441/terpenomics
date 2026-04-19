@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-04-19T14:47:02.735Z",
-  "claims_hash": "4821644",
+  "compiled_at": "2026-04-19T14:53:51.314Z",
+  "claims_hash": "b97a534",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -120,9 +120,7 @@
         "artifact": "routes/customer/portal.py",
         "connector": null
       },
-      "conflicts_with": [
-        "d001"
-      ],
+      "conflicts_with": [],
       "resolved_by": null,
       "tags": [
         "challenge",
@@ -133,13 +131,7 @@
     }
   ],
   "conflict_graph": {
-    "resolved": [
-      {
-        "winner": "x001",
-        "loser": "d001",
-        "reason": "evidence_tier: documented (3) > stated (1)"
-      }
-    ],
+    "resolved": [],
     "unresolved": []
   },
   "coverage": {
@@ -276,9 +268,9 @@
       "phase": "define",
       "question": "Should the terpenomics API expose only simple CRUD operations, with all batch/complex write logic living in standalone scripts?",
       "claims_count": 5,
-      "active_claims": 5,
-      "last_git_activity": "2026-04-19T14:39:13Z",
-      "git_commit_count": 14
+      "active_claims": 4,
+      "last_git_activity": "2026-04-19T14:47:17Z",
+      "git_commit_count": 15
     }
   ],
   "sprint_meta": {
@@ -295,7 +287,7 @@
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:48216447c111b7042119b737038c957e254439f663e501bcaeca4a5ab5082795",
+    "input_hash": "sha256:b97a534141b2d55111a5d711d7d5a2a34c970d2f1559e85d67f42a20248ef660",
     "compiler_version": "0.2.0",
     "deterministic": true
   }

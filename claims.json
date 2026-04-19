@@ -21,11 +21,11 @@
         "connector": null
       },
       "evidence": "stated",
-      "status": "active",
+      "status": "superseded",
       "phase_added": "define",
       "timestamp": "2026-04-19T00:00:00.000Z",
       "conflicts_with": [],
-      "resolved_by": null,
+      "resolved_by": "x001",
       "tags": ["api", "internal", "consumers"]
     },
     {
@@ -97,7 +97,7 @@
       "status": "active",
       "phase_added": "define",
       "timestamp": "2026-04-19T00:01:00.000Z",
-      "conflicts_with": ["d001"],
+      "conflicts_with": [],
       "resolved_by": null,
       "tags": ["challenge", "customer-portal", "readonly", "api-consumers"]
     }
