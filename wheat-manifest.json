@@ -1,9 +1,9 @@
 {
-  "generated": "2026-04-12T22:13:50.672Z",
+  "generated": "2026-04-19T14:38:10.533Z",
   "generator": "generate-manifest.js",
-  "claims_hash": "b6d299e",
+  "claims_hash": "97b2a4a",
   "topics": {
-    "done-criteria": {
+    "api-consumer-context": {
       "claims": [
         "d001"
       ],
@@ -11,487 +11,44 @@
       "sprint": "current",
       "evidence_level": "stated"
     },
-    "files-api-beta-header": {
+    "maintainer-context": {
       "claims": [
-        "r001"
+        "d002"
+      ],
+      "files": [],
+      "sprint": "current",
+      "evidence_level": "stated"
+    },
+    "existing-pattern": {
+      "claims": [
+        "d003"
       ],
       "files": [],
       "sprint": "current",
       "evidence_level": "documented"
     },
-    "files-api-upload-sdk-method": {
+    "done-criteria": {
       "claims": [
-        "r002"
+        "d004"
       ],
       "files": [],
       "sprint": "current",
-      "evidence_level": "documented"
-    },
-    "files-api-message-reference": {
-      "claims": [
-        "r003"
-      ],
-      "files": [],
-      "sprint": "current",
-      "evidence_level": "documented"
-    },
-    "files-api-limits": {
-      "claims": [
-        "r004"
-      ],
-      "files": [],
-      "sprint": "current",
-      "evidence_level": "documented"
-    },
-    "files-api-supported-types": {
-      "claims": [
-        "r005"
-      ],
-      "files": [],
-      "sprint": "current",
-      "evidence_level": "documented"
-    },
-    "files-api-model-support": {
-      "claims": [
-        "r006"
-      ],
-      "files": [],
-      "sprint": "current",
-      "evidence_level": "documented"
-    },
-    "native-pdf-support-mechanism": {
-      "claims": [
-        "r007"
-      ],
-      "files": [],
-      "sprint": "current",
-      "evidence_level": "documented"
-    },
-    "pdf-limits": {
-      "claims": [
-        "r008"
-      ],
-      "files": [],
-      "sprint": "current",
-      "evidence_level": "documented"
-    },
-    "pdf-three-source-options": {
-      "claims": [
-        "r009"
-      ],
-      "files": [],
-      "sprint": "current",
-      "evidence_level": "documented"
-    },
-    "current-parser-approach": {
-      "claims": [
-        "r010"
-      ],
-      "files": [],
-      "sprint": "current",
-      "evidence_level": "documented"
-    },
-    "files-api-not-zdr": {
-      "claims": [
-        "r011"
-      ],
-      "files": [],
-      "sprint": "current",
-      "evidence_level": "documented"
-    },
-    "files-api-billing": {
-      "claims": [
-        "r012"
-      ],
-      "files": [],
-      "sprint": "current",
-      "evidence_level": "documented"
-    },
-    "migration-approach": {
-      "claims": [
-        "r013"
-      ],
-      "files": [],
-      "sprint": "current",
-      "evidence_level": "documented"
-    },
-    "files-api-beta-instability": {
-      "claims": [
-        "r014"
-      ],
-      "files": [],
-      "sprint": "current",
-      "evidence_level": "documented"
-    },
-    "document-block-optional-fields": {
-      "claims": [
-        "r015"
-      ],
-      "files": [],
-      "sprint": "current",
-      "evidence_level": "documented"
-    },
-    "files-api-message-sdk-path": {
-      "claims": [
-        "r016"
-      ],
-      "files": [],
-      "sprint": "current",
-      "evidence_level": "documented"
-    },
-    "messages-sdk-path-distinction": {
-      "claims": [
-        "r017"
-      ],
-      "files": [],
-      "sprint": "current",
-      "evidence_level": "documented"
-    },
-    "prototype-structural-validation": {
-      "claims": [
-        "p001"
-      ],
-      "files": [
-        "prototypes/files-api-pdf-parser/README.md",
-        "prototypes/files-api-pdf-parser/__pycache__/make_multipage_pdf.cpython-312.pyc",
-        "prototypes/files-api-pdf-parser/__pycache__/make_test_pdf.cpython-312.pyc",
-        "prototypes/files-api-pdf-parser/__pycache__/parser_files_api.cpython-312.pyc",
-        "prototypes/files-api-pdf-parser/challenge_p006.py",
-        "prototypes/files-api-pdf-parser/compare.py",
-        "prototypes/files-api-pdf-parser/demo.html",
-        "prototypes/files-api-pdf-parser/make_multipage_pdf.py",
-        "prototypes/files-api-pdf-parser/make_test_pdf.py",
-        "prototypes/files-api-pdf-parser/parser_files_api.py",
-        "prototypes/files-api-pdf-parser/results.json",
-        "prototypes/files-api-pdf-parser/results_challenge_p006.json",
-        "prototypes/files-api-pdf-parser/test_coa.pdf",
-        "prototypes/files-api-pdf-parser/test_coa_3page.pdf"
-      ],
-      "sprint": "current",
-      "evidence_level": "tested"
-    },
-    "payload-size-reduction": {
-      "claims": [
-        "p002"
-      ],
-      "files": [
-        "prototypes/files-api-pdf-parser/results.json"
-      ],
-      "sprint": "current",
-      "evidence_level": "tested"
-    },
-    "code-reduction": {
-      "claims": [
-        "p003"
-      ],
-      "files": [
-        "prototypes/files-api-pdf-parser/parser_files_api.py"
-      ],
-      "sprint": "current",
-      "evidence_level": "tested"
-    },
-    "api-call-count-tradeoff": {
-      "claims": [
-        "p004"
-      ],
-      "files": [
-        "prototypes/files-api-pdf-parser/compare.py"
-      ],
-      "sprint": "current",
-      "evidence_level": "tested"
-    },
-    "extraction-quality-parity": {
-      "claims": [
-        "p005"
-      ],
-      "files": [
-        "prototypes/files-api-pdf-parser/results.json"
-      ],
-      "sprint": "current",
-      "evidence_level": "tested"
-    },
-    "latency-1-page": {
-      "claims": [
-        "p006",
-        "x001",
-        "x002"
-      ],
-      "files": [
-        "prototypes/files-api-pdf-parser/challenge_p006.py",
-        "prototypes/files-api-pdf-parser/results.json",
-        "prototypes/files-api-pdf-parser/results_challenge_p006.json"
-      ],
-      "sprint": "current",
-      "evidence_level": "tested"
-    },
-    "checkweedny-dataset-scale": {
-      "claims": [
-        "r018"
-      ],
-      "files": [
-        "research/checkweedny-api.md"
-      ],
-      "sprint": "current",
-      "evidence_level": "tested"
-    },
-    "checkweedny-auth": {
-      "claims": [
-        "r019"
-      ],
-      "files": [
-        "research/checkweedny-api.md"
-      ],
-      "sprint": "current",
-      "evidence_level": "tested"
-    },
-    "checkweedny-list-schema": {
-      "claims": [
-        "r020"
-      ],
-      "files": [
-        "research/checkweedny-api.md"
-      ],
-      "sprint": "current",
-      "evidence_level": "tested"
-    },
-    "checkweedny-detail-schema": {
-      "claims": [
-        "r021"
-      ],
-      "files": [
-        "research/checkweedny-api.md"
-      ],
-      "sprint": "current",
-      "evidence_level": "tested"
-    },
-    "checkweedny-terpene-coverage": {
-      "claims": [
-        "r022"
-      ],
-      "files": [
-        "research/checkweedny-api.md"
-      ],
-      "sprint": "current",
-      "evidence_level": "tested"
-    },
-    "checkweedny-filter-params": {
-      "claims": [
-        "r023",
-        "x003",
-        "r029"
-      ],
-      "files": [
-        "research/checkweedny-api.md"
-      ],
-      "sprint": "current",
-      "evidence_level": "tested"
-    },
-    "checkweedny-pdf-url": {
-      "claims": [
-        "r024"
-      ],
-      "files": [
-        "research/checkweedny-api.md"
-      ],
-      "sprint": "current",
-      "evidence_level": "tested"
-    },
-    "checkweedny-parse-confidence": {
-      "claims": [
-        "r025"
-      ],
-      "files": [
-        "research/checkweedny-api.md"
-      ],
-      "sprint": "current",
-      "evidence_level": "tested"
-    },
-    "checkweedny-integration-strategy": {
-      "claims": [
-        "r026",
-        "x004",
-        "x005",
-        "x006",
-        "x007",
-        "x008",
-        "x009",
-        "x010"
-      ],
-      "files": [
-        "research/checkweedny-api.md"
-      ],
-      "sprint": "current",
-      "evidence_level": "tested"
-    },
-    "checkweedny-filter-limitation": {
-      "claims": [
-        "r027"
-      ],
-      "files": [
-        "research/checkweedny-api.md"
-      ],
-      "sprint": "current",
-      "evidence_level": "tested"
-    },
-    "checkweedny-terpene-gap": {
-      "claims": [
-        "r028"
-      ],
-      "files": [
-        "research/checkweedny-api.md"
-      ],
-      "sprint": "current",
-      "evidence_level": "tested"
-    },
-    "checkweedny-bulk-sync-design": {
-      "claims": [
-        "p007",
-        "p009"
-      ],
-      "files": [
-        "prototypes/checkweedny-bulk-sync/sync.py"
-      ],
-      "sprint": "current",
-      "evidence_level": "tested"
-    },
-    "checkweedny-terpene-normalization": {
-      "claims": [
-        "p008"
-      ],
-      "files": [
-        "prototypes/checkweedny-bulk-sync/sync.py"
-      ],
-      "sprint": "current",
-      "evidence_level": "tested"
+      "evidence_level": "stated"
     }
   },
   "sprints": {
-    "lab-report-parser-should": {
-      "question": "Lab report parser should upload pdf's using anthropic's upload functionality and then sending messages instead of just sending message with b64_image of each page sequentially like it does here https://platform.claude.com/docs/en/build-with-claude/pdf-support#send-your-first-pdf-request",
-      "phase": "prototype",
-      "claims_count": 49,
-      "active_claims": 47,
+    "should-the-terpenomics-api": {
+      "question": "Should the terpenomics API expose only simple CRUD operations, with all batch/complex write logic living in standalone scripts?",
+      "phase": "define",
+      "claims_count": 4,
+      "active_claims": 4,
       "path": ".",
       "status": "active",
-      "last_git_activity": "2026-04-12T21:31:16Z",
-      "git_commit_count": 12
+      "last_git_activity": "2026-04-12T22:13:54Z",
+      "git_commit_count": 13
     }
   },
   "files": {
-    "research/checkweedny-api.md": {
-      "topics": [
-        "checkweedny-dataset-scale",
-        "checkweedny-auth",
-        "checkweedny-list-schema",
-        "checkweedny-detail-schema",
-        "checkweedny-terpene-coverage",
-        "checkweedny-filter-params",
-        "checkweedny-pdf-url",
-        "checkweedny-parse-confidence",
-        "checkweedny-integration-strategy",
-        "checkweedny-filter-limitation",
-        "checkweedny-terpene-gap"
-      ],
-      "type": "research"
-    },
-    "prototypes/checkweedny-bulk-sync/sync.py": {
-      "topics": [
-        "checkweedny-bulk-sync-design",
-        "checkweedny-terpene-normalization"
-      ],
-      "type": "prototype"
-    },
-    "prototypes/files-api-pdf-parser/README.md": {
-      "topics": [
-        "prototype-structural-validation"
-      ],
-      "type": "prototype"
-    },
-    "prototypes/files-api-pdf-parser/__pycache__/make_multipage_pdf.cpython-312.pyc": {
-      "topics": [
-        "prototype-structural-validation"
-      ],
-      "type": "prototype"
-    },
-    "prototypes/files-api-pdf-parser/__pycache__/make_test_pdf.cpython-312.pyc": {
-      "topics": [
-        "prototype-structural-validation"
-      ],
-      "type": "prototype"
-    },
-    "prototypes/files-api-pdf-parser/__pycache__/parser_files_api.cpython-312.pyc": {
-      "topics": [
-        "prototype-structural-validation"
-      ],
-      "type": "prototype"
-    },
-    "prototypes/files-api-pdf-parser/challenge_p006.py": {
-      "topics": [
-        "prototype-structural-validation",
-        "latency-1-page"
-      ],
-      "type": "prototype"
-    },
-    "prototypes/files-api-pdf-parser/compare.py": {
-      "topics": [
-        "prototype-structural-validation",
-        "api-call-count-tradeoff"
-      ],
-      "type": "prototype"
-    },
-    "prototypes/files-api-pdf-parser/demo.html": {
-      "topics": [
-        "prototype-structural-validation"
-      ],
-      "type": "prototype"
-    },
-    "prototypes/files-api-pdf-parser/make_multipage_pdf.py": {
-      "topics": [
-        "prototype-structural-validation"
-      ],
-      "type": "prototype"
-    },
-    "prototypes/files-api-pdf-parser/make_test_pdf.py": {
-      "topics": [
-        "prototype-structural-validation"
-      ],
-      "type": "prototype"
-    },
-    "prototypes/files-api-pdf-parser/parser_files_api.py": {
-      "topics": [
-        "prototype-structural-validation",
-        "code-reduction"
-      ],
-      "type": "prototype"
-    },
-    "prototypes/files-api-pdf-parser/results.json": {
-      "topics": [
-        "prototype-structural-validation",
-        "payload-size-reduction",
-        "extraction-quality-parity",
-        "latency-1-page"
-      ],
-      "type": "prototype"
-    },
-    "prototypes/files-api-pdf-parser/results_challenge_p006.json": {
-      "topics": [
-        "prototype-structural-validation",
-        "latency-1-page"
-      ],
-      "type": "prototype"
-    },
-    "prototypes/files-api-pdf-parser/test_coa.pdf": {
-      "topics": [
-        "prototype-structural-validation"
-      ],
-      "type": "prototype"
-    },
-    "prototypes/files-api-pdf-parser/test_coa_3page.pdf": {
-      "topics": [
-        "prototype-structural-validation"
-      ],
-      "type": "prototype"
-    },
     "wheat-manifest.json": {
       "topics": [
         "cartography"

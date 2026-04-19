@@ -4,14 +4,16 @@
 
 ## Sprint
 
-**Question:** Lab report parser should upload pdf's using anthropic's upload functionality and then sending messages instead of just sending message with b64_image of each page sequentially like it does here https://platform.claude.com/docs/en/build-with-claude/pdf-support#send-your-first-pdf-request
+**Question:** Should the terpenomics API expose only simple CRUD operations, with all batch/complex write logic living in standalone scripts?
 
-**Audience:** engineers
+**Audience:** solo engineer
 
 **Constraints:**
-- (none specified)
+- API is internal/admin-facing only — no external consumers
+- Solo maintainer — complexity cost is paid by one person
+- Pattern must be consistent and predictable across features
 
-**Done looks like:** Decision-ready brief with evidence
+**Done looks like:** Analysis of the thin-API/thick-script pattern with evidence — is it sound for this system?
 
 ## Connectors
 
