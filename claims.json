@@ -101,5 +101,96 @@
       "resolved_by": null,
       "tags": ["challenge", "customer-portal", "readonly", "api-consumers"]
     }
+  ,
+    {
+      "id": "r001",
+      "type": "factual",
+      "topic": "scraper-commonalities",
+      "content": "Both scrapers (travel-agency and alleaves) share an identical 14-column CSV schema defined independently as CSV_HEADERS and CSV_COLUMNS. The columns, names, and order are byte-for-byte identical.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/scraper-common-dependency.md",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-04-20T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["scraper", "csv-schema", "duplication"]
+    },
+    {
+      "id": "r002",
+      "type": "factual",
+      "topic": "scraper-commonalities",
+      "content": "write_csv() is functionally identical in both scrapers: csv.DictWriter, newline='', utf-8 encoding. The only difference is extrasaction='ignore' in travel-agency (defensive) which is harmless to apply universally.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/scraper-common-dependency.md",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-04-20T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["scraper", "write-csv", "duplication"]
+    },
+    {
+      "id": "r003",
+      "type": "factual",
+      "topic": "scraper-commonalities",
+      "content": "Both scrapers define independent CATEGORY_MAPs that map source-specific strings to the same internal enum values (flower, preroll, cart, concentrate, edible, tincture, topical, merch, other). The combined map is a superset with no value conflicts.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/scraper-common-dependency.md",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-04-20T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["scraper", "category-map", "duplication"]
+    },
+    {
+      "id": "r004",
+      "type": "recommendation",
+      "topic": "scraper-shared-dependency",
+      "content": "Create scripts/scraper_common.py containing: CSV_COLUMNS, CATEGORY_MAP (merged), map_category(), slugify(), store_slug(), now_iso(), write_csv(). Do NOT abstract pagination — each scraper's fetch loop is source-specific and the savings from abstracting it are negative at 2 scrapers.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/scraper-common-dependency.md",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-04-20T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["scraper", "shared-module", "recommendation"]
+    },
+    {
+      "id": "r005",
+      "type": "risk",
+      "topic": "scraper-shared-dependency",
+      "content": "A shared scraper_common.py introduces a single point of failure: a bug in the module breaks all scrapers simultaneously. Currently each scraper is fully isolated. At 2 scrapers solo-maintained, the risk is low but the blast radius grows with each new scraper added.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/scraper-common-dependency.md",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-04-20T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["scraper", "shared-module", "risk", "blast-radius"]
+    }
   ]
 }

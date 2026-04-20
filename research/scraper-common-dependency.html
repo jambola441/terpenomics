@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Scraper Commonalities — Terpenomics</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-snap-type: y mandatory; overflow-y: scroll; height: 100%; }
+  body { background: #0d0d0d; color: #e8e8e8; font-family: 'SF Mono', 'Fira Code', monospace; height: 100%; }
+  section {
+    min-height: 100vh; scroll-snap-align: start;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 4rem 6rem; border-bottom: 1px solid #1e1e1e;
+    max-width: 1000px; margin: 0 auto; width: 100%;
+  }
+  h1 { font-size: 2.4rem; color: #7ee8a2; margin-bottom: 0.5rem; font-weight: 700; letter-spacing: -0.02em; }
+  h2 { font-size: 1.6rem; color: #7ee8a2; margin-bottom: 1.5rem; font-weight: 600; }
+  h3 { font-size: 1rem; color: #aaa; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1rem; }
+  p { line-height: 1.7; color: #ccc; margin-bottom: 1rem; font-family: system-ui, sans-serif; font-size: 1rem; }
+  .subtitle { color: #666; font-size: 1rem; margin-bottom: 3rem; font-family: system-ui, sans-serif; }
+  .claim-id { display: inline-block; background: #1a2a1a; color: #7ee8a2; padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.75rem; margin-right: 0.5rem; font-family: monospace; }
+  .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; margin-right: 0.5rem; }
+  .badge-fact { background: #1a2040; color: #7ca8f0; }
+  .badge-rec { background: #1a2a1a; color: #7ee8a2; }
+  .badge-risk { background: #2a1a1a; color: #f07c7c; }
+  table { width: 100%; border-collapse: collapse; font-family: system-ui, sans-serif; font-size: 0.9rem; margin-bottom: 1.5rem; }
+  th { text-align: left; padding: 0.6rem 1rem; background: #161616; color: #888; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  td { padding: 0.7rem 1rem; border-top: 1px solid #1e1e1e; color: #ccc; vertical-align: top; }
+  tr:hover td { background: #111; }
+  code { font-family: 'SF Mono', 'Fira Code', monospace; background: #161616; padding: 0.1rem 0.4rem; border-radius: 3px; font-size: 0.85em; color: #f0c07c; }
+  pre { background: #111; border: 1px solid #222; border-radius: 8px; padding: 1.5rem; overflow-x: auto; margin-bottom: 1.5rem; }
+  pre code { background: none; padding: 0; color: #e8e8e8; font-size: 0.85rem; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+  .card { background: #111; border: 1px solid #222; border-radius: 8px; padding: 1.5rem; }
+  .card h3 { color: #7ca8f0; margin-bottom: 0.75rem; }
+  .card p { font-size: 0.9rem; margin-bottom: 0; }
+  .shared { color: #7ee8a2; }
+  .specific { color: #f07c7c; }
+  .verdict { background: #0a1a0a; border: 1px solid #2a4a2a; border-radius: 8px; padding: 2rem; margin-top: 1rem; }
+  .verdict h3 { color: #7ee8a2; margin-bottom: 0.75rem; font-size: 1rem; text-transform: none; letter-spacing: 0; }
+  ul { margin-left: 1.5rem; margin-bottom: 1rem; }
+  li { line-height: 1.7; color: #ccc; font-family: system-ui, sans-serif; font-size: 0.95rem; margin-bottom: 0.3rem; }
+  .nav { position: fixed; right: 2rem; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 0.5rem; z-index: 100; }
+  .nav a { width: 8px; height: 8px; border-radius: 50%; background: #333; display: block; transition: background 0.2s; }
+  .nav a:hover { background: #7ee8a2; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="#slide-1" title="Overview"></a>
+  <a href="#slide-2" title="What's Shared"></a>
+  <a href="#slide-3" title="What Stays Specific"></a>
+  <a href="#slide-4" title="Proposed Module"></a>
+  <a href="#slide-5" title="Trade-offs"></a>
+</nav>
+
+<section id="slide-1">
+  <h1>Scraper Commonalities</h1>
+  <p class="subtitle">Research · 2026-04-20 · Terpenomics sprint: thin-API / thick-scripts</p>
+  <p>Two scraping scripts exist today: one for The Travel Agency (website scrape) and one for Brooklyn Organic Buds (Alleaves POS API). A third script, <code>import_listings.py</code>, consumes both outputs.</p>
+  <p>This research identifies what they share, what must stay source-specific, and what a minimal common module would look like.</p>
+  <div class="grid" style="margin-top:2rem">
+    <div class="card">
+      <h3>Travel Agency</h3>
+      <p>Leaflogix / Remix turbo-stream site. Single GET loop, slug-based SKU, 1s delay. ~314 lines.</p>
+    </div>
+    <div class="card">
+      <h3>Alleaves (Brooklyn Organic Buds)</h3>
+      <p>Alleaves POS API. Two-pass: items catalog + inventory for in_stock. Cookie auth. ~260 lines.</p>
+    </div>
+  </div>
+</section>
+
+<section id="slide-2">
+  <h2>What's Shared <span class="claim-id">r001</span><span class="claim-id">r002</span><span class="claim-id">r003</span></h2>
+  <table>
+    <tr>
+      <th>Item</th>
+      <th>Status</th>
+      <th>Notes</th>
+    </tr>
+    <tr>
+      <td><code>CSV_COLUMNS</code> — 14-column schema</td>
+      <td><span class="shared">Identical</span></td>
+      <td>Named differently (<code>CSV_HEADERS</code> vs <code>CSV_COLUMNS</code>), same content byte-for-byte</td>
+    </tr>
+    <tr>
+      <td><code>write_csv(rows, path)</code></td>
+      <td><span class="shared">Near-identical</span></td>
+      <td>DictWriter + same encoding. Travel Agency adds <code>extrasaction="ignore"</code> — harmless to apply universally</td>
+    </tr>
+    <tr>
+      <td><code>CATEGORY_MAP</code> values</td>
+      <td><span class="shared">Same enum</span></td>
+      <td>Keys differ (source-specific raw strings). Values are the same 9 internal categories. Combined map is a conflict-free superset.</td>
+    </tr>
+    <tr>
+      <td><code>scraped_at</code> generation</td>
+      <td><span class="shared">Identical</span></td>
+      <td><code>datetime.now(timezone.utc).isoformat()</code> in both</td>
+    </tr>
+    <tr>
+      <td>Pagination pattern</td>
+      <td><span style="color:#f0c07c">Structural</span></td>
+      <td>Same while/break/sleep shape but fetch signatures differ enough that shared paginator adds more complexity than it removes</td>
+    </tr>
+    <tr>
+      <td>Dedup by set</td>
+      <td><span style="color:#f0c07c">Structural</span></td>
+      <td>Both use <code>seen: set[str]</code>, different keys (slug vs id_item)</td>
+    </tr>
+  </table>
+  <p>~40 lines are copy-paste identical across both files today.</p>
+</section>
+
+<section id="slide-3">
+  <h2>What Stays Scraper-Specific</h2>
+  <table>
+    <tr>
+      <th>Concern</th>
+      <th>Why it can't be shared</th>
+    </tr>
+    <tr>
+      <td>Auth</td>
+      <td>No auth (travel agency) vs cookie-based session (Alleaves) — fundamentally different</td>
+    </tr>
+    <tr>
+      <td>Fetch / parse</td>
+      <td>Turbo-stream flat-array decoding vs Kendo form-encoded API with two passes</td>
+    </tr>
+    <tr>
+      <td><code>normalise()</code></td>
+      <td>Source-specific field names, price logic, variant derivation, classification source</td>
+    </tr>
+    <tr>
+      <td>Dedup key</td>
+      <td>Travel Agency uses the product slug; Alleaves uses <code>id_item</code>; next source will differ</td>
+    </tr>
+    <tr>
+      <td>Rate limit delay</td>
+      <td>1.0s (polite web scrape) vs 0.3s (authenticated API)</td>
+    </tr>
+    <tr>
+      <td>Pagination exit condition</td>
+      <td>Travel Agency uses total_products count; Alleaves uses both page length and total_rows</td>
+    </tr>
+  </table>
+</section>
+
+<section id="slide-4">
+  <h2>Proposed: <code>scripts/scraper_common.py</code></h2>
+  <p>A minimal shared module. No pagination abstraction. No base classes. Just the shared data and pure functions.</p>
+  <pre><code># scripts/scraper_common.py
+
+CSV_COLUMNS = [
+    "dispensary_slug", "sku", "product_uuid", "name", "brand", "category",
+    "variant", "price_cents", "thc_percent", "cbd_percent", "classification",
+    "in_stock", "product_url", "scraped_at",
+]
+
+CATEGORY_MAP = {
+    # Alleaves (title-case keys)
+    "Flower": "flower", "Pre-Roll": "preroll", "Vaporizers": "cart",
+    "Concentrate": "concentrate", "Edibles": "edible", "Tinctures": "tincture",
+    "Topicals": "topical", "Accessories": "merch", "Apparel": "merch",
+    # Travel Agency (lowercase keys)
+    "flower": "flower", "vape": "cart", "pre-roll": "preroll",
+    "concentrate": "concentrate", "edible": "edible", "tincture": "tincture",
+    "topical": "topical", "accessories": "merch", "cbd": "tincture",
+    # ... (full merged map)
+}
+
+def map_category(raw): ...   # split on " > ", lookup, default "other"
+def slugify(text): ...       # lower + non-alnum → hyphens
+def store_slug(text): ...    # apostrophes dropped, then slugify
+def now_iso(): ...           # datetime.now(timezone.utc).isoformat()
+def write_csv(rows, path): ... # DictWriter with extrasaction="ignore"</code></pre>
+  <p>Each scraper imports only what it needs:</p>
+  <pre><code>from scraper_common import map_category, store_slug, now_iso, write_csv</code></pre>
+  <p>Placement in <code>scripts/</code> (not <code>prototypes/</code>) signals it's a stable dependency, not a throwaway.</p>
+</section>
+
+<section id="slide-5">
+  <h2>Trade-offs</h2>
+  <div class="grid">
+    <div class="card">
+      <h3 style="color:#7ee8a2">For shared module</h3>
+      <ul>
+        <li>CSV schema defined once — future scrapers can't silently diverge</li>
+        <li>Category enum owned in one place — adding a new POS source means adding keys to one file</li>
+        <li>~40 lines of copy-paste eliminated</li>
+        <li>Consistent <code>write_csv</code> behavior (e.g. <code>extrasaction="ignore"</code>) without remembering to add it in each scraper</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="color:#f07c7c">Against / risks <span class="claim-id">r005</span></h3>
+      <ul>
+        <li>Adds a file dependency — a bug in <code>scraper_common</code> breaks all scrapers simultaneously</li>
+        <li>Previously isolated scripts now have a shared failure mode</li>
+        <li>Solo project: copy-paste drift costs less than in a team codebase</li>
+        <li>At 2 scrapers, savings are real but modest</li>
+      </ul>
+    </div>
+  </div>
+  <div class="verdict">
+    <h3>Verdict <span class="claim-id">r004</span></h3>
+    <p>Do it — but stay minimal. The CSV schema and category enum are shared contracts, not coincidental duplication. They will diverge and cause import failures if kept separate. Pagination abstraction is not worth it at this scale. Keep <code>scraper_common.py</code> to pure functions and data — no classes, no protocols, no I/O beyond <code>write_csv</code>.</p>
+  </div>
+
+  <p style="margin-top:2rem; color:#555; font-size:0.8rem;">Claims: r001 (CSV schema identical), r002 (write_csv near-identical), r003 (CATEGORY_MAP shared enum), r004 (recommendation: create scraper_common.py), r005 (risk: shared single point of failure)</p>
+</section>
+
+</body>
+</html>
