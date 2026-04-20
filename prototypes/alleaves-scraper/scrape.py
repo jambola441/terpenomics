@@ -1,9 +1,9 @@
 """
-scrape.py — Alleaves POS inventory scraper
+scrape.py — Alleaves POS scraper
 
-Fetches all in-stock inventory for a tenant from the Alleaves POS API and
-writes a CSV in the same format as the travel-agency scraper so that
-scripts/import_listings.py can import it without modification.
+Two-pass approach:
+  1. /api/inventory/item/search  — full product catalog (stable id_item, descriptions, images)
+  2. /api/inventory/search        — current inventory to determine in_stock per id_item
 
 Usage:
     python prototypes/alleaves-scraper/scrape.py \\
@@ -21,14 +21,13 @@ Output columns (identical to travel_agency_listings.csv):
 """
 
 import argparse
-import csv
 import os
-import re
 import sys
 import time
-from datetime import datetime, timezone
 from urllib.parse import urlencode
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../scripts"))
+from scraper_common import map_category, now_iso, store_slug, write_csv  # noqa: E402
 
 try:
     import httpx
@@ -40,24 +39,11 @@ except ImportError:
 BASE_URL = "https://app.alleaves.com"
 PAGE_SIZE = 100
 
-CATEGORY_MAP = {
-    "Flower":       "flower",
-    "Pre-Roll":     "preroll",
-    "Vaporizers":   "cart",
-    "Concentrate":  "concentrate",
-    "Edibles":      "edible",
-    "Tinctures":    "tincture",
-    "Topicals":     "topical",
-    "Accessories":  "merch",
-    "Apparel":      "merch",
-    "Dog Treats":   "other",
+_API_HEADERS = {
+    "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+    "x-requested-with": "XMLHttpRequest",
+    "accept": "application/json",
 }
-
-CSV_COLUMNS = [
-    "dispensary_slug", "sku", "product_uuid", "name", "brand", "category",
-    "variant", "price_cents", "thc_percent", "cbd_percent", "classification",
-    "in_stock", "product_url", "scraped_at",
-]
 
 
 # ---------------------------------------------------------------------------
@@ -65,7 +51,6 @@ CSV_COLUMNS = [
 # ---------------------------------------------------------------------------
 
 def login(client: httpx.Client, username: str, password: str) -> None:
-    """Login and persist session cookies onto the client."""
     resp = client.post(
         "/api/account/login",
         json={"username": username, "password": password},
@@ -77,11 +62,61 @@ def login(client: httpx.Client, username: str, password: str) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Fetch
+# Pass 1 — item catalog
 # ---------------------------------------------------------------------------
 
-def build_inventory_params(skip: int) -> str:
-    """Build the form-encoded body for the inventory/search endpoint."""
+def _item_params(skip: int) -> str:
+    page = skip // PAGE_SIZE + 1
+    return urlencode({
+        "take": PAGE_SIZE,
+        "skip": skip,
+        "page": page,
+        "pageSize": PAGE_SIZE,
+    })
+
+
+def fetch_all_items(client: httpx.Client) -> list[dict]:
+    """Return all non-deleted catalog items, deduplicated by id_item."""
+    records: list[dict] = []
+    seen: set[str] = set()
+    skip = 0
+    total = None
+
+    while True:
+        resp = client.post(
+            "/api/inventory/item/search",
+            content=_item_params(skip),
+            headers=_API_HEADERS,
+        )
+        resp.raise_for_status()
+        page: list[dict] = resp.json()
+        if not page:
+            break
+
+        if total is None:
+            total = page[0].get("total_rows", 0)
+            print(f"  Total catalog items: {total}")
+
+        for r in page:
+            key = str(r.get("id_item", ""))
+            if key and key not in seen:
+                seen.add(key)
+                records.append(r)
+
+        skip += len(page)
+        if len(page) < PAGE_SIZE or (total and skip >= total):
+            break
+
+        time.sleep(0.3)
+
+    return records
+
+
+# ---------------------------------------------------------------------------
+# Pass 2 — in-stock ids from inventory
+# ---------------------------------------------------------------------------
+
+def _inventory_params(skip: int) -> str:
     page = skip // PAGE_SIZE + 1
     params = {
         "take": PAGE_SIZE,
@@ -95,7 +130,6 @@ def build_inventory_params(skip: int) -> str:
         "filter[filters][1][field]": "has_inventory",
         "filter[filters][1][value]": "true",
         "filter[filters][1][operator]": "eq",
-        # exclude scrap areas
         "filter[filters][2][filters][0][field]": "area_type",
         "filter[filters][2][filters][0][value]": "scrap",
         "filter[filters][2][filters][0][operator]": "neq",
@@ -108,71 +142,61 @@ def build_inventory_params(skip: int) -> str:
     return urlencode(params)
 
 
-def fetch_page(client: httpx.Client, skip: int) -> list[dict]:
-    resp = client.post(
-        "/api/inventory/search",
-        content=build_inventory_params(skip),
-        headers={
-            "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-            "x-requested-with": "XMLHttpRequest",
-            "accept": "application/json",
-        },
-    )
-    resp.raise_for_status()
-    data = resp.json()
-    if not isinstance(data, list):
-        raise RuntimeError(f"Unexpected response shape: {type(data)}")
-    return data
-
-
-def fetch_all(client: httpx.Client) -> list[dict]:
-    """Paginate through all inventory records."""
-    records = []
-    seen_batches: set[str] = set()
+def fetch_in_stock_ids(client: httpx.Client) -> set[str]:
+    """Return the set of id_item strings that currently have available > 0."""
+    in_stock: set[str] = set()
     skip = 0
     total = None
 
     while True:
-        page = fetch_page(client, skip)
+        resp = client.post(
+            "/api/inventory/search",
+            content=_inventory_params(skip),
+            headers=_API_HEADERS,
+        )
+        resp.raise_for_status()
+        page: list[dict] = resp.json()
         if not page:
             break
 
-        if total is None and page:
+        if total is None:
             total = page[0].get("total_rows", 0)
             print(f"  Total inventory records: {total}")
 
         for r in page:
-            batch_key = str(r.get("id_batch", ""))
-            if batch_key in seen_batches:
-                continue  # same batch in multiple areas — take first
-            seen_batches.add(batch_key)
-            records.append(r)
+            if (r.get("available") or 0) > 0:
+                item_id = str(r.get("id_item", ""))
+                if item_id:
+                    in_stock.add(item_id)
 
         skip += len(page)
         if len(page) < PAGE_SIZE or (total and skip >= total):
             break
 
-        time.sleep(0.3)  # polite rate limiting
+        time.sleep(0.3)
 
-    return records
+    return in_stock
 
 
 # ---------------------------------------------------------------------------
 # Normalise
 # ---------------------------------------------------------------------------
 
-def slugify(text: str) -> str:
-    """'Brooklyn Organic Buds' -> 'brooklyn-organic-buds'"""
-    return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
+def _product_url(store_url: str, brand: str, name: str) -> str:
+    if not store_url:
+        return ""
+    brand_part = store_slug(brand.strip())
+    name_part = store_slug(name)
+    slug = f"{brand_part}-{name_part}" if brand_part else name_part
+    return f"{store_url}/{slug}"
 
 
-def derive_variant(weight_useable, weight_useable_uom: str | None) -> str:
+def derive_variant(weight_useable, uom_weight_useable: str | None) -> str:
     if weight_useable is None:
         return ""
-    uom = (weight_useable_uom or "").lower()
+    uom = (uom_weight_useable or "").lower()
     if uom == "grams":
-        val = float(weight_useable)
-        return f"{val:g}g"
+        return f"{float(weight_useable):g}g"
     elif uom == "milligrams":
         mg = float(weight_useable)
         if mg >= 1000:
@@ -181,51 +205,50 @@ def derive_variant(weight_useable, weight_useable_uom: str | None) -> str:
     return ""
 
 
-def map_category(raw_category: str | None) -> str:
-    if not raw_category:
-        return "other"
-    top = raw_category.split(" > ")[0].strip()
-    return CATEGORY_MAP.get(top, "other")
+def map_classification(strain_type: str | None) -> str:
+    if not strain_type:
+        return ""
+    return strain_type.lower()  # "Hybrid" → "hybrid", "Indica" → "indica", etc.
 
 
-def normalise(r: dict, dispensary_slug: str, scraped_at: str) -> dict | None:
-    """Return a CSV row dict, or None to skip the record."""
+def normalise(
+    r: dict,
+    in_stock_ids: set[str],
+    dispensary_slug: str,
+    scraped_at: str,
+    store_url: str = "",
+) -> dict | None:
     item_name = (r.get("item") or "").strip()
     if not item_name:
         return None
 
-    # Skip internal sample items
     if "SAMPLES" in item_name.upper():
         return None
 
-    price_raw = r.get("price_otd_adult_use") or 0
+    item_id = str(r.get("id_item", ""))
+
+    price_raw = r.get("price_retail_adult_use") or 0
     price_cents = int(round(float(price_raw) * 100))
 
-    available = r.get("available") or 0
+    thc = r.get("strain_percent_thc")
+    cbd = r.get("strain_percent_cbd")
 
     return {
         "dispensary_slug": dispensary_slug,
-        "sku":             r.get("batch") or str(r.get("id_batch", "")),
-        "product_uuid":    str(r.get("id_batch", "")),
+        "sku":             item_id,
+        "product_uuid":    item_id,
         "name":            item_name,
-        "brand":           (r.get("brand") or "").strip() or "",
+        "brand":           (r.get("brand") or "").strip(),
         "category":        map_category(r.get("category")),
-        "variant":         derive_variant(r.get("weight_useable"), r.get("weight_useable_uom")),
+        "variant":         derive_variant(r.get("weight_useable"), r.get("uom_weight_useable")),
         "price_cents":     price_cents,
-        "thc_percent":     r.get("thc") or "",
-        "cbd_percent":     r.get("cbd") or "",
-        "classification":  "",
-        "in_stock":        "TRUE" if available > 0 else "FALSE",
-        "product_url":     "",
+        "thc_percent":     thc if thc else "",
+        "cbd_percent":     cbd if cbd else "",
+        "classification":  map_classification(r.get("strain_type")),
+        "in_stock":        "TRUE" if item_id in in_stock_ids else "FALSE",
+        "product_url":     _product_url(store_url, r.get("brand") or "", item_name),
         "scraped_at":      scraped_at,
     }
-
-
-def write_csv(rows: list[dict], path: str) -> None:
-    with open(path, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=CSV_COLUMNS)
-        writer.writeheader()
-        writer.writerows(rows)
 
 
 # ---------------------------------------------------------------------------
@@ -233,15 +256,13 @@ def write_csv(rows: list[dict], path: str) -> None:
 # ---------------------------------------------------------------------------
 
 def parse_args():
-    p = argparse.ArgumentParser(description="Scrape Alleaves POS inventory to CSV")
-    p.add_argument("--tenant", default="brooklynorganicbuds",
-                   help="Alleaves tenant slug (default: brooklynorganicbuds)")
-    p.add_argument("--out", default=None,
-                   help="Output CSV path (default: <tenant>_listings.csv in script dir)")
-    p.add_argument("--username", default=None,
-                   help="Alleaves username (or set ALLEAVES_USER)")
-    p.add_argument("--password", default=None,
-                   help="Alleaves password (or set ALLEAVES_PASS)")
+    p = argparse.ArgumentParser(description="Scrape Alleaves POS catalog to CSV")
+    p.add_argument("--tenant", default="brooklynorganicbuds")
+    p.add_argument("--out", default=None)
+    p.add_argument("--username", default=None)
+    p.add_argument("--password", default=None)
+    p.add_argument("--store-url", default="",
+                   help="Storefront base URL for product links, e.g. https://brooklynorganicbuds.com/store/product")
     return p.parse_args()
 
 
@@ -258,31 +279,26 @@ def main():
     out_path = args.out or os.path.join(
         os.path.dirname(__file__), f"{args.tenant}_listings.csv"
     )
-
-    scraped_at = datetime.now(timezone.utc).isoformat()
+    dispensary_slug = args.tenant
+    scraped_at = now_iso()
 
     print(f"Logging in as {username} ...")
     with httpx.Client(base_url=BASE_URL, timeout=30, follow_redirects=True) as client:
         login(client, username, password)
         print("  Logged in.")
 
-        print("Fetching inventory ...")
-        records = fetch_all(client)
-        print(f"  Fetched {len(records)} unique inventory records.")
+        print("Pass 1 — fetching item catalog ...")
+        items = fetch_all_items(client)
+        print(f"  {len(items)} unique items.")
 
-    # Derive dispensary slug from the location field of the first real record,
-    # falling back to the tenant arg.
-    location_name = next(
-        (r.get("location") for r in records if r.get("location")),
-        args.tenant,
-    )
-    dispensary_slug = slugify(location_name)
-    print(f"  Dispensary slug: {dispensary_slug!r}")
+        print("Pass 2 — fetching inventory for in-stock status ...")
+        in_stock_ids = fetch_in_stock_ids(client)
+        print(f"  {len(in_stock_ids)} items currently in stock.")
 
     rows = []
     skipped = 0
-    for r in records:
-        row = normalise(r, dispensary_slug, scraped_at)
+    for r in items:
+        row = normalise(r, in_stock_ids, dispensary_slug, scraped_at, args.store_url)
         if row is None:
             skipped += 1
         else:

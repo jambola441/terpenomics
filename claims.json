@@ -6,7 +6,7 @@
     "audience": [
       "solo engineer"
     ],
-    "phase": "define",
+    "phase": "prototype",
     "connectors": []
   },
   "claims": [
@@ -191,6 +191,60 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["scraper", "shared-module", "risk", "blast-radius"]
+    },
+    {
+      "id": "p001",
+      "type": "factual",
+      "topic": "scraper-shared-dependency",
+      "content": "scripts/scraper_common.py was created and both scrapers updated to import from it. Lines removed: ~45 from alleaves/scrape.py (CSV_COLUMNS, CATEGORY_MAP, slugify, store_slug, write_csv, map_category), ~40 from travel-agency/scrape.py (CSV_HEADERS, CATEGORY_MAP, write_csv). The Alleaves scraper ran end-to-end successfully post-refactor: 459 rows, correct headers, correct product URLs.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "scripts/scraper_common.py",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-04-20T00:01:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["scraper", "shared-module", "refactor", "tested"]
+    },
+    {
+      "id": "p002",
+      "type": "factual",
+      "topic": "scraper-shared-dependency",
+      "content": "The merged CATEGORY_MAP in scraper_common.py required no value conflicts — Alleaves uses title-case keys ('Flower', 'Pre-Roll'), Travel Agency uses lowercase ('flower', 'pre-roll'). Both sets coexist in one dict without collision. map_category() handles the ' > ' hierarchical prefix splitting for Alleaves.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "scripts/scraper_common.py",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-04-20T00:01:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["scraper", "category-map", "tested"]
+    },
+    {
+      "id": "p003",
+      "type": "factual",
+      "topic": "scraper-shared-dependency",
+      "content": "sys.path.insert() is the import mechanism used by scrapers in prototypes/* to reach scripts/scraper_common.py. No package installation required. Scripts remain runnable as standalone files from any working directory as long as the project structure is intact.",
+      "source": {
+        "origin": "prototype",
+        "artifact": "scripts/scraper_common.py",
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "timestamp": "2026-04-20T00:01:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["scraper", "import-mechanism", "tested"]
     }
   ]
 }
