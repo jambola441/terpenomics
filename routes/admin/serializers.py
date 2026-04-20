@@ -1,4 +1,4 @@
-from models import Customer, Product, Purchase, PurchaseItem
+from models import Customer, Listing, Product, Purchase, PurchaseItem
 
 
 def serialize_customer(c: Customer) -> dict:
@@ -37,12 +37,15 @@ def serialize_purchase(p: Purchase) -> dict:
     }
 
 
-def serialize_purchase_item(item: PurchaseItem, product_name: str) -> dict:
+def serialize_purchase_item(item: PurchaseItem, listing: Listing, product: Product) -> dict:
     return {
         "id": str(item.id),
         "purchase_id": str(item.purchase_id),
-        "product_id": str(item.product_id),
-        "product_name": product_name,
+        "listing_id": str(item.listing_id),
+        "product_id": str(listing.product_id),
+        "product_name": product.name,
+        "dispensary_id": str(listing.dispensary_id),
+        "variant": listing.variant,
         "quantity": item.quantity,
         "line_amount_cents": item.line_amount_cents,
         "feedback": item.feedback,

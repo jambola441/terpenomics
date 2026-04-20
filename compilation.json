@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-04-19T14:53:51.314Z",
-  "claims_hash": "b97a534",
+  "compiled_at": "2026-04-20T13:26:47.641Z",
+  "claims_hash": "6a00c49",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -46,6 +46,24 @@
       "claims": [
         "d002"
       ]
+    },
+    {
+      "code": "W_TYPE_MONOCULTURE",
+      "message": "Topic \"scraper-commonalities\" has only 1 claim type(s): factual. Missing: constraint, estimate, risk, recommendation, feedback",
+      "claims": [
+        "r001",
+        "r002",
+        "r003"
+      ]
+    },
+    {
+      "code": "W_ECHO_CHAMBER",
+      "message": "Topic \"scraper-commonalities\" has 3 claims but all from a single source origin: research",
+      "claims": [
+        "r001",
+        "r002",
+        "r003"
+      ]
     }
   ],
   "resolved_claims": [
@@ -53,6 +71,7 @@
       "id": "d002",
       "type": "constraint",
       "topic": "maintainer-context",
+      "content": "The codebase is solo-maintained. Every API endpoint added must be designed, tested, and maintained by one person indefinitely. Complexity cost is not diluted across a team.",
       "evidence": "stated",
       "status": "active",
       "phase_added": "define",
@@ -73,6 +92,7 @@
       "id": "d003",
       "type": "constraint",
       "topic": "existing-pattern",
+      "content": "The thick-script pattern is already in use: scripts/import_listings.py handles product discovery and listing upsert by calling existing simple CRUD endpoints. The sprint question is whether to formalize this as the architectural rule going forward.",
       "evidence": "documented",
       "status": "active",
       "phase_added": "define",
@@ -93,6 +113,7 @@
       "id": "d004",
       "type": "constraint",
       "topic": "done-criteria",
+      "content": "Done looks like: an analysis with evidence on whether the thin-API/thick-script pattern is sound for this system — benefits, failure modes, and a clear rule for future feature decisions.",
       "evidence": "stated",
       "status": "active",
       "phase_added": "define",
@@ -111,6 +132,7 @@
       "id": "x001",
       "type": "factual",
       "topic": "api-consumer-context",
+      "content": "PARTIALLY CONTRADICTS d001: A customer-facing portal exists (routes/customer/portal.py) and reads directly from the products, listings, terpenes, and purchases tables. It is an external consumer. However, all 4 of its product/listing endpoints are GET-only. The single POST endpoint (/{customer_id}/purchase-items/{item_id}/feedback) writes only customer purchase feedback — not products or listings. Conclusion: d001's assertion 'no external consumers' is factually wrong, but its implication for write/batch endpoint design holds — the customer portal creates no pressure to expose batch write operations.",
       "evidence": "documented",
       "status": "active",
       "phase_added": "define",
@@ -127,6 +149,176 @@
         "customer-portal",
         "readonly",
         "api-consumers"
+      ]
+    },
+    {
+      "id": "r001",
+      "type": "factual",
+      "topic": "scraper-commonalities",
+      "content": "Both scrapers (travel-agency and alleaves) share an identical 14-column CSV schema defined independently as CSV_HEADERS and CSV_COLUMNS. The columns, names, and order are byte-for-byte identical.",
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "source": {
+        "origin": "research",
+        "artifact": "research/scraper-common-dependency.md",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "scraper",
+        "csv-schema",
+        "duplication"
+      ]
+    },
+    {
+      "id": "r002",
+      "type": "factual",
+      "topic": "scraper-commonalities",
+      "content": "write_csv() is functionally identical in both scrapers: csv.DictWriter, newline='', utf-8 encoding. The only difference is extrasaction='ignore' in travel-agency (defensive) which is harmless to apply universally.",
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "source": {
+        "origin": "research",
+        "artifact": "research/scraper-common-dependency.md",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "scraper",
+        "write-csv",
+        "duplication"
+      ]
+    },
+    {
+      "id": "r003",
+      "type": "factual",
+      "topic": "scraper-commonalities",
+      "content": "Both scrapers define independent CATEGORY_MAPs that map source-specific strings to the same internal enum values (flower, preroll, cart, concentrate, edible, tincture, topical, merch, other). The combined map is a superset with no value conflicts.",
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "source": {
+        "origin": "research",
+        "artifact": "research/scraper-common-dependency.md",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "scraper",
+        "category-map",
+        "duplication"
+      ]
+    },
+    {
+      "id": "r004",
+      "type": "recommendation",
+      "topic": "scraper-shared-dependency",
+      "content": "Create scripts/scraper_common.py containing: CSV_COLUMNS, CATEGORY_MAP (merged), map_category(), slugify(), store_slug(), now_iso(), write_csv(). Do NOT abstract pagination — each scraper's fetch loop is source-specific and the savings from abstracting it are negative at 2 scrapers.",
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "source": {
+        "origin": "research",
+        "artifact": "research/scraper-common-dependency.md",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "scraper",
+        "shared-module",
+        "recommendation"
+      ]
+    },
+    {
+      "id": "r005",
+      "type": "risk",
+      "topic": "scraper-shared-dependency",
+      "content": "A shared scraper_common.py introduces a single point of failure: a bug in the module breaks all scrapers simultaneously. Currently each scraper is fully isolated. At 2 scrapers solo-maintained, the risk is low but the blast radius grows with each new scraper added.",
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "source": {
+        "origin": "research",
+        "artifact": "research/scraper-common-dependency.md",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "scraper",
+        "shared-module",
+        "risk",
+        "blast-radius"
+      ]
+    },
+    {
+      "id": "p001",
+      "type": "factual",
+      "topic": "scraper-shared-dependency",
+      "content": "scripts/scraper_common.py was created and both scrapers updated to import from it. Lines removed: ~45 from alleaves/scrape.py (CSV_COLUMNS, CATEGORY_MAP, slugify, store_slug, write_csv, map_category), ~40 from travel-agency/scrape.py (CSV_HEADERS, CATEGORY_MAP, write_csv). The Alleaves scraper ran end-to-end successfully post-refactor: 459 rows, correct headers, correct product URLs.",
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "source": {
+        "origin": "prototype",
+        "artifact": "scripts/scraper_common.py",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "scraper",
+        "shared-module",
+        "refactor",
+        "tested"
+      ]
+    },
+    {
+      "id": "p002",
+      "type": "factual",
+      "topic": "scraper-shared-dependency",
+      "content": "The merged CATEGORY_MAP in scraper_common.py required no value conflicts — Alleaves uses title-case keys ('Flower', 'Pre-Roll'), Travel Agency uses lowercase ('flower', 'pre-roll'). Both sets coexist in one dict without collision. map_category() handles the ' > ' hierarchical prefix splitting for Alleaves.",
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "source": {
+        "origin": "prototype",
+        "artifact": "scripts/scraper_common.py",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "scraper",
+        "category-map",
+        "tested"
+      ]
+    },
+    {
+      "id": "p003",
+      "type": "factual",
+      "topic": "scraper-shared-dependency",
+      "content": "sys.path.insert() is the import mechanism used by scrapers in prototypes/* to reach scripts/scraper_common.py. No package installation required. Scripts remain runnable as standalone files from any working directory as long as the project structure is intact.",
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "prototype",
+      "source": {
+        "origin": "prototype",
+        "artifact": "scripts/scraper_common.py",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "scraper",
+        "import-mechanism",
+        "tested"
       ]
     }
   ],
@@ -230,13 +422,76 @@
         "recommendation",
         "feedback"
       ]
+    },
+    "scraper-commonalities": {
+      "claims": 3,
+      "max_evidence": "documented",
+      "status": "moderate",
+      "types": [
+        "factual"
+      ],
+      "claim_ids": [
+        "r001",
+        "r002",
+        "r003"
+      ],
+      "constraint_count": 0,
+      "source_origins": [
+        "research"
+      ],
+      "source_count": 1,
+      "type_diversity": 1,
+      "missing_types": [
+        "constraint",
+        "estimate",
+        "risk",
+        "recommendation",
+        "feedback"
+      ]
+    },
+    "scraper-shared-dependency": {
+      "claims": 5,
+      "max_evidence": "tested",
+      "status": "strong",
+      "types": [
+        "factual",
+        "recommendation",
+        "risk"
+      ],
+      "claim_ids": [
+        "r004",
+        "r005",
+        "p001",
+        "p002",
+        "p003"
+      ],
+      "constraint_count": 0,
+      "source_origins": [
+        "prototype",
+        "research"
+      ],
+      "source_count": 2,
+      "type_diversity": 3,
+      "missing_types": [
+        "constraint",
+        "estimate",
+        "feedback"
+      ]
     }
   },
   "corroboration": {
     "d002": 0,
     "d003": 0,
     "d004": 0,
-    "x001": 0
+    "x001": 0,
+    "r001": 0,
+    "r002": 0,
+    "r003": 0,
+    "r004": 0,
+    "r005": 0,
+    "p001": 0,
+    "p002": 0,
+    "p003": 0
   },
   "phase_summary": {
     "define": {
@@ -244,12 +499,12 @@
       "complete": true
     },
     "research": {
-      "claims": 0,
-      "complete": false
+      "claims": 5,
+      "complete": true
     },
     "prototype": {
-      "claims": 0,
-      "complete": false
+      "claims": 3,
+      "complete": true
     },
     "evaluate": {
       "claims": 0,
@@ -265,12 +520,12 @@
       "name": "should-the-terpenomics-api",
       "path": ".",
       "status": "active",
-      "phase": "define",
+      "phase": "prototype",
       "question": "Should the terpenomics API expose only simple CRUD operations, with all batch/complex write logic living in standalone scripts?",
-      "claims_count": 5,
-      "active_claims": 4,
-      "last_git_activity": "2026-04-19T14:47:17Z",
-      "git_commit_count": 15
+      "claims_count": 13,
+      "active_claims": 12,
+      "last_git_activity": "2026-04-20T13:16:29Z",
+      "git_commit_count": 17
     }
   ],
   "sprint_meta": {
@@ -279,15 +534,16 @@
       "solo engineer"
     ],
     "initiated": "2026-04-19",
-    "phase": "define",
-    "total_claims": 5,
-    "active_claims": 4,
+    "phase": "prototype",
+    "total_claims": 13,
+    "active_claims": 12,
     "conflicted_claims": 0,
     "superseded_claims": 1,
+    "refuted_claims": 0,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:b97a534141b2d55111a5d711d7d5a2a34c970d2f1559e85d67f42a20248ef660",
+    "input_hash": "sha256:6a00c4980ec2e6bec9b1657064727fbf4578399f3ff2201f4a56a57ff00a5c7b",
     "compiler_version": "0.2.0",
     "deterministic": true
   }

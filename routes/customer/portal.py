@@ -8,7 +8,7 @@ from sqlmodel import Session, select, func, case, or_
 from sqlalchemy import cast, String
 
 from database import get_session
-from models import Customer, Purchase, PurchaseItem, Product, ProductTerpene, Terpene, Cannabinoid, ProductCannabinoid
+from models import Customer, Listing, Purchase, PurchaseItem, Product, ProductTerpene, Terpene, Cannabinoid, ProductCannabinoid
 from routes.admin.serializers import serialize_purchase_item
 
 DEFAULT_TERPENE_PERCENT = 0.10
@@ -151,15 +151,16 @@ def get_portal_purchases(
 
     # Pass 2: full data for those purchase IDs
     rows = session.exec(
-        select(Purchase, PurchaseItem, Product)
+        select(Purchase, PurchaseItem, Listing, Product)
         .join(PurchaseItem, PurchaseItem.purchase_id == Purchase.id, isouter=True)
-        .join(Product, Product.id == PurchaseItem.product_id, isouter=True)
+        .join(Listing, Listing.id == PurchaseItem.listing_id, isouter=True)
+        .join(Product, Product.id == Listing.product_id, isouter=True)
         .where(Purchase.id.in_(purchase_ids))
         .order_by(Purchase.purchased_at.desc())
     ).all()
 
     purchases_by_id = {}
-    for purchase, item, product in rows:
+    for purchase, item, listing, product in rows:
         pur_id = str(purchase.id)
         if pur_id not in purchases_by_id:
             purchases_by_id[pur_id] = {
@@ -171,14 +172,14 @@ def get_portal_purchases(
                 "items": [],
             }
 
-        if item is None or product is None:
+        if item is None or listing is None or product is None:
             continue
 
         item_id = str(item.id)
         items = purchases_by_id[pur_id]["items"]
         if not any(x["id"] == item_id for x in items):
             items.append({
-                **serialize_purchase_item(item, product.name),
+                **serialize_purchase_item(item, listing, product),
                 "product_category": product.category,
             })
 

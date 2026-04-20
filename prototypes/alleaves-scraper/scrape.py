@@ -257,7 +257,10 @@ def normalise(
 
 def parse_args():
     p = argparse.ArgumentParser(description="Scrape Alleaves POS catalog to CSV")
-    p.add_argument("--tenant", default="brooklynorganicbuds")
+    p.add_argument("--tenant", default="brooklynorganicbuds",
+                   help="Alleaves tenant ID (used in API auth)")
+    p.add_argument("--dispensary-slug", default=None,
+                   help="Dispensary slug for the CSV (defaults to --tenant value)")
     p.add_argument("--out", default=None)
     p.add_argument("--username", default=None)
     p.add_argument("--password", default=None)
@@ -279,7 +282,7 @@ def main():
     out_path = args.out or os.path.join(
         os.path.dirname(__file__), f"{args.tenant}_listings.csv"
     )
-    dispensary_slug = args.tenant
+    dispensary_slug = args.dispensary_slug or args.tenant
     scraped_at = now_iso()
 
     print(f"Logging in as {username} ...")

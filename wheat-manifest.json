@@ -1,7 +1,7 @@
 {
-  "generated": "2026-04-19T14:53:51.319Z",
+  "generated": "2026-04-20T13:26:47.645Z",
   "generator": "generate-manifest.js",
-  "claims_hash": "b97a534",
+  "claims_hash": "6a00c49",
   "topics": {
     "api-consumer-context": {
       "claims": [
@@ -35,21 +35,54 @@
       "files": [],
       "sprint": "current",
       "evidence_level": "stated"
+    },
+    "scraper-commonalities": {
+      "claims": [
+        "r001",
+        "r002",
+        "r003"
+      ],
+      "files": [
+        "research/scraper-common-dependency.md"
+      ],
+      "sprint": "current",
+      "evidence_level": "documented"
+    },
+    "scraper-shared-dependency": {
+      "claims": [
+        "r004",
+        "r005",
+        "p001",
+        "p002",
+        "p003"
+      ],
+      "files": [
+        "research/scraper-common-dependency.md"
+      ],
+      "sprint": "current",
+      "evidence_level": "tested"
     }
   },
   "sprints": {
     "should-the-terpenomics-api": {
       "question": "Should the terpenomics API expose only simple CRUD operations, with all batch/complex write logic living in standalone scripts?",
-      "phase": "define",
-      "claims_count": 5,
-      "active_claims": 4,
+      "phase": "prototype",
+      "claims_count": 13,
+      "active_claims": 12,
       "path": ".",
       "status": "active",
-      "last_git_activity": "2026-04-19T14:47:17Z",
-      "git_commit_count": 15
+      "last_git_activity": "2026-04-20T13:16:29Z",
+      "git_commit_count": 17
     }
   },
   "files": {
+    "research/scraper-common-dependency.md": {
+      "topics": [
+        "scraper-commonalities",
+        "scraper-shared-dependency"
+      ],
+      "type": "research"
+    },
     "wheat-manifest.json": {
       "topics": [
         "cartography"

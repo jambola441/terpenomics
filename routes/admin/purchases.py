@@ -8,7 +8,7 @@ from sqlmodel import Session, select, func, or_
 
 from auth import SupabaseAuthUser
 from database import get_session
-from models import Customer, Product, Purchase, PurchaseItem
+from models import Customer, Dispensary, Listing, Product, Purchase, PurchaseItem
 from .auth import require_admin
 from .serializers import serialize_purchase, serialize_purchase_item
 
@@ -24,7 +24,7 @@ class PurchaseCreate(BaseModel):
 
 
 class PurchaseItemAdd(BaseModel):
-    product_id: UUID
+    listing_id: UUID
     quantity: int = PydField(default=1, ge=1, le=100)
     line_amount_cents: int = PydField(ge=0)
     external_id: Optional[str] = None
@@ -145,14 +145,16 @@ def add_purchase_item(
     if not purchase:
         raise HTTPException(status_code=404, detail="purchase not found")
 
-    product = session.get(Product, payload.product_id)
-    if not product:
-        raise HTTPException(status_code=404, detail="product not found")
+    listing = session.get(Listing, payload.listing_id)
+    if not listing:
+        raise HTTPException(status_code=404, detail="listing not found")
+
+    product = session.get(Product, listing.product_id)
 
     item = PurchaseItem(
         id=uuid4(),
         purchase_id=purchase_id,
-        product_id=payload.product_id,
+        listing_id=payload.listing_id,
         quantity=payload.quantity,
         line_amount_cents=payload.line_amount_cents,
         external_id=payload.external_id,
@@ -164,7 +166,7 @@ def add_purchase_item(
     session.commit()
     session.refresh(item)
 
-    return serialize_purchase_item(item, product.name)
+    return serialize_purchase_item(item, listing, product)
 
 
 @router.post("/purchases/{purchase_id}/items/batch")
@@ -188,30 +190,36 @@ def add_purchase_items_batch(
     if len(items) > 100:
         raise HTTPException(status_code=400, detail="Maximum 100 items allowed per batch")
     
-    # Validate all products exist before creating any items
-    product_ids = [item.product_id for item in items]
-    products = session.exec(
-        select(Product).where(Product.id.in_(product_ids))
+    # Validate all listings exist before creating any items
+    listing_ids = [item.listing_id for item in items]
+    listings = session.exec(
+        select(Listing).where(Listing.id.in_(listing_ids))
     ).all()
-    
-    products_by_id = {p.id: p for p in products}
-    
+
+    listings_by_id = {l.id: l for l in listings}
+
     for item in items:
-        if item.product_id not in products_by_id:
+        if item.listing_id not in listings_by_id:
             raise HTTPException(
                 status_code=404,
-                detail=f"product not found: {item.product_id}"
+                detail=f"listing not found: {item.listing_id}"
             )
-    
+
+    # Load products for all listings
+    product_ids = list({l.product_id for l in listings_by_id.values()})
+    products = session.exec(select(Product).where(Product.id.in_(product_ids))).all()
+    products_by_id = {p.id: p for p in products}
+
     # Create all items
     created_items = []
     now = datetime.now(timezone.utc)
-    
+
     for item_data in items:
+        listing = listings_by_id[item_data.listing_id]
         item = PurchaseItem(
             id=uuid4(),
             purchase_id=purchase_id,
-            product_id=item_data.product_id,
+            listing_id=item_data.listing_id,
             quantity=item_data.quantity,
             line_amount_cents=item_data.line_amount_cents,
             external_id=item_data.external_id,
@@ -219,15 +227,15 @@ def add_purchase_items_batch(
             updated_at=now,
         )
         session.add(item)
-        created_items.append((item, products_by_id[item_data.product_id]))
-    
+        created_items.append((item, listing, products_by_id[listing.product_id]))
+
     session.commit()
-    
+
     # Refresh and return all items
     result = []
-    for item, product in created_items:
+    for item, listing, product in created_items:
         session.refresh(item)
-        result.append(serialize_purchase_item(item, product.name))
+        result.append(serialize_purchase_item(item, listing, product))
 
     return result
 

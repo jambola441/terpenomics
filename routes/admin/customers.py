@@ -10,6 +10,7 @@ from auth import SupabaseAuthUser
 from database import get_session
 from models import (
     Customer,
+    Listing,
     Purchase,
     PurchaseItem,
     Product,
@@ -130,15 +131,16 @@ def get_customer_purchases(
 
     # Step 2: Fetch full data only for these purchase IDs
     rows = session.exec(
-        select(Purchase, PurchaseItem, Product)
+        select(Purchase, PurchaseItem, Listing, Product)
         .join(PurchaseItem, PurchaseItem.purchase_id == Purchase.id, isouter=True)
-        .join(Product, Product.id == PurchaseItem.product_id, isouter=True)
+        .join(Listing, Listing.id == PurchaseItem.listing_id, isouter=True)
+        .join(Product, Product.id == Listing.product_id, isouter=True)
         .where(Purchase.id.in_(purchase_ids))
         .order_by(Purchase.purchased_at.desc())
     ).all()
 
     purchases_by_id = {}
-    for purchase, item, product in rows:
+    for purchase, item, listing, product in rows:
         pur_id = str(purchase.id)
         if pur_id not in purchases_by_id:
             purchases_by_id[pur_id] = {
@@ -150,13 +152,13 @@ def get_customer_purchases(
                 "items": [],
             }
 
-        if item is None or product is None:
+        if item is None or listing is None or product is None:
             continue
 
         item_id = str(item.id)
         items = purchases_by_id[pur_id]["items"]
         if not any(x["id"] == item_id for x in items):
-            items.append(serialize_purchase_item(item, product.name))
+            items.append(serialize_purchase_item(item, listing, product))
 
     # Preserve ordering from purchase_ids
     order = {str(pid): i for i, pid in enumerate(purchase_ids)}

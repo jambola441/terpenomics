@@ -53,10 +53,12 @@ class Customer(CustomerBase, TimestampMixin, table=True):
 
 class ProductCategory(str, Enum):
     flower = "flower"
+    vaporizers = "vaporizers"
     cart = "cart"
     edible = "edible"
     concentrate = "concentrate"
     preroll = "preroll"
+    tinctures = "tinctures"
     tincture = "tincture"
     topical = "topical"
     merch = "merch"

@@ -32,6 +32,12 @@ def on_startup() -> None:
         conn.execute(text(
             "ALTER TABLE lab_reports ADD COLUMN IF NOT EXISTS pdf_bytes BYTEA"
         ))
+        conn.execute(text(
+            "ALTER TABLE purchase_items ADD COLUMN IF NOT EXISTS listing_id UUID REFERENCES listings(id)"
+        ))
+        conn.execute(text(
+            "ALTER TABLE purchase_items ALTER COLUMN product_id DROP NOT NULL"
+        ))
         conn.commit()
 
 
