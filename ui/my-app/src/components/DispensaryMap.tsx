@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useMatch, useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import DispensaryListings from './DispensaryListings'
+import AisleView from './AisleView'
+import type { CartItem } from '../types'
 
 type PortalDispensary = {
   id: string
@@ -11,20 +13,32 @@ type PortalDispensary = {
   lat: number
   lng: number
   website_url: string | null
+  accepts_pickup: boolean
+  logo_url: string | null
+  banner_url: string | null
 }
 
 interface Props {
   activeDispensaryId?: string | null
   onProductClick?: (productId: string) => void
+  onAddToCart?: (item: CartItem) => void
+  cart?: CartItem[]
 }
 
-export default function DispensaryMap({ activeDispensaryId, onProductClick }: Props) {
+export default function DispensaryMap({ activeDispensaryId, onProductClick, onAddToCart, cart = [] }: Props) {
   const navigate = useNavigate()
+  const matchAisle = useMatch('/portal/map/:dispensaryId/aisle/:category')
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<any>(null)
   const [dispensaries, setDispensaries] = useState<PortalDispensary[]>([])
   const [selected, setSelected] = useState<PortalDispensary | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  const aisleDispensaryId = matchAisle?.params.dispensaryId ?? null
+  const aisleCategory = matchAisle?.params.category ?? null
+  const aisleDispensary = aisleDispensaryId
+    ? dispensaries.find(d => d.id === aisleDispensaryId) ?? null
+    : null
 
   useEffect(() => {
     api.portal.getDispensaries()
@@ -85,18 +99,6 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick }: Pr
     background: '#0a0a0a',
   }
 
-  // Show listings sub-view when a dispensary is active in the URL
-  if (activeDispensary) {
-    return (
-      <DispensaryListings
-        dispensaryId={activeDispensary.id}
-        dispensaryName={activeDispensary.name}
-        onBack={() => navigate(-1)}
-        onProductClick={onProductClick}
-      />
-    )
-  }
-
   if (error) {
     return (
       <div style={{ ...containerStyle, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -109,8 +111,43 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick }: Pr
     <div style={containerStyle}>
       <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
 
+      {/* Store home overlay */}
+      {activeDispensary && !aisleDispensary && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 2000, background: '#0a0a0a', overflowY: 'auto' }}>
+          <DispensaryListings
+            dispensaryId={activeDispensary.id}
+            dispensaryName={activeDispensary.name}
+            dispensarySlug={activeDispensary.slug}
+            dispensaryAddress={activeDispensary.address}
+            dispensaryLat={activeDispensary.lat}
+            dispensaryLng={activeDispensary.lng}
+            dispensaryLogoUrl={activeDispensary.logo_url}
+            dispensaryBannerUrl={activeDispensary.banner_url}
+            acceptsPickup={activeDispensary.accepts_pickup}
+            onBack={() => navigate(-1)}
+            onAddToCart={onAddToCart}
+            cart={cart}
+          />
+        </div>
+      )}
+
+      {/* Aisle overlay */}
+      {aisleDispensary && aisleCategory && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 2000, background: '#0a0a0a', overflowY: 'auto' }}>
+          <AisleView
+            dispensaryId={aisleDispensary.id}
+            dispensaryName={aisleDispensary.name}
+            dispensarySlug={aisleDispensary.slug}
+            category={aisleCategory}
+            acceptsPickup={aisleDispensary.accepts_pickup}
+            onAddToCart={onAddToCart}
+            cart={cart}
+          />
+        </div>
+      )}
+
       {/* Bottom sheet */}
-      {selected && (
+      {selected && !activeDispensary && (
         <div style={{
           position: 'absolute', bottom: 0, left: 0, right: 0,
           background: '#111', borderTop: '1px solid #222',

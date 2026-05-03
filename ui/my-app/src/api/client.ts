@@ -27,6 +27,7 @@ import type {
   UnmatchedListing,
   Dispensary,
   DispensaryListing,
+  ListingDetail,
 } from '../types'
 
 // Get API base URL from environment variable or use default
@@ -343,10 +344,16 @@ export const api = {
       portalFetch<PortalProduct>(`/customer/products/${productId}`),
 
     getDispensaries: () =>
-      portalFetch<{ id: string; name: string; slug: string; address: string | null; lat: number; lng: number; website_url: string | null }[]>(`/customer/dispensaries`),
+      portalFetch<{ id: string; name: string; slug: string; address: string | null; lat: number; lng: number; website_url: string | null; accepts_pickup: boolean; logo_url: string | null; banner_url: string | null }[]>(`/customer/dispensaries`),
 
-    getDispensaryListings: (dispensaryId: string, params?: { category?: string; q?: string; limit?: number; offset?: number }) =>
+    getDispensaryFilterOptions: (dispensaryId: string) =>
+      portalFetch<{ brands: string[]; variants: string[] }>(`/customer/dispensaries/${dispensaryId}/filter-options`),
+
+    getDispensaryListings: (dispensaryId: string, params?: { category?: string; brand?: string; variant?: string; q?: string; inStock?: boolean; limit?: number; offset?: number }) =>
       portalFetch<DispensaryListing[]>(`/customer/dispensaries/${dispensaryId}/listings${buildQueryString(params)}`),
+
+    getListing: (dispensaryId: string, listingId: string) =>
+      portalFetch<ListingDetail>(`/customer/dispensaries/${dispensaryId}/listings/${listingId}`),
   },
 }
 

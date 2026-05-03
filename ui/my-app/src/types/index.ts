@@ -250,6 +250,28 @@ export type DispensaryListing = {
   cannabinoids: Cannabinoid[]
 }
 
+export type ListingDetail = DispensaryListing & {
+  dispensary_id: string
+  dispensary_name: string
+  dispensary_slug: string
+  dispensary_accepts_pickup: boolean
+  in_stock: boolean
+}
+
+export type CartItem = {
+  listingId: string
+  dispensaryId: string
+  dispensarySlug: string
+  dispensaryName: string
+  name: string
+  brand: string | null
+  variant: string | null
+  price_cents: number | null
+  url: string | null
+  image_url: string | null
+  quantity: number
+}
+
 export type Dispensary = {
   id: string
   name: string

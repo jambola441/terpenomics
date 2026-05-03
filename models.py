@@ -208,6 +208,9 @@ class DispensaryBase(SQLModel):
     lat: Optional[float] = Field(default=None)
     lng: Optional[float] = Field(default=None)
     is_active: bool = Field(default=True, nullable=False)
+    accepts_pickup: bool = Field(default=False, nullable=False)
+    logo_url: Optional[str] = Field(default=None, max_length=1000)
+    banner_url: Optional[str] = Field(default=None, max_length=1000)
     pos_type: PosType = Field(default=PosType.none)
     pos_tenant_id: Optional[str] = Field(default=None, max_length=200)
 

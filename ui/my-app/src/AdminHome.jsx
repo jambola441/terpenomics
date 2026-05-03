@@ -31,6 +31,39 @@ export default function AdminHome() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <Link
+            to="/portal"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '22px 24px',
+              background: '#0a1a0a',
+              border: '1px solid #1a3320',
+              borderRadius: 10,
+              textDecoration: 'none',
+              color: 'inherit',
+              marginBottom: 8,
+              transition: 'border-color 0.15s, background 0.15s',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = '#0d1f0d'
+              e.currentTarget.style.borderColor = '#2d5c3a'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = '#0a1a0a'
+              e.currentTarget.style.borderColor = '#1a3320'
+            }}
+          >
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 500, color: '#a8e063', marginBottom: 5 }}>
+                Customer Portal
+              </div>
+              <div style={{ fontSize: 13, color: '#4a7c4e' }}>View the customer-facing storefront</div>
+            </div>
+            <span style={{ color: '#4a7c4e', fontSize: 18 }}>→</span>
+          </Link>
+
           {sections.map(s => (
             <Link
               key={s.path}

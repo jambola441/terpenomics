@@ -3,7 +3,8 @@ import { useNavigate, useMatch } from 'react-router-dom'
 import api from './api/client'
 import supabase from './utils/supabase'
 import DispensaryMap from './components/DispensaryMap'
-import type { PortalPurchase, RecommendedProduct, Feedback, PortalProduct } from './types'
+import ListingDetailView from './components/ListingDetail'
+import type { PortalPurchase, RecommendedProduct, Feedback, PortalProduct, CartItem } from './types'
 import type { Session } from '@supabase/supabase-js'
 import 'leaflet/dist/leaflet.css'
 
@@ -899,17 +900,186 @@ function NotLinkedScreen() {
   )
 }
 
+// ─── Cart Drawer ──────────────────────────────────────────────────────────────
+
+interface CartDrawerProps {
+  items: CartItem[]
+  open: boolean
+  onClose: () => void
+  onRemove: (listingId: string) => void
+  onClear: () => void
+}
+
+function CartDrawer({ items, open, onClose, onRemove, onClear }: CartDrawerProps) {
+  const total = items.reduce((sum, i) => sum + (i.price_cents ?? 0) * i.quantity, 0)
+  const dispensaryName = items[0]?.dispensaryName ?? ''
+
+  return (
+    <>
+      {/* Backdrop */}
+      {open && (
+        <div
+          onClick={onClose}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
+            zIndex: 2200, backdropFilter: 'blur(2px)',
+          }}
+        />
+      )}
+
+      {/* Drawer */}
+      <div style={{
+        position: 'fixed',
+        bottom: 0, left: 0, right: 0,
+        background: '#141414',
+        borderTop: '1px solid #2a2a2a',
+        borderRadius: '20px 20px 0 0',
+        zIndex: 2300,
+        transform: open ? 'translateY(0)' : 'translateY(100%)',
+        transition: 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
+        maxHeight: '80dvh',
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+        {/* Handle */}
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 0' }}>
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: '#333' }} />
+        </div>
+
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px 0' }}>
+          <div>
+            <div style={{ color: '#fff', fontWeight: 700, fontSize: 18 }}>Your cart</div>
+            {dispensaryName && (
+              <div style={{ color: '#555', fontSize: 12, marginTop: 2 }}>{dispensaryName}</div>
+            )}
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {items.length > 0 && (
+              <button
+                onClick={onClear}
+                style={{
+                  background: 'transparent', border: '1px solid #2a2a2a',
+                  borderRadius: 8, color: '#555', fontSize: 12,
+                  padding: '5px 10px', cursor: 'pointer',
+                }}
+              >
+                Clear
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              style={{
+                background: '#2a2a2a', border: 'none',
+                borderRadius: 8, color: '#888', fontSize: 18,
+                width: 32, height: 32, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+
+        {/* Items */}
+        <div style={{ overflowY: 'auto', flex: 1, padding: '16px 20px 0' }}>
+          {items.length === 0 ? (
+            <div style={{ color: '#555', fontSize: 14, textAlign: 'center', padding: '32px 0' }}>
+              Cart is empty
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {items.map(item => (
+                <div key={item.listingId} style={{
+                  display: 'flex', gap: 12, alignItems: 'center',
+                  background: '#1a1a1a', borderRadius: 12, padding: 12,
+                }}>
+                  {item.image_url ? (
+                    <img
+                      src={item.image_url}
+                      alt=""
+                      style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'contain', background: '#111', flexShrink: 0 }}
+                      onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+                    />
+                  ) : (
+                    <div style={{ width: 48, height: 48, borderRadius: 8, background: '#222', flexShrink: 0 }} />
+                  )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ color: '#fff', fontWeight: 600, fontSize: 14, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {item.name}
+                    </div>
+                    {item.variant && (
+                      <div style={{ color: '#555', fontSize: 12 }}>{item.variant}</div>
+                    )}
+                    {item.price_cents != null && (
+                      <div style={{ color: '#a8e063', fontWeight: 700, fontSize: 13, marginTop: 2 }}>
+                        ${(item.price_cents / 100).toFixed(2)}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => onRemove(item.listingId)}
+                    style={{
+                      background: 'transparent', border: 'none',
+                      color: '#444', fontSize: 18, cursor: 'pointer',
+                      padding: '4px 8px', flexShrink: 0,
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        {items.length > 0 && (
+          <div style={{ padding: 20, borderTop: '1px solid #1e1e1e', marginTop: 16 }}>
+            {total > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                <span style={{ color: '#666', fontSize: 14 }}>Estimated total</span>
+                <span style={{ color: '#fff', fontWeight: 700, fontSize: 18 }}>
+                  ${(total / 100).toFixed(2)}
+                </span>
+              </div>
+            )}
+            <a
+              href={items[0]?.url ?? '#'}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'block', width: '100%', boxSizing: 'border-box',
+                background: '#a8e063', borderRadius: 12,
+                color: '#0a0a0a', fontWeight: 700, fontSize: 15,
+                padding: '14px', textAlign: 'center', textDecoration: 'none',
+              }}
+            >
+              Order at {dispensaryName} →
+            </a>
+          </div>
+        )}
+        <div style={{ height: 'env(safe-area-inset-bottom, 0px)' }} />
+      </div>
+    </>
+  )
+}
+
 // ─── Root Component ───────────────────────────────────────────────────────────
 
 export default function CustomerPortal() {
   const navigate = useNavigate()
   const matchProduct = useMatch('/portal/products/:productId')
+  const matchListing = useMatch('/portal/map/:dispensaryId/listings/:listingId')
+  const matchAisle = useMatch('/portal/map/:dispensaryId/aisle/:category')
   const matchDispensary = useMatch('/portal/map/:dispensaryId')
   const matchTab = useMatch('/portal/:tab')
 
   const selectedProductId = matchProduct?.params.productId ?? null
+  const selectedListingId = matchListing?.params.listingId ?? null
+  const selectedListingDispensaryId = matchListing?.params.dispensaryId ?? null
   const selectedDispensaryId = matchDispensary?.params.dispensaryId ?? null
-  const activeTab: Tab = matchDispensary
+  const activeTab: Tab = (matchListing || matchDispensary || matchAisle)
     ? 'map'
     : matchProduct
       ? 'products'
@@ -930,6 +1100,9 @@ export default function CustomerPortal() {
   const [recsLoading, setRecsLoading] = useState(false)
   const [recsError, setRecsError] = useState<string | null>(null)
   const [recsFetched, setRecsFetched] = useState(false)
+
+  const [cart, setCart] = useState<CartItem[]>([])
+  const [cartOpen, setCartOpen] = useState(false)
 
   // Track Supabase session
   useEffect(() => {
@@ -992,6 +1165,22 @@ export default function CustomerPortal() {
 
   function handleProductClick(productId: string) {
     navigate('/portal/products/' + productId)
+  }
+
+  function handleAddToCart(item: CartItem) {
+    setCart(prev => {
+      const existing = prev.findIndex(i => i.listingId === item.listingId)
+      if (existing !== -1) {
+        const next = [...prev]
+        next[existing] = { ...next[existing], quantity: next[existing].quantity + 1 }
+        return next
+      }
+      return [...prev, item]
+    })
+  }
+
+  function handleRemoveFromCart(listingId: string) {
+    setCart(prev => prev.filter(i => i.listingId !== listingId))
   }
 
   async function handleFeedback(itemId: string, value: Feedback) {
@@ -1068,12 +1257,71 @@ export default function CustomerPortal() {
       {activeTab === 'products' && !selectedProductId && (
         <ProductsFeed onProductClick={handleProductClick} />
       )}
-      {activeTab === 'map' && (
+      {activeTab === 'map' && selectedListingId && selectedListingDispensaryId ? (
+        <ListingDetailView
+          dispensaryId={selectedListingDispensaryId}
+          listingId={selectedListingId}
+          onProductClick={handleProductClick}
+          onAddToCart={handleAddToCart}
+          cartQuantity={cart.filter(i => i.listingId === selectedListingId).reduce((s, i) => s + i.quantity, 0)}
+        />
+      ) : activeTab === 'map' && (
         <DispensaryMap
           activeDispensaryId={selectedDispensaryId}
           onProductClick={handleProductClick}
+          onAddToCart={handleAddToCart}
+          cart={cart}
         />
       )}
+
+      {/* Floating cart button */}
+      {cart.length > 0 && (() => {
+        const totalQty = cart.reduce((s, i) => s + i.quantity, 0)
+        const totalCents = cart.reduce((s, i) => s + (i.price_cents ?? 0) * i.quantity, 0)
+        return (
+          <button
+            onClick={() => setCartOpen(true)}
+            style={{
+              position: 'fixed',
+              bottom: 72,
+              left: 12,
+              right: 12,
+              zIndex: 2100,
+              background: '#1c1c1e',
+              border: '1px solid #2a2a2a',
+              borderRadius: 16,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '14px 18px',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.7)',
+            }}
+          >
+            <span style={{
+              background: '#333', borderRadius: 8,
+              color: '#fff', fontWeight: 700, fontSize: 13,
+              padding: '4px 10px', minWidth: 28, textAlign: 'center',
+            }}>
+              {totalQty}
+            </span>
+            <span style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>View cart</span>
+            {totalCents > 0
+              ? <span style={{ color: '#a8e063', fontWeight: 700, fontSize: 15 }}>${(totalCents / 100).toFixed(2)}</span>
+              : <span style={{ width: 40 }} />
+            }
+          </button>
+        )
+      })()}
+
+      {/* Cart drawer */}
+      <CartDrawer
+        items={cart}
+        open={cartOpen}
+        onClose={() => setCartOpen(false)}
+        onRemove={handleRemoveFromCart}
+        onClear={() => setCart([])}
+      />
 
       {/* Bottom nav */}
       <div style={{

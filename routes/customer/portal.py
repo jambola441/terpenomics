@@ -35,10 +35,49 @@ def list_portal_dispensaries(session: Session = Depends(get_session)):
             "lat": d.lat,
             "lng": d.lng,
             "website_url": d.website_url,
+            "accepts_pickup": d.accepts_pickup,
+            "logo_url": d.logo_url,
+            "banner_url": d.banner_url,
         }
         for d in dispensaries
         if d.lat is not None and d.lng is not None
     ]
+
+
+# ---------------------------
+# GET /dispensaries/{id}/filter-options
+# ---------------------------
+
+@router.get("/dispensaries/{dispensary_id}/filter-options")
+def get_dispensary_filter_options(
+    dispensary_id: UUID,
+    session: Session = Depends(get_session),
+):
+    brands = session.exec(
+        select(Listing.scraped_brand)
+        .where(Listing.dispensary_id == dispensary_id)
+        .where(Listing.is_active == True)
+        .where(Listing.in_stock == True)
+        .where(Listing.scraped_brand.isnot(None))
+        .distinct()
+        .order_by(Listing.scraped_brand)
+    ).all()
+
+    variants = session.exec(
+        select(Listing.variant)
+        .where(Listing.dispensary_id == dispensary_id)
+        .where(Listing.is_active == True)
+        .where(Listing.in_stock == True)
+        .where(Listing.variant.isnot(None))
+        .where(Listing.variant != "")
+        .distinct()
+        .order_by(Listing.variant)
+    ).all()
+
+    return {
+        "brands": [b for b in brands if b],
+        "variants": [v for v in variants if v],
+    }
 
 
 # ---------------------------
@@ -50,7 +89,10 @@ def get_dispensary_listings(
     dispensary_id: UUID,
     session: Session = Depends(get_session),
     category: Optional[str] = Query(default=None),
+    brand: Optional[str] = Query(default=None),
+    variant: Optional[str] = Query(default=None),
     q: Optional[str] = Query(default=None),
+    in_stock: Optional[bool] = Query(default=True),
     limit: int = Query(default=50, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
 ):
@@ -62,11 +104,16 @@ def get_dispensary_listings(
         select(Listing.id)
         .where(Listing.dispensary_id == dispensary_id)
         .where(Listing.is_active == True)
-        .where(Listing.in_stock == True)
     )
+    if in_stock:
+        stmt = stmt.where(Listing.in_stock == True)
 
     if category:
         stmt = stmt.where(Listing.scraped_category == category)
+    if brand:
+        stmt = stmt.where(Listing.scraped_brand == brand)
+    if variant:
+        stmt = stmt.where(Listing.variant == variant)
     if q:
         like = f"%{q.strip()}%"
         stmt = stmt.where(
@@ -129,6 +176,68 @@ def get_dispensary_listings(
         })
 
     return result
+
+
+# ---------------------------
+# GET /dispensaries/{id}/listings/{listing_id}
+# ---------------------------
+
+@router.get("/dispensaries/{dispensary_id}/listings/{listing_id}")
+def get_dispensary_listing(
+    dispensary_id: UUID,
+    listing_id: UUID,
+    session: Session = Depends(get_session),
+):
+    dispensary = session.get(Dispensary, dispensary_id)
+    if not dispensary or not dispensary.is_active:
+        raise HTTPException(status_code=404, detail="dispensary not found")
+
+    listing = session.exec(
+        select(Listing)
+        .where(Listing.id == listing_id)
+        .where(Listing.dispensary_id == dispensary_id)
+        .where(Listing.is_active == True)
+    ).first()
+    if not listing:
+        raise HTTPException(status_code=404, detail="listing not found")
+
+    product = session.get(Product, listing.product_id) if listing.product_id else None
+    pid = str(product.id) if product else None
+
+    terpenes, cannabinoids = [], []
+    if pid:
+        for link, t in session.exec(
+            select(ProductTerpene, Terpene)
+            .join(Terpene, Terpene.id == ProductTerpene.terpene_id)
+            .where(ProductTerpene.product_id == listing.product_id)
+        ).all():
+            terpenes.append({"name": t.name, "percent": link.percent})
+
+        for link, c in session.exec(
+            select(ProductCannabinoid, Cannabinoid)
+            .join(Cannabinoid, Cannabinoid.id == ProductCannabinoid.cannabinoid_id)
+            .where(ProductCannabinoid.product_id == listing.product_id)
+        ).all():
+            cannabinoids.append({"name": c.name, "family": c.family, "percent": link.percent})
+
+    return {
+        "id": str(listing.id),
+        "dispensary_id": str(dispensary.id),
+        "dispensary_name": dispensary.name,
+        "dispensary_slug": dispensary.slug,
+        "dispensary_accepts_pickup": dispensary.accepts_pickup,
+        "scraped_name": listing.scraped_name,
+        "scraped_brand": listing.scraped_brand,
+        "scraped_category": listing.scraped_category,
+        "price_cents": listing.price_cents,
+        "variant": listing.variant,
+        "url": listing.url,
+        "image_url": listing.image_url,
+        "in_stock": listing.in_stock,
+        "product_id": pid,
+        "terpenes": terpenes,
+        "cannabinoids": cannabinoids,
+    }
 
 
 # ---------------------------

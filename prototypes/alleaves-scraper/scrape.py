@@ -40,6 +40,8 @@ except ImportError:
 BASE_URL = "https://app.alleaves.com"
 PAGE_SIZE = 100
 
+TAX_RATES = {1: 1.13, 2: 1.09}
+
 _API_HEADERS = {
     "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
     "x-requested-with": "XMLHttpRequest",
@@ -181,7 +183,7 @@ def fetch_in_stock_ids(client: httpx.Client) -> dict[str, str]:
 # Pass 3 — Carrot/Typesense storefront cross-reference
 # ---------------------------------------------------------------------------
 
-def fetch_storefront_products(space_id: str, location_id: str = "1") -> dict[str, str]:
+def fetch_storefront_products(space_id: str, location_id: str = "1") -> dict[str, dict]:
     """Return {batchName: slug} for all products published on the Carrot storefront."""
     with httpx.Client(timeout=15) as c:
         resp = c.get(
@@ -205,7 +207,7 @@ def fetch_storefront_products(space_id: str, location_id: str = "1") -> dict[str
         while True:
             resp = c.get(
                 f"https://{ts_node}/collections/{index_name}/documents/search",
-                params={"q": "*", "per_page": 250, "page": page, "include_fields": "batchName,slug"},
+                params={"q": "*", "per_page": 250, "page": page, "include_fields": "batchName,slug,option1Price"},
                 headers={"X-Typesense-Api-Key": ts_key},
             )
             resp.raise_for_status()
@@ -216,7 +218,7 @@ def fetch_storefront_products(space_id: str, location_id: str = "1") -> dict[str
                 bn = doc.get("batchName")
                 slug = doc.get("slug")
                 if bn and slug:
-                    published[bn] = slug
+                    published[bn] = {"slug": slug, "price": doc.get("option1Price")}
             if len(hits) < 250:
                 break
             page += 1
@@ -324,8 +326,14 @@ def normalise(
     batch_id = in_stock_ids.get(item_id, "")
     brand = resolve_brand(item_name, (r.get("brand") or "").strip(), known_brands)
 
-    price_raw = r.get("price_retail_adult_use") or r.get("price_retail") or 0
-    price_cents = int(round(float(price_raw) * 100))
+    carrot_entry = (batch_to_slug or {}).get(batch_id)
+    carrot_price = carrot_entry.get("price") if carrot_entry else None
+    if carrot_price is not None:
+        price_cents = int(round(float(carrot_price) * 100))
+    else:
+        tax_rate = TAX_RATES.get(r.get("id_tax_category"), 1.13)
+        price_raw = r.get("price_retail_adult_use") or r.get("price_retail") or 0
+        price_cents = int(round(float(price_raw) * tax_rate * 100))
 
     thc = r.get("strain_percent_thc")
     cbd = r.get("strain_percent_cbd")
@@ -348,7 +356,7 @@ def normalise(
         "classification":  map_classification(r.get("strain_type")),
         "in_stock":        "TRUE" if item_id in in_stock_ids else "FALSE",
         "product_url":     (
-            f"{store_url}/{batch_to_slug[batch_id]}"
+            f"{store_url}/{batch_to_slug[batch_id]['slug']}"
             if batch_to_slug and batch_id and batch_id in batch_to_slug
             else _product_url(store_url, brand, item_name)
         ),
@@ -407,7 +415,7 @@ def main():
         in_stock_ids = fetch_in_stock_ids(client)
         print(f"  {len(in_stock_ids)} items in retail inventory.")
 
-    batch_to_slug: dict[str, str] = {}
+    batch_to_slug: dict[str, dict] = {}
     if args.carrot_space_id:
         print("Pass 3 — cross-referencing Carrot storefront ...")
         storefront = fetch_storefront_products(args.carrot_space_id, args.carrot_location_id)
