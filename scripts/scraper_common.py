@@ -30,6 +30,7 @@ CSV_COLUMNS = [
     "classification",
     "in_stock",
     "product_url",
+    "image_url",
     "scraped_at",
 ]
 
@@ -206,8 +207,8 @@ def slugify(text: str) -> str:
 
 
 def store_slug(text: str) -> str:
-    """Storefront URL slug: apostrophes/backticks dropped (not hyphenated)."""
-    text = re.sub(r"['`]", "", text.lower())
+    """Storefront URL slug: apostrophes/backticks/slashes dropped (not hyphenated)."""
+    text = re.sub(r"['`/]", "", text.lower())
     return re.sub(r"[^a-z0-9]+", "-", text).strip("-")
 
 

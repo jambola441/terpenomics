@@ -25,6 +25,8 @@ import type {
   LabReportResult,
   Listing,
   UnmatchedListing,
+  Dispensary,
+  DispensaryListing,
 } from '../types'
 
 // Get API base URL from environment variable or use default
@@ -263,7 +265,22 @@ export const api = {
 
   dispensaries: {
     list: (params?: { q?: string; limit?: number; offset?: number }) =>
-      authenticatedFetch<{ id: string; name: string; slug: string }[]>(`/admin/dispensaries${buildQueryString(params)}`),
+      authenticatedFetch<Dispensary[]>(`/admin/dispensaries${buildQueryString(params)}`),
+
+    get: (id: string) =>
+      authenticatedFetch<Dispensary>(`/admin/dispensaries/${id}`),
+
+    create: (data: Partial<Dispensary>) =>
+      authenticatedFetch<Dispensary>(`/admin/dispensaries`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    update: (id: string, data: Partial<Dispensary>) =>
+      authenticatedFetch<Dispensary>(`/admin/dispensaries/${id}`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
   },
 
   listings: {
@@ -295,6 +312,17 @@ export const api = {
       authenticatedFetch<Listing>(`/admin/listings/${listingId}/unmatch`, { method: 'POST' }),
   },
 
+  me: {
+    getProfile: () =>
+      authenticatedFetch<{ id: string; name: string | null; phone: string | null; email: string | null; marketing_opt_in: boolean }>(`/me`),
+
+    linkCustomer: (payload?: { phone?: string; email?: string; name?: string }) =>
+      authenticatedFetch<{ customer_id: string; linked: boolean; created?: boolean }>(`/me/link-customer`, {
+        method: 'POST',
+        body: JSON.stringify(payload ?? {}),
+      }),
+  },
+
   portal: {
     getPurchases: (customerId: string, params?: { limit?: number; offset?: number }) =>
       portalFetch<PortalPurchase[]>(`/customer/${customerId}/purchases${buildQueryString(params)}`),
@@ -313,6 +341,12 @@ export const api = {
 
     getProduct: (productId: string) =>
       portalFetch<PortalProduct>(`/customer/products/${productId}`),
+
+    getDispensaries: () =>
+      portalFetch<{ id: string; name: string; slug: string; address: string | null; lat: number; lng: number; website_url: string | null }[]>(`/customer/dispensaries`),
+
+    getDispensaryListings: (dispensaryId: string, params?: { category?: string; q?: string; limit?: number; offset?: number }) =>
+      portalFetch<DispensaryListing[]>(`/customer/dispensaries/${dispensaryId}/listings${buildQueryString(params)}`),
   },
 }
 

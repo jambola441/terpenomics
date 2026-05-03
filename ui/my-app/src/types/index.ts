@@ -236,6 +236,36 @@ export type UnmatchedListing = {
   candidates: MatchCandidate[]
 }
 
+export type DispensaryListing = {
+  id: string
+  scraped_name: string | null
+  scraped_brand: string | null
+  scraped_category: string | null
+  price_cents: number | null
+  variant: string | null
+  url: string | null
+  image_url: string | null
+  product_id: string | null
+  terpenes: Terpene[]
+  cannabinoids: Cannabinoid[]
+}
+
+export type Dispensary = {
+  id: string
+  name: string
+  slug: string
+  website_url: string | null
+  location: string | null
+  address: string | null
+  lat: number | null
+  lng: number | null
+  is_active: boolean
+  pos_type: string
+  pos_tenant_id: string | null
+  created_at: string
+  updated_at: string
+}
+
 export type Listing = {
   id: string
   product_id: string | null

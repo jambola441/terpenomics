@@ -161,6 +161,11 @@ def normalise(p: dict, scraped_at: str) -> dict:
     sku      = str(p.get("slug") or p.get("sku") or "").strip()
     batch_id = str(p.get("id") or "").strip()
 
+    image_url = str(
+        p.get("image") or p.get("imageUrl") or p.get("image_url") or
+        p.get("thumbnail") or p.get("photo") or ""
+    ).strip()
+
     return {
         "dispensary_slug": DISPENSARY_SLUG,
         "sku":             sku,
@@ -176,6 +181,7 @@ def normalise(p: dict, scraped_at: str) -> dict:
         "classification":  str(p.get("classification") or "").strip().lower(),
         "in_stock":        in_stock,
         "product_url":     f"{BASE_URL}/products/{sku}/" if sku else "",
+        "image_url":       image_url,
         "scraped_at":      scraped_at,
     }
 

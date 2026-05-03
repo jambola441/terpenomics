@@ -1,7 +1,13 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useMatch } from 'react-router-dom'
 import api from './api/client'
+import supabase from './utils/supabase'
+import DispensaryMap from './components/DispensaryMap'
 import type { PortalPurchase, RecommendedProduct, Feedback, PortalProduct } from './types'
+import type { Session } from '@supabase/supabase-js'
+import 'leaflet/dist/leaflet.css'
+
+type Tab = 'orders' | 'foryou' | 'products' | 'map'
 
 const CATEGORY_IMAGES: Record<string, string> = {
   flower: '/flower.png',
@@ -776,14 +782,142 @@ function ProductDetail({ productId, onBack }: ProductDetailProps) {
   )
 }
 
+// ─── Login Screen ─────────────────────────────────────────────────────────────
+
+function LoginScreen() {
+  const [email, setEmail] = useState('')
+  const [sent, setSent] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleSend() {
+    if (!email.trim()) return
+    setLoading(true)
+    setError(null)
+    try {
+      const { error: err } = await supabase.auth.signInWithOtp({ email: email.trim() })
+      if (err) throw err
+      setSent(true)
+    } catch (e: any) {
+      setError(e.message ?? 'Failed to send link')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100dvh',
+      padding: '0 32px',
+      background: '#0a0a0a',
+      fontFamily: 'system-ui, -apple-system, sans-serif',
+    }}>
+      <div style={{ fontSize: 36, marginBottom: 20 }}>🌿</div>
+      <div style={{ color: '#fff', fontWeight: 800, fontSize: 24, marginBottom: 8, textAlign: 'center' }}>
+        Sign in
+      </div>
+      <div style={{ color: '#555', fontSize: 14, marginBottom: 32, textAlign: 'center' }}>
+        {sent ? 'Check your email for a magic link.' : "We'll send you a magic link."}
+      </div>
+
+      {!sent && (
+        <>
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') handleSend() }}
+            placeholder="your@email.com"
+            style={{
+              width: '100%',
+              maxWidth: 320,
+              background: '#1a1a1a',
+              border: '1px solid #2a2a2a',
+              borderRadius: 10,
+              color: '#fff',
+              fontSize: 16,
+              padding: '14px 16px',
+              outline: 'none',
+              marginBottom: 12,
+              boxSizing: 'border-box',
+            }}
+          />
+          <button
+            onClick={handleSend}
+            disabled={loading || !email.trim()}
+            style={{
+              width: '100%',
+              maxWidth: 320,
+              background: loading ? '#222' : '#a8e063',
+              border: 'none',
+              borderRadius: 10,
+              color: loading ? '#555' : '#0a0a0a',
+              fontSize: 15,
+              fontWeight: 700,
+              padding: '14px',
+              cursor: loading ? 'default' : 'pointer',
+            }}
+          >
+            {loading ? 'Sending…' : 'Send magic link'}
+          </button>
+          {error && (
+            <div style={{ color: '#f44336', fontSize: 13, marginTop: 12 }}>{error}</div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
+// ─── Not Linked Screen ────────────────────────────────────────────────────────
+
+function NotLinkedScreen() {
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100dvh',
+      padding: '0 32px',
+      background: '#0a0a0a',
+      fontFamily: 'system-ui, -apple-system, sans-serif',
+      textAlign: 'center',
+    }}>
+      <div style={{ fontSize: 36, marginBottom: 20 }}>🔗</div>
+      <div style={{ color: '#fff', fontWeight: 800, fontSize: 22, marginBottom: 12 }}>
+        Account not linked
+      </div>
+      <div style={{ color: '#555', fontSize: 14, lineHeight: 1.6 }}>
+        Your email isn't connected to a customer account yet. Ask a staff member to link your account.
+      </div>
+    </div>
+  )
+}
+
 // ─── Root Component ───────────────────────────────────────────────────────────
 
 export default function CustomerPortal() {
-  const { customerId } = useParams<{ customerId: string }>()
-  const id = customerId!
+  const navigate = useNavigate()
+  const matchProduct = useMatch('/portal/products/:productId')
+  const matchDispensary = useMatch('/portal/map/:dispensaryId')
+  const matchTab = useMatch('/portal/:tab')
 
-  const [activeTab, setActiveTab] = useState<'orders' | 'foryou' | 'products'>('orders')
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(null)
+  const selectedProductId = matchProduct?.params.productId ?? null
+  const selectedDispensaryId = matchDispensary?.params.dispensaryId ?? null
+  const activeTab: Tab = matchDispensary
+    ? 'map'
+    : matchProduct
+      ? 'products'
+      : ((matchTab?.params.tab as Tab | undefined) ?? 'orders')
+
+  const [session, setSession] = useState<Session | null | undefined>(undefined)
+  const [customerId, setCustomerId] = useState<string | null>(null)
+  const [profileError, setProfileError] = useState<string | null>(null)
 
   const [purchases, setPurchases] = useState<PortalPurchase[]>([])
   const [purchasesLoading, setPurchasesLoading] = useState(true)
@@ -797,8 +931,32 @@ export default function CustomerPortal() {
   const [recsError, setRecsError] = useState<string | null>(null)
   const [recsFetched, setRecsFetched] = useState(false)
 
-  // Load orders on mount
+  // Track Supabase session
   useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSession(data.session ?? null))
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => setSession(s))
+    return () => subscription.unsubscribe()
+  }, [])
+
+  // Resolve customer ID once session is available, auto-linking on first login
+  useEffect(() => {
+    if (!session) return
+    api.me.getProfile()
+      .then(profile => setCustomerId(profile.id))
+      .catch(() =>
+        api.me.linkCustomer()
+          .then(() => api.me.getProfile())
+          .then(profile => setCustomerId(profile.id))
+          .catch(err => setProfileError(err.message ?? 'not_linked'))
+      )
+  }, [session])
+
+  const id = customerId
+
+  // Load orders once customer is resolved
+  useEffect(() => {
+    if (!id) return
+    setPurchasesLoading(true)
     api.portal.getPurchases(id)
       .then((data) => {
         setPurchases(data)
@@ -813,6 +971,7 @@ export default function CustomerPortal() {
   }, [id])
 
   function loadRecommendations() {
+    if (!id) return
     setRecsLoading(true)
     api.portal.getRecommendations(id)
       .then(setRecommendations)
@@ -820,28 +979,23 @@ export default function CustomerPortal() {
       .finally(() => setRecsLoading(false))
   }
 
-  function handleTabChange(tab: 'orders' | 'foryou' | 'products') {
-    setActiveTab(tab)
-    if (tab !== 'products') {
-      // keep selectedProductId so back-navigation from another tab still works
-    } else {
-      // navigating to products tab directly clears any deep-link selection
-      if (selectedProductId === null) {
-        // already showing list, nothing to do
-      }
-    }
-    if (tab === 'foryou' && !recsFetched) {
+  useEffect(() => {
+    if (activeTab === 'foryou' && !recsFetched && id) {
       setRecsFetched(true)
       loadRecommendations()
     }
+  }, [activeTab, id])
+
+  function handleTabChange(tab: Tab) {
+    navigate('/portal/' + tab)
   }
 
   function handleProductClick(productId: string) {
-    setSelectedProductId(productId)
-    setActiveTab('products')
+    navigate('/portal/products/' + productId)
   }
 
   async function handleFeedback(itemId: string, value: Feedback) {
+    if (!id) return
     const previous = feedback[itemId] ?? null
     setFeedback((prev) => ({ ...prev, [itemId]: value }))
     setSavingItems((prev) => new Set(prev).add(itemId))
@@ -857,6 +1011,24 @@ export default function CustomerPortal() {
         return next
       })
     }
+  }
+
+  // Auth / loading gates
+  if (session === undefined) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100dvh', background: '#0a0a0a' }}>
+        <span style={{ color: '#333', fontSize: 14 }}>Loading…</span>
+      </div>
+    )
+  }
+  if (!session) return <LoginScreen />
+  if (profileError) return <NotLinkedScreen />
+  if (!customerId) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100dvh', background: '#0a0a0a' }}>
+        <span style={{ color: '#333', fontSize: 14 }}>Loading…</span>
+      </div>
+    )
   }
 
   return (
@@ -890,11 +1062,17 @@ export default function CustomerPortal() {
       {activeTab === 'products' && selectedProductId && (
         <ProductDetail
           productId={selectedProductId}
-          onBack={() => setSelectedProductId(null)}
+          onBack={() => navigate(-1)}
         />
       )}
       {activeTab === 'products' && !selectedProductId && (
         <ProductsFeed onProductClick={handleProductClick} />
+      )}
+      {activeTab === 'map' && (
+        <DispensaryMap
+          activeDispensaryId={selectedDispensaryId}
+          onProductClick={handleProductClick}
+        />
       )}
 
       {/* Bottom nav */}
@@ -912,6 +1090,7 @@ export default function CustomerPortal() {
           { key: 'orders', label: 'Orders', icon: '🧾' },
           { key: 'foryou', label: 'For You', icon: '✨' },
           { key: 'products', label: 'Menu', icon: '🌿' },
+          { key: 'map', label: 'Map', icon: '📍' },
         ] as const).map(({ key, label, icon }) => (
           <button
             key={key}

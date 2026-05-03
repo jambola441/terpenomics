@@ -46,6 +46,8 @@ _API_HEADERS = {
     "accept": "application/json",
 }
 
+CARROT_SETTINGS_URL = "https://api.nevada.getcarrot.io/api/v1/store/settings/public2"
+
 
 # ---------------------------------------------------------------------------
 # Auth
@@ -131,13 +133,9 @@ def _inventory_params(skip: int) -> str:
         "filter[filters][1][field]": "has_inventory",
         "filter[filters][1][value]": "true",
         "filter[filters][1][operator]": "eq",
-        "filter[filters][2][filters][0][field]": "area_type",
-        "filter[filters][2][filters][0][value]": "scrap",
-        "filter[filters][2][filters][0][operator]": "neq",
-        "filter[filters][2][filters][1][field]": "area_type",
-        "filter[filters][2][filters][1][value]": "true",
-        "filter[filters][2][filters][1][operator]": "isnull",
-        "filter[filters][2][logic]": "or",
+        "filter[filters][2][field]": "area_type",
+        "filter[filters][2][value]": "Retail",
+        "filter[filters][2][operator]": "eq",
         "id_location": "",
     }
     return urlencode(params)
@@ -177,6 +175,53 @@ def fetch_in_stock_ids(client: httpx.Client) -> dict[str, str]:
         time.sleep(0.3)
 
     return in_stock
+
+
+# ---------------------------------------------------------------------------
+# Pass 3 — Carrot/Typesense storefront cross-reference
+# ---------------------------------------------------------------------------
+
+def fetch_storefront_products(space_id: str, location_id: str = "1") -> dict[str, str]:
+    """Return {batchName: slug} for all products published on the Carrot storefront."""
+    with httpx.Client(timeout=15) as c:
+        resp = c.get(
+            CARROT_SETTINGS_URL,
+            params={"locId": location_id},
+            headers={"Carrot-Space-Id": space_id, "Accept": "application/json"},
+        )
+        resp.raise_for_status()
+        settings = resp.json()
+
+    ts_node = settings["typesense_nodes"]
+    ts_key = settings["typesense_public_key"]
+    indexes = settings.get("typesense_indexes_by_location", {})
+    index_name = indexes.get(location_id) or indexes.get(int(location_id))
+    if not index_name:
+        raise RuntimeError(f"No Typesense index for location {location_id}")
+
+    published: dict[str, str] = {}
+    page = 1
+    with httpx.Client(timeout=15) as c:
+        while True:
+            resp = c.get(
+                f"https://{ts_node}/collections/{index_name}/documents/search",
+                params={"q": "*", "per_page": 250, "page": page, "include_fields": "batchName,slug"},
+                headers={"X-Typesense-Api-Key": ts_key},
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            hits = data.get("hits", [])
+            for hit in hits:
+                doc = hit["document"]
+                bn = doc.get("batchName")
+                slug = doc.get("slug")
+                if bn and slug:
+                    published[bn] = slug
+            if len(hits) < 250:
+                break
+            page += 1
+
+    return published
 
 
 # ---------------------------------------------------------------------------
@@ -269,24 +314,29 @@ def normalise(
     scraped_at: str,
     known_brands: set[str],
     store_url: str = "",
+    batch_to_slug: dict[str, str] | None = None,
 ) -> dict | None:
     item_name = (r.get("item") or "").strip()
     if not item_name:
         return None
 
     item_id = str(r.get("id_item", ""))
+    batch_id = in_stock_ids.get(item_id, "")
     brand = resolve_brand(item_name, (r.get("brand") or "").strip(), known_brands)
 
-    price_raw = r.get("price_retail_adult_use") or 0
+    price_raw = r.get("price_retail_adult_use") or r.get("price_retail") or 0
     price_cents = int(round(float(price_raw) * 100))
 
     thc = r.get("strain_percent_thc")
     cbd = r.get("strain_percent_cbd")
 
+    media = r.get("media_list") or []
+    image_url = (media[0].get("content") or "").strip() if media else ""
+
     return {
         "dispensary_slug": dispensary_slug,
         "sku":             item_id,
-        "batch_id":        in_stock_ids.get(item_id, ""),
+        "batch_id":        batch_id,
         "name":            clean_name(item_name, brand),
         "name_raw":        item_name,
         "brand":           brand,
@@ -297,7 +347,12 @@ def normalise(
         "cbd_percent":     cbd if cbd else "",
         "classification":  map_classification(r.get("strain_type")),
         "in_stock":        "TRUE" if item_id in in_stock_ids else "FALSE",
-        "product_url":     _product_url(store_url, brand, item_name),
+        "product_url":     (
+            f"{store_url}/{batch_to_slug[batch_id]}"
+            if batch_to_slug and batch_id and batch_id in batch_to_slug
+            else _product_url(store_url, brand, item_name)
+        ),
+        "image_url":       image_url,
         "scraped_at":      scraped_at,
     }
 
@@ -317,6 +372,9 @@ def parse_args():
     p.add_argument("--password", default=None)
     p.add_argument("--store-url", default="https://brooklynorganicbuds.com/store/product",
                    help="Storefront base URL for product links")
+    p.add_argument("--carrot-space-id", default="318",
+                   help="Carrot space ID for storefront cross-reference (set empty to skip)")
+    p.add_argument("--carrot-location-id", default="1")
     return p.parse_args()
 
 
@@ -347,7 +405,21 @@ def main():
 
         print("Pass 2 — fetching inventory for in-stock status ...")
         in_stock_ids = fetch_in_stock_ids(client)
-        print(f"  {len(in_stock_ids)} items currently in stock.")
+        print(f"  {len(in_stock_ids)} items in retail inventory.")
+
+    batch_to_slug: dict[str, str] = {}
+    if args.carrot_space_id:
+        print("Pass 3 — cross-referencing Carrot storefront ...")
+        storefront = fetch_storefront_products(args.carrot_space_id, args.carrot_location_id)
+        print(f"  {len(storefront)} products published to storefront.")
+        batch_to_slug = storefront
+        before = len(in_stock_ids)
+        in_stock_ids = {
+            item_id: batch
+            for item_id, batch in in_stock_ids.items()
+            if batch in storefront
+        }
+        print(f"  {len(in_stock_ids)} in stock after storefront filter ({before - len(in_stock_ids)} unpublished).")
 
     raw_brands = {(r.get("brand") or "").strip() for r in items if r.get("brand")}
     brand_canon = canonical_brands(raw_brands)
@@ -358,7 +430,7 @@ def main():
     for r in items:
         if r.get("brand"):
             r = {**r, "brand": brand_canon.get(r["brand"].strip(), r["brand"].strip())}
-        row = normalise(r, in_stock_ids, dispensary_slug, scraped_at, known_brands, args.store_url)
+        row = normalise(r, in_stock_ids, dispensary_slug, scraped_at, known_brands, args.store_url, batch_to_slug)
         if row is None:
             skipped += 1
         else:

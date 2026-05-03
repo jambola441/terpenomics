@@ -18,6 +18,9 @@ class DispensaryCreate(BaseModel):
     slug: str
     website_url: Optional[str] = None
     location: Optional[str] = None
+    address: Optional[str] = None
+    lat: Optional[float] = None
+    lng: Optional[float] = None
     is_active: bool = True
     pos_type: PosType = PosType.none
     pos_tenant_id: Optional[str] = None
@@ -28,6 +31,9 @@ class DispensaryUpdate(BaseModel):
     slug: Optional[str] = None
     website_url: Optional[str] = None
     location: Optional[str] = None
+    address: Optional[str] = None
+    lat: Optional[float] = None
+    lng: Optional[float] = None
     is_active: Optional[bool] = None
     pos_type: Optional[PosType] = None
     pos_tenant_id: Optional[str] = None
@@ -40,6 +46,9 @@ def _serialize(d: Dispensary) -> dict:
         "slug": d.slug,
         "website_url": d.website_url,
         "location": d.location,
+        "address": d.address,
+        "lat": d.lat,
+        "lng": d.lng,
         "is_active": d.is_active,
         "pos_type": d.pos_type,
         "pos_tenant_id": d.pos_tenant_id,
@@ -85,6 +94,9 @@ def create_dispensary(
         slug=payload.slug.strip(),
         website_url=payload.website_url,
         location=payload.location,
+        address=payload.address,
+        lat=payload.lat,
+        lng=payload.lng,
         is_active=payload.is_active,
         pos_type=payload.pos_type,
         pos_tenant_id=payload.pos_tenant_id,
@@ -132,6 +144,12 @@ def update_dispensary(
         d.website_url = payload.website_url
     if payload.location is not None:
         d.location = payload.location
+    if payload.address is not None:
+        d.address = payload.address
+    if payload.lat is not None:
+        d.lat = payload.lat
+    if payload.lng is not None:
+        d.lng = payload.lng
     if payload.is_active is not None:
         d.is_active = payload.is_active
     if payload.pos_type is not None:

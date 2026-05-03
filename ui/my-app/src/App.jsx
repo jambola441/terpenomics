@@ -6,6 +6,9 @@ import ProductEdit from './ProductEdit'
 import Customers from './Customers'
 import CustomerEdit from './CustomerEdit'
 import Purchases from './Purchases'
+import Dispensaries from './Dispensaries'
+import DispensaryEdit from './DispensaryEdit'
+import CustomerRegister from './CustomerRegister'
 import CustomerPortal from './CustomerPortal'
 import LabReportUpload from './LabReportUpload'
 import LabReportDetail from './LabReportDetail'
@@ -25,13 +28,16 @@ function App() {
         <Route path="/admin/products" element={<Products />} />
         <Route path="/admin/products/:productId" element={<ProductEdit />} />
         <Route path="/admin/customers" element={<Customers />} />
+        <Route path="/admin/customers/new" element={<CustomerRegister />} />
         <Route path="/admin/customers/:customerId" element={<CustomerEdit />} />
         <Route path="/admin/purchases" element={<Purchases />} />
         <Route path="/admin/lab-reports" element={<LabReportUpload />} />
         <Route path="/admin/lab-reports/:reportId" element={<LabReportDetail />} />
+        <Route path="/admin/dispensaries" element={<Dispensaries />} />
+        <Route path="/admin/dispensaries/:dispensaryId" element={<DispensaryEdit />} />
         <Route path="/admin/listings" element={<Listings />} />
         <Route path="/admin/listings/match" element={<ListingMatch />} />
-        <Route path="/portal/:customerId" element={<CustomerPortal />} />
+        <Route path="/portal/*" element={<CustomerPortal />} />
       </Routes>
       </BrowserRouter>
   </>

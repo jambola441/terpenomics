@@ -43,6 +43,12 @@ export default function Customers() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
           <button onClick={() => navigate('/admin')} style={navBtnStyle}>← Admin</button>
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>Customers</h2>
+          <button
+            onClick={() => navigate('/admin/customers/new')}
+            style={{ ...navBtnStyle, color: '#a5b4fc', borderColor: '#3730a3' }}
+          >
+            + Register
+          </button>
           <div style={{ marginLeft: 'auto' }}>
             <SearchBar
               value={searchInput}

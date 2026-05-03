@@ -204,6 +204,9 @@ class DispensaryBase(SQLModel):
     slug: str = Field(max_length=100, index=True, sa_column_kwargs={"unique": True})
     website_url: Optional[str] = Field(default=None, max_length=500)
     location: Optional[str] = Field(default=None, max_length=200)
+    address: Optional[str] = Field(default=None, max_length=500)
+    lat: Optional[float] = Field(default=None)
+    lng: Optional[float] = Field(default=None)
     is_active: bool = Field(default=True, nullable=False)
     pos_type: PosType = Field(default=PosType.none)
     pos_tenant_id: Optional[str] = Field(default=None, max_length=200)
@@ -231,6 +234,7 @@ class ListingBase(SQLModel):
     scraped_name_raw: Optional[str] = Field(default=None, max_length=300)
     scraped_brand: Optional[str] = Field(default=None, max_length=200)
     scraped_category: Optional[str] = Field(default=None, max_length=100)
+    image_url: Optional[str] = Field(default=None, max_length=1000)
 
 
 class Listing(ListingBase, TimestampMixin, table=True):
