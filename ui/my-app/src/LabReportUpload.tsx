@@ -7,45 +7,21 @@ import type { LabReport, LabReportResult, LabReportUpload, Product } from './typ
 // Confidence badge
 // ---------------------------------------------------------------------------
 function ConfidenceBadge({ score }: { score: number }) {
-  const color =
-    score >= 4 ? '#1a7f37' : score === 3 ? '#9a6700' : '#cf222e'
-  const bg =
-    score >= 4 ? '#dafbe1' : score === 3 ? '#fff8c5' : '#ffebe9'
-  const label =
-    score >= 4 ? 'High' : score === 3 ? 'Medium' : 'Low'
-
+  const color = score >= 4 ? '#86efac' : score === 3 ? '#fcd34d' : '#fca5a5'
+  const bg    = score >= 4 ? '#14532d' : score === 3 ? '#451a03' : '#450a0a'
+  const label = score >= 4 ? 'High'   : score === 3 ? 'Medium'  : 'Low'
   return (
-    <span style={{
-      display: 'inline-block',
-      padding: '2px 10px',
-      borderRadius: 12,
-      fontSize: 13,
-      fontWeight: 600,
-      background: bg,
-      color,
-      border: `1px solid ${color}40`,
-    }}>
+    <span style={{ display: 'inline-block', padding: '2px 10px', borderRadius: 12, fontSize: 13, fontWeight: 600, background: bg, color, border: `1px solid ${color}30` }}>
       {label} confidence ({score}/5)
     </span>
   )
 }
 
-// ---------------------------------------------------------------------------
-// Pass/Fail badge
-// ---------------------------------------------------------------------------
 function PassFailBadge({ value }: { value: string | null }) {
-  if (!value) return <span style={{ opacity: 0.4 }}>—</span>
+  if (!value) return <span style={{ color: '#475569' }}>—</span>
   const pass = value.toUpperCase() === 'PASS'
   return (
-    <span style={{
-      display: 'inline-block',
-      padding: '2px 10px',
-      borderRadius: 12,
-      fontSize: 13,
-      fontWeight: 600,
-      background: pass ? '#dafbe1' : '#ffebe9',
-      color: pass ? '#1a7f37' : '#cf222e',
-    }}>
+    <span style={{ display: 'inline-block', padding: '2px 10px', borderRadius: 12, fontSize: 13, fontWeight: 600, background: pass ? '#14532d' : '#450a0a', color: pass ? '#86efac' : '#fca5a5' }}>
       {value.toUpperCase()}
     </span>
   )
@@ -164,22 +140,14 @@ function ResultsPanel({ result }: { result: LabReportResult }) {
 // ---------------------------------------------------------------------------
 function StatusBadge({ status }: { status: LabReport['status'] }) {
   const styles: Record<string, { bg: string; color: string }> = {
-    pending:   { bg: '#fff8c5', color: '#9a6700' },
-    extracted: { bg: '#ddf4ff', color: '#0969da' },
-    applied:   { bg: '#dafbe1', color: '#1a7f37' },
-    failed:    { bg: '#ffebe9', color: '#cf222e' },
+    pending:   { bg: '#451a03', color: '#fcd34d' },
+    extracted: { bg: '#0c1a2e', color: '#93c5fd' },
+    applied:   { bg: '#14532d', color: '#86efac' },
+    failed:    { bg: '#450a0a', color: '#fca5a5' },
   }
   const s = styles[status] ?? styles.pending
   return (
-    <span style={{
-      display: 'inline-block',
-      padding: '2px 10px',
-      borderRadius: 12,
-      fontSize: 12,
-      fontWeight: 600,
-      background: s.bg,
-      color: s.color,
-    }}>
+    <span style={{ display: 'inline-block', padding: '2px 10px', borderRadius: 12, fontSize: 12, fontWeight: 600, background: s.bg, color: s.color }}>
       {status}
     </span>
   )
@@ -338,321 +306,199 @@ export default function LabReportUpload() {
   }
 
   return (
-    <div style={{ padding: 24, maxWidth: 720 }}>
-      <h1 style={{ margin: '0 0 4px' }}>COA Lab Report Upload</h1>
-      <p style={{ margin: '0 0 24px', color: '#57606a', fontSize: 14 }}>
-        Upload NY cannabis Certificate of Analysis PDFs. Claude extracts terpene data via vision API.
-      </p>
+    <div style={{ padding: 24, fontFamily: "'Inter', system-ui, sans-serif", background: '#080d18', minHeight: '100vh', color: '#f1f5f9' }}>
+      <div style={{ maxWidth: 900, margin: '0 auto' }}>
 
-      {/* ── Step 1: select & upload files ── */}
-      <div style={{
-        padding: '16px 20px',
-        border: '1px solid #d0d7de',
-        borderRadius: 8,
-        marginBottom: 16,
-      }}>
-        <h2 style={{ margin: '0 0 12px', fontSize: 16 }}>
-          Step 1 — Upload PDFs
-        </h2>
-
-        {/* Drop zone */}
-        <div
-          onDragOver={e => { e.preventDefault(); setDragging(true) }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={onDrop}
-          onClick={() => inputRef.current?.click()}
-          style={{
-            border: `2px dashed ${dragging ? '#1f6feb' : '#d0d7de'}`,
-            borderRadius: 8,
-            padding: '24px',
-            textAlign: 'center',
-            cursor: 'pointer',
-            background: '#525252',
-            transition: 'all 0.15s',
-            marginBottom: 12,
-          }}
-        >
-          <input
-            ref={inputRef}
-            type="file"
-            accept=".pdf,application/pdf"
-            multiple
-            style={{ display: 'none' }}
-            onChange={onFileChange}
-          />
-          <div style={{ fontSize: 24, marginBottom: 4 }}>⬆</div>
-          <div style={{ fontWeight: 500, fontSize: 14 }}>Drop PDFs here or click to browse</div>
-          <div style={{ fontSize: 13, color: '#ffffff', marginTop: 2 }}>Multiple files supported · Max 20 MB each</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
+          <button onClick={() => navigate('/admin')} style={navBtnStyle}>← Admin</button>
+          <div>
+            <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>Lab Reports</h2>
+            <p style={{ margin: '3px 0 0', fontSize: 13, color: '#475569' }}>Upload COA PDFs — Claude extracts terpene data via vision API</p>
+          </div>
         </div>
 
-        {/* Selected files list */}
-        {files.length > 0 && (
-          <ul style={{ margin: '0 0 12px', padding: 0, listStyle: 'none' }}>
-            {files.map(f => (
-              <li key={f.name} style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                padding: '6px 10px', background: '#525252',
-                borderRadius: 6, marginBottom: 4, fontSize: 14,
-              }}>
-                <span>📄</span>
-                <span style={{ flex: 1 }}>{f.name}</span>
-                <span style={{ color: '#ffffff', fontSize: 12 }}>{(f.size / 1024).toFixed(1)} KB</span>
-                {uploaded.length === 0 && (
-                  <button
-                    onClick={e => { e.stopPropagation(); removeFile(f.name) }}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ffffff', fontSize: 16, lineHeight: 1 }}
-                  >×</button>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
+        {/* Step 1 */}
+        <div style={{ padding: '16px 20px', border: '1px solid #1e293b', borderRadius: 8, marginBottom: 12, background: '#0a0f1a' }}>
+          <h3 style={{ margin: '0 0 12px', fontSize: 15, color: '#94a3b8', fontWeight: 500 }}>Step 1 — Upload PDFs</h3>
 
-        {uploaded.length === 0 && (
-          <button
-            onClick={handleUpload}
-            disabled={files.length === 0 || uploading}
+          <div
+            onDragOver={e => { e.preventDefault(); setDragging(true) }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={onDrop}
+            onClick={() => inputRef.current?.click()}
             style={{
-              padding: '8px 20px',
-              fontSize: 14,
-              fontWeight: 600,
-              borderRadius: 6,
-              border: 'none',
-              background: files.length === 0 || uploading ? '#d0d7de' : '#1f6feb',
-              color: files.length === 0 || uploading ? '#57606a' : '#fff',
-              cursor: files.length === 0 || uploading ? 'not-allowed' : 'pointer',
+              border: `2px dashed ${dragging ? '#6366f1' : '#1e293b'}`,
+              borderRadius: 8, padding: 24, textAlign: 'center', cursor: 'pointer',
+              background: dragging ? '#0f172a' : 'transparent', transition: 'all 0.15s', marginBottom: 12,
             }}
           >
-            {uploading ? 'Uploading…' : `Upload ${files.length > 0 ? `${files.length} file${files.length > 1 ? 's' : ''}` : 'Files'}`}
+            <input ref={inputRef} type="file" accept=".pdf,application/pdf" multiple style={{ display: 'none' }} onChange={onFileChange} />
+            <div style={{ fontSize: 22, marginBottom: 4 }}>⬆</div>
+            <div style={{ fontWeight: 500, fontSize: 14, color: '#cbd5e1' }}>Drop PDFs here or click to browse</div>
+            <div style={{ fontSize: 13, color: '#475569', marginTop: 2 }}>Multiple files supported · Max 20 MB each</div>
+          </div>
+
+          {files.length > 0 && (
+            <ul style={{ margin: '0 0 12px', padding: 0, listStyle: 'none' }}>
+              {files.map(f => (
+                <li key={f.name} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', background: '#0f172a', border: '1px solid #1e293b', borderRadius: 6, marginBottom: 4, fontSize: 13 }}>
+                  <span>📄</span>
+                  <span style={{ flex: 1, color: '#cbd5e1' }}>{f.name}</span>
+                  <span style={{ color: '#475569', fontSize: 12 }}>{(f.size / 1024).toFixed(1)} KB</span>
+                  {uploaded.length === 0 && (
+                    <button onClick={e => { e.stopPropagation(); removeFile(f.name) }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#475569', fontSize: 16, lineHeight: 1 }}>×</button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {uploaded.length === 0 && (
+            <button
+              onClick={handleUpload}
+              disabled={files.length === 0 || uploading}
+              style={{ padding: '8px 20px', fontSize: 14, fontWeight: 600, borderRadius: 6, border: 'none', background: files.length === 0 || uploading ? '#1e293b' : '#4f46e5', color: files.length === 0 || uploading ? '#475569' : '#fff', cursor: files.length === 0 || uploading ? 'not-allowed' : 'pointer' }}
+            >
+              {uploading ? 'Uploading…' : `Upload ${files.length > 0 ? `${files.length} file${files.length > 1 ? 's' : ''}` : 'Files'}`}
+            </button>
+          )}
+
+          {uploaded.length > 0 && (
+            <div style={{ fontSize: 13, color: '#86efac', background: '#14532d30', padding: '8px 12px', borderRadius: 6, border: '1px solid #14532d' }}>
+              ✓ {uploaded.length} file{uploaded.length > 1 ? 's' : ''} uploaded successfully
+            </div>
+          )}
+        </div>
+
+        {/* Step 2 */}
+        <div style={{ padding: '16px 20px', border: '1px solid #1e293b', borderRadius: 8, marginBottom: 16, background: '#0a0f1a', opacity: step === 2 ? 1 : 0.5 }}>
+          <h3 style={{ margin: '0 0 12px', fontSize: 15, color: '#94a3b8', fontWeight: 500 }}>Step 2 — Extract Terpenes</h3>
+          <button
+            onClick={handleProcess}
+            disabled={step !== 2 || processing || results.length > 0}
+            style={{ padding: '8px 20px', fontSize: 14, fontWeight: 600, borderRadius: 6, border: 'none', background: step !== 2 || processing || results.length > 0 ? '#1e293b' : '#4f46e5', color: step !== 2 || processing || results.length > 0 ? '#475569' : '#fff', cursor: step !== 2 || processing || results.length > 0 ? 'not-allowed' : 'pointer' }}
+          >
+            {processing ? 'Analyzing COAs…' : 'Process Reports'}
           </button>
-        )}
-
-        {/* Uploaded confirmation */}
-        {uploaded.length > 0 && (
-          <div style={{ fontSize: 13, color: '#1a7f37', background: '#dafbe1', padding: '8px 12px', borderRadius: 6 }}>
-            ✓ {uploaded.length} file{uploaded.length > 1 ? 's' : ''} uploaded successfully
-          </div>
-        )}
-      </div>
-
-      {/* ── Step 2: process ── */}
-      <div style={{
-        padding: '16px 20px',
-        border: `1px solid ${step === 2 ? '#d0d7de' : '#e8ecef'}`,
-        borderRadius: 8,
-        marginBottom: 16,
-        opacity: step === 2 ? 1 : 0.6,
-      }}>
-        <h2 style={{ margin: '0 0 12px', fontSize: 16 }}>
-          Step 2 — Extract Terpenes
-        </h2>
-
-        <button
-          onClick={handleProcess}
-          disabled={step !== 2 || processing || results.length > 0}
-          style={{
-            padding: '8px 20px',
-            fontSize: 14,
-            fontWeight: 600,
-            borderRadius: 6,
-            border: 'none',
-            background: step !== 2 || processing || results.length > 0 ? '#d0d7de' : '#1f6feb',
-            color: step !== 2 || processing || results.length > 0 ? '#57606a' : '#fff',
-            cursor: step !== 2 || processing || results.length > 0 ? 'not-allowed' : 'pointer',
-          }}
-        >
-          {processing ? 'Analyzing COAs…' : 'Process Reports'}
-        </button>
-      </div>
-
-      {/* Error */}
-      {error && (
-        <div style={{
-          marginTop: 16,
-          padding: '10px 14px',
-          background: '#ffebe9',
-          color: '#cf222e',
-          borderRadius: 6,
-          fontSize: 14,
-        }}>
-          {error}
         </div>
-      )}
 
-      {/* Results */}
-      {results.length > 0 && (
-        <div style={{ marginTop: 24 }}>
-          {results.map((r, i) => (
-            <div key={r.lab_report_id} style={{
-              border: '1px solid #d0d7de',
-              borderRadius: 8,
-              padding: '16px 20px',
-              marginBottom: 16,
-            }}>
-              <h3 style={{ margin: '0 0 4px', fontSize: 15 }}>
-                {uploaded[i]?.filename ?? `Report ${i + 1}`}
-              </h3>
-              <ResultsPanel result={r} />
-            </div>
-          ))}
-        </div>
-      )}
+        {error && <div style={{ marginBottom: 16, padding: '10px 14px', background: '#450a0a', color: '#fca5a5', borderRadius: 6, fontSize: 14 }}>{error}</div>}
 
-      {/* ── All lab reports list ── */}
-      <div style={{ marginTop: 40 }}>
-        <h2 style={{ margin: '0 0 16px', fontSize: 18 }}>All Lab Reports</h2>
-
-        {listError && (
-          <div style={{ padding: '10px 14px', background: '#ffebe9', color: '#cf222e', borderRadius: 6, fontSize: 14, marginBottom: 12 }}>
-            {listError}
-          </div>
-        )}
-
-        {!listError && labReports.length === 0 && !listLoading && (
-          <p style={{ color: '#57606a', fontSize: 14 }}>No lab reports yet.</p>
-        )}
-
-        {labReports.length > 0 && (
-          <>
-            {/* Process toolbar */}
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
-              marginBottom: 12, padding: '10px 14px',
-              background: '#f6f8fa', border: '1px solid #d0d7de', borderRadius: 6,
-            }}>
-              <span style={{ fontSize: 14, color: '#57606a', minWidth: 120 }}>
-                {selectedIds.size > 0
-                  ? `${selectedIds.size} selected`
-                  : 'Select pending reports to process'}
-              </span>
-              <button
-                onClick={handleListProcess}
-                disabled={selectedIds.size === 0 || listProcessing}
-                style={{
-                  padding: '6px 18px', fontSize: 14, fontWeight: 600,
-                  borderRadius: 6, border: 'none',
-                  background: selectedIds.size === 0 || listProcessing ? '#d0d7de' : '#1f6feb',
-                  color: selectedIds.size === 0 || listProcessing ? '#57606a' : '#fff',
-                  cursor: selectedIds.size === 0 || listProcessing ? 'not-allowed' : 'pointer',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {listProcessing ? 'Analyzing COAs…' : 'Process Selected'}
-              </button>
-            </div>
-
-            <table border={1} cellPadding={8} style={{ borderCollapse: 'collapse', width: '100%', fontSize: 14 }}>
-              <thead>
-                <tr>
-                  <th style={{ textAlign: 'center', width: 36 }}>
-                    <input
-                      type="checkbox"
-                      title="Select all pending"
-                      checked={allPendingSelected}
-                      disabled={pendingIds.length === 0}
-                      onChange={toggleSelectAll}
-                    />
-                  </th>
-                  <th style={{ textAlign: 'left' }}>Date</th>
-                  <th style={{ textAlign: 'left' }}>Status</th>
-                  <th style={{ textAlign: 'left' }}>Lab</th>
-                  <th style={{ textAlign: 'left' }}>Assigned product</th>
-                  <th style={{ textAlign: 'left' }}>Product (on report)</th>
-                  <th style={{ textAlign: 'left' }}>Batch ID</th>
-                  <th style={{ textAlign: 'left' }}>Test date</th>
-                  <th style={{ textAlign: 'right' }}>Total terpenes</th>
-                  <th style={{ textAlign: 'left' }}>Pass/Fail</th>
-                  <th style={{ textAlign: 'left' }}>Confidence</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(() => {
-                  const productMap = new Map(products.map(p => [p.id, p]))
-                  return labReports.map(r => {
-                  const canSelect = r.status === 'pending'
-                  const isSelected = selectedIds.has(r.id)
-                  const assignedProduct = r.product_id ? productMap.get(r.product_id) : undefined
-                  return (
-                    <tr
-                      key={r.id}
-                      style={{ background: isSelected ? '#ddf4ff' : undefined, cursor: 'pointer' }}
-                      onClick={() => navigate(`/lab-reports/${r.id}`)}
-                    >
-                      <td style={{ textAlign: 'center' }} onClick={e => e.stopPropagation()}>
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          disabled={!canSelect || listProcessing}
-                          title={canSelect ? undefined : 'Only pending reports can be processed'}
-                          onChange={() => toggleSelected(r.id)}
-                        />
-                      </td>
-                      <td style={{ whiteSpace: 'nowrap', color: '#57606a' }}>
-                        {r.created_at ? new Date(r.created_at).toLocaleDateString() : '—'}
-                      </td>
-                      <td><StatusBadge status={r.status} /></td>
-                      <td>{r.lab_name ?? <span style={{ opacity: 0.4 }}>—</span>}</td>
-                      <td>
-                        {assignedProduct
-                          ? <span style={{ fontWeight: 500 }}>{assignedProduct.name}</span>
-                          : <span style={{ opacity: 0.4 }}>—</span>}
-                      </td>
-                      <td>{r.product_name_on_report ?? <span style={{ opacity: 0.4 }}>—</span>}</td>
-                      <td>{r.batch_id ?? <span style={{ opacity: 0.4 }}>—</span>}</td>
-                      <td>{r.test_date ?? <span style={{ opacity: 0.4 }}>—</span>}</td>
-                      <td style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
-                        {r.total_terpenes != null ? `${r.total_terpenes}%` : <span style={{ opacity: 0.4 }}>—</span>}
-                      </td>
-                      <td><PassFailBadge value={r.pass_fail} /></td>
-                      <td>
-                        {r.confidence != null
-                          ? <ConfidenceBadge score={r.confidence} />
-                          : <span style={{ opacity: 0.4 }}>—</span>}
-                      </td>
-                    </tr>
-                  )
-                })})()}
-              </tbody>
-            </table>
-
-            {/* Results from list processing */}
-            {listResults.length > 0 && (
-              <div style={{ marginTop: 24 }}>
-                <h3 style={{ margin: '0 0 12px', fontSize: 16 }}>Processing Results</h3>
-                {listResults.map(r => (
-                  <div key={r.lab_report_id} style={{
-                    border: '1px solid #d0d7de', borderRadius: 8, padding: '16px 20px', marginBottom: 16,
-                  }}>
-                    <h4 style={{ margin: '0 0 4px', fontSize: 15 }}>{r.lab_report_id}</h4>
-                    <ResultsPanel result={r} />
-                  </div>
-                ))}
+        {results.length > 0 && (
+          <div style={{ marginBottom: 32 }}>
+            {results.map((r, i) => (
+              <div key={r.lab_report_id} style={{ border: '1px solid #1e293b', borderRadius: 8, padding: '16px 20px', marginBottom: 12, background: '#0a0f1a' }}>
+                <h3 style={{ margin: '0 0 4px', fontSize: 15, color: '#f1f5f9' }}>{uploaded[i]?.filename ?? `Report ${i + 1}`}</h3>
+                <ResultsPanel result={r} />
               </div>
-            )}
-          </>
+            ))}
+          </div>
         )}
 
-        {listLoading && (
-          <p style={{ color: '#57606a', fontSize: 14, marginTop: 8 }}>Loading…</p>
-        )}
+        {/* All lab reports */}
+        <div style={{ marginTop: 40 }}>
+          <h3 style={{ margin: '0 0 16px', fontSize: 17, fontWeight: 600 }}>All Lab Reports</h3>
 
-        {!listLoading && labReports.length === LIST_LIMIT + listOffset && (
-          <button
-            onClick={() => loadLabReports(listOffset + LIST_LIMIT)}
-            style={{
-              marginTop: 12,
-              padding: '6px 16px',
-              fontSize: 14,
-              borderRadius: 6,
-              border: '1px solid #d0d7de',
-              background: '#f6f8fa',
-              cursor: 'pointer',
-            }}
-          >
-            Load more
-          </button>
-        )}
+          {listError && <div style={{ padding: '10px 14px', background: '#450a0a', color: '#fca5a5', borderRadius: 6, fontSize: 14, marginBottom: 12 }}>{listError}</div>}
+          {!listError && labReports.length === 0 && !listLoading && <p style={{ color: '#475569', fontSize: 14 }}>No lab reports yet.</p>}
+
+          {labReports.length > 0 && (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 12, padding: '10px 14px', background: '#0f172a', border: '1px solid #1e293b', borderRadius: 6 }}>
+                <span style={{ fontSize: 13, color: '#94a3b8', minWidth: 120 }}>
+                  {selectedIds.size > 0 ? `${selectedIds.size} selected` : 'Select pending reports to process'}
+                </span>
+                <button
+                  onClick={handleListProcess}
+                  disabled={selectedIds.size === 0 || listProcessing}
+                  style={{ padding: '6px 18px', fontSize: 13, fontWeight: 600, borderRadius: 6, border: 'none', background: selectedIds.size === 0 || listProcessing ? '#1e293b' : '#4f46e5', color: selectedIds.size === 0 || listProcessing ? '#475569' : '#fff', cursor: selectedIds.size === 0 || listProcessing ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' }}
+                >
+                  {listProcessing ? 'Analyzing COAs…' : 'Process Selected'}
+                </button>
+              </div>
+
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                <thead>
+                  <tr style={{ color: '#475569', textAlign: 'left', borderBottom: '1px solid #1e293b' }}>
+                    <th style={{ width: 36, padding: '8px', textAlign: 'center' }}>
+                      <input type="checkbox" title="Select all pending" checked={allPendingSelected} disabled={pendingIds.length === 0} onChange={toggleSelectAll} />
+                    </th>
+                    <th style={thStyle}>Date</th>
+                    <th style={thStyle}>Status</th>
+                    <th style={thStyle}>Lab</th>
+                    <th style={thStyle}>Assigned Product</th>
+                    <th style={thStyle}>Product on Report</th>
+                    <th style={thStyle}>Batch ID</th>
+                    <th style={thStyle}>Test Date</th>
+                    <th style={{ ...thStyle, textAlign: 'right' }}>Total Terpenes</th>
+                    <th style={thStyle}>Pass/Fail</th>
+                    <th style={thStyle}>Confidence</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(() => {
+                    const productMap = new Map(products.map(p => [p.id, p]))
+                    return labReports.map(r => {
+                      const canSelect = r.status === 'pending'
+                      const isSelected = selectedIds.has(r.id)
+                      const assignedProduct = r.product_id ? productMap.get(r.product_id) : undefined
+                      return (
+                        <tr
+                          key={r.id}
+                          style={{ borderBottom: '1px solid #0f172a', cursor: 'pointer', background: isSelected ? '#0c1a2e' : 'transparent' }}
+                          onClick={() => navigate(`/admin/lab-reports/${r.id}`)}
+                          onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLTableRowElement).style.background = '#0a0f1a' }}
+                          onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLTableRowElement).style.background = 'transparent' }}
+                        >
+                          <td style={{ textAlign: 'center', padding: '10px 8px' }} onClick={e => e.stopPropagation()}>
+                            <input type="checkbox" checked={isSelected} disabled={!canSelect || listProcessing} title={canSelect ? undefined : 'Only pending reports can be processed'} onChange={() => toggleSelected(r.id)} />
+                          </td>
+                          <td style={{ ...tdStyle, whiteSpace: 'nowrap' }}>{r.created_at ? new Date(r.created_at).toLocaleDateString() : '—'}</td>
+                          <td style={tdStyle}><StatusBadge status={r.status} /></td>
+                          <td style={tdStyle}>{r.lab_name ?? <span style={{ color: '#475569' }}>—</span>}</td>
+                          <td style={{ ...tdStyle, color: '#f1f5f9' }}>{assignedProduct ? assignedProduct.name : <span style={{ color: '#475569' }}>—</span>}</td>
+                          <td style={tdStyle}>{r.product_name_on_report ?? <span style={{ color: '#475569' }}>—</span>}</td>
+                          <td style={tdStyle}>{r.batch_id ?? <span style={{ color: '#475569' }}>—</span>}</td>
+                          <td style={tdStyle}>{r.test_date ?? <span style={{ color: '#475569' }}>—</span>}</td>
+                          <td style={{ ...tdStyle, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                            {r.total_terpenes != null ? `${r.total_terpenes}%` : <span style={{ color: '#475569' }}>—</span>}
+                          </td>
+                          <td style={tdStyle}><PassFailBadge value={r.pass_fail} /></td>
+                          <td style={tdStyle}>{r.confidence != null ? <ConfidenceBadge score={r.confidence} /> : <span style={{ color: '#475569' }}>—</span>}</td>
+                        </tr>
+                      )
+                    })
+                  })()}
+                </tbody>
+              </table>
+
+              {listResults.length > 0 && (
+                <div style={{ marginTop: 24 }}>
+                  <h3 style={{ margin: '0 0 12px', fontSize: 15, color: '#94a3b8' }}>Processing Results</h3>
+                  {listResults.map(r => (
+                    <div key={r.lab_report_id} style={{ border: '1px solid #1e293b', borderRadius: 8, padding: '16px 20px', marginBottom: 12, background: '#0a0f1a' }}>
+                      <h4 style={{ margin: '0 0 4px', fontSize: 14, color: '#94a3b8' }}>{r.lab_report_id}</h4>
+                      <ResultsPanel result={r} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {listLoading && <p style={{ color: '#475569', fontSize: 14, marginTop: 8 }}>Loading…</p>}
+
+          {!listLoading && labReports.length === LIST_LIMIT + listOffset && (
+            <button onClick={() => loadLabReports(listOffset + LIST_LIMIT)} style={{ ...navBtnStyle, marginTop: 12 }}>
+              Load more
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )
 }
+
+const thStyle: React.CSSProperties = { padding: '8px 12px', fontWeight: 500, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }
+const tdStyle: React.CSSProperties = { padding: '10px 12px', color: '#cbd5e1' }
+const navBtnStyle: React.CSSProperties = { padding: '6px 12px', background: '#0f172a', border: '1px solid #1e293b', borderRadius: 6, color: '#94a3b8', cursor: 'pointer', fontSize: 13 }

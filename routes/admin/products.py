@@ -30,6 +30,7 @@ class ProductCannabinoidInput(BaseModel):
 class ProductCreate(BaseModel):
     name: str
     brand: Optional[str] = None
+    variant: Optional[str] = None
     category: ProductCategory = ProductCategory.other
     is_active: bool = True
     terpenes: List[ProductTerpeneInput] = []
@@ -39,6 +40,7 @@ class ProductCreate(BaseModel):
 class ProductUpdate(BaseModel):
     name: Optional[str] = None
     brand: Optional[str] = None
+    variant: Optional[str] = None
     category: Optional[ProductCategory] = None
     is_active: Optional[bool] = None
     terpenes: Optional[List[ProductTerpeneInput]] = None  # if provided, REPLACE
@@ -68,6 +70,9 @@ def list_products(
     session: Session = Depends(get_session),
     _: SupabaseAuthUser = Depends(require_admin),
     q: Optional[str] = Query(default=None),
+    brand: Optional[str] = Query(default=None),
+    category: Optional[ProductCategory] = Query(default=None),
+    variant: Optional[str] = Query(default=None),
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
 ):
@@ -83,6 +88,12 @@ def list_products(
                 cast(Product.category, String).ilike(like),
             )
         )
+    if brand:
+        id_stmt = id_stmt.where(Product.brand.ilike(f"%{brand.strip()}%"))
+    if category:
+        id_stmt = id_stmt.where(Product.category == category)
+    if variant:
+        id_stmt = id_stmt.where(Product.variant.ilike(f"%{variant.strip()}%"))
 
     id_stmt = id_stmt.order_by(Product.created_at.desc()).offset(offset).limit(limit)
     product_ids = session.exec(id_stmt).all()
@@ -108,6 +119,7 @@ def list_products(
                 "id": pid,
                 "name": product.name,
                 "brand": product.brand,
+                "variant": product.variant,
                 "category": product.category,
                 "is_active": product.is_active,
                 "terpenes": [],
@@ -143,6 +155,7 @@ def create_product(
     p = Product(
         name=payload.name.strip(),
         brand=payload.brand.strip() if payload.brand else None,
+        variant=payload.variant.strip() if payload.variant else None,
         category=payload.category,
         is_active=payload.is_active,
     )
@@ -267,6 +280,20 @@ def get_products_terpenes_batch(
     return result
 
 
+@router.get("/products/brands")
+def list_brands(
+    session: Session = Depends(get_session),
+    _: SupabaseAuthUser = Depends(require_admin),
+):
+    rows = session.exec(
+        select(Product.brand)
+        .where(Product.brand.is_not(None))
+        .distinct()
+        .order_by(Product.brand)
+    ).all()
+    return [r for r in rows if r]
+
+
 @router.get("/products/{product_id}")
 def get_product(
     product_id: UUID,
@@ -297,6 +324,8 @@ def update_product(
         p.name = payload.name.strip()
     if payload.brand is not None:
         p.brand = payload.brand.strip() if payload.brand else None
+    if payload.variant is not None:
+        p.variant = payload.variant.strip() if payload.variant else None
     if payload.category is not None:
         p.category = payload.category
     if payload.is_active is not None:

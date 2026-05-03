@@ -17,6 +17,7 @@ export type Product = {
   id: string
   name: string
   brand?: string | null
+  variant?: string | null
   category: string
   is_active: boolean
   terpenes?: Terpene[]
@@ -175,6 +176,7 @@ export type LabReport = {
   pass_fail: string | null
   confidence: number | null
   product_id: string | null
+  listing_id: string | null
   created_at: string | null
 }
 
@@ -205,4 +207,54 @@ export type LabReportDetail = LabReport & {
   cannabinoids: Terpene[]
   confidence_notes: string | null
   product_name: string | null
+}
+
+export type MatchCandidate = {
+  product_id: string
+  product_name: string
+  product_brand: string | null
+  product_variant: string | null
+  product_category: string
+  score: number
+  match_basis: string
+  dispensary_slugs: { slug: string; url: string | null }[]
+}
+
+export type UnmatchedListing = {
+  id: string
+  dispensary_id: string
+  dispensary_name: string
+  dispensary_slug: string
+  sku: string | null
+  scraped_name: string | null
+  scraped_brand: string | null
+  scraped_category: string | null
+  variant: string | null
+  price_cents: number | null
+  url: string | null
+  in_stock: boolean
+  candidates: MatchCandidate[]
+}
+
+export type Listing = {
+  id: string
+  product_id: string | null
+  product_name: string | null
+  product_brand: string | null
+  dispensary_id: string
+  dispensary_name: string
+  dispensary_slug: string
+  scraped_name: string | null
+  scraped_name_raw: string | null
+  scraped_brand: string | null
+  scraped_category: string | null
+  price_cents: number | null
+  variant: string | null
+  sku: string | null
+  url: string | null
+  in_stock: boolean
+  is_active: boolean
+  scraped_at: string | null
+  created_at: string
+  updated_at: string
 }

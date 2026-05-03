@@ -1,6 +1,6 @@
 // src/AddProduct.tsx
 import { useState } from 'react'
-import  supabase  from './utils/supabase'
+import api from './api/client'
 
 type TerpeneInput = {
   name: string
@@ -35,45 +35,16 @@ export default function AddProduct() {
     setMsg('')
     setLoading(true)
 
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-
-    if (!session?.access_token) {
-      setMsg('Not authenticated')
-      setLoading(false)
-      return
-    }
-
-    const payload = {
-      name,
-      brand: brand || null,
-      category,
-      is_active: isActive,
-      terpenes: terpenes
-        .filter(t => t.name.trim() !== '')
-        .map(t => ({
-          name: t.name.trim(),
-          percent: t.percent ?? null,
-        })),
-    }
-
     try {
-      const res = await fetch('https://sturdy-parakeet-qg59j4pjp9q29j9j-8000.app.github.dev/admin/products', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify(payload),
+      const data = await api.products.create({
+        name,
+        brand: brand || null,
+        category,
+        is_active: isActive,
+        terpenes: terpenes
+          .filter(t => t.name.trim() !== '')
+          .map(t => ({ name: t.name.trim(), percent: t.percent ?? null })),
       })
-
-      if (!res.ok) {
-        const text = await res.text()
-        throw new Error(text || 'Request failed')
-      }
-
-      const data = await res.json()
       setMsg(`Created product ${data.id}`)
       setName('')
       setBrand('')

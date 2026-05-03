@@ -1,9 +1,9 @@
 """
-import_listings.py — Import scraped listing CSVs directly into the DB.
+import_listings.py — Import scraped listing CSVs into the DB.
 
-For each row in the CSV:
-  - Match or create a Product by (name, brand) — case-insensitive exact match
-  - Create or update a Listing keyed on (dispensary_id, sku)
+Inserts new listings keyed on (dispensary_id, sku). Skips rows whose SKU
+already exists for that dispensary. Product matching is not performed here —
+it happens in the admin UI.
 
 Usage:
   python scripts/import_listings.py \\
@@ -92,6 +92,16 @@ def main():
     cur = conn.cursor()
 
     # ------------------------------------------------------------------
+    # Load brand alias map
+    # ------------------------------------------------------------------
+    cur.execute("SELECT alias, canonical_brand FROM brand_aliases")
+    brand_aliases: dict[str, str] = {a: c for a, c in cur.fetchall()}
+    print(f"  {len(brand_aliases)} brand aliases loaded")
+
+    def resolve_brand(brand: str) -> str:
+        return brand_aliases.get(brand, brand)
+
+    # ------------------------------------------------------------------
     # Resolve dispensary slugs
     # ------------------------------------------------------------------
     slugs = {r["dispensary_slug"].strip() for r in rows if r.get("dispensary_slug")}
@@ -101,118 +111,66 @@ def main():
     if missing:
         print(f"  [WARN] Dispensaries not found (rows will be skipped): {missing}")
 
-    # ------------------------------------------------------------------
-    # Load existing products → {(name_lower, brand_lower): id}
-    # ------------------------------------------------------------------
-    cur.execute("SELECT id, LOWER(name), LOWER(COALESCE(brand, '')) FROM products")
-    product_cache: dict[tuple, str] = {
-        (name, brand): str(pid) for pid, name, brand in cur.fetchall()
-    }
-    print(f"  {len(product_cache)} existing products loaded")
-
     now = utcnow()
-
-    # ------------------------------------------------------------------
-    # Collect new products (deduplicate within the CSV too)
-    # ------------------------------------------------------------------
-    new_products: list[tuple] = []
-    for row in rows:
-        name = (row.get("name") or "").strip()
-        brand = (row.get("brand") or "").strip()
-        category = (row.get("category") or "other").strip()
-        if not name:
-            continue
-        key = (name.lower(), brand.lower())
-        if key not in product_cache:
-            new_id = str(uuid.uuid4())
-            product_cache[key] = new_id
-            new_products.append((new_id, name, brand or None, category, True, now, now))
-
-    if new_products:
-        if not args.dry_run:
-            psycopg2.extras.execute_values(
-                cur,
-                "INSERT INTO products (id, name, brand, category, is_active, created_at, updated_at) VALUES %s",
-                new_products,
-            )
-        print(f"  {'[DRY] Would create' if args.dry_run else 'Created'} {len(new_products)} new products")
-
-    # ------------------------------------------------------------------
-    # Listings: per-dispensary load, then batch insert/update
-    # ------------------------------------------------------------------
-    total_created = 0
-    total_updated = 0
-    total_skipped = 0
+    total_inserted = 0
+    total_skipped  = 0
 
     for slug, dispensary_id in dispensary_map.items():
+        # Load existing SKUs for this dispensary
         cur.execute(
-            "SELECT id, sku FROM listings WHERE dispensary_id = %s AND sku IS NOT NULL",
+            "SELECT sku FROM listings WHERE dispensary_id = %s AND sku IS NOT NULL",
             (dispensary_id,),
         )
-        listing_cache: dict[str, str] = {sku: str(lid) for lid, sku in cur.fetchall()}
+        existing_skus: set[str] = {sku for (sku,) in cur.fetchall()}
 
         disp_rows = [r for r in rows if r.get("dispensary_slug", "").strip() == slug]
-
         to_insert: list[tuple] = []
-        to_update: list[tuple] = []
 
         for row in disp_rows:
-            name = (row.get("name") or "").strip()
-            brand = (row.get("brand") or "").strip()
-            if not name:
+            sku = (row.get("sku") or "").strip() or None
+            if sku and sku in existing_skus:
                 total_skipped += 1
                 continue
 
-            product_id = product_cache.get((name.lower(), brand.lower()))
-            if not product_id:
+            scraped_name     = (row.get("name")     or "").strip() or None
+            scraped_name_raw = (row.get("name_raw") or "").strip() or None
+            scraped_brand    = resolve_brand((row.get("brand") or "").strip()) or None
+
+            if not scraped_name:
                 total_skipped += 1
                 continue
 
-            sku        = (row.get("sku") or "").strip() or None
-            price      = parse_int(row.get("price_cents"))
-            in_stock   = parse_bool(row.get("in_stock", "true"))
-            variant    = (row.get("variant") or "").strip() or None
-            url        = (row.get("product_url") or "").strip() or None
-            scraped_at = (row.get("scraped_at") or "").strip() or None
-
-            existing_id = listing_cache.get(sku) if sku else None
-
-            if existing_id:
-                # (price, variant, url, in_stock, scraped_at, updated_at, id)
-                to_update.append((price, variant, url, in_stock, scraped_at, now, existing_id))
-            else:
-                new_id = str(uuid.uuid4())
-                to_insert.append((
-                    new_id, product_id, dispensary_id,
-                    price, variant, sku, url, in_stock, True, scraped_at, now, now,
-                ))
-                if sku:
-                    listing_cache[sku] = new_id
+            to_insert.append((
+                str(uuid.uuid4()),
+                dispensary_id,
+                sku,
+                parse_int(row.get("price_cents")),
+                (row.get("variant") or "").strip() or None,
+                (row.get("product_url") or "").strip() or None,
+                parse_bool(row.get("in_stock", "true")),
+                True,                                          # is_active
+                (row.get("scraped_at") or "").strip() or None,
+                scraped_name,
+                scraped_name_raw,
+                scraped_brand,
+                (row.get("category") or "").strip() or None,
+                now,
+                now,
+            ))
 
         if to_insert and not args.dry_run:
             psycopg2.extras.execute_values(
                 cur,
                 """INSERT INTO listings
-                   (id, product_id, dispensary_id, price_cents, variant, sku, url,
-                    in_stock, is_active, scraped_at, created_at, updated_at)
+                   (id, dispensary_id, sku, price_cents, variant, url,
+                    in_stock, is_active, scraped_at,
+                    scraped_name, scraped_name_raw, scraped_brand, scraped_category, created_at, updated_at)
                    VALUES %s""",
                 to_insert,
             )
 
-        if to_update and not args.dry_run:
-            psycopg2.extras.execute_batch(
-                cur,
-                """UPDATE listings
-                   SET price_cents=%s, variant=%s, url=%s, in_stock=%s,
-                       scraped_at=%s, updated_at=%s
-                   WHERE id=%s""",
-                to_update,
-            )
-
-        total_created += len(to_insert)
-        total_updated += len(to_update)
-
-        print(f"  {slug}: {len(to_insert)} to create, {len(to_update)} to update")
+        total_inserted += len(to_insert)
+        print(f"  {slug}: {len(to_insert)} inserted, {len(disp_rows) - len(to_insert)} skipped")
 
     if not args.dry_run:
         conn.commit()
@@ -220,8 +178,7 @@ def main():
 
     print()
     print("Done.")
-    print(f"  Products: {len(new_products)} created, {len(product_cache) - len(new_products)} matched")
-    print(f"  Listings: {total_created} created, {total_updated} updated, {total_skipped} skipped")
+    print(f"  Listings: {total_inserted} inserted, {total_skipped} skipped")
 
 
 if __name__ == "__main__":

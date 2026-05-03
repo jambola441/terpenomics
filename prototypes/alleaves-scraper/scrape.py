@@ -22,12 +22,13 @@ Output columns (identical to travel_agency_listings.csv):
 
 import argparse
 import os
+import re
 import sys
 import time
 from urllib.parse import urlencode
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../scripts"))
-from scraper_common import map_category, now_iso, store_slug, write_csv  # noqa: E402
+from scraper_common import _norm, canonical_brands, map_category, now_iso, store_slug, strip_noinfo, write_csv  # noqa: E402
 
 try:
     import httpx
@@ -142,9 +143,9 @@ def _inventory_params(skip: int) -> str:
     return urlencode(params)
 
 
-def fetch_in_stock_ids(client: httpx.Client) -> set[str]:
-    """Return the set of id_item strings that currently have available > 0."""
-    in_stock: set[str] = set()
+def fetch_in_stock_ids(client: httpx.Client) -> dict[str, str]:
+    """Return {id_item: batch} for items with available > 0. First batch per item wins."""
+    in_stock: dict[str, str] = {}
     skip = 0
     total = None
 
@@ -166,8 +167,8 @@ def fetch_in_stock_ids(client: httpx.Client) -> set[str]:
         for r in page:
             if (r.get("available") or 0) > 0:
                 item_id = str(r.get("id_item", ""))
-                if item_id:
-                    in_stock.add(item_id)
+                if item_id and item_id not in in_stock:
+                    in_stock[item_id] = r.get("batch") or ""
 
         skip += len(page)
         if len(page) < PAGE_SIZE or (total and skip >= total):
@@ -211,21 +212,70 @@ def map_classification(strain_type: str | None) -> str:
     return strain_type.lower()  # "Hybrid" → "hybrid", "Indica" → "indica", etc.
 
 
+# Inline patterns removed from within each section (not whole-section drops)
+_INLINE_REMOVE_RE = re.compile(
+    r'\[[\d.,]+\s*(?:g|oz|ml|mg|lb|pk|ct)\]'   # [1g], [3.5g]
+    r'|[\d.,]+\s*(?:g|oz|ml|mg|lb)\b'           # 0.50g, 3.5g, 100mg
+    r'|\([shib/]+\)',                            # (H), (S), (I)
+    re.I,
+)
+
+
+def resolve_brand(name: str, raw_brand: str, known_brands: set[str]) -> str:
+    """If brand is missing, detect it from name parts against the known brand set."""
+    if raw_brand:
+        return raw_brand
+    sep = ' | ' if ' | ' in name else (' - ' if ' - ' in name else None)
+    if not sep:
+        return raw_brand
+    norm_brands = {_norm(b): b for b in known_brands}
+    for part in name.split(sep):
+        pl = _norm(part)
+        if pl in norm_brands:
+            return norm_brands[pl]
+        for nb, orig in norm_brands.items():
+            if pl.startswith(nb + ' '):
+                return orig
+    return raw_brand
+
+
+def clean_name(name: str, brand: str) -> str:
+    """Remove brand and quantity substrings inline, normalize separator to |."""
+    if brand:
+        name = re.sub(re.escape(brand), '', name, flags=re.I)
+        name = re.sub(r'^[\s|\-]+|[\s|\-]+$', '', name).strip()
+
+    if ' | ' in name:
+        sep = ' | '
+    elif ' - ' in name:
+        sep = ' - '
+    else:
+        return re.sub(r'\s{2,}', ' ', name).strip()
+
+    parts = [p.strip() for p in name.split(sep)]
+    kept = []
+    for part in parts:
+        part = _INLINE_REMOVE_RE.sub('', part).strip(' ,')
+        if part:
+            kept.append(part)
+    result = ' | '.join(kept).strip() if kept else name
+    return strip_noinfo(result)
+
+
 def normalise(
     r: dict,
-    in_stock_ids: set[str],
+    in_stock_ids: dict[str, str],
     dispensary_slug: str,
     scraped_at: str,
+    known_brands: set[str],
     store_url: str = "",
 ) -> dict | None:
     item_name = (r.get("item") or "").strip()
     if not item_name:
         return None
 
-    if "SAMPLES" in item_name.upper():
-        return None
-
     item_id = str(r.get("id_item", ""))
+    brand = resolve_brand(item_name, (r.get("brand") or "").strip(), known_brands)
 
     price_raw = r.get("price_retail_adult_use") or 0
     price_cents = int(round(float(price_raw) * 100))
@@ -236,9 +286,10 @@ def normalise(
     return {
         "dispensary_slug": dispensary_slug,
         "sku":             item_id,
-        "product_uuid":    item_id,
-        "name":            item_name,
-        "brand":           (r.get("brand") or "").strip(),
+        "batch_id":        in_stock_ids.get(item_id, ""),
+        "name":            clean_name(item_name, brand),
+        "name_raw":        item_name,
+        "brand":           brand,
         "category":        map_category(r.get("category")),
         "variant":         derive_variant(r.get("weight_useable"), r.get("uom_weight_useable")),
         "price_cents":     price_cents,
@@ -246,7 +297,7 @@ def normalise(
         "cbd_percent":     cbd if cbd else "",
         "classification":  map_classification(r.get("strain_type")),
         "in_stock":        "TRUE" if item_id in in_stock_ids else "FALSE",
-        "product_url":     _product_url(store_url, r.get("brand") or "", item_name),
+        "product_url":     _product_url(store_url, brand, item_name),
         "scraped_at":      scraped_at,
     }
 
@@ -259,13 +310,13 @@ def parse_args():
     p = argparse.ArgumentParser(description="Scrape Alleaves POS catalog to CSV")
     p.add_argument("--tenant", default="brooklynorganicbuds",
                    help="Alleaves tenant ID (used in API auth)")
-    p.add_argument("--dispensary-slug", default=None,
-                   help="Dispensary slug for the CSV (defaults to --tenant value)")
+    p.add_argument("--dispensary-slug", default="brooklyn-organic-buds",
+                   help="Dispensary slug for the CSV")
     p.add_argument("--out", default=None)
     p.add_argument("--username", default=None)
     p.add_argument("--password", default=None)
-    p.add_argument("--store-url", default="",
-                   help="Storefront base URL for product links, e.g. https://brooklynorganicbuds.com/store/product")
+    p.add_argument("--store-url", default="https://brooklynorganicbuds.com/store/product",
+                   help="Storefront base URL for product links")
     return p.parse_args()
 
 
@@ -282,7 +333,7 @@ def main():
     out_path = args.out or os.path.join(
         os.path.dirname(__file__), f"{args.tenant}_listings.csv"
     )
-    dispensary_slug = args.dispensary_slug or args.tenant
+    dispensary_slug = args.dispensary_slug
     scraped_at = now_iso()
 
     print(f"Logging in as {username} ...")
@@ -298,10 +349,16 @@ def main():
         in_stock_ids = fetch_in_stock_ids(client)
         print(f"  {len(in_stock_ids)} items currently in stock.")
 
+    raw_brands = {(r.get("brand") or "").strip() for r in items if r.get("brand")}
+    brand_canon = canonical_brands(raw_brands)
+    known_brands = set(brand_canon.values())
+
     rows = []
     skipped = 0
     for r in items:
-        row = normalise(r, in_stock_ids, dispensary_slug, scraped_at, args.store_url)
+        if r.get("brand"):
+            r = {**r, "brand": brand_canon.get(r["brand"].strip(), r["brand"].strip())}
+        row = normalise(r, in_stock_ids, dispensary_slug, scraped_at, known_brands, args.store_url)
         if row is None:
             skipped += 1
         else:

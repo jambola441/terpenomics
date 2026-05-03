@@ -59,7 +59,6 @@ class ProductCategory(str, Enum):
     concentrate = "concentrate"
     preroll = "preroll"
     tinctures = "tinctures"
-    tincture = "tincture"
     topical = "topical"
     merch = "merch"
     other = "other"
@@ -68,6 +67,7 @@ class ProductCategory(str, Enum):
 class ProductBase(SQLModel):
     name: str = Field(max_length=200, index=True)
     brand: Optional[str] = Field(default=None, max_length=200)
+    variant: Optional[str] = Field(default=None, max_length=100)
     category: ProductCategory = Field(default=ProductCategory.other, nullable=False)
     is_active: bool = Field(default=True, nullable=False)
 
@@ -125,8 +125,8 @@ class LabReport(SQLModel, TimestampMixin, table=True):
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
 
-    # Which product these terpenes belong to (optional at upload time)
     product_id: Optional[UUID] = Field(default=None, foreign_key="products.id", index=True)
+    listing_id: Optional[UUID] = Field(default=None, foreign_key="listings.id", index=True)
 
     # Metadata extracted from the COA
     lab_name:               Optional[str]   = Field(default=None, max_length=300)
@@ -218,7 +218,7 @@ class Dispensary(DispensaryBase, TimestampMixin, table=True):
 
 
 class ListingBase(SQLModel):
-    product_id: UUID = Field(foreign_key="products.id", index=True, nullable=False)
+    product_id: Optional[UUID] = Field(default=None, foreign_key="products.id", index=True)
     dispensary_id: UUID = Field(foreign_key="dispensaries.id", index=True, nullable=False)
     price_cents: Optional[int] = Field(default=None, ge=0)
     variant: Optional[str] = Field(default=None, max_length=100)
@@ -227,6 +227,10 @@ class ListingBase(SQLModel):
     in_stock: bool = Field(default=True, nullable=False)
     is_active: bool = Field(default=True, nullable=False)
     scraped_at: Optional[datetime] = Field(default=None)
+    scraped_name: Optional[str] = Field(default=None, max_length=300)
+    scraped_name_raw: Optional[str] = Field(default=None, max_length=300)
+    scraped_brand: Optional[str] = Field(default=None, max_length=200)
+    scraped_category: Optional[str] = Field(default=None, max_length=100)
 
 
 class Listing(ListingBase, TimestampMixin, table=True):
@@ -234,7 +238,7 @@ class Listing(ListingBase, TimestampMixin, table=True):
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
 
-    product: "Product" = Relationship(back_populates="listings")
+    product: Optional["Product"] = Relationship(back_populates="listings")
     dispensary: Dispensary = Relationship(back_populates="listings")
     purchase_items: list["PurchaseItem"] = Relationship(back_populates="listing")
 

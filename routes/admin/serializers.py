@@ -18,6 +18,7 @@ def serialize_product(p: Product, terpenes: list, cannabinoids: list = []) -> di
         "id": str(p.id),
         "name": p.name,
         "brand": p.brand,
+        "variant": p.variant,
         "category": p.category,
         "is_active": p.is_active,
         "terpenes": terpenes,

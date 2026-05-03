@@ -168,7 +168,7 @@ export default function LabReportDetailPage() {
   if (loading) {
     return (
       <div style={{ padding: 24 }}>
-        <Link to="/lab-reports" style={{ fontSize: 14, color: '#57606a' }}>← All Lab Reports</Link>
+        <Link to="/admin/lab-reports" style={{ fontSize: 14, color: '#57606a' }}>← All Lab Reports</Link>
         <p style={{ marginTop: 24, color: '#57606a' }}>Loading…</p>
       </div>
     )
@@ -177,7 +177,7 @@ export default function LabReportDetailPage() {
   if (error || !report) {
     return (
       <div style={{ padding: 24 }}>
-        <Link to="/lab-reports" style={{ fontSize: 14, color: '#57606a' }}>← All Lab Reports</Link>
+        <Link to="/admin/lab-reports" style={{ fontSize: 14, color: '#57606a' }}>← All Lab Reports</Link>
         <div style={{ marginTop: 24, padding: '10px 14px', background: '#ffebe9', color: '#cf222e', borderRadius: 6 }}>
           {error ?? 'Report not found'}
         </div>
@@ -195,7 +195,7 @@ export default function LabReportDetailPage() {
   return (
     <div style={{ padding: 24, maxWidth: 760 }}>
       {/* Breadcrumb */}
-      <Link to="/lab-reports" style={{ fontSize: 14, color: '#57606a', textDecoration: 'none' }}>
+      <Link to="/admin/lab-reports" style={{ fontSize: 14, color: '#57606a', textDecoration: 'none' }}>
         ← All Lab Reports
       </Link>
 
@@ -289,7 +289,7 @@ export default function LabReportDetailPage() {
             {assigning ? 'Saving…' : 'Save Assignment'}
           </button>
           {selectedProduct && (
-            <Link to={`/products/${selectedProduct.id}`} style={{ fontSize: 13, color: '#57606a' }}>
+            <Link to={`/admin/products/${selectedProduct.id}`} style={{ fontSize: 13, color: '#57606a' }}>
               View product →
             </Link>
           )}

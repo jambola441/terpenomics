@@ -23,6 +23,8 @@ import type {
   LabReportDetail,
   LabReportUpload,
   LabReportResult,
+  Listing,
+  UnmatchedListing,
 } from '../types'
 
 // Get API base URL from environment variable or use default
@@ -125,7 +127,7 @@ export const api = {
   },
 
   products: {
-    list: (params?: ListParams) =>
+    list: (params?: ListParams & { brand?: string; category?: string; variant?: string }) =>
       authenticatedFetch<Product[]>(`/admin/products${buildQueryString(params)}`),
     
     get: (id: string) =>
@@ -154,6 +156,9 @@ export const api = {
 
     listAllCannabinoids: () =>
       authenticatedFetch<Cannabinoid[]>(`/admin/products/cannabinoids`),
+
+    listAllBrands: () =>
+      authenticatedFetch<string[]>(`/admin/products/brands`),
   },
 
   purchases: {
@@ -199,10 +204,10 @@ export const api = {
     get: (id: string) =>
       authenticatedFetch<LabReportDetail>(`/admin/lab-reports/${id}`),
 
-    assign: (id: string, productId: string | null) =>
+    assign: (id: string, productId: string | null, listingId?: string | null) =>
       authenticatedFetch<LabReport>(`/admin/lab-reports/${id}`, {
         method: 'POST',
-        body: JSON.stringify({ product_id: productId }),
+        body: JSON.stringify({ product_id: productId, listing_id: listingId ?? null }),
       }),
 
     upload: async (files: File[]): Promise<LabReportUpload[]> => {
@@ -254,6 +259,40 @@ export const api = {
 
       return res.json()
     },
+  },
+
+  dispensaries: {
+    list: (params?: { q?: string; limit?: number; offset?: number }) =>
+      authenticatedFetch<{ id: string; name: string; slug: string }[]>(`/admin/dispensaries${buildQueryString(params)}`),
+  },
+
+  listings: {
+    list: (params?: { q?: string; product_id?: string; dispensary_id?: string; matched?: boolean; limit?: number; offset?: number }) =>
+      authenticatedFetch<Listing[]>(`/admin/listings${buildQueryString(params)}`),
+
+    listUnmatched: (params?: { dispensary_id?: string; limit?: number; offset?: number }) =>
+      authenticatedFetch<UnmatchedListing[]>(`/admin/listings/unmatched${buildQueryString(params)}`),
+
+    match: (listingId: string, productId: string) =>
+      authenticatedFetch<Listing>(`/admin/listings/${listingId}/match`, {
+        method: 'POST',
+        body: JSON.stringify({ product_id: productId }),
+      }),
+
+    createAndMatch: (listingId: string) =>
+      authenticatedFetch<Listing>(`/admin/listings/${listingId}/match`, {
+        method: 'POST',
+        body: JSON.stringify({ product_id: null }),
+      }),
+
+    bulkCreateProducts: (listingIds: string[]) =>
+      authenticatedFetch<{ created: number; errors: { listing_id: string; error: string }[] }>(
+        `/admin/listings/bulk-create-products`,
+        { method: 'POST', body: JSON.stringify({ listing_ids: listingIds }) },
+      ),
+
+    unmatch: (listingId: string) =>
+      authenticatedFetch<Listing>(`/admin/listings/${listingId}/unmatch`, { method: 'POST' }),
   },
 
   portal: {

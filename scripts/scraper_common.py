@@ -18,8 +18,9 @@ from datetime import datetime, timezone
 CSV_COLUMNS = [
     "dispensary_slug",
     "sku",
-    "product_uuid",
+    "batch_id",
     "name",
+    "name_raw",
     "brand",
     "category",
     "variant",
@@ -92,6 +93,107 @@ def map_category(raw: str | None) -> str:
         return "other"
     top = raw.split(" > ")[0].strip()
     return CATEGORY_MAP.get(top, CATEGORY_MAP.get(top.lower(), "other"))
+
+
+# ---------------------------------------------------------------------------
+# Variant normalization
+# ---------------------------------------------------------------------------
+
+_MG_RE = re.compile(r'^(\d+(?:\.\d+)?)\s*mg$', re.I)
+
+def normalize_variant(v: str) -> str:
+    """Normalize variant strings for cross-source consistency.
+
+    Converts ≥500mg to grams (e.g. 500mg → 0.5g) since vape carts/concentrates
+    are measured in grams by some sources and mg by others.
+    Keeps 100mg/200mg/etc. as-is (standard edible doses).
+    """
+    m = _MG_RE.match(v.strip())
+    if m:
+        mg = float(m.group(1))
+        if mg >= 500:
+            return f"{mg / 1000:g}g"
+    return v
+
+
+# ---------------------------------------------------------------------------
+# Name normalization
+# ---------------------------------------------------------------------------
+
+# Longest alternatives first so compound tokens are consumed before their parts
+_NOINFO_PAT = re.compile(
+    r'\s*\b(?:'
+    # Pre-roll format descriptors
+    r'Single\s+Pre[-\s]?Rolls?\s+Pack'
+    r'|Pre[-\s]?Rolls?\s+Pack'
+    r'|Singles?\s+Pre[-\s]?Rolls?'
+    r'|Premium\s+Flower'
+    r'|Pre[-\s]?Rolls?'
+    r'|Singles?'
+    # Weight segments (already in variant)
+    r'|\d+(?:/\d+)?\s*Gram\s*Joints?'
+    r'|\d+(?:/\d+)?\s*Gram'
+    # Pack / count (redundant given name+brand+variant+category uniqueness)
+    r'|\d+\s*pk'
+    r'|\d+\s*ct'
+    # Internal sample inventory
+    r'|Samples?'
+    # Vape / format vessel descriptors — strip generic ones, keep format-distinguishing
+    r'|Disposable\s+Vape\s+Pen'
+    r'|Distillate\s+Vape'
+    r'|Flower\s+Jar'
+    r'|Vape\s+Pen'
+    r'|Cones?'
+    r')\b\s*',
+    re.I,
+)
+
+def strip_noinfo(name: str) -> str:
+    """Strip noinfo tokens from anywhere within each pipe-separated segment."""
+    parts = [p.strip() for p in name.split(' | ')]
+    kept = []
+    for p in parts:
+        if not p:
+            continue
+        cleaned = re.sub(r'\s+', ' ', _NOINFO_PAT.sub(' ', p)).strip()
+        if cleaned:
+            kept.append(cleaned)
+    return ' | '.join(kept).strip()
+
+
+# ---------------------------------------------------------------------------
+# Brand normalization
+# ---------------------------------------------------------------------------
+
+def _norm(s: str) -> str:
+    """Lowercase and strip punctuation — used for loose brand matching."""
+    return re.sub(r"[^\w\s]", "", s.lower()).strip()
+
+
+def _cap_score(s: str) -> float:
+    """Fraction of alphabetic chars that are uppercase."""
+    alpha = [c for c in s if c.isalpha()]
+    if not alpha:
+        return 0.0
+    return sum(1 for c in alpha if c.isupper()) / len(alpha)
+
+
+def canonical_brands(raw_brands: set[str]) -> dict[str, str]:
+    """Return {raw_brand: canonical_brand}.
+
+    Brands that normalize to the same string (case/punct-insensitive) are
+    collapsed to the variant with the highest uppercase fraction.
+    Ties broken by longer string (preserves punctuation like apostrophes/periods).
+    """
+    groups: dict[str, list[str]] = {}
+    for b in raw_brands:
+        groups.setdefault(_norm(b), []).append(b)
+    result: dict[str, str] = {}
+    for variants in groups.values():
+        best = max(variants, key=lambda v: (_cap_score(v), len(v)))
+        for v in variants:
+            result[v] = best
+    return result
 
 
 # ---------------------------------------------------------------------------

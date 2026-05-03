@@ -35,7 +35,7 @@ import time
 from datetime import datetime, timezone
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../scripts"))
-from scraper_common import map_category, now_iso, write_csv  # noqa: E402
+from scraper_common import canonical_brands, map_category, normalize_variant, now_iso, strip_noinfo, write_csv  # noqa: E402
 
 import httpx
 
@@ -46,7 +46,7 @@ import httpx
 BASE_URL        = "https://www.thetravelagency.co"
 API_URL         = f"{BASE_URL}/menu.data"
 DISPENSARY_SLUG = "travel-agency-ny"
-OUTPUT_FILE     = "travel_agency_listings.csv"
+OUTPUT_FILE     = os.path.join(os.path.dirname(os.path.abspath(__file__)), "travel_agency_listings.csv")
 PAGE_SIZE       = 20   # server-side fixed; limit= param is ignored
 DELAY_SECS      = 1.0  # polite delay between requests
 
@@ -135,7 +135,7 @@ def normalise(p: dict, scraped_at: str) -> dict:
         price_cents = ""
 
     # variant: prefer "option" (e.g. "2g") over grams fallback
-    variant = str(p.get("option") or p.get("size") or "").strip()
+    variant = normalize_variant(str(p.get("option") or p.get("size") or "").strip())
     if not variant and p.get("grams"):
         variant = f"{p['grams']}g"
 
@@ -158,14 +158,15 @@ def normalise(p: dict, scraped_at: str) -> dict:
     else:
         in_stock = "FALSE" if str(stock_val).lower() in ("0", "out_of_stock", "false") else "TRUE"
 
-    sku          = str(p.get("slug") or p.get("sku") or "").strip()
-    product_uuid = str(p.get("id") or "").strip()
+    sku      = str(p.get("slug") or p.get("sku") or "").strip()
+    batch_id = str(p.get("id") or "").strip()
 
     return {
         "dispensary_slug": DISPENSARY_SLUG,
         "sku":             sku,
-        "product_uuid":    product_uuid,
-        "name":            str(p.get("name") or "").strip(),
+        "batch_id":        batch_id,
+        "name":            strip_noinfo(str(p.get("name") or "").strip()),
+        "name_raw":        str(p.get("name") or "").strip(),
         "brand":           str(p.get("brand") or "").strip(),
         "category":        category,
         "variant":         variant,
@@ -239,6 +240,12 @@ def main() -> None:
 
             page += 1
             time.sleep(DELAY_SECS)
+
+    raw_brands = {r["brand"] for r in all_rows if r["brand"]}
+    brand_canon = canonical_brands(raw_brands)
+    for r in all_rows:
+        if r["brand"]:
+            r["brand"] = brand_canon.get(r["brand"], r["brand"])
 
     if not all_rows:
         print(

@@ -1,8 +1,5 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
 import Login from './Login'
+import AdminHome from './AdminHome'
 import AddProduct from './AddProduct'
 import Products from './Products'
 import ProductEdit from './ProductEdit'
@@ -12,27 +9,29 @@ import Purchases from './Purchases'
 import CustomerPortal from './CustomerPortal'
 import LabReportUpload from './LabReportUpload'
 import LabReportDetail from './LabReportDetail'
+import ListingMatch from './ListingMatch'
+import Listings from './Listings'
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <>
-      <header>banger</header>
       <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/add-product" element={<AddProduct />} />
-        <Route path="/products" element={<Products />} />
-        <Route path="/products/:productId" element={<ProductEdit />} />
-        <Route path="/customers" element={<Customers />} />
-        <Route path="/customers/:customerId" element={<CustomerEdit />} />
-        <Route path="/purchases" element={<Purchases />} />
+        <Route path="/admin" element={<AdminHome />} />
+        <Route path="/admin/add-product" element={<AddProduct />} />
+        <Route path="/admin/products" element={<Products />} />
+        <Route path="/admin/products/:productId" element={<ProductEdit />} />
+        <Route path="/admin/customers" element={<Customers />} />
+        <Route path="/admin/customers/:customerId" element={<CustomerEdit />} />
+        <Route path="/admin/purchases" element={<Purchases />} />
+        <Route path="/admin/lab-reports" element={<LabReportUpload />} />
+        <Route path="/admin/lab-reports/:reportId" element={<LabReportDetail />} />
+        <Route path="/admin/listings" element={<Listings />} />
+        <Route path="/admin/listings/match" element={<ListingMatch />} />
         <Route path="/portal/:customerId" element={<CustomerPortal />} />
-        <Route path="/lab-reports" element={<LabReportUpload />} />
-        <Route path="/lab-reports/:reportId" element={<LabReportDetail />} />
       </Routes>
       </BrowserRouter>
   </>

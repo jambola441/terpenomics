@@ -8,7 +8,7 @@ from sqlmodel import Session, select, delete, func
 
 from auth import SupabaseAuthUser
 from database import get_session
-from models import LabReport, LabReportStatus, Product, ProductTerpene, Terpene, ProductCannabinoid, Cannabinoid
+from models import LabReport, LabReportStatus, Listing, Product, ProductTerpene, Terpene, ProductCannabinoid, Cannabinoid
 from services.lab_report_parser import COAExtraction, extract_from_pdf
 from .auth import require_admin
 
@@ -161,6 +161,7 @@ def _serialize_report(r: LabReport) -> dict:
         "confidence": r.confidence,
         "confidence_notes": None,
         "product_id": str(r.product_id) if r.product_id else None,
+        "listing_id": str(r.listing_id) if r.listing_id else None,
         "created_at": r.created_at.isoformat() if r.created_at else None,
         "terpenes": terpenes,
         "cannabinoids": cannabinoids,
@@ -171,6 +172,7 @@ def _serialize_report(r: LabReport) -> dict:
 class ProcessRequest(BaseModel):
     lab_report_ids: List[UUID]
     product_id: Optional[UUID] = None
+    listing_id: Optional[UUID] = None
 
 
 @router.post("/lab-reports/process")
@@ -190,10 +192,12 @@ async def process_lab_reports(
     if not body.lab_report_ids:
         raise HTTPException(status_code=400, detail="At least one lab_report_id is required")
 
-    # Validate product exists if provided
     if body.product_id is not None:
         if not session.get(Product, body.product_id):
             raise HTTPException(status_code=404, detail="product not found")
+    if body.listing_id is not None:
+        if not session.get(Listing, body.listing_id):
+            raise HTTPException(status_code=404, detail="listing not found")
 
     results = []
     for report_id in body.lab_report_ids:
@@ -219,6 +223,7 @@ async def process_lab_reports(
 
         # Populate LabReport from extraction
         report.product_id             = body.product_id
+        report.listing_id             = body.listing_id
         report.lab_name               = extraction.lab_name
         report.lab_license            = extraction.lab_license
         report.test_date              = extraction.test_date
@@ -277,18 +282,19 @@ def get_lab_report(
     return _serialize_report(report)
 
 
-class AssignProductRequest(BaseModel):
+class AssignRequest(BaseModel):
     product_id: Optional[UUID] = None
+    listing_id: Optional[UUID] = None
 
 
 @router.post("/lab-reports/{report_id}")
-def assign_lab_report_product(
+def assign_lab_report(
     report_id: UUID,
-    body: AssignProductRequest = Body(...),
+    body: AssignRequest = Body(...),
     session: Session = Depends(get_session),
     _: SupabaseAuthUser = Depends(require_admin),
 ):
-    """Assign (or unassign) a product to a lab report."""
+    """Assign (or unassign) a product and/or listing to a lab report."""
     report = session.get(LabReport, report_id)
     if report is None:
         raise HTTPException(status_code=404, detail="lab_report not found")
@@ -296,8 +302,12 @@ def assign_lab_report_product(
     if body.product_id is not None:
         if not session.get(Product, body.product_id):
             raise HTTPException(status_code=404, detail="product not found")
+    if body.listing_id is not None:
+        if not session.get(Listing, body.listing_id):
+            raise HTTPException(status_code=404, detail="listing not found")
 
     report.product_id = body.product_id
+    report.listing_id = body.listing_id
     session.add(report)
     session.commit()
     session.refresh(report)
