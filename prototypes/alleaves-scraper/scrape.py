@@ -362,6 +362,7 @@ def normalise(
         ),
         "image_url":       image_url,
         "scraped_at":      scraped_at,
+        "description":     " ".join(str(r.get("product_description") or "").split()),
     }
 
 

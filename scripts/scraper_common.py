@@ -32,6 +32,7 @@ CSV_COLUMNS = [
     "product_url",
     "image_url",
     "scraped_at",
+    "description",
 ]
 
 # ---------------------------------------------------------------------------
@@ -227,7 +228,7 @@ def now_iso() -> str:
 def write_csv(rows: list[dict], path: str) -> int:
     """Write rows to path using the canonical CSV schema. Returns row count."""
     with open(path, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=CSV_COLUMNS, extrasaction="ignore")
+        writer = csv.DictWriter(f, fieldnames=CSV_COLUMNS, extrasaction="ignore", restval="")
         writer.writeheader()
         writer.writerows(rows)
     return len(rows)

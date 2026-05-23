@@ -183,6 +183,7 @@ def normalise(p: dict, scraped_at: str) -> dict:
         "product_url":     f"{BASE_URL}/products/{sku}/" if sku else "",
         "image_url":       image_url,
         "scraped_at":      scraped_at,
+        "description":     " ".join(str(p.get("product_description") or "").split()),
     }
 
 
