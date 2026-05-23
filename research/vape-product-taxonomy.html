@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vape Product Taxonomy — Terpenomics Research</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f;
+    --surface: #16161a;
+    --border: #2a2a32;
+    --accent: #7c6af7;
+    --accent2: #4ecdc4;
+    --accent3: #f7b26a;
+    --text: #e8e8f0;
+    --muted: #7a7a90;
+    --danger: #f76a6a;
+    --success: #6af7a0;
+  }
+  html { scroll-snap-type: y mandatory; overflow-y: scroll; background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; }
+  section {
+    min-height: 100vh; scroll-snap-align: start;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 4rem 2rem; max-width: 860px; margin: 0 auto;
+  }
+  h1 { font-size: 2.4rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 0.5rem; }
+  h2 { font-size: 1.6rem; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 1.5rem; color: var(--accent); }
+  h3 { font-size: 1rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1rem; }
+  p { line-height: 1.7; color: var(--muted); margin-bottom: 1rem; }
+  .label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; padding: 0.2rem 0.6rem; border-radius: 4px; display: inline-block; }
+  .label-fact  { background: rgba(124,106,247,0.15); color: var(--accent); }
+  .label-risk  { background: rgba(247,106,106,0.15); color: var(--danger); }
+  .label-rec   { background: rgba(78,205,196,0.15); color: var(--accent2); }
+  .label-prod  { background: rgba(106,247,160,0.15); color: var(--success); }
+  .claim-id { font-size: 0.72rem; color: var(--muted); font-family: monospace; margin-left: 0.5rem; }
+
+  /* Cards */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; }
+  .card-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+  .card h4 { font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; }
+  .card p { font-size: 0.85rem; margin: 0; }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; font-size: 0.9rem; }
+  th { text-align: left; padding: 0.6rem 1rem; color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
+  td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); line-height: 1.4; }
+  tr:last-child td { border-bottom: none; }
+
+  /* Bar chart */
+  .bars { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
+  .bar-row { display: flex; align-items: center; gap: 1rem; }
+  .bar-label { width: 180px; font-size: 0.85rem; flex-shrink: 0; }
+  .bar-track { flex: 1; background: var(--border); border-radius: 4px; height: 28px; position: relative; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding: 0 0.75rem; font-size: 0.8rem; font-weight: 600; transition: width 0.5s ease; }
+  .bar-aio   { background: linear-gradient(90deg, var(--accent), #9b8bfa); }
+  .bar-cart  { background: linear-gradient(90deg, var(--accent2), #6af0e8); }
+  .bar-uncl  { background: linear-gradient(90deg, #555, #777); }
+  .bar-pod   { background: linear-gradient(90deg, var(--accent3), #fab26a); }
+  .bar-batt  { background: linear-gradient(90deg, #888, #aaa); }
+
+  /* Code block */
+  pre { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.82rem; line-height: 1.6; overflow-x: auto; margin-top: 1rem; }
+  .kw  { color: var(--accent); }
+  .str { color: var(--accent2); }
+  .cmt { color: var(--muted); font-style: italic; }
+
+  /* Tag cloud */
+  .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+  .tag { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.75rem; font-size: 0.8rem; font-family: monospace; }
+  .tag-mapped { border-color: var(--accent); color: var(--accent); }
+
+  /* Subtitle */
+  .subtitle { color: var(--muted); font-size: 1rem; margin-top: 0.5rem; margin-bottom: 2rem; }
+  .divider { width: 48px; height: 3px; background: var(--accent); border-radius: 2px; margin-bottom: 2rem; }
+
+  /* Nav dots */
+  .nav { position: fixed; right: 1.5rem; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 0.5rem; z-index: 100; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); cursor: pointer; transition: background 0.2s; }
+  .dot:hover { background: var(--accent); }
+
+  @media (max-width: 600px) { h1 { font-size: 1.8rem; } .bar-label { width: 120px; } }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="dot" href="#s1"></a>
+  <a class="dot" href="#s2"></a>
+  <a class="dot" href="#s3"></a>
+  <a class="dot" href="#s4"></a>
+  <a class="dot" href="#s5"></a>
+  <a class="dot" href="#s6"></a>
+</nav>
+
+<!-- SLIDE 1 — Title -->
+<section id="s1">
+  <div>
+    <span class="label label-fact">Research</span>
+    <span class="claim-id">r006 – r011</span>
+    <h1 style="margin-top:1rem;">Vape Product<br>Taxonomy</h1>
+    <p class="subtitle">What subtypes exist on dispensary menus, which matter for product matching, and what the live data looks like.</p>
+    <div class="divider"></div>
+    <p>The sprint question is whether <strong>type</strong> should differentiate products in the identity tuple. This research answers what "type" should mean for vape products specifically — the category with the highest internal diversity.</p>
+  </div>
+</section>
+
+<!-- SLIDE 2 — The three subtypes -->
+<section id="s2">
+  <div>
+    <h2>Three Subtypes Worth Keeping <span class="claim-id">r006</span></h2>
+    <p>All dispensary vape products fall into three functionally distinct groups. Weedmaps and Leafly both surface cartridge and disposable as the two primary consumer-facing subcategories.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">🔋</div>
+        <h4>Cart / 510</h4>
+        <p>Pre-filled oil tank, screws onto any 510-thread battery. Universal compatibility. Reuse your battery, replace the cart.</p>
+        <br>
+        <span class="label label-fact">cart</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">🚀</div>
+        <h4>All-in-One / Disposable</h4>
+        <p>Integrated battery + oil. Self-contained. Discard the whole unit when empty. No accessories needed.</p>
+        <br>
+        <span class="label label-fact">all-in-one</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔌</div>
+        <h4>Pod System</h4>
+        <p>Brand-specific cartridge snaps into a proprietary rechargeable battery. PAX, STIIIZY. Not cross-compatible.</p>
+        <br>
+        <span class="label label-fact">pod</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 3 — Synonym chaos -->
+<section id="s3">
+  <div>
+    <h2>Terminology Is a Mess <span class="claim-id">r007</span></h2>
+    <p>Six different tokens in the live data all mean the same thing — all-in-one/disposable. Each brand picked its own label.</p>
+
+    <table>
+      <thead><tr><th>Raw token in scraped_name</th><th>Brand</th><th>Maps to</th></tr></thead>
+      <tbody>
+        <tr><td><code>All-in-one</code></td><td>Bloom, Ayrloom, Fernway, B Noble</td><td><span class="label label-fact">all-in-one</span></td></tr>
+        <tr><td><code>Disposable [flavor]</code></td><td>Edie Parker</td><td><span class="label label-fact">all-in-one</span></td></tr>
+        <tr><td><code>AIO</code></td><td>PAX</td><td><span class="label label-fact">all-in-one</span></td></tr>
+        <tr><td><code>All-in-one Disposable/Reusable</code></td><td>Eureka</td><td><span class="label label-fact">all-in-one</span></td></tr>
+        <tr><td><code>All-inone</code> (typo)</td><td>Bloom</td><td><span class="label label-fact">all-in-one</span></td></tr>
+        <tr><td><code>Ail-in-one</code> (typo)</td><td>Heavy Hitters</td><td><span class="label label-fact">all-in-one</span></td></tr>
+        <tr><td><code>510</code>, <code>Reload Cartridge</code>, <code>Classic Preload</code></td><td>Fernway, Eureka</td><td><span class="label label-rec">cart</span></td></tr>
+      </tbody>
+    </table>
+
+    <p style="margin-top:1.5rem;">The normalization problem is real but tractable — it's a finite list of tokens per brand, not free-form text.</p>
+  </div>
+</section>
+
+<!-- SLIDE 4 — Live data distribution -->
+<section id="s4">
+  <div>
+    <h2>Live DB Distribution <span class="claim-id">r008</span></h2>
+    <p>238 rows with <code>scraped_category = 'vaporizers'</code>, classified by name-token inference against the live Supabase DB.</p>
+
+    <div class="bars">
+      <div class="bar-row">
+        <span class="bar-label">All-in-one / Disposable</span>
+        <div class="bar-track"><div class="bar-fill bar-aio" style="width:47%">112 &nbsp;47%</div></div>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">Unclassified</span>
+        <div class="bar-track"><div class="bar-fill bar-uncl" style="width:26%">61 &nbsp;26%</div></div>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">Cart / 510</span>
+        <div class="bar-track"><div class="bar-fill bar-cart" style="width:23%">55 &nbsp;23%</div></div>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">Pod</span>
+        <div class="bar-track"><div class="bar-fill bar-pod" style="width:2%">5</div></div>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">Battery / Kit</span>
+        <div class="bar-track"><div class="bar-fill bar-batt" style="width:2%">5</div></div>
+      </div>
+    </div>
+
+    <p style="margin-top:1.5rem;">All-in-ones dominate the vape shelf. Carts are the #2 category. Pods are a rounding error at 2%.</p>
+  </div>
+</section>
+
+<!-- SLIDE 5 — The gap and the risk -->
+<section id="s5">
+  <div>
+    <h2>The 26% Problem <span class="claim-id">r009, r010</span></h2>
+    <p>A quarter of vape listings can't be classified by name token alone:</p>
+
+    <table>
+      <thead><tr><th>Brand</th><th>Example listing name</th><th>Missing signal</th></tr></thead>
+      <tbody>
+        <tr><td>Bloom</td><td>Blue Cookies</td><td>No format token at all</td></tr>
+        <tr><td>Cannabals</td><td>Cereal Milk</td><td>No format token at all</td></tr>
+        <tr><td>Cannabals</td><td>Mood State | Lilac Diesel (Chill Time)</td><td>No format token</td></tr>
+      </tbody>
+    </table>
+
+    <p style="margin-top:1.5rem;">Separately: the <code>ProductCategory</code> enum in <code>models.py</code> already has both <code>vaporizers</code> and <code>cart</code> as distinct values — but the pipeline has never populated <code>cart</code>. It's a latent design intent sitting unused since the model was written.</p>
+
+    <pre><span class="kw">class</span> ProductCategory(str, Enum):
+    flower     = <span class="str">"flower"</span>
+    vaporizers = <span class="str">"vaporizers"</span>   <span class="cmt"># ← everything collapses here</span>
+    cart       = <span class="str">"cart"</span>         <span class="cmt"># ← exists but never populated</span>
+    ...</pre>
+  </div>
+</section>
+
+<!-- SLIDE 6 — Recommendation -->
+<section id="s6">
+  <div>
+    <h2>Recommendation <span class="claim-id">r011</span></h2>
+    <p>Replace the single <code>vaporizers</code> bucket with three typed subtypes. The <code>cart</code> enum value is already there — finish the job.</p>
+
+    <pre><span class="cmt"># models.py — ProductCategory</span>
+    flower      = <span class="str">"flower"</span>
+    cart        = <span class="str">"cart"</span>        <span class="cmt"># 510-thread cartridge</span>
+    all_in_one  = <span class="str">"all-in-one"</span>  <span class="cmt"># disposable / AIO</span>
+    pod         = <span class="str">"pod"</span>         <span class="cmt"># brand-specific pod</span>
+    <span class="cmt"># vaporizers ← remove</span></pre>
+
+    <h3 style="margin-top:1.5rem;">Update CATEGORY_MAP</h3>
+    <div class="tags">
+      <span class="tag tag-mapped">Cartridges → cart</span>
+      <span class="tag tag-mapped">510 → cart</span>
+      <span class="tag tag-mapped">Reload Cartridge → cart</span>
+      <span class="tag tag-mapped">Classic Preload → cart</span>
+      <span class="tag tag-mapped">Reload → cart</span>
+      <span class="tag tag-mapped">All-in-one Disposable → all-in-one</span>
+      <span class="tag tag-mapped">All-in-one → all-in-one</span>
+      <span class="tag tag-mapped">Disposable → all-in-one</span>
+      <span class="tag tag-mapped">AIO → all-in-one</span>
+      <span class="tag tag-mapped">Pod → pod</span>
+      <span class="tag tag-mapped">Live Rosin Pod → pod</span>
+      <span class="tag">Bloom (naked) → ?</span>
+      <span class="tag">Cannabals (naked) → ?</span>
+    </div>
+
+    <p style="margin-top:1.5rem;">The two grey tags above are the residual problem — brand-level lookup or accept <code>vaporizers</code> as a fallback for ambiguous cases.</p>
+  </div>
+</section>
+
+</body>
+</html>

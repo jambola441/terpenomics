@@ -246,5 +246,114 @@
       "resolved_by": null,
       "tags": ["scraper", "import-mechanism", "tested"]
     }
+  ,
+    {
+      "id": "r006",
+      "type": "factual",
+      "topic": "vape-product-taxonomy",
+      "content": "Three primary vape subcategories exist on dispensary menus: (1) 510-thread cartridges ('cart') — require a separate rechargeable battery, universal threading; (2) all-in-one/disposable ('all-in-one') — integrated battery and oil, self-contained, single-use; (3) pod systems ('pod') — brand-specific cartridge format (PAX, STIIIZY), requires proprietary battery. A minor fourth category is battery/kit bundles. Weedmaps and Leafly both surface cartridge and disposable as the two primary consumer-facing vape subcategories.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/vape-product-taxonomy.md",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-05-23T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["vape", "taxonomy", "cart", "all-in-one", "pod"]
+    },
+    {
+      "id": "r007",
+      "type": "factual",
+      "topic": "vape-product-taxonomy",
+      "content": "'All-in-one', 'disposable', 'AIO', and 'all-in-one disposable' are synonymous terms in the industry. All refer to the same product type: integrated battery + oil chamber, discarded as a unit. PAX uses 'AIO' as a prefix. Edie Parker uses 'Disposable [flavor]'. Bloom and others use 'All-in-one' as a pipe-separated suffix. All should map to the same canonical value.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/vape-product-taxonomy.md",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-05-23T00:01:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["vape", "all-in-one", "disposable", "normalization"]
+    },
+    {
+      "id": "r008",
+      "type": "factual",
+      "topic": "vape-product-taxonomy",
+      "content": "In the actual listings DB (238 vaporizer rows): 112 all-in-one/disposable (47%), 55 cart/510 (23%), 5 pod (2%), 5 battery/kit (2%), 61 unclassified (26%). The unclassified 26% have no format token in their name — primarily Bloom and Cannabals brand listings that omit format entirely, plus PAX listings using 'AIO'/'Cart' tokens that are caught only with extended matching.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/vape-product-taxonomy.md",
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-05-23T00:02:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["vape", "data-distribution", "listings", "production"]
+    },
+    {
+      "id": "r009",
+      "type": "factual",
+      "topic": "vape-product-taxonomy",
+      "content": "The ProductCategory enum in models.py already has both 'vaporizers' and 'cart' as distinct values. However, scraper_common.py CATEGORY_MAP maps everything (cartridges, all-in-ones, pods, batteries) to 'vaporizers'. The 'cart' enum value exists at the model layer but is never populated by any scraper. This is a latent design intent that has never been activated.",
+      "source": {
+        "origin": "research",
+        "artifact": "models.py",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-05-23T00:03:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["vape", "model", "enum", "pipeline-gap"]
+    },
+    {
+      "id": "r010",
+      "type": "risk",
+      "topic": "vape-product-taxonomy",
+      "content": "Approximately 26% of vaporizer listings (61 of 238) cannot be subcategorized from name tokens alone. Bloom and Cannabals publish listings with no format suffix — just 'Brand | Strain' with no cart/AIO/pod marker. Any subcategorization system that relies solely on name parsing will leave ~1 in 4 vape listings as 'unknown subtype', requiring either brand-level lookup tables or manual correction.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/vape-product-taxonomy.md",
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-05-23T00:04:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["vape", "risk", "parsing", "unlabeled"]
+    },
+    {
+      "id": "r011",
+      "type": "recommendation",
+      "topic": "vape-product-taxonomy",
+      "content": "For the product identity tuple, replace 'vaporizers' with three canonical vape subtypes: 'cart' (510-thread), 'all-in-one' (disposable/AIO), 'pod' (brand-specific). The existing 'cart' enum value in ProductCategory is a head start. Rename 'vaporizers' → 'cart' and add 'all-in-one' and 'pod'. Update CATEGORY_MAP to map source strings ('Cartridges', '510', 'Reload Cartridge', 'Classic Preload') → 'cart'; ('All-in-one Disposable', 'All-in-one', 'Disposable', 'AIO') → 'all-in-one'; ('Pod', 'Live Rosin Pod') → 'pod'.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/vape-product-taxonomy.md",
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-05-23T00:05:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["vape", "recommendation", "taxonomy", "enum", "category-map"]
+    }
   ]
 }
