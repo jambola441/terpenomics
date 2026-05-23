@@ -1,0 +1,38 @@
+[
+  {
+    "name": "Bedford Club",
+    "dispensary_slug": "bedford-club-bk",
+    "menu_url": "https://shop.bedfordclub.com/menu/",
+    "platform": "tymber",
+    "blaze_id": "31157479-283f-402f-92d4-36b7a01524b1"
+  },
+  {
+    "name": "Happy Munkey Brooklyn",
+    "dispensary_slug": "happy-munkey-bk",
+    "menu_url": "https://happymunkey.com/shop/fulton/",
+    "platform": "tymber",
+    "blaze_id": "228f4b2f-186e-46fc-b303-80140c796fdc",
+    "_note": "Fulton Street (Brooklyn) location; currently returns 0 products — may be inactive"
+  },
+  {
+    "name": "The Spot Dispensary",
+    "dispensary_slug": "the-spot-bk",
+    "menu_url": "https://thespotdispensary.com/menu",
+    "platform": "tymber",
+    "blaze_id": "3711e5f1-bf74-4a55-8c5d-855566ae43a6"
+  },
+  {
+    "name": "Ignyte Red Hook",
+    "dispensary_slug": "ignyte-red-hook",
+    "menu_url": "https://shop.ignyteny.com/whitestone/categories/flower",
+    "platform": "tymber",
+    "blaze_id": "29d186b2-782e-4d3f-a485-45139b7aad9b"
+  },
+  {
+    "name": "Hold Up Roll Up",
+    "dispensary_slug": "hold-up-roll-up",
+    "menu_url": "https://holduprollup.com/menu/",
+    "platform": "tymber",
+    "blaze_id": "aa754b5d-462d-4106-89ac-4623a1acc64c"
+  }
+]

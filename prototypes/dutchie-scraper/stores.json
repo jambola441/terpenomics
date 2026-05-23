@@ -116,6 +116,14 @@
     "_note": "cName=kaya-bliss (Bay Ridge); dutchie_id matches WP embed init JS ObjectID"
   },
   {
+    "name": "Kaya Bliss Brooklyn Heights",
+    "dispensary_slug": "kaya-bliss-brooklyn-heights",
+    "menu_url": "https://kayablissnyc.com",
+    "platform": "dutchie_graphql",
+    "dutchie_id": "685ab00e8b39ac2c590a9be5",
+    "_note": "cName=high-of-brooklyn; second Kaya Bliss location"
+  },
+  {
     "name": "RNR Dispensary",
     "dispensary_slug": "rnr-dispensary-bk",
     "menu_url": "https://store.rnrdispensary.com/stores/rnr-dispensary",

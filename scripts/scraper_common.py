@@ -72,6 +72,17 @@ CATEGORY_MAP: dict[str, str] = {
     "Pre-Rolls":         "preroll",
     "CBD":               "tinctures",
     "Oral":              "tinctures",
+    # Tymber/BLAZE product_categories
+    "Vape Pens":         "vaporizers",
+    "Disposables":       "vaporizers",
+    "Preroll":           "preroll",
+    "Infused Preroll":   "preroll",
+    "Infused Pre-Rolls": "preroll",
+    "Infused Flower":    "flower",
+    "Concentrates":      "concentrate",
+    "Drinks":            "edible",
+    "Merchandise":       "merch",
+    "Gift Cards":        "other",
     # Travel Agency / Leaflogix (lowercase)
     "flower":       "flower",
     "vape":         "vaporizers",
@@ -97,6 +108,11 @@ CATEGORY_MAP: dict[str, str] = {
     "accessory":    "merch",
     "gear":         "merch",
     "cbd":          "tinctures",
+    # Dutchie GraphQL type strings
+    "Edible":       "edible",
+    "Pre-Rolls":    "preroll",
+    "CBD":          "tinctures",
+    "Oral":         "tinctures",
 }
 
 
