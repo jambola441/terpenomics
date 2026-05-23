@@ -67,6 +67,11 @@ CATEGORY_MAP: dict[str, str] = {
     "Topical":                  "topical",
     "Shirts":                   "merch",
     "Uncategorized":            "other",
+    # Dutchie GraphQL type strings (title-case singular/plural variants)
+    "Edible":            "edible",
+    "Pre-Rolls":         "preroll",
+    "CBD":               "tinctures",
+    "Oral":              "tinctures",
     # Travel Agency / Leaflogix (lowercase)
     "flower":       "flower",
     "vape":         "vaporizers",

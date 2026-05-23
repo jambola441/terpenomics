@@ -16,148 +16,174 @@
   {
     "name": "Grow Together",
     "dispensary_slug": "grow-together-bk",
-    "menu_url": "https://growtogetherbk.com",
-    "platform": "dutchie_ecommerce",
-    "_note": "Own domain 403-blocked; likely Dutchie eCommerce Next.js"
+    "menu_url": "https://growtogetherbrooklyn.dispensary.shop/rec/search",
+    "platform": "flowhub",
+    "dutchie_id": "64b7eed2f3057100092375a1",
+    "_note": "Confirmed Flowhub (dispensary.shop domain); previous menu_url was wrong"
   },
   {
     "name": "The Emerald Dispensary",
     "dispensary_slug": "emerald-dispensary-bk",
     "menu_url": "https://theemeralddispensary.com/shop/",
-    "platform": "wp_embed",
-    "_note": "WP embed with dtche params \u2014 likely wp_embed, verify at runtime"
+    "platform": "dutchie_graphql",
+    "dutchie_id": "65401a70789a45000951b9d4",
+    "_note": "Bushwick location; scrape via GraphQL filteredProducts"
   },
   {
     "name": "Misha's Flower Shop",
     "dispensary_slug": "mishas-flower-shop-bk",
     "menu_url": "https://shop.mishasflowershop.com/mishasflower/menu/",
     "platform": null,
-    "_note": "As of 2026-05-23 serving Sweedpos CDN assets \u2014 may have switched platforms; verify"
+    "_note": "As of 2026-05-23 serving Sweedpos CDN assets — not on Dutchie; verify platform before scraping"
   },
   {
     "name": "Hii NYC Williamsburg",
     "dispensary_slug": "hii-nyc-williamsburg",
     "menu_url": "https://hiinyc.com/stores/hii-williamsburg",
-    "platform": "dutchie_ecommerce",
-    "_note": "Dutchie eCommerce Next.js (assets2.dutchie.com); _next/data 403-blocked"
+    "platform": "dutchie_graphql",
+    "dutchie_id": "64f1019d875c460009419172",
+    "_note": "cName=hii-williamsburg; scrape via GraphQL filteredProducts"
   },
   {
     "name": "Hii NYC Bay Ridge",
     "dispensary_slug": "hii-nyc-bay-ridge",
-    "menu_url": "https://hiinyc.com/stores/hii-bay-ridge",
-    "platform": "dutchie_ecommerce",
-    "_note": "Same operator as Williamsburg; menu_url 404 \u2014 verify correct URL"
+    "menu_url": "https://hiinyc.com/stores/hii-3rd-ave",
+    "platform": "dutchie_graphql",
+    "dutchie_id": "69701042f673ce6c21358024",
+    "_note": "cName=hii-3rd-ave; scrape via GraphQL filteredProducts"
   },
   {
     "name": "Bedford Club",
     "dispensary_slug": "bedford-club-bk",
     "menu_url": "https://shop.bedfordclub.com/menu/",
-    "platform": "dutchie_ecommerce",
-    "_note": "Dutchie eCommerce Next.js; CSR only"
+    "platform": "tymber",
+    "_note": "Confirmed Tymber/BLAZE — assets served from tymber CDN; not Dutchie"
   },
   {
     "name": "The Garden Club",
     "dispensary_slug": "garden-club-carroll-gardens",
     "menu_url": "https://thegardenclubbk.com/menu/",
-    "platform": "dutchie_ecommerce",
-    "_note": "URL 404; verify correct menu URL"
+    "platform": "dutchie_graphql",
+    "dutchie_id": "66a42611df30d7568d11d892",
+    "_note": "cName=dizzpensary; scrape via GraphQL filteredProducts"
   },
   {
     "name": "Herbology",
     "dispensary_slug": "herbology-bed-stuy",
     "menu_url": "https://herbologynyc.com/shop/",
-    "platform": "wp_embed",
-    "_note": "WP age-gate renders blank HTML without JS"
+    "platform": "dutchie_graphql",
+    "dutchie_id": "6671d391190a3f6246920038",
+    "_note": "cName=1106-rebecca-street-llc; scrape via GraphQL filteredProducts"
   },
   {
     "name": "Fireleaf",
     "dispensary_slug": "fireleaf-canarsie",
     "menu_url": "https://fireleaf.com/shop/",
-    "platform": "wp_embed",
-    "_note": "dtche iframe confirmed in HTML"
+    "platform": "dutchie_graphql",
+    "dutchie_id": "659488836cef6400097ef830",
+    "_note": "cName=fireleaf; scrape via GraphQL filteredProducts"
   },
   {
     "name": "Twisted Vibration",
     "dispensary_slug": "twisted-vibration-wburg",
     "menu_url": "https://twistedvibration.com/shop-menu/",
-    "platform": "unknown",
-    "_note": "Custom Vite SPA (Manus runtime); dtche confirmed but menu is full CSR"
+    "platform": "dutchie_graphql",
+    "dutchie_id": "67e325b03cb6f8627726ae48",
+    "_note": "cName=twisted-vibrations-retail; scrape via GraphQL filteredProducts"
   },
   {
     "name": "By Any Other Name",
     "dispensary_slug": "by-any-other-name-bk",
     "menu_url": "https://byanyothernamebk.com/shop/",
-    "platform": "wp_embed",
-    "_note": "429 rate-limited on fetch; dtche params confirmed"
+    "platform": "dutchie_graphql",
+    "dutchie_id": "6595bddc3604d70009d47295",
+    "_note": "cName=xander-legacy; scrape via GraphQL filteredProducts"
   },
   {
     "name": "StashMaster NYC",
     "dispensary_slug": "stashmaster-nyc",
     "menu_url": "https://stashmasternyc.com/shop/",
-    "platform": "wp_embed",
-    "_note": "dutchie.com/api/v2/embedded-menu/672e75caa3554416fca5ad28.js confirmed"
+    "platform": "dutchie_graphql",
+    "dutchie_id": "672e75caa3554416fca5ad28",
+    "_note": "cName=stash-master; dutchie_id matches WP embed init JS ObjectID"
   },
   {
     "name": "Kaya Bliss Dispensary",
     "dispensary_slug": "kaya-bliss-bay-ridge",
     "menu_url": "https://kayablissnyc.com/location/brooklyn-ny/shop/",
-    "platform": "wp_embed",
-    "_note": "dutchie.com/api/v2/embedded-menu/67858280fe520b9bfe00be96.js confirmed"
+    "platform": "dutchie_graphql",
+    "dutchie_id": "67858280fe520b9bfe00be96",
+    "_note": "cName=kaya-bliss (Bay Ridge); dutchie_id matches WP embed init JS ObjectID"
   },
   {
     "name": "RNR Dispensary",
     "dispensary_slug": "rnr-dispensary-bk",
     "menu_url": "https://store.rnrdispensary.com/stores/rnr-dispensary",
-    "platform": "dutchie_ecommerce",
-    "_note": "Dutchie eCommerce Next.js; retailerId=60d576e6-32f8-4c8d-ad49-cb31a61b5355; CSR only"
+    "platform": "dutchie_graphql",
+    "dutchie_id": "683f3328bc6b683c5ab7d6d0",
+    "_note": "cName=rnr-dispensary; scrape via GraphQL filteredProducts"
   },
   {
     "name": "OC Dispensary",
     "dispensary_slug": "oc-dispensary-bk",
     "menu_url": "https://dutchie.com/dispensary/oc-dispensary",
-    "platform": "dutchie_ecommerce",
-    "_note": "dutchie.com direct URL, 403-blocked"
+    "platform": "dutchie_graphql",
+    "dutchie_id": "64c010d60403d4000956b399",
+    "_note": "cName=oc-dispensary; scrape via GraphQL filteredProducts"
   },
   {
     "name": "Soulmate",
     "dispensary_slug": "soulmate-fort-greene",
     "menu_url": "https://soulmatebk.com/shop/",
-    "platform": "wp_embed",
-    "_note": "dutchie.com/api/v2/embedded-menu/66d24bbc7ee915c729faa0a0.js confirmed"
+    "platform": "dutchie_graphql",
+    "dutchie_id": "66d24bbc7ee915c729faa0a0",
+    "_note": "cName=Soulmate; dutchie_id matches WP embed init JS ObjectID"
   },
   {
     "name": "Quality Control Dispensary",
     "dispensary_slug": "quality-control-brighton-beach",
     "menu_url": "https://qualitycontroldispensary.com/shop-brooklyn",
-    "platform": "wp_embed",
-    "_note": "dtche params confirmed; 403 on direct fetch per MD"
+    "platform": "dutchie_graphql",
+    "dutchie_id": "675b36d8a0c49644edaa2aca",
+    "_note": "cName=case-management; scrape via GraphQL filteredProducts"
   },
   {
     "name": "Milligrams",
     "dispensary_slug": "milligrams-greenpoint",
     "menu_url": "https://milligrams.co/stores/brooklyn-greenpoint-ny",
-    "platform": "dutchie_ecommerce",
-    "_note": "Dutchie eCommerce Next.js (assets2.dutchie.com); _next/data 403-blocked"
+    "platform": "dutchie_graphql",
+    "dutchie_id": "692778a75607b6500cb6d931",
+    "_note": "cName=brooklyn-greenpoint-ny; scrape via GraphQL filteredProducts"
   },
   {
     "name": "Dagmar Cannabis Williamsburg",
     "dispensary_slug": "dagmar-cannabis-wburg",
     "menu_url": "https://dagmarcannabis.com",
-    "platform": "wp_embed",
-    "_note": "WP + JointCommerce Dutchie embed (CSS .joint-fi class)"
+    "platform": "dutchie_graphql",
+    "dutchie_id": "68c4983a7dfca73e5025d643",
+    "_note": "cName=dagmar-cannabis-williamsburg; scrape via GraphQL filteredProducts"
   },
   {
     "name": "Greene Street",
     "dispensary_slug": "greene-street-sheepshead-bay",
     "menu_url": "https://dutchie.com/dispensary/green-street-brooklyn",
-    "platform": "dutchie_ecommerce",
-    "_note": "dutchie.com direct URL, 403-blocked; brochure site"
+    "platform": "dutchie_graphql",
+    "dutchie_id": "682cba1a698ccda19d19f496",
+    "_note": "cName=green-street-brooklyn; scrape via GraphQL filteredProducts"
+  },
+  {
+    "name": "Emerald Dispensary Carroll Gardens",
+    "dispensary_slug": "emerald-dispensary-carroll-gardens",
+    "menu_url": "https://dutchie.com/dispensary/emerald-dispensary-carroll-gardens",
+    "platform": "dutchie_graphql",
+    "dutchie_id": "68a3438bdda59053a3dbb721",
+    "_note": "cName=emerald-dispensary-carroll-gardens; scrape via GraphQL filteredProducts"
   },
   {
     "name": "Happy Buds Brooklyn",
     "dispensary_slug": "happy-buds-bk",
     "menu_url": "https://happybudsbk.com/collections/all",
     "platform": "shopify",
-    "_note": "Site sells hemp-derived; OCM adult-use status unclear \u2014 verify before importing"
+    "_note": "Site sells hemp-derived; OCM adult-use status unclear — verify before importing"
   }
 ]
