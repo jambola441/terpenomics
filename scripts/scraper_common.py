@@ -20,7 +20,6 @@ CSV_COLUMNS = [
     "sku",
     "batch_id",
     "name",
-    "name_raw",
     "brand",
     "category",
     "variant",
@@ -33,6 +32,8 @@ CSV_COLUMNS = [
     "image_url",
     "scraped_at",
     "description",
+    "subtype",
+    "strain",
 ]
 
 # ---------------------------------------------------------------------------
@@ -70,14 +71,19 @@ CATEGORY_MAP: dict[str, str] = {
     "flower":       "flower",
     "vape":         "vaporizers",
     "vaporizer":    "vaporizers",
+    "vaporizers":   "vaporizers",
+    "vapes":        "vaporizers",
+    "vape carts":   "vaporizers",
     "pre-roll":     "preroll",
     "pre-rolls":    "preroll",
+    "pre-rolled flower": "preroll",
     "concentrate":  "concentrate",
     "concentrates": "concentrate",
     "edible":       "edible",
     "edibles":      "edible",
     "beverage":     "edible",
     "beverages":    "edible",
+    "drinks":       "edible",
     "tincture":     "tinctures",
     "tinctures":    "tinctures",
     "topical":      "topical",
@@ -121,46 +127,6 @@ def normalize_variant(v: str) -> str:
 # ---------------------------------------------------------------------------
 # Name normalization
 # ---------------------------------------------------------------------------
-
-# Longest alternatives first so compound tokens are consumed before their parts
-_NOINFO_PAT = re.compile(
-    r'\s*\b(?:'
-    # Pre-roll format descriptors
-    r'Single\s+Pre[-\s]?Rolls?\s+Pack'
-    r'|Pre[-\s]?Rolls?\s+Pack'
-    r'|Singles?\s+Pre[-\s]?Rolls?'
-    r'|Premium\s+Flower'
-    r'|Pre[-\s]?Rolls?'
-    r'|Singles?'
-    # Weight segments (already in variant)
-    r'|\d+(?:/\d+)?\s*Gram\s*Joints?'
-    r'|\d+(?:/\d+)?\s*Gram'
-    # Pack / count (redundant given name+brand+variant+category uniqueness)
-    r'|\d+\s*pk'
-    r'|\d+\s*ct'
-    # Internal sample inventory
-    r'|Samples?'
-    # Vape / format vessel descriptors — strip generic ones, keep format-distinguishing
-    r'|Disposable\s+Vape\s+Pen'
-    r'|Distillate\s+Vape'
-    r'|Flower\s+Jar'
-    r'|Vape\s+Pen'
-    r'|Cones?'
-    r')\b\s*',
-    re.I,
-)
-
-def strip_noinfo(name: str) -> str:
-    """Strip noinfo tokens from anywhere within each pipe-separated segment."""
-    parts = [p.strip() for p in name.split(' | ')]
-    kept = []
-    for p in parts:
-        if not p:
-            continue
-        cleaned = re.sub(r'\s+', ' ', _NOINFO_PAT.sub(' ', p)).strip()
-        if cleaned:
-            kept.append(cleaned)
-    return ' | '.join(kept).strip()
 
 
 # ---------------------------------------------------------------------------
