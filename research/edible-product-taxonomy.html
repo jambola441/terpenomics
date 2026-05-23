@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edible Product Taxonomy — Terpenomics Research</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f;
+    --surface: #16161a;
+    --border: #2a2a32;
+    --accent: #7c6af7;
+    --accent2: #4ecdc4;
+    --accent3: #f7b26a;
+    --text: #e8e8f0;
+    --muted: #7a7a90;
+    --danger: #f76a6a;
+    --success: #6af7a0;
+    --pink: #f76ab4;
+  }
+  html { scroll-snap-type: y mandatory; overflow-y: scroll; background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; }
+  section { min-height: 100vh; scroll-snap-align: start; display: flex; flex-direction: column; justify-content: center; padding: 4rem 2rem; max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 2.4rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 0.5rem; }
+  h2 { font-size: 1.6rem; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 1.5rem; color: var(--accent2); }
+  h3 { font-size: 0.9rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1rem; }
+  p { line-height: 1.7; color: var(--muted); margin-bottom: 1rem; }
+  .label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; padding: 0.2rem 0.6rem; border-radius: 4px; display: inline-block; }
+  .label-fact { background: rgba(124,106,247,0.15); color: var(--accent); }
+  .label-rec  { background: rgba(78,205,196,0.15); color: var(--accent2); }
+  .label-risk { background: rgba(247,106,106,0.15); color: var(--danger); }
+  .claim-id { font-size: 0.72rem; color: var(--muted); font-family: monospace; margin-left: 0.5rem; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
+  .card-icon { font-size: 1.8rem; margin-bottom: 0.6rem; }
+  .card h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.3rem; }
+  .card p { font-size: 0.8rem; margin: 0; }
+  .card .pct { font-size: 1.2rem; font-weight: 700; color: var(--accent2); margin-top: 0.5rem; }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; font-size: 0.88rem; }
+  th { text-align: left; padding: 0.6rem 1rem; color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
+  td { padding: 0.7rem 1rem; border-bottom: 1px solid var(--border); line-height: 1.4; }
+  tr:last-child td { border-bottom: none; }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; background: rgba(124,106,247,0.1); padding: 0.1em 0.35em; border-radius: 3px; color: var(--accent); }
+
+  .bars { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
+  .bar-row { display: flex; align-items: center; gap: 1rem; }
+  .bar-label { width: 160px; font-size: 0.85rem; flex-shrink: 0; }
+  .bar-track { flex: 1; background: var(--border); border-radius: 4px; height: 28px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding: 0 0.75rem; font-size: 0.8rem; font-weight: 600; }
+  .bar-uncl  { background: linear-gradient(90deg, #444, #666); }
+  .bar-gummy { background: linear-gradient(90deg, var(--accent2), #6af0e8); }
+  .bar-bev   { background: linear-gradient(90deg, #4e8bcf, #6aaff7); }
+  .bar-choc  { background: linear-gradient(90deg, #8b5e3c, #b8845c); }
+  .bar-tab   { background: linear-gradient(90deg, var(--accent3), #fab26a); }
+  .bar-other { background: linear-gradient(90deg, #555, #888); }
+
+  pre { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; line-height: 1.7; overflow-x: auto; margin-top: 1rem; }
+  .kw  { color: var(--accent); }
+  .str { color: var(--accent2); }
+  .cmt { color: var(--muted); font-style: italic; }
+  .bad { color: var(--danger); }
+  .good { color: var(--success); }
+
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1rem; }
+  .split-box { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; }
+  .split-box h4 { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.75rem; }
+
+  .pill { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.78rem; font-family: monospace; margin: 0.2rem; }
+  .pill-gummy { background: rgba(78,205,196,0.15); color: var(--accent2); border: 1px solid rgba(78,205,196,0.3); }
+  .pill-choc  { background: rgba(139,94,60,0.2); color: #c89a72; border: 1px solid rgba(139,94,60,0.3); }
+  .pill-bev   { background: rgba(78,140,210,0.15); color: #7ab8f7; border: 1px solid rgba(78,140,210,0.3); }
+  .pill-tab   { background: rgba(247,178,106,0.15); color: var(--accent3); border: 1px solid rgba(247,178,106,0.3); }
+  .pill-other { background: rgba(150,150,150,0.1); color: #aaa; border: 1px solid rgba(150,150,150,0.2); }
+
+  .nav { position: fixed; right: 1.5rem; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 0.5rem; z-index: 100; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); cursor: pointer; transition: background 0.2s; }
+  .dot:hover { background: var(--accent2); }
+  .subtitle { color: var(--muted); font-size: 1rem; margin-top: 0.5rem; margin-bottom: 2rem; }
+  .divider { width: 48px; height: 3px; background: var(--accent2); border-radius: 2px; margin-bottom: 2rem; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="dot" href="#s1"></a>
+  <a class="dot" href="#s2"></a>
+  <a class="dot" href="#s3"></a>
+  <a class="dot" href="#s4"></a>
+  <a class="dot" href="#s5"></a>
+  <a class="dot" href="#s6"></a>
+</nav>
+
+<!-- SLIDE 1 — Title -->
+<section id="s1">
+  <div>
+    <span class="label label-fact">Research</span>
+    <span class="claim-id">r012 – r016</span>
+    <h1 style="margin-top:1rem;">Edible Product<br>Taxonomy</h1>
+    <p class="subtitle">Five subcategories, a 46% unclassified rate, and why brand identity beats name parsing for edibles.</p>
+    <div class="divider"></div>
+    <p>The edibles shelf looks homogeneous from the outside — everything goes in the <code>edible</code> bucket. But gummies, chocolates, beverages, and tablets are genuinely different products that should differentiate in the identity tuple.</p>
+  </div>
+</section>
+
+<!-- SLIDE 2 — The five subcategories -->
+<section id="s2">
+  <div>
+    <h2>Five Subcategories <span class="claim-id">r012</span></h2>
+    <p>Nationally, gummies are 79% of edible sales (BDSA 2025). The other four categories are small but distinct.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">🍬</div>
+        <h4>Gummy</h4>
+        <p>Gummies, chews, ropes, pearls — any soft candy form</p>
+        <div class="pct">79%</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🍫</div>
+        <h4>Chocolate</h4>
+        <p>Bars, mini bars, chocolate confections</p>
+        <div class="pct">6%</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🥤</div>
+        <h4>Beverage</h4>
+        <p>Infused drinks, sparkling water, tea sachets</p>
+        <div class="pct">6%</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">💊</div>
+        <h4>Tablet</h4>
+        <p>ProTabs, micro-pills, fast-acting sublingual tabs</p>
+        <div class="pct">5%</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🍯</div>
+        <h4>Other</h4>
+        <p>Lozenges, powder, strips, honey</p>
+        <div class="pct">4%</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 3 — Live DB distribution -->
+<section id="s3">
+  <div>
+    <h2>Live DB: 46% Unclassified <span class="claim-id">r013</span></h2>
+    <p>213 edible listings, classified by name-token inference. Unclassified rate is nearly double the vape rate (26%).</p>
+    <div class="bars">
+      <div class="bar-row">
+        <span class="bar-label">Unclassified</span>
+        <div class="bar-track"><div class="bar-fill bar-uncl" style="width:46%">97 — 46%</div></div>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">Gummy</span>
+        <div class="bar-track"><div class="bar-fill bar-gummy" style="width:33%">71 — 33%</div></div>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">Beverage</span>
+        <div class="bar-track"><div class="bar-fill bar-bev" style="width:7%">16 — 7%</div></div>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">Chocolate</span>
+        <div class="bar-track"><div class="bar-fill bar-choc" style="width:7%">14 — 7%</div></div>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">Tablet</span>
+        <div class="bar-track"><div class="bar-fill bar-tab" style="width:6%">12 — 6%</div></div>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">Other</span>
+        <div class="bar-track"><div class="bar-fill bar-other" style="width:1%">3</div></div>
+      </div>
+    </div>
+    <p style="margin-top:1.5rem;">This is <strong>not random noise</strong> — the 46% is structural. It's almost entirely known gummy brands that skip the type token.</p>
+  </div>
+</section>
+
+<!-- SLIDE 4 — Brand = format -->
+<section id="s4">
+  <div>
+    <h2>Brand Identity Beats Name Parsing <span class="claim-id">r014</span></h2>
+    <p>Major gummy brands don't include a type token because they've never made anything else. Their brand IS their format.</p>
+    <table>
+      <thead><tr><th>Brand</th><th>Unlabeled listings</th><th>What they make</th><th>Lookup result</th></tr></thead>
+      <tbody>
+        <tr><td>Camino</td><td>12</td><td>Always gummies</td><td><span class="pill pill-gummy">gummy</span></td></tr>
+        <tr><td>Wyld</td><td>9</td><td>Always gummies</td><td><span class="pill pill-gummy">gummy</span></td></tr>
+        <tr><td>Lost Farm</td><td>6</td><td>Always chews</td><td><span class="pill pill-gummy">gummy</span></td></tr>
+        <tr><td>Level</td><td>0</td><td>Always ProTabs</td><td><span class="pill pill-tab">tablet</span></td></tr>
+        <tr><td>Layup</td><td>0</td><td>Always beverages</td><td><span class="pill pill-bev">beverage</span></td></tr>
+        <tr><td>Beboe</td><td>5</td><td>Lozenges/pastilles</td><td><span class="pill pill-other">other</span></td></tr>
+        <tr><td>Incredibles</td><td>9</td><td><strong>Both</strong> gummies and chocolate</td><td>— ambiguous</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:1.25rem;">Incredibles is the hard case — they make both. Can't resolve from brand alone; need name-token fallback.</p>
+  </div>
+</section>
+
+<!-- SLIDE 5 — Live rosin is quality not type -->
+<section id="s5">
+  <div>
+    <h2>"Live Rosin" Is Quality, Not Type <span class="claim-id">r015</span></h2>
+    <p>Many listings embed extract quality in the name. This is not a type signal — it's an ingredient tier.</p>
+    <div class="split">
+      <div class="split-box">
+        <h4 style="color: var(--danger);">Wrong — splits the type</h4>
+        <pre style="margin-top: 0.5rem; font-size: 0.78rem;"><span class="bad">(Camino, "live-rosin-gummy", "Chill", "10mg")
+(Camino, "gummy", "Chill", "10mg")
+→ treated as different products</span></pre>
+      </div>
+      <div class="split-box">
+        <h4 style="color: var(--success);">Right — quality is extra_info</h4>
+        <pre style="margin-top: 0.5rem; font-size: 0.78rem;"><span class="good">(Camino, "gummy", "Chill", "10mg",
+  extract="live-rosin")
+(Camino, "gummy", "Chill", "10mg",
+  extract="distillate")
+→ variants of same type</span></pre>
+      </div>
+    </div>
+    <p style="margin-top:1.5rem;">Same rule applies to "Live Resin", "Hash Rosin", "Nano" — all quality/extraction markers, not format types.</p>
+  </div>
+</section>
+
+<!-- SLIDE 6 — Recommendation -->
+<section id="s6">
+  <div>
+    <h2>Recommendation <span class="claim-id">r016</span></h2>
+    <p>Four typed edible subtypes in the enum + a brand-level lookup layer to cover unlabeled gummy brands.</p>
+    <pre><span class="kw">class</span> ProductCategory(str, Enum):
+    <span class="cmt"># edible subtypes</span>
+    gummy     = <span class="str">"gummy"</span>      <span class="cmt"># all soft candy forms</span>
+    chocolate = <span class="str">"chocolate"</span>  <span class="cmt"># bars, confections</span>
+    beverage  = <span class="str">"beverage"</span>   <span class="cmt"># drinks, tea, sparkling water</span>
+    tablet    = <span class="str">"tablet"</span>     <span class="cmt"># pills, caps, sublingual</span>
+    <span class="cmt"># edible = "edible" ← remove</span></pre>
+
+    <h3 style="margin-top:1.5rem;">CATEGORY_MAP updates</h3>
+    <div style="margin-top: 0.75rem;">
+      <span class="pill pill-gummy">"Gummies" → gummy</span>
+      <span class="pill pill-choc">"Chocolates" → chocolate</span>
+      <span class="pill pill-bev">"Beverage" → beverage</span>
+      <span class="pill pill-bev">"Beverages" → beverage</span>
+      <span class="pill pill-tab">"Tablets" → tablet</span>
+    </div>
+
+    <h3 style="margin-top:1.5rem;">Brand defaults (new lookup layer)</h3>
+    <div style="margin-top: 0.75rem;">
+      <span class="pill pill-gummy">Camino → gummy</span>
+      <span class="pill pill-gummy">Wyld → gummy</span>
+      <span class="pill pill-gummy">Lost Farm → gummy</span>
+      <span class="pill pill-gummy">Good Tide → gummy</span>
+      <span class="pill pill-gummy">Rythm → gummy</span>
+      <span class="pill pill-bev">Layup → beverage</span>
+      <span class="pill pill-tab">Level → tablet</span>
+      <span class="pill pill-other">Beboe → other</span>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

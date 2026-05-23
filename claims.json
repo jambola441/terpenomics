@@ -354,6 +354,96 @@
       "conflicts_with": [],
       "resolved_by": null,
       "tags": ["vape", "recommendation", "taxonomy", "enum", "category-map"]
+    },
+    {
+      "id": "r012",
+      "type": "factual",
+      "topic": "edible-product-taxonomy",
+      "content": "Five meaningful edible subcategories appear on dispensary menus: (1) gummy — by far dominant, includes chews, ropes, pearls, any soft candy form; (2) chocolate — bars, mini bars, chocolate-covered confections; (3) beverage — infused drinks, sparkling water, tea sachets; (4) tablet/capsule — ProTabs (Level), micro-pills (1906), fast-acting tabs; (5) other — lozenges/pastilles (Beboe), dissolvable powder (Myhi), strips, honey. Nationally, gummies represent 79% of edible sales (BDSA 2025).",
+      "source": {
+        "origin": "research",
+        "artifact": "research/edible-product-taxonomy.md",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-05-23T01:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["edible", "taxonomy", "gummy", "chocolate", "beverage", "tablet"]
+    },
+    {
+      "id": "r013",
+      "type": "factual",
+      "topic": "edible-product-taxonomy",
+      "content": "Live DB distribution — 213 edible listings: 97 unclassified by name token (46%), 71 gummy (33%), 16 beverage (7%), 14 chocolate (7%), 12 tablet/capsule (6%), 3 baked/other (1%). Unclassified rate (46%) is nearly double the vape rate (26%).",
+      "source": {
+        "origin": "research",
+        "artifact": "research/edible-product-taxonomy.md",
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-05-23T01:01:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["edible", "data-distribution", "production", "listings"]
+    },
+    {
+      "id": "r014",
+      "type": "factual",
+      "topic": "edible-product-taxonomy",
+      "content": "The high unclassified rate in edibles is structural: major gummy brands (Camino, Wyld, Lost Farm, Heavy Hitters, Good Tide, Rythm, Papa & Barkley) publish listings as 'Brand | Strain | Ratio' with no format token, because their brand identity IS their format. Camino = always gummy. Wyld = always gummy. Lost Farm = always chew. Level = always tablet. Layup = always beverage. Brand-level lookup is more reliable than name-token parsing for edibles.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/edible-product-taxonomy.md",
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-05-23T01:02:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["edible", "brand-identity", "parsing", "unlabeled"]
+    },
+    {
+      "id": "r015",
+      "type": "factual",
+      "topic": "edible-product-taxonomy",
+      "content": "'Live rosin' and 'live resin' tokens in edible names are extract-quality signals, not format-type signals. 'Live Rosin Gummies' and plain 'Gummies' are the same product type. The distinction belongs in an extract_quality or extra_info field on the tuple — not in the type field. Using it as a type differentiator would fragment the gummy category into live-rosin gummies, live-resin gummies, and distillate gummies, all of which are the same product form.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/edible-product-taxonomy.md",
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-05-23T01:03:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["edible", "live-rosin", "extract-quality", "type-vs-quality"]
+    },
+    {
+      "id": "r016",
+      "type": "recommendation",
+      "topic": "edible-product-taxonomy",
+      "content": "For the product identity tuple, use four typed edible subtypes: 'gummy' (all soft candy forms), 'chocolate' (bars, confections), 'beverage' (drinks, sparkling water, tea), 'tablet' (capsules, pills, tabs, drops). Add 'other' fallback for pastilles (Beboe), dissolvable powder (Myhi), strips (Select), honey. Update CATEGORY_MAP: source 'Gummies', 'Chocolates', 'Beverage', 'Beverages' already present — extend with brand-level defaults for unlabeled gummy brands. The Alleaves sub-category strings 'Gummies', 'Chocolates', 'Beverage' already map correctly via scraper_common.py.",
+      "source": {
+        "origin": "research",
+        "artifact": "research/edible-product-taxonomy.md",
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-05-23T01:04:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["edible", "recommendation", "taxonomy", "category-map", "gummy", "chocolate", "beverage", "tablet"]
     }
   ]
 }
