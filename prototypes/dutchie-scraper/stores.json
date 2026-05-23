@@ -17,55 +17,57 @@
     "name": "Grow Together",
     "dispensary_slug": "grow-together-bk",
     "menu_url": "https://growtogetherbk.com",
-    "platform": null,
-    "_note": "Own domain; platform detection needed at runtime — likely Dutchie Plus"
+    "platform": "dutchie_ecommerce",
+    "_note": "Own domain 403-blocked; likely Dutchie eCommerce Next.js"
   },
   {
     "name": "The Emerald Dispensary",
     "dispensary_slug": "emerald-dispensary-bk",
     "menu_url": "https://theemeralddispensary.com/shop/",
-    "platform": null,
-    "_note": "WP embed with dtche params — likely wp_embed, verify at runtime"
+    "platform": "wp_embed",
+    "_note": "WP embed with dtche params \u2014 likely wp_embed, verify at runtime"
   },
   {
     "name": "Misha's Flower Shop",
     "dispensary_slug": "mishas-flower-shop-bk",
     "menu_url": "https://shop.mishasflowershop.com/mishasflower/menu/",
     "platform": null,
-    "_note": "As of 2026-05-23 serving Sweedpos CDN assets — may have switched platforms; verify"
+    "_note": "As of 2026-05-23 serving Sweedpos CDN assets \u2014 may have switched platforms; verify"
   },
   {
     "name": "Hii NYC Williamsburg",
     "dispensary_slug": "hii-nyc-williamsburg",
     "menu_url": "https://hiinyc.com/stores/hii-williamsburg",
-    "platform": null
+    "platform": "dutchie_ecommerce",
+    "_note": "Dutchie eCommerce Next.js (assets2.dutchie.com); _next/data 403-blocked"
   },
   {
     "name": "Hii NYC Bay Ridge",
     "dispensary_slug": "hii-nyc-bay-ridge",
     "menu_url": "https://hiinyc.com/stores/hii-bay-ridge",
-    "platform": null
+    "platform": "dutchie_ecommerce",
+    "_note": "Same operator as Williamsburg; menu_url 404 \u2014 verify correct URL"
   },
   {
     "name": "Bedford Club",
     "dispensary_slug": "bedford-club-bk",
     "menu_url": "https://shop.bedfordclub.com/menu/",
-    "platform": null,
-    "_note": "Next.js client-side; products not in HTML — may need browser"
+    "platform": "dutchie_ecommerce",
+    "_note": "Dutchie eCommerce Next.js; CSR only"
   },
   {
     "name": "The Garden Club",
     "dispensary_slug": "garden-club-carroll-gardens",
     "menu_url": "https://thegardenclubbk.com/menu/",
-    "platform": null,
-    "_note": "dutchie.com/dispensary/dizzpensary listed in MD"
+    "platform": "dutchie_ecommerce",
+    "_note": "URL 404; verify correct menu URL"
   },
   {
     "name": "Herbology",
     "dispensary_slug": "herbology-bed-stuy",
     "menu_url": "https://herbologynyc.com/shop/",
-    "platform": null,
-    "_note": "WP age-gated; blank HTML without JS — not scrapable without browser"
+    "platform": "wp_embed",
+    "_note": "WP age-gate renders blank HTML without JS"
   },
   {
     "name": "Fireleaf",
@@ -78,14 +80,15 @@
     "name": "Twisted Vibration",
     "dispensary_slug": "twisted-vibration-wburg",
     "menu_url": "https://twistedvibration.com/shop-menu/",
-    "platform": null,
-    "_note": "Bot-blocks fetches per MD; dtche params confirmed"
+    "platform": "unknown",
+    "_note": "Custom Vite SPA (Manus runtime); dtche confirmed but menu is full CSR"
   },
   {
     "name": "By Any Other Name",
     "dispensary_slug": "by-any-other-name-bk",
     "menu_url": "https://byanyothernamebk.com/shop/",
-    "platform": null
+    "platform": "wp_embed",
+    "_note": "429 rate-limited on fetch; dtche params confirmed"
   },
   {
     "name": "StashMaster NYC",
@@ -105,15 +108,15 @@
     "name": "RNR Dispensary",
     "dispensary_slug": "rnr-dispensary-bk",
     "menu_url": "https://store.rnrdispensary.com/stores/rnr-dispensary",
-    "platform": null,
-    "_note": "Next.js, retailerId=60d576e6-32f8-4c8d-ad49-cb31a61b5355; products client-side"
+    "platform": "dutchie_ecommerce",
+    "_note": "Dutchie eCommerce Next.js; retailerId=60d576e6-32f8-4c8d-ad49-cb31a61b5355; CSR only"
   },
   {
     "name": "OC Dispensary",
     "dispensary_slug": "oc-dispensary-bk",
     "menu_url": "https://dutchie.com/dispensary/oc-dispensary",
-    "platform": null,
-    "_note": "dutchie.com URL — 403 blocked; need browser or third-party API"
+    "platform": "dutchie_ecommerce",
+    "_note": "dutchie.com direct URL, 403-blocked"
   },
   {
     "name": "Soulmate",
@@ -133,28 +136,28 @@
     "name": "Milligrams",
     "dispensary_slug": "milligrams-greenpoint",
     "menu_url": "https://milligrams.co/stores/brooklyn-greenpoint-ny",
-    "platform": null,
-    "_note": "Next.js; products client-side loaded"
+    "platform": "dutchie_ecommerce",
+    "_note": "Dutchie eCommerce Next.js (assets2.dutchie.com); _next/data 403-blocked"
   },
   {
     "name": "Dagmar Cannabis Williamsburg",
     "dispensary_slug": "dagmar-cannabis-wburg",
     "menu_url": "https://dagmarcannabis.com",
-    "platform": null,
-    "_note": "dutchie.com/dispensary/dagmar-cannabis-williamsburg — 403 blocked"
+    "platform": "wp_embed",
+    "_note": "WP + JointCommerce Dutchie embed (CSS .joint-fi class)"
   },
   {
     "name": "Greene Street",
     "dispensary_slug": "greene-street-sheepshead-bay",
     "menu_url": "https://dutchie.com/dispensary/green-street-brooklyn",
-    "platform": null,
-    "_note": "dutchie.com URL — 403 blocked; brochure site only"
+    "platform": "dutchie_ecommerce",
+    "_note": "dutchie.com direct URL, 403-blocked; brochure site"
   },
   {
     "name": "Happy Buds Brooklyn",
     "dispensary_slug": "happy-buds-bk",
     "menu_url": "https://happybudsbk.com/collections/all",
-    "platform": null,
-    "_note": "Site sells hemp-derived; OCM adult-use license status unclear — verify before importing"
+    "platform": "shopify",
+    "_note": "Site sells hemp-derived; OCM adult-use status unclear \u2014 verify before importing"
   }
 ]
