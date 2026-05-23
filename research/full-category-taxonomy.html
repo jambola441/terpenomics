@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Full Category Taxonomy — Terpenomics Research</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f; --surface: #16161a; --border: #2a2a32;
+    --accent: #7c6af7; --accent2: #4ecdc4; --accent3: #f7b26a;
+    --text: #e8e8f0; --muted: #7a7a90;
+    --danger: #f76a6a; --success: #6af7a0; --pink: #f76ab4;
+    --flower: #6af7a0; --preroll: #f7b26a; --vape: #7c6af7;
+    --edible: #4ecdc4; --conc: #f76ab4; --misc: #7a7a90;
+  }
+  html { scroll-snap-type: y mandatory; overflow-y: scroll; background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; }
+  section { min-height: 100vh; scroll-snap-align: start; display: flex; flex-direction: column; justify-content: center; padding: 4rem 2rem; max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 2.4rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 0.5rem; }
+  h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; }
+  h3 { font-size: 0.82rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem; }
+  p { line-height: 1.7; color: var(--muted); margin-bottom: 1rem; }
+  .subtitle { color: var(--muted); font-size: 1rem; margin-top: 0.5rem; margin-bottom: 2rem; }
+  .divider { width: 48px; height: 3px; background: var(--accent); border-radius: 2px; margin-bottom: 2rem; }
+  .claim-id { font-size: 0.72rem; color: var(--muted); font-family: monospace; margin-left: 0.5rem; }
+  .label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; padding: 0.2rem 0.6rem; border-radius: 4px; display: inline-block; }
+  .label-fact { background: rgba(124,106,247,0.15); color: var(--accent); }
+  .label-rec  { background: rgba(78,205,196,0.15); color: var(--accent2); }
+
+  code { font-family: monospace; font-size: 0.85em; background: rgba(124,106,247,0.1); padding: 0.1em 0.35em; border-radius: 3px; color: var(--accent); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  th { text-align: left; padding: 0.55rem 0.9rem; color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
+  td { padding: 0.65rem 0.9rem; border-bottom: 1px solid var(--border); line-height: 1.4; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+
+  .pill { display: inline-block; padding: 0.15rem 0.55rem; border-radius: 20px; font-size: 0.75rem; font-family: monospace; margin: 0.15rem; white-space: nowrap; }
+
+  /* Category color pills */
+  .p-flower  { background: rgba(106,247,160,0.12); color: var(--flower); border: 1px solid rgba(106,247,160,0.25); }
+  .p-preroll { background: rgba(247,178,106,0.12); color: var(--preroll); border: 1px solid rgba(247,178,106,0.25); }
+  .p-vape    { background: rgba(124,106,247,0.12); color: var(--vape); border: 1px solid rgba(124,106,247,0.25); }
+  .p-edible  { background: rgba(78,205,196,0.12); color: var(--edible); border: 1px solid rgba(78,205,196,0.25); }
+  .p-conc    { background: rgba(247,106,180,0.12); color: var(--conc); border: 1px solid rgba(247,106,180,0.25); }
+  .p-misc    { background: rgba(122,122,144,0.12); color: var(--muted); border: 1px solid rgba(122,122,144,0.25); }
+
+  /* Bar chart */
+  .bars { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; }
+  .bar-row { display: flex; align-items: center; gap: 0.75rem; }
+  .bar-label { width: 130px; font-size: 0.82rem; flex-shrink: 0; color: var(--text); }
+  .bar-sub   { width: 110px; font-size: 0.75rem; flex-shrink: 0; color: var(--muted); font-family: monospace; }
+  .bar-track { flex: 1; background: var(--border); border-radius: 3px; height: 22px; overflow: hidden; }
+  .bar-fill  { height: 100%; border-radius: 3px; display: flex; align-items: center; padding: 0 0.6rem; font-size: 0.75rem; font-weight: 600; white-space: nowrap; min-width: 40px; }
+  .bf-flower  { background: linear-gradient(90deg, #3a8a58, var(--flower)); }
+  .bf-smalls  { background: linear-gradient(90deg, #2a6040, #5acc88); }
+  .bf-pregrnd { background: linear-gradient(90deg, #1a4030, #3a9a68); }
+  .bf-single  { background: linear-gradient(90deg, #8a6020, var(--preroll)); }
+  .bf-infused { background: linear-gradient(90deg, #c05010, #f09050); }
+  .bf-pack    { background: linear-gradient(90deg, #604010, #a07030); }
+  .bf-cart    { background: linear-gradient(90deg, #4a3aaa, #8a7af7); }
+  .bf-aio     { background: linear-gradient(90deg, #3a2a9a, var(--vape)); }
+  .bf-pod     { background: linear-gradient(90deg, #2a2070, #5a4ac0); }
+  .bf-gummy   { background: linear-gradient(90deg, #2a8a88, var(--edible)); }
+  .bf-choc    { background: linear-gradient(90deg, #5a3a28, #9a6a48); }
+  .bf-bev     { background: linear-gradient(90deg, #2a5a8a, #4a8ac0); }
+  .bf-tab     { background: linear-gradient(90deg, #7a5a20, #c0a040); }
+  .bf-rosin   { background: linear-gradient(90deg, #8a3a70, var(--conc)); }
+  .bf-resin   { background: linear-gradient(90deg, #6a2a58, #d06aa0); }
+  .bf-uncl    { background: linear-gradient(90deg, #333, #555); }
+
+  .nav { position: fixed; right: 1.5rem; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 0.5rem; z-index: 100; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); cursor: pointer; transition: background 0.2s; }
+  .dot:hover { background: var(--accent); }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem; }
+  .box { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; }
+  .box h4 { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.75rem; }
+  .callout { background: rgba(247,178,106,0.08); border: 1px solid rgba(247,178,106,0.25); border-radius: 8px; padding: 1rem 1.25rem; margin-top: 1rem; }
+  .callout p { color: var(--accent3); margin: 0; font-size: 0.9rem; }
+
+  @media (max-width: 640px) { .grid2 { grid-template-columns: 1fr; } .bar-sub { display: none; } }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="dot" href="#s1"></a>
+  <a class="dot" href="#s2"></a>
+  <a class="dot" href="#s3"></a>
+  <a class="dot" href="#s4"></a>
+  <a class="dot" href="#s5"></a>
+  <a class="dot" href="#s6"></a>
+  <a class="dot" href="#s7"></a>
+</nav>
+
+<!-- SLIDE 1 — Title + overview -->
+<section id="s1">
+  <span class="label label-fact">Research</span>
+  <span class="claim-id">r017 – r022</span>
+  <h1 style="margin-top:1rem;">Full Category<br>Taxonomy</h1>
+  <p class="subtitle">Subtype analysis across all 9 listing categories in the live DB — what differentiates products within each bucket.</p>
+  <div class="divider"></div>
+  <table>
+    <thead><tr><th>Category</th><th>Listings</th><th>Subtypes</th><th>Classifier priority</th></tr></thead>
+    <tbody>
+      <tr><td><span class="pill p-preroll">preroll</span></td><td>288</td><td>single, infused, pack</td><td>🔴 High — 44% are infused</td></tr>
+      <tr><td><span class="pill p-edible">edible</span></td><td>213</td><td>gummy, chocolate, beverage, tablet</td><td>🔴 High — 46% unclassified</td></tr>
+      <tr><td><span class="pill p-vape">vape</span></td><td>238</td><td>cart, all-in-one, pod</td><td>🟡 Medium — 26% unclassified</td></tr>
+      <tr><td><span class="pill p-flower">flower</span></td><td>233</td><td>flower, smalls, preground</td><td>🟡 Medium — 15% non-standard</td></tr>
+      <tr><td><span class="pill p-conc">concentrate</span></td><td>19</td><td>rosin, resin, hash, rso</td><td>🟢 Low vol, token-labelable</td></tr>
+      <tr><td><span class="pill p-misc">tinctures</span></td><td>29</td><td>(single type)</td><td>⚪ Skip</td></tr>
+      <tr><td><span class="pill p-misc">topical</span></td><td>9</td><td>(single type)</td><td>⚪ Skip</td></tr>
+      <tr><td><span class="pill p-misc">merch</span></td><td>149</td><td>none needed</td><td>⚪ Skip</td></tr>
+      <tr><td><span class="pill p-misc">other</span></td><td>9</td><td>cleanup target</td><td>⚪ Skip</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- SLIDE 2 — Preroll -->
+<section id="s2">
+  <h2 style="color: var(--preroll);">Preroll <span class="claim-id">r017</span></h2>
+  <p>The biggest surprise in the dataset. Nearly half of all pre-rolls are infused with concentrate — a 2-3× price premium. The infused/non-infused distinction is the most impactful subtype split in the entire catalogue.</p>
+  <div class="bars">
+    <div class="bar-row">
+      <span class="bar-label">Single</span>
+      <span class="bar-sub">non-infused</span>
+      <div class="bar-track"><div class="bar-fill bf-single" style="width:54%">156 — 54%</div></div>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Infused</span>
+      <span class="bar-sub">live resin, diamond, kief, hash</span>
+      <div class="bar-track"><div class="bar-fill bf-infused" style="width:44%">128 — 44%</div></div>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Pack</span>
+      <span class="bar-sub">multi-unit</span>
+      <div class="bar-track"><div class="bar-fill bf-pack" style="width:2%">4</div></div>
+    </div>
+  </div>
+  <div class="callout" style="margin-top: 1.5rem;">
+    <p>Token signal is strong: "Infused", "Kief Coated", "Diamond Infused", "Live Resin Infused", "Hash Infused", "Hash Hole" all map to <code>infused</code>. Unclassified rate is near zero.</p>
+  </div>
+</section>
+
+<!-- SLIDE 3 — Flower -->
+<section id="s3">
+  <h2 style="color: var(--flower);">Flower <span class="claim-id">r018</span></h2>
+  <p>The cleanest category — 85% of listings are standard flower with no special subtype signal. The remaining 15% are meaningful tiers: smalls (cheaper), pre-ground (roll-your-own), and the rare infused flower.</p>
+  <div class="bars">
+    <div class="bar-row">
+      <span class="bar-label">Standard flower</span>
+      <span class="bar-sub">whole buds</span>
+      <div class="bar-track"><div class="bar-fill bf-flower" style="width:85%">199 — 85%</div></div>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Pre-ground</span>
+      <span class="bar-sub">ready to roll</span>
+      <div class="bar-track"><div class="bar-fill bf-pregrnd" style="width:8%">19 — 8%</div></div>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Smalls</span>
+      <span class="bar-sub">small buds</span>
+      <div class="bar-track"><div class="bar-fill bf-smalls" style="width:5%">11 — 5%</div></div>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Infused flower</span>
+      <span class="bar-sub">diamond-dusted etc.</span>
+      <div class="bar-track"><div class="bar-fill bf-infused" style="width:2%">4</div></div>
+    </div>
+  </div>
+  <div class="callout" style="margin-top:1.5rem;">
+    <p>Token signals: "Smalls", "Small Buds" → <code>smalls</code>. "Pre-ground", "Ground Flower", "Ready to Roll", "Ready-to-Roll" → <code>preground</code>. Standard flower needs no positive signal — it's the default.</p>
+  </div>
+</section>
+
+<!-- SLIDE 4 — Vape + Edible recap -->
+<section id="s4">
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+    <div>
+      <h2 style="color: var(--vape); font-size: 1.2rem;">Vape <span class="claim-id">r006</span></h2>
+      <div class="bars" style="margin-top: 1rem;">
+        <div class="bar-row">
+          <span class="bar-label" style="width:100px;">All-in-one</span>
+          <div class="bar-track"><div class="bar-fill bf-aio" style="width:47%">47%</div></div>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label" style="width:100px;">Unclassified</span>
+          <div class="bar-track"><div class="bar-fill bf-uncl" style="width:26%">26%</div></div>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label" style="width:100px;">Cart / 510</span>
+          <div class="bar-track"><div class="bar-fill bf-cart" style="width:23%">23%</div></div>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label" style="width:100px;">Pod</span>
+          <div class="bar-track"><div class="bar-fill bf-pod" style="width:2%">2%</div></div>
+        </div>
+      </div>
+      <p style="margin-top:0.75rem; font-size:0.82rem;">26% unclassified — bare brand+strain names (Bloom, Cannabals)</p>
+    </div>
+    <div>
+      <h2 style="color: var(--edible); font-size: 1.2rem;">Edible <span class="claim-id">r012</span></h2>
+      <div class="bars" style="margin-top: 1rem;">
+        <div class="bar-row">
+          <span class="bar-label" style="width:100px;">Unclassified</span>
+          <div class="bar-track"><div class="bar-fill bf-uncl" style="width:46%">46%</div></div>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label" style="width:100px;">Gummy</span>
+          <div class="bar-track"><div class="bar-fill bf-gummy" style="width:33%">33%</div></div>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label" style="width:100px;">Beverage</span>
+          <div class="bar-track"><div class="bar-fill bf-bev" style="width:7%">7%</div></div>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label" style="width:100px;">Chocolate</span>
+          <div class="bar-track"><div class="bar-fill bf-choc" style="width:7%">7%</div></div>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label" style="width:100px;">Tablet</span>
+          <div class="bar-track"><div class="bar-fill bf-tab" style="width:6%">6%</div></div>
+        </div>
+      </div>
+      <p style="margin-top:0.75rem; font-size:0.82rem;">46% unclassified — brand-identity gummy brands (Camino, Wyld)</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 5 — Concentrate -->
+<section id="s5">
+  <h2 style="color: var(--conc);">Concentrate <span class="claim-id">r019</span></h2>
+  <p>Small category (19 listings) but rich in subtype signal. Extraction method is the primary differentiator — rosin (solventless) vs resin (solvent-extracted) are genuinely different products with different price points and consumer bases.</p>
+  <div class="bars">
+    <div class="bar-row">
+      <span class="bar-label">Rosin</span>
+      <span class="bar-sub">solventless, live rosin</span>
+      <div class="bar-track"><div class="bar-fill bf-rosin" style="width:47%">9 — 47%</div></div>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Resin</span>
+      <span class="bar-sub">live resin, cured resin</span>
+      <div class="bar-track"><div class="bar-fill bf-resin" style="width:32%">6 — 32%</div></div>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Unclassified</span>
+      <span class="bar-sub">no extraction token</span>
+      <div class="bar-track"><div class="bar-fill bf-uncl" style="width:11%">2 — 11%</div></div>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Hash</span>
+      <span class="bar-sub">bubble hash, traditional</span>
+      <div class="bar-track"><div class="bar-fill bf-pack" style="width:5%">1</div></div>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">RSO</span>
+      <span class="bar-sub">Rick Simpson Oil</span>
+      <div class="bar-track"><div class="bar-fill bf-uncl" style="width:5%">1</div></div>
+    </div>
+  </div>
+  <p style="margin-top:1.25rem; font-size:0.85rem;">Texture variants (badder, sugar, wax, crumble) within rosin/resin are secondary — they don't change the extraction method or price tier meaningfully enough to warrant their own subtype.</p>
+</section>
+
+<!-- SLIDE 6 — Tinctures, topicals, merch, other -->
+<section id="s6">
+  <h2>Remaining Categories <span class="claim-id">r020, r021</span></h2>
+  <p>Low volume and low classifier value — these can be handled with simple rules or skipped entirely.</p>
+  <div class="grid2">
+    <div class="box">
+      <h4>Tinctures (29)</h4>
+      <p style="font-size:0.85rem;">Mostly oral-drop / oil format — single type. Contains ~5-6 miscategorized topicals from source data (Reunion roll-on, Vlasic Labs bath bombs, Cause Medic scrub). Also one hemp flower (Barbari) and one hemp patch.</p>
+    </div>
+    <div class="box">
+      <h4>Topicals (9)</h4>
+      <p style="font-size:0.85rem;">All balm format. Ayrloom, Papa & Barkley, Doctor Solomons, Hepworth. No subtype split needed at this volume.</p>
+    </div>
+    <div class="box">
+      <h4>Merch (149)</h4>
+      <p style="font-size:0.85rem;">Accessories, apparel, lighters, grinders, stash jars, rolling papers. Also contains vape batteries (PAX Era Go, CCELL, Vessel, PuffCo) — excluded from strain-matching pipelines regardless of subtype.</p>
+    </div>
+    <div class="box">
+      <h4>Other (9)</h4>
+      <p style="font-size:0.85rem;">Garbage bin: test entries (DELETE, NO ITEM, OLD), 1 miscategorized concentrate (Hudson Cannabis Hash), BOB brand apparel. Cleanup target, not a classifier target.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 7 — Full taxonomy map -->
+<section id="s7">
+  <h2>Complete Taxonomy Map <span class="claim-id">r022</span></h2>
+  <p>The full subtype vocabulary for the product identity tuple.</p>
+  <table>
+    <thead><tr><th>Category</th><th>Subtypes</th><th>Token signals</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="pill p-preroll">preroll</span></td>
+        <td>
+          <span class="pill p-preroll">single</span>
+          <span class="pill p-preroll">infused</span>
+          <span class="pill p-preroll">pack</span>
+        </td>
+        <td style="font-size:0.78rem; color:var(--muted);">Infused / Kief / Diamond → infused<br>Pack / Variety → pack</td>
+      </tr>
+      <tr>
+        <td><span class="pill p-flower">flower</span></td>
+        <td>
+          <span class="pill p-flower">flower</span>
+          <span class="pill p-flower">smalls</span>
+          <span class="pill p-flower">preground</span>
+          <span class="pill p-flower">infused</span>
+        </td>
+        <td style="font-size:0.78rem; color:var(--muted);">Smalls → smalls<br>Pre-ground / Ready to Roll → preground<br>Default → flower</td>
+      </tr>
+      <tr>
+        <td><span class="pill p-vape">vape</span></td>
+        <td>
+          <span class="pill p-vape">cart</span>
+          <span class="pill p-vape">all-in-one</span>
+          <span class="pill p-vape">pod</span>
+        </td>
+        <td style="font-size:0.78rem; color:var(--muted);">510 / Reload / Preload → cart<br>All-in-one / AIO / Disposable → all-in-one<br>Pod → pod</td>
+      </tr>
+      <tr>
+        <td><span class="pill p-edible">edible</span></td>
+        <td>
+          <span class="pill p-edible">gummy</span>
+          <span class="pill p-edible">chocolate</span>
+          <span class="pill p-edible">beverage</span>
+          <span class="pill p-edible">tablet</span>
+          <span class="pill p-edible">other</span>
+        </td>
+        <td style="font-size:0.78rem; color:var(--muted);">Gumm / Chew / Rope → gummy<br>Chocolate / Bar → chocolate<br>Beverage / Tea Sachet → beverage<br>ProTab / Tablet / Bean → tablet</td>
+      </tr>
+      <tr>
+        <td><span class="pill p-conc">concentrate</span></td>
+        <td>
+          <span class="pill p-conc">rosin</span>
+          <span class="pill p-conc">resin</span>
+          <span class="pill p-conc">hash</span>
+          <span class="pill p-conc">rso</span>
+        </td>
+        <td style="font-size:0.78rem; color:var(--muted);">Rosin / Live Rosin → rosin<br>Resin / Live Resin → resin<br>Hash → hash<br>RSO → rso</td>
+      </tr>
+      <tr>
+        <td><span class="pill p-misc">tinctures</span></td>
+        <td><span class="pill p-misc">tincture</span></td>
+        <td style="font-size:0.78rem; color:var(--muted);">Default → tincture</td>
+      </tr>
+      <tr>
+        <td><span class="pill p-misc">topical</span></td>
+        <td><span class="pill p-misc">topical</span></td>
+        <td style="font-size:0.78rem; color:var(--muted);">Default → topical</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+</body>
+</html>
