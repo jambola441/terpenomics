@@ -1,384 +1,230 @@
-from typing import Optional, List
-from uuid import UUID
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
-from sqlmodel import Session, select, delete, or_
-from sqlalchemy import cast, String
+from sqlalchemy import text
+from sqlmodel import Session, select
 
 from auth import SupabaseAuthUser
-from database import get_session
-from models import Product, ProductCategory, ProductTerpene, Terpene, Cannabinoid, ProductCannabinoid, CannabinoidFamily
+from database import engine, get_session
+from models import Dispensary, Listing
 from .auth import require_admin
-from .serializers import serialize_product
-
 
 router = APIRouter()
 
-
-class ProductTerpeneInput(BaseModel):
-    name: str
-    percent: Optional[float] = None
+_NULL = "__null__"
 
 
-class ProductCannabinoidInput(BaseModel):
-    name: str
-    family: CannabinoidFamily
-    percent: Optional[float] = None
+def _tuple_filter(stmt, brand, category, subtype, product_line, strain, variant):
+    """Apply exact-match tuple filters, treating __null__ as IS NULL."""
+    if brand == _NULL:
+        stmt = stmt.where(Listing.scraped_brand.is_(None))
+    elif brand is not None:
+        stmt = stmt.where(Listing.scraped_brand == brand)
 
+    if category is not None:
+        stmt = stmt.where(Listing.scraped_category == category)
 
-class ProductCreate(BaseModel):
-    name: str
-    brand: Optional[str] = None
-    variant: Optional[str] = None
-    category: ProductCategory = ProductCategory.other
-    is_active: bool = True
-    terpenes: List[ProductTerpeneInput] = []
-    cannabinoids: List[ProductCannabinoidInput] = []
+    if subtype == _NULL:
+        stmt = stmt.where(Listing.subtype.is_(None))
+    elif subtype is not None:
+        stmt = stmt.where(Listing.subtype == subtype)
 
+    if product_line == _NULL:
+        stmt = stmt.where(Listing.product_line.is_(None))
+    elif product_line is not None:
+        stmt = stmt.where(Listing.product_line == product_line)
 
-class ProductUpdate(BaseModel):
-    name: Optional[str] = None
-    brand: Optional[str] = None
-    variant: Optional[str] = None
-    category: Optional[ProductCategory] = None
-    is_active: Optional[bool] = None
-    terpenes: Optional[List[ProductTerpeneInput]] = None  # if provided, REPLACE
-    cannabinoids: Optional[List[ProductCannabinoidInput]] = None  # if provided, REPLACE
+    if strain == _NULL:
+        stmt = stmt.where(Listing.strain.is_(None))
+    elif strain is not None:
+        stmt = stmt.where(Listing.strain == strain)
 
+    if variant == _NULL:
+        stmt = stmt.where(Listing.variant.is_(None))
+    elif variant is not None:
+        stmt = stmt.where(Listing.variant == variant)
 
-def _load_product_terpenes(session: Session, product_id: UUID) -> list:
-    rows = session.exec(
-        select(ProductTerpene, Terpene)
-        .join(Terpene, Terpene.id == ProductTerpene.terpene_id)
-        .where(ProductTerpene.product_id == product_id)
-    ).all()
-    return [{"name": terp.name, "percent": link.percent} for link, terp in rows]
-
-
-def _load_product_cannabinoids(session: Session, product_id: UUID) -> list:
-    rows = session.exec(
-        select(ProductCannabinoid, Cannabinoid)
-        .join(Cannabinoid, Cannabinoid.id == ProductCannabinoid.cannabinoid_id)
-        .where(ProductCannabinoid.product_id == product_id)
-    ).all()
-    return [{"name": c.name, "family": c.family, "percent": link.percent} for link, c in rows]
+    return stmt
 
 
 @router.get("/products")
 def list_products(
-    session: Session = Depends(get_session),
     _: SupabaseAuthUser = Depends(require_admin),
     q: Optional[str] = Query(default=None),
     brand: Optional[str] = Query(default=None),
-    category: Optional[ProductCategory] = Query(default=None),
-    variant: Optional[str] = Query(default=None),
+    category: Optional[str] = Query(default=None),
+    in_stock: Optional[bool] = Query(default=None),
+    sort: Optional[str] = Query(default=None),
+    order: str = Query(default="asc"),
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
 ):
-    # Step 1: select product ids for this page (so pagination doesn't truncate terpene rows)
-    id_stmt = select(Product.id)
+    conditions = ["1=1"]
+    params: dict = {}
 
     if q:
-        like = f"%{q.strip()}%"
-        id_stmt = id_stmt.where(
-            or_(
-                Product.name.ilike(like),
-                Product.brand.ilike(like),
-                cast(Product.category, String).ilike(like),
-            )
+        conditions.append(
+            "(brand ILIKE :q OR category ILIKE :q OR strain ILIKE :q OR subtype ILIKE :q)"
         )
+        params["q"] = f"%{q.strip()}%"
     if brand:
-        id_stmt = id_stmt.where(Product.brand.ilike(f"%{brand.strip()}%"))
+        conditions.append("brand ILIKE :brand")
+        params["brand"] = f"%{brand.strip()}%"
     if category:
-        id_stmt = id_stmt.where(Product.category == category)
-    if variant:
-        id_stmt = id_stmt.where(Product.variant.ilike(f"%{variant.strip()}%"))
+        conditions.append("category = :category")
+        params["category"] = category
+    if in_stock is not None:
+        conditions.append("any_in_stock = :in_stock")
+        params["in_stock"] = in_stock
 
-    id_stmt = id_stmt.order_by(Product.created_at.desc()).offset(offset).limit(limit)
-    product_ids = session.exec(id_stmt).all()
+    _sort_cols = {
+        "brand":        "brand",
+        "category":     "category",
+        "subtype":      "subtype",
+        "product_line": "product_line",
+        "strain":       "strain",
+        "stores":       "dispensary_count",
+        "listings":     "listing_count",
+        "price":        "min_price_cents",
+    }
+    sort_col = _sort_cols.get(sort or "", None)
+    sort_dir = "ASC" if order == "asc" else "DESC"
+    order_clause = f"{sort_col} {sort_dir} NULLS LAST" if sort_col else "brand, category, subtype, strain, variant"
 
-    if not product_ids:
-        return []
+    where = " AND ".join(conditions)
+    sql = text(f"""
+        SELECT brand, category, subtype, product_line, strain, variant,
+               listing_count, dispensary_count,
+               min_price_cents, max_price_cents,
+               any_in_stock
+        FROM products
+        WHERE {where}
+        ORDER BY {order_clause}
+        LIMIT :limit OFFSET :offset
+    """)
+    params["limit"] = limit
+    params["offset"] = offset
 
-    # Step 2: fetch full rows (product + terpenes) for only these ids
-    rows = session.exec(
-        select(Product, ProductTerpene, Terpene)
-        .join(ProductTerpene, ProductTerpene.product_id == Product.id, isouter=True)
-        .join(Terpene, Terpene.id == ProductTerpene.terpene_id, isouter=True)
-        .where(Product.id.in_(product_ids))
-        .order_by(Product.created_at.desc())
-    ).all()
+    with engine.connect() as conn:
+        rows = conn.execute(sql, params).mappings().all()
 
-    by_id = {}
-
-    for product, link, terpene in rows:
-        pid = str(product.id)
-        if pid not in by_id:
-            by_id[pid] = {
-                "id": pid,
-                "name": product.name,
-                "brand": product.brand,
-                "variant": product.variant,
-                "category": product.category,
-                "is_active": product.is_active,
-                "terpenes": [],
-                "cannabinoids": [],
-            }
-
-        if terpene is not None and link is not None:
-            by_id[pid]["terpenes"].append({"name": terpene.name, "percent": link.percent})
-
-    # Batch load cannabinoids for the same product ids
-    cannab_rows = session.exec(
-        select(ProductCannabinoid, Cannabinoid)
-        .join(Cannabinoid, Cannabinoid.id == ProductCannabinoid.cannabinoid_id)
-        .where(ProductCannabinoid.product_id.in_(product_ids))
-    ).all()
-
-    for link, c in cannab_rows:
-        pid = str(link.product_id)
-        if pid in by_id:
-            by_id[pid]["cannabinoids"].append({"name": c.name, "family": c.family, "percent": link.percent})
-
-    # Preserve the original ordering from product_ids
-    order = {str(pid): i for i, pid in enumerate(product_ids)}
-    return sorted(by_id.values(), key=lambda x: order.get(x["id"], 10**9))
+    return [dict(r) for r in rows]
 
 
-@router.post("/products")
-def create_product(
-    payload: ProductCreate,
-    session: Session = Depends(get_session),
+@router.get("/products/detail")
+def get_product_detail(
     _: SupabaseAuthUser = Depends(require_admin),
+    session: Session = Depends(get_session),
+    brand: Optional[str] = Query(default=None),
+    category: Optional[str] = Query(default=None),
+    subtype: Optional[str] = Query(default=None),
+    product_line: Optional[str] = Query(default=None),
+    strain: Optional[str] = Query(default=None),
+    variant: Optional[str] = Query(default=None),
 ):
-    p = Product(
-        name=payload.name.strip(),
-        brand=payload.brand.strip() if payload.brand else None,
-        variant=payload.variant.strip() if payload.variant else None,
-        category=payload.category,
-        is_active=payload.is_active,
+    if category is None:
+        raise HTTPException(status_code=400, detail="category is required")
+
+    # Fetch the matching VIEW row
+    view_conditions = ["category = :category"]
+    view_params: dict = {"category": category}
+
+    if brand == _NULL:
+        view_conditions.append("brand IS NULL")
+    elif brand is not None:
+        view_conditions.append("brand = :brand")
+        view_params["brand"] = brand
+
+    if subtype == _NULL:
+        view_conditions.append("subtype IS NULL")
+    elif subtype is not None:
+        view_conditions.append("subtype = :subtype")
+        view_params["subtype"] = subtype
+
+    if product_line == _NULL:
+        view_conditions.append("product_line IS NULL")
+    elif product_line is not None:
+        view_conditions.append("product_line = :product_line")
+        view_params["product_line"] = product_line
+
+    if strain == _NULL:
+        view_conditions.append("strain IS NULL")
+    elif strain is not None:
+        view_conditions.append("strain = :strain")
+        view_params["strain"] = strain
+
+    if variant == _NULL:
+        view_conditions.append("variant IS NULL")
+    elif variant is not None:
+        view_conditions.append("variant = :variant")
+        view_params["variant"] = variant
+
+    where = " AND ".join(view_conditions)
+    with engine.connect() as conn:
+        row = conn.execute(
+            text(f"SELECT * FROM products WHERE {where}"),
+            view_params,
+        ).mappings().first()
+
+        # Fallback: product_line=__null__ (IS NULL) found nothing — the listing that
+        # generated this URL has product_line=null but no product group with
+        # product_line=null exists for this combo (all siblings have a value set).
+        # Relax the product_line constraint and use whatever value the found row has.
+        if not row and product_line == _NULL:
+            fallback_conditions = [c for c in view_conditions if "product_line" not in c]
+            fallback_params = {k: v for k, v in view_params.items() if k != "product_line"}
+            row = conn.execute(
+                text("SELECT * FROM products WHERE " + " AND ".join(fallback_conditions)),
+                fallback_params,
+            ).mappings().first()
+            if row:
+                product_line = row["product_line"]  # use actual value for listings query
+
+    if not row:
+        raise HTTPException(status_code=404, detail="product not found")
+
+    product = dict(row)
+
+    # Fetch all matching listings with dispensary name
+    stmt = (
+        select(Listing, Dispensary)
+        .join(Dispensary, Dispensary.id == Listing.dispensary_id)
+        .where(Listing.is_active == True)  # noqa: E712
     )
-    session.add(p)
-    session.flush()
+    stmt = _tuple_filter(stmt, brand, category, subtype, product_line, strain, variant)
+    stmt = stmt.order_by(Dispensary.name, Listing.price_cents)
 
-    for t_in in payload.terpenes:
-        tname = t_in.name.strip()
-        if not tname:
-            continue
-        terp = session.exec(select(Terpene).where(Terpene.name == tname)).first()
-        if not terp:
-            terp = Terpene(name=tname)
-            session.add(terp)
-            session.flush()
+    listings = []
+    for listing, dispensary in session.exec(stmt).all():
+        listings.append({
+            "id":               str(listing.id),
+            "dispensary_id":    str(listing.dispensary_id),
+            "dispensary_name":  dispensary.name,
+            "dispensary_slug":  dispensary.slug,
+            "scraped_name":     listing.scraped_name,
+            "price_cents":      listing.price_cents,
+            "variant":          listing.variant,
+            "sku":              listing.sku,
+            "url":              listing.url,
+            "image_url":        listing.image_url,
+            "in_stock":         listing.in_stock,
+            "classification":   listing.classification,
+            "scraped_at":       listing.scraped_at.isoformat() if listing.scraped_at else None,
+        })
 
-        link = ProductTerpene(
-            product_id=p.id,
-            terpene_id=terp.id,
-            percent=t_in.percent,
-        )
-        session.add(link)
-
-    for c_in in payload.cannabinoids:
-        cname = c_in.name.strip()
-        if not cname:
-            continue
-        cannab = session.exec(select(Cannabinoid).where(Cannabinoid.name == cname)).first()
-        if not cannab:
-            cannab = Cannabinoid(name=cname, family=c_in.family)
-            session.add(cannab)
-            session.flush()
-
-        session.add(ProductCannabinoid(
-            product_id=p.id,
-            cannabinoid_id=cannab.id,
-            percent=c_in.percent,
-        ))
-
-    session.commit()
-    session.refresh(p)
-    return {"id": str(p.id)}
-
-
-@router.get("/products/cannabinoids")
-def get_products_cannabinoids_batch(
-    session: Session = Depends(get_session),
-    _: SupabaseAuthUser = Depends(require_admin),
-    product_ids: Optional[str] = Query(default=None, description="Comma-separated list of product UUIDs"),
-):
-    # No product_ids → return flat list of all cannabinoids for autocomplete
-    if product_ids is None:
-        rows = session.exec(select(Cannabinoid).order_by(Cannabinoid.name)).all()
-        return [{"name": c.name, "family": c.family} for c in rows]
-
-    try:
-        ids = [UUID(pid.strip()) for pid in product_ids.split(",") if pid.strip()]
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=f"Invalid product_id format: {e}")
-
-    if not ids:
-        return {}
-
-    if len(ids) > 100:
-        raise HTTPException(status_code=400, detail="Maximum 100 product IDs allowed")
-
-    rows = session.exec(
-        select(ProductCannabinoid, Cannabinoid)
-        .join(Cannabinoid, Cannabinoid.id == ProductCannabinoid.cannabinoid_id)
-        .where(ProductCannabinoid.product_id.in_(ids))
-    ).all()
-
-    result = {str(pid): [] for pid in ids}
-    for link, c in rows:
-        pid_str = str(link.product_id)
-        if pid_str in result:
-            result[pid_str].append({"name": c.name, "family": c.family, "percent": link.percent})
-
-    return result
-
-
-@router.get("/products/terpenes")
-def get_products_terpenes_batch(
-    session: Session = Depends(get_session),
-    _: SupabaseAuthUser = Depends(require_admin),
-    product_ids: Optional[str] = Query(default=None, description="Comma-separated list of product UUIDs"),
-):
-    # No product_ids → return flat list of all terpenes for autocomplete
-    if product_ids is None:
-        rows = session.exec(select(Terpene).order_by(Terpene.name)).all()
-        return [{"name": t.name} for t in rows]
-
-    # Parse comma-separated UUIDs
-    try:
-        ids = [UUID(pid.strip()) for pid in product_ids.split(",") if pid.strip()]
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=f"Invalid product_id format: {e}")
-
-    if not ids:
-        return {}
-
-    if len(ids) > 100:
-        raise HTTPException(status_code=400, detail="Maximum 100 product IDs allowed")
-
-    # Fetch all product-terpene links for these products
-    rows = session.exec(
-        select(ProductTerpene, Terpene)
-        .join(Terpene, Terpene.id == ProductTerpene.terpene_id)
-        .where(ProductTerpene.product_id.in_(ids))
-    ).all()
-
-    # Build mapping
-    result = {str(pid): [] for pid in ids}
-    for link, terpene in rows:
-        pid_str = str(link.product_id)
-        if pid_str in result:
-            result[pid_str].append({
-                "name": terpene.name,
-                "percent": link.percent,
-            })
-    
-    return result
+    return {"product": product, "listings": listings}
 
 
 @router.get("/products/brands")
 def list_brands(
-    session: Session = Depends(get_session),
     _: SupabaseAuthUser = Depends(require_admin),
+    session: Session = Depends(get_session),
 ):
     rows = session.exec(
-        select(Product.brand)
-        .where(Product.brand.is_not(None))
+        select(Listing.scraped_brand)
+        .where(Listing.scraped_brand.isnot(None))
+        .where(Listing.is_active == True)  # noqa: E712
         .distinct()
-        .order_by(Product.brand)
+        .order_by(Listing.scraped_brand)
     ).all()
     return [r for r in rows if r]
-
-
-@router.get("/products/{product_id}")
-def get_product(
-    product_id: UUID,
-    session: Session = Depends(get_session),
-    _: SupabaseAuthUser = Depends(require_admin),
-):
-    p = session.get(Product, product_id)
-    if not p:
-        raise HTTPException(status_code=404, detail="product not found")
-
-    terpenes = _load_product_terpenes(session, product_id)
-    cannabinoids = _load_product_cannabinoids(session, product_id)
-    return serialize_product(p, terpenes, cannabinoids)
-
-
-@router.post("/products/{product_id}")
-def update_product(
-    product_id: UUID,
-    payload: ProductUpdate,
-    session: Session = Depends(get_session),
-    _: SupabaseAuthUser = Depends(require_admin),
-):
-    p = session.get(Product, product_id)
-    if not p:
-        raise HTTPException(status_code=404, detail="product not found")
-
-    if payload.name is not None:
-        p.name = payload.name.strip()
-    if payload.brand is not None:
-        p.brand = payload.brand.strip() if payload.brand else None
-    if payload.variant is not None:
-        p.variant = payload.variant.strip() if payload.variant else None
-    if payload.category is not None:
-        p.category = payload.category
-    if payload.is_active is not None:
-        p.is_active = payload.is_active
-
-    if payload.terpenes is not None:
-        session.exec(delete(ProductTerpene).where(ProductTerpene.product_id == product_id))
-
-        for t_in in payload.terpenes:
-            tname = t_in.name.strip()
-            if not tname:
-                continue
-
-            terp = session.exec(select(Terpene).where(Terpene.name == tname)).first()
-            if not terp:
-                terp = Terpene(name=tname)
-                session.add(terp)
-                session.flush()
-
-            session.add(
-                ProductTerpene(
-                    product_id=product_id,
-                    terpene_id=terp.id,
-                    percent=t_in.percent,
-                )
-            )
-
-    if payload.cannabinoids is not None:
-        session.exec(delete(ProductCannabinoid).where(ProductCannabinoid.product_id == product_id))
-
-        for c_in in payload.cannabinoids:
-            cname = c_in.name.strip()
-            if not cname:
-                continue
-
-            cannab = session.exec(select(Cannabinoid).where(Cannabinoid.name == cname)).first()
-            if not cannab:
-                cannab = Cannabinoid(name=cname, family=c_in.family)
-                session.add(cannab)
-                session.flush()
-
-            session.add(
-                ProductCannabinoid(
-                    product_id=product_id,
-                    cannabinoid_id=cannab.id,
-                    percent=c_in.percent,
-                )
-            )
-
-    session.add(p)
-    session.commit()
-    session.refresh(p)
-
-    terpenes = _load_product_terpenes(session, product_id)
-    cannabinoids = _load_product_cannabinoids(session, product_id)
-    return serialize_product(p, terpenes, cannabinoids)

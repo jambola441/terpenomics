@@ -13,15 +13,19 @@ export type Cannabinoid = {
   percent?: number | null
 }
 
+// Products are a derived VIEW — no id, no CRUD
 export type Product = {
-  id: string
-  name: string
-  brand?: string | null
-  variant?: string | null
+  brand: string | null
   category: string
-  is_active: boolean
-  terpenes?: Terpene[]
-  cannabinoids?: Cannabinoid[]
+  subtype: string | null
+  product_line: string | null
+  strain: string | null
+  variant: string | null
+  listing_count: number
+  dispensary_count: number
+  min_price_cents: number | null
+  max_price_cents: number | null
+  any_in_stock: boolean
 }
 
 export type Customer = {
@@ -36,8 +40,10 @@ export type Customer = {
 
 export type PurchaseItem = {
   id: string
-  product_id: string
-  product_name: string
+  listing_id: string | null
+  product_name: string | null
+  dispensary_id: string | null
+  variant: string | null
   quantity: number
   line_amount_cents?: number | null
   feedback?: Feedback
@@ -81,8 +87,6 @@ export type TerpeneScoresResponse = {
   scores: TerpeneScoreRow[]
 }
 
-export type ProductTerpenesMap = Record<string, Terpene[]>
-
 // API Parameter types
 export type ListParams = {
   q?: string
@@ -103,16 +107,6 @@ export type TerpeneScoresParams = {
   window_days?: number
 }
 
-export type RecommendedProduct = {
-  id: string
-  name: string
-  brand?: string | null
-  category: string
-  score: number
-  terpenes: Terpene[]
-  purchased_count: number
-}
-
 export type PurchaseCreateParams = {
   customer_id: string
   purchased_at?: string
@@ -122,18 +116,18 @@ export type PurchaseCreateParams = {
 }
 
 export type PurchaseItemCreateParams = {
-  product_id: string
+  listing_id: string
   quantity: number
   line_amount_cents: number
-  external_id?: string
 }
 
 export type PortalPurchaseItem = {
   id: string
   purchase_id: string
-  product_id: string
-  product_name: string
-  product_category: string
+  listing_id: string | null
+  product_name: string | null
+  product_category: string | null
+  variant: string | null
   quantity: number
   line_amount_cents?: number | null
   feedback?: Feedback
@@ -156,12 +150,16 @@ export type FeedbackResponse = {
 }
 
 export type PortalProduct = {
-  id: string
-  name: string
-  brand?: string | null
+  brand: string | null
   category: string
-  terpenes: Terpene[]
-  cannabinoids: Cannabinoid[]
+  subtype: string | null
+  strain: string | null
+  variant: string | null
+  listing_count: number
+  dispensary_count: number
+  min_price_cents: number | null
+  max_price_cents: number | null
+  any_in_stock: boolean
 }
 
 export type LabReport = {
@@ -175,7 +173,6 @@ export type LabReport = {
   total_terpenes: number | null
   pass_fail: string | null
   confidence: number | null
-  product_id: string | null
   listing_id: string | null
   created_at: string | null
 }
@@ -199,7 +196,7 @@ export type LabReportResult = {
   confidence: number
   confidence_notes: string | null
   status: 'pending' | 'extracted' | 'applied' | 'failed'
-  applied_to_product: boolean
+  applied_to_listing: boolean
 }
 
 export type LabReportDetail = LabReport & {
@@ -209,43 +206,19 @@ export type LabReportDetail = LabReport & {
   product_name: string | null
 }
 
-export type MatchCandidate = {
-  product_id: string
-  product_name: string
-  product_brand: string | null
-  product_variant: string | null
-  product_category: string
-  score: number
-  match_basis: string
-  dispensary_slugs: { slug: string; url: string | null }[]
-}
-
-export type UnmatchedListing = {
-  id: string
-  dispensary_id: string
-  dispensary_name: string
-  dispensary_slug: string
-  sku: string | null
-  scraped_name: string | null
-  scraped_brand: string | null
-  scraped_category: string | null
-  variant: string | null
-  price_cents: number | null
-  url: string | null
-  in_stock: boolean
-  candidates: MatchCandidate[]
-}
-
 export type DispensaryListing = {
   id: string
   scraped_name: string | null
   scraped_brand: string | null
   scraped_category: string | null
+  subtype: string | null
+  strain: string | null
+  product_line: string | null
   price_cents: number | null
   variant: string | null
   url: string | null
   image_url: string | null
-  product_id: string | null
+  in_stock: boolean
   terpenes: Terpene[]
   cannabinoids: Cannabinoid[]
 }
@@ -254,8 +227,9 @@ export type ListingDetail = DispensaryListing & {
   dispensary_id: string
   dispensary_name: string
   dispensary_slug: string
-  dispensary_accepts_pickup: boolean
   in_stock: boolean
+  classification: string | null
+  description: string | null
 }
 
 export type CartItem = {
@@ -290,23 +264,37 @@ export type Dispensary = {
 
 export type Listing = {
   id: string
-  product_id: string | null
-  product_name: string | null
-  product_brand: string | null
   dispensary_id: string
   dispensary_name: string
   dispensary_slug: string
   scraped_name: string | null
-  scraped_name_raw: string | null
   scraped_brand: string | null
   scraped_category: string | null
+  subtype: string | null
+  strain: string | null
+  product_line: string | null
   price_cents: number | null
   variant: string | null
   sku: string | null
   url: string | null
+  image_url: string | null
   in_stock: boolean
   is_active: boolean
+  classification: string | null
+  description: string | null
   scraped_at: string | null
   created_at: string
   updated_at: string
+}
+
+export type PortalBrand = {
+  name: string
+  listing_count: number
+  image_url: string | null
+}
+
+export type PortalCategory = {
+  name: string
+  listing_count: number
+  image_url: string | null
 }

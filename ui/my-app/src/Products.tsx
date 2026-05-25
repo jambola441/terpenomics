@@ -1,54 +1,103 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { usePagination } from './hooks/usePagination'
-import { useSearch } from './hooks/useSearch'
+import { useEffect, useRef, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { SearchBar } from './components/SearchBar'
 import api from './api/client'
 import type { Product } from './types'
 
+const NULL_SENTINEL = '__null__'
+
+function tupleParams(p: Product) {
+  const enc = (v: string | null) => v ?? NULL_SENTINEL
+  return new URLSearchParams({
+    brand:        enc(p.brand),
+    category:     p.category,
+    subtype:      enc(p.subtype),
+    product_line: enc(p.product_line),
+    strain:       enc(p.strain),
+    variant:      enc(p.variant),
+  }).toString()
+}
+
 const CATEGORIES = [
-  'flower', 'vaporizers', 'cart', 'edible', 'concentrate',
-  'preroll', 'tinctures', 'topical', 'merch', 'other',
+  'flower', 'vaporizers', 'preroll', 'concentrate', 'edible',
+  'tinctures', 'topical', 'merch', 'other',
 ]
+const LIMIT = 50
+
+function fmt(cents: number | null) {
+  return cents != null ? `$${(cents / 100).toFixed(2)}` : null
+}
+
+function priceRange(p: Product) {
+  const lo = fmt(p.min_price_cents)
+  const hi = fmt(p.max_price_cents)
+  if (!lo && !hi) return null
+  if (lo === hi || !hi) return lo
+  return `${lo} – ${hi}`
+}
 
 export default function Products() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const navigate = useNavigate()
+
+  // Committed filter values live in the URL
+  const q              = searchParams.get('q') ?? ''
+  const filterBrand    = searchParams.get('brand') ?? ''
+  const filterCategory = searchParams.get('category') ?? ''
+  const filterInStock  = searchParams.get('in_stock') ?? ''
+  const sort           = searchParams.get('sort') ?? ''
+  const order          = searchParams.get('order') ?? 'asc'
+
+  // Controlled input state (unconfirmed search text)
+  const [searchInput, setSearchInput] = useState(q)
+
+  // Data state
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [brands, setBrands] = useState<string[]>([])
-  const [filterBrand, setFilterBrand] = useState('')
-  const [filterCategory, setFilterCategory] = useState('')
-  const [filterVariant, setFilterVariant] = useState('')
-  const navigate = useNavigate()
+  const [offset, setOffset] = useState(0)
+  const [hasMore, setHasMore] = useState(true)
 
-  const { hasMore, limit, offset, loadMore, reset: resetPagination, updateHasMore } = usePagination(50)
-  const { search, searchInput, setSearchInput, handleSearch, clearSearch } = useSearch()
+  // Keep searchInput in sync if the URL q param changes externally (e.g. back button)
+  const prevQ = useRef(q)
+  useEffect(() => {
+    if (q !== prevQ.current) {
+      setSearchInput(q)
+      prevQ.current = q
+    }
+  }, [q])
 
   useEffect(() => {
     api.products.listAllBrands().then(setBrands).catch(() => {})
   }, [])
 
+  // Reset and fetch whenever URL filters change
+  const filterKey = searchParams.toString()
   useEffect(() => {
-    fetchProducts(true)
-  }, [search, filterBrand, filterCategory, filterVariant])
+    setOffset(0)
+    setHasMore(true)
+    fetchProducts(0)
+  }, [filterKey])
 
-  async function fetchProducts(reset: boolean = false) {
+  async function fetchProducts(currentOffset: number) {
     setLoading(true)
     setError(null)
     try {
-      const currentOffset = reset ? 0 : offset
+      const inStockParam = filterInStock === 'true' ? true : filterInStock === 'false' ? false : undefined
       const data = await api.products.list({
-        q: search || undefined,
+        q: q || undefined,
         brand: filterBrand || undefined,
         category: filterCategory || undefined,
-        variant: filterVariant || undefined,
-        limit,
+        in_stock: inStockParam,
+        sort: sort || undefined,
+        order: order || undefined,
+        limit: LIMIT,
         offset: currentOffset,
       })
-      setProducts(prev => reset ? data : [...prev, ...data])
-      updateHasMore(data.length)
-      if (reset) resetPagination()
-      else loadMore()
+      setProducts(prev => currentOffset === 0 ? data : [...prev, ...data])
+      setHasMore(data.length === LIMIT)
+      if (currentOffset > 0) setOffset(currentOffset)
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -56,64 +105,95 @@ export default function Products() {
     }
   }
 
-  const activeFilters = [filterBrand, filterCategory, filterVariant].filter(Boolean).length
+  function setFilter(key: string, value: string) {
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev)
+      if (value) next.set(key, value)
+      else next.delete(key)
+      return next
+    })
+  }
+
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault()
+    setFilter('q', searchInput.trim())
+  }
+
+  function clearSearch() {
+    setSearchInput('')
+    setFilter('q', '')
+  }
 
   function clearFilters() {
-    setFilterBrand('')
-    setFilterCategory('')
-    setFilterVariant('')
+    setSearchInput('')
+    setSearchParams(new URLSearchParams())
   }
+
+  function handleSort(col: string) {
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev)
+      if (sort === col) {
+        next.set('order', order === 'asc' ? 'desc' : 'asc')
+      } else {
+        next.set('sort', col)
+        next.set('order', 'asc')
+      }
+      return next
+    })
+  }
+
+  const hasFilters = q || filterBrand || filterCategory || filterInStock
 
   return (
     <div style={{ padding: 24, fontFamily: "'Inter', system-ui, sans-serif", background: '#080d18', minHeight: '100vh', color: '#f1f5f9' }}>
-      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+      <div style={{ maxWidth: 1300, margin: '0 auto' }}>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
           <button onClick={() => navigate('/admin')} style={navBtnStyle}>← Admin</button>
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>Products</h2>
-          <div style={{ marginLeft: 'auto' }}>
-            <SearchBar
-              value={searchInput}
-              onChange={setSearchInput}
-              onSearch={handleSearch}
-              onClear={clearSearch}
-              placeholder="Search by name, brand, or category…"
-              disabled={loading}
-              showClearButton={!!search}
-            />
-          </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 8, marginBottom: 20, alignItems: 'center', flexWrap: 'wrap' }}>
-          <select value={filterBrand} onChange={e => setFilterBrand(e.target.value)} style={selectStyle}>
-            <option value="">All brands</option>
-            {brands.map(b => <option key={b} value={b}>{b}</option>)}
-          </select>
-
-          <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)} style={selectStyle}>
-            <option value="">All categories</option>
-            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-
-          <input
-            value={filterVariant}
-            onChange={e => setFilterVariant(e.target.value)}
-            placeholder="Variant…"
-            style={{ ...selectStyle, width: 120 }}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
+          <SearchBar
+            value={searchInput}
+            onChange={setSearchInput}
+            onSearch={handleSearch}
+            onClear={clearSearch}
+            placeholder="Search brand, strain, category…"
+            disabled={loading}
+            showClearButton={!!q}
           />
 
-          {(activeFilters > 0 || search) && (
-            <button onClick={() => { clearFilters(); clearSearch() }} style={{ fontSize: 12, padding: '4px 10px', cursor: 'pointer', background: 'transparent', border: '1px solid #374151', borderRadius: 4, color: '#94a3b8' }}>
-              Clear all
-            </button>
-          )}
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            <select value={filterBrand} onChange={e => setFilter('brand', e.target.value)} style={selectStyle}>
+              <option value="">All brands</option>
+              {brands.map(b => <option key={b} value={b}>{b}</option>)}
+            </select>
+
+            <select value={filterCategory} onChange={e => setFilter('category', e.target.value)} style={selectStyle}>
+              <option value="">All categories</option>
+              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+
+            <select value={filterInStock} onChange={e => setFilter('in_stock', e.target.value)} style={selectStyle}>
+              <option value="">All availability</option>
+              <option value="true">In stock</option>
+              <option value="false">Out of stock</option>
+            </select>
+
+            {hasFilters && (
+              <button onClick={clearFilters} style={{ fontSize: 12, padding: '4px 10px', cursor: 'pointer', background: 'transparent', border: '1px solid #374151', borderRadius: 4, color: '#94a3b8' }}>
+                Clear all
+              </button>
+            )}
+          </div>
         </div>
 
         {error && <div style={{ color: '#f87171', marginBottom: 16 }}>Error: {error}</div>}
 
         <p style={{ fontSize: 13, color: '#475569', marginBottom: 12 }}>
-          {search ? <>Searching: <strong style={{ color: '#94a3b8' }}>{search}</strong> — </> : null}
-          Showing {products.length} product(s)
+          {q ? <>Searching: <strong style={{ color: '#94a3b8' }}>{q}</strong> — </> : null}
+          Showing {products.length} product tuple(s)
         </p>
 
         {loading && products.length === 0 ? (
@@ -124,32 +204,62 @@ export default function Products() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr style={{ color: '#475569', textAlign: 'left', borderBottom: '1px solid #1e293b' }}>
-                <th style={thStyle}>Name</th>
-                <th style={thStyle}>Brand</th>
+                <SortTh col="brand"    label="Brand"        sort={sort} order={order} onSort={handleSort} />
+                <SortTh col="category" label="Category"     sort={sort} order={order} onSort={handleSort} />
+                <SortTh col="subtype"      label="Subtype"         sort={sort} order={order} onSort={handleSort} />
+                <SortTh col="product_line" label="Product Line"    sort={sort} order={order} onSort={handleSort} />
+                <SortTh col="strain"       label="Strain / Flavor" sort={sort} order={order} onSort={handleSort} />
                 <th style={thStyle}>Variant</th>
-                <th style={thStyle}>Category</th>
-                <th style={thStyle}>Active</th>
-                <th style={thStyle}>Terpenes</th>
+                <SortTh col="price"    label="Price"        sort={sort} order={order} onSort={handleSort} />
+                <SortTh col="stores"   label="Stores"       sort={sort} order={order} onSort={handleSort} />
+                <SortTh col="listings" label="Listings"     sort={sort} order={order} onSort={handleSort} />
+                <th style={thStyle}>Stock</th>
               </tr>
             </thead>
             <tbody>
-              {products.map(p => (
+              {products.map((p, i) => (
                 <tr
-                  key={p.id}
+                  key={i}
                   style={{ borderBottom: '1px solid #0f172a', cursor: 'pointer' }}
-                  onClick={() => navigate(`/admin/products/${p.id}`)}
+                  onClick={() => navigate(`/admin/products/detail?${tupleParams(p)}`)}
                   onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#0f172a'}
                   onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}
                 >
-                  <td style={{ ...tdStyle, color: '#f1f5f9', fontWeight: 500 }}>{p.name}</td>
-                  <td style={tdStyle}>{p.brand ?? <span style={{ color: '#475569' }}>—</span>}</td>
-                  <td style={tdStyle}>{p.variant ?? <span style={{ color: '#475569' }}>—</span>}</td>
-                  <td style={tdStyle}>{p.category}</td>
-                  <td style={tdStyle}>{p.is_active ? <span style={{ color: '#86efac' }}>Yes</span> : <span style={{ color: '#475569' }}>No</span>}</td>
+                  <td style={{ ...tdStyle, color: '#f1f5f9', fontWeight: 500 }}>
+                    {p.brand ?? <span style={{ color: '#475569' }}>—</span>}
+                  </td>
                   <td style={tdStyle}>
-                    {p.terpenes?.length > 0
-                      ? <span style={{ color: '#94a3b8' }}>{p.terpenes.map(t => t.name).join(', ')}</span>
+                    {p.category
+                      ? <span style={{ ...badge, ...categoryColor(p.category) }}>{p.category}</span>
                       : <span style={{ color: '#475569' }}>—</span>}
+                  </td>
+                  <td style={{ ...tdStyle, color: '#94a3b8' }}>
+                    {p.subtype ?? <span style={{ color: '#475569' }}>—</span>}
+                  </td>
+                  <td style={{ ...tdStyle, color: '#94a3b8' }}>
+                    {p.product_line ?? <span style={{ color: '#475569' }}>—</span>}
+                  </td>
+                  <td style={{ ...tdStyle, color: '#a5b4fc' }}>
+                    {p.strain ?? <span style={{ color: '#475569' }}>—</span>}
+                  </td>
+                  <td style={tdStyle}>
+                    {p.variant ?? <span style={{ color: '#475569' }}>—</span>}
+                  </td>
+                  <td style={tdStyle}>
+                    {priceRange(p) ?? <span style={{ color: '#475569' }}>—</span>}
+                  </td>
+                  <td style={{ ...tdStyle, textAlign: 'center' }}>
+                    <span style={{ color: p.dispensary_count > 1 ? '#86efac' : '#94a3b8' }}>
+                      {p.dispensary_count}
+                    </span>
+                  </td>
+                  <td style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8' }}>
+                    {p.listing_count}
+                  </td>
+                  <td style={tdStyle}>
+                    {p.any_in_stock
+                      ? <span style={{ color: '#86efac' }}>✓</span>
+                      : <span style={{ color: '#475569' }}>✗</span>}
                   </td>
                 </tr>
               ))}
@@ -163,16 +273,46 @@ export default function Products() {
 
         {!loading && hasMore && products.length > 0 && (
           <div style={{ marginTop: 16, textAlign: 'center' }}>
-            <button onClick={() => fetchProducts(false)} style={navBtnStyle}>
+            <button
+              onClick={() => fetchProducts(offset + LIMIT)}
+              style={{ padding: '8px 20px', background: '#0f172a', border: '1px solid #1e293b', borderRadius: 6, color: '#94a3b8', cursor: 'pointer' }}
+            >
               Load more
             </button>
           </div>
         )}
+
       </div>
     </div>
   )
 }
 
+const CATEGORY_COLORS: Record<string, { background: string; color: string }> = {
+  flower:      { background: '#14532d', color: '#86efac' },
+  preroll:     { background: '#1a2e05', color: '#a3e635' },
+  vaporizers:  { background: '#1e1b4b', color: '#a5b4fc' },
+  concentrate: { background: '#431407', color: '#fdba74' },
+  edible:      { background: '#4a1942', color: '#f0abfc' },
+  tinctures:   { background: '#0c4a6e', color: '#7dd3fc' },
+  topical:     { background: '#3b3a2a', color: '#fde68a' },
+  merch:       { background: '#1c1917', color: '#a8a29e' },
+}
+
+function categoryColor(cat: string) {
+  return CATEGORY_COLORS[cat] ?? { background: '#1e293b', color: '#94a3b8' }
+}
+
+function SortTh({ col, label, sort, order, onSort }: { col: string; label: string; sort: string; order: string; onSort: (c: string) => void }) {
+  const active = sort === col
+  return (
+    <th style={{ ...thStyle, cursor: 'pointer', userSelect: 'none' }} onClick={() => onSort(col)}>
+      {label}
+      {active && <span style={{ marginLeft: 4, color: '#6366f1' }}>{order === 'asc' ? '↑' : '↓'}</span>}
+    </th>
+  )
+}
+
+const badge: React.CSSProperties = { padding: '2px 7px', borderRadius: 4, fontSize: 11, fontWeight: 500 }
 const thStyle: React.CSSProperties = { padding: '8px 12px', fontWeight: 500, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }
 const tdStyle: React.CSSProperties = { padding: '10px 12px', color: '#cbd5e1' }
 const navBtnStyle: React.CSSProperties = { padding: '6px 12px', background: '#0f172a', border: '1px solid #1e293b', borderRadius: 6, color: '#94a3b8', cursor: 'pointer', fontSize: 13 }

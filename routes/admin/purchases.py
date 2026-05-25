@@ -8,7 +8,7 @@ from sqlmodel import Session, select, func, or_
 
 from auth import SupabaseAuthUser
 from database import get_session
-from models import Customer, Dispensary, Listing, Product, Purchase, PurchaseItem
+from models import Customer, Listing, Purchase, PurchaseItem
 from .auth import require_admin
 from .serializers import serialize_purchase, serialize_purchase_item
 
@@ -149,15 +149,12 @@ def add_purchase_item(
     if not listing:
         raise HTTPException(status_code=404, detail="listing not found")
 
-    product = session.get(Product, listing.product_id)
-
     item = PurchaseItem(
         id=uuid4(),
         purchase_id=purchase_id,
         listing_id=payload.listing_id,
         quantity=payload.quantity,
         line_amount_cents=payload.line_amount_cents,
-        external_id=payload.external_id,
         created_at=datetime.now(timezone.utc),
         updated_at=datetime.now(timezone.utc),
     )
@@ -166,7 +163,7 @@ def add_purchase_item(
     session.commit()
     session.refresh(item)
 
-    return serialize_purchase_item(item, listing, product)
+    return serialize_purchase_item(item, listing)
 
 
 @router.post("/purchases/{purchase_id}/items/batch")
@@ -176,26 +173,20 @@ def add_purchase_items_batch(
     session: Session = Depends(get_session),
     _: SupabaseAuthUser = Depends(require_admin),
 ):
-    """
-    Batch create multiple purchase items for a purchase.
-    Validates all products exist before creating any items.
-    """
     purchase = session.get(Purchase, purchase_id)
     if not purchase:
         raise HTTPException(status_code=404, detail="purchase not found")
-    
+
     if not items:
         raise HTTPException(status_code=400, detail="items list cannot be empty")
-    
+
     if len(items) > 100:
         raise HTTPException(status_code=400, detail="Maximum 100 items allowed per batch")
-    
-    # Validate all listings exist before creating any items
+
     listing_ids = [item.listing_id for item in items]
     listings = session.exec(
         select(Listing).where(Listing.id.in_(listing_ids))
     ).all()
-
     listings_by_id = {l.id: l for l in listings}
 
     for item in items:
@@ -205,12 +196,6 @@ def add_purchase_items_batch(
                 detail=f"listing not found: {item.listing_id}"
             )
 
-    # Load products for all listings
-    product_ids = list({l.product_id for l in listings_by_id.values()})
-    products = session.exec(select(Product).where(Product.id.in_(product_ids))).all()
-    products_by_id = {p.id: p for p in products}
-
-    # Create all items
     created_items = []
     now = datetime.now(timezone.utc)
 
@@ -222,20 +207,18 @@ def add_purchase_items_batch(
             listing_id=item_data.listing_id,
             quantity=item_data.quantity,
             line_amount_cents=item_data.line_amount_cents,
-            external_id=item_data.external_id,
             created_at=now,
             updated_at=now,
         )
         session.add(item)
-        created_items.append((item, listing, products_by_id[listing.product_id]))
+        created_items.append((item, listing))
 
     session.commit()
 
-    # Refresh and return all items
     result = []
-    for item, listing, product in created_items:
+    for item, listing in created_items:
         session.refresh(item)
-        result.append(serialize_purchase_item(item, listing, product))
+        result.append(serialize_purchase_item(item, listing))
 
     return result
 

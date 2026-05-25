@@ -1,7 +1,7 @@
 {
-  "generated": "2026-04-20T13:26:47.645Z",
+  "generated": "2026-05-23T20:07:33.095Z",
   "generator": "generate-manifest.js",
-  "claims_hash": "6a00c49",
+  "claims_hash": "7837a38",
   "topics": {
     "api-consumer-context": {
       "claims": [
@@ -61,25 +61,137 @@
       ],
       "sprint": "current",
       "evidence_level": "tested"
+    },
+    "vape-product-taxonomy": {
+      "claims": [
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011"
+      ],
+      "files": [
+        "research/vape-product-taxonomy.md"
+      ],
+      "sprint": "current",
+      "evidence_level": "production"
+    },
+    "edible-product-taxonomy": {
+      "claims": [
+        "r012",
+        "r013",
+        "r014",
+        "r015",
+        "r016"
+      ],
+      "files": [
+        "research/edible-product-taxonomy.md"
+      ],
+      "sprint": "current",
+      "evidence_level": "production"
+    },
+    "preroll-taxonomy": {
+      "claims": [
+        "r017"
+      ],
+      "files": [
+        "research/full-category-taxonomy.md"
+      ],
+      "sprint": "current",
+      "evidence_level": "production"
+    },
+    "flower-taxonomy": {
+      "claims": [
+        "r018"
+      ],
+      "files": [
+        "research/full-category-taxonomy.md"
+      ],
+      "sprint": "current",
+      "evidence_level": "production"
+    },
+    "concentrate-taxonomy": {
+      "claims": [
+        "r019"
+      ],
+      "files": [
+        "research/full-category-taxonomy.md"
+      ],
+      "sprint": "current",
+      "evidence_level": "production"
+    },
+    "tincture-topical-taxonomy": {
+      "claims": [
+        "r020"
+      ],
+      "files": [
+        "research/full-category-taxonomy.md"
+      ],
+      "sprint": "current",
+      "evidence_level": "production"
+    },
+    "merch-other-taxonomy": {
+      "claims": [
+        "r021"
+      ],
+      "files": [
+        "research/full-category-taxonomy.md"
+      ],
+      "sprint": "current",
+      "evidence_level": "production"
+    },
+    "full-taxonomy": {
+      "claims": [
+        "r022"
+      ],
+      "files": [
+        "research/full-category-taxonomy.md"
+      ],
+      "sprint": "current",
+      "evidence_level": "production"
     }
   },
   "sprints": {
     "should-the-terpenomics-api": {
       "question": "Should the terpenomics API expose only simple CRUD operations, with all batch/complex write logic living in standalone scripts?",
       "phase": "prototype",
-      "claims_count": 13,
-      "active_claims": 12,
+      "claims_count": 30,
+      "active_claims": 29,
       "path": ".",
       "status": "active",
-      "last_git_activity": "2026-04-20T13:16:29Z",
-      "git_commit_count": 17
+      "last_git_activity": "2026-05-23T19:51:08Z",
+      "git_commit_count": 20
     }
   },
   "files": {
+    "research/edible-product-taxonomy.md": {
+      "topics": [
+        "edible-product-taxonomy"
+      ],
+      "type": "research"
+    },
+    "research/full-category-taxonomy.md": {
+      "topics": [
+        "preroll-taxonomy",
+        "flower-taxonomy",
+        "concentrate-taxonomy",
+        "tincture-topical-taxonomy",
+        "merch-other-taxonomy",
+        "full-taxonomy"
+      ],
+      "type": "research"
+    },
     "research/scraper-common-dependency.md": {
       "topics": [
         "scraper-commonalities",
         "scraper-shared-dependency"
+      ],
+      "type": "research"
+    },
+    "research/vape-product-taxonomy.md": {
+      "topics": [
+        "vape-product-taxonomy"
       ],
       "type": "research"
     },

@@ -2,7 +2,7 @@ import Login from './Login'
 import AdminHome from './AdminHome'
 import AddProduct from './AddProduct'
 import Products from './Products'
-import ProductEdit from './ProductEdit'
+import ProductDetail from './ProductDetail'
 import Customers from './Customers'
 import CustomerEdit from './CustomerEdit'
 import Purchases from './Purchases'
@@ -14,6 +14,7 @@ import LabReportUpload from './LabReportUpload'
 import LabReportDetail from './LabReportDetail'
 import ListingMatch from './ListingMatch'
 import Listings from './Listings'
+import AdminListingDetail from './AdminListingDetail'
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
@@ -26,7 +27,7 @@ function App() {
         <Route path="/admin" element={<AdminHome />} />
         <Route path="/admin/add-product" element={<AddProduct />} />
         <Route path="/admin/products" element={<Products />} />
-        <Route path="/admin/products/:productId" element={<ProductEdit />} />
+        <Route path="/admin/products/detail" element={<ProductDetail />} />
         <Route path="/admin/customers" element={<Customers />} />
         <Route path="/admin/customers/new" element={<CustomerRegister />} />
         <Route path="/admin/customers/:customerId" element={<CustomerEdit />} />
@@ -37,6 +38,7 @@ function App() {
         <Route path="/admin/dispensaries/:dispensaryId" element={<DispensaryEdit />} />
         <Route path="/admin/listings" element={<Listings />} />
         <Route path="/admin/listings/match" element={<ListingMatch />} />
+        <Route path="/admin/listings/:listingId" element={<AdminListingDetail />} />
         <Route path="/portal/*" element={<CustomerPortal />} />
       </Routes>
       </BrowserRouter>

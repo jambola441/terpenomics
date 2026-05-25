@@ -3,12 +3,13 @@ import { useNavigate, useMatch } from 'react-router-dom'
 import api from './api/client'
 import supabase from './utils/supabase'
 import DispensaryMap from './components/DispensaryMap'
+import HomeFeed from './components/HomeFeed'
 import ListingDetailView from './components/ListingDetail'
 import type { PortalPurchase, RecommendedProduct, Feedback, PortalProduct, CartItem } from './types'
 import type { Session } from '@supabase/supabase-js'
 import 'leaflet/dist/leaflet.css'
 
-type Tab = 'orders' | 'foryou' | 'products' | 'map'
+type Tab = 'home' | 'map' | 'search' | 'account'
 
 const CATEGORY_IMAGES: Record<string, string> = {
   flower: '/flower.png',
@@ -57,7 +58,7 @@ interface OrdersFeedProps {
 
 function OrdersFeed({ purchases, loading, error, feedback, savingItems, onFeedback, onProductClick }: OrdersFeedProps) {
   const feedStyle: React.CSSProperties = {
-    height: 'calc(100dvh - 64px)',
+    height: '100dvh',
     overflowY: 'scroll',
     scrollSnapType: 'y mandatory',
     WebkitOverflowScrolling: 'touch' as any,
@@ -248,8 +249,8 @@ function OrdersFeed({ purchases, loading, error, feedback, savingItems, onFeedba
           </div>
         </div>
       ))}
-      {/* Bottom padding so last card clears nav */}
-      <div style={{ height: 16 }} />
+      {/* Bottom padding so last card clears floating nav */}
+      <div style={{ height: 92 }} />
     </div>
   )
 }
@@ -265,7 +266,7 @@ interface RecsFeedProps {
 
 function RecsFeed({ recommendations, loading, error, onProductClick }: RecsFeedProps) {
   const feedStyle: React.CSSProperties = {
-    height: 'calc(100dvh - 64px)',
+    height: '100dvh',
     overflowY: 'scroll',
     scrollSnapType: 'y mandatory',
     WebkitOverflowScrolling: 'touch' as any,
@@ -438,7 +439,7 @@ function RecsFeed({ recommendations, loading, error, onProductClick }: RecsFeedP
           </div>
         )
       })}
-      <div style={{ height: 16 }} />
+      <div style={{ height: 92 }} />
     </div>
   )
 }
@@ -474,7 +475,7 @@ function ProductsFeed({ onProductClick }: ProductsFeedProps) {
   }
 
   const feedStyle: React.CSSProperties = {
-    height: 'calc(100dvh - 64px)',
+    height: '100dvh',
     overflowY: 'auto',
     WebkitOverflowScrolling: 'touch' as any,
   }
@@ -530,7 +531,7 @@ function ProductsFeed({ onProductClick }: ProductsFeedProps) {
           <span style={{ color: '#555', fontSize: 14 }}>No products found</span>
         </div>
       ) : (
-        <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ padding: '0 16px 92px', display: 'flex', flexDirection: 'column', gap: 10 }}>
           {products.map((p) => {
             const catColor = CATEGORY_COLORS[p.category] ?? '#555'
             const imgSrc = CATEGORY_IMAGES[p.category]
@@ -634,7 +635,7 @@ function ProductDetail({ productId, onBack }: ProductDetailProps) {
   }, [productId])
 
   const feedStyle: React.CSSProperties = {
-    height: 'calc(100dvh - 64px)',
+    height: '100dvh',
     overflowY: 'auto',
     WebkitOverflowScrolling: 'touch' as any,
   }
@@ -788,8 +789,24 @@ function ProductDetail({ productId, onBack }: ProductDetailProps) {
 function LoginScreen() {
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
+  const [code, setCode] = useState('')
   const [loading, setLoading] = useState(false)
+  const [verifying, setVerifying] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%',
+    maxWidth: 320,
+    background: '#1a1a1a',
+    border: '1px solid #2a2a2a',
+    borderRadius: 10,
+    color: '#fff',
+    fontSize: 16,
+    padding: '14px 16px',
+    outline: 'none',
+    marginBottom: 12,
+    boxSizing: 'border-box',
+  }
 
   async function handleSend() {
     if (!email.trim()) return
@@ -799,10 +816,26 @@ function LoginScreen() {
       const { error: err } = await supabase.auth.signInWithOtp({ email: email.trim() })
       if (err) throw err
       setSent(true)
+      setCode('')
     } catch (e: any) {
-      setError(e.message ?? 'Failed to send link')
+      setError(e.message ?? 'Failed to send code')
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleVerify() {
+    const token = code.trim()
+    if (!token) return
+    setVerifying(true)
+    setError(null)
+    try {
+      const { error: err } = await supabase.auth.verifyOtp({ email: email.trim(), token, type: 'email' })
+      if (err) throw err
+    } catch (e: any) {
+      setError(e.message ?? 'Invalid code')
+    } finally {
+      setVerifying(false)
     }
   }
 
@@ -821,31 +854,19 @@ function LoginScreen() {
       <div style={{ color: '#fff', fontWeight: 800, fontSize: 24, marginBottom: 8, textAlign: 'center' }}>
         Sign in
       </div>
-      <div style={{ color: '#555', fontSize: 14, marginBottom: 32, textAlign: 'center' }}>
-        {sent ? 'Check your email for a magic link.' : "We'll send you a magic link."}
-      </div>
 
-      {!sent && (
+      {!sent ? (
         <>
+          <div style={{ color: '#555', fontSize: 14, marginBottom: 32, textAlign: 'center' }}>
+            We'll send a code to your email.
+          </div>
           <input
             type="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') handleSend() }}
             placeholder="your@email.com"
-            style={{
-              width: '100%',
-              maxWidth: 320,
-              background: '#1a1a1a',
-              border: '1px solid #2a2a2a',
-              borderRadius: 10,
-              color: '#fff',
-              fontSize: 16,
-              padding: '14px 16px',
-              outline: 'none',
-              marginBottom: 12,
-              boxSizing: 'border-box',
-            }}
+            style={inputStyle}
           />
           <button
             onClick={handleSend}
@@ -863,12 +884,64 @@ function LoginScreen() {
               cursor: loading ? 'default' : 'pointer',
             }}
           >
-            {loading ? 'Sending…' : 'Send magic link'}
+            {loading ? 'Sending…' : 'Send code'}
           </button>
-          {error && (
-            <div style={{ color: '#f44336', fontSize: 13, marginTop: 12 }}>{error}</div>
-          )}
         </>
+      ) : (
+        <>
+          <div style={{ color: '#555', fontSize: 14, marginBottom: 32, textAlign: 'center' }}>
+            Enter the code sent to <span style={{ color: '#888' }}>{email}</span>
+          </div>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={code}
+            onChange={e => {
+              const v = e.target.value.replace(/\D/g, '').slice(0, 8)
+              setCode(v)
+            }}
+            onKeyDown={e => { if (e.key === 'Enter') handleVerify() }}
+            placeholder="8-digit code"
+            autoFocus
+            style={{ ...inputStyle, fontSize: 24, letterSpacing: '0.3em', textAlign: 'center' }}
+          />
+          <button
+            onClick={handleVerify}
+            disabled={verifying || code.trim().length < 8}
+            style={{
+              width: '100%',
+              maxWidth: 320,
+              background: verifying || code.trim().length < 8 ? '#222' : '#a8e063',
+              border: 'none',
+              borderRadius: 10,
+              color: verifying || code.trim().length < 8 ? '#555' : '#0a0a0a',
+              fontSize: 15,
+              fontWeight: 700,
+              padding: '14px',
+              cursor: verifying || code.trim().length < 8 ? 'default' : 'pointer',
+              marginBottom: 12,
+            }}
+          >
+            {verifying ? 'Verifying…' : 'Verify'}
+          </button>
+          <button
+            onClick={() => { setSent(false); setCode(''); setError(null) }}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#444',
+              fontSize: 13,
+              cursor: 'pointer',
+              padding: '4px 0',
+            }}
+          >
+            Use a different email
+          </button>
+        </>
+      )}
+
+      {error && (
+        <div style={{ color: '#f44336', fontSize: 13, marginTop: 12, textAlign: 'center' }}>{error}</div>
       )}
     </div>
   )
@@ -1065,6 +1138,61 @@ function CartDrawer({ items, open, onClose, onRemove, onClear }: CartDrawerProps
   )
 }
 
+// ─── Account View ─────────────────────────────────────────────────────────────
+
+interface AccountViewProps {
+  session: import('@supabase/supabase-js').Session
+  onSignOut: () => void
+}
+
+function AccountView({ session, onSignOut }: AccountViewProps) {
+  return (
+    <div style={{
+      height: '100dvh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '0 32px 92px',
+      background: '#0a0a0a',
+      fontFamily: 'system-ui, -apple-system, sans-serif',
+    }}>
+      <div style={{
+        width: 72,
+        height: 72,
+        borderRadius: 36,
+        background: '#1a1a1a',
+        border: '1px solid #2a2a2a',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 20,
+      }}>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="#555">
+          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+        </svg>
+      </div>
+      <div style={{ color: '#fff', fontWeight: 700, fontSize: 18, marginBottom: 6 }}>Your account</div>
+      <div style={{ color: '#555', fontSize: 14, marginBottom: 40 }}>{session.user.email}</div>
+      <button
+        onClick={onSignOut}
+        style={{
+          background: 'transparent',
+          border: '1px solid #2a2a2a',
+          borderRadius: 12,
+          color: '#f44336',
+          fontSize: 15,
+          fontWeight: 600,
+          padding: '12px 32px',
+          cursor: 'pointer',
+        }}
+      >
+        Sign out
+      </button>
+    </div>
+  )
+}
+
 // ─── Root Component ───────────────────────────────────────────────────────────
 
 export default function CustomerPortal() {
@@ -1082,8 +1210,8 @@ export default function CustomerPortal() {
   const activeTab: Tab = (matchListing || matchDispensary || matchAisle)
     ? 'map'
     : matchProduct
-      ? 'products'
-      : ((matchTab?.params.tab as Tab | undefined) ?? 'orders')
+      ? 'search'
+      : ((matchTab?.params.tab as Tab | undefined) ?? 'home')
 
   const [session, setSession] = useState<Session | null | undefined>(undefined)
   const [customerId, setCustomerId] = useState<string | null>(null)
@@ -1152,15 +1280,12 @@ export default function CustomerPortal() {
       .finally(() => setRecsLoading(false))
   }
 
-  useEffect(() => {
-    if (activeTab === 'foryou' && !recsFetched && id) {
-      setRecsFetched(true)
-      loadRecommendations()
-    }
-  }, [activeTab, id])
-
   function handleTabChange(tab: Tab) {
     navigate('/portal/' + tab)
+  }
+
+  async function handleSignOut() {
+    await supabase.auth.signOut()
   }
 
   function handleProductClick(productId: string) {
@@ -1229,32 +1354,14 @@ export default function CustomerPortal() {
       fontFamily: 'system-ui, -apple-system, sans-serif',
     }}>
       {/* Feed area */}
-      {activeTab === 'orders' && (
-        <OrdersFeed
-          purchases={purchases}
-          loading={purchasesLoading}
-          error={purchasesError}
-          feedback={feedback}
-          savingItems={savingItems}
-          onFeedback={handleFeedback}
-          onProductClick={handleProductClick}
-        />
-      )}
-      {activeTab === 'foryou' && (
-        <RecsFeed
-          recommendations={recommendations}
-          loading={recsLoading}
-          error={recsError}
-          onProductClick={handleProductClick}
-        />
-      )}
-      {activeTab === 'products' && selectedProductId && (
+      {activeTab === 'home' && <HomeFeed />}
+      {activeTab === 'search' && selectedProductId && (
         <ProductDetail
           productId={selectedProductId}
           onBack={() => navigate(-1)}
         />
       )}
-      {activeTab === 'products' && !selectedProductId && (
+      {activeTab === 'search' && !selectedProductId && (
         <ProductsFeed onProductClick={handleProductClick} />
       )}
       {activeTab === 'map' && selectedListingId && selectedListingDispensaryId ? (
@@ -1273,46 +1380,9 @@ export default function CustomerPortal() {
           cart={cart}
         />
       )}
-
-      {/* Floating cart button */}
-      {cart.length > 0 && (() => {
-        const totalQty = cart.reduce((s, i) => s + i.quantity, 0)
-        const totalCents = cart.reduce((s, i) => s + (i.price_cents ?? 0) * i.quantity, 0)
-        return (
-          <button
-            onClick={() => setCartOpen(true)}
-            style={{
-              position: 'fixed',
-              bottom: 72,
-              left: 12,
-              right: 12,
-              zIndex: 2100,
-              background: '#1c1c1e',
-              border: '1px solid #2a2a2a',
-              borderRadius: 16,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '14px 18px',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.7)',
-            }}
-          >
-            <span style={{
-              background: '#333', borderRadius: 8,
-              color: '#fff', fontWeight: 700, fontSize: 13,
-              padding: '4px 10px', minWidth: 28, textAlign: 'center',
-            }}>
-              {totalQty}
-            </span>
-            <span style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>View cart</span>
-            {totalCents > 0
-              ? <span style={{ color: '#a8e063', fontWeight: 700, fontSize: 15 }}>${(totalCents / 100).toFixed(2)}</span>
-              : <span style={{ width: 40 }} />
-            }
-          </button>
-        )
-      })()}
+      {activeTab === 'account' && session && (
+        <AccountView session={session} onSignOut={handleSignOut} />
+      )}
 
       {/* Cart drawer */}
       <CartDrawer
@@ -1323,61 +1393,181 @@ export default function CustomerPortal() {
         onClear={() => setCart([])}
       />
 
-      {/* Bottom nav */}
+      {/* Floating bottom nav */}
       <div style={{
         position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: 64,
-        background: '#111',
-        borderTop: '1px solid #222',
+        bottom: 16,
+        left: 12,
+        right: 12,
+        height: 60,
+        background: 'rgba(14, 14, 14, 0.92)',
+        backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)',
+        borderRadius: 20,
+        border: '1px solid rgba(255,255,255,0.07)',
+        boxShadow: '0 4px 32px rgba(0,0,0,0.6)',
         display: 'flex',
+        alignItems: 'center',
+        zIndex: 1000,
+        padding: '0 6px',
+        gap: 2,
       }}>
-        {([
-          { key: 'orders', label: 'Orders', icon: '🧾' },
-          { key: 'foryou', label: 'For You', icon: '✨' },
-          { key: 'products', label: 'Menu', icon: '🌿' },
-          { key: 'map', label: 'Map', icon: '📍' },
-        ] as const).map(({ key, label, icon }) => (
-          <button
-            key={key}
-            onClick={() => handleTabChange(key)}
-            style={{
-              flex: 1,
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 4,
-              color: activeTab === key ? '#a8e063' : '#555',
-              transition: 'color 0.15s',
-            }}
-          >
-            <span style={{ fontSize: 20 }}>{icon}</span>
-            <span style={{
-              fontSize: 11,
-              fontWeight: activeTab === key ? 700 : 400,
-              letterSpacing: '0.02em',
-              textTransform: 'uppercase',
-            }}>
-              {label}
-            </span>
-            {activeTab === key && (
-              <div style={{
-                position: 'absolute',
-                bottom: 0,
-                width: 32,
-                height: 2,
-                background: '#a8e063',
-                borderRadius: 2,
-              }} />
-            )}
-          </button>
-        ))}
+        {/* Home */}
+        <button
+          onClick={() => handleTabChange('home')}
+          style={{
+            flex: 1,
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 3,
+            color: activeTab === 'home' ? '#a8e063' : '#555',
+            padding: '0 4px',
+            height: '100%',
+            transition: 'color 0.15s',
+            borderRadius: 16,
+          }}
+        >
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+          </svg>
+          <span style={{ fontSize: 10, fontWeight: activeTab === 'home' ? 700 : 400, letterSpacing: '0.02em' }}>Home</span>
+        </button>
+
+        {/* Map */}
+        <button
+          onClick={() => handleTabChange('map')}
+          style={{
+            flex: 1,
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 3,
+            color: activeTab === 'map' ? '#a8e063' : '#555',
+            padding: '0 4px',
+            height: '100%',
+            transition: 'color 0.15s',
+            borderRadius: 16,
+          }}
+        >
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+          </svg>
+          <span style={{ fontSize: 10, fontWeight: activeTab === 'map' ? 700 : 400, letterSpacing: '0.02em' }}>Map</span>
+        </button>
+
+        {/* Search — wide pill */}
+        <button
+          onClick={() => handleTabChange('search')}
+          style={{
+            flex: 2,
+            background: activeTab === 'search' ? 'rgba(168,224,99,0.1)' : 'rgba(255,255,255,0.05)',
+            border: activeTab === 'search' ? '1px solid rgba(168,224,99,0.25)' : '1px solid rgba(255,255,255,0.07)',
+            borderRadius: 14,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 7,
+            padding: '0 12px',
+            height: 40,
+            color: activeTab === 'search' ? '#a8e063' : '#555',
+            transition: 'all 0.15s',
+          }}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
+            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+          </svg>
+          <span style={{ fontSize: 13, fontWeight: 500, flex: 1, textAlign: 'left', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            Search products
+          </span>
+        </button>
+
+        {/* Cart with badge */}
+        {(() => {
+          const totalQty = cart.reduce((s, i) => s + i.quantity, 0)
+          return (
+            <button
+              onClick={() => setCartOpen(true)}
+              style={{
+                flex: 1,
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 3,
+                color: totalQty > 0 ? '#a8e063' : '#555',
+                padding: '0 4px',
+                height: '100%',
+                transition: 'color 0.15s',
+                borderRadius: 16,
+                position: 'relative',
+              }}
+            >
+              <div style={{ position: 'relative' }}>
+                <svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96C5 16.1 6.9 18 9 18h12v-2H9.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63H19c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1z"/>
+                </svg>
+                {totalQty > 0 && (
+                  <div style={{
+                    position: 'absolute',
+                    top: -5,
+                    right: -7,
+                    background: '#a8e063',
+                    color: '#0a0a0a',
+                    fontSize: 9,
+                    fontWeight: 800,
+                    width: 15,
+                    height: 15,
+                    borderRadius: 8,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    {totalQty}
+                  </div>
+                )}
+              </div>
+              <span style={{ fontSize: 10, fontWeight: 400, letterSpacing: '0.02em' }}>Cart</span>
+            </button>
+          )
+        })()}
+
+        {/* Account */}
+        <button
+          onClick={() => handleTabChange('account')}
+          style={{
+            flex: 1,
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 3,
+            color: activeTab === 'account' ? '#a8e063' : '#555',
+            padding: '0 4px',
+            height: '100%',
+            transition: 'color 0.15s',
+            borderRadius: 16,
+          }}
+        >
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+          <span style={{ fontSize: 10, fontWeight: activeTab === 'account' ? 700 : 400, letterSpacing: '0.02em' }}>Account</span>
+        </button>
       </div>
     </div>
   )

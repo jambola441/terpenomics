@@ -23,22 +23,7 @@ app.include_router(customer_router)
 
 @app.on_event("startup")
 def on_startup() -> None:
-    # DEV ONLY: creates tables from models
     create_db_and_tables()
-    # Migration: add pdf_bytes column if it doesn't exist yet
-    from sqlalchemy import text
-    from database import engine
-    with engine.connect() as conn:
-        conn.execute(text(
-            "ALTER TABLE lab_reports ADD COLUMN IF NOT EXISTS pdf_bytes BYTEA"
-        ))
-        conn.execute(text(
-            "ALTER TABLE purchase_items ADD COLUMN IF NOT EXISTS listing_id UUID REFERENCES listings(id)"
-        ))
-        conn.execute(text(
-            "ALTER TABLE purchase_items ALTER COLUMN product_id DROP NOT NULL"
-        ))
-        conn.commit()
 
 
 @app.get("/health")

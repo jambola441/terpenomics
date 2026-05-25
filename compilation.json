@@ -1,6 +1,6 @@
 {
-  "compiled_at": "2026-04-20T13:26:47.641Z",
-  "claims_hash": "6a00c49",
+  "compiled_at": "2026-05-23T20:07:33.089Z",
+  "claims_hash": "7837a38",
   "compiler_version": "0.2.0",
   "status": "ready",
   "errors": [],
@@ -10,6 +10,13 @@
       "message": "Topic \"api-consumer-context\" has only 1 claim type(s): factual. Missing: constraint, estimate, risk, recommendation, feedback",
       "claims": [
         "x001"
+      ]
+    },
+    {
+      "code": "W_TYPE_MONOCULTURE",
+      "message": "Topic \"concentrate-taxonomy\" has only 1 claim type(s): factual. Missing: constraint, estimate, risk, recommendation, feedback",
+      "claims": [
+        "r019"
       ]
     },
     {
@@ -27,10 +34,35 @@
       ]
     },
     {
+      "code": "W_ECHO_CHAMBER",
+      "message": "Topic \"edible-product-taxonomy\" has 5 claims but all from a single source origin: research",
+      "claims": [
+        "r012",
+        "r013",
+        "r014",
+        "r015",
+        "r016"
+      ]
+    },
+    {
       "code": "W_TYPE_MONOCULTURE",
       "message": "Topic \"existing-pattern\" has only 1 claim type(s): constraint. Missing: factual, estimate, risk, recommendation, feedback",
       "claims": [
         "d003"
+      ]
+    },
+    {
+      "code": "W_TYPE_MONOCULTURE",
+      "message": "Topic \"flower-taxonomy\" has only 1 claim type(s): factual. Missing: constraint, estimate, risk, recommendation, feedback",
+      "claims": [
+        "r018"
+      ]
+    },
+    {
+      "code": "W_TYPE_MONOCULTURE",
+      "message": "Topic \"full-taxonomy\" has only 1 claim type(s): recommendation. Missing: constraint, factual, estimate, risk, feedback",
+      "claims": [
+        "r022"
       ]
     },
     {
@@ -49,6 +81,20 @@
     },
     {
       "code": "W_TYPE_MONOCULTURE",
+      "message": "Topic \"merch-other-taxonomy\" has only 1 claim type(s): factual. Missing: constraint, estimate, risk, recommendation, feedback",
+      "claims": [
+        "r021"
+      ]
+    },
+    {
+      "code": "W_TYPE_MONOCULTURE",
+      "message": "Topic \"preroll-taxonomy\" has only 1 claim type(s): factual. Missing: constraint, estimate, risk, recommendation, feedback",
+      "claims": [
+        "r017"
+      ]
+    },
+    {
+      "code": "W_TYPE_MONOCULTURE",
       "message": "Topic \"scraper-commonalities\" has only 1 claim type(s): factual. Missing: constraint, estimate, risk, recommendation, feedback",
       "claims": [
         "r001",
@@ -63,6 +109,25 @@
         "r001",
         "r002",
         "r003"
+      ]
+    },
+    {
+      "code": "W_TYPE_MONOCULTURE",
+      "message": "Topic \"tincture-topical-taxonomy\" has only 1 claim type(s): factual. Missing: constraint, estimate, risk, recommendation, feedback",
+      "claims": [
+        "r020"
+      ]
+    },
+    {
+      "code": "W_ECHO_CHAMBER",
+      "message": "Topic \"vape-product-taxonomy\" has 6 claims but all from a single source origin: research",
+      "claims": [
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011"
       ]
     }
   ],
@@ -320,6 +385,391 @@
         "import-mechanism",
         "tested"
       ]
+    },
+    {
+      "id": "r006",
+      "type": "factual",
+      "topic": "vape-product-taxonomy",
+      "content": "Three primary vape subcategories exist on dispensary menus: (1) 510-thread cartridges ('cart') — require a separate rechargeable battery, universal threading; (2) all-in-one/disposable ('all-in-one') — integrated battery and oil, self-contained, single-use; (3) pod systems ('pod') — brand-specific cartridge format (PAX, STIIIZY), requires proprietary battery. A minor fourth category is battery/kit bundles. Weedmaps and Leafly both surface cartridge and disposable as the two primary consumer-facing vape subcategories.",
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "source": {
+        "origin": "research",
+        "artifact": "research/vape-product-taxonomy.md",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "vape",
+        "taxonomy",
+        "cart",
+        "all-in-one",
+        "pod"
+      ]
+    },
+    {
+      "id": "r007",
+      "type": "factual",
+      "topic": "vape-product-taxonomy",
+      "content": "'All-in-one', 'disposable', 'AIO', and 'all-in-one disposable' are synonymous terms in the industry. All refer to the same product type: integrated battery + oil chamber, discarded as a unit. PAX uses 'AIO' as a prefix. Edie Parker uses 'Disposable [flavor]'. Bloom and others use 'All-in-one' as a pipe-separated suffix. All should map to the same canonical value.",
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "source": {
+        "origin": "research",
+        "artifact": "research/vape-product-taxonomy.md",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "vape",
+        "all-in-one",
+        "disposable",
+        "normalization"
+      ]
+    },
+    {
+      "id": "r008",
+      "type": "factual",
+      "topic": "vape-product-taxonomy",
+      "content": "In the actual listings DB (238 vaporizer rows): 112 all-in-one/disposable (47%), 55 cart/510 (23%), 5 pod (2%), 5 battery/kit (2%), 61 unclassified (26%). The unclassified 26% have no format token in their name — primarily Bloom and Cannabals brand listings that omit format entirely, plus PAX listings using 'AIO'/'Cart' tokens that are caught only with extended matching.",
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "research",
+      "source": {
+        "origin": "research",
+        "artifact": "research/vape-product-taxonomy.md",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "vape",
+        "data-distribution",
+        "listings",
+        "production"
+      ]
+    },
+    {
+      "id": "r009",
+      "type": "factual",
+      "topic": "vape-product-taxonomy",
+      "content": "The ProductCategory enum in models.py already has both 'vaporizers' and 'cart' as distinct values. However, scraper_common.py CATEGORY_MAP maps everything (cartridges, all-in-ones, pods, batteries) to 'vaporizers'. The 'cart' enum value exists at the model layer but is never populated by any scraper. This is a latent design intent that has never been activated.",
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "source": {
+        "origin": "research",
+        "artifact": "models.py",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "vape",
+        "model",
+        "enum",
+        "pipeline-gap"
+      ]
+    },
+    {
+      "id": "r010",
+      "type": "risk",
+      "topic": "vape-product-taxonomy",
+      "content": "Approximately 26% of vaporizer listings (61 of 238) cannot be subcategorized from name tokens alone. Bloom and Cannabals publish listings with no format suffix — just 'Brand | Strain' with no cart/AIO/pod marker. Any subcategorization system that relies solely on name parsing will leave ~1 in 4 vape listings as 'unknown subtype', requiring either brand-level lookup tables or manual correction.",
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "research",
+      "source": {
+        "origin": "research",
+        "artifact": "research/vape-product-taxonomy.md",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "vape",
+        "risk",
+        "parsing",
+        "unlabeled"
+      ]
+    },
+    {
+      "id": "r011",
+      "type": "recommendation",
+      "topic": "vape-product-taxonomy",
+      "content": "For the product identity tuple, replace 'vaporizers' with three canonical vape subtypes: 'cart' (510-thread), 'all-in-one' (disposable/AIO), 'pod' (brand-specific). The existing 'cart' enum value in ProductCategory is a head start. Rename 'vaporizers' → 'cart' and add 'all-in-one' and 'pod'. Update CATEGORY_MAP to map source strings ('Cartridges', '510', 'Reload Cartridge', 'Classic Preload') → 'cart'; ('All-in-one Disposable', 'All-in-one', 'Disposable', 'AIO') → 'all-in-one'; ('Pod', 'Live Rosin Pod') → 'pod'.",
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "research",
+      "source": {
+        "origin": "research",
+        "artifact": "research/vape-product-taxonomy.md",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "vape",
+        "recommendation",
+        "taxonomy",
+        "enum",
+        "category-map"
+      ]
+    },
+    {
+      "id": "r012",
+      "type": "factual",
+      "topic": "edible-product-taxonomy",
+      "content": "Five meaningful edible subcategories appear on dispensary menus: (1) gummy — by far dominant, includes chews, ropes, pearls, any soft candy form; (2) chocolate — bars, mini bars, chocolate-covered confections; (3) beverage — infused drinks, sparkling water, tea sachets; (4) tablet/capsule — ProTabs (Level), micro-pills (1906), fast-acting tabs; (5) other — lozenges/pastilles (Beboe), dissolvable powder (Myhi), strips, honey. Nationally, gummies represent 79% of edible sales (BDSA 2025).",
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "source": {
+        "origin": "research",
+        "artifact": "research/edible-product-taxonomy.md",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "edible",
+        "taxonomy",
+        "gummy",
+        "chocolate",
+        "beverage",
+        "tablet"
+      ]
+    },
+    {
+      "id": "r013",
+      "type": "factual",
+      "topic": "edible-product-taxonomy",
+      "content": "Live DB distribution — 213 edible listings: 97 unclassified by name token (46%), 71 gummy (33%), 16 beverage (7%), 14 chocolate (7%), 12 tablet/capsule (6%), 3 baked/other (1%). Unclassified rate (46%) is nearly double the vape rate (26%).",
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "research",
+      "source": {
+        "origin": "research",
+        "artifact": "research/edible-product-taxonomy.md",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "edible",
+        "data-distribution",
+        "production",
+        "listings"
+      ]
+    },
+    {
+      "id": "r014",
+      "type": "factual",
+      "topic": "edible-product-taxonomy",
+      "content": "The high unclassified rate in edibles is structural: major gummy brands (Camino, Wyld, Lost Farm, Heavy Hitters, Good Tide, Rythm, Papa & Barkley) publish listings as 'Brand | Strain | Ratio' with no format token, because their brand identity IS their format. Camino = always gummy. Wyld = always gummy. Lost Farm = always chew. Level = always tablet. Layup = always beverage. Brand-level lookup is more reliable than name-token parsing for edibles.",
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "research",
+      "source": {
+        "origin": "research",
+        "artifact": "research/edible-product-taxonomy.md",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "edible",
+        "brand-identity",
+        "parsing",
+        "unlabeled"
+      ]
+    },
+    {
+      "id": "r015",
+      "type": "factual",
+      "topic": "edible-product-taxonomy",
+      "content": "'Live rosin' and 'live resin' tokens in edible names are extract-quality signals, not format-type signals. 'Live Rosin Gummies' and plain 'Gummies' are the same product type. The distinction belongs in an extract_quality or extra_info field on the tuple — not in the type field. Using it as a type differentiator would fragment the gummy category into live-rosin gummies, live-resin gummies, and distillate gummies, all of which are the same product form.",
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "research",
+      "source": {
+        "origin": "research",
+        "artifact": "research/edible-product-taxonomy.md",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "edible",
+        "live-rosin",
+        "extract-quality",
+        "type-vs-quality"
+      ]
+    },
+    {
+      "id": "r016",
+      "type": "recommendation",
+      "topic": "edible-product-taxonomy",
+      "content": "For the product identity tuple, use four typed edible subtypes: 'gummy' (all soft candy forms), 'chocolate' (bars, confections), 'beverage' (drinks, sparkling water, tea), 'tablet' (capsules, pills, tabs, drops). Add 'other' fallback for pastilles (Beboe), dissolvable powder (Myhi), strips (Select), honey. Update CATEGORY_MAP: source 'Gummies', 'Chocolates', 'Beverage', 'Beverages' already present — extend with brand-level defaults for unlabeled gummy brands. The Alleaves sub-category strings 'Gummies', 'Chocolates', 'Beverage' already map correctly via scraper_common.py.",
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "research",
+      "source": {
+        "origin": "research",
+        "artifact": "research/edible-product-taxonomy.md",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "edible",
+        "recommendation",
+        "taxonomy",
+        "category-map",
+        "gummy",
+        "chocolate",
+        "beverage",
+        "tablet"
+      ]
+    },
+    {
+      "id": "r017",
+      "type": "factual",
+      "topic": "preroll-taxonomy",
+      "content": "Preroll listings (288) split into three subtypes by name token: single/non-infused (156, 54%), infused (128, 44%), pack (4, 1%). Infused pre-rolls — any addition of live resin, diamonds, kief, hash, or bubble hash — represent nearly half the category. The infused/non-infused distinction is the most impactful subtype differentiator in the entire catalogue: infused pre-rolls typically cost 2-3x more than single non-infused ones.",
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "research",
+      "source": {
+        "origin": "research",
+        "artifact": "research/full-category-taxonomy.md",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "preroll",
+        "taxonomy",
+        "infused",
+        "production"
+      ]
+    },
+    {
+      "id": "r018",
+      "type": "factual",
+      "topic": "flower-taxonomy",
+      "content": "Flower listings (233) split into four subtypes: standard flower (199, 85%), pre-ground/ready-to-roll (19, 8%), smalls (11, 5%), infused flower (4, 2%). Flower is the cleanest category for name-token classification — 85% have no special subtype signal and map directly to standard flower. Smalls and pre-ground are consistently lower-priced tiers of the same strain; infused flower (diamond-dusted etc.) is a premium variant.",
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "research",
+      "source": {
+        "origin": "research",
+        "artifact": "research/full-category-taxonomy.md",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "flower",
+        "taxonomy",
+        "smalls",
+        "preground",
+        "production"
+      ]
+    },
+    {
+      "id": "r019",
+      "type": "factual",
+      "topic": "concentrate-taxonomy",
+      "content": "Concentrate listings (19) split by extraction method: rosin/live rosin (9, 47%), live resin/cured resin (6, 32%), unclassified (2, 11%), hash (1, 5%), RSO (1, 5%). Rosin (solventless, heat-pressed) and resin (solvent-extracted) are genuinely different products — different process, different price, different consumer preference. Texture variants (badder, sugar, wax, crumble) within each method are secondary descriptors, not primary type differentiators.",
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "research",
+      "source": {
+        "origin": "research",
+        "artifact": "research/full-category-taxonomy.md",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "concentrate",
+        "taxonomy",
+        "rosin",
+        "resin",
+        "hash",
+        "production"
+      ]
+    },
+    {
+      "id": "r020",
+      "type": "factual",
+      "topic": "tincture-topical-taxonomy",
+      "content": "Tinctures (29 listings) and topicals (9 listings) are stable single-type categories with no meaningful internal subtype split. However, both categories contain miscategorized items from source data: tinctures includes at least 4 topicals (Reunion roll-on/body balm, Vlasic Labs bath bombs, Cause Medic scrub), 1 hemp flower (Barbari), and 1 hemp patch (The Good Patch). Topicals are all balm format. Neither category warrants classifier effort given low volume.",
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "research",
+      "source": {
+        "origin": "research",
+        "artifact": "research/full-category-taxonomy.md",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "tinctures",
+        "topical",
+        "taxonomy",
+        "miscategorization"
+      ]
+    },
+    {
+      "id": "r021",
+      "type": "factual",
+      "topic": "merch-other-taxonomy",
+      "content": "Merch (149 listings) contains accessories, apparel, lighters, grinders, stash jars, rolling papers, and vape batteries (PAX, CCELL, Vessel, PuffCo). No subtypes are needed for product identity matching — merch items are not matched by strain or extract type. The 'other' category (9 listings) is a garbage bin: test entries ('DELETE', 'NO ITEM', 'OLD'), one miscategorized concentrate (Hudson Cannabis Hash), and BOB brand apparel. Neither category is a classifier priority.",
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "research",
+      "source": {
+        "origin": "research",
+        "artifact": "research/full-category-taxonomy.md",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "merch",
+        "other",
+        "taxonomy",
+        "cleanup"
+      ]
+    },
+    {
+      "id": "r022",
+      "type": "recommendation",
+      "topic": "full-taxonomy",
+      "content": "Complete subtype taxonomy for the product identity tuple across all categories: preroll → {single, infused, pack}; flower → {flower, smalls, preground, infused}; concentrate → {rosin, resin, hash, rso}; vape → {cart, all-in-one, pod}; edible → {gummy, chocolate, beverage, tablet, other}; tinctures → {tincture}; topical → {topical}; merch + other → skip subtype classification. Priority order for classifier implementation: preroll (infused 44% is high-value), edible (46% unclassified), vape (26% unclassified), flower (15% non-standard), concentrate (small but token-labelable).",
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "research",
+      "source": {
+        "origin": "research",
+        "artifact": "research/full-category-taxonomy.md",
+        "connector": null
+      },
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "taxonomy",
+        "full",
+        "recommendation",
+        "classifier-priority"
+      ]
     }
   ],
   "conflict_graph": {
@@ -340,6 +790,30 @@
       "constraint_count": 0,
       "source_origins": [
         "challenge"
+      ],
+      "source_count": 1,
+      "type_diversity": 1,
+      "missing_types": [
+        "constraint",
+        "estimate",
+        "risk",
+        "recommendation",
+        "feedback"
+      ]
+    },
+    "concentrate-taxonomy": {
+      "claims": 1,
+      "max_evidence": "production",
+      "status": "strong",
+      "types": [
+        "factual"
+      ],
+      "claim_ids": [
+        "r019"
+      ],
+      "constraint_count": 0,
+      "source_origins": [
+        "research"
       ],
       "source_count": 1,
       "type_diversity": 1,
@@ -375,6 +849,34 @@
         "feedback"
       ]
     },
+    "edible-product-taxonomy": {
+      "claims": 5,
+      "max_evidence": "production",
+      "status": "strong",
+      "types": [
+        "factual",
+        "recommendation"
+      ],
+      "claim_ids": [
+        "r012",
+        "r013",
+        "r014",
+        "r015",
+        "r016"
+      ],
+      "constraint_count": 0,
+      "source_origins": [
+        "research"
+      ],
+      "source_count": 1,
+      "type_diversity": 2,
+      "missing_types": [
+        "constraint",
+        "estimate",
+        "risk",
+        "feedback"
+      ]
+    },
     "existing-pattern": {
       "claims": 1,
       "max_evidence": "documented",
@@ -399,6 +901,54 @@
         "feedback"
       ]
     },
+    "flower-taxonomy": {
+      "claims": 1,
+      "max_evidence": "production",
+      "status": "strong",
+      "types": [
+        "factual"
+      ],
+      "claim_ids": [
+        "r018"
+      ],
+      "constraint_count": 0,
+      "source_origins": [
+        "research"
+      ],
+      "source_count": 1,
+      "type_diversity": 1,
+      "missing_types": [
+        "constraint",
+        "estimate",
+        "risk",
+        "recommendation",
+        "feedback"
+      ]
+    },
+    "full-taxonomy": {
+      "claims": 1,
+      "max_evidence": "production",
+      "status": "strong",
+      "types": [
+        "recommendation"
+      ],
+      "claim_ids": [
+        "r022"
+      ],
+      "constraint_count": 0,
+      "source_origins": [
+        "research"
+      ],
+      "source_count": 1,
+      "type_diversity": 1,
+      "missing_types": [
+        "constraint",
+        "factual",
+        "estimate",
+        "risk",
+        "feedback"
+      ]
+    },
     "maintainer-context": {
       "claims": 1,
       "max_evidence": "stated",
@@ -417,6 +967,54 @@
       "type_diversity": 1,
       "missing_types": [
         "factual",
+        "estimate",
+        "risk",
+        "recommendation",
+        "feedback"
+      ]
+    },
+    "merch-other-taxonomy": {
+      "claims": 1,
+      "max_evidence": "production",
+      "status": "strong",
+      "types": [
+        "factual"
+      ],
+      "claim_ids": [
+        "r021"
+      ],
+      "constraint_count": 0,
+      "source_origins": [
+        "research"
+      ],
+      "source_count": 1,
+      "type_diversity": 1,
+      "missing_types": [
+        "constraint",
+        "estimate",
+        "risk",
+        "recommendation",
+        "feedback"
+      ]
+    },
+    "preroll-taxonomy": {
+      "claims": 1,
+      "max_evidence": "production",
+      "status": "strong",
+      "types": [
+        "factual"
+      ],
+      "claim_ids": [
+        "r017"
+      ],
+      "constraint_count": 0,
+      "source_origins": [
+        "research"
+      ],
+      "source_count": 1,
+      "type_diversity": 1,
+      "missing_types": [
+        "constraint",
         "estimate",
         "risk",
         "recommendation",
@@ -477,6 +1075,59 @@
         "estimate",
         "feedback"
       ]
+    },
+    "tincture-topical-taxonomy": {
+      "claims": 1,
+      "max_evidence": "production",
+      "status": "strong",
+      "types": [
+        "factual"
+      ],
+      "claim_ids": [
+        "r020"
+      ],
+      "constraint_count": 0,
+      "source_origins": [
+        "research"
+      ],
+      "source_count": 1,
+      "type_diversity": 1,
+      "missing_types": [
+        "constraint",
+        "estimate",
+        "risk",
+        "recommendation",
+        "feedback"
+      ]
+    },
+    "vape-product-taxonomy": {
+      "claims": 6,
+      "max_evidence": "production",
+      "status": "strong",
+      "types": [
+        "factual",
+        "recommendation",
+        "risk"
+      ],
+      "claim_ids": [
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011"
+      ],
+      "constraint_count": 0,
+      "source_origins": [
+        "research"
+      ],
+      "source_count": 1,
+      "type_diversity": 3,
+      "missing_types": [
+        "constraint",
+        "estimate",
+        "feedback"
+      ]
     }
   },
   "corroboration": {
@@ -491,7 +1142,24 @@
     "r005": 0,
     "p001": 0,
     "p002": 0,
-    "p003": 0
+    "p003": 0,
+    "r006": 0,
+    "r007": 0,
+    "r008": 0,
+    "r009": 0,
+    "r010": 0,
+    "r011": 0,
+    "r012": 0,
+    "r013": 0,
+    "r014": 0,
+    "r015": 0,
+    "r016": 0,
+    "r017": 0,
+    "r018": 0,
+    "r019": 0,
+    "r020": 0,
+    "r021": 0,
+    "r022": 0
   },
   "phase_summary": {
     "define": {
@@ -499,7 +1167,7 @@
       "complete": true
     },
     "research": {
-      "claims": 5,
+      "claims": 22,
       "complete": true
     },
     "prototype": {
@@ -522,10 +1190,10 @@
       "status": "active",
       "phase": "prototype",
       "question": "Should the terpenomics API expose only simple CRUD operations, with all batch/complex write logic living in standalone scripts?",
-      "claims_count": 13,
-      "active_claims": 12,
-      "last_git_activity": "2026-04-20T13:16:29Z",
-      "git_commit_count": 17
+      "claims_count": 30,
+      "active_claims": 29,
+      "last_git_activity": "2026-05-23T19:51:08Z",
+      "git_commit_count": 20
     }
   ],
   "sprint_meta": {
@@ -535,15 +1203,15 @@
     ],
     "initiated": "2026-04-19",
     "phase": "prototype",
-    "total_claims": 13,
-    "active_claims": 12,
+    "total_claims": 30,
+    "active_claims": 29,
     "conflicted_claims": 0,
     "superseded_claims": 1,
     "refuted_claims": 0,
     "connectors": []
   },
   "compilation_certificate": {
-    "input_hash": "sha256:6a00c4980ec2e6bec9b1657064727fbf4578399f3ff2201f4a56a57ff00a5c7b",
+    "input_hash": "sha256:7837a38a579277f7824e2a46892a950873da88188b93ce6a7d14bd813ba580d2",
     "compiler_version": "0.2.0",
     "deterministic": true
   }

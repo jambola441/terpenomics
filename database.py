@@ -1,10 +1,28 @@
 # database.py
 import os
 from contextlib import contextmanager
+from pathlib import Path
 from typing import Generator, Optional
 
 from sqlmodel import SQLModel, Session, create_engine
 from sqlalchemy.engine import Engine
+
+
+def _load_dotenv() -> None:
+    env_path = Path(__file__).parent / ".env"
+    if not env_path.is_file():
+        return
+    with open(env_path) as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, val = line.partition("=")
+            if key not in os.environ:
+                os.environ[key] = val
+
+
+_load_dotenv()
 
 
 def _build_database_url() -> str:

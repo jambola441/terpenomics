@@ -5,18 +5,17 @@ import type {
   Purchase,
   PurchaseRow,
   TerpeneScoresResponse,
-  ProductTerpenesMap,
-  Cannabinoid,
   ListParams,
   PurchaseListParams,
   CustomerPurchasesParams,
   TerpeneScoresParams,
-  RecommendedProduct,
   PurchaseCreateParams,
   PurchaseItemCreateParams,
   PurchaseItem,
   PortalPurchase,
   PortalProduct,
+  PortalBrand,
+  PortalCategory,
   FeedbackResponse,
   Feedback,
   LabReport,
@@ -24,7 +23,6 @@ import type {
   LabReportUpload,
   LabReportResult,
   Listing,
-  UnmatchedListing,
   Dispensary,
   DispensaryListing,
   ListingDetail,
@@ -130,35 +128,11 @@ export const api = {
   },
 
   products: {
-    list: (params?: ListParams & { brand?: string; category?: string; variant?: string }) =>
+    list: (params?: ListParams & { brand?: string; category?: string; in_stock?: boolean; sort?: string; order?: string }) =>
       authenticatedFetch<Product[]>(`/admin/products${buildQueryString(params)}`),
-    
-    get: (id: string) =>
-      authenticatedFetch<Product>(`/admin/products/${id}`),
-    
-    create: (data: any) =>
-      authenticatedFetch<{ id: string }>(`/admin/products`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-      }),
-    
-    update: (id: string, data: any) =>
-      authenticatedFetch<Product>(`/admin/products/${id}`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-      }),
-    
-    getTerpenes: (productIds: string[]) =>
-      authenticatedFetch<ProductTerpenesMap>(`/admin/products/terpenes?product_ids=${productIds.join(',')}`),
 
-    getCannabinoids: (productIds: string[]) =>
-      authenticatedFetch<Record<string, Cannabinoid[]>>(`/admin/products/cannabinoids?product_ids=${productIds.join(',')}`),
-
-    listAllTerpenes: () =>
-      authenticatedFetch<{ name: string }[]>(`/admin/products/terpenes`),
-
-    listAllCannabinoids: () =>
-      authenticatedFetch<Cannabinoid[]>(`/admin/products/cannabinoids`),
+    getDetail: (params: { brand?: string; category?: string; subtype?: string; product_line?: string; strain?: string; variant?: string }) =>
+      authenticatedFetch<{ product: Product; listings: any[] }>(`/admin/products/detail${buildQueryString(params)}`),
 
     listAllBrands: () =>
       authenticatedFetch<string[]>(`/admin/products/brands`),
@@ -207,10 +181,10 @@ export const api = {
     get: (id: string) =>
       authenticatedFetch<LabReportDetail>(`/admin/lab-reports/${id}`),
 
-    assign: (id: string, productId: string | null, listingId?: string | null) =>
+    assign: (id: string, listingId: string | null) =>
       authenticatedFetch<LabReport>(`/admin/lab-reports/${id}`, {
         method: 'POST',
-        body: JSON.stringify({ product_id: productId, listing_id: listingId ?? null }),
+        body: JSON.stringify({ listing_id: listingId }),
       }),
 
     upload: async (files: File[]): Promise<LabReportUpload[]> => {
@@ -238,7 +212,7 @@ export const api = {
       return res.json()
     },
 
-    process: async (labReportIds: string[], productId?: string): Promise<LabReportResult[]> => {
+    process: async (labReportIds: string[], listingId?: string): Promise<LabReportResult[]> => {
       const { data } = await supabase.auth.getSession()
       const token = data.session?.access_token
       if (!token) throw new Error('Not authenticated')
@@ -251,7 +225,7 @@ export const api = {
         },
         body: JSON.stringify({
           lab_report_ids: labReportIds,
-          product_id: productId ?? null,
+          listing_id: listingId ?? null,
         }),
       })
 
@@ -285,32 +259,20 @@ export const api = {
   },
 
   listings: {
-    list: (params?: { q?: string; product_id?: string; dispensary_id?: string; matched?: boolean; limit?: number; offset?: number }) =>
+    list: (params?: { q?: string; dispensary_id?: string; category?: string; brand?: string; subtype?: string; classification?: string; in_stock?: boolean; sort?: string; order?: string; limit?: number; offset?: number }) =>
       authenticatedFetch<Listing[]>(`/admin/listings${buildQueryString(params)}`),
 
-    listUnmatched: (params?: { dispensary_id?: string; limit?: number; offset?: number }) =>
-      authenticatedFetch<UnmatchedListing[]>(`/admin/listings/unmatched${buildQueryString(params)}`),
+    get: (id: string) =>
+      authenticatedFetch<Listing>(`/admin/listings/${id}`),
 
-    match: (listingId: string, productId: string) =>
-      authenticatedFetch<Listing>(`/admin/listings/${listingId}/match`, {
+    update: (id: string, data: { product_line?: string; strain?: string }) =>
+      authenticatedFetch<Listing>(`/admin/listings/${id}`, {
         method: 'POST',
-        body: JSON.stringify({ product_id: productId }),
+        body: JSON.stringify(data),
       }),
 
-    createAndMatch: (listingId: string) =>
-      authenticatedFetch<Listing>(`/admin/listings/${listingId}/match`, {
-        method: 'POST',
-        body: JSON.stringify({ product_id: null }),
-      }),
-
-    bulkCreateProducts: (listingIds: string[]) =>
-      authenticatedFetch<{ created: number; errors: { listing_id: string; error: string }[] }>(
-        `/admin/listings/bulk-create-products`,
-        { method: 'POST', body: JSON.stringify({ listing_ids: listingIds }) },
-      ),
-
-    unmatch: (listingId: string) =>
-      authenticatedFetch<Listing>(`/admin/listings/${listingId}/unmatch`, { method: 'POST' }),
+    filterOptions: () =>
+      authenticatedFetch<{ dispensaries: { id: string; name: string }[]; brands: string[]; classifications: string[]; subtypes: string[] }>(`/admin/listings/filter-options`),
   },
 
   me: {
@@ -354,6 +316,12 @@ export const api = {
 
     getListing: (dispensaryId: string, listingId: string) =>
       portalFetch<ListingDetail>(`/customer/dispensaries/${dispensaryId}/listings/${listingId}`),
+
+    getBrands: (limit = 24) =>
+      portalFetch<PortalBrand[]>(`/customer/brands?limit=${limit}`),
+
+    getCategories: () =>
+      portalFetch<PortalCategory[]>(`/customer/categories`),
   },
 }
 

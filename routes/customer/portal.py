@@ -1,18 +1,18 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from typing import Optional, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
-from sqlmodel import Session, select, func, case, or_
-from sqlalchemy import cast, String
+from sqlalchemy import func, text
+from sqlmodel import Session, select, or_
 
-from database import get_session
-from models import Customer, Dispensary, Listing, Purchase, PurchaseItem, Product, ProductTerpene, Terpene, Cannabinoid, ProductCannabinoid
+from database import engine, get_session
+from models import (
+    Customer, Dispensary, Listing, ListingTerpene, ListingCannabinoid,
+    Terpene, Cannabinoid, Purchase, PurchaseItem,
+)
 from routes.admin.serializers import serialize_purchase_item
-
-DEFAULT_TERPENE_PERCENT = 0.10
-BRAND_WEIGHT = 1000
 
 router = APIRouter()
 
@@ -24,7 +24,9 @@ router = APIRouter()
 @router.get("/dispensaries")
 def list_portal_dispensaries(session: Session = Depends(get_session)):
     dispensaries = session.exec(
-        select(Dispensary).where(Dispensary.is_active == True).order_by(Dispensary.name)
+        select(Dispensary)
+        .where(Dispensary.is_active == True)  # noqa: E712
+        .order_by(Dispensary.name)
     ).all()
     return [
         {
@@ -40,8 +42,47 @@ def list_portal_dispensaries(session: Session = Depends(get_session)):
             "banner_url": d.banner_url,
         }
         for d in dispensaries
-        if d.lat is not None and d.lng is not None
     ]
+
+
+# ---------------------------
+# GET /brands
+# ---------------------------
+
+@router.get("/brands")
+def list_portal_brands(limit: int = 24, session: Session = Depends(get_session)):
+    rows = session.exec(
+        select(
+            Listing.scraped_brand,
+            func.count(Listing.id).label("cnt"),
+            func.min(Listing.image_url).label("image_url"),
+        )
+        .where(Listing.scraped_brand.isnot(None))
+        .where(Listing.scraped_brand != "")
+        .group_by(Listing.scraped_brand)
+        .order_by(func.count(Listing.id).desc())
+        .limit(limit)
+    ).all()
+    return [{"name": r.scraped_brand, "listing_count": r.cnt, "image_url": r.image_url} for r in rows]
+
+
+# ---------------------------
+# GET /categories
+# ---------------------------
+
+@router.get("/categories")
+def list_portal_categories(session: Session = Depends(get_session)):
+    rows = session.exec(
+        select(
+            Listing.scraped_category,
+            func.count(Listing.id).label("cnt"),
+            func.min(Listing.image_url).label("image_url"),
+        )
+        .where(Listing.scraped_category.isnot(None))
+        .group_by(Listing.scraped_category)
+        .order_by(func.count(Listing.id).desc())
+    ).all()
+    return [{"name": r.scraped_category, "listing_count": r.cnt, "image_url": r.image_url} for r in rows]
 
 
 # ---------------------------
@@ -56,8 +97,8 @@ def get_dispensary_filter_options(
     brands = session.exec(
         select(Listing.scraped_brand)
         .where(Listing.dispensary_id == dispensary_id)
-        .where(Listing.is_active == True)
-        .where(Listing.in_stock == True)
+        .where(Listing.is_active == True)  # noqa: E712
+        .where(Listing.in_stock == True)  # noqa: E712
         .where(Listing.scraped_brand.isnot(None))
         .distinct()
         .order_by(Listing.scraped_brand)
@@ -66,8 +107,8 @@ def get_dispensary_filter_options(
     variants = session.exec(
         select(Listing.variant)
         .where(Listing.dispensary_id == dispensary_id)
-        .where(Listing.is_active == True)
-        .where(Listing.in_stock == True)
+        .where(Listing.is_active == True)  # noqa: E712
+        .where(Listing.in_stock == True)  # noqa: E712
         .where(Listing.variant.isnot(None))
         .where(Listing.variant != "")
         .distinct()
@@ -97,17 +138,16 @@ def get_dispensary_listings(
     offset: int = Query(default=0, ge=0),
 ):
     dispensary = session.get(Dispensary, dispensary_id)
-    if not dispensary or not dispensary.is_active:
+    if not dispensary:
         raise HTTPException(status_code=404, detail="dispensary not found")
 
     stmt = (
         select(Listing.id)
         .where(Listing.dispensary_id == dispensary_id)
-        .where(Listing.is_active == True)
+        .where(Listing.is_active == True)  # noqa: E712
     )
     if in_stock:
-        stmt = stmt.where(Listing.in_stock == True)
-
+        stmt = stmt.where(Listing.in_stock == True)  # noqa: E712
     if category:
         stmt = stmt.where(Listing.scraped_category == category)
     if brand:
@@ -129,50 +169,46 @@ def get_dispensary_listings(
     if not listing_ids:
         return []
 
-    rows = session.exec(
-        select(Listing, Product)
-        .join(Product, Product.id == Listing.product_id, isouter=True)
-        .where(Listing.id.in_(listing_ids))
-        .order_by(Listing.scraped_name)
+    listings = session.exec(
+        select(Listing).where(Listing.id.in_(listing_ids)).order_by(Listing.scraped_name)
     ).all()
 
-    product_ids = [str(p.id) for _, p in rows if p is not None]
-
     terpene_map: dict[str, list] = {}
+    for link, t in session.exec(
+        select(ListingTerpene, Terpene)
+        .join(Terpene, Terpene.id == ListingTerpene.terpene_id)
+        .where(ListingTerpene.listing_id.in_(listing_ids))
+    ).all():
+        lid = str(link.listing_id)
+        terpene_map.setdefault(lid, []).append({"name": t.name, "percent": link.percent})
+
     cannabinoid_map: dict[str, list] = {}
-
-    if product_ids:
-        for link, t in session.exec(
-            select(ProductTerpene, Terpene)
-            .join(Terpene, Terpene.id == ProductTerpene.terpene_id)
-            .where(ProductTerpene.product_id.in_([r.product_id for r, _ in rows if r.product_id]))
-        ).all():
-            pid = str(link.product_id)
-            terpene_map.setdefault(pid, []).append({"name": t.name, "percent": link.percent})
-
-        for link, c in session.exec(
-            select(ProductCannabinoid, Cannabinoid)
-            .join(Cannabinoid, Cannabinoid.id == ProductCannabinoid.cannabinoid_id)
-            .where(ProductCannabinoid.product_id.in_([r.product_id for r, _ in rows if r.product_id]))
-        ).all():
-            pid = str(link.product_id)
-            cannabinoid_map.setdefault(pid, []).append({"name": c.name, "family": c.family, "percent": link.percent})
+    for link, c in session.exec(
+        select(ListingCannabinoid, Cannabinoid)
+        .join(Cannabinoid, Cannabinoid.id == ListingCannabinoid.cannabinoid_id)
+        .where(ListingCannabinoid.listing_id.in_(listing_ids))
+    ).all():
+        lid = str(link.listing_id)
+        cannabinoid_map.setdefault(lid, []).append({"name": c.name, "family": c.family, "percent": link.percent})
 
     result = []
-    for listing, product in rows:
-        pid = str(product.id) if product else None
+    for listing in listings:
+        lid = str(listing.id)
         result.append({
-            "id": str(listing.id),
+            "id": lid,
             "scraped_name": listing.scraped_name,
             "scraped_brand": listing.scraped_brand,
             "scraped_category": listing.scraped_category,
+            "subtype": listing.subtype,
+            "strain": listing.strain,
+            "product_line": listing.product_line,
             "price_cents": listing.price_cents,
             "variant": listing.variant,
             "url": listing.url,
             "image_url": listing.image_url,
-            "product_id": pid,
-            "terpenes": terpene_map.get(pid, []) if pid else [],
-            "cannabinoids": cannabinoid_map.get(pid, []) if pid else [],
+            "in_stock": listing.in_stock,
+            "terpenes": terpene_map.get(lid, []),
+            "cannabinoids": cannabinoid_map.get(lid, []),
         })
 
     return result
@@ -189,52 +225,52 @@ def get_dispensary_listing(
     session: Session = Depends(get_session),
 ):
     dispensary = session.get(Dispensary, dispensary_id)
-    if not dispensary or not dispensary.is_active:
+    if not dispensary:
         raise HTTPException(status_code=404, detail="dispensary not found")
 
     listing = session.exec(
         select(Listing)
         .where(Listing.id == listing_id)
         .where(Listing.dispensary_id == dispensary_id)
-        .where(Listing.is_active == True)
+        .where(Listing.is_active == True)  # noqa: E712
     ).first()
     if not listing:
         raise HTTPException(status_code=404, detail="listing not found")
 
-    product = session.get(Product, listing.product_id) if listing.product_id else None
-    pid = str(product.id) if product else None
+    terpenes = []
+    for link, t in session.exec(
+        select(ListingTerpene, Terpene)
+        .join(Terpene, Terpene.id == ListingTerpene.terpene_id)
+        .where(ListingTerpene.listing_id == listing_id)
+    ).all():
+        terpenes.append({"name": t.name, "percent": link.percent})
 
-    terpenes, cannabinoids = [], []
-    if pid:
-        for link, t in session.exec(
-            select(ProductTerpene, Terpene)
-            .join(Terpene, Terpene.id == ProductTerpene.terpene_id)
-            .where(ProductTerpene.product_id == listing.product_id)
-        ).all():
-            terpenes.append({"name": t.name, "percent": link.percent})
-
-        for link, c in session.exec(
-            select(ProductCannabinoid, Cannabinoid)
-            .join(Cannabinoid, Cannabinoid.id == ProductCannabinoid.cannabinoid_id)
-            .where(ProductCannabinoid.product_id == listing.product_id)
-        ).all():
-            cannabinoids.append({"name": c.name, "family": c.family, "percent": link.percent})
+    cannabinoids = []
+    for link, c in session.exec(
+        select(ListingCannabinoid, Cannabinoid)
+        .join(Cannabinoid, Cannabinoid.id == ListingCannabinoid.cannabinoid_id)
+        .where(ListingCannabinoid.listing_id == listing_id)
+    ).all():
+        cannabinoids.append({"name": c.name, "family": c.family, "percent": link.percent})
 
     return {
         "id": str(listing.id),
         "dispensary_id": str(dispensary.id),
         "dispensary_name": dispensary.name,
         "dispensary_slug": dispensary.slug,
-        "dispensary_accepts_pickup": dispensary.accepts_pickup,
         "scraped_name": listing.scraped_name,
         "scraped_brand": listing.scraped_brand,
         "scraped_category": listing.scraped_category,
+        "subtype": listing.subtype,
+        "strain": listing.strain,
+        "product_line": listing.product_line,
+        "classification": listing.classification,
         "price_cents": listing.price_cents,
         "variant": listing.variant,
         "url": listing.url,
         "image_url": listing.image_url,
         "in_stock": listing.in_stock,
-        "product_id": pid,
+        "description": listing.description,
         "terpenes": terpenes,
         "cannabinoids": cannabinoids,
     }
@@ -246,102 +282,45 @@ def get_dispensary_listing(
 
 @router.get("/products")
 def list_portal_products(
-    session: Session = Depends(get_session),
     q: Optional[str] = Query(default=None),
+    category: Optional[str] = Query(default=None),
+    brand: Optional[str] = Query(default=None),
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
 ):
-    id_stmt = select(Product.id).where(Product.is_active == True)
+    conditions = ["1=1"]
+    params: dict = {}
 
     if q:
-        like = f"%{q.strip()}%"
-        id_stmt = id_stmt.where(
-            or_(
-                Product.name.ilike(like),
-                Product.brand.ilike(like),
-                cast(Product.category, String).ilike(like),
-            )
+        conditions.append(
+            "(brand ILIKE :q OR category ILIKE :q OR strain ILIKE :q)"
         )
+        params["q"] = f"%{q.strip()}%"
+    if category:
+        conditions.append("category = :category")
+        params["category"] = category
+    if brand:
+        conditions.append("brand ILIKE :brand")
+        params["brand"] = f"%{brand.strip()}%"
 
-    id_stmt = id_stmt.order_by(Product.name).offset(offset).limit(limit)
-    product_ids = session.exec(id_stmt).all()
+    where = " AND ".join(conditions)
+    sql = text(f"""
+        SELECT brand, category, subtype, strain, variant,
+               listing_count, dispensary_count,
+               min_price_cents, max_price_cents,
+               any_in_stock
+        FROM products
+        WHERE {where}
+        ORDER BY brand, category, subtype, strain, variant
+        LIMIT :limit OFFSET :offset
+    """)
+    params["limit"] = limit
+    params["offset"] = offset
 
-    if not product_ids:
-        return []
+    with engine.connect() as conn:
+        rows = conn.execute(sql, params).mappings().all()
 
-    rows = session.exec(
-        select(Product, ProductTerpene, Terpene)
-        .join(ProductTerpene, ProductTerpene.product_id == Product.id, isouter=True)
-        .join(Terpene, Terpene.id == ProductTerpene.terpene_id, isouter=True)
-        .where(Product.id.in_(product_ids))
-        .order_by(Product.name)
-    ).all()
-
-    by_id = {}
-    for product, link, terpene in rows:
-        pid = str(product.id)
-        if pid not in by_id:
-            by_id[pid] = {
-                "id": pid,
-                "name": product.name,
-                "brand": product.brand,
-                "category": product.category,
-                "terpenes": [],
-                "cannabinoids": [],
-            }
-        if terpene is not None and link is not None:
-            by_id[pid]["terpenes"].append({"name": terpene.name, "percent": link.percent})
-
-    cannab_rows = session.exec(
-        select(ProductCannabinoid, Cannabinoid)
-        .join(Cannabinoid, Cannabinoid.id == ProductCannabinoid.cannabinoid_id)
-        .where(ProductCannabinoid.product_id.in_(product_ids))
-    ).all()
-
-    for link, c in cannab_rows:
-        pid = str(link.product_id)
-        if pid in by_id:
-            by_id[pid]["cannabinoids"].append({"name": c.name, "family": c.family, "percent": link.percent})
-
-    order = {str(pid): i for i, pid in enumerate(product_ids)}
-    return sorted(by_id.values(), key=lambda x: order.get(x["id"], 10**9))
-
-
-# ---------------------------
-# GET /products/{product_id}
-# ---------------------------
-
-@router.get("/products/{product_id}")
-def get_portal_product(
-    product_id: UUID,
-    session: Session = Depends(get_session),
-):
-    p = session.get(Product, product_id)
-    if not p or not p.is_active:
-        raise HTTPException(status_code=404, detail="product not found")
-
-    terpene_rows = session.exec(
-        select(ProductTerpene, Terpene)
-        .join(Terpene, Terpene.id == ProductTerpene.terpene_id)
-        .where(ProductTerpene.product_id == product_id)
-    ).all()
-    terpenes = [{"name": t.name, "percent": link.percent} for link, t in terpene_rows]
-
-    cannab_rows = session.exec(
-        select(ProductCannabinoid, Cannabinoid)
-        .join(Cannabinoid, Cannabinoid.id == ProductCannabinoid.cannabinoid_id)
-        .where(ProductCannabinoid.product_id == product_id)
-    ).all()
-    cannabinoids = [{"name": c.name, "family": c.family, "percent": link.percent} for link, c in cannab_rows]
-
-    return {
-        "id": str(p.id),
-        "name": p.name,
-        "brand": p.brand,
-        "category": p.category,
-        "terpenes": terpenes,
-        "cannabinoids": cannabinoids,
-    }
+    return [dict(r) for r in rows]
 
 
 # ---------------------------
@@ -359,7 +338,6 @@ def get_portal_purchases(
     if not c:
         raise HTTPException(status_code=404, detail="customer not found")
 
-    # Pass 1: paginated purchase IDs
     id_stmt = (
         select(Purchase.id)
         .where(Purchase.customer_id == customer_id)
@@ -372,18 +350,16 @@ def get_portal_purchases(
     if not purchase_ids:
         return []
 
-    # Pass 2: full data for those purchase IDs
     rows = session.exec(
-        select(Purchase, PurchaseItem, Listing, Product)
+        select(Purchase, PurchaseItem, Listing)
         .join(PurchaseItem, PurchaseItem.purchase_id == Purchase.id, isouter=True)
         .join(Listing, Listing.id == PurchaseItem.listing_id, isouter=True)
-        .join(Product, Product.id == Listing.product_id, isouter=True)
         .where(Purchase.id.in_(purchase_ids))
         .order_by(Purchase.purchased_at.desc())
     ).all()
 
     purchases_by_id = {}
-    for purchase, item, listing, product in rows:
+    for purchase, item, listing in rows:
         pur_id = str(purchase.id)
         if pur_id not in purchases_by_id:
             purchases_by_id[pur_id] = {
@@ -395,15 +371,15 @@ def get_portal_purchases(
                 "items": [],
             }
 
-        if item is None or listing is None or product is None:
+        if item is None or listing is None:
             continue
 
         item_id = str(item.id)
         items = purchases_by_id[pur_id]["items"]
         if not any(x["id"] == item_id for x in items):
             items.append({
-                **serialize_purchase_item(item, listing, product),
-                "product_category": product.category,
+                **serialize_purchase_item(item, listing),
+                "product_category": listing.scraped_category,
             })
 
     order = {str(pid): i for i, pid in enumerate(purchase_ids)}
@@ -425,7 +401,6 @@ def set_portal_feedback(
     payload: FeedbackUpdate,
     session: Session = Depends(get_session),
 ):
-    # Ownership check: item must belong to a purchase of this customer
     item = session.exec(
         select(PurchaseItem)
         .join(Purchase, Purchase.id == PurchaseItem.purchase_id)
@@ -460,106 +435,5 @@ def get_portal_recommendations(
     limit: int = Query(default=10, ge=1, le=50),
     window_days: int = Query(default=180, ge=1, le=3650),
 ):
-    c = session.get(Customer, customer_id)
-    if not c:
-        raise HTTPException(status_code=404, detail="customer not found")
-
-    cutoff = datetime.now(timezone.utc) - timedelta(days=window_days)
-
-    # Step 1: Customer terpene preference scores
-    terpene_scores_stmt = (
-        select(
-            Terpene.id,
-            Terpene.name,
-            func.sum(
-                case(
-                    (PurchaseItem.feedback == "like", func.coalesce(ProductTerpene.percent, DEFAULT_TERPENE_PERCENT)),
-                    (PurchaseItem.feedback == "dislike", -func.coalesce(ProductTerpene.percent, DEFAULT_TERPENE_PERCENT)),
-                    else_=0.0,
-                )
-            ).label("score"),
-        )
-        .select_from(PurchaseItem)
-        .join(Purchase, Purchase.id == PurchaseItem.purchase_id)
-        .join(ProductTerpene, ProductTerpene.product_id == PurchaseItem.product_id)
-        .join(Terpene, Terpene.id == ProductTerpene.terpene_id)
-        .where(Purchase.customer_id == customer_id)
-        .where(Purchase.purchased_at >= cutoff)
-        .where(PurchaseItem.feedback.isnot(None))
-        .group_by(Terpene.id, Terpene.name)
-    )
-
-    terpene_score_rows = session.exec(terpene_scores_stmt).all()
-    terpene_scores_by_id = {row[0]: float(row[2]) if row[2] else 0.0 for row in terpene_score_rows}
-
-    if not terpene_scores_by_id:
-        return []
-
-    # Step 2: Purchase history counts
-    purchase_history_rows = session.exec(
-        select(PurchaseItem.product_id, func.count().label("count"))
-        .select_from(PurchaseItem)
-        .join(Purchase, Purchase.id == PurchaseItem.purchase_id)
-        .where(Purchase.customer_id == customer_id)
-        .group_by(PurchaseItem.product_id)
-    ).all()
-    purchased_counts = {row[0]: row[1] for row in purchase_history_rows}
-
-    # Step 2b: Brand affinity scores
-    brand_affinity_rows = session.exec(
-        select(
-            Product.brand,
-            func.count(case((PurchaseItem.feedback == "like", 1))).label("likes"),
-            func.count(case((PurchaseItem.feedback == "dislike", 1))).label("dislikes"),
-        )
-        .select_from(PurchaseItem)
-        .join(Purchase, Purchase.id == PurchaseItem.purchase_id)
-        .join(Product, Product.id == PurchaseItem.product_id)
-        .where(Purchase.customer_id == customer_id)
-        .where(Purchase.purchased_at >= cutoff)
-        .where(PurchaseItem.feedback.isnot(None))
-        .where(Product.brand.isnot(None))
-        .group_by(Product.brand)
-    ).all()
-    brand_scores_by_name = {row.brand: (row.likes - row.dislikes) for row in brand_affinity_rows}
-
-    # Step 3: Score all active products by terpene match
-    products_rows = session.exec(
-        select(Product, ProductTerpene, Terpene)
-        .join(ProductTerpene, ProductTerpene.product_id == Product.id, isouter=True)
-        .join(Terpene, Terpene.id == ProductTerpene.terpene_id, isouter=True)
-        .where(Product.is_active == True)
-        .order_by(Product.name)
-    ).all()
-
-    products_dict = {}
-    for product, pt_link, terpene in products_rows:
-        pid = product.id
-        if pid not in products_dict:
-            products_dict[pid] = {
-                "id": str(pid),
-                "name": product.name,
-                "brand": product.brand,
-                "category": product.category,
-                "score": 0.0,
-                "terpenes": [],
-                "purchased_count": purchased_counts.get(pid, 0),
-            }
-
-        if terpene and pt_link:
-            terpene_percent = pt_link.percent or DEFAULT_TERPENE_PERCENT
-            terpene_score = terpene_scores_by_id.get(terpene.id, 0.0)
-            products_dict[pid]["score"] += terpene_percent * terpene_score
-            products_dict[pid]["terpenes"].append({
-                "name": terpene.name,
-                "percent": terpene_percent,
-            })
-
-    # Apply brand affinity
-    for prod in products_dict.values():
-        if prod["brand"] and prod["brand"] in brand_scores_by_name:
-            prod["score"] += brand_scores_by_name[prod["brand"]] * BRAND_WEIGHT
-
-    products_list = list(products_dict.values())
-    products_list.sort(key=lambda x: x["score"], reverse=True)
-    return products_list[:limit]
+    # Recommendations engine not yet implemented for listing-level terpene data
+    return []

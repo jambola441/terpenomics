@@ -1,4 +1,4 @@
-from models import Customer, Listing, Product, Purchase, PurchaseItem
+from models import Customer, Listing, Purchase, PurchaseItem
 
 
 def serialize_customer(c: Customer) -> dict:
@@ -10,19 +10,6 @@ def serialize_customer(c: Customer) -> dict:
         "marketing_opt_in": c.marketing_opt_in,
         "last_visit_at": c.last_visit_at.isoformat() if c.last_visit_at else None,
         "auth_user_id": str(c.auth_user_id) if c.auth_user_id else None,
-    }
-
-
-def serialize_product(p: Product, terpenes: list, cannabinoids: list = []) -> dict:
-    return {
-        "id": str(p.id),
-        "name": p.name,
-        "brand": p.brand,
-        "variant": p.variant,
-        "category": p.category,
-        "is_active": p.is_active,
-        "terpenes": terpenes,
-        "cannabinoids": cannabinoids,
     }
 
 
@@ -38,15 +25,14 @@ def serialize_purchase(p: Purchase) -> dict:
     }
 
 
-def serialize_purchase_item(item: PurchaseItem, listing: Listing, product: Product) -> dict:
+def serialize_purchase_item(item: PurchaseItem, listing: Listing) -> dict:
     return {
         "id": str(item.id),
         "purchase_id": str(item.purchase_id),
-        "listing_id": str(item.listing_id),
-        "product_id": str(listing.product_id),
-        "product_name": product.name,
-        "dispensary_id": str(listing.dispensary_id),
-        "variant": listing.variant,
+        "listing_id": str(item.listing_id) if item.listing_id else None,
+        "product_name": listing.scraped_name if listing else None,
+        "dispensary_id": str(listing.dispensary_id) if listing else None,
+        "variant": listing.variant if listing else None,
         "quantity": item.quantity,
         "line_amount_cents": item.line_amount_cents,
         "feedback": item.feedback,

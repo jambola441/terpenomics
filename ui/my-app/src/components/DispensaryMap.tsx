@@ -5,17 +5,16 @@ import DispensaryListings from './DispensaryListings'
 import AisleView from './AisleView'
 import type { CartItem } from '../types'
 
+const BROOKLYN: [number, number] = [40.6782, -73.9442]
+
 type PortalDispensary = {
   id: string
   name: string
   slug: string
   address: string | null
-  lat: number
-  lng: number
+  lat: number | null
+  lng: number | null
   website_url: string | null
-  accepts_pickup: boolean
-  logo_url: string | null
-  banner_url: string | null
 }
 
 interface Props {
@@ -30,7 +29,10 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
   const matchAisle = useMatch('/portal/map/:dispensaryId/aisle/:category')
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<any>(null)
+  const LRef = useRef<any>(null)
   const [dispensaries, setDispensaries] = useState<PortalDispensary[]>([])
+  const [loadingDispensaries, setLoadingDispensaries] = useState(true)
+  const [mapReady, setMapReady] = useState(false)
   const [selected, setSelected] = useState<PortalDispensary | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -42,15 +44,23 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
 
   useEffect(() => {
     api.portal.getDispensaries()
-      .then(setDispensaries)
-      .catch(() => setError('Failed to load dispensaries'))
+      .then(data => {
+        setDispensaries(data as PortalDispensary[])
+        setLoadingDispensaries(false)
+      })
+      .catch(() => {
+        setError('Failed to load dispensaries')
+        setLoadingDispensaries(false)
+      })
   }, [])
 
+  // Initialize Leaflet as soon as the container is ready — Brooklyn center, no markers yet
   useEffect(() => {
-    if (!mapRef.current || dispensaries.length === 0) return
-    if (mapInstanceRef.current) return
+    if (!mapRef.current || mapInstanceRef.current) return
 
     import('leaflet').then(L => {
+      if (mapInstanceRef.current) return
+
       delete (L.Icon.Default.prototype as any)._getIconUrl
       L.Icon.Default.mergeOptions({
         iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -58,13 +68,9 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
         shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
       })
 
-      const center: [number, number] = [
-        dispensaries.reduce((s, d) => s + d.lat, 0) / dispensaries.length,
-        dispensaries.reduce((s, d) => s + d.lng, 0) / dispensaries.length,
-      ]
-
-      const map = L.map(mapRef.current!, { zoomControl: false }).setView(center, 14)
+      const map = L.map(mapRef.current!, { zoomControl: false }).setView(BROOKLYN, 13)
       mapInstanceRef.current = map
+      LRef.current = L
 
       L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         attribution: '© OpenStreetMap © CARTO',
@@ -73,21 +79,41 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
 
       L.control.zoom({ position: 'bottomright' }).addTo(map)
 
-      dispensaries.forEach(d => {
-        const marker = L.marker([d.lat, d.lng])
-          .addTo(map)
-          .bindTooltip(d.name, { permanent: false, direction: 'top' })
-        marker.on('click', () => setSelected(d))
-      })
+      setMapReady(true)
     })
 
     return () => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove()
         mapInstanceRef.current = null
+        LRef.current = null
       }
     }
-  }, [dispensaries])
+  }, [])
+
+  // Add markers once both map and dispensaries are ready
+  useEffect(() => {
+    if (!mapReady || !LRef.current || dispensaries.length === 0) return
+
+    const L = LRef.current
+    const map = mapInstanceRef.current!
+    const coorded = dispensaries.filter(d => d.lat != null && d.lng != null)
+
+    if (coorded.length > 0) {
+      const center: [number, number] = [
+        coorded.reduce((s, d) => s + d.lat!, 0) / coorded.length,
+        coorded.reduce((s, d) => s + d.lng!, 0) / coorded.length,
+      ]
+      map.setView(center, 14)
+
+      coorded.forEach(d => {
+        const marker = L.marker([d.lat!, d.lng!])
+          .addTo(map)
+          .bindTooltip(d.name, { permanent: false, direction: 'top' })
+        marker.on('click', () => setSelected(d))
+      })
+    }
+  }, [mapReady, dispensaries])
 
   const activeDispensary = activeDispensaryId
     ? dispensaries.find(d => d.id === activeDispensaryId) ?? null
@@ -121,9 +147,9 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
             dispensaryAddress={activeDispensary.address}
             dispensaryLat={activeDispensary.lat}
             dispensaryLng={activeDispensary.lng}
-            dispensaryLogoUrl={activeDispensary.logo_url}
-            dispensaryBannerUrl={activeDispensary.banner_url}
-            acceptsPickup={activeDispensary.accepts_pickup}
+            dispensaryLogoUrl={null}
+            dispensaryBannerUrl={null}
+            acceptsPickup={false}
             onBack={() => navigate(-1)}
             onAddToCart={onAddToCart}
             cart={cart}
@@ -139,7 +165,7 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
             dispensaryName={aisleDispensary.name}
             dispensarySlug={aisleDispensary.slug}
             category={aisleCategory}
-            acceptsPickup={aisleDispensary.accepts_pickup}
+            acceptsPickup={false}
             onAddToCart={onAddToCart}
             cart={cart}
           />
@@ -203,13 +229,39 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
         </div>
       )}
 
-      {dispensaries.length === 0 && !error && (
+      {/* Dispensaries without map coords: show as list at bottom */}
+      {!loadingDispensaries && dispensaries.filter(d => d.lat == null).length > 0 && !selected && !activeDispensary && (
         <div style={{
-          position: 'absolute', inset: 0, zIndex: 999,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: '#0a0a0a',
+          position: 'absolute', bottom: 0, left: 0, right: 0,
+          background: '#111', borderTop: '1px solid #222',
+          borderRadius: '16px 16px 0 0', padding: '16px 20px 28px', zIndex: 1000,
+          maxHeight: '40%', overflowY: 'auto',
         }}>
-          <span style={{ color: '#333', fontSize: 14 }}>Loading map…</span>
+          <div style={{ color: '#555', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
+            Stores
+          </div>
+          {dispensaries.map(d => (
+            <div
+              key={d.id}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #1a1a1a', cursor: 'pointer' }}
+              onClick={() => navigate('/portal/map/' + d.id)}
+            >
+              <div>
+                <div style={{ color: '#fff', fontSize: 14, fontWeight: 600 }}>{d.name}</div>
+                {d.address && <div style={{ color: '#555', fontSize: 12, marginTop: 2 }}>{d.address}</div>}
+              </div>
+              <span style={{ color: '#a8e063', fontSize: 13, fontWeight: 700, marginLeft: 12 }}>→</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {loadingDispensaries && (
+        <div style={{
+          position: 'absolute', top: 16, left: '50%', transform: 'translateX(-50%)',
+          background: 'rgba(0,0,0,0.7)', borderRadius: 20, padding: '8px 16px', zIndex: 999,
+        }}>
+          <span style={{ color: '#555', fontSize: 13 }}>Loading stores…</span>
         </div>
       )}
     </div>
