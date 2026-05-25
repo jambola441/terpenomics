@@ -1,13 +1,9 @@
 """
 import_listings.py — Import scraped listing CSVs into the DB.
 
-Upserts listings keyed on (dispensary_id, sku):
-  - INSERT new listings
-  - UPDATE existing listings: in_stock, price_cents, image_url, scraped_name,
-    scraped_name_raw, scraped_brand, scraped_category, url, scraped_at, updated_at
-
-Product matches (product_id) are preserved on update — matching happens in the
-admin UI and is never overwritten by a re-import.
+Upserts listings keyed on (dispensary_id, sku). On conflict, updates volatile
+fields (in_stock, price_cents, image_url, url, scraped_at, subtype, strain,
+scraped_name, scraped_brand, scraped_category, description).
 
 Usage:
   python scripts/import_listings.py \\
@@ -68,6 +64,14 @@ def parse_int(val):
         return None
 
 
+def parse_float(val):
+    try:
+        v = float(val)
+        return v if v else None
+    except (ValueError, TypeError):
+        return None
+
+
 def main():
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     load_env(project_root)
@@ -95,14 +99,6 @@ def main():
     conn = psycopg2.connect(db_url)
     cur = conn.cursor()
 
-    # Load brand alias map
-    cur.execute("SELECT alias, canonical_brand FROM brand_aliases")
-    brand_aliases: dict[str, str] = {a: c for a, c in cur.fetchall()}
-    print(f"  {len(brand_aliases)} brand aliases loaded")
-
-    def resolve_brand(brand: str) -> str:
-        return brand_aliases.get(brand, brand)
-
     # Resolve dispensary slugs
     slugs = {r["dispensary_slug"].strip() for r in rows if r.get("dispensary_slug")}
     cur.execute("SELECT id, slug FROM dispensaries WHERE slug = ANY(%s)", (list(slugs),))
@@ -113,7 +109,6 @@ def main():
 
     now = utcnow()
     total_inserted = 0
-    total_updated  = 0
     total_skipped  = 0
 
     for slug, dispensary_id in dispensary_map.items():
@@ -123,39 +118,50 @@ def main():
         no_sku_insert: list[tuple] = []
 
         for row in disp_rows:
-            sku             = (row.get("sku") or "").strip() or None
-            scraped_name    = (row.get("name")     or "").strip() or None
-            scraped_name_raw = (row.get("name_raw") or "").strip() or None
-            scraped_brand   = resolve_brand((row.get("brand") or "").strip()) or None
-            scraped_category = (row.get("category") or "").strip() or None
-            price_cents     = parse_int(row.get("price_cents"))
-            variant         = (row.get("variant") or "").strip() or None
-            url             = (row.get("product_url") or "").strip() or None
-            image_url       = (row.get("image_url") or "").strip() or None
-            in_stock        = parse_bool(row.get("in_stock", "true"))
-            scraped_at      = (row.get("scraped_at") or "").strip() or None
+            sku              = (row.get("sku")          or "").strip() or None
+            batch_id         = (row.get("batch_id")     or "").strip() or None
+            scraped_name     = (row.get("name")         or "").strip() or None
+            scraped_brand    = (row.get("brand")        or "").strip() or None
+            scraped_category = (row.get("category")     or "").strip() or None
+            subtype          = (row.get("subtype")      or "").strip() or None
+            strain           = (row.get("strain")       or "").strip() or None
+            product_line     = (row.get("product_line") or "").strip() or None
+            price_cents      = parse_int(row.get("price_cents"))
+            variant          = (row.get("variant")      or "").strip() or None
+            url              = (row.get("product_url")  or "").strip() or None
+            image_url        = (row.get("image_url")    or "").strip() or None
+            in_stock         = parse_bool(row.get("in_stock", "true"))
+            scraped_at       = (row.get("scraped_at")   or "").strip() or None
+            classification   = (row.get("classification") or "").strip() or None
+            description      = (row.get("description")  or "").strip() or None
 
             if not scraped_name:
                 total_skipped += 1
                 continue
 
             record = (
-                str(uuid.uuid4()),  # id (used on INSERT, ignored on UPDATE)
-                dispensary_id,
-                sku,
-                price_cents,
-                variant,
-                url,
-                image_url,
-                in_stock,
-                True,           # is_active
-                scraped_at,
-                scraped_name,
-                scraped_name_raw,
-                scraped_brand,
-                scraped_category,
-                now,            # created_at
-                now,            # updated_at
+                str(uuid.uuid4()),  # 0:  id
+                dispensary_id,      # 1:  dispensary_id
+                sku,                # 2:  sku
+                batch_id,           # 3:  batch_id
+                price_cents,        # 4:  price_cents
+                variant,            # 5:  variant
+                url,                # 6:  url
+                image_url,          # 7:  image_url
+                in_stock,           # 8:  in_stock
+                True,               # 9:  is_active
+                scraped_at,         # 10: scraped_at
+                scraped_name,       # 11: scraped_name
+                scraped_brand,      # 12: scraped_brand
+                scraped_category,   # 13: scraped_category
+                subtype,            # 14: subtype
+                strain,             # 15: strain
+                classification,     # 16: classification
+                description,        # 17: description
+                product_line,       # 18: product_line
+                now,                # 19: created_at
+                now,                # 20: updated_at
+                now,                # 21: last_seen_at
             )
 
             if sku:
@@ -163,13 +169,14 @@ def main():
             else:
                 no_sku_insert.append(record)
 
-        # --- Diff summary (runs in both dry-run and live mode) ---
+        # --- Diff summary ---
         if to_upsert:
-            skus = [r[2] for r in to_upsert]  # index 2 = sku
+            skus = [r[2] for r in to_upsert]
             cur.execute(
                 """
                 SELECT sku, in_stock, price_cents, image_url,
-                       scraped_name, scraped_brand, scraped_category, url
+                       scraped_name, scraped_brand, scraped_category,
+                       subtype, strain, url, product_line
                 FROM listings
                 WHERE dispensary_id = %s AND sku = ANY(%s)
                 """,
@@ -178,14 +185,17 @@ def main():
             existing: dict[str, tuple] = {row[0]: row for row in cur.fetchall()}
 
             TRACKED = [
-                # (label, record_idx, existing_idx)
-                ("in_stock",        7, 1),
-                ("price_cents",     3, 2),
-                ("image_url",       6, 3),
-                ("scraped_name",   10, 4),
-                ("scraped_brand",  12, 5),
-                ("scraped_cat",    13, 6),
-                ("url",             5, 7),
+                # (label, record_idx, existing_col_idx)
+                ("in_stock",       8,  1),
+                ("price_cents",    4,  2),
+                ("image_url",      7,  3),
+                ("scraped_name",  11,  4),
+                ("scraped_brand", 12,  5),
+                ("scraped_cat",   13,  6),
+                ("subtype",       14,  7),
+                ("strain",        15,  8),
+                ("url",            6,  9),
+                ("product_line",  18, 10),
             ]
 
             new_skus, changed, unchanged = [], [], []
@@ -209,72 +219,109 @@ def main():
                     unchanged.append(sku_val)
 
             print(f"\n  --- diff: {slug} ---")
-            print(f"  new (INSERT): {len(new_skus)}  |  changed (UPDATE): {len(changed)}  |  unchanged: {len(unchanged)}  |  no-SKU inserts: {len(no_sku_insert)}")
+            print(f"  new: {len(new_skus)}  |  changed: {len(changed)}  |  unchanged: {len(unchanged)}  |  no-SKU: {len(no_sku_insert)}")
             if field_change_counts:
-                breakdown = "  field changes: " + ", ".join(
+                print("  field changes: " + ", ".join(
                     f"{k}={v}" for k, v in sorted(field_change_counts.items(), key=lambda x: -x[1])
-                )
-                print(breakdown)
+                ))
             if changed:
                 print(f"  sample changes (first {min(10, len(changed))}):")
                 for rec, diffs in changed[:10]:
-                    print(f"    [{rec[2]}] {rec[10] or ''}:  {' | '.join(diffs)}")
+                    print(f"    [{rec[2]}] {rec[11] or ''}:  {' | '.join(diffs)}")
             print()
 
         if not args.dry_run:
-            # Upsert rows that have a SKU
             if to_upsert:
+                # Deduplicate by SKU — last row wins (avoids CardinalityViolation)
+                seen: dict[str, tuple] = {}
+                for rec in to_upsert:
+                    seen[rec[2]] = rec
+                to_upsert = list(seen.values())
+
                 psycopg2.extras.execute_values(
                     cur,
                     """
                     INSERT INTO listings
-                        (id, dispensary_id, sku, price_cents, variant, url, image_url,
+                        (id, dispensary_id, sku, batch_id, price_cents, variant, url, image_url,
                          in_stock, is_active, scraped_at,
-                         scraped_name, scraped_name_raw, scraped_brand, scraped_category,
-                         created_at, updated_at)
+                         scraped_name, scraped_brand, scraped_category,
+                         subtype, strain, classification, description, product_line,
+                         created_at, updated_at, last_seen_at)
                     VALUES %s
                     ON CONFLICT (dispensary_id, sku)
                     WHERE sku IS NOT NULL
                     DO UPDATE SET
-                        in_stock        = EXCLUDED.in_stock,
-                        price_cents     = EXCLUDED.price_cents,
-                        image_url       = EXCLUDED.image_url,
-                        scraped_name    = EXCLUDED.scraped_name,
-                        scraped_name_raw = EXCLUDED.scraped_name_raw,
-                        scraped_brand   = EXCLUDED.scraped_brand,
+                        in_stock         = EXCLUDED.in_stock,
+                        is_active        = TRUE,
+                        price_cents      = EXCLUDED.price_cents,
+                        batch_id         = EXCLUDED.batch_id,
+                        image_url        = EXCLUDED.image_url,
+                        scraped_name     = EXCLUDED.scraped_name,
+                        scraped_brand    = EXCLUDED.scraped_brand,
                         scraped_category = EXCLUDED.scraped_category,
-                        url             = EXCLUDED.url,
-                        scraped_at      = EXCLUDED.scraped_at,
-                        updated_at      = EXCLUDED.updated_at
+                        subtype          = EXCLUDED.subtype,
+                        strain           = EXCLUDED.strain,
+                        classification   = EXCLUDED.classification,
+                        description      = EXCLUDED.description,
+                        product_line     = EXCLUDED.product_line,
+                        url              = EXCLUDED.url,
+                        scraped_at       = EXCLUDED.scraped_at,
+                        last_seen_at     = EXCLUDED.last_seen_at,
+                        updated_at       = EXCLUDED.updated_at
                     """,
                     to_upsert,
                 )
 
-            # INSERT-only for rows without a SKU (no natural key to update on)
             if no_sku_insert:
                 psycopg2.extras.execute_values(
                     cur,
-                    """INSERT INTO listings
-                       (id, dispensary_id, sku, price_cents, variant, url, image_url,
-                        in_stock, is_active, scraped_at,
-                        scraped_name, scraped_name_raw, scraped_brand, scraped_category,
-                        created_at, updated_at)
-                       VALUES %s""",
+                    """
+                    INSERT INTO listings
+                        (id, dispensary_id, sku, batch_id, price_cents, variant, url, image_url,
+                         in_stock, is_active, scraped_at,
+                         scraped_name, scraped_brand, scraped_category,
+                         subtype, strain, classification, description, product_line,
+                         created_at, updated_at, last_seen_at)
+                    VALUES %s
+                    """,
                     no_sku_insert,
                 )
 
-        # Count outcomes (approximate for dry-run)
+        # Mark stale listings inactive — SKUs present in DB but absent from this scrape
+        upserted_skus = [rec[2] for rec in to_upsert if rec[2]]
+        cur.execute(
+            """
+            SELECT sku, scraped_name FROM listings
+            WHERE dispensary_id = %s AND sku IS NOT NULL
+              AND is_active = TRUE AND sku != ALL(%s)
+            """,
+            (dispensary_id, upserted_skus),
+        )
+        stale = cur.fetchall()
+        if stale:
+            print(f"  marking {len(stale)} stale listings inactive:")
+            for sku, name in stale[:5]:
+                print(f"    [{sku}] {name}")
+            if len(stale) > 5:
+                print(f"    ... and {len(stale) - 5} more")
+            if not args.dry_run:
+                cur.execute(
+                    """
+                    UPDATE listings SET is_active = FALSE, in_stock = FALSE, updated_at = %s
+                    WHERE dispensary_id = %s AND sku IS NOT NULL AND sku != ALL(%s)
+                    """,
+                    (now, dispensary_id, upserted_skus),
+                )
+
         total_inserted += len(to_upsert) + len(no_sku_insert)
-        total_updated  += 0  # psycopg2 doesn't easily split insert vs update count
-        print(f"  {slug}: {len(to_upsert)} upserted (by SKU), {len(no_sku_insert)} inserted (no SKU), {len(disp_rows) - len(to_upsert) - len(no_sku_insert)} skipped")
+        print(f"  {slug}: {len(to_upsert)} upserted, {len(no_sku_insert)} inserted (no SKU), "
+              f"{len(disp_rows) - len(to_upsert) - len(no_sku_insert)} skipped")
 
     if not args.dry_run:
         conn.commit()
     conn.close()
 
-    print()
-    print("Done.")
-    print(f"  Rows processed: {total_inserted}  skipped (no name): {total_skipped}")
+    print(f"\nDone. rows processed: {total_inserted}  skipped (no name): {total_skipped}")
 
 
 if __name__ == "__main__":
