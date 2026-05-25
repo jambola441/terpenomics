@@ -3,7 +3,27 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-.vscode/
+# Python environments
+.venv/
+venv/
+env/
 
+# Node
+node_modules/
+ui/my-app/.vite/
+
+# Scraped output — generated artifacts, not source
+data/scrapes/
+prototypes/**/*_listings.csv
+travel_agency_listings.csv
+
+# Enrich cache — large, machine-local, regeneratable
+data/enrich_cache.json
+
+# Editor / OS
+.vscode/
+.DS_Store
+
+# Secrets
 *.env
 .claude/

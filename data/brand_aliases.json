@@ -1,0 +1,407 @@
+{
+  "_comment": "Maps raw scraped brand name -> canonical brand name. Add new aliases here; scrapers and import will apply them automatically.",
+
+  "ayrloom":            "Ayrloom",
+  "Aryloom":            "Ayrloom",
+  "Ayrloom Mood":       "Ayrloom",
+
+  "Stiiizy":            "STIIIZY",
+
+  "ROVE":               "Rove",
+
+  "Pax":                "PAX",
+
+  "Rythm":              "RYTHM",
+
+  "WYLD":               "Wyld",
+
+  "Raw":                "RAW",
+
+  "Nyce":               "NYCE",
+
+  "LEFT COAST":         "Left Coast",
+
+  "LayUp":              "Layup",
+
+  "LEAL":               "Leal",
+
+  "GRON":               "Grön",
+  "Grön Edibles":       "Grön",
+
+  "BLAZY SUSAN":        "Blazy Susan",
+
+  "BODEGA BOYZ":        "Bodega Boyz",
+
+  "Bloom":              "BLOOM",
+
+  "CAMINO":             "Camino",
+  "Camino Chews":       "Camino",
+  "Caminos":            "Camino",
+
+  "CANNABALS":          "Cannabals",
+
+  "Dank By Definition.": "Dank By Definition",
+  "Dank. By Definition": "Dank By Definition",
+  "Dank":               "Dank By Definition",
+  "DANK":               "Dank By Definition",
+
+  "DUMBO ELECTRIC":     "Dumbo Electric",
+
+  "Eaton":              "Eaton Botanicals",
+
+  "Electraleaf":        "ElectraLeaf",
+  "Electraleaf New York": "ElectraLeaf",
+  "Electraleaf NY":     "ElectraLeaf",
+
+  "EUREKA":             "Eureka",
+
+  "Find":               "Find.",
+  "FIND":               "Find.",
+
+  "florist farms":      "Florist Farms",
+
+  "5 Boro":             "5Boro",
+  "5 Boro Cannabis":    "5Boro",
+  "5-Boro":             "5Boro",
+  "5BORO":              "5Boro",
+  "5boro":              "5Boro",
+
+  "Grav":               "GRAV",
+
+  "HashTag Honey":      "Hashtag Honey",
+
+  "Head and Heal":      "Head & Heal",
+
+  "HER Highness":       "Her Highness",
+
+  "HOLIDAY":            "Holiday",
+
+  "House Of Sacci":     "House of Sacci",
+
+  "JetPacks":           "Jetpacks",
+
+  "KIVA":               "Kiva",
+  "Kiva Confections":   "Kiva",
+  "KIVA LOST FARM":     "Kiva",
+
+  "LEVEL":              "Level",
+
+  "MilkWeed":           "Milkweed",
+
+  "mini mart":          "Mini Mart",
+  "Mini MART":          "Mini Mart",
+  "miniMART":           "Mini Mart",
+
+  "Mfny":               "MFNY",
+
+  "Moon Dust":          "Moondust",
+
+  "Myhi":               "MyHi",
+
+  "Off hours":          "Off Hours",
+
+  "Papa and Barkley":   "Papa & Barkley",
+
+  "PICC Platform":      "PICC",
+
+  "PLUGPLAY":           "Plug Play",
+
+  "Puff":               "PUFF",
+  "Puff Co":            "Puffco",
+  "PUFFCO":             "Puffco",
+  "PuffCo":             "Puffco",
+
+  "pura":               "Pura",
+
+  "Quality Control Cannabis": "Quality Control",
+
+  "Raven's View Genetics": "Ravens View Genetics",
+
+  "ready 2 roll":       "Ready 2 Roll",
+  "READY 2 ROLL (NY)":  "Ready 2 Roll",
+
+  "Revert Cannabis":    "Revert",
+
+  "Rolling Green Cannabis": "Rolling Green",
+
+  "RUBY FARMS":         "Ruby Farms",
+  "ruby":               "Ruby Farms",
+
+  "SiLLY NiCE":         "Silly Nice",
+
+  "Smartbud":           "SmartBud",
+  "SmartBuds":          "SmartBud",
+  "Smart Bud":          "SmartBud",
+  "smart bud":          "SmartBud",
+
+  "SMOKE":              "Smoke",
+
+  "Smokiez":            "Smokiez Edibles",
+
+  "SpaceBuds":          "Spacebuds",
+  "SPACEBUDS":          "Spacebuds",
+  "SpaceBuds Moonrocks": "Spacebuds",
+  "Spacebuds Moonrocks": "Spacebuds",
+
+  "SUSHI HASH":         "Sushi Hash",
+
+  "synergy":            "Synergy",
+  "Synergy Cannabis":   "Synergy",
+
+  "TYSON 2.0":          "Tyson 2.0",
+
+  "Umaii":              "Umamii",
+  "UMAMII":             "Umamii",
+
+  "untitled":           "Untitled",
+  "UNTITLED":           "Untitled",
+
+  "Voice of the Plant (VOP)": "VOP",
+
+  "Zig Zag":            "Zig-Zag",
+  "ZIG ZAG":            "Zig-Zag",
+  "ZigZag":             "Zig-Zag",
+
+  "alibi":              "Alibi",
+
+  "akron bloom":        "Akron Bloom",
+  "Akron Bloom LLC":    "Akron Bloom",
+
+  "butter":             "Butter",
+
+  "BUDD":               "Budd",
+
+  "Connected Cannabis": "Connected Cannabis Co.",
+
+  "DaDa":               "Dada Exotics",
+  "Dada":               "Dada Exotics",
+  "dada":               "Dada Exotics",
+  "dada Exotics":       "Dada Exotics",
+  "Dada Daily":         "Dada Exotics",
+
+  "doobie labs":        "Doobie Labs",
+
+  "DR Green":           "Dr. Green",
+  "Dr Green":           "Dr. Green",
+
+  "FLAMER":             "Flamer",
+
+  "foy":                "Foy",
+  "FOY":                "Foy",
+
+  "Goodlyfe Farms":     "GoodLyfe",
+
+  "Harney Brothers Cannabis": "Harney Brothers",
+
+  "HiAF":               "Hi-AF",
+
+  "Hurley":             "Hurley Grown",
+
+  "Ithaca Organics":    "Ithaca Organics Cannabis Co.",
+
+  "Jennys":             "Jenny's",
+  "JENNY'S":            "Jenny's",
+
+  "Jetty":              "Jetty Extracts",
+
+  "julia":              "Julia",
+
+  "KickFly's":          "Kickfly's",
+  "Kickflys":           "Kickfly's",
+
+  "Kingsroad":          "Kings Road",
+  "KINGSROAD":          "Kings Road",
+
+  "Koa":                "Koa Cannabis Co.",
+  "KOA":                "Koa Cannabis Co.",
+
+  "Livwell":            "LivWell",
+  "LIVWELL":            "LivWell",
+
+  "LOOKAH":             "Lookah",
+
+  "Lost Farms":         "Lost Farm",
+
+  "magnitude":          "Magnitude",
+
+  "Matter.":            "matter.",
+
+  "microbar":           "Micro Bar",
+
+  "MINTZ":              "Mintz",
+  "mintz":              "Mintz",
+
+  "Mj Arsenal":         "MJ Arsenal",
+
+  "moonlit":            "Moonlit Hash Co.",
+  "Moonlit Hash Co":    "Moonlit Hash Co.",
+  "MoonLit Hash Co":    "Moonlit Hash Co.",
+  "Moonlit Hash CO":    "Moonlit Hash Co.",
+
+  "Moodz":              "MOODZ",
+  "MOODS":              "MOODZ",
+
+  "NY Honey":           "New York Honey",
+
+  "OHHO":               "oHHo",
+
+  "OLIO":               "Olio",
+
+  "PREFERRED GARDENS":  "Preferred Gardens",
+
+  "7SEAZ":              "7 SEAZ",
+
+  "Supernaturals New York": "Supernaturals",
+
+  "#Juan -Roll":        "#Juan Roll",
+  "#JUAN-ROLL":         "#Juan Roll",
+
+  "Binske":             "binske",
+
+  "CRU":                "CRU Cannabis",
+
+  "Kings and Queens":   "Kings & Queens",
+
+  "Cheech and Chong":   "Cheech & Chong",
+  "CHEECH &  CHONG":    "Cheech & Chong",
+
+  "1906 New Highs":     "1906",
+
+  "Canna Cure Farms LLC": "Canna Cure Farms",
+
+  "Back Home Farm":     "Back Home Cannabis Co.",
+
+  "Dr. Jekyll & Mr.High Cannabis": "Dr. Jekyll and Mr. High",
+  "Dr Jekyll & Mr. High": "Dr. Jekyll and Mr. High",
+  "Dr Jekyll/Mr High":  "Dr. Jekyll and Mr. High",
+
+  "167 Exotics":        "167",
+
+  "ADK":                "ADK Hemp Co.",
+  "Adirondack":         "ADK Hemp Co.",
+  "Adirondack Flowers": "ADK Hemp Co.",
+
+  "Aeterna Cannabis":   "Aeterna",
+
+  "Bonanza Cannabis":   "Bonanza",
+
+  "Boukét":             "Bouket",
+
+  "bytes":              "Bytes",
+
+  "CHEF FOR HIGHER":    "Chef For Higher",
+
+  "chime & chill":      "Chime & Chill",
+
+  "DEALER CANNABIS CO.": "Dealer",
+  "Dealer.":            "Dealer",
+
+  "DOJA":               "Doja",
+
+  "edie parker":        "Edie Parker",
+
+  "Fela's":             "Fela's Farm",
+  "Felas":              "Fela's Farm",
+
+  "FINCA":              "Finca",
+
+  "FORMULA 420":        "Formula 420",
+
+  "Ghost":              "ghost.",
+
+  "Golden Garden Flower": "Golden Garden",
+
+  "Grocery cannabis":   "Grocery",
+
+  "HEAD SPACE (NY)":    "Head Space",
+
+  "herb":               "Herb",
+
+  "HIGH SCALE":         "High Scale",
+  "High Scales":        "High Scale",
+
+  "Honest Pharm":       "Honest Pharm Co",
+
+  "JAMS":               "Jams",
+
+  "JCannabis":          "J Cannabis",
+
+  "Joke 'N Toke":       "Joke n Toke",
+
+  "Juicy Jay's":        "Juicy Jay",
+
+  "Julia NY":           "Julia",
+
+  "Leadfarmer":         "LeadFarmer",
+
+  "lowell smokes":      "Lowell Herb Co.",
+
+  "Mechanic Farms":     "Mechanic Farm",
+  "The Mechanic Farm":  "Mechanic Farm",
+
+  "Mildy Moronic":      "Mildly Moronic",
+
+  "MOONY'S ZOOTIES":    "Moony's Zooties",
+  "Moonys Zooties":     "Moony's Zooties",
+
+  "neo":                "Neo",
+
+  "new york infusions": "New York Infusions",
+  "NY Infusions":       "New York Infusions",
+
+  "OCB USA":            "OCB",
+  "OCB® Rolling Papers & Cones": "OCB",
+
+  "Oasis Cannabis LLC": "Oasis",
+
+  "ONGROK":             "Ongrok",
+
+  "PACKS":              "Packs",
+
+  "PlantWerks":         "Plantwerks",
+
+  "pure vibe":          "Pure Vibe",
+
+  "Randys":             "Randy's",
+
+  "Skyrose":            "SkyRose",
+
+  "SMACK.":             "Smack",
+
+  "Small Ass Bud":      "Small A$$ Bud",
+
+  "Space Poppers!":     "Space Poppers",
+
+  "STRAIN GANG":        "Strain Gang",
+
+  "Studio Farms NY":    "Studio Farms",
+
+  "Studenglass":        "Stündenglass",
+
+  "SUGAR TREEZ":        "Sugar Treez",
+
+  "Sundrift":           "SunDrift",
+
+  "Superdope":          "Super Dope",
+
+  "the gram":           "The Gram",
+
+  "TOKE FOLKS":         "Toke Folks",
+
+  "Tyson":              "Tyson 2.0",
+
+  "Tune | Infused Seltzers": "Tune",
+
+  "UrbanXtracts":       "urbanXtracts",
+
+  "Veteran's Choice Creation":   "Veteran's Choice Creations",
+  "Veterans":                    "Veteran's Choice Creations",
+  "Veterans Choice":             "Veteran's Choice Creations",
+  "Veterans Choice Creations":   "Veteran's Choice Creations",
+
+  "VLSNY":              "Vlsny",
+
+  "ZZZ's Collective":       "ZZZ's Rolling Papers",
+  "ZZZ's Rolling Paper Co.": "ZZZ's Rolling Papers",
+  "ZZZ'S ROLLING PAPERS":   "ZZZ's Rolling Papers"
+}
