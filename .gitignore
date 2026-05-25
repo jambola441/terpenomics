@@ -18,7 +18,7 @@ prototypes/**/*_listings.csv
 travel_agency_listings.csv
 
 # Enrich cache — large, machine-local, regeneratable
-data/enrich_cache.json
+data/enrich_cache/
 
 # Editor / OS
 .vscode/

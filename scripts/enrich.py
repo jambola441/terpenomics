@@ -88,25 +88,35 @@ def _hint_subtype(row: dict) -> str | None:
 
 
 # ---------------------------------------------------------------------------
-# Cache
+# Cache — one file per dispensary: data/enrich_cache/{slug}.json
 # ---------------------------------------------------------------------------
 
+_CACHE_DIR = _DATA_DIR / "enrich_cache"
+
+
 def _cache_key(row: dict) -> str | None:
-    sku  = (row.get("sku")              or "").strip()
-    slug = (row.get("dispensary_slug") or "").strip()
-    return f"{slug}:{sku}" if sku and slug else None
+    sku = (row.get("sku") or "").strip()
+    return sku if sku else None
 
 
-def _load_cache() -> dict:
-    path = _DATA_DIR / "enrich_cache.json"
+def _slug_for_rows(rows: list[dict]) -> str | None:
+    for row in rows:
+        slug = (row.get("dispensary_slug") or "").strip()
+        if slug:
+            return slug
+    return None
+
+
+def _load_cache(slug: str) -> dict:
+    path = _CACHE_DIR / f"{slug}.json"
     if path.exists():
         return json.loads(path.read_text(encoding="utf-8"))
     return {}
 
 
-def _save_cache(cache: dict) -> None:
-    _DATA_DIR.mkdir(exist_ok=True)
-    (_DATA_DIR / "enrich_cache.json").write_text(
+def _save_cache(cache: dict, slug: str) -> None:
+    _CACHE_DIR.mkdir(exist_ok=True)
+    (_CACHE_DIR / f"{slug}.json").write_text(
         json.dumps(cache, indent=2, ensure_ascii=False), encoding="utf-8"
     )
 
@@ -187,6 +197,7 @@ Reply ONLY with a JSON array, no explanation, no markdown fences:
 def _run_haiku(
     pending: list[tuple[int, dict]],
     cache: dict,
+    slug: str,
     categories: list[str | None],
     subtypes: list[str | None],
     strains: list[str | None],
@@ -258,7 +269,7 @@ def _run_haiku(
                     "product_line": product_line, "variant": variant,
                 }
 
-        _save_cache(cache)
+        _save_cache(cache, slug)
         print("done")
 
 
@@ -268,7 +279,8 @@ def _run_haiku(
 
 def enrich(rows: list[dict], batch_size: int = 50) -> list[dict]:
     """Enrich every row in place: corrects category, adds subtype/strain/product_line/variant."""
-    cache = _load_cache()
+    slug = _slug_for_rows(rows) or "unknown"
+    cache = _load_cache(slug)
 
     categories:    list[str | None] = []
     subtypes:      list[str | None] = []
@@ -298,7 +310,7 @@ def enrich(rows: list[dict], batch_size: int = 50) -> list[dict]:
     cached_count = len(rows) - len(pending)
     if pending:
         print(f"  enrich: {cached_count} cached, {len(pending)} → Haiku")
-        _run_haiku(pending, cache, categories, subtypes, strains, product_lines, variants, batch_size)
+        _run_haiku(pending, cache, slug, categories, subtypes, strains, product_lines, variants, batch_size)
     else:
         print(f"  enrich: {cached_count} cached, 0 → Haiku")
 
