@@ -28,7 +28,8 @@ import time
 from urllib.parse import urlencode
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../scripts"))
-from scraper_common import _norm, canonical_brands, map_category, now_iso, store_slug, strip_noinfo, write_csv  # noqa: E402
+from scraper_common import _norm, canonical_brands, map_category, now_iso, store_slug, write_csv  # noqa: E402
+from enrich import enrich  # noqa: E402
 
 try:
     import httpx
@@ -305,8 +306,7 @@ def clean_name(name: str, brand: str) -> str:
         part = _INLINE_REMOVE_RE.sub('', part).strip(' ,')
         if part:
             kept.append(part)
-    result = ' | '.join(kept).strip() if kept else name
-    return strip_noinfo(result)
+    return ' | '.join(kept).strip() if kept else name
 
 
 def normalise(
@@ -346,7 +346,6 @@ def normalise(
         "sku":             item_id,
         "batch_id":        batch_id,
         "name":            clean_name(item_name, brand),
-        "name_raw":        item_name,
         "brand":           brand,
         "category":        map_category(r.get("category")),
         "variant":         derive_variant(r.get("weight_useable"), r.get("uom_weight_useable")),
@@ -444,6 +443,9 @@ def main():
             skipped += 1
         else:
             rows.append(row)
+
+    print("\nEnriching listings (subtype + strain) ...")
+    enrich(rows)
 
     write_csv(rows, out_path)
     print(f"\nWrote {len(rows)} rows to {out_path}  ({skipped} skipped)")

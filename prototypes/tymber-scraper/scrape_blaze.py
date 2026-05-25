@@ -25,7 +25,8 @@ import time
 import requests
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../scripts"))
-from scraper_common import canonical_brands, map_category, normalize_variant, now_iso, write_csv  # noqa: E402
+from scraper_common import apply_brand_aliases, canonical_brands, map_category, normalize_variant, now_iso, write_csv  # noqa: E402
+from enrich import enrich  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Config
@@ -36,7 +37,8 @@ PAGE_SIZE     = 100
 ECOM_BASE     = "https://ecom-api.blaze.me/api/v1/products/"
 
 HERE        = os.path.dirname(os.path.abspath(__file__))
-STORES_JSON = os.path.join(HERE, "stores.json")
+ROOT        = os.path.abspath(os.path.join(HERE, "../.."))
+STORES_JSON = os.path.join(ROOT, "dispensaries.json")
 
 SESSION = requests.Session()
 SESSION.headers.update({"Accept": "application/json"})
@@ -206,6 +208,10 @@ def scrape_store(blaze_id: str, dispensary_slug: str, dispensary_name: str, out_
     for r in all_rows:
         if r["brand"]:
             r["brand"] = brand_canon.get(r["brand"], r["brand"])
+    apply_brand_aliases(all_rows)
+
+    print("  Enriching (subtype + strain) ...")
+    enrich(all_rows)
 
     write_csv(all_rows, out_path)
     print(f"  Wrote {len(all_rows)} rows → {out_path}")
@@ -226,13 +232,18 @@ def parse_args():
     p.add_argument("--dispensary-slug", default=None)
     p.add_argument("--name",    default="", help="Human-readable dispensary name")
     p.add_argument("--out",     default=None, help="Output CSV (single-store mode)")
-    p.add_argument("--out-dir", default=HERE, help="Output directory for --all mode")
+    p.add_argument("--out-dir", default=os.path.join(ROOT, "data/scrapes"),
+                      help="Output directory for --all mode")
     return p.parse_args()
 
 
 def load_stores() -> list[dict]:
     with open(STORES_JSON) as f:
-        return json.load(f)
+        all_stores = json.load(f)
+    stores = [s for s in all_stores if s.get("platform") == "tymber"]
+    for s in stores:
+        s.setdefault("dispensary_slug", s.get("slug", ""))
+    return stores
 
 
 def main():

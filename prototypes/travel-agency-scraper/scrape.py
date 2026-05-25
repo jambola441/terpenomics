@@ -30,12 +30,13 @@ Usage
 import argparse
 import math
 import os
+import re
 import sys
 import time
-from datetime import datetime, timezone
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../scripts"))
-from scraper_common import canonical_brands, map_category, normalize_variant, now_iso, strip_noinfo, write_csv  # noqa: E402
+from scraper_common import canonical_brands, map_category, normalize_variant, now_iso, write_csv  # noqa: E402
+from enrich import enrich  # noqa: E402
 
 import httpx
 
@@ -135,12 +136,39 @@ def normalise(p: dict, scraped_at: str) -> dict:
         price_cents = ""
 
     # variant: prefer "option" (e.g. "2g") over grams fallback
-    variant = normalize_variant(str(p.get("option") or p.get("size") or "").strip())
+    raw_option = str(p.get("option") or p.get("size") or "").strip()
+    thc_raw    = str(p.get("thc") or "").strip()
+    thc_unit   = str(p.get("thcUnit") or "").strip().lower()
+    raw_cat    = str(p.get("category") or "").strip()
+
+    # For edibles where the option is a per-piece value rather than total package
+    # THC, compute total from per-piece × pack count from the name.
+    #
+    # Case 1: option is a gram weight → option is physical weight, not potency
+    #   "Galactic Guava | Live Rosin | 10pk": option=1g, thc=10mg → 100mg
+    # Case 2: option is mg-per-piece (option_value == thc_value, thcUnit==mg)
+    #   "Juicy Mango | Live Rosin | 10pk": option=10mg, thc=10mg → 100mg
+    #   Distinguisher: if option_mg != thc (e.g. Camino option=100mg, thc=5mg)
+    #   the option is already showing total package THC — leave it alone.
+    if "edible" in map_category(raw_cat) and thc_raw and thc_unit in ("mg", "mg/g"):
+        gram_m   = re.match(r'^\d+(?:\.\d+)?g$', raw_option)
+        option_m = re.match(r'^(\d+(?:\.\d+)?)mg$', raw_option, re.I)
+        try:
+            per_piece = float(thc_raw)
+            is_gram_option    = bool(gram_m)
+            is_perpiece_mg    = bool(option_m) and abs(float(option_m.group(1)) - per_piece) < 0.01
+            if is_gram_option or is_perpiece_mg:
+                pack_m = re.search(r'\b(\d+)\s*pk\b', str(p.get("name") or ""), re.I)
+                count  = int(pack_m.group(1)) if pack_m else 1
+                raw_option = f"{round(per_piece * count):g}mg"
+        except (ValueError, TypeError):
+            pass
+
+    variant = normalize_variant(raw_option)
     if not variant and p.get("grams"):
         variant = f"{p['grams']}g"
 
-    # category
-    raw_cat  = str(p.get("category") or "").strip()
+    # category (raw_cat already computed above for variant logic)
     category = map_category(raw_cat)
 
     # THC / CBD
@@ -170,8 +198,7 @@ def normalise(p: dict, scraped_at: str) -> dict:
         "dispensary_slug": DISPENSARY_SLUG,
         "sku":             sku,
         "batch_id":        batch_id,
-        "name":            strip_noinfo(str(p.get("name") or "").strip()),
-        "name_raw":        str(p.get("name") or "").strip(),
+        "name":            str(p.get("name") or "").strip(),
         "brand":           str(p.get("brand") or "").strip(),
         "category":        category,
         "variant":         variant,
@@ -264,9 +291,9 @@ def main() -> None:
         sys.exit(1)
 
     print(f"\nTotal unique products scraped: {len(all_rows)}")
-    print("\nSample row:")
-    for k, v in all_rows[0].items():
-        print(f"  {k:20s} {v}")
+
+    print("\nEnriching listings (subtype + strain) ...")
+    enrich(all_rows)
 
     n = write_csv(all_rows, args.output)
     print(f"\n✓  Wrote {n} rows → {args.output}")

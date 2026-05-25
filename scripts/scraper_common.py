@@ -8,6 +8,8 @@ Scrapers import this via:
 """
 
 import csv
+import json
+import os
 import re
 from datetime import datetime, timezone
 
@@ -24,8 +26,6 @@ CSV_COLUMNS = [
     "category",
     "variant",
     "price_cents",
-    "thc_percent",
-    "cbd_percent",
     "classification",
     "in_stock",
     "product_url",
@@ -34,6 +34,7 @@ CSV_COLUMNS = [
     "description",
     "subtype",
     "strain",
+    "product_line",
 ]
 
 # ---------------------------------------------------------------------------
@@ -54,6 +55,8 @@ CATEGORY_MAP: dict[str, str] = {
     "Dog Treats":               "other",
     # Alleaves sub-category names (returned directly when no parent prefix)
     "Gummies":                  "edible",
+    "Chocolate":                "edible",
+    "Sublingual":               "tinctures",
     "Chocolates":               "edible",
     "Beverage":                 "edible",
     "Tablets":                  "edible",
@@ -67,22 +70,45 @@ CATEGORY_MAP: dict[str, str] = {
     "Topical":                  "topical",
     "Shirts":                   "merch",
     "Uncategorized":            "other",
-    # Dutchie GraphQL type strings (title-case singular/plural variants)
+    # Dutchie GraphQL / Flowhub title-case strings
     "Edible":            "edible",
     "Pre-Rolls":         "preroll",
     "CBD":               "tinctures",
     "Oral":              "tinctures",
+    "Live Rosin":        "concentrate",
+    "Live Resin":        "concentrate",
+    "Pills":             "edible",
+    "Capsules":          "edible",
+    # Dutchie Plus SCREAMING_SNAKE_CASE category strings
+    "FLOWER":            "flower",
+    "PRE_ROLLS":         "preroll",
+    "VAPORIZERS":        "vaporizers",
+    "EDIBLES":           "edible",
+    "TINCTURES":         "tinctures",
+    "TOPICALS":          "topical",
+    "CONCENTRATES":      "concentrate",
+    "ACCESSORIES":       "merch",
+    "APPAREL":           "merch",
     # Tymber/BLAZE product_categories
-    "Vape Pens":         "vaporizers",
-    "Disposables":       "vaporizers",
-    "Preroll":           "preroll",
-    "Infused Preroll":   "preroll",
-    "Infused Pre-Rolls": "preroll",
-    "Infused Flower":    "flower",
-    "Concentrates":      "concentrate",
-    "Drinks":            "edible",
-    "Merchandise":       "merch",
-    "Gift Cards":        "other",
+    "Flowers":                 "flower",
+    "Infused Flower":          "flower",
+    "Vape Pens":               "vaporizers",
+    "Vape AIOs":               "vaporizers",
+    "Vape Carts":              "vaporizers",
+    "Vape Carts (510 Thread)": "vaporizers",
+    "Vape Disposables":        "vaporizers",
+    "Vape Pods":               "vaporizers",
+    "Disposables":             "vaporizers",
+    "Pre Rolls":               "preroll",
+    "Preroll":                 "preroll",
+    "preroll":                 "preroll",
+    "Infused Preroll":         "preroll",
+    "Infused Pre-Roll":        "preroll",
+    "Infused Pre-Rolls":       "preroll",
+    "Concentrates":            "concentrate",
+    "Drinks":                  "edible",
+    "Merchandise":             "merch",
+    "Gift Cards":              "other",
     # Travel Agency / Leaflogix (lowercase)
     "flower":       "flower",
     "vape":         "vaporizers",
@@ -108,11 +134,6 @@ CATEGORY_MAP: dict[str, str] = {
     "accessory":    "merch",
     "gear":         "merch",
     "cbd":          "tinctures",
-    # Dutchie GraphQL type strings
-    "Edible":       "edible",
-    "Pre-Rolls":    "preroll",
-    "CBD":          "tinctures",
-    "Oral":         "tinctures",
 }
 
 
@@ -128,20 +149,61 @@ def map_category(raw: str | None) -> str:
 # Variant normalization
 # ---------------------------------------------------------------------------
 
-_MG_RE = re.compile(r'^(\d+(?:\.\d+)?)\s*mg$', re.I)
+_MG_RE      = re.compile(r'^(\d+(?:\.\d+)?)\s*(?:mg|milligrams?)$', re.I)
+_GRAM_RE    = re.compile(r'^(\d+(?:\.\d+)?)\s*grams?$', re.I)
+_G_RE       = re.compile(r'^(\d*\.?\d+)\s*g$', re.I)
+_OZ_FRAC_RE = re.compile(r'^(\d+)/(\d+)\s*oz\.?(?:\|.*)?$', re.I)
+_OZ_WHOLE_RE = re.compile(r'^(\d+(?:\.\d+)?)\s*(?:oz\.?|ounces?)$', re.I)
+_OZ_WORD_MAP = {
+    "ounce":              28,
+    "halfounce":          14,
+    "quarterounceflower":  7,
+}
+
+_OZ_PER_G = 28  # cannabis convention: 1 oz = 28g
+
 
 def normalize_variant(v: str) -> str:
     """Normalize variant strings for cross-source consistency.
 
-    Converts ≥500mg to grams (e.g. 500mg → 0.5g) since vape carts/concentrates
-    are measured in grams by some sources and mg by others.
-    Keeps 100mg/200mg/etc. as-is (standard edible doses).
+    Canonical form: mg for <0.5g, grams (compact) for ≥0.5g.
+      500mg       → 0.5g   (≥500mg converted to grams)
+      100mg       → 100mg  (standard edible dose, kept as-is)
+      1.5g        → 1.5g
+      0.3g        → 300mg  (<0.5g converted to mg)
+      1.5 grams   → 1.5g   (spelled-out collapsed)
+      1/8oz       → 3.5g   (fractional ounces → grams)
+      1oz         → 28g    (whole ounces → grams)
+    Fluid ounces (fl oz) are left unchanged.
     """
-    m = _MG_RE.match(v.strip())
+    v = v.strip()
+    # Fractional ounces: "1/8oz", "1/4oz", "1/2oz", "1/2oz.|14g"
+    m = _OZ_FRAC_RE.match(v)
+    if m:
+        grams = (int(m.group(1)) / int(m.group(2))) * _OZ_PER_G
+        return f"{grams:g}g"
+    # Whole/decimal ounces: "1oz", "3.0 ounces" — but not "fl oz"
+    m = _OZ_WHOLE_RE.match(v)
+    if m:
+        grams = float(m.group(1)) * _OZ_PER_G
+        return f"{grams:g}g"
+    # Word forms: "ounce", "halfounce", "quarterounceflower"
+    g = _OZ_WORD_MAP.get(v.lower().replace(" ", ""))
+    if g is not None:
+        return f"{g}g"
+    # Gram forms
+    m = _GRAM_RE.match(v) or _G_RE.match(v)
+    if m:
+        grams = float(m.group(1))
+        if grams > 0 and grams < 0.5:
+            return f"{round(grams * 1000):g}mg"
+        return f"{grams:g}g"
+    m = _MG_RE.match(v)
     if m:
         mg = float(m.group(1))
         if mg >= 500:
             return f"{mg / 1000:g}g"
+        return f"{mg:g}mg"
     return v
 
 
@@ -183,6 +245,37 @@ def canonical_brands(raw_brands: set[str]) -> dict[str, str]:
         for v in variants:
             result[v] = best
     return result
+
+
+# ---------------------------------------------------------------------------
+# Brand alias map (persistent, cross-scraper)
+# ---------------------------------------------------------------------------
+
+_ALIASES_CACHE: dict[str, str] | None = None
+_ALIASES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../data/brand_aliases.json")
+
+
+def _load_brand_aliases() -> dict[str, str]:
+    global _ALIASES_CACHE
+    if _ALIASES_CACHE is None:
+        if os.path.isfile(_ALIASES_PATH):
+            with open(_ALIASES_PATH, encoding="utf-8") as f:
+                raw = json.load(f)
+            _ALIASES_CACHE = {k: v for k, v in raw.items() if not k.startswith("_")}
+        else:
+            _ALIASES_CACHE = {}
+    return _ALIASES_CACHE
+
+
+def apply_brand_aliases(rows: list[dict]) -> None:
+    """Normalize brand names in-place using the persistent alias map."""
+    aliases = _load_brand_aliases()
+    if not aliases:
+        return
+    for row in rows:
+        brand = row.get("brand") or ""
+        if brand in aliases:
+            row["brand"] = aliases[brand]
 
 
 # ---------------------------------------------------------------------------
