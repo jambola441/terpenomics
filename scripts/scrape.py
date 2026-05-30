@@ -44,7 +44,7 @@ def csv_path(slug: str) -> Path:
     return OUT_DIR / f"{slug}.csv"
 
 
-def build_scraper_cmd(d: dict) -> list[str] | None:
+def build_scraper_cmd(d: dict, parallel: bool = False) -> list[str] | None:
     platform = d["platform"]
     slug     = d["slug"]
     name     = d["name"]
@@ -59,7 +59,7 @@ def build_scraper_cmd(d: dict) -> list[str] | None:
         if not d.get("dutchie_id"):
             print(f"  [skip] {slug}: missing dutchie_id", file=sys.stderr)
             return None
-        return [
+        cmd = [
             sys.executable, str(scraper),
             "--dutchie-id", d["dutchie_id"],
             "--dispensary-slug", slug,
@@ -71,7 +71,7 @@ def build_scraper_cmd(d: dict) -> list[str] | None:
         if not d.get("menu_url"):
             print(f"  [skip] {slug}: missing menu_url", file=sys.stderr)
             return None
-        return [
+        cmd = [
             sys.executable, str(scraper),
             "--url", d["menu_url"],
             "--dispensary-slug", slug,
@@ -83,7 +83,7 @@ def build_scraper_cmd(d: dict) -> list[str] | None:
         if not d.get("blaze_id"):
             print(f"  [skip] {slug}: missing blaze_id", file=sys.stderr)
             return None
-        return [
+        cmd = [
             sys.executable, str(scraper),
             "--blaze-id", d["blaze_id"],
             "--dispensary-slug", slug,
@@ -95,7 +95,7 @@ def build_scraper_cmd(d: dict) -> list[str] | None:
         if not d.get("alleaves_tenant"):
             print(f"  [skip] {slug}: missing alleaves_tenant", file=sys.stderr)
             return None
-        return [
+        cmd = [
             sys.executable, str(scraper),
             "--tenant", d["alleaves_tenant"],
             "--dispensary-slug", slug,
@@ -103,12 +103,17 @@ def build_scraper_cmd(d: dict) -> list[str] | None:
         ]
 
     elif platform == "travel_agency":
-        return [
+        cmd = [
             sys.executable, str(scraper),
             "--output", out,
         ]
 
-    return None
+    else:
+        return None
+
+    if parallel:
+        cmd.append("--parallel")
+    return cmd
 
 
 def read_usage(slug: str) -> dict:
@@ -131,7 +136,7 @@ def run_import(slug: str, dry_run: bool) -> bool:
     return result.returncode == 0
 
 
-def run_one(d: dict, dry_run: bool, import_only: bool = False, scrape_only: bool = False) -> bool:
+def run_one(d: dict, dry_run: bool, import_only: bool = False, scrape_only: bool = False, parallel: bool = False) -> bool:
     slug = d["slug"]
     platform = d["platform"]
 
@@ -141,7 +146,7 @@ def run_one(d: dict, dry_run: bool, import_only: bool = False, scrape_only: bool
     if import_only:
         return run_import(slug, dry_run)
 
-    cmd = build_scraper_cmd(d)
+    cmd = build_scraper_cmd(d, parallel=parallel)
     if cmd is None:
         print(f"  [skip] {slug}: unsupported platform '{platform}'")
         return False
@@ -170,6 +175,7 @@ def main() -> None:
     parser.add_argument("--dry-run",     action="store_true", help="Print commands without running")
     parser.add_argument("--import-only", action="store_true", help="Skip scraping; import existing CSVs from data/scrapes/")
     parser.add_argument("--scrape-only", action="store_true", help="Scrape to CSV only; skip DB import")
+    parser.add_argument("--parallel",    action="store_true", help="Fetch pages concurrently within each dispensary scrape")
     args = parser.parse_args()
 
     registry = load_registry()
@@ -189,7 +195,7 @@ def main() -> None:
     total_usage = {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0, "cost_usd": 0.0}
 
     for d in targets:
-        success = run_one(d, dry_run=args.dry_run, import_only=args.import_only, scrape_only=args.scrape_only)
+        success = run_one(d, dry_run=args.dry_run, import_only=args.import_only, scrape_only=args.scrape_only, parallel=args.parallel)
         if success:
             ok += 1
             if not args.import_only and not args.dry_run:
@@ -197,6 +203,10 @@ def main() -> None:
                 for k in ("input_tokens", "output_tokens", "cache_write_tokens", "cache_read_tokens"):
                     total_usage[k] += u.get(k, 0)
                 total_usage["cost_usd"] = round(total_usage["cost_usd"] + u.get("cost_usd", 0.0), 4)
+                if u.get("input_tokens") or u.get("cache_read_tokens"):
+                    print(f"  Haiku: input={u.get('input_tokens',0):,}  output={u.get('output_tokens',0):,}  "
+                          f"cache_write={u.get('cache_write_tokens',0):,}  cache_read={u.get('cache_read_tokens',0):,}  "
+                          f"cost=${u.get('cost_usd',0.0):.4f}")
         elif args.import_only or d["platform"] in SCRAPER:
             failed += 1
         else:

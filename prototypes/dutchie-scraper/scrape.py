@@ -33,6 +33,7 @@ the scraper will print a skip message for these.
 
 import argparse
 import json
+import math
 import os
 import re
 import sys
@@ -160,40 +161,63 @@ def normalise_dp(p: dict, dispensary_slug: str, scraped_at: str) -> list[dict]:
 
 
 def scrape_dutchie_plus(client: httpx.Client, url: str, dispensary_slug: str,
-                        dispensary_name: str, out_path: str) -> int:
+                        dispensary_name: str, out_path: str, parallel: bool = False) -> int:
     scraped_at = now_iso()
     all_rows: list[dict] = []
     seen_ids: set[str] = set()
-    offset = 0
 
-    while True:
-        page_url = url if offset == 0 else f"{url}?offset={offset}"
-        resp = client.get(page_url, headers=HEADERS)
-        resp.raise_for_status()
+    # Offset 0 — always fetch first to learn total
+    resp = client.get(url, headers=HEADERS)
+    resp.raise_for_status()
+    products_0, total = _dp_products(resp.text)
+    print(f"  Total products: {total}")
 
-        products, total = _dp_products(resp.text)
-        if not products:
-            break
-
-        if offset == 0:
-            print(f"  Total products: {total}")
-
-        for p in products:
-            pid = str(p.get("id") or "")
-            if pid in seen_ids:
-                continue
+    for p in products_0:
+        pid = str(p.get("id") or "")
+        if pid not in seen_ids:
             seen_ids.add(pid)
             all_rows.extend(normalise_dp(p, dispensary_slug, scraped_at))
+    print(f"  offset={len(products_0):4d}  unique products: {len(seen_ids)}")
 
-        offset += len(products)
-        print(f"  offset={offset:4d}  unique products: {len(seen_ids)}")
+    remaining_offsets = list(range(len(products_0), total, 20)) if total and len(products_0) < total else []
 
-        if total and offset >= total:
-            break
-        if len(products) < 20:
-            break
+    def _fetch_dp_offset(offset: int) -> list[dict]:
+        r = client.get(f"{url}?offset={offset}", headers=HEADERS)
+        r.raise_for_status()
+        return _dp_products(r.text)[0]
 
-        time.sleep(DELAY_SECS)
+    if remaining_offsets and parallel:
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        pages_data: dict[int, list[dict]] = {}
+        with ThreadPoolExecutor(max_workers=min(len(remaining_offsets), 6)) as executor:
+            futures = {executor.submit(_fetch_dp_offset, off): off for off in remaining_offsets}
+            for future in as_completed(futures):
+                off = futures[future]
+                try:
+                    pages_data[off] = future.result()
+                    print(f"  offset={off:4d}  fetched {len(pages_data[off])} products")
+                except Exception as exc:
+                    print(f"  [error] offset {off}: {exc}", file=sys.stderr)
+        for off in sorted(pages_data):
+            for p in pages_data[off]:
+                pid = str(p.get("id") or "")
+                if pid not in seen_ids:
+                    seen_ids.add(pid)
+                    all_rows.extend(normalise_dp(p, dispensary_slug, scraped_at))
+    else:
+        for off in remaining_offsets:
+            time.sleep(DELAY_SECS)
+            products = _fetch_dp_offset(off)
+            if not products:
+                break
+            for p in products:
+                pid = str(p.get("id") or "")
+                if pid not in seen_ids:
+                    seen_ids.add(pid)
+                    all_rows.extend(normalise_dp(p, dispensary_slug, scraped_at))
+            print(f"  offset={off + len(products):4d}  unique products: {len(seen_ids)}")
+            if len(products) < 20:
+                break
 
     return _finish(all_rows, out_path)
 
@@ -269,41 +293,64 @@ def normalise_fh(p: dict, dispensary_slug: str, scraped_at: str) -> dict:
 
 
 def scrape_flowhub(client: httpx.Client, url: str, dispensary_slug: str,
-                   dispensary_name: str, out_path: str) -> int:
+                   dispensary_name: str, out_path: str, parallel: bool = False) -> int:
     scraped_at = now_iso()
     all_rows: list[dict] = []
     seen_ids: set[str] = set()
-    page = 1
 
-    while True:
-        page_url = url if page == 1 else f"{url}?page={page}"
-        resp = client.get(page_url, headers=HEADERS)
-        resp.raise_for_status()
+    # Page 1 — always fetch first to learn total
+    resp = client.get(url, headers=HEADERS)
+    resp.raise_for_status()
+    products_1, total = _fh_products(resp.text)
+    print(f"  Total products: {total}")
 
-        products, total = _fh_products(resp.text)
-        if not products:
-            break
-
-        if page == 1:
-            print(f"  Total products: {total}")
-
-        for p in products:
-            pid = str(p.get("product_id") or p.get("variant_id") or "")
-            if pid in seen_ids:
-                continue
+    for p in products_1:
+        pid = str(p.get("product_id") or p.get("variant_id") or "")
+        if pid not in seen_ids:
             seen_ids.add(pid)
             all_rows.append(normalise_fh(p, dispensary_slug, scraped_at))
+    print(f"  page=  1  unique products: {len(seen_ids)}")
 
-        offset = (page - 1) * 20 + len(products)
-        print(f"  page={page:3d}  unique products: {len(seen_ids)}")
+    total_pages = math.ceil(total / 20) if total else 1
+    remaining   = list(range(2, total_pages + 1))
 
-        if total and len(seen_ids) >= total:
-            break
-        if len(products) < 20:
-            break
+    def _fetch_fh_page(pg: int) -> list[dict]:
+        r = client.get(f"{url}?page={pg}", headers=HEADERS)
+        r.raise_for_status()
+        return _fh_products(r.text)[0]
 
-        page += 1
-        time.sleep(DELAY_SECS)
+    if remaining and parallel:
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        pages_data: dict[int, list[dict]] = {}
+        with ThreadPoolExecutor(max_workers=min(len(remaining), 6)) as executor:
+            futures = {executor.submit(_fetch_fh_page, pg): pg for pg in remaining}
+            for future in as_completed(futures):
+                pg = futures[future]
+                try:
+                    pages_data[pg] = future.result()
+                    print(f"  page={pg:3d}  fetched {len(pages_data[pg])} products")
+                except Exception as exc:
+                    print(f"  [error] page {pg}: {exc}", file=sys.stderr)
+        for pg in sorted(pages_data):
+            for p in pages_data[pg]:
+                pid = str(p.get("product_id") or p.get("variant_id") or "")
+                if pid not in seen_ids:
+                    seen_ids.add(pid)
+                    all_rows.append(normalise_fh(p, dispensary_slug, scraped_at))
+    else:
+        for pg in remaining:
+            time.sleep(DELAY_SECS)
+            products = _fetch_fh_page(pg)
+            if not products:
+                break
+            for p in products:
+                pid = str(p.get("product_id") or p.get("variant_id") or "")
+                if pid not in seen_ids:
+                    seen_ids.add(pid)
+                    all_rows.append(normalise_fh(p, dispensary_slug, scraped_at))
+            print(f"  page={pg:3d}  unique products: {len(seen_ids)}")
+            if len(products) < 20:
+                break
 
     return _finish(all_rows, out_path)
 
@@ -340,6 +387,7 @@ def scrape_store(
     dispensary_name: str,
     out_path: str,
     platform: str | None = None,
+    parallel: bool = False,
 ) -> int:
     print(f"\n{'='*60}")
     print(f"Scraping: {dispensary_name}")
@@ -359,9 +407,9 @@ def scrape_store(
         print("  [SKIP] Unknown platform — inspect page manually")
         return 0
     if platform == "dutchie_plus":
-        return scrape_dutchie_plus(client, menu_url, dispensary_slug, dispensary_name, out_path)
+        return scrape_dutchie_plus(client, menu_url, dispensary_slug, dispensary_name, out_path, parallel=parallel)
     if platform == "flowhub":
-        return scrape_flowhub(client, menu_url, dispensary_slug, dispensary_name, out_path)
+        return scrape_flowhub(client, menu_url, dispensary_slug, dispensary_name, out_path, parallel=parallel)
 
     print(f"  [SKIP] Unsupported platform: {platform}")
     return 0
@@ -385,6 +433,7 @@ def parse_args():
     p.add_argument("--out",     default=None, help="Output CSV path (single-store mode)")
     p.add_argument("--out-dir", default=os.path.join(ROOT, "data/scrapes"),
                    help="Output directory for --all mode")
+    p.add_argument("--parallel", action="store_true", help="Fetch pages concurrently")
     return p.parse_args()
 
 
@@ -421,6 +470,7 @@ def main():
                     s["name"],
                     out_path,
                     s.get("platform"),
+                    parallel=args.parallel,
                 )
                 total_rows += n
                 if n == 0:
@@ -445,6 +495,7 @@ def main():
                 args.name or args.url,
                 out_path,
                 args.platform,
+                parallel=args.parallel,
             )
 
 

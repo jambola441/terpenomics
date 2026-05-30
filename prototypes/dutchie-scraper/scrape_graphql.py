@@ -170,12 +170,42 @@ def normalise_gql(p: dict, dispensary_slug: str, scraped_at: str) -> list[dict]:
 # Pagination
 # ---------------------------------------------------------------------------
 
+def _gql_payload(dutchie_id: str, page: int) -> dict:
+    return {
+        "operationName": "FilteredProducts",
+        "variables": {
+            "productsFilter": {
+                "dispensaryId":              dutchie_id,
+                "Status":                    "Active",
+                "bypassOnlineThresholds":    True,
+                "removeProductsBelowOptionThresholds": False,
+            },
+            "page":    page,
+            "perPage": PER_PAGE,
+        },
+        "query": PRODUCTS_QUERY,
+    }
+
+
+def _fetch_gql_page(dutchie_id: str, page: int) -> list[dict]:
+    """Fetch one GQL page in an independent session (thread-safe)."""
+    session = cffi_req.Session(impersonate=IMPERSONATE)
+    resp = session.post(GQL_URL, json=_gql_payload(dutchie_id, page), headers=HEADERS, timeout=30)
+    resp.raise_for_status()
+    body = resp.json()
+    if "errors" in body:
+        raise RuntimeError(body["errors"][0].get("message", "?"))
+    fp = (body.get("data") or {}).get("filteredProducts") or {}
+    return fp.get("products") or []
+
+
 def scrape_store(
     session: cffi_req.Session,
     dutchie_id: str,
     dispensary_slug: str,
     dispensary_name: str,
     out_path: str,
+    parallel: bool = False,
 ) -> int:
     print(f"\n{'='*60}")
     print(f"Scraping: {dispensary_name}")
@@ -184,64 +214,68 @@ def scrape_store(
     scraped_at = now_iso()
     all_rows:  list[dict] = []
     seen_ids:  set[str]   = set()
-    page = 1
 
-    while True:
-        payload = {
-            "operationName": "FilteredProducts",
-            "variables": {
-                "productsFilter": {
-                    "dispensaryId":              dutchie_id,
-                    "Status":                    "Active",
-                    "bypassOnlineThresholds":    True,
-                    "removeProductsBelowOptionThresholds": False,
-                },
-                "page":    page,
-                "perPage": PER_PAGE,
-            },
-            "query": PRODUCTS_QUERY,
-        }
+    # Page 1 — always fetch first to learn total_pages
+    resp = session.post(GQL_URL, json=_gql_payload(dutchie_id, 1), headers=HEADERS, timeout=30)
+    resp.raise_for_status()
+    body = resp.json()
 
-        resp = session.post(GQL_URL, json=payload, headers=HEADERS, timeout=30)
-        resp.raise_for_status()
-        body = resp.json()
+    if "errors" in body:
+        print(f"  [ERROR] {body['errors'][0].get('message','?')}")
+        return 0
 
-        if "errors" in body:
-            print(f"  [ERROR] {body['errors'][0].get('message','?')}")
-            break
+    fp          = (body.get("data") or {}).get("filteredProducts") or {}
+    qi          = fp.get("queryInfo") or {}
+    total_count = qi.get("totalCount") or 0
+    total_pages = qi.get("totalPages") or 0
+    products_1  = fp.get("products") or []
 
-        fp      = (body.get("data") or {}).get("filteredProducts") or {}
-        qi      = fp.get("queryInfo") or {}
-        products = fp.get("products") or []
+    print(f"  Total products: {total_count}  Total pages: {total_pages} (perPage={PER_PAGE})")
 
-        if not products:
-            break
-
-        total_count = qi.get("totalCount") or 0
-        total_pages = qi.get("totalPages") or 0
-
-        if page == 1:
-            print(f"  Total products: {total_count}  "
-                  f"Total pages: {total_pages} (perPage={PER_PAGE})")
-
-        for p in products:
-            pid = str(p.get("_id") or "")
-            if pid in seen_ids:
-                continue
+    for p in products_1:
+        pid = str(p.get("_id") or "")
+        if pid not in seen_ids:
             seen_ids.add(pid)
             all_rows.extend(normalise_gql(p, dispensary_slug, scraped_at))
+    print(f"  page=  1  unique products: {len(seen_ids)}")
 
-        print(f"  page={page:3d}  unique products: {len(seen_ids)}")
+    remaining = list(range(2, total_pages + 1))
 
-        if total_pages and page >= total_pages:
-            break
-        if total_count and len(seen_ids) >= total_count:
-            break
-        if not products:
-            break
-
-        page += 1
-        time.sleep(DELAY_SECS)
+    if remaining and parallel:
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        pages_data: dict[int, list[dict]] = {}
+        with ThreadPoolExecutor(max_workers=min(len(remaining), 6)) as executor:
+            futures = {executor.submit(_fetch_gql_page, dutchie_id, p): p for p in remaining}
+            for future in as_completed(futures):
+                pg = futures[future]
+                try:
+                    pages_data[pg] = future.result()
+                    print(f"  page={pg:3d}  fetched ({len(pages_data[pg])} products)")
+                except Exception as exc:
+                    print(f"  [error] page {pg}: {exc}", file=sys.stderr)
+        for pg in sorted(pages_data):
+            for p in pages_data[pg]:
+                pid = str(p.get("_id") or "")
+                if pid not in seen_ids:
+                    seen_ids.add(pid)
+                    all_rows.extend(normalise_gql(p, dispensary_slug, scraped_at))
+    elif remaining:
+        for page in remaining:
+            time.sleep(DELAY_SECS)
+            resp = session.post(GQL_URL, json=_gql_payload(dutchie_id, page), headers=HEADERS, timeout=30)
+            resp.raise_for_status()
+            body = resp.json()
+            if "errors" in body:
+                print(f"  [ERROR] {body['errors'][0].get('message','?')}")
+                break
+            fp       = (body.get("data") or {}).get("filteredProducts") or {}
+            products = fp.get("products") or []
+            for p in products:
+                pid = str(p.get("_id") or "")
+                if pid not in seen_ids:
+                    seen_ids.add(pid)
+                    all_rows.extend(normalise_gql(p, dispensary_slug, scraped_at))
+            print(f"  page={page:3d}  unique products: {len(seen_ids)}")
 
     if not all_rows:
         print("  [WARN] No rows collected")
@@ -282,6 +316,7 @@ def parse_args():
     p.add_argument("--out",     default=None, help="Output CSV path (single-store mode)")
     p.add_argument("--out-dir", default=os.path.join(ROOT, "data/scrapes"),
                       help="Output directory for --all mode")
+    p.add_argument("--parallel", action="store_true", help="Fetch pages 2..N concurrently")
     return p.parse_args()
 
 
@@ -319,6 +354,7 @@ def main():
                 s["dispensary_slug"],
                 s["name"],
                 out_path,
+                parallel=args.parallel,
             )
             total_rows += n
             if n == 0:
@@ -340,7 +376,7 @@ def main():
             or args.dutchie_id
         )
         out_path = args.out or os.path.join(HERE, f"{disp_slug}_listings.csv")
-        scrape_store(session, args.dutchie_id, disp_slug, args.name or args.dutchie_id, out_path)
+        scrape_store(session, args.dutchie_id, disp_slug, args.name or args.dutchie_id, out_path, parallel=args.parallel)
 
 
 if __name__ == "__main__":

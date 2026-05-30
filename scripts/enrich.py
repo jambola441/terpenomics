@@ -202,6 +202,58 @@ _HAIKU_COST = {
 }
 
 
+def _call_batch(
+    client,
+    chunk: list[tuple[int, dict]],
+    batch_num: int,
+    total_batches: int,
+    hint_subtypes: list[str | None],
+    print_lock,
+) -> tuple[dict, dict]:
+    """Call Haiku for one batch. Returns (items_by_local_id, usage_dict). Thread-safe."""
+    payload = [
+        {
+            "id":            str(i),
+            "hint_category": r.get("category", ""),
+            "brand":         r.get("brand", ""),
+            "name":          r.get("name", ""),
+            "description":   r.get("description", ""),
+            "hint_subtype":  hint_subtypes[orig_idx],
+            "hint_variant":  r.get("variant", ""),
+        }
+        for i, (orig_idx, r) in enumerate(chunk)
+    ]
+
+    try:
+        resp = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=4096,
+            system=[{"type": "text", "text": _ENRICH_PROMPT, "cache_control": {"type": "ephemeral"}}],
+            messages=[{"role": "user", "content": json.dumps(payload)}],
+        )
+        text = resp.content[0].text.strip()
+        if text.startswith("```"):
+            text = text.split("\n", 1)[1].rsplit("```", 1)[0].strip()
+        items = {item["id"]: item for item in json.loads(text)}
+        u = resp.usage
+        batch_usage = {
+            "input_tokens":       u.input_tokens,
+            "output_tokens":      u.output_tokens,
+            "cache_write_tokens": getattr(u, "cache_creation_input_tokens", 0) or 0,
+            "cache_read_tokens":  getattr(u, "cache_read_input_tokens", 0) or 0,
+        }
+    except Exception as exc:
+        with print_lock:
+            print(f"  [model error] batch {batch_num}: {exc}", file=sys.stderr)
+        items = {}
+        batch_usage = {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0}
+
+    with print_lock:
+        print(f"    enrich batch {batch_num}/{total_batches} done")
+
+    return items, batch_usage
+
+
 def _run_haiku(
     pending: list[tuple[int, dict]],
     cache: dict,
@@ -214,54 +266,42 @@ def _run_haiku(
     batch_size: int = 50,
 ) -> dict:
     import anthropic
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    import threading
 
     api_key = _load_api_key()
     if not api_key:
         print("  [warn] ANTHROPIC_API_KEY not set", file=sys.stderr)
-        return
+        return {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0}
 
     client = anthropic.Anthropic(api_key=api_key)
-    total_batches = -(-len(pending) // batch_size)
+    batches = [pending[s : s + batch_size] for s in range(0, len(pending), batch_size)]
+    total_batches = len(batches)
+    print_lock = threading.Lock()
     usage = {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0}
 
-    for start in range(0, len(pending), batch_size):
-        chunk = pending[start : start + batch_size]
-        batch_num = start // batch_size + 1
-        print(f"    enrich batch {batch_num}/{total_batches}...", end=" ", flush=True)
+    # Fire all batches concurrently; each thread is pure (no shared writes).
+    # Results are applied by the main thread after all futures complete.
+    max_workers = min(total_batches, 8)
+    batch_results: dict[int, tuple[dict, dict]] = {}
 
-        payload = [
-            {
-                "id":             str(i),
-                "hint_category":  r.get("category", ""),
-                "brand":          r.get("brand", ""),
-                "name":           r.get("name", ""),
-                "description":    r.get("description", ""),
-                "hint_subtype":   subtypes[orig_idx],
-                "hint_variant":   r.get("variant", ""),
-            }
-            for i, (orig_idx, r) in enumerate(chunk)
-        ]
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_to_idx = {
+            executor.submit(
+                _call_batch, client, chunk, i + 1, total_batches, subtypes, print_lock
+            ): (i, chunk)
+            for i, chunk in enumerate(batches)
+        }
+        for future in as_completed(future_to_idx):
+            i, chunk = future_to_idx[future]
+            items, batch_usage = future.result()
+            batch_results[i] = (chunk, items)
+            for k in usage:
+                usage[k] += batch_usage[k]
 
-        try:
-            resp = client.messages.create(
-                model="claude-haiku-4-5-20251001",
-                max_tokens=4096,
-                system=[{"type": "text", "text": _ENRICH_PROMPT, "cache_control": {"type": "ephemeral"}}],
-                messages=[{"role": "user", "content": json.dumps(payload)}],
-            )
-            text = resp.content[0].text.strip()
-            if text.startswith("```"):
-                text = text.split("\n", 1)[1].rsplit("```", 1)[0].strip()
-            items = {item["id"]: item for item in json.loads(text)}
-            u = resp.usage
-            usage["input_tokens"]       += u.input_tokens
-            usage["output_tokens"]      += u.output_tokens
-            usage["cache_write_tokens"] += getattr(u, "cache_creation_input_tokens", 0) or 0
-            usage["cache_read_tokens"]  += getattr(u, "cache_read_input_tokens", 0) or 0
-        except Exception as exc:
-            print(f"  [model error] {exc}", file=sys.stderr)
-            items = {}
-
+    # Apply results in batch order, then save cache once.
+    for i in sorted(batch_results):
+        chunk, items = batch_results[i]
         for local_id, (orig_idx, row) in enumerate(chunk):
             item         = items.get(str(local_id), {})
             category     = item.get("category") or categories[orig_idx] or row.get("category", "other")
@@ -283,9 +323,7 @@ def _run_haiku(
                     "product_line": product_line, "variant": variant,
                 }
 
-        _save_cache(cache, slug)
-        print("done")
-
+    _save_cache(cache, slug)
     return usage
 
 

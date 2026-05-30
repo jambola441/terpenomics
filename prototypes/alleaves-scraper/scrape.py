@@ -383,6 +383,7 @@ def parse_args():
     p.add_argument("--carrot-space-id", default="318",
                    help="Carrot space ID for storefront cross-reference (set empty to skip)")
     p.add_argument("--carrot-location-id", default="1")
+    p.add_argument("--parallel", action="store_true", help="Fetch catalog and inventory concurrently")
     return p.parse_args()
 
 
@@ -407,13 +408,23 @@ def main():
         login(client, username, password)
         print("  Logged in.")
 
-        print("Pass 1 — fetching item catalog ...")
-        items = fetch_all_items(client)
-        print(f"  {len(items)} unique items.")
+        if args.parallel:
+            from concurrent.futures import ThreadPoolExecutor
+            print("Passes 1+2 — fetching catalog and inventory in parallel ...")
+            with ThreadPoolExecutor(max_workers=2) as executor:
+                items_f      = executor.submit(fetch_all_items, client)
+                in_stock_f   = executor.submit(fetch_in_stock_ids, client)
+                items        = items_f.result()
+                in_stock_ids = in_stock_f.result()
+            print(f"  {len(items)} unique items, {len(in_stock_ids)} in retail inventory.")
+        else:
+            print("Pass 1 — fetching item catalog ...")
+            items = fetch_all_items(client)
+            print(f"  {len(items)} unique items.")
 
-        print("Pass 2 — fetching inventory for in-stock status ...")
-        in_stock_ids = fetch_in_stock_ids(client)
-        print(f"  {len(in_stock_ids)} items in retail inventory.")
+            print("Pass 2 — fetching inventory for in-stock status ...")
+            in_stock_ids = fetch_in_stock_ids(client)
+            print(f"  {len(in_stock_ids)} items in retail inventory.")
 
     batch_to_slug: dict[str, dict] = {}
     if args.carrot_space_id:

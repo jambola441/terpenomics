@@ -148,56 +148,84 @@ def normalise_blaze(p: dict, included_map: dict, dispensary_slug: str, scraped_a
 # Pagination
 # ---------------------------------------------------------------------------
 
-def scrape_store(blaze_id: str, dispensary_slug: str, dispensary_name: str, out_path: str) -> int:
+def _fetch_blaze_offset(blaze_id: str, offset: int) -> tuple[list[dict], list[dict]]:
+    """Fetch one page in an independent session (thread-safe). Returns (products, included)."""
+    s = requests.Session()
+    s.headers.update({"Accept": "application/json"})
+    resp = s.get(ECOM_BASE, headers={"X-Store": blaze_id},
+                 params={"limit": PAGE_SIZE, "offset": offset}, timeout=30)
+    resp.raise_for_status()
+    body = resp.json()
+    return body.get("data") or [], body.get("included") or []
+
+
+def scrape_store(blaze_id: str, dispensary_slug: str, dispensary_name: str, out_path: str, parallel: bool = False) -> int:
     print(f"\n{'='*60}")
     print(f"Scraping: {dispensary_name}")
     print(f"  blaze_id: {blaze_id}")
 
-    headers    = {"X-Store": blaze_id}
-    scraped_at = now_iso()
+    scraped_at    = now_iso()
     all_rows:  list[dict] = []
     seen_ids:  set        = set()
-    offset     = 0
 
-    while True:
-        resp = SESSION.get(
-            ECOM_BASE,
-            headers=headers,
-            params={"limit": PAGE_SIZE, "offset": offset},
-            timeout=30,
-        )
-        resp.raise_for_status()
-        body = resp.json()
+    # Offset 0 — always fetch first to learn total
+    resp = SESSION.get(ECOM_BASE, headers={"X-Store": blaze_id},
+                       params={"limit": PAGE_SIZE, "offset": 0}, timeout=30)
+    resp.raise_for_status()
+    body_0       = resp.json()
+    products_0   = body_0.get("data") or []
+    total        = (body_0.get("meta") or {}).get("total_count") or 0
+    all_included = list(body_0.get("included") or [])
 
-        products = body.get("data") or []
-        meta     = body.get("meta") or {}
-        total    = meta.get("total_count") or 0
-        included = body.get("included") or []
-        inc_map  = _build_included_map(included)
+    print(f"  Total products: {total}")
+    if not products_0:
+        return 0
 
-        if offset == 0:
-            print(f"  Total products: {total}")
+    remaining_offsets = list(range(PAGE_SIZE, total, PAGE_SIZE))
 
-        if not products:
-            break
+    if remaining_offsets and parallel:
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        pages_data: dict[int, list[dict]] = {}
+        with ThreadPoolExecutor(max_workers=min(len(remaining_offsets), 6)) as executor:
+            futures = {executor.submit(_fetch_blaze_offset, blaze_id, off): off for off in remaining_offsets}
+            for future in as_completed(futures):
+                off = futures[future]
+                try:
+                    prods, inc = future.result()
+                    pages_data[off] = prods
+                    all_included.extend(inc)
+                    print(f"  offset={off:4d}  fetched {len(prods)} products")
+                except Exception as exc:
+                    print(f"  [error] offset {off}: {exc}", file=sys.stderr)
+        # Unified brand/category map built from all pages' included resources
+        inc_map      = _build_included_map(all_included)
+        all_products = products_0 + [p for off in sorted(pages_data) for p in pages_data[off]]
+    elif remaining_offsets:
+        offset = PAGE_SIZE
+        while offset < total:
+            time.sleep(DELAY_SECS)
+            prods, inc = _fetch_blaze_offset(blaze_id, offset)
+            all_included.extend(inc)
+            products_0 = products_0 + prods
+            print(f"  offset={offset:4d}  page_size={len(prods):3d}")
+            offset += len(prods) if prods else PAGE_SIZE
+            if not prods:
+                break
+        inc_map      = _build_included_map(all_included)
+        all_products = products_0
+    else:
+        inc_map      = _build_included_map(all_included)
+        all_products = products_0
 
-        new_this_page = 0
-        for p in products:
-            pid = p.get("id")
-            if pid in seen_ids:
-                continue
-            seen_ids.add(pid)
-            new_this_page += 1
-            all_rows.extend(normalise_blaze(p, inc_map, dispensary_slug, scraped_at))
-
-        print(f"  offset={offset:4d}  page_size={len(products):3d}  "
-              f"new={new_this_page:3d}  unique_so_far={len(seen_ids)}")
-
-        offset += len(products)
-        if offset >= total or not products:
-            break
-
-        time.sleep(DELAY_SECS)
+    new_count = 0
+    for p in all_products:
+        pid = p.get("id")
+        if pid in seen_ids:
+            continue
+        seen_ids.add(pid)
+        new_count += 1
+        all_rows.extend(normalise_blaze(p, inc_map, dispensary_slug, scraped_at))
+    print(f"  {len(seen_ids)} unique products ({new_count} rows normalised)")
 
     if not all_rows:
         print("  [WARN] No rows collected")
@@ -235,6 +263,7 @@ def parse_args():
     p.add_argument("--out",     default=None, help="Output CSV (single-store mode)")
     p.add_argument("--out-dir", default=os.path.join(ROOT, "data/scrapes"),
                       help="Output directory for --all mode")
+    p.add_argument("--parallel", action="store_true", help="Fetch pages concurrently")
     return p.parse_args()
 
 
@@ -263,7 +292,7 @@ def main():
                 continue
 
             out_path = os.path.join(args.out_dir, f"{s['dispensary_slug']}_listings.csv")
-            n = scrape_store(blaze_id, s["dispensary_slug"], s["name"], out_path)
+            n = scrape_store(blaze_id, s["dispensary_slug"], s["name"], out_path, parallel=args.parallel)
             total_rows += n
             if n == 0:
                 skipped += 1
@@ -284,7 +313,7 @@ def main():
             or args.blaze_id
         )
         out_path = args.out or os.path.join(HERE, f"{disp_slug}_listings.csv")
-        scrape_store(args.blaze_id, disp_slug, args.name or args.blaze_id, out_path)
+        scrape_store(args.blaze_id, disp_slug, args.name or args.blaze_id, out_path, parallel=args.parallel)
 
 
 if __name__ == "__main__":

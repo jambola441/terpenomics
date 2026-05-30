@@ -223,57 +223,71 @@ def main() -> None:
     parser.add_argument("--pages", type=int, default=0,
                         help="Max pages to fetch (0 = all, default)")
     parser.add_argument("-o", "--output", default=OUTPUT_FILE)
+    parser.add_argument("--parallel", action="store_true", help="Fetch pages 2..N concurrently")
     args = parser.parse_args()
 
     scraped_at = now_iso()
     all_rows:  list[dict] = []
     seen_skus: set[str]   = set()
-    total_products = None
 
     with httpx.Client(follow_redirects=True, timeout=30) as client:
-        page = 1
-        while True:
-            print(f"  Page {page}", end="", flush=True)
-            if total_products:
-                total_pages = math.ceil(total_products / PAGE_SIZE)
-                print(f"/{total_pages}", end="", flush=True)
-            print(" ...", end=" ", flush=True)
+        # Page 1 — always fetch first to learn total
+        print("  Page 1 ...", end=" ", flush=True)
+        try:
+            products_1, total = fetch_page(1, client)
+        except httpx.HTTPError as exc:
+            print(f"\n[!] HTTP error on page 1: {exc}", file=sys.stderr)
+            products_1, total = [], 0
 
-            try:
-                products, total = fetch_page(page, client)
-            except httpx.HTTPError as exc:
-                print(f"\n[!] HTTP error on page {page}: {exc}", file=sys.stderr)
-                break
+        total_pages = math.ceil(total / PAGE_SIZE) if total else 1
+        print(f"({total} total products, {total_pages} pages)")
 
-            if total_products is None and total:
-                total_products = total
-                print(f"({total} total products)  ", end="", flush=True)
+        rows_1 = [normalise(p, scraped_at) for p in products_1]
+        new_1  = [r for r in rows_1 if r["sku"] not in seen_skus]
+        seen_skus.update(r["sku"] for r in new_1 if r["sku"])
+        all_rows.extend(new_1)
 
-            if not products:
-                print("empty — done.")
-                break
+        max_page  = min(args.pages, total_pages) if args.pages else total_pages
+        remaining = list(range(2, max_page + 1))
 
-            rows = [normalise(p, scraped_at) for p in products]
-            new  = [r for r in rows if r["sku"] not in seen_skus]
-            seen_skus.update(r["sku"] for r in new if r["sku"])
-            all_rows.extend(new)
-
-            print(f"got {len(products)}, running total {len(all_rows)}")
-
-            if args.pages and page >= args.pages:
-                print(f"  Reached --pages {args.pages} limit.")
-                break
-
-            if total_products and len(all_rows) >= total_products:
-                print("  All products collected.")
-                break
-
-            if len(products) < PAGE_SIZE:
-                print("  Last page (partial).")
-                break
-
-            page += 1
-            time.sleep(DELAY_SECS)
+        if remaining and args.parallel:
+            from concurrent.futures import ThreadPoolExecutor, as_completed
+            pages_data: dict[int, list[dict]] = {}
+            with ThreadPoolExecutor(max_workers=min(len(remaining), 8)) as executor:
+                futures = {executor.submit(fetch_page, p, client): p for p in remaining}
+                for future in as_completed(futures):
+                    pg = futures[future]
+                    try:
+                        prods, _ = future.result()
+                        pages_data[pg] = prods
+                        print(f"  Page {pg}/{total_pages} done ({len(prods)} products)")
+                    except httpx.HTTPError as exc:
+                        print(f"\n[!] HTTP error on page {pg}: {exc}", file=sys.stderr)
+            for pg in sorted(pages_data):
+                rows = [normalise(p, scraped_at) for p in pages_data[pg]]
+                new  = [r for r in rows if r["sku"] not in seen_skus]
+                seen_skus.update(r["sku"] for r in new if r["sku"])
+                all_rows.extend(new)
+        else:
+            for page in remaining:
+                time.sleep(DELAY_SECS)
+                print(f"  Page {page}/{total_pages} ...", end=" ", flush=True)
+                try:
+                    products, _ = fetch_page(page, client)
+                except httpx.HTTPError as exc:
+                    print(f"\n[!] HTTP error on page {page}: {exc}", file=sys.stderr)
+                    break
+                if not products:
+                    print("empty — done.")
+                    break
+                rows = [normalise(p, scraped_at) for p in products]
+                new  = [r for r in rows if r["sku"] not in seen_skus]
+                seen_skus.update(r["sku"] for r in new if r["sku"])
+                all_rows.extend(new)
+                print(f"got {len(products)}, running total {len(all_rows)}")
+                if len(products) < PAGE_SIZE:
+                    print("  Last page (partial).")
+                    break
 
     raw_brands = {r["brand"] for r in all_rows if r["brand"]}
     brand_canon = canonical_brands(raw_brands)
