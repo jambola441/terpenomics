@@ -16,6 +16,7 @@ ui/my-app/.vite/
 data/scrapes/
 prototypes/**/*_listings.csv
 travel_agency_listings.csv
+*.usage.json
 
 # Enrich cache — large, machine-local, regeneratable
 data/enrich_cache/

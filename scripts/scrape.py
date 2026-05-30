@@ -111,6 +111,13 @@ def build_scraper_cmd(d: dict) -> list[str] | None:
     return None
 
 
+def read_usage(slug: str) -> dict:
+    path = OUT_DIR / f"{slug}.usage.json"
+    if path.exists():
+        return json.loads(path.read_text())
+    return {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0, "cost_usd": 0.0}
+
+
 def run_import(slug: str, dry_run: bool) -> bool:
     csv = csv_path(slug)
     if not csv.exists():
@@ -179,10 +186,17 @@ def main() -> None:
         targets = registry
 
     ok = skipped = failed = 0
+    total_usage = {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0, "cost_usd": 0.0}
+
     for d in targets:
         success = run_one(d, dry_run=args.dry_run, import_only=args.import_only, scrape_only=args.scrape_only)
         if success:
             ok += 1
+            if not args.import_only and not args.dry_run:
+                u = read_usage(d["slug"])
+                for k in ("input_tokens", "output_tokens", "cache_write_tokens", "cache_read_tokens"):
+                    total_usage[k] += u.get(k, 0)
+                total_usage["cost_usd"] = round(total_usage["cost_usd"] + u.get("cost_usd", 0.0), 4)
         elif args.import_only or d["platform"] in SCRAPER:
             failed += 1
         else:
@@ -190,6 +204,10 @@ def main() -> None:
 
     print(f"\n{'='*60}")
     print(f"Done.  ok={ok}  skipped={skipped}  failed={failed}")
+    if not args.import_only and not args.dry_run and (total_usage["input_tokens"] or total_usage["cache_read_tokens"]):
+        print(f"Haiku tokens — input: {total_usage['input_tokens']:,}  output: {total_usage['output_tokens']:,}  "
+              f"cache_write: {total_usage['cache_write_tokens']:,}  cache_read: {total_usage['cache_read_tokens']:,}")
+        print(f"Estimated cost: ${total_usage['cost_usd']:.4f}")
 
 
 if __name__ == "__main__":

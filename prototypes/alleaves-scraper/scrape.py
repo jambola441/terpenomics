@@ -29,7 +29,7 @@ from urllib.parse import urlencode
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../scripts"))
 from scraper_common import _norm, canonical_brands, map_category, now_iso, store_slug, write_csv  # noqa: E402
-from enrich import enrich  # noqa: E402
+from enrich import enrich, write_usage  # noqa: E402
 
 try:
     import httpx
@@ -445,7 +445,8 @@ def main():
             rows.append(row)
 
     print("\nEnriching listings (subtype + strain) ...")
-    enrich(rows)
+    usage = enrich(rows)
+    write_usage(usage, out_path)
 
     write_csv(rows, out_path)
     print(f"\nWrote {len(rows)} rows to {out_path}  ({skipped} skipped)")

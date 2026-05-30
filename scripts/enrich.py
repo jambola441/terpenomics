@@ -194,6 +194,14 @@ Reply ONLY with a JSON array, no explanation, no markdown fences:
 """
 
 
+_HAIKU_COST = {
+    "input":        0.80  / 1_000_000,
+    "output":       4.00  / 1_000_000,
+    "cache_write":  1.00  / 1_000_000,
+    "cache_read":   0.08  / 1_000_000,
+}
+
+
 def _run_haiku(
     pending: list[tuple[int, dict]],
     cache: dict,
@@ -204,7 +212,7 @@ def _run_haiku(
     product_lines: list[str | None],
     variants: list[str | None],
     batch_size: int = 50,
-) -> None:
+) -> dict:
     import anthropic
 
     api_key = _load_api_key()
@@ -214,6 +222,7 @@ def _run_haiku(
 
     client = anthropic.Anthropic(api_key=api_key)
     total_batches = -(-len(pending) // batch_size)
+    usage = {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0}
 
     for start in range(0, len(pending), batch_size):
         chunk = pending[start : start + batch_size]
@@ -244,6 +253,11 @@ def _run_haiku(
             if text.startswith("```"):
                 text = text.split("\n", 1)[1].rsplit("```", 1)[0].strip()
             items = {item["id"]: item for item in json.loads(text)}
+            u = resp.usage
+            usage["input_tokens"]       += u.input_tokens
+            usage["output_tokens"]      += u.output_tokens
+            usage["cache_write_tokens"] += getattr(u, "cache_creation_input_tokens", 0) or 0
+            usage["cache_read_tokens"]  += getattr(u, "cache_read_input_tokens", 0) or 0
         except Exception as exc:
             print(f"  [model error] {exc}", file=sys.stderr)
             items = {}
@@ -272,13 +286,19 @@ def _run_haiku(
         _save_cache(cache, slug)
         print("done")
 
+    return usage
+
 
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
 
-def enrich(rows: list[dict], batch_size: int = 50) -> list[dict]:
-    """Enrich every row in place: corrects category, adds subtype/strain/product_line/variant."""
+def enrich(rows: list[dict], batch_size: int = 50) -> dict:
+    """Enrich every row in place: corrects category, adds subtype/strain/product_line/variant.
+
+    Returns a token usage dict: {input_tokens, output_tokens, cache_write_tokens,
+    cache_read_tokens, cost_usd}. All zeros when everything was cached.
+    """
     slug = _slug_for_rows(rows) or "unknown"
     cache = _load_cache(slug)
 
@@ -310,9 +330,10 @@ def enrich(rows: list[dict], batch_size: int = 50) -> list[dict]:
     cached_count = len(rows) - len(pending)
     if pending:
         print(f"  enrich: {cached_count} cached, {len(pending)} → Haiku")
-        _run_haiku(pending, cache, slug, categories, subtypes, strains, product_lines, variants, batch_size)
+        usage = _run_haiku(pending, cache, slug, categories, subtypes, strains, product_lines, variants, batch_size)
     else:
         print(f"  enrich: {cached_count} cached, 0 → Haiku")
+        usage = {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0}
 
     for i, row in enumerate(rows):
         row["category"]     = categories[i] or row.get("category", "other")
@@ -322,4 +343,17 @@ def enrich(rows: list[dict], batch_size: int = 50) -> list[dict]:
         v = variants[i] if variants[i] is not None else row.get("variant", "")
         row["variant"]      = normalize_variant(v) if v else v
 
-    return rows
+    cost = (
+        usage["input_tokens"]         * _HAIKU_COST["input"]
+        + usage["output_tokens"]      * _HAIKU_COST["output"]
+        + usage["cache_write_tokens"] * _HAIKU_COST["cache_write"]
+        + usage["cache_read_tokens"]  * _HAIKU_COST["cache_read"]
+    )
+    usage["cost_usd"] = round(cost, 4)
+    return usage
+
+
+def write_usage(usage: dict, csv_path: str) -> None:
+    """Write usage dict as a sidecar .usage.json next to the CSV."""
+    path = Path(csv_path).with_suffix(".usage.json")
+    path.write_text(json.dumps(usage, indent=2))

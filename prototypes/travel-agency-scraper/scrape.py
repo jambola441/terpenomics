@@ -36,7 +36,7 @@ import time
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../scripts"))
 from scraper_common import canonical_brands, map_category, normalize_variant, now_iso, write_csv  # noqa: E402
-from enrich import enrich  # noqa: E402
+from enrich import enrich, write_usage  # noqa: E402
 
 import httpx
 
@@ -293,7 +293,8 @@ def main() -> None:
     print(f"\nTotal unique products scraped: {len(all_rows)}")
 
     print("\nEnriching listings (subtype + strain) ...")
-    enrich(all_rows)
+    usage = enrich(all_rows)
+    write_usage(usage, args.output)
 
     n = write_csv(all_rows, args.output)
     print(f"\n✓  Wrote {n} rows → {args.output}")

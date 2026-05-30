@@ -40,7 +40,7 @@ import time
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../scripts"))
 from scraper_common import apply_brand_aliases, canonical_brands, map_category, normalize_variant, now_iso, write_csv  # noqa: E402
-from enrich import enrich  # noqa: E402
+from enrich import enrich, write_usage  # noqa: E402
 
 try:
     import httpx
@@ -322,7 +322,8 @@ def _finish(all_rows: list[dict], out_path: str) -> int:
             r["brand"] = brand_canon.get(r["brand"], r["brand"])
     apply_brand_aliases(all_rows)
     print("  Enriching (subtype + strain) ...")
-    enrich(all_rows)
+    usage = enrich(all_rows)
+    write_usage(usage, out_path)
     write_csv(all_rows, out_path)
     print(f"  Wrote {len(all_rows)} rows → {out_path}")
     return len(all_rows)
