@@ -117,7 +117,7 @@ def _load_cache(slug: str) -> dict:
 def _save_cache(cache: dict, slug: str) -> None:
     _CACHE_DIR.mkdir(exist_ok=True)
     (_CACHE_DIR / f"{slug}.json").write_text(
-        json.dumps(cache, indent=2, ensure_ascii=False), encoding="utf-8"
+        json.dumps(cache, indent=2, ensure_ascii=False, sort_keys=True), encoding="utf-8"
     )
 
 
@@ -331,12 +331,19 @@ def _run_haiku(
 # Public API
 # ---------------------------------------------------------------------------
 
-def enrich(rows: list[dict], batch_size: int = 50) -> dict:
+def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False) -> dict:
     """Enrich every row in place: corrects category, adds subtype/strain/product_line/variant.
 
     Returns a token usage dict: {input_tokens, output_tokens, cache_write_tokens,
     cache_read_tokens, cost_usd}. All zeros when everything was cached.
     """
+    if no_enrich:
+        for row in rows:
+            row.setdefault("subtype", "other")
+            row.setdefault("strain", "")
+            row.setdefault("product_line", None)
+        return {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0, "cost_usd": 0.0}
+
     slug = _slug_for_rows(rows) or "unknown"
     cache = _load_cache(slug)
 

@@ -161,7 +161,7 @@ def normalise_dp(p: dict, dispensary_slug: str, scraped_at: str) -> list[dict]:
 
 
 def scrape_dutchie_plus(client: httpx.Client, url: str, dispensary_slug: str,
-                        dispensary_name: str, out_path: str, parallel: bool = False) -> int:
+                        dispensary_name: str, out_path: str, parallel: bool = False, no_enrich: bool = False) -> int:
     scraped_at = now_iso()
     all_rows: list[dict] = []
     seen_ids: set[str] = set()
@@ -224,7 +224,7 @@ def scrape_dutchie_plus(client: httpx.Client, url: str, dispensary_slug: str,
             if len(products) < 20:
                 break
 
-    return _finish(all_rows, out_path)
+    return _finish(all_rows, out_path, no_enrich=no_enrich)
 
 
 # ---------------------------------------------------------------------------
@@ -298,7 +298,7 @@ def normalise_fh(p: dict, dispensary_slug: str, scraped_at: str) -> dict:
 
 
 def scrape_flowhub(client: httpx.Client, url: str, dispensary_slug: str,
-                   dispensary_name: str, out_path: str, parallel: bool = False) -> int:
+                   dispensary_name: str, out_path: str, parallel: bool = False, no_enrich: bool = False) -> int:
     scraped_at = now_iso()
     all_rows: list[dict] = []
     seen_ids: set[str] = set()
@@ -362,14 +362,14 @@ def scrape_flowhub(client: httpx.Client, url: str, dispensary_slug: str,
             if len(products) < 20:
                 break
 
-    return _finish(all_rows, out_path)
+    return _finish(all_rows, out_path, no_enrich=no_enrich)
 
 
 # ---------------------------------------------------------------------------
 # Shared finishing step
 # ---------------------------------------------------------------------------
 
-def _finish(all_rows: list[dict], out_path: str) -> int:
+def _finish(all_rows: list[dict], out_path: str, no_enrich: bool = False) -> int:
     if not all_rows:
         return 0
     raw_brands  = {r["brand"] for r in all_rows if r["brand"]}
@@ -378,8 +378,9 @@ def _finish(all_rows: list[dict], out_path: str) -> int:
         if r["brand"]:
             r["brand"] = brand_canon.get(r["brand"], r["brand"])
     apply_brand_aliases(all_rows)
-    print("  Enriching (subtype + strain) ...")
-    usage = enrich(all_rows)
+    if not no_enrich:
+        print("  Enriching (subtype + strain) ...")
+    usage = enrich(all_rows, no_enrich=no_enrich)
     write_usage(usage, out_path)
     write_csv(all_rows, out_path)
     print(f"  Wrote {len(all_rows)} rows → {out_path}")
@@ -398,6 +399,7 @@ def scrape_store(
     out_path: str,
     platform: str | None = None,
     parallel: bool = False,
+    no_enrich: bool = False,
 ) -> int:
     print(f"\n{'='*60}")
     print(f"Scraping: {dispensary_name}")
@@ -417,9 +419,9 @@ def scrape_store(
         print("  [SKIP] Unknown platform — inspect page manually")
         return 0
     if platform == "dutchie_plus":
-        return scrape_dutchie_plus(client, menu_url, dispensary_slug, dispensary_name, out_path, parallel=parallel)
+        return scrape_dutchie_plus(client, menu_url, dispensary_slug, dispensary_name, out_path, parallel=parallel, no_enrich=no_enrich)
     if platform == "flowhub":
-        return scrape_flowhub(client, menu_url, dispensary_slug, dispensary_name, out_path, parallel=parallel)
+        return scrape_flowhub(client, menu_url, dispensary_slug, dispensary_name, out_path, parallel=parallel, no_enrich=no_enrich)
 
     print(f"  [SKIP] Unsupported platform: {platform}")
     return 0
@@ -443,7 +445,8 @@ def parse_args():
     p.add_argument("--out",     default=None, help="Output CSV path (single-store mode)")
     p.add_argument("--out-dir", default=os.path.join(ROOT, "data/scrapes"),
                    help="Output directory for --all mode")
-    p.add_argument("--parallel", action="store_true", help="Fetch pages concurrently")
+    p.add_argument("--parallel",  action="store_true", help="Fetch pages concurrently")
+    p.add_argument("--no-enrich", action="store_true", help="Skip Haiku enrichment")
     return p.parse_args()
 
 
@@ -481,6 +484,7 @@ def main():
                     out_path,
                     s.get("platform"),
                     parallel=args.parallel,
+                    no_enrich=args.no_enrich,
                 )
                 total_rows += n
                 if n == 0:
@@ -506,6 +510,7 @@ def main():
                 out_path,
                 args.platform,
                 parallel=args.parallel,
+                no_enrich=args.no_enrich,
             )
 
 

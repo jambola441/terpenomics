@@ -383,7 +383,8 @@ def parse_args():
     p.add_argument("--carrot-space-id", default="318",
                    help="Carrot space ID for storefront cross-reference (set empty to skip)")
     p.add_argument("--carrot-location-id", default="1")
-    p.add_argument("--parallel", action="store_true", help="Fetch catalog and inventory concurrently")
+    p.add_argument("--parallel",  action="store_true", help="Fetch catalog and inventory concurrently")
+    p.add_argument("--no-enrich", action="store_true", help="Skip Haiku enrichment")
     return p.parse_args()
 
 
@@ -455,8 +456,9 @@ def main():
         else:
             rows.append(row)
 
-    print("\nEnriching listings (subtype + strain) ...")
-    usage = enrich(rows)
+    if not args.no_enrich:
+        print("\nEnriching listings (subtype + strain) ...")
+    usage = enrich(rows, no_enrich=args.no_enrich)
     write_usage(usage, out_path)
 
     write_csv(rows, out_path)

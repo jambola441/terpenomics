@@ -220,7 +220,8 @@ def main() -> None:
     parser.add_argument("--pages", type=int, default=0,
                         help="Max pages to fetch (0 = all, default)")
     parser.add_argument("-o", "--output", default=OUTPUT_FILE)
-    parser.add_argument("--parallel", action="store_true", help="Fetch pages 2..N concurrently")
+    parser.add_argument("--parallel",  action="store_true", help="Fetch pages 2..N concurrently")
+    parser.add_argument("--no-enrich", action="store_true", help="Skip Haiku enrichment")
     args = parser.parse_args()
 
     scraped_at = now_iso()
@@ -300,8 +301,9 @@ def main() -> None:
 
     print(f"\nTotal unique products scraped: {len(all_rows)}")
 
-    print("\nEnriching listings (subtype + strain) ...")
-    usage = enrich(all_rows)
+    if not args.no_enrich:
+        print("\nEnriching listings (subtype + strain) ...")
+    usage = enrich(all_rows, no_enrich=args.no_enrich)
     write_usage(usage, args.output)
 
     n = write_csv(all_rows, args.output)

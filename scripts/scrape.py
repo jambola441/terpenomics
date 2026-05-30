@@ -44,7 +44,7 @@ def csv_path(slug: str) -> Path:
     return OUT_DIR / f"{slug}.csv"
 
 
-def build_scraper_cmd(d: dict, parallel: bool = False) -> list[str] | None:
+def build_scraper_cmd(d: dict, parallel: bool = False, no_enrich: bool = False) -> list[str] | None:
     platform = d["platform"]
     slug     = d["slug"]
     name     = d["name"]
@@ -113,6 +113,8 @@ def build_scraper_cmd(d: dict, parallel: bool = False) -> list[str] | None:
 
     if parallel:
         cmd.append("--parallel")
+    if no_enrich:
+        cmd.append("--no-enrich")
     return cmd
 
 
@@ -136,7 +138,7 @@ def run_import(slug: str, dry_run: bool) -> bool:
     return result.returncode == 0
 
 
-def run_one(d: dict, dry_run: bool, import_only: bool = False, scrape_only: bool = False, parallel: bool = False) -> bool:
+def run_one(d: dict, dry_run: bool, import_only: bool = False, scrape_only: bool = False, parallel: bool = False, no_enrich: bool = False) -> bool:
     slug = d["slug"]
     platform = d["platform"]
 
@@ -146,7 +148,7 @@ def run_one(d: dict, dry_run: bool, import_only: bool = False, scrape_only: bool
     if import_only:
         return run_import(slug, dry_run)
 
-    cmd = build_scraper_cmd(d, parallel=parallel)
+    cmd = build_scraper_cmd(d, parallel=parallel, no_enrich=no_enrich)
     if cmd is None:
         print(f"  [skip] {slug}: unsupported platform '{platform}'")
         return False
@@ -176,6 +178,7 @@ def main() -> None:
     parser.add_argument("--import-only", action="store_true", help="Skip scraping; import existing CSVs from data/scrapes/")
     parser.add_argument("--scrape-only", action="store_true", help="Scrape to CSV only; skip DB import")
     parser.add_argument("--parallel",    action="store_true", help="Fetch pages concurrently within each dispensary scrape")
+    parser.add_argument("--no-enrich",   action="store_true", help="Skip Haiku enrichment; write raw scraped data only")
     args = parser.parse_args()
 
     registry = load_registry()
@@ -195,7 +198,7 @@ def main() -> None:
     total_usage = {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0, "cost_usd": 0.0}
 
     for d in targets:
-        success = run_one(d, dry_run=args.dry_run, import_only=args.import_only, scrape_only=args.scrape_only, parallel=args.parallel)
+        success = run_one(d, dry_run=args.dry_run, import_only=args.import_only, scrape_only=args.scrape_only, parallel=args.parallel, no_enrich=args.no_enrich)
         if success:
             ok += 1
             if not args.import_only and not args.dry_run:
