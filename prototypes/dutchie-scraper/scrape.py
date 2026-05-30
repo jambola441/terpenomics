@@ -181,10 +181,18 @@ def scrape_dutchie_plus(client: httpx.Client, url: str, dispensary_slug: str,
 
     remaining_offsets = list(range(len(products_0), total, 20)) if total and len(products_0) < total else []
 
-    def _fetch_dp_offset(offset: int) -> list[dict]:
-        r = client.get(f"{url}?offset={offset}", headers=HEADERS)
-        r.raise_for_status()
-        return _dp_products(r.text)[0]
+    def _fetch_dp_offset(offset: int, retries: int = 3) -> list[dict]:
+        last_exc: Exception = Exception("no attempts made")
+        for attempt in range(retries):
+            try:
+                r = client.get(f"{url}?offset={offset}", headers=HEADERS)
+                r.raise_for_status()
+                return _dp_products(r.text)[0]
+            except Exception as exc:
+                last_exc = exc
+                if attempt < retries - 1:
+                    time.sleep(2 ** attempt)
+        raise RuntimeError(f"offset {offset} failed after {retries} attempts: {last_exc}") from last_exc
 
     if remaining_offsets and parallel:
         from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -193,11 +201,8 @@ def scrape_dutchie_plus(client: httpx.Client, url: str, dispensary_slug: str,
             futures = {executor.submit(_fetch_dp_offset, off): off for off in remaining_offsets}
             for future in as_completed(futures):
                 off = futures[future]
-                try:
-                    pages_data[off] = future.result()
-                    print(f"  offset={off:4d}  fetched {len(pages_data[off])} products")
-                except Exception as exc:
-                    print(f"  [error] offset {off}: {exc}", file=sys.stderr)
+                pages_data[off] = future.result()  # raises → exits executor, fails scrape
+                print(f"  offset={off:4d}  fetched {len(pages_data[off])} products")
         for off in sorted(pages_data):
             for p in pages_data[off]:
                 pid = str(p.get("id") or "")
@@ -314,10 +319,18 @@ def scrape_flowhub(client: httpx.Client, url: str, dispensary_slug: str,
     total_pages = math.ceil(total / 20) if total else 1
     remaining   = list(range(2, total_pages + 1))
 
-    def _fetch_fh_page(pg: int) -> list[dict]:
-        r = client.get(f"{url}?page={pg}", headers=HEADERS)
-        r.raise_for_status()
-        return _fh_products(r.text)[0]
+    def _fetch_fh_page(pg: int, retries: int = 3) -> list[dict]:
+        last_exc: Exception = Exception("no attempts made")
+        for attempt in range(retries):
+            try:
+                r = client.get(f"{url}?page={pg}", headers=HEADERS)
+                r.raise_for_status()
+                return _fh_products(r.text)[0]
+            except Exception as exc:
+                last_exc = exc
+                if attempt < retries - 1:
+                    time.sleep(2 ** attempt)
+        raise RuntimeError(f"page {pg} failed after {retries} attempts: {last_exc}") from last_exc
 
     if remaining and parallel:
         from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -326,11 +339,8 @@ def scrape_flowhub(client: httpx.Client, url: str, dispensary_slug: str,
             futures = {executor.submit(_fetch_fh_page, pg): pg for pg in remaining}
             for future in as_completed(futures):
                 pg = futures[future]
-                try:
-                    pages_data[pg] = future.result()
-                    print(f"  page={pg:3d}  fetched {len(pages_data[pg])} products")
-                except Exception as exc:
-                    print(f"  [error] page {pg}: {exc}", file=sys.stderr)
+                pages_data[pg] = future.result()  # raises → exits executor, fails scrape
+                print(f"  page={pg:3d}  fetched {len(pages_data[pg])} products")
         for pg in sorted(pages_data):
             for p in pages_data[pg]:
                 pid = str(p.get("product_id") or p.get("variant_id") or "")

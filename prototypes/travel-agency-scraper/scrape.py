@@ -102,26 +102,23 @@ def parse_response(arr: list) -> dict:
 # Fetch
 # ---------------------------------------------------------------------------
 
-def fetch_page(page: int, client: httpx.Client) -> tuple[list[dict], int]:
-    """
-    Returns (products_list, total_count).
-    Raises httpx.HTTPError on non-200.
-    """
-    params = {
-        "page":    page,
-        "_routes": "routes/_layout.menu",
-    }
-    resp = client.get(API_URL, params=params, headers=API_HEADERS)
-    resp.raise_for_status()
-
-    arr = resp.json()
-    data = parse_response(arr)
-
-    route_data = data.get("routes/_layout.menu", {}).get("data", {})
-    products   = route_data.get("products") or []
-    total      = route_data.get("total") or 0
-
-    return products, int(total)
+def fetch_page(page: int, client: httpx.Client, retries: int = 3) -> tuple[list[dict], int]:
+    """Returns (products_list, total_count). Retries on transient errors."""
+    last_exc: Exception = Exception("no attempts made")
+    for attempt in range(retries):
+        try:
+            params = {"page": page, "_routes": "routes/_layout.menu"}
+            resp = client.get(API_URL, params=params, headers=API_HEADERS)
+            resp.raise_for_status()
+            arr  = resp.json()
+            data = parse_response(arr)
+            route_data = data.get("routes/_layout.menu", {}).get("data", {})
+            return route_data.get("products") or [], int(route_data.get("total") or 0)
+        except Exception as exc:
+            last_exc = exc
+            if attempt < retries - 1:
+                time.sleep(2 ** attempt)
+    raise RuntimeError(f"page {page} failed after {retries} attempts: {last_exc}") from last_exc
 
 # ---------------------------------------------------------------------------
 # Normalise
@@ -257,12 +254,9 @@ def main() -> None:
                 futures = {executor.submit(fetch_page, p, client): p for p in remaining}
                 for future in as_completed(futures):
                     pg = futures[future]
-                    try:
-                        prods, _ = future.result()
-                        pages_data[pg] = prods
-                        print(f"  Page {pg}/{total_pages} done ({len(prods)} products)")
-                    except httpx.HTTPError as exc:
-                        print(f"\n[!] HTTP error on page {pg}: {exc}", file=sys.stderr)
+                    prods, _ = future.result()  # raises → exits executor, fails scrape
+                    pages_data[pg] = prods
+                    print(f"  Page {pg}/{total_pages} done ({len(prods)} products)")
             for pg in sorted(pages_data):
                 rows = [normalise(p, scraped_at) for p in pages_data[pg]]
                 new  = [r for r in rows if r["sku"] not in seen_skus]

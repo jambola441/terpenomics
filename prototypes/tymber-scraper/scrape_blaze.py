@@ -148,15 +148,23 @@ def normalise_blaze(p: dict, included_map: dict, dispensary_slug: str, scraped_a
 # Pagination
 # ---------------------------------------------------------------------------
 
-def _fetch_blaze_offset(blaze_id: str, offset: int) -> tuple[list[dict], list[dict]]:
+def _fetch_blaze_offset(blaze_id: str, offset: int, retries: int = 3) -> tuple[list[dict], list[dict]]:
     """Fetch one page in an independent session (thread-safe). Returns (products, included)."""
-    s = requests.Session()
-    s.headers.update({"Accept": "application/json"})
-    resp = s.get(ECOM_BASE, headers={"X-Store": blaze_id},
-                 params={"limit": PAGE_SIZE, "offset": offset}, timeout=30)
-    resp.raise_for_status()
-    body = resp.json()
-    return body.get("data") or [], body.get("included") or []
+    last_exc: Exception = Exception("no attempts made")
+    for attempt in range(retries):
+        try:
+            s = requests.Session()
+            s.headers.update({"Accept": "application/json"})
+            resp = s.get(ECOM_BASE, headers={"X-Store": blaze_id},
+                         params={"limit": PAGE_SIZE, "offset": offset}, timeout=30)
+            resp.raise_for_status()
+            body = resp.json()
+            return body.get("data") or [], body.get("included") or []
+        except Exception as exc:
+            last_exc = exc
+            if attempt < retries - 1:
+                time.sleep(2 ** attempt)
+    raise RuntimeError(f"offset {offset} failed after {retries} attempts: {last_exc}") from last_exc
 
 
 def scrape_store(blaze_id: str, dispensary_slug: str, dispensary_name: str, out_path: str, parallel: bool = False) -> int:
@@ -190,13 +198,10 @@ def scrape_store(blaze_id: str, dispensary_slug: str, dispensary_name: str, out_
             futures = {executor.submit(_fetch_blaze_offset, blaze_id, off): off for off in remaining_offsets}
             for future in as_completed(futures):
                 off = futures[future]
-                try:
-                    prods, inc = future.result()
-                    pages_data[off] = prods
-                    all_included.extend(inc)
-                    print(f"  offset={off:4d}  fetched {len(prods)} products")
-                except Exception as exc:
-                    print(f"  [error] offset {off}: {exc}", file=sys.stderr)
+                prods, inc = future.result()  # raises → exits executor, fails scrape
+                pages_data[off] = prods
+                all_included.extend(inc)
+                print(f"  offset={off:4d}  fetched {len(prods)} products")
         # Unified brand/category map built from all pages' included resources
         inc_map      = _build_included_map(all_included)
         all_products = products_0 + [p for off in sorted(pages_data) for p in pages_data[off]]

@@ -187,16 +187,24 @@ def _gql_payload(dutchie_id: str, page: int) -> dict:
     }
 
 
-def _fetch_gql_page(dutchie_id: str, page: int) -> list[dict]:
-    """Fetch one GQL page in an independent session (thread-safe)."""
-    session = cffi_req.Session(impersonate=IMPERSONATE)
-    resp = session.post(GQL_URL, json=_gql_payload(dutchie_id, page), headers=HEADERS, timeout=30)
-    resp.raise_for_status()
-    body = resp.json()
-    if "errors" in body:
-        raise RuntimeError(body["errors"][0].get("message", "?"))
-    fp = (body.get("data") or {}).get("filteredProducts") or {}
-    return fp.get("products") or []
+def _fetch_gql_page(dutchie_id: str, page: int, retries: int = 3) -> list[dict]:
+    """Fetch one GQL page in an independent session (thread-safe). Retries on transient errors."""
+    last_exc: Exception = Exception("no attempts made")
+    for attempt in range(retries):
+        try:
+            session = cffi_req.Session(impersonate=IMPERSONATE)
+            resp = session.post(GQL_URL, json=_gql_payload(dutchie_id, page), headers=HEADERS, timeout=30)
+            resp.raise_for_status()
+            body = resp.json()
+            if "errors" in body:
+                raise RuntimeError(body["errors"][0].get("message", "?"))
+            fp = (body.get("data") or {}).get("filteredProducts") or {}
+            return fp.get("products") or []
+        except Exception as exc:
+            last_exc = exc
+            if attempt < retries - 1:
+                time.sleep(2 ** attempt)
+    raise RuntimeError(f"page {page} failed after {retries} attempts: {last_exc}") from last_exc
 
 
 def scrape_store(
@@ -248,11 +256,8 @@ def scrape_store(
             futures = {executor.submit(_fetch_gql_page, dutchie_id, p): p for p in remaining}
             for future in as_completed(futures):
                 pg = futures[future]
-                try:
-                    pages_data[pg] = future.result()
-                    print(f"  page={pg:3d}  fetched ({len(pages_data[pg])} products)")
-                except Exception as exc:
-                    print(f"  [error] page {pg}: {exc}", file=sys.stderr)
+                pages_data[pg] = future.result()  # raises → exits executor, fails scrape
+                print(f"  page={pg:3d}  fetched ({len(pages_data[pg])} products)")
         for pg in sorted(pages_data):
             for p in pages_data[pg]:
                 pid = str(p.get("_id") or "")
