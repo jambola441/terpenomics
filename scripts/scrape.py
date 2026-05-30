@@ -124,7 +124,7 @@ def run_import(slug: str, dry_run: bool) -> bool:
     return result.returncode == 0
 
 
-def run_one(d: dict, dry_run: bool, import_only: bool = False) -> bool:
+def run_one(d: dict, dry_run: bool, import_only: bool = False, scrape_only: bool = False) -> bool:
     slug = d["slug"]
     platform = d["platform"]
 
@@ -150,6 +150,8 @@ def run_one(d: dict, dry_run: bool, import_only: bool = False) -> bool:
         print(f"  [error] scraper exited {result.returncode}", file=sys.stderr)
         return False
 
+    if scrape_only:
+        return True
     return run_import(slug, dry_run=False)
 
 
@@ -160,6 +162,7 @@ def main() -> None:
     group.add_argument("--all",  action="store_true", help="Run all supported dispensaries")
     parser.add_argument("--dry-run",     action="store_true", help="Print commands without running")
     parser.add_argument("--import-only", action="store_true", help="Skip scraping; import existing CSVs from data/scrapes/")
+    parser.add_argument("--scrape-only", action="store_true", help="Scrape to CSV only; skip DB import")
     args = parser.parse_args()
 
     registry = load_registry()
@@ -177,7 +180,7 @@ def main() -> None:
 
     ok = skipped = failed = 0
     for d in targets:
-        success = run_one(d, dry_run=args.dry_run, import_only=args.import_only)
+        success = run_one(d, dry_run=args.dry_run, import_only=args.import_only, scrape_only=args.scrape_only)
         if success:
             ok += 1
         elif args.import_only or d["platform"] in SCRAPER:
