@@ -4,6 +4,8 @@ import api from '../api/client'
 import DispensaryListings from './DispensaryListings'
 import AisleView from './AisleView'
 import type { CartItem } from '../types'
+import { t, radius, font, alpha } from '../theme'
+import { FeedState, Spinner, Label } from './ui'
 
 const BROOKLYN: [number, number] = [40.6782, -73.9442]
 
@@ -122,15 +124,26 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
   const containerStyle: React.CSSProperties = {
     height: 'calc(100dvh - 64px)',
     position: 'relative',
-    background: '#0a0a0a',
+    background: t.bg,
+  }
+
+  const sheetBase: React.CSSProperties = {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    background: t.surface1, borderTop: `1px solid ${t.border}`,
+    borderRadius: `${radius.xl} ${radius.xl} 0 0`, zIndex: 1000,
+    boxShadow: 'var(--e-3)', animation: 'ds-fade-in 0.24s ease',
+  }
+
+  function Handle() {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 10 }}>
+        <div style={{ width: 36, height: 4, borderRadius: 2, background: t.surface3 }} />
+      </div>
+    )
   }
 
   if (error) {
-    return (
-      <div style={{ ...containerStyle, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ color: '#f44336', fontSize: 14 }}>{error}</span>
-      </div>
-    )
+    return <div style={containerStyle}><FeedState kind="error" message={error} style={{ height: '100%' }} /></div>
   }
 
   return (
@@ -139,7 +152,7 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
 
       {/* Store home overlay */}
       {activeDispensary && !aisleDispensary && (
-        <div style={{ position: 'absolute', inset: 0, zIndex: 2000, background: '#0a0a0a', overflowY: 'auto' }}>
+        <div style={{ position: 'absolute', inset: 0, zIndex: 2000, background: t.bg, overflowY: 'auto' }}>
           <DispensaryListings
             dispensaryId={activeDispensary.id}
             dispensaryName={activeDispensary.name}
@@ -159,7 +172,7 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
 
       {/* Aisle overlay */}
       {aisleDispensary && aisleCategory && (
-        <div style={{ position: 'absolute', inset: 0, zIndex: 2000, background: '#0a0a0a', overflowY: 'auto' }}>
+        <div style={{ position: 'absolute', inset: 0, zIndex: 2000, background: t.bg, overflowY: 'auto' }}>
           <AisleView
             dispensaryId={aisleDispensary.id}
             dispensaryName={aisleDispensary.name}
@@ -174,18 +187,15 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
 
       {/* Bottom sheet */}
       {selected && !activeDispensary && (
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0,
-          background: '#111', borderTop: '1px solid #222',
-          borderRadius: '16px 16px 0 0', padding: '20px 20px 28px', zIndex: 1000,
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div style={{ ...sheetBase, padding: '0 20px 28px' }}>
+          <Handle />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingTop: 14 }}>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ color: '#fff', fontWeight: 700, fontSize: 17, marginBottom: 4 }}>
+              <div style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.title, marginBottom: 4, letterSpacing: '-0.01em' }}>
                 {selected.name}
               </div>
               {selected.address && (
-                <div style={{ color: '#666', fontSize: 13, marginBottom: 14 }}>
+                <div style={{ color: t.text3, fontSize: font.size.small + 1, marginBottom: 14 }}>
                   📍 {selected.address}
                 </div>
               )}
@@ -193,9 +203,9 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
                 <button
                   onClick={() => navigate('/portal/map/' + selected.id)}
                   style={{
-                    background: '#a8e063', border: 'none', borderRadius: 8,
-                    color: '#0a0a0a', fontSize: 13, fontWeight: 700,
-                    padding: '8px 16px', cursor: 'pointer',
+                    background: t.accent, border: 'none', borderRadius: radius.sm,
+                    color: '#0a0a0a', fontSize: font.size.small + 1, fontWeight: font.weight.bold,
+                    padding: '9px 16px', cursor: 'pointer', boxShadow: 'var(--e-1)',
                   }}
                 >
                   View menu →
@@ -206,10 +216,10 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
-                      display: 'inline-block', background: '#1a1a1a',
-                      border: '1px solid #333', borderRadius: 8,
-                      color: '#888', fontSize: 13, fontWeight: 500,
-                      padding: '8px 16px', textDecoration: 'none',
+                      display: 'inline-block', background: t.surface2,
+                      border: `1px solid ${t.border}`, borderRadius: radius.sm,
+                      color: t.text2, fontSize: font.size.small + 1, fontWeight: font.weight.medium,
+                      padding: '9px 16px', textDecoration: 'none',
                     }}
                   >
                     Website
@@ -219,10 +229,12 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
             </div>
             <button
               onClick={() => setSelected(null)}
+              aria-label="Close"
               style={{
-                background: '#1a1a1a', border: '1px solid #333', borderRadius: 20,
-                color: '#888', fontSize: 13, padding: '4px 10px',
+                background: t.surface2, border: `1px solid ${t.border}`, borderRadius: radius.pill,
+                color: t.text3, fontSize: 16, width: 32, height: 32,
                 cursor: 'pointer', marginLeft: 12, flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
             >✕</button>
           </div>
@@ -231,26 +243,20 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
 
       {/* Dispensaries without map coords: show as list at bottom */}
       {!loadingDispensaries && dispensaries.filter(d => d.lat == null).length > 0 && !selected && !activeDispensary && (
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0,
-          background: '#111', borderTop: '1px solid #222',
-          borderRadius: '16px 16px 0 0', padding: '16px 20px 28px', zIndex: 1000,
-          maxHeight: '40%', overflowY: 'auto',
-        }}>
-          <div style={{ color: '#555', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
-            Stores
-          </div>
+        <div style={{ ...sheetBase, padding: '0 20px 28px', maxHeight: '42%', overflowY: 'auto' }}>
+          <Handle />
+          <Label style={{ margin: '14px 0 12px' }}>Stores</Label>
           {dispensaries.map(d => (
             <div
               key={d.id}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #1a1a1a', cursor: 'pointer' }}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 0', borderBottom: `1px solid ${t.border}`, cursor: 'pointer' }}
               onClick={() => navigate('/portal/map/' + d.id)}
             >
-              <div>
-                <div style={{ color: '#fff', fontSize: 14, fontWeight: 600 }}>{d.name}</div>
-                {d.address && <div style={{ color: '#555', fontSize: 12, marginTop: 2 }}>{d.address}</div>}
+              <div style={{ minWidth: 0 }}>
+                <div style={{ color: t.text1, fontSize: font.size.body, fontWeight: font.weight.semibold }}>{d.name}</div>
+                {d.address && <div style={{ color: t.text3, fontSize: font.size.small, marginTop: 2 }}>{d.address}</div>}
               </div>
-              <span style={{ color: '#a8e063', fontSize: 13, fontWeight: 700, marginLeft: 12 }}>→</span>
+              <span style={{ color: t.accent, fontSize: font.size.small + 1, fontWeight: font.weight.bold, marginLeft: 12 }}>→</span>
             </div>
           ))}
         </div>
@@ -259,9 +265,12 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
       {loadingDispensaries && (
         <div style={{
           position: 'absolute', top: 16, left: '50%', transform: 'translateX(-50%)',
-          background: 'rgba(0,0,0,0.7)', borderRadius: 20, padding: '8px 16px', zIndex: 999,
+          background: alpha('#000', 0.7), border: `1px solid ${t.border}`, backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+          borderRadius: radius.pill, padding: '8px 16px', zIndex: 999,
+          display: 'flex', alignItems: 'center', gap: 9,
         }}>
-          <span style={{ color: '#555', fontSize: 13 }}>Loading stores…</span>
+          <Spinner size={14} />
+          <span style={{ color: t.text2, fontSize: font.size.small + 1 }}>Loading stores…</span>
         </div>
       )}
     </div>

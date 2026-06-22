@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { usePagination } from './hooks/usePagination'
 import { useSearch } from './hooks/useSearch'
 import { SearchBar } from './components/SearchBar'
+import { AdminTable, navBtnStyle, Dash, type Column } from './components/AdminTable'
 import api from './api/client'
 import type { Customer } from './types'
 
@@ -35,6 +36,17 @@ export default function Customers() {
       setLoading(false)
     }
   }
+
+  const columns: Column<Customer>[] = [
+    { key: 'name', header: 'Name', td: { color: '#f1f5f9', fontWeight: 500 },
+      render: c => c.name ?? <Dash /> },
+    { key: 'email', header: 'Email', render: c => c.email ?? <Dash /> },
+    { key: 'phone', header: 'Phone', render: c => c.phone ?? <Dash /> },
+    { key: 'marketing', header: 'Marketing',
+      render: c => c.marketing_opt_in ? <span style={{ color: '#86efac' }}>Yes</span> : <span style={{ color: '#475569' }}>No</span> },
+    { key: 'last_visit', header: 'Last Visit',
+      render: c => c.last_visit_at ? new Date(c.last_visit_at).toLocaleString() : <Dash /> },
+  ]
 
   return (
     <div style={{ padding: 24, fontFamily: "'Inter', system-ui, sans-serif", background: '#080d18', minHeight: '100vh', color: '#f1f5f9' }}>
@@ -74,34 +86,12 @@ export default function Customers() {
         ) : customers.length === 0 ? (
           <div style={{ color: '#475569', padding: 16 }}>No customers found.</div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-            <thead>
-              <tr style={{ color: '#475569', textAlign: 'left', borderBottom: '1px solid #1e293b' }}>
-                <th style={thStyle}>Name</th>
-                <th style={thStyle}>Email</th>
-                <th style={thStyle}>Phone</th>
-                <th style={thStyle}>Marketing</th>
-                <th style={thStyle}>Last Visit</th>
-              </tr>
-            </thead>
-            <tbody>
-              {customers.map(c => (
-                <tr
-                  key={c.id}
-                  style={{ borderBottom: '1px solid #0f172a', cursor: 'pointer' }}
-                  onClick={() => navigate(`/admin/customers/${c.id}`)}
-                  onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#0f172a'}
-                  onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}
-                >
-                  <td style={{ ...tdStyle, color: '#f1f5f9', fontWeight: 500 }}>{c.name ?? <span style={{ color: '#475569' }}>—</span>}</td>
-                  <td style={tdStyle}>{c.email ?? <span style={{ color: '#475569' }}>—</span>}</td>
-                  <td style={tdStyle}>{c.phone ?? <span style={{ color: '#475569' }}>—</span>}</td>
-                  <td style={tdStyle}>{c.marketing_opt_in ? <span style={{ color: '#86efac' }}>Yes</span> : <span style={{ color: '#475569' }}>No</span>}</td>
-                  <td style={tdStyle}>{c.last_visit_at ? new Date(c.last_visit_at).toLocaleString() : <span style={{ color: '#475569' }}>—</span>}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <AdminTable
+            columns={columns}
+            rows={customers}
+            rowKey={c => c.id}
+            onRowClick={c => navigate(`/admin/customers/${c.id}`)}
+          />
         )}
 
         {loading && customers.length > 0 && (
@@ -117,7 +107,3 @@ export default function Customers() {
     </div>
   )
 }
-
-const thStyle: React.CSSProperties = { padding: '8px 12px', fontWeight: 500, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }
-const tdStyle: React.CSSProperties = { padding: '10px 12px', color: '#cbd5e1' }
-const navBtnStyle: React.CSSProperties = { padding: '6px 12px', background: '#0f172a', border: '1px solid #1e293b', borderRadius: 6, color: '#94a3b8', cursor: 'pointer', fontSize: 13 }

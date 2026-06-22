@@ -67,6 +67,105 @@ def list_portal_brands(limit: int = 24, session: Session = Depends(get_session))
 
 
 # ---------------------------
+# GET /brands/{brand_name}
+# ---------------------------
+
+@router.get("/brands/{brand_name}")
+def get_portal_brand(
+    brand_name: str,
+    session: Session = Depends(get_session),
+    in_stock: bool = Query(default=True),
+):
+    stmt = (
+        select(Listing, Dispensary)
+        .join(Dispensary, Dispensary.id == Listing.dispensary_id)
+        .where(Listing.scraped_brand == brand_name)
+        .where(Listing.is_active == True)  # noqa: E712
+        .where(Dispensary.is_active == True)  # noqa: E712
+    )
+    if in_stock:
+        stmt = stmt.where(Listing.in_stock == True)  # noqa: E712
+    stmt = stmt.order_by(Listing.scraped_category, Listing.scraped_name)
+
+    rows = session.exec(stmt).all()
+    if not rows:
+        raise HTTPException(status_code=404, detail="brand not found")
+
+    # Group listings into products by the 6-tuple identity (brand is fixed here).
+    # Each product carries its per-dispensary offerings so the client can compute
+    # the closest/cheapest options against the user's location.
+    products: dict[tuple, dict] = {}
+    brand_image = None
+    dispensary_ids = set()
+
+    for listing, dispensary in rows:
+        if brand_image is None and listing.image_url:
+            brand_image = listing.image_url
+        dispensary_ids.add(str(dispensary.id))
+
+        key = (
+            listing.scraped_category,
+            listing.subtype,
+            listing.product_line,
+            listing.strain,
+            listing.variant,
+        )
+        product = products.get(key)
+        if product is None:
+            name = (
+                listing.strain
+                or listing.product_line
+                or listing.scraped_name
+                or listing.scraped_category
+                or "—"
+            )
+            product = {
+                "key": "|".join("" if k is None else str(k) for k in key),
+                "name": name,
+                "category": listing.scraped_category,
+                "subtype": listing.subtype,
+                "product_line": listing.product_line,
+                "strain": listing.strain,
+                "variant": listing.variant,
+                "image_url": listing.image_url,
+                "offerings": [],
+            }
+            products[key] = product
+
+        if product["image_url"] is None and listing.image_url:
+            product["image_url"] = listing.image_url
+
+        product["offerings"].append({
+            "listing_id": str(listing.id),
+            "dispensary_id": str(dispensary.id),
+            "dispensary_name": dispensary.name,
+            "dispensary_slug": dispensary.slug,
+            "lat": dispensary.lat,
+            "lng": dispensary.lng,
+            "price_cents": listing.price_cents,
+            "in_stock": listing.in_stock,
+            "url": listing.url,
+        })
+
+    product_list = []
+    for product in products.values():
+        prices = [o["price_cents"] for o in product["offerings"] if o["price_cents"] is not None]
+        product["min_price_cents"] = min(prices) if prices else None
+        product["dispensary_count"] = len({o["dispensary_id"] for o in product["offerings"]})
+        product_list.append(product)
+
+    product_list.sort(key=lambda p: ((p["category"] or ""), p["name"].lower()))
+
+    return {
+        "name": brand_name,
+        "image_url": brand_image,
+        "product_count": len(product_list),
+        "dispensary_count": len(dispensary_ids),
+        "products": product_list,
+    }
+
+
+# ---------------------------
 # GET /categories
 # ---------------------------
 

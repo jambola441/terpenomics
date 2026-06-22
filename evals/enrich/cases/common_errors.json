@@ -1,0 +1,13 @@
+{
+  "eval_type": "common_error",
+  "description": "Real-world messy listings combining several common dispensary mistakes at once (wrong category hint + ALLCAPS + flavor-as-strain + variant mislabel). Asserts the fields with a single clear answer.",
+  "cases": [
+    {"id": "err-live-resin-pod", "input": {"brand": "Stiiizy", "name": "BIRTHDAY CAKE LIVE RESIN POD 0.5G", "category": "concentrate", "description": ""}, "expect": {"category": "vaporizers", "subtype": "pod", "strain": "Birthday Cake", "variant": "0.5g"}},
+    {"id": "err-gummy-allcaps", "input": {"brand": "Wyld", "name": "WYLD RASPBERRY GUMMIES 100MG (10PK)", "category": "edible", "description": "10 x 10mg"}, "expect": {"category": "edible", "subtype": "gummy", "strain": "Raspberry", "variant": "100mg"}},
+    {"id": "err-edible-as-flower", "input": {"brand": "Camino", "name": "Midnight Blueberry Gummies", "category": "flower", "description": "sleep gummies, 100mg (10x10mg)"}, "expect": {"category": "edible", "subtype": "gummy", "variant": "100mg"}},
+    {"id": "err-badder-texture", "input": {"brand": "Jetpacks", "name": "Granddaddy Purple (I) | Badder | 1g", "category": "concentrate", "description": ""}, "expect": {"category": "concentrate", "subtype": "other", "strain": "Granddaddy Purple", "variant": "1g"}},
+    {"id": "err-kief-preground", "input": {"brand": "Revert", "name": "Durban Kush (S) | Kief Infused | Pre-Ground | 14g", "category": "flower", "description": ""}, "expect": {"category": "flower", "subtype": "preground", "strain": "Durban Kush", "variant": "14g"}},
+    {"id": "err-drink-flavor-strain", "input": {"brand": "LayUp", "name": "LayUp | Black Cherry Lemonade | 10mg", "category": "edible", "description": "THC drink"}, "expect": {"category": "edible", "strain": "Black Cherry Lemonade", "variant": "10mg"}},
+    {"id": "err-disposable-as-flower", "input": {"brand": "Jaunty", "name": "Apple Fritter AIO Palm 1.5g", "category": "flower", "description": "all-in-one vape"}, "expect": {"category": "vaporizers", "subtype": "all-in-one", "strain": "Apple Fritter", "variant": "1.5g"}}
+  ]
+}

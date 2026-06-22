@@ -1,0 +1,695 @@
+{
+  "model": "gemini-flash",
+  "api_model": "google/gemini-2.0-flash-001",
+  "secs": 0.07702493667602539,
+  "usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "cost_usd": 0.0
+  },
+  "error": null,
+  "scores": {
+    "categorization.json": [
+      {
+        "id": "cat-aio-as-concentrate",
+        "got": {
+          "category": "concentrate",
+          "subtype": "rosin",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one"
+        },
+        "passed": false,
+        "fails": [
+          "category",
+          "subtype"
+        ]
+      },
+      {
+        "id": "cat-cart-as-concentrate",
+        "got": {
+          "category": "concentrate",
+          "subtype": "resin",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "cart"
+        },
+        "passed": false,
+        "fails": [
+          "category",
+          "subtype"
+        ]
+      },
+      {
+        "id": "cat-pod",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "pod",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "pod"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "cat-capsules-as-other",
+        "got": {
+          "category": "other",
+          "subtype": "other",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "tablet"
+        },
+        "passed": false,
+        "fails": [
+          "category",
+          "subtype"
+        ]
+      },
+      {
+        "id": "cat-grinder-merch",
+        "got": {
+          "category": "other",
+          "subtype": "other",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "merch",
+          "subtype": "merch"
+        },
+        "passed": false,
+        "fails": [
+          "category",
+          "subtype"
+        ]
+      },
+      {
+        "id": "cat-papers-merch",
+        "got": {
+          "category": "other",
+          "subtype": "other",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "merch",
+          "subtype": "merch"
+        },
+        "passed": false,
+        "fails": [
+          "category",
+          "subtype"
+        ]
+      },
+      {
+        "id": "cat-rosin-jar",
+        "got": {
+          "category": "concentrate",
+          "subtype": "rosin",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "concentrate",
+          "subtype": "rosin"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "cat-rso",
+        "got": {
+          "category": "concentrate",
+          "subtype": "rso",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "concentrate",
+          "subtype": "rso"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "cat-beverage",
+        "got": {
+          "category": "edible",
+          "subtype": "beverage",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "beverage"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "cat-preroll-pack",
+        "got": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "pack"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "cat-preroll-infused",
+        "got": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "infused"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "cat-smalls",
+        "got": {
+          "category": "flower",
+          "subtype": "smalls",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "smalls"
+        },
+        "passed": true,
+        "fails": []
+      }
+    ],
+    "common_errors.json": [
+      {
+        "id": "err-live-resin-pod",
+        "got": {
+          "category": "concentrate",
+          "subtype": "resin",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "pod",
+          "strain": "Birthday Cake",
+          "variant": "0.5g"
+        },
+        "passed": false,
+        "fails": [
+          "category",
+          "subtype",
+          "strain",
+          "variant"
+        ]
+      },
+      {
+        "id": "err-gummy-allcaps",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Raspberry",
+          "variant": "100mg"
+        },
+        "passed": false,
+        "fails": [
+          "strain",
+          "variant"
+        ]
+      },
+      {
+        "id": "err-edible-as-flower",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "variant": "100mg"
+        },
+        "passed": false,
+        "fails": [
+          "category",
+          "subtype",
+          "variant"
+        ]
+      },
+      {
+        "id": "err-badder-texture",
+        "got": {
+          "category": "concentrate",
+          "subtype": "other",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "concentrate",
+          "subtype": "other",
+          "strain": "Granddaddy Purple",
+          "variant": "1g"
+        },
+        "passed": false,
+        "fails": [
+          "strain",
+          "variant"
+        ]
+      },
+      {
+        "id": "err-kief-preground",
+        "got": {
+          "category": "flower",
+          "subtype": "preground",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "preground",
+          "strain": "Durban Kush",
+          "variant": "14g"
+        },
+        "passed": false,
+        "fails": [
+          "strain",
+          "variant"
+        ]
+      },
+      {
+        "id": "err-drink-flavor-strain",
+        "got": {
+          "category": "edible",
+          "subtype": "other",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "edible",
+          "strain": "Black Cherry Lemonade",
+          "variant": "10mg"
+        },
+        "passed": false,
+        "fails": [
+          "strain",
+          "variant"
+        ]
+      },
+      {
+        "id": "err-disposable-as-flower",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Apple Fritter",
+          "variant": "1.5g"
+        },
+        "passed": false,
+        "fails": [
+          "category",
+          "subtype",
+          "strain",
+          "variant"
+        ]
+      }
+    ],
+    "identity_clusters.json": [
+      {
+        "id": "clust-blue-dream-eighth",
+        "converged": true,
+        "split": {},
+        "canonical_match": false,
+        "canon_fails": [
+          "strain",
+          "variant"
+        ],
+        "members": [
+          {
+            "category": "flower",
+            "subtype": "flower",
+            "strain": "",
+            "product_line": null,
+            "variant": ""
+          },
+          {
+            "category": "flower",
+            "subtype": "flower",
+            "strain": "",
+            "product_line": null,
+            "variant": ""
+          },
+          {
+            "category": "flower",
+            "subtype": "flower",
+            "strain": "",
+            "product_line": null,
+            "variant": ""
+          },
+          {
+            "category": "flower",
+            "subtype": "flower",
+            "strain": "",
+            "product_line": null,
+            "variant": ""
+          }
+        ]
+      },
+      {
+        "id": "clust-gelato-cart",
+        "converged": false,
+        "split": {
+          "category": [
+            "concentrate",
+            "vaporizers"
+          ],
+          "subtype": [
+            "cart",
+            "resin"
+          ]
+        },
+        "canonical_match": false,
+        "canon_fails": [],
+        "members": [
+          {
+            "category": "concentrate",
+            "subtype": "resin",
+            "strain": "",
+            "product_line": null,
+            "variant": ""
+          },
+          {
+            "category": "vaporizers",
+            "subtype": "cart",
+            "strain": "",
+            "product_line": null,
+            "variant": ""
+          },
+          {
+            "category": "vaporizers",
+            "subtype": "cart",
+            "strain": "",
+            "product_line": null,
+            "variant": ""
+          }
+        ]
+      },
+      {
+        "id": "clust-watermelon-gummy",
+        "converged": true,
+        "split": {},
+        "canonical_match": false,
+        "canon_fails": [
+          "strain",
+          "variant"
+        ],
+        "members": [
+          {
+            "category": "edible",
+            "subtype": "gummy",
+            "strain": "",
+            "product_line": null,
+            "variant": ""
+          },
+          {
+            "category": "edible",
+            "subtype": "gummy",
+            "strain": "",
+            "product_line": null,
+            "variant": ""
+          },
+          {
+            "category": "edible",
+            "subtype": "gummy",
+            "strain": "",
+            "product_line": null,
+            "variant": ""
+          }
+        ]
+      },
+      {
+        "id": "clust-gmo-preroll",
+        "converged": true,
+        "split": {},
+        "canonical_match": false,
+        "canon_fails": [
+          "strain",
+          "variant"
+        ],
+        "members": [
+          {
+            "category": "preroll",
+            "subtype": "single",
+            "strain": "",
+            "product_line": null,
+            "variant": ""
+          },
+          {
+            "category": "preroll",
+            "subtype": "single",
+            "strain": "",
+            "product_line": null,
+            "variant": ""
+          },
+          {
+            "category": "preroll",
+            "subtype": "single",
+            "strain": "",
+            "product_line": null,
+            "variant": ""
+          }
+        ]
+      }
+    ],
+    "variant_fixes.json": [
+      {
+        "id": "var-edible-packmath-10x10",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "variant": "100mg"
+        },
+        "passed": false,
+        "fails": [
+          "variant"
+        ]
+      },
+      {
+        "id": "var-edible-packmath-20x5",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "variant": "100mg"
+        },
+        "passed": false,
+        "fails": [
+          "variant"
+        ]
+      },
+      {
+        "id": "var-edible-grams-wrong",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "variant": "100mg"
+        },
+        "passed": false,
+        "fails": [
+          "variant"
+        ]
+      },
+      {
+        "id": "var-flower-eighth-oz",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "variant": "3.5g"
+        },
+        "passed": false,
+        "fails": [
+          "variant"
+        ]
+      },
+      {
+        "id": "var-flower-quarter",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "variant": "7g"
+        },
+        "passed": false,
+        "fails": [
+          "variant"
+        ]
+      },
+      {
+        "id": "var-cart-halfg",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "cart",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "variant": "0.5g"
+        },
+        "passed": false,
+        "fails": [
+          "variant"
+        ]
+      },
+      {
+        "id": "var-beverage-floz-keep",
+        "got": {
+          "category": "edible",
+          "subtype": "other",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "variant": "5mg"
+        },
+        "passed": false,
+        "fails": [
+          "variant"
+        ]
+      },
+      {
+        "id": "var-tincture-ml",
+        "got": {
+          "category": "tinctures",
+          "subtype": "tincture",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "variant": "30ml"
+        },
+        "passed": false,
+        "fails": [
+          "variant"
+        ]
+      },
+      {
+        "id": "var-concentrate-1g",
+        "got": {
+          "category": "concentrate",
+          "subtype": "rosin",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "variant": "1g"
+        },
+        "passed": false,
+        "fails": [
+          "variant"
+        ]
+      },
+      {
+        "id": "var-flower-eighth-grams",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "variant": "3.5g"
+        },
+        "passed": false,
+        "fails": [
+          "variant"
+        ]
+      }
+    ]
+  }
+}

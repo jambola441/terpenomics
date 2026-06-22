@@ -1,67 +1,225 @@
+/* ============================================================================
+   Terpenomics — design foundation
+   A single source of truth for the customer-facing dark/lime design language.
+   Tokens are CSS custom properties so they can be referenced from inline
+   styles via var(--token) and from theme.ts (typed accessors).
+   ========================================================================== */
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  /* ── Surfaces (dark → light) ───────────────────────────────────────────── */
+  --bg:           #0b0b0d;   /* app background (near-black, faint cool) */
+  --surface-1:    #141418;   /* cards, sheets */
+  --surface-2:    #1c1c21;   /* raised: inputs, chips, hover */
+  --surface-3:    #26262d;   /* pressed / active */
+  --tile:         #f3f2ee;   /* light neutral plate for product photos */
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  /* ── Borders / hairlines ───────────────────────────────────────────────── */
+  --border:        #26262d;  /* default hairline */
+  --border-strong: #34343d;  /* emphasized edge */
 
+  /* ── Text ramp (deliberate 4-step hierarchy) ───────────────────────────── */
+  --text-1: #f4f5f7;  /* primary — names, headings */
+  --text-2: #aab0b9;  /* secondary — readable meta, brand */
+  --text-3: #7d828c;  /* muted — labels, captions */
+  --text-4: #585d66;  /* faint — placeholders, disabled, empty states */
+
+  /* ── Accent (brand lime) ───────────────────────────────────────────────── */
+  --accent:        #a8e063;
+  --accent-strong: #baee78;  /* hover / brighter */
+  --accent-dim:    #7faa46;  /* subdued accent text */
+  --accent-ink:    #0c1605;  /* text/icon on accent fills */
+  --accent-tint:   rgba(168, 224, 99, 0.12);  /* faint accent wash */
+
+  /* ── Semantic ──────────────────────────────────────────────────────────── */
+  --danger:  #f0655a;
+  --success: #a8e063;
+  --warning: #ffb454;
+
+  /* ── Radius scale ──────────────────────────────────────────────────────── */
+  --r-xs: 6px;
+  --r-sm: 8px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-xl: 18px;
+  --r-2xl: 22px;
+  --r-pill: 999px;
+
+  /* ── Spacing scale (4pt grid) ──────────────────────────────────────────── */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-7: 32px;
+  --s-8: 40px;
+
+  /* ── Elevation ─────────────────────────────────────────────────────────── */
+  --e-1: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --e-2: 0 6px 20px rgba(0, 0, 0, 0.40);
+  --e-3: 0 12px 40px rgba(0, 0, 0, 0.55);
+  --ring: 0 0 0 3px rgba(168, 224, 99, 0.35);  /* focus ring */
+
+  /* ── Motion ────────────────────────────────────────────────────────────── */
+  --t-fast: 120ms cubic-bezier(0.4, 0, 0.2, 1);
+  --t-base: 180ms cubic-bezier(0.4, 0, 0.2, 1);
+  --t-slow: 280ms cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* ── Type ──────────────────────────────────────────────────────────────── */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text',
+    'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+  color-scheme: dark;
+  font-family: var(--font-sans);
   font-synthesis: none;
-  text-rendering: optimizeLegibility;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+
+  color: var(--text-1);
+  background-color: var(--bg);
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+/* ── Reset / base ─────────────────────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-body, #root {
+html,
+body,
+#root {
   margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
+  padding: 0;
+  min-height: 100%;
   width: 100%;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+body {
+  min-width: 320px;
+  background-color: var(--bg);
+  color: var(--text-1);
+  /* Prevent iOS rubber-band flashing a white background behind the app */
+  overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1, h2, h3, h4, h5, h6, p, figure {
+  margin: 0;
+}
+
+img, svg, video {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color var(--t-fast);
+}
+a:hover {
+  color: var(--accent-strong);
 }
 
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  font-size: 1em;
+  color: inherit;
   cursor: pointer;
-  transition: border-color 0.25s;
 }
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+button:disabled {
+  cursor: default;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-4);
+}
+
+/* ── Accessible, on-brand focus ───────────────────────────────────────────── */
+
+:focus { outline: none; }
+:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+  border-radius: var(--r-sm);
+}
+
+/* ── Selection ────────────────────────────────────────────────────────────── */
+
+::selection {
+  background: rgba(168, 224, 99, 0.28);
+  color: #fff;
+}
+
+/* ── Custom scrollbars (subtle, themed) ───────────────────────────────────── */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface-3) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--surface-3);
+  border-radius: var(--r-pill);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+  background-clip: padding-box;
+}
+
+/* Opt-out helper for horizontal scroll rails that want a clean edge */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Reusable motion ──────────────────────────────────────────────────────── */
+
+@keyframes ds-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes ds-shimmer {
+  from { background-position: -180% 0; }
+  to   { background-position: 180% 0; }
+}
+
+@keyframes ds-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Respect reduced-motion ───────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }

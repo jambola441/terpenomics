@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { SearchBar } from './components/SearchBar'
+import { AdminTable, badge, categoryColor, navBtnStyle, selectStyle, Dash, type Column } from './components/AdminTable'
 import api from './api/client'
 import type { Listing } from './types'
 
@@ -133,6 +134,33 @@ export default function Listings() {
 
   const hasFilters = q || filterDispensary || filterCategory || filterBrand || filterSubtype || filterClass || filterInStock
 
+  const columns: Column<Listing>[] = [
+    { key: 'name', header: 'Scraped Name', sortable: true, td: { color: '#f1f5f9', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+      render: l => l.scraped_name ?? <Dash /> },
+    { key: 'brand', header: 'Brand', sortable: true,
+      render: l => l.scraped_brand ?? <Dash /> },
+    { key: 'category', header: 'Category', sortable: true,
+      render: l => l.scraped_category ? <span style={{ ...badge, ...categoryColor(l.scraped_category) }}>{l.scraped_category}</span> : <Dash /> },
+    { key: 'subtype', header: 'Subtype', sortable: true,
+      render: l => l.subtype ?? <Dash /> },
+    { key: 'product_line', header: 'Product Line', sortable: true, td: { color: '#94a3b8' },
+      render: l => l.product_line ?? <Dash /> },
+    { key: 'strain', header: 'Strain', sortable: true, td: { color: '#a5b4fc' },
+      render: l => l.strain ?? <Dash /> },
+    { key: 'classification', header: 'Class', td: { color: '#94a3b8' },
+      render: l => l.classification ?? <Dash /> },
+    { key: 'variant', header: 'Variant',
+      render: l => l.variant ?? <Dash /> },
+    { key: 'dispensary', header: 'Dispensary', sortable: true, td: { color: '#94a3b8' },
+      render: l => l.dispensary_name },
+    { key: 'price', header: 'Price', sortable: true,
+      render: l => l.price_cents != null ? `$${(l.price_cents / 100).toFixed(2)}` : <Dash /> },
+    { key: 'in_stock', header: 'In Stock',
+      render: l => l.in_stock ? <span style={{ color: '#86efac' }}>✓</span> : <span style={{ color: '#475569' }}>✗</span> },
+    { key: 'link', header: '', align: 'right', stopPropagation: true,
+      render: l => l.url ? <a href={l.url} target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1', textDecoration: 'none', fontSize: 14 }} title={l.url}>↗</a> : null },
+  ]
+
   return (
     <div style={{ padding: 24, fontFamily: "'Inter', system-ui, sans-serif", background: '#080d18', minHeight: '100vh', color: '#f1f5f9' }}>
       <div style={{ maxWidth: 1300, margin: '0 auto' }}>
@@ -230,56 +258,13 @@ export default function Listings() {
         ) : listings.length === 0 ? (
           <div style={{ color: '#475569', padding: 16 }}>No listings found.</div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-            <thead>
-              <tr style={{ color: '#475569', textAlign: 'left', borderBottom: '1px solid #1e293b' }}>
-                <SortTh col="name"       label="Scraped Name" sort={sort} order={order} onSort={handleSort} />
-                <SortTh col="brand"      label="Brand"        sort={sort} order={order} onSort={handleSort} />
-                <SortTh col="category"   label="Category"     sort={sort} order={order} onSort={handleSort} />
-                <SortTh col="subtype"      label="Subtype"       sort={sort} order={order} onSort={handleSort} />
-                <SortTh col="product_line" label="Product Line"  sort={sort} order={order} onSort={handleSort} />
-                <SortTh col="strain"       label="Strain"        sort={sort} order={order} onSort={handleSort} />
-                <th style={thStyle}>Class</th>
-                <th style={thStyle}>Variant</th>
-                <SortTh col="dispensary" label="Dispensary"   sort={sort} order={order} onSort={handleSort} />
-                <SortTh col="price"      label="Price"        sort={sort} order={order} onSort={handleSort} />
-                <th style={thStyle}>In Stock</th>
-                <th style={thStyle}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {listings.map(l => (
-                <tr key={l.id} style={{ borderBottom: '1px solid #0f172a', cursor: 'pointer' }}
-                  onClick={() => navigate(`/admin/listings/${l.id}`)}
-                  onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#0f172a'}
-                  onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}
-                >
-                  <td style={{ ...tdStyle, color: '#f1f5f9', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {l.scraped_name ?? <span style={{ color: '#475569' }}>—</span>}
-                  </td>
-                  <td style={tdStyle}>{l.scraped_brand ?? <span style={{ color: '#475569' }}>—</span>}</td>
-                  <td style={tdStyle}>
-                    {l.scraped_category
-                      ? <span style={{ ...badge, ...categoryColor(l.scraped_category) }}>{l.scraped_category}</span>
-                      : <span style={{ color: '#475569' }}>—</span>}
-                  </td>
-                  <td style={tdStyle}>{l.subtype ?? <span style={{ color: '#475569' }}>—</span>}</td>
-                  <td style={{ ...tdStyle, color: '#94a3b8' }}>{l.product_line ?? <span style={{ color: '#475569' }}>—</span>}</td>
-                  <td style={{ ...tdStyle, color: '#a5b4fc' }}>{l.strain ?? <span style={{ color: '#475569' }}>—</span>}</td>
-                  <td style={{ ...tdStyle, color: '#94a3b8' }}>{l.classification ?? <span style={{ color: '#475569' }}>—</span>}</td>
-                  <td style={tdStyle}>{l.variant ?? <span style={{ color: '#475569' }}>—</span>}</td>
-                  <td style={{ ...tdStyle, color: '#94a3b8' }}>{l.dispensary_name}</td>
-                  <td style={tdStyle}>{l.price_cents != null ? `$${(l.price_cents / 100).toFixed(2)}` : <span style={{ color: '#475569' }}>—</span>}</td>
-                  <td style={tdStyle}>{l.in_stock ? <span style={{ color: '#86efac' }}>✓</span> : <span style={{ color: '#475569' }}>✗</span>}</td>
-                  <td style={{ ...tdStyle, textAlign: 'right' }} onClick={e => e.stopPropagation()}>
-                    {l.url
-                      ? <a href={l.url} target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1', textDecoration: 'none', fontSize: 14 }} title={l.url}>↗</a>
-                      : null}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <AdminTable
+            columns={columns}
+            rows={listings}
+            rowKey={l => l.id}
+            onRowClick={l => navigate(`/admin/listings/${l.id}`)}
+            sorting={{ sort, order, onSort: handleSort }}
+          />
         )}
 
         {loading && listings.length > 0 && (
@@ -302,32 +287,3 @@ export default function Listings() {
   )
 }
 
-const CATEGORY_COLORS: Record<string, { background: string; color: string }> = {
-  flower:      { background: '#14532d', color: '#86efac' },
-  preroll:     { background: '#1a2e05', color: '#a3e635' },
-  vaporizers:  { background: '#1e1b4b', color: '#a5b4fc' },
-  concentrate: { background: '#431407', color: '#fdba74' },
-  edible:      { background: '#4a1942', color: '#f0abfc' },
-  tinctures:   { background: '#0c4a6e', color: '#7dd3fc' },
-  topical:     { background: '#3b3a2a', color: '#fde68a' },
-  merch:       { background: '#1c1917', color: '#a8a29e' },
-}
-function categoryColor(cat: string) {
-  return CATEGORY_COLORS[cat] ?? { background: '#1e293b', color: '#94a3b8' }
-}
-
-function SortTh({ col, label, sort, order, onSort }: { col: string; label: string; sort: string; order: string; onSort: (c: string) => void }) {
-  const active = sort === col
-  return (
-    <th style={{ ...thStyle, cursor: 'pointer', userSelect: 'none' }} onClick={() => onSort(col)}>
-      {label}
-      {active && <span style={{ marginLeft: 4, color: '#6366f1' }}>{order === 'asc' ? '↑' : '↓'}</span>}
-    </th>
-  )
-}
-
-const badge: React.CSSProperties = { padding: '2px 7px', borderRadius: 4, fontSize: 11, fontWeight: 500 }
-const thStyle: React.CSSProperties = { padding: '8px 12px', fontWeight: 500, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }
-const tdStyle: React.CSSProperties = { padding: '10px 12px', color: '#cbd5e1' }
-const navBtnStyle: React.CSSProperties = { padding: '6px 12px', background: '#0f172a', border: '1px solid #1e293b', borderRadius: 6, color: '#94a3b8', cursor: 'pointer', fontSize: 13 }
-const selectStyle: React.CSSProperties = { fontSize: 13, padding: '5px 8px', borderRadius: 4, background: '#0f172a', border: '1px solid #1e293b', color: '#94a3b8' }

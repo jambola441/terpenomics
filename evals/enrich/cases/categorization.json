@@ -1,0 +1,18 @@
+{
+  "eval_type": "categorization",
+  "description": "Correct top-level category and sub-format, including overriding the scraper's wrong hint_category. `input.category` is the scraper hint (sometimes wrong on purpose).",
+  "cases": [
+    {"id": "cat-aio-as-concentrate", "input": {"brand": "Jaunty", "name": "Apple Fritter Live Rosin AIO 1g", "category": "concentrate", "description": ""}, "expect": {"category": "vaporizers", "subtype": "all-in-one"}},
+    {"id": "cat-cart-as-concentrate", "input": {"brand": "Stiiizy", "name": "Gelato Live Resin Cart 0.5g", "category": "concentrate", "description": ""}, "expect": {"category": "vaporizers", "subtype": "cart"}},
+    {"id": "cat-pod", "input": {"brand": "PAX", "name": "Birthday Cake Era Pod 0.5g", "category": "vaporizers", "description": ""}, "expect": {"category": "vaporizers", "subtype": "pod"}},
+    {"id": "cat-capsules-as-other", "input": {"brand": "Vireo", "name": "10:1 THC Capsules 10pk", "category": "other", "description": "10 capsules"}, "expect": {"category": "edible", "subtype": "tablet"}},
+    {"id": "cat-grinder-merch", "input": {"brand": "House", "name": "Branded Metal Grinder", "category": "other", "description": ""}, "expect": {"category": "merch", "subtype": "merch"}},
+    {"id": "cat-papers-merch", "input": {"brand": "RAW", "name": "Classic King Size Rolling Papers", "category": "other", "description": ""}, "expect": {"category": "merch", "subtype": "merch"}},
+    {"id": "cat-rosin-jar", "input": {"brand": "Punch", "name": "Sundae Driver Live Rosin 1g", "category": "concentrate", "description": "cold-cure rosin jar"}, "expect": {"category": "concentrate", "subtype": "rosin"}},
+    {"id": "cat-rso", "input": {"brand": "Patient", "name": "RSO Syringe 1g", "category": "concentrate", "description": ""}, "expect": {"category": "concentrate", "subtype": "rso"}},
+    {"id": "cat-beverage", "input": {"brand": "Cann", "name": "Grapefruit Rosemary Sparkling Beverage 5mg", "category": "edible", "description": "sparkling drink"}, "expect": {"category": "edible", "subtype": "beverage"}},
+    {"id": "cat-preroll-pack", "input": {"brand": "Honey King", "name": "Sativa Blend Pre-Roll 7pk 3.5g", "category": "preroll", "description": ""}, "expect": {"category": "preroll", "subtype": "pack"}},
+    {"id": "cat-preroll-infused", "input": {"brand": "Jeeter", "name": "Horchata Infused Pre-Roll 1g", "category": "preroll", "description": "diamond infused"}, "expect": {"category": "preroll", "subtype": "infused"}},
+    {"id": "cat-smalls", "input": {"brand": "Ruby Farms", "name": "Gelato 41 Smalls 7g", "category": "flower", "description": ""}, "expect": {"category": "flower", "subtype": "smalls"}}
+  ]
+}

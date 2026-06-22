@@ -112,6 +112,42 @@ All 31 Brooklyn dispensaries. Status: **active** = scraper confirmed working; **
 
 ---
 
+## Scheduled scraping (Render worker)
+
+The full pipeline runs once a day on a Render **background worker**, not a cron
+job — Render cron jobs can't mount a persistent disk, and the per-SKU enrich
+cache (`data/enrich_cache/`) is what keeps Haiku spend low. The worker holds the
+disk and schedules itself.
+
+| File | Role |
+|---|---|
+| `scripts/scrape_worker.py` | Long-running loop. Sleeps until `SCRAPE_RUN_AT_ET` (default 09:00 ET), runs one sweep, repeats. Drift-free, DST-aware, crash-proof. |
+| `scripts/run_scrape_cron.py` | One robust sweep: wraps `scrape.py --all --parallel` with logging, an overlap lock, a 90-min wall-clock timeout, a heartbeat file, and a meaningful exit code. |
+| `scripts/render.yaml` | Reference spec for the worker + 1 GB disk mounted at `/app/data/enrich_cache`. |
+
+**Run a one-off locally:**
+
+```bash
+python scripts/run_scrape_cron.py                    # full --all --parallel sweep
+SCRAPE_ARGS="--all --dry-run" python scripts/run_scrape_cron.py   # no-op rehearsal
+```
+
+**Env knobs** (set on the worker; secrets copied from the `terpenomics` web service):
+
+| Var | Default | Meaning |
+|---|---|---|
+| `SCRAPE_RUN_AT_ET` | `09:00` | Daily run time, America/New_York |
+| `SCRAPE_RUN_ON_START` | `false` | Also run once immediately on deploy |
+| `SCRAPE_ARGS` | `--all --parallel` | Args passed to `scrape.py` |
+| `SCRAPE_TIMEOUT_SEC` | `5400` | Hard kill if one sweep runs longer |
+
+**Deploy:** Render Dashboard → New → Background Worker → pick this repo (Docker
+runtime), then transcribe the command, disk, and env vars from
+`scripts/render.yaml` and fill the `sync:false` secrets. (Render only auto-detects
+Blueprints from a root `render.yaml`; move the file back to the root if you want
+Blueprint sync instead.) Health check: `data/enrich_cache/_cron_status.json` on
+the disk records the last run's state/duration/exit code; logs stream to Render.
+
 ## Adding a new dispensary
 
 1. Identify the platform (check the site's network requests or CDN assets).

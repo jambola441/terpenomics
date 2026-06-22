@@ -1,12 +1,14 @@
-import { useState, useEffect } from 'react'
-import { useNavigate, useMatch } from 'react-router-dom'
+import { useState, useEffect, useMemo } from 'react'
+import { useNavigate, useMatch, useSearchParams } from 'react-router-dom'
 import api from './api/client'
 import supabase from './utils/supabase'
 import DispensaryMap from './components/DispensaryMap'
 import HomeFeed from './components/HomeFeed'
 import ListingDetailView from './components/ListingDetail'
-import type { PortalPurchase, RecommendedProduct, Feedback, PortalProduct, CartItem } from './types'
+import type { PortalPurchase, RecommendedProduct, Feedback, PortalProduct, CartItem, PortalBrandDetail, PortalBrandProduct, PortalBrandOffering, ListingDetail } from './types'
 import type { Session } from '@supabase/supabase-js'
+import { t, radius, font, alpha } from './theme'
+import { Pressable, Pill, CategoryTag, FeedState, Skeleton, Label, ClassificationTag, DetailBlock, CollapsibleBlock, SpecRow } from './components/ui'
 import 'leaflet/dist/leaflet.css'
 
 type Tab = 'home' | 'map' | 'search' | 'account'
@@ -21,15 +23,15 @@ const CATEGORY_IMAGES: Record<string, string> = {
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  flower: '#4caf50',
-  cart: '#2196f3',
-  edible: '#ff9800',
-  concentrate: '#9c27b0',
-  preroll: '#00bcd4',
+  flower: '#5bb85f',
+  cart: '#3b9bf0',
+  edible: '#ff9f43',
+  concentrate: '#a958d8',
+  preroll: '#22c3d6',
   tincture: '#8bc34a',
-  topical: '#f44336',
-  merch: '#607d8b',
-  other: '#9e9e9e',
+  topical: '#f0655a',
+  merch: '#7a8a99',
+  other: '#9aa0a6',
 }
 
 function formatDate(iso: string) {
@@ -42,6 +44,18 @@ function formatDate(iso: string) {
 
 function formatDollars(cents: number) {
   return `$${(cents / 100).toFixed(2)}`
+}
+
+function haversineMi(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 3958.8
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLng = (lng2 - lng1) * Math.PI / 180
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
+function formatDist(mi: number) {
+  return mi < 0.1 ? '< 0.1 mi' : `${mi.toFixed(1)} mi`
 }
 
 // ─── Orders Feed ──────────────────────────────────────────────────────────────
@@ -65,27 +79,15 @@ function OrdersFeed({ purchases, loading, error, feedback, savingItems, onFeedba
   }
 
   if (loading) {
-    return (
-      <div style={{ ...feedStyle, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ color: '#555', fontSize: 14 }}>Loading orders...</span>
-      </div>
-    )
+    return <div style={feedStyle}><FeedState kind="loading" message="Loading orders…" style={{ height: '100%' }} /></div>
   }
 
   if (error) {
-    return (
-      <div style={{ ...feedStyle, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ color: '#f44336', fontSize: 14 }}>Failed to load orders</span>
-      </div>
-    )
+    return <div style={feedStyle}><FeedState kind="error" message="Failed to load orders" style={{ height: '100%' }} /></div>
   }
 
   if (purchases.length === 0) {
-    return (
-      <div style={{ ...feedStyle, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ color: '#555', fontSize: 14 }}>No orders yet</span>
-      </div>
-    )
+    return <div style={feedStyle}><FeedState kind="empty" message="No orders yet" hint="Your past purchases will show up here." icon="🧾" style={{ height: '100%' }} /></div>
   }
 
   return (
@@ -93,29 +95,31 @@ function OrdersFeed({ purchases, loading, error, feedback, savingItems, onFeedba
       {purchases.map((purchase) => (
         <div key={purchase.id} style={{ scrollSnapAlign: 'start', padding: '16px 16px 0' }}>
           <div style={{
-            background: '#1a1a1a',
-            borderRadius: 16,
+            background: t.surface1,
+            borderRadius: radius.xl,
             padding: 20,
             minHeight: 280,
             marginBottom: 16,
+            border: `1px solid ${t.border}`,
           }}>
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
               <div>
-                <div style={{ color: '#fff', fontSize: 18, fontWeight: 700 }}>
+                <div style={{ color: t.text1, fontSize: font.size.title, fontWeight: font.weight.bold, letterSpacing: '-0.01em' }}>
                   {formatDate(purchase.purchased_at)}
                 </div>
-                <div style={{ color: '#666', fontSize: 13, marginTop: 2 }}>
+                <div style={{ color: t.text3, fontSize: font.size.small + 1, marginTop: 2 }}>
                   {purchase.items.length} {purchase.items.length === 1 ? 'item' : 'items'}
                 </div>
               </div>
               <div style={{
-                background: '#2a2a2a',
-                borderRadius: 10,
+                background: 'var(--accent-tint)',
+                border: `1px solid ${alpha('#a8e063', 0.3)}`,
+                borderRadius: radius.md,
                 padding: '6px 12px',
-                color: '#a8e063',
-                fontWeight: 700,
-                fontSize: 16,
+                color: t.accent,
+                fontWeight: font.weight.bold,
+                fontSize: font.size.title,
               }}>
                 {purchase.total_amount_cents ? formatDollars(purchase.total_amount_cents) : '—'}
               </div>
@@ -273,33 +277,23 @@ function RecsFeed({ recommendations, loading, error, onProductClick }: RecsFeedP
   }
 
   if (loading) {
-    return (
-      <div style={{ ...feedStyle, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ color: '#555', fontSize: 14 }}>Finding your picks...</span>
-      </div>
-    )
+    return <div style={feedStyle}><FeedState kind="loading" message="Finding your picks…" style={{ height: '100%' }} /></div>
   }
 
   if (error) {
-    return (
-      <div style={{ ...feedStyle, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ color: '#f44336', fontSize: 14 }}>Failed to load recommendations</span>
-      </div>
-    )
+    return <div style={feedStyle}><FeedState kind="error" message="Failed to load recommendations" style={{ height: '100%' }} /></div>
   }
 
   if (recommendations.length === 0) {
     return (
-      <div style={{ ...feedStyle, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 32px' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 36, marginBottom: 16 }}>✨</div>
-          <div style={{ color: '#fff', fontWeight: 700, fontSize: 18, marginBottom: 8 }}>
-            Rate your past orders
-          </div>
-          <div style={{ color: '#555', fontSize: 14, lineHeight: 1.5 }}>
-            Tap 👍 or 👎 on your order items to unlock personalized picks.
-          </div>
-        </div>
+      <div style={feedStyle}>
+        <FeedState
+          kind="empty"
+          message="Rate your past orders"
+          hint="Tap 👍 or 👎 on your order items to unlock personalized picks."
+          icon="✨"
+          style={{ height: '100%' }}
+        />
       </div>
     )
   }
@@ -316,38 +310,38 @@ function RecsFeed({ recommendations, loading, error, onProductClick }: RecsFeedP
         const imgSrc = CATEGORY_IMAGES[rec.category]
 
         return (
-          <div
+          <Pressable
             key={rec.id}
-            style={{ scrollSnapAlign: 'start', padding: '16px 16px 0', cursor: 'pointer' }}
             onClick={() => onProductClick(rec.id)}
+            style={{ scrollSnapAlign: 'start', padding: '16px 16px 0' }}
           >
             <div style={{
-              background: '#1a1a1a',
-              borderRadius: 16,
+              background: t.surface1,
+              borderRadius: radius.xl,
               minHeight: 280,
               marginBottom: 16,
               position: 'relative',
-              border: `1px solid #2a2a2a`,
+              border: `1px solid ${t.border}`,
               overflow: 'hidden',
             }}>
-              {/* Hero image */}
+              {/* Hero image — unified light plate */}
               {imgSrc ? (
-                <div style={{ position: 'relative', height: 200 }}>
-                  <img src={imgSrc} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
-                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, #1a1a1a 100%)' }} />
+                <div style={{ position: 'relative', height: 200, background: t.tile }}>
+                  <img src={imgSrc} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', padding: 18, boxSizing: 'border-box' }} />
                   {matchPct !== null && (
                     <div style={{
                       position: 'absolute',
                       top: 12,
                       right: 12,
-                      background: '#a8e063',
+                      background: t.accent,
                       color: '#0a0a0a',
-                      fontSize: 11,
-                      fontWeight: 800,
+                      fontSize: font.size.caption,
+                      fontWeight: font.weight.heavy,
                       padding: '4px 10px',
-                      borderRadius: 20,
+                      borderRadius: radius.pill,
                       letterSpacing: '0.05em',
                       textTransform: 'uppercase',
+                      boxShadow: 'var(--e-1)',
                     }}>
                       {matchPct}% match
                     </div>
@@ -359,12 +353,12 @@ function RecsFeed({ recommendations, loading, error, onProductClick }: RecsFeedP
                     position: 'absolute',
                     top: 16,
                     right: 16,
-                    background: '#a8e063',
+                    background: t.accent,
                     color: '#0a0a0a',
-                    fontSize: 11,
-                    fontWeight: 800,
+                    fontSize: font.size.caption,
+                    fontWeight: font.weight.heavy,
                     padding: '4px 10px',
-                    borderRadius: 20,
+                    borderRadius: radius.pill,
                     letterSpacing: '0.05em',
                     textTransform: 'uppercase',
                   }}>
@@ -374,31 +368,20 @@ function RecsFeed({ recommendations, loading, error, onProductClick }: RecsFeedP
               )}
 
               {/* Content */}
-              <div style={{ padding: imgSrc ? '12px 20px 20px' : 20 }}>
+              <div style={{ padding: imgSrc ? '14px 20px 20px' : 20 }}>
               {/* Category tag */}
-              <div style={{
-                display: 'inline-block',
-                background: catColor + '22',
-                border: `1px solid ${catColor}`,
-                color: catColor,
-                fontSize: 10,
-                fontWeight: 700,
-                padding: '3px 10px',
-                borderRadius: 20,
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                marginBottom: 12,
-              }}>
-                {rec.category}
+              <div style={{ marginBottom: 12 }}>
+                <CategoryTag category={rec.category} />
               </div>
 
               {/* Product name */}
               <div style={{
-                color: '#fff',
-                fontSize: 24,
-                fontWeight: 800,
+                color: t.text1,
+                fontSize: font.size.display,
+                fontWeight: font.weight.heavy,
                 lineHeight: 1.2,
                 marginBottom: 6,
+                letterSpacing: '-0.01em',
                 paddingRight: !imgSrc && matchPct !== null ? 80 : 0,
               }}>
                 {rec.name}
@@ -406,7 +389,7 @@ function RecsFeed({ recommendations, loading, error, onProductClick }: RecsFeedP
 
               {/* Brand */}
               {rec.brand && (
-                <div style={{ color: '#666', fontSize: 13, marginBottom: 16 }}>
+                <div style={{ color: t.text2, fontSize: font.size.small + 1, marginBottom: 16 }}>
                   {rec.brand}
                 </div>
               )}
@@ -414,15 +397,16 @@ function RecsFeed({ recommendations, loading, error, onProductClick }: RecsFeedP
               {/* Terpenes */}
               {shownTerpenes.length > 0 && (
                 <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 6, marginTop: 'auto' }}>
-                  {shownTerpenes.map((t) => (
-                    <span key={t.name} style={{
-                      background: '#2a2a2a',
-                      color: '#888',
-                      fontSize: 11,
-                      padding: '3px 10px',
-                      borderRadius: 20,
+                  {shownTerpenes.map((tp) => (
+                    <span key={tp.name} style={{
+                      background: t.surface2,
+                      color: t.text2,
+                      border: `1px solid ${t.border}`,
+                      fontSize: font.size.caption,
+                      padding: '4px 10px',
+                      borderRadius: radius.pill,
                     }}>
-                      {t.name}{t.percent ? ` ${t.percent.toFixed(1)}%` : ''}
+                      {tp.name}{tp.percent ? ` ${tp.percent.toFixed(1)}%` : ''}
                     </span>
                   ))}
                 </div>
@@ -430,13 +414,13 @@ function RecsFeed({ recommendations, loading, error, onProductClick }: RecsFeedP
 
               {/* Purchased before */}
               {rec.purchased_count > 0 && (
-                <div style={{ color: '#444', fontSize: 11, marginTop: 12 }}>
+                <div style={{ color: t.text3, fontSize: font.size.caption, marginTop: 12 }}>
                   Purchased {rec.purchased_count}× before
                 </div>
               )}
               </div>
             </div>
-          </div>
+          </Pressable>
         )
       })}
       <div style={{ height: 92 }} />
@@ -451,6 +435,9 @@ interface ProductsFeedProps {
 }
 
 function ProductsFeed({ onProductClick }: ProductsFeedProps) {
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const category = searchParams.get('category')
   const [products, setProducts] = useState<PortalProduct[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -458,21 +445,15 @@ function ProductsFeed({ onProductClick }: ProductsFeedProps) {
   const [search, setSearch] = useState('')
 
   useEffect(() => {
-    fetchProducts()
-  }, [search])
-
-  async function fetchProducts() {
+    let cancelled = false
     setLoading(true)
     setError(null)
-    try {
-      const data = await api.portal.getProducts({ q: search || undefined, limit: 50 })
-      setProducts(data)
-    } catch {
-      setError('Failed to load products')
-    } finally {
-      setLoading(false)
-    }
-  }
+    api.portal.getProducts({ q: search || undefined, category: category || undefined, limit: 50 })
+      .then(data => { if (!cancelled) setProducts(data) })
+      .catch(() => { if (!cancelled) setError('Failed to load products') })
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
+  }, [search, category])
 
   const feedStyle: React.CSSProperties = {
     height: '100dvh',
@@ -491,12 +472,12 @@ function ProductsFeed({ onProductClick }: ProductsFeedProps) {
           placeholder="Search products..."
           style={{
             flex: 1,
-            background: '#1a1a1a',
-            border: '1px solid #2a2a2a',
-            borderRadius: 10,
-            color: '#fff',
-            fontSize: 14,
-            padding: '10px 14px',
+            background: t.surface2,
+            border: `1px solid ${t.border}`,
+            borderRadius: radius.md,
+            color: t.text1,
+            fontSize: font.size.body,
+            padding: '11px 14px',
             outline: 'none',
           }}
         />
@@ -504,11 +485,11 @@ function ProductsFeed({ onProductClick }: ProductsFeedProps) {
           <button
             onClick={() => { setSearchInput(''); setSearch('') }}
             style={{
-              background: '#2a2a2a',
-              border: 'none',
-              borderRadius: 10,
-              color: '#888',
-              fontSize: 14,
+              background: t.surface2,
+              border: `1px solid ${t.border}`,
+              borderRadius: radius.md,
+              color: t.text3,
+              fontSize: font.size.body,
               padding: '0 14px',
               cursor: 'pointer',
             }}
@@ -518,93 +499,96 @@ function ProductsFeed({ onProductClick }: ProductsFeedProps) {
         )}
       </div>
 
+      {/* Active category chip (from "Shop by category") */}
+      {category && (
+        <div style={{ padding: '0 16px 8px', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            background: 'var(--accent-tint)', border: `1px solid ${alpha('#a8e063', 0.4)}`, color: t.accent,
+            fontSize: font.size.small, fontWeight: font.weight.semibold, padding: '5px 6px 5px 12px', borderRadius: radius.pill,
+            textTransform: 'capitalize',
+          }}>
+            {category}
+            <button onClick={() => navigate('/portal/search')} aria-label="Clear category"
+              style={{ background: 'none', border: 'none', color: t.accent, cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: '0 2px' }}>✕</button>
+          </span>
+        </div>
+      )}
+
       {loading ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
-          <span style={{ color: '#555', fontSize: 14 }}>Loading...</span>
+        <div style={{ padding: '4px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {[0, 1, 2, 3, 4, 5].map(i => (
+            <div key={i} style={{ display: 'flex', gap: 14, alignItems: 'center', background: t.surface1, borderRadius: radius.lg, padding: 14, border: `1px solid ${t.border}` }}>
+              <Skeleton width={52} height={52} radius={radius.md} />
+              <div style={{ flex: 1 }}>
+                <Skeleton width="60%" height={14} style={{ marginBottom: 8 }} />
+                <Skeleton width="35%" height={11} />
+              </div>
+            </div>
+          ))}
         </div>
       ) : error ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
-          <span style={{ color: '#f44336', fontSize: 14 }}>{error}</span>
-        </div>
+        <FeedState kind="error" message={error} />
       ) : products.length === 0 ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
-          <span style={{ color: '#555', fontSize: 14 }}>No products found</span>
-        </div>
+        <FeedState kind="empty" message="No products found" hint={search ? `Nothing matches “${search}”${category ? ` in ${category}` : ''}.` : category ? `No ${category} products right now.` : 'Try a different search.'} icon="🔍" />
       ) : (
         <div style={{ padding: '0 16px 92px', display: 'flex', flexDirection: 'column', gap: 10 }}>
           {products.map((p) => {
-            const catColor = CATEGORY_COLORS[p.category] ?? '#555'
             const imgSrc = CATEGORY_IMAGES[p.category]
             return (
-              <div
+              <Pressable
                 key={p.id}
                 onClick={() => onProductClick(p.id)}
                 style={{
-                  background: '#1a1a1a',
-                  borderRadius: 12,
-                  padding: 16,
+                  background: t.surface1,
+                  borderRadius: radius.lg,
+                  padding: 14,
                   display: 'flex',
                   gap: 14,
                   alignItems: 'center',
-                  cursor: 'pointer',
-                  border: '1px solid #222',
+                  border: `1px solid ${t.border}`,
                 }}
               >
                 {/* Thumbnail */}
                 <div style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 10,
+                  width: 54,
+                  height: 54,
+                  borderRadius: radius.md,
                   overflow: 'hidden',
                   flexShrink: 0,
-                  background: catColor + '22',
+                  background: t.tile,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.06)',
                 }}>
                   {imgSrc
-                    ? <img src={imgSrc} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    : <span style={{ fontSize: 20 }}>🌿</span>
+                    ? <img src={imgSrc} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 6, boxSizing: 'border-box' }} />
+                    : <span style={{ fontSize: 20, opacity: 0.6 }}>🌿</span>
                   }
                 </div>
 
                 {/* Info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ color: '#fff', fontWeight: 700, fontSize: 15, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <div style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.callout, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {p.name}
                   </div>
                   {p.brand && (
-                    <div style={{ color: '#666', fontSize: 12, marginTop: 2 }}>{p.brand}</div>
+                    <div style={{ color: t.text2, fontSize: font.size.small, marginTop: 2 }}>{p.brand}</div>
                   )}
-                  <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>
-                    <span style={{
-                      background: catColor + '22',
-                      border: `1px solid ${catColor}`,
-                      color: catColor,
-                      fontSize: 9,
-                      fontWeight: 700,
-                      padding: '2px 8px',
-                      borderRadius: 20,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                    }}>
-                      {p.category}
-                    </span>
+                  <div style={{ display: 'flex', gap: 6, marginTop: 7, flexWrap: 'wrap' }}>
+                    <CategoryTag category={p.category} />
                     {p.terpenes.length > 0 && (
-                      <span style={{ background: '#2a2a2a', color: '#666', fontSize: 10, padding: '2px 8px', borderRadius: 20 }}>
-                        {p.terpenes.length} terpene{p.terpenes.length !== 1 ? 's' : ''}
-                      </span>
+                      <Pill>{p.terpenes.length} terpene{p.terpenes.length !== 1 ? 's' : ''}</Pill>
                     )}
                     {p.cannabinoids.length > 0 && (
-                      <span style={{ background: '#2a2a2a', color: '#666', fontSize: 10, padding: '2px 8px', borderRadius: 20 }}>
-                        {p.cannabinoids.length} cannabinoid{p.cannabinoids.length !== 1 ? 's' : ''}
-                      </span>
+                      <Pill>{p.cannabinoids.length} cannabinoid{p.cannabinoids.length !== 1 ? 's' : ''}</Pill>
                     )}
                   </div>
                 </div>
 
-                <span style={{ color: '#333', fontSize: 18 }}>›</span>
-              </div>
+                <span style={{ color: t.text4, fontSize: 18, flexShrink: 0 }}>›</span>
+              </Pressable>
             )
           })}
         </div>
@@ -641,19 +625,11 @@ function ProductDetail({ productId, onBack }: ProductDetailProps) {
   }
 
   if (loading) {
-    return (
-      <div style={{ ...feedStyle, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ color: '#555', fontSize: 14 }}>Loading...</span>
-      </div>
-    )
+    return <div style={feedStyle}><FeedState kind="loading" message="Loading…" style={{ height: '100%' }} /></div>
   }
 
   if (error || !product) {
-    return (
-      <div style={{ ...feedStyle, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ color: '#f44336', fontSize: 14 }}>{error ?? 'Not found'}</span>
-      </div>
-    )
+    return <div style={feedStyle}><FeedState kind="error" message={error ?? 'Not found'} style={{ height: '100%' }} /></div>
   }
 
   const catColor = CATEGORY_COLORS[product.category] ?? '#555'
@@ -669,88 +645,76 @@ function ProductDetail({ productId, onBack }: ProductDetailProps) {
           top: 16,
           left: 16,
           zIndex: 10,
-          background: 'rgba(0,0,0,0.6)',
-          border: '1px solid #333',
-          borderRadius: 20,
+          background: alpha('#000', 0.55),
+          border: `1px solid ${alpha('#fff', 0.15)}`,
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          borderRadius: radius.pill,
           color: '#fff',
-          fontSize: 13,
-          padding: '6px 14px',
+          fontSize: font.size.small,
+          fontWeight: font.weight.medium,
+          padding: '7px 14px',
           cursor: 'pointer',
         }}
       >
         ← Back
       </button>
 
-      {/* Hero */}
+      {/* Hero — unified light product plate */}
       {imgSrc ? (
-        <div style={{ position: 'relative' }}>
-          <img src={imgSrc} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', background: '#111' }} />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, #0a0a0a 100%)' }} />
+        <div style={{ position: 'relative', width: '100%', paddingTop: '64%', background: t.tile }}>
+          <img src={imgSrc} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', padding: 24, boxSizing: 'border-box' }} />
         </div>
       ) : (
-        <div style={{ height: 120, background: `linear-gradient(135deg, ${catColor}33 0%, #111 100%)` }} />
+        <div style={{ height: 130, background: `linear-gradient(135deg, ${alpha(catColor, 0.28)} 0%, ${t.surface1} 100%)` }} />
       )}
 
       {/* Content */}
       <div style={{ padding: '20px 20px 32px' }}>
         {/* Category pill */}
-        <div style={{
-          display: 'inline-block',
-          background: catColor + '22',
-          border: `1px solid ${catColor}`,
-          color: catColor,
-          fontSize: 10,
-          fontWeight: 700,
-          padding: '3px 10px',
-          borderRadius: 20,
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em',
-          marginBottom: 12,
-        }}>
-          {product.category}
+        <div style={{ marginBottom: 12 }}>
+          <CategoryTag category={product.category} />
         </div>
 
         {/* Name */}
-        <div style={{ color: '#fff', fontSize: 28, fontWeight: 800, lineHeight: 1.2, marginBottom: 6 }}>
+        <div style={{ color: t.text1, fontSize: font.size.hero, fontWeight: font.weight.heavy, lineHeight: 1.2, marginBottom: 6, letterSpacing: '-0.01em' }}>
           {product.name}
         </div>
 
         {/* Brand */}
         {product.brand && (
-          <div style={{ color: '#666', fontSize: 14, marginBottom: 24 }}>{product.brand}</div>
+          <div style={{ color: t.text2, fontSize: font.size.body, marginBottom: 24 }}>{product.brand}</div>
         )}
 
         {/* Cannabinoids */}
         {product.cannabinoids.length > 0 && (
           <div style={{ marginBottom: 24 }}>
-            <div style={{ color: '#555', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-              Cannabinoids
-            </div>
+            <Label style={{ marginBottom: 10 }}>Cannabinoids</Label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 , justifyContent: 'center'}}>
               {product.cannabinoids.map((c) => (
                 <div key={c.name} style={{
-                  background: '#1a1a1a',
-                  border: '1px solid #2a2a2a',
-                  borderRadius: 10,
-                  padding: '8px 14px',
+                  background: t.surface1,
+                  border: `1px solid ${t.border}`,
+                  borderRadius: radius.md,
+                  padding: '9px 14px',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: 2,
-                  minWidth: 72,
+                  gap: 3,
+                  minWidth: 74,
                 }}>
-                  <span style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>{c.name}</span>
+                  <span style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.body }}>{c.name}</span>
                   <span style={{
-                    color: c.family === 'thc' ? '#a8e063' : '#2196f3',
-                    fontSize: 10,
-                    fontWeight: 700,
+                    color: c.family === 'thc' ? t.accent : '#3b9bf0',
+                    fontSize: font.size.micro,
+                    fontWeight: font.weight.bold,
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em',
                   }}>
                     {c.family.toUpperCase()}
                   </span>
                   {c.percent != null && (
-                    <span style={{ color: '#555', fontSize: 11 }}>{c.percent}%</span>
+                    <span style={{ color: t.text3, fontSize: font.size.caption }}>{c.percent}%</span>
                   )}
                 </div>
               ))}
@@ -761,19 +725,18 @@ function ProductDetail({ productId, onBack }: ProductDetailProps) {
         {/* Terpenes */}
         {product.terpenes.length > 0 && (
           <div>
-            <div style={{ color: '#555', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-              Terpenes
-            </div>
+            <Label style={{ marginBottom: 10 }}>Terpenes</Label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 , justifyContent: 'center'}}>
-              {product.terpenes.map((t) => (
-                <span key={t.name} style={{
-                  background: '#2a2a2a',
-                  color: '#888',
-                  fontSize: 12,
-                  padding: '5px 12px',
-                  borderRadius: 20,
+              {product.terpenes.map((tp) => (
+                <span key={tp.name} style={{
+                  background: t.surface2,
+                  color: t.text2,
+                  border: `1px solid ${t.border}`,
+                  fontSize: font.size.small,
+                  padding: '6px 12px',
+                  borderRadius: radius.pill,
                 }}>
-                  {t.name}{t.percent != null ? ` ${t.percent}%` : ''}
+                  {tp.name}{tp.percent != null ? ` ${tp.percent}%` : ''}
                 </span>
               ))}
             </div>
@@ -797,10 +760,10 @@ function LoginScreen() {
   const inputStyle: React.CSSProperties = {
     width: '100%',
     maxWidth: 320,
-    background: '#1a1a1a',
-    border: '1px solid #2a2a2a',
-    borderRadius: 10,
-    color: '#fff',
+    background: t.surface2,
+    border: `1px solid ${t.border}`,
+    borderRadius: radius.md,
+    color: t.text1,
     fontSize: 16,
     padding: '14px 16px',
     outline: 'none',
@@ -847,17 +810,16 @@ function LoginScreen() {
       justifyContent: 'center',
       height: '100dvh',
       padding: '0 32px',
-      background: '#0a0a0a',
-      fontFamily: 'system-ui, -apple-system, sans-serif',
+      background: t.bg,
     }}>
-      <div style={{ fontSize: 36, marginBottom: 20 }}>🌿</div>
-      <div style={{ color: '#fff', fontWeight: 800, fontSize: 24, marginBottom: 8, textAlign: 'center' }}>
+      <div style={{ fontSize: 40, marginBottom: 18 }}>🌿</div>
+      <div style={{ color: t.text1, fontWeight: font.weight.heavy, fontSize: font.size.display, marginBottom: 8, textAlign: 'center', letterSpacing: '-0.01em' }}>
         Sign in
       </div>
 
       {!sent ? (
         <>
-          <div style={{ color: '#555', fontSize: 14, marginBottom: 32, textAlign: 'center' }}>
+          <div style={{ color: t.text3, fontSize: font.size.body, marginBottom: 32, textAlign: 'center' }}>
             We'll send a code to your email.
           </div>
           <input
@@ -874,14 +836,16 @@ function LoginScreen() {
             style={{
               width: '100%',
               maxWidth: 320,
-              background: loading ? '#222' : '#a8e063',
+              background: loading ? t.surface3 : t.accent,
               border: 'none',
-              borderRadius: 10,
-              color: loading ? '#555' : '#0a0a0a',
-              fontSize: 15,
-              fontWeight: 700,
+              borderRadius: radius.md,
+              color: loading ? t.text3 : '#0a0a0a',
+              fontSize: font.size.callout,
+              fontWeight: font.weight.bold,
               padding: '14px',
               cursor: loading ? 'default' : 'pointer',
+              boxShadow: loading ? 'none' : 'var(--e-1)',
+              transition: `background var(--t-base)`,
             }}
           >
             {loading ? 'Sending…' : 'Send code'}
@@ -889,8 +853,8 @@ function LoginScreen() {
         </>
       ) : (
         <>
-          <div style={{ color: '#555', fontSize: 14, marginBottom: 32, textAlign: 'center' }}>
-            Enter the code sent to <span style={{ color: '#888' }}>{email}</span>
+          <div style={{ color: t.text3, fontSize: font.size.body, marginBottom: 32, textAlign: 'center' }}>
+            Enter the code sent to <span style={{ color: t.text2, fontWeight: font.weight.medium }}>{email}</span>
           </div>
           <input
             type="text"
@@ -911,15 +875,17 @@ function LoginScreen() {
             style={{
               width: '100%',
               maxWidth: 320,
-              background: verifying || code.trim().length < 8 ? '#222' : '#a8e063',
+              background: verifying || code.trim().length < 8 ? t.surface3 : t.accent,
               border: 'none',
-              borderRadius: 10,
-              color: verifying || code.trim().length < 8 ? '#555' : '#0a0a0a',
-              fontSize: 15,
-              fontWeight: 700,
+              borderRadius: radius.md,
+              color: verifying || code.trim().length < 8 ? t.text3 : '#0a0a0a',
+              fontSize: font.size.callout,
+              fontWeight: font.weight.bold,
               padding: '14px',
               cursor: verifying || code.trim().length < 8 ? 'default' : 'pointer',
               marginBottom: 12,
+              boxShadow: verifying || code.trim().length < 8 ? 'none' : 'var(--e-1)',
+              transition: `background var(--t-base)`,
             }}
           >
             {verifying ? 'Verifying…' : 'Verify'}
@@ -929,8 +895,8 @@ function LoginScreen() {
             style={{
               background: 'none',
               border: 'none',
-              color: '#444',
-              fontSize: 13,
+              color: t.text3,
+              fontSize: font.size.small + 1,
               cursor: 'pointer',
               padding: '4px 0',
             }}
@@ -941,7 +907,7 @@ function LoginScreen() {
       )}
 
       {error && (
-        <div style={{ color: '#f44336', fontSize: 13, marginTop: 12, textAlign: 'center' }}>{error}</div>
+        <div style={{ color: t.danger, fontSize: font.size.small + 1, marginTop: 12, textAlign: 'center' }}>{error}</div>
       )}
     </div>
   )
@@ -958,15 +924,14 @@ function NotLinkedScreen() {
       justifyContent: 'center',
       height: '100dvh',
       padding: '0 32px',
-      background: '#0a0a0a',
-      fontFamily: 'system-ui, -apple-system, sans-serif',
+      background: t.bg,
       textAlign: 'center',
     }}>
-      <div style={{ fontSize: 36, marginBottom: 20 }}>🔗</div>
-      <div style={{ color: '#fff', fontWeight: 800, fontSize: 22, marginBottom: 12 }}>
+      <div style={{ fontSize: 40, marginBottom: 18 }}>🔗</div>
+      <div style={{ color: t.text1, fontWeight: font.weight.heavy, fontSize: font.size.heading, marginBottom: 12, letterSpacing: '-0.01em' }}>
         Account not linked
       </div>
-      <div style={{ color: '#555', fontSize: 14, lineHeight: 1.6 }}>
+      <div style={{ color: t.text3, fontSize: font.size.body, lineHeight: 1.6, maxWidth: 300 }}>
         Your email isn't connected to a customer account yet. Ask a staff member to link your account.
       </div>
     </div>
@@ -1004,27 +969,28 @@ function CartDrawer({ items, open, onClose, onRemove, onClear }: CartDrawerProps
       <div style={{
         position: 'fixed',
         bottom: 0, left: 0, right: 0,
-        background: '#141414',
-        borderTop: '1px solid #2a2a2a',
-        borderRadius: '20px 20px 0 0',
+        background: t.surface1,
+        borderTop: `1px solid ${t.border}`,
+        borderRadius: `${radius['2xl']} ${radius['2xl']} 0 0`,
         zIndex: 2300,
         transform: open ? 'translateY(0)' : 'translateY(100%)',
-        transition: 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
+        transition: 'transform 0.32s cubic-bezier(0.32, 0.72, 0, 1)',
         maxHeight: '80dvh',
         display: 'flex',
         flexDirection: 'column',
+        boxShadow: 'var(--e-3)',
       }}>
         {/* Handle */}
         <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 0' }}>
-          <div style={{ width: 36, height: 4, borderRadius: 2, background: '#333' }} />
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: t.surface3 }} />
         </div>
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px 0' }}>
           <div>
-            <div style={{ color: '#fff', fontWeight: 700, fontSize: 18 }}>Your cart</div>
+            <div style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.title, letterSpacing: '-0.01em' }}>Your cart</div>
             {dispensaryName && (
-              <div style={{ color: '#555', fontSize: 12, marginTop: 2 }}>{dispensaryName}</div>
+              <div style={{ color: t.text3, fontSize: font.size.small, marginTop: 2 }}>{dispensaryName}</div>
             )}
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
@@ -1032,9 +998,9 @@ function CartDrawer({ items, open, onClose, onRemove, onClear }: CartDrawerProps
               <button
                 onClick={onClear}
                 style={{
-                  background: 'transparent', border: '1px solid #2a2a2a',
-                  borderRadius: 8, color: '#555', fontSize: 12,
-                  padding: '5px 10px', cursor: 'pointer',
+                  background: 'transparent', border: `1px solid ${t.border}`,
+                  borderRadius: radius.sm, color: t.text3, fontSize: font.size.small,
+                  padding: '6px 11px', cursor: 'pointer',
                 }}
               >
                 Clear
@@ -1042,9 +1008,10 @@ function CartDrawer({ items, open, onClose, onRemove, onClear }: CartDrawerProps
             )}
             <button
               onClick={onClose}
+              aria-label="Close cart"
               style={{
-                background: '#2a2a2a', border: 'none',
-                borderRadius: 8, color: '#888', fontSize: 18,
+                background: t.surface2, border: `1px solid ${t.border}`,
+                borderRadius: radius.sm, color: t.text2, fontSize: 18,
                 width: 32, height: 32, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
@@ -1057,44 +1024,46 @@ function CartDrawer({ items, open, onClose, onRemove, onClear }: CartDrawerProps
         {/* Items */}
         <div style={{ overflowY: 'auto', flex: 1, padding: '16px 20px 0' }}>
           {items.length === 0 ? (
-            <div style={{ color: '#555', fontSize: 14, textAlign: 'center', padding: '32px 0' }}>
-              Cart is empty
+            <div style={{ color: t.text3, fontSize: font.size.body, textAlign: 'center', padding: '40px 0' }}>
+              <div style={{ fontSize: 30, marginBottom: 10 }}>🛒</div>
+              Your cart is empty
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {items.map(item => (
                 <div key={item.listingId} style={{
                   display: 'flex', gap: 12, alignItems: 'center',
-                  background: '#1a1a1a', borderRadius: 12, padding: 12,
+                  background: t.surface2, borderRadius: radius.lg, padding: 12, border: `1px solid ${t.border}`,
                 }}>
                   {item.image_url ? (
                     <img
                       src={item.image_url}
                       alt=""
-                      style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'contain', background: '#111', flexShrink: 0 }}
+                      style={{ width: 48, height: 48, borderRadius: radius.sm, objectFit: 'contain', background: t.tile, padding: 4, boxSizing: 'border-box', flexShrink: 0 }}
                       onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
                     />
                   ) : (
-                    <div style={{ width: 48, height: 48, borderRadius: 8, background: '#222', flexShrink: 0 }} />
+                    <div style={{ width: 48, height: 48, borderRadius: radius.sm, background: t.surface3, flexShrink: 0 }} />
                   )}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ color: '#fff', fontWeight: 600, fontSize: 14, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div style={{ color: t.text1, fontWeight: font.weight.semibold, fontSize: font.size.body, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {item.name}
                     </div>
                     {item.variant && (
-                      <div style={{ color: '#555', fontSize: 12 }}>{item.variant}</div>
+                      <div style={{ color: t.text3, fontSize: font.size.small }}>{item.variant}</div>
                     )}
                     {item.price_cents != null && (
-                      <div style={{ color: '#a8e063', fontWeight: 700, fontSize: 13, marginTop: 2 }}>
+                      <div style={{ color: t.accent, fontWeight: font.weight.bold, fontSize: font.size.small + 1, marginTop: 2 }}>
                         ${(item.price_cents / 100).toFixed(2)}
                       </div>
                     )}
                   </div>
                   <button
                     onClick={() => onRemove(item.listingId)}
+                    aria-label="Remove item"
                     style={{
                       background: 'transparent', border: 'none',
-                      color: '#444', fontSize: 18, cursor: 'pointer',
+                      color: t.text3, fontSize: 18, cursor: 'pointer',
                       padding: '4px 8px', flexShrink: 0,
                     }}
                   >
@@ -1108,11 +1077,11 @@ function CartDrawer({ items, open, onClose, onRemove, onClear }: CartDrawerProps
 
         {/* Footer */}
         {items.length > 0 && (
-          <div style={{ padding: 20, borderTop: '1px solid #1e1e1e', marginTop: 16 }}>
+          <div style={{ padding: 20, borderTop: `1px solid ${t.border}`, marginTop: 16 }}>
             {total > 0 && (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <span style={{ color: '#666', fontSize: 14 }}>Estimated total</span>
-                <span style={{ color: '#fff', fontWeight: 700, fontSize: 18 }}>
+                <span style={{ color: t.text2, fontSize: font.size.body }}>Estimated total</span>
+                <span style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.title }}>
                   ${(total / 100).toFixed(2)}
                 </span>
               </div>
@@ -1123,9 +1092,10 @@ function CartDrawer({ items, open, onClose, onRemove, onClear }: CartDrawerProps
               rel="noopener noreferrer"
               style={{
                 display: 'block', width: '100%', boxSizing: 'border-box',
-                background: '#a8e063', borderRadius: 12,
-                color: '#0a0a0a', fontWeight: 700, fontSize: 15,
+                background: t.accent, borderRadius: radius.lg,
+                color: '#0a0a0a', fontWeight: font.weight.bold, fontSize: font.size.callout,
                 padding: '14px', textAlign: 'center', textDecoration: 'none',
+                boxShadow: 'var(--e-1)',
               }}
             >
               Order at {dispensaryName} →
@@ -1154,35 +1124,34 @@ function AccountView({ session, onSignOut }: AccountViewProps) {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '0 32px 92px',
-      background: '#0a0a0a',
-      fontFamily: 'system-ui, -apple-system, sans-serif',
+      background: t.bg,
     }}>
       <div style={{
         width: 72,
         height: 72,
-        borderRadius: 36,
-        background: '#1a1a1a',
-        border: '1px solid #2a2a2a',
+        borderRadius: '50%',
+        background: t.surface2,
+        border: `1px solid ${t.border}`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 20,
       }}>
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="#555">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="var(--text-3)">
           <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
         </svg>
       </div>
-      <div style={{ color: '#fff', fontWeight: 700, fontSize: 18, marginBottom: 6 }}>Your account</div>
-      <div style={{ color: '#555', fontSize: 14, marginBottom: 40 }}>{session.user.email}</div>
+      <div style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.title, marginBottom: 6 }}>Your account</div>
+      <div style={{ color: t.text3, fontSize: font.size.body, marginBottom: 40 }}>{session.user.email}</div>
       <button
         onClick={onSignOut}
         style={{
           background: 'transparent',
-          border: '1px solid #2a2a2a',
-          borderRadius: 12,
-          color: '#f44336',
-          fontSize: 15,
-          fontWeight: 600,
+          border: `1px solid ${t.border}`,
+          borderRadius: radius.lg,
+          color: t.danger,
+          fontSize: font.size.callout,
+          fontWeight: font.weight.semibold,
           padding: '12px 32px',
           cursor: 'pointer',
         }}
@@ -1193,17 +1162,622 @@ function AccountView({ session, onSignOut }: AccountViewProps) {
   )
 }
 
+// ─── Brand View ───────────────────────────────────────────────────────────────
+
+function FilterChip({ label, active, onClick, color }: {
+  label: string
+  active: boolean
+  onClick: () => void
+  color?: string
+}) {
+  const accent = color ?? '#a8e063'
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        flexShrink: 0,
+        cursor: 'pointer',
+        whiteSpace: 'nowrap',
+        textTransform: 'capitalize',
+        fontSize: font.size.small,
+        fontWeight: active ? font.weight.bold : font.weight.medium,
+        padding: '6px 12px',
+        borderRadius: radius.pill,
+        background: active ? alpha(accent, 0.14) : t.surface2,
+        border: `1px solid ${active ? accent : t.border}`,
+        color: active ? accent : t.text3,
+        transition: `all var(--t-fast)`,
+      }}
+    >
+      {label}
+    </button>
+  )
+}
+
+interface BrandViewProps {
+  brandName: string
+  onBack: () => void
+  onOpenProduct: (productKey: string) => void
+}
+
+type BrandSort = 'featured' | 'nearest' | 'price-asc' | 'price-desc'
+
+type EnrichedProduct = {
+  product: PortalBrandProduct
+  closest: PortalBrandOffering | null
+  closestDist: number | null
+  cheapest: PortalBrandOffering | null
+  cheapestDist: number | null
+}
+
+function BrandView({ brandName, onBack, onOpenProduct }: BrandViewProps) {
+  const [brand, setBrand] = useState<PortalBrandDetail | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [category, setCategory] = useState<string | null>(null)
+  const [sort, setSort] = useState<BrandSort>('featured')
+  const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(null)
+
+  useEffect(() => {
+    setLoading(true)
+    setError(null)
+    setCategory(null)
+    setSort('featured')
+    api.portal.getBrand(brandName)
+      .then(setBrand)
+      .catch(() => setError('Failed to load brand'))
+      .finally(() => setLoading(false))
+  }, [brandName])
+
+  useEffect(() => {
+    navigator.geolocation?.getCurrentPosition(pos => {
+      setUserPos({ lat: pos.coords.latitude, lng: pos.coords.longitude })
+    })
+  }, [])
+
+  // Category facets with product counts, ordered by frequency
+  const categoryFacets = useMemo(() => {
+    if (!brand) return [] as { name: string; count: number }[]
+    const counts = new Map<string, number>()
+    for (const p of brand.products) {
+      if (p.category) counts.set(p.category, (counts.get(p.category) ?? 0) + 1)
+    }
+    return [...counts.entries()]
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+  }, [brand])
+
+  // For each product, resolve the closest in-stock offering and the cheapest one
+  const enriched = useMemo<EnrichedProduct[]>(() => {
+    if (!brand) return []
+    return brand.products.map(product => {
+      let closest: PortalBrandOffering | null = null
+      let closestDist = Infinity
+      let cheapest: PortalBrandOffering | null = null
+      for (const o of product.offerings) {
+        if (o.price_cents != null && (cheapest == null || o.price_cents < cheapest.price_cents!)) {
+          cheapest = o
+        }
+        if (userPos && o.lat != null && o.lng != null) {
+          const d = haversineMi(userPos.lat, userPos.lng, o.lat, o.lng)
+          if (d < closestDist) { closestDist = d; closest = o }
+        }
+      }
+      const cheapestDist = (userPos && cheapest?.lat != null && cheapest?.lng != null)
+        ? haversineMi(userPos.lat, userPos.lng, cheapest.lat, cheapest.lng)
+        : null
+      return {
+        product,
+        closest,
+        closestDist: closest ? closestDist : null,
+        cheapest,
+        cheapestDist,
+      }
+    })
+  }, [brand, userPos])
+
+  const visibleProducts = useMemo(() => {
+    const filtered = category
+      ? enriched.filter(e => e.product.category === category)
+      : enriched
+    const sorted = [...filtered]
+    if (sort === 'price-asc' || sort === 'price-desc') {
+      const dir = sort === 'price-asc' ? 1 : -1
+      sorted.sort((a, b) => {
+        const pa = a.product.min_price_cents
+        const pb = b.product.min_price_cents
+        if (pa == null) return 1
+        if (pb == null) return -1
+        return (pa - pb) * dir
+      })
+    } else if (sort === 'nearest') {
+      sorted.sort((a, b) => (a.closestDist ?? Infinity) - (b.closestDist ?? Infinity))
+    }
+    return sorted
+  }, [enriched, category, sort])
+
+  return (
+    <div style={{ height: '100dvh', overflowY: 'auto', background: t.bg }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '20px 16px 12px' }}>
+        <button
+          onClick={onBack}
+          aria-label="Back"
+          style={{ background: 'none', border: 'none', color: t.accent, fontSize: 26, cursor: 'pointer', padding: 0, lineHeight: 1 }}
+        >
+          ‹
+        </button>
+        <div style={{
+          width: 56, height: 56, borderRadius: '50%', background: t.surface2, border: `1px solid ${t.border}`,
+          overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+        }}>
+          {brand?.image_url ? (
+            <img src={brand.image_url} alt={brandName} style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+          ) : (
+            <span style={{ color: t.accent, fontWeight: font.weight.heavy, fontSize: 22 }}>
+              {brandName.charAt(0).toUpperCase()}
+            </span>
+          )}
+        </div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ color: t.text1, fontWeight: font.weight.heavy, fontSize: font.size.heading, letterSpacing: '-0.01em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {brandName}
+          </div>
+          {brand && (
+            <div style={{ color: t.text3, fontSize: font.size.small, marginTop: 2 }}>
+              {brand.product_count} product{brand.product_count !== 1 ? 's' : ''} · {brand.dispensary_count} dispensar{brand.dispensary_count !== 1 ? 'ies' : 'y'}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Filter / sort toolbar */}
+      {brand && brand.products.length > 0 && (
+        <div style={{ position: 'sticky', top: 0, zIndex: 5, background: 'rgba(11,11,13,0.86)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', paddingBottom: 4 }}>
+          {/* Category chips */}
+          {categoryFacets.length > 1 && (
+            <div style={{ display: 'flex', overflowX: 'auto', gap: 8, padding: '4px 16px 8px', scrollbarWidth: 'none' } as React.CSSProperties}>
+              <FilterChip label="All" active={category === null} onClick={() => setCategory(null)} />
+              {categoryFacets.map(f => (
+                <FilterChip
+                  key={f.name}
+                  label={`${f.name} ${f.count}`}
+                  color={CATEGORY_COLORS[f.name] ?? '#888'}
+                  active={category === f.name}
+                  onClick={() => setCategory(category === f.name ? null : f.name)}
+                />
+              ))}
+            </div>
+          )}
+          {/* Sort row */}
+          <div style={{ display: 'flex', gap: 8, padding: '0 16px 6px', overflowX: 'auto', scrollbarWidth: 'none' } as React.CSSProperties}>
+            <FilterChip label="Featured" active={sort === 'featured'} onClick={() => setSort('featured')} />
+            {userPos && <FilterChip label="Nearest" active={sort === 'nearest'} onClick={() => setSort('nearest')} />}
+            <FilterChip label="Price ↑" active={sort === 'price-asc'} onClick={() => setSort('price-asc')} />
+            <FilterChip label="Price ↓" active={sort === 'price-desc'} onClick={() => setSort('price-desc')} />
+          </div>
+        </div>
+      )}
+
+      {loading ? (
+        <FeedState kind="loading" message="Loading…" />
+      ) : error ? (
+        <FeedState kind="error" message={error} />
+      ) : !brand || brand.products.length === 0 ? (
+        <FeedState kind="empty" message="No products in stock" icon="🌿" />
+      ) : visibleProducts.length === 0 ? (
+        <FeedState kind="empty" message="No products in this category" icon="🔍" style={{ minHeight: 160 }} />
+      ) : (
+        <div style={{ padding: '4px 16px 92px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {!userPos && (
+            <div style={{ color: t.text3, fontSize: font.size.caption, padding: '0 2px 2px' }}>
+              📍 Turn on location to see distances and nearest stores
+            </div>
+          )}
+          {visibleProducts.map((e) => (
+            <BrandProductCard key={e.product.key} item={e} hasLocation={!!userPos} onOpen={() => onOpenProduct(e.product.key)} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// One product row: closest in-stock store + price, plus the lowest price elsewhere
+function BrandProductCard({ item, hasLocation, onOpen }: {
+  item: EnrichedProduct
+  hasLocation: boolean
+  onOpen: () => void
+}) {
+  const { product, closest, closestDist, cheapest, cheapestDist } = item
+
+  // The store we surface first: prefer the closest, else the cheapest
+  const primary = closest ?? cheapest
+  const otherCount = product.dispensary_count - 1
+  // Show the "lowest price" line only when it's a genuinely cheaper, different store
+  const showLowest =
+    cheapest != null &&
+    cheapest.price_cents != null &&
+    primary != null &&
+    cheapest.listing_id !== primary.listing_id &&
+    (primary.price_cents == null || cheapest.price_cents < primary.price_cents)
+
+  return (
+    <Pressable
+      onClick={onOpen}
+      style={{
+        background: t.surface1, borderRadius: radius.lg, padding: 14, display: 'flex', gap: 14,
+        alignItems: 'center', border: `1px solid ${t.border}`,
+      }}
+    >
+      {/* Thumbnail */}
+      <div style={{
+        width: 54, height: 54, borderRadius: radius.md, overflow: 'hidden', flexShrink: 0,
+        background: t.tile, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.06)',
+      }}>
+        {product.image_url
+          ? <img src={product.image_url} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 6, boxSizing: 'border-box' }}
+              onError={ev => { (ev.target as HTMLImageElement).style.display = 'none' }} />
+          : <span style={{ fontSize: 20, opacity: 0.6 }}>🌿</span>}
+      </div>
+
+      {/* Info */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.callout, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {product.name}
+        </div>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 5, flexWrap: 'wrap' }}>
+          {product.category && <CategoryTag category={product.category} />}
+          {product.variant && (
+            <span style={{ color: t.text3, fontSize: font.size.caption }}>{product.variant}</span>
+          )}
+        </div>
+
+        {/* Closest store line */}
+        {closest ? (
+          <div style={{ color: t.text2, fontSize: font.size.small, marginTop: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <span style={{ color: t.accent }}>📍 {closestDist != null ? formatDist(closestDist) : ''}</span>
+            {' · '}{closest.dispensary_name}
+          </div>
+        ) : primary ? (
+          <div style={{ color: t.text2, fontSize: font.size.small, marginTop: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {primary.dispensary_name}
+          </div>
+        ) : null}
+
+        {/* Availability across dispensaries */}
+        <div style={{
+          color: otherCount > 0 ? t.accent : t.text3,
+          fontSize: font.size.caption, marginTop: 3,
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        }}>
+          {otherCount > 0
+            ? `Also at ${otherCount} other dispensar${otherCount === 1 ? 'y' : 'ies'}`
+            : 'Only at this dispensary'}
+        </div>
+      </div>
+
+      {/* Price column */}
+      <div style={{ textAlign: 'right', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
+        {primary?.price_cents != null && (
+          <div style={{ color: t.text1, fontWeight: font.weight.heavy, fontSize: font.size.callout }}>{formatDollars(primary.price_cents)}</div>
+        )}
+        {showLowest && (
+          <div style={{ color: t.accent, fontSize: font.size.micro, fontWeight: font.weight.semibold, whiteSpace: 'nowrap' }}>
+            Low {formatDollars(cheapest!.price_cents!)}
+            {hasLocation && cheapestDist != null ? ` · ${formatDist(cheapestDist)}` : ''}
+          </div>
+        )}
+        {!showLowest && cheapest?.price_cents != null && product.dispensary_count > 1 && (
+          <div style={{ color: t.text3, fontSize: font.size.micro }}>best price</div>
+        )}
+      </div>
+    </Pressable>
+  )
+}
+
+// ─── Brand Product View ─────────────────────────────────────────────────────
+
+interface ProductViewProps {
+  brandName: string
+  productKey: string
+  onBack: () => void
+  onListingClick: (dispensaryId: string, listingId: string) => void
+}
+
+function ProductView({ brandName, productKey, onBack, onListingClick }: ProductViewProps) {
+  const [brand, setBrand] = useState<PortalBrandDetail | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(null)
+  const [detail, setDetail] = useState<ListingDetail | null>(null)
+
+  useEffect(() => {
+    setLoading(true)
+    setError(null)
+    api.portal.getBrand(brandName)
+      .then(setBrand)
+      .catch(() => setError('Failed to load product'))
+      .finally(() => setLoading(false))
+  }, [brandName])
+
+  useEffect(() => {
+    navigator.geolocation?.getCurrentPosition(pos => {
+      setUserPos({ lat: pos.coords.latitude, lng: pos.coords.longitude })
+    })
+  }, [])
+
+  const product = useMemo(
+    () => brand?.products.find(p => p.key === productKey) ?? null,
+    [brand, productKey],
+  )
+
+  // Pull richer attributes (description, classification, terpenes, cannabinoids)
+  // from a representative listing — the cheapest offering carrying this product.
+  useEffect(() => {
+    setDetail(null)
+    if (!product || product.offerings.length === 0) return
+    const rep = [...product.offerings]
+      .filter(o => o.price_cents != null)
+      .sort((a, b) => (a.price_cents! - b.price_cents!))[0] ?? product.offerings[0]
+    let cancelled = false
+    api.portal.getListing(rep.dispensary_id, rep.listing_id)
+      .then(d => { if (!cancelled) setDetail(d) })
+      .catch(() => { /* detail is best-effort */ })
+    return () => { cancelled = true }
+  }, [product])
+
+  // All dispensaries carrying this product, with distance, sorted by distance (or price)
+  const offerings = useMemo(() => {
+    if (!product) return []
+    const withDist = product.offerings.map(o => ({
+      offering: o,
+      dist: (userPos && o.lat != null && o.lng != null)
+        ? haversineMi(userPos.lat, userPos.lng, o.lat, o.lng)
+        : null,
+    }))
+    withDist.sort((a, b) => {
+      if (a.dist != null && b.dist != null) return a.dist - b.dist
+      if (a.dist != null) return -1
+      if (b.dist != null) return 1
+      // no location: cheapest first
+      const pa = a.offering.price_cents
+      const pb = b.offering.price_cents
+      if (pa == null) return 1
+      if (pb == null) return -1
+      return pa - pb
+    })
+    return withDist
+  }, [product, userPos])
+
+  const prices = (product?.offerings ?? []).map(o => o.price_cents).filter((p): p is number => p != null)
+  const minPrice = prices.length ? Math.min(...prices) : null
+  const maxPrice = prices.length ? Math.max(...prices) : null
+  const avgPrice = prices.length ? Math.round(prices.reduce((s, p) => s + p, 0) / prices.length) : null
+  const savings = (minPrice != null && maxPrice != null) ? maxPrice - minPrice : 0
+
+  const classification = detail?.classification ?? null
+  const strain = product?.strain ?? detail?.strain ?? null
+  const subtype = product?.subtype ?? detail?.subtype ?? null
+  const productLine = product?.product_line ?? detail?.product_line ?? null
+  const description = detail?.description ?? null
+  const cannabinoids = detail?.cannabinoids ?? []
+  const terpenes = detail?.terpenes ?? []
+  const hasSpecs = !!(strain || subtype || productLine || product?.variant || classification)
+
+  return (
+    <div style={{ height: '100dvh', overflowY: 'auto', background: t.bg }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '20px 16px 8px' }}>
+        <button
+          onClick={onBack}
+          style={{ background: 'none', border: 'none', color: t.accent, fontSize: 24, cursor: 'pointer', padding: 0, lineHeight: 1 }}
+        >
+          ‹
+        </button>
+        <div style={{ color: t.text3, fontSize: font.size.small, fontWeight: font.weight.semibold }}>{brandName}</div>
+      </div>
+
+      {loading ? (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
+          <span style={{ color: t.text3, fontSize: 14 }}>Loading…</span>
+        </div>
+      ) : error ? (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
+          <span style={{ color: t.danger, fontSize: 14 }}>{error}</span>
+        </div>
+      ) : !product ? (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
+          <span style={{ color: t.text3, fontSize: 14 }}>Product not found</span>
+        </div>
+      ) : (
+        <>
+          {/* Product hero */}
+          <div style={{ display: 'flex', gap: 16, padding: '8px 16px 16px', alignItems: 'center' }}>
+            <div style={{
+              width: 88, height: 88, borderRadius: radius.lg, overflow: 'hidden', flexShrink: 0,
+              background: t.tile, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {product.image_url
+                ? <img src={product.image_url} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 8, boxSizing: 'border-box' }}
+                    onError={ev => { (ev.target as HTMLImageElement).style.display = 'none' }} />
+                : <span style={{ fontSize: 32, opacity: 0.6 }}>🌿</span>}
+            </div>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ color: t.text1, fontWeight: font.weight.heavy, fontSize: font.size.heading, lineHeight: 1.15 }}>
+                {product.name}
+              </div>
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 7, flexWrap: 'wrap' }}>
+                {product.category && <CategoryTag category={product.category} />}
+                {classification && <ClassificationTag classification={classification} />}
+                {product.variant && <span style={{ color: t.text3, fontSize: font.size.caption }}>{product.variant}</span>}
+              </div>
+              {minPrice != null && (
+                <div style={{ color: t.text2, fontSize: font.size.small, marginTop: 8 }}>
+                  {minPrice === maxPrice
+                    ? formatDollars(minPrice)
+                    : `${formatDollars(minPrice)} – ${formatDollars(maxPrice!)}`}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Price insights */}
+          {minPrice != null && (
+            <div style={{ padding: '0 16px 18px' }}>
+              <div style={{
+                display: 'flex', background: t.surface1, border: `1px solid ${t.border}`,
+                borderRadius: radius.lg, overflow: 'hidden',
+              }}>
+                {[
+                  { label: 'Lowest', value: formatDollars(minPrice), accent: true },
+                  { label: 'Average', value: avgPrice != null ? formatDollars(avgPrice) : '—', accent: false },
+                  { label: 'Highest', value: maxPrice != null ? formatDollars(maxPrice) : '—', accent: false },
+                ].map((cell, i) => (
+                  <div key={cell.label} style={{
+                    flex: 1, padding: '12px 8px', textAlign: 'center',
+                    borderLeft: i > 0 ? `1px solid ${t.border}` : 'none',
+                  }}>
+                    <div style={{ color: cell.accent ? t.accent : t.text1, fontWeight: font.weight.heavy, fontSize: font.size.callout }}>{cell.value}</div>
+                    <div style={{ color: t.text3, fontSize: font.size.micro, marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{cell.label}</div>
+                  </div>
+                ))}
+              </div>
+              {savings > 0 && (
+                <div style={{ color: t.accent, fontSize: font.size.caption, fontWeight: font.weight.semibold, marginTop: 8, textAlign: 'center' }}>
+                  Save up to {formatDollars(savings)} by choosing the lowest-priced store
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Cannabinoids */}
+          {cannabinoids.length > 0 && (
+            <DetailBlock title="Cannabinoids" style={{ padding: '0 16px 18px' }}>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {cannabinoids.map((c, i) => (
+                  <div key={`${c.name}-${i}`} style={{
+                    background: t.surface1, border: `1px solid ${t.border}`, borderRadius: radius.md,
+                    padding: '8px 12px', minWidth: 64,
+                  }}>
+                    <div style={{ color: t.text1, fontWeight: font.weight.heavy, fontSize: font.size.body }}>
+                      {c.percent != null ? `${c.percent}%` : '—'}
+                    </div>
+                    <div style={{ color: t.text3, fontSize: font.size.micro, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{c.name}</div>
+                  </div>
+                ))}
+              </div>
+            </DetailBlock>
+          )}
+
+          {/* Terpenes */}
+          {terpenes.length > 0 && (
+            <DetailBlock title="Terpenes" style={{ padding: '0 16px 18px' }}>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {terpenes.map((tp, i) => (
+                  <span key={`${tp.name}-${i}`} style={{
+                    background: t.surface1, border: `1px solid ${t.border}`, borderRadius: radius.pill,
+                    padding: '6px 12px', color: t.text2, fontSize: font.size.small,
+                  }}>
+                    {tp.name}{tp.percent != null ? ` · ${tp.percent}%` : ''}
+                  </span>
+                ))}
+              </div>
+            </DetailBlock>
+          )}
+
+          {/* Specs */}
+          {hasSpecs && (
+            <DetailBlock title="Details" style={{ padding: '0 16px 18px' }}>
+              <div>
+                {strain && <SpecRow label="Strain" value={strain} />}
+                {classification && <SpecRow label="Type" value={classification} />}
+                {subtype && <SpecRow label="Form" value={subtype} />}
+                {productLine && <SpecRow label="Product line" value={productLine} />}
+                {product.variant && <SpecRow label="Size" value={product.variant} />}
+              </div>
+            </DetailBlock>
+          )}
+
+          {/* Description */}
+          {description && (
+            <CollapsibleBlock title="Product Description" style={{ padding: '0 16px 18px' }}>
+              <p style={{ color: t.text2, fontSize: font.size.small, lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>
+                {description}
+              </p>
+            </CollapsibleBlock>
+          )}
+
+          {/* Availability heading */}
+          <div style={{ color: t.text2, fontWeight: font.weight.bold, fontSize: font.size.callout, padding: '8px 16px 4px' }}>
+            {product.dispensary_count === 1
+              ? 'Available at 1 dispensary'
+              : `Available at ${product.dispensary_count} dispensaries`}
+          </div>
+          {!userPos && (
+            <div style={{ color: t.text3, fontSize: font.size.caption, padding: '0 16px 6px' }}>
+              📍 Turn on location to sort by distance
+            </div>
+          )}
+
+          {/* Dispensary list */}
+          <div style={{ padding: '4px 16px 92px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {offerings.map(({ offering: o, dist }) => {
+              const isCheapest = o.price_cents != null && o.price_cents === minPrice && minPrice !== maxPrice
+              return (
+                <Pressable
+                  key={o.listing_id}
+                  onClick={() => onListingClick(o.dispensary_id, o.listing_id)}
+                  style={{
+                    background: t.surface1, borderRadius: radius.lg, padding: 14, display: 'flex', gap: 12,
+                    alignItems: 'center', border: `1px solid ${t.border}`,
+                  }}
+                >
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.callout, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {o.dispensary_name}
+                    </div>
+                    <div style={{ color: t.text3, fontSize: font.size.small, marginTop: 3 }}>
+                      {dist != null ? `📍 ${formatDist(dist)}` : (o.in_stock ? 'In stock' : 'Out of stock')}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
+                    {o.price_cents != null && (
+                      <div style={{ color: t.text1, fontWeight: font.weight.heavy, fontSize: font.size.callout }}>{formatDollars(o.price_cents)}</div>
+                    )}
+                    {isCheapest && (
+                      <div style={{ color: t.accent, fontSize: font.size.micro, fontWeight: font.weight.semibold }}>lowest</div>
+                    )}
+                  </div>
+                  <span style={{ color: t.text4, fontSize: 18, marginLeft: 2 }}>›</span>
+                </Pressable>
+              )
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 // ─── Root Component ───────────────────────────────────────────────────────────
 
 export default function CustomerPortal() {
   const navigate = useNavigate()
   const matchProduct = useMatch('/portal/products/:productId')
+  const matchBrandProduct = useMatch('/portal/brands/:brandName/products/:productKey')
+  const matchBrand = useMatch('/portal/brands/:brandName')
   const matchListing = useMatch('/portal/map/:dispensaryId/listings/:listingId')
   const matchAisle = useMatch('/portal/map/:dispensaryId/aisle/:category')
   const matchDispensary = useMatch('/portal/map/:dispensaryId')
   const matchTab = useMatch('/portal/:tab')
 
   const selectedProductId = matchProduct?.params.productId ?? null
+  const brandProductBrand = matchBrandProduct?.params.brandName ? decodeURIComponent(matchBrandProduct.params.brandName) : null
+  const brandProductKey = matchBrandProduct?.params.productKey ? decodeURIComponent(matchBrandProduct.params.productKey) : null
+  const selectedBrandName = matchBrand?.params.brandName ? decodeURIComponent(matchBrand.params.brandName) : null
   const selectedListingId = matchListing?.params.listingId ?? null
   const selectedListingDispensaryId = matchListing?.params.dispensaryId ?? null
   const selectedDispensaryId = matchDispensary?.params.dispensaryId ?? null
@@ -1211,7 +1785,9 @@ export default function CustomerPortal() {
     ? 'map'
     : matchProduct
       ? 'search'
-      : ((matchTab?.params.tab as Tab | undefined) ?? 'home')
+      : (matchBrand || matchBrandProduct)
+        ? 'home'
+        : ((matchTab?.params.tab as Tab | undefined) ?? 'home')
 
   const [session, setSession] = useState<Session | null | undefined>(undefined)
   const [customerId, setCustomerId] = useState<string | null>(null)
@@ -1329,32 +1905,38 @@ export default function CustomerPortal() {
 
   // Auth / loading gates
   if (session === undefined) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100dvh', background: '#0a0a0a' }}>
-        <span style={{ color: '#333', fontSize: 14 }}>Loading…</span>
-      </div>
-    )
+    return <div style={{ height: '100dvh', background: t.bg }}><FeedState kind="loading" message="Loading…" style={{ height: '100%' }} /></div>
   }
   if (!session) return <LoginScreen />
   if (profileError) return <NotLinkedScreen />
   if (!customerId) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100dvh', background: '#0a0a0a' }}>
-        <span style={{ color: '#333', fontSize: 14 }}>Loading…</span>
-      </div>
-    )
+    return <div style={{ height: '100dvh', background: t.bg }}><FeedState kind="loading" message="Loading…" style={{ height: '100%' }} /></div>
   }
 
   return (
     <div style={{
       position: 'fixed',
       inset: 0,
-      background: '#0a0a0a',
+      background: t.bg,
       overflow: 'hidden',
-      fontFamily: 'system-ui, -apple-system, sans-serif',
     }}>
       {/* Feed area */}
-      {activeTab === 'home' && <HomeFeed />}
+      {activeTab === 'home' && brandProductBrand && brandProductKey && (
+        <ProductView
+          brandName={brandProductBrand}
+          productKey={brandProductKey}
+          onBack={() => navigate(-1)}
+          onListingClick={(dispensaryId, listingId) => navigate(`/portal/map/${dispensaryId}/listings/${listingId}`)}
+        />
+      )}
+      {activeTab === 'home' && !brandProductBrand && selectedBrandName && (
+        <BrandView
+          brandName={selectedBrandName}
+          onBack={() => navigate(-1)}
+          onOpenProduct={(productKey) => navigate(`/portal/brands/${encodeURIComponent(selectedBrandName)}/products/${encodeURIComponent(productKey)}`)}
+        />
+      )}
+      {activeTab === 'home' && !brandProductBrand && !selectedBrandName && <HomeFeed />}
       {activeTab === 'search' && selectedProductId && (
         <ProductDetail
           productId={selectedProductId}
@@ -1408,7 +1990,7 @@ export default function CustomerPortal() {
         boxShadow: '0 4px 32px rgba(0,0,0,0.6)',
         display: 'flex',
         alignItems: 'center',
-        zIndex: 1000,
+        zIndex: 2100,
         padding: '0 6px',
         gap: 2,
       }}>

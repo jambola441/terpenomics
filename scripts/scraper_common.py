@@ -301,6 +301,18 @@ def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def run_stamp() -> str:
+    """UTC timestamp suffix for output filenames — compact, filesystem-safe, and
+    lexicographically chronological (so the newest file sorts last). e.g. 20260621T183000Z."""
+    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+
+
+def stamped_path(path: str, stamp: str | None = None) -> str:
+    """Insert a timestamp before the extension: foo/bar.csv -> foo/bar_20260621T183000Z.csv."""
+    root, ext = os.path.splitext(path)
+    return f"{root}_{stamp or run_stamp()}{ext}"
+
+
 # ---------------------------------------------------------------------------
 # CSV output
 # ---------------------------------------------------------------------------

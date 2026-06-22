@@ -1,0 +1,62 @@
+{
+  "eval_type": "identity_cluster",
+  "description": "Each case is a GROUP of real-world listings of the SAME physical product, worded differently across dispensaries (naming, size notation, ALLCAPS, format words). After enrichment every member must land on the SAME identity tuple (the fields in expect_same), and match `canonical` if given. Brand is held constant so this isolates what enrichment controls (category, subtype, strain, variant). This is the cross-dispensary 'same product → same key' test.",
+  "cases": [
+    {
+      "id": "clust-blue-dream-eighth",
+      "expect_same": ["category", "subtype", "strain", "variant"],
+      "canonical": {"category": "flower", "subtype": "flower", "strain": "Blue Dream", "variant": "3.5g"},
+      "members": [
+        {"brand": "Stone Road", "name": "Blue Dream 3.5g", "category": "flower", "description": ""},
+        {"brand": "Stone Road", "name": "Blue Dream Eighth", "category": "flower", "description": "1/8 oz"},
+        {"brand": "Stone Road", "name": "Stone Road Blue Dream Flower 1/8 oz", "category": "flower", "description": ""},
+        {"brand": "Stone Road", "name": "BLUE DREAM (S) 3.5G", "category": "flower", "description": ""}
+      ]
+    },
+    {
+      "id": "clust-gelato-cart",
+      "expect_same": ["category", "subtype", "strain", "variant"],
+      "canonical": {"category": "vaporizers", "subtype": "cart", "strain": "Gelato", "variant": "0.5g"},
+      "members": [
+        {"brand": "Stiiizy", "name": "Gelato Live Resin Cart 0.5g", "category": "concentrate", "description": ""},
+        {"brand": "Stiiizy", "name": "Gelato 510 Cartridge .5g", "category": "vaporizers", "description": ""},
+        {"brand": "Stiiizy", "name": "Gelato Live Resin Vape Cartridge 0.5 g", "category": "vaporizers", "description": ""}
+      ]
+    },
+    {
+      "id": "clust-watermelon-gummy",
+      "expect_same": ["category", "subtype", "strain", "variant"],
+      "canonical": {"category": "edible", "subtype": "gummy", "strain": "Watermelon", "variant": "100mg"},
+      "members": [
+        {"brand": "Camino", "name": "Watermelon Gummies 100mg", "category": "edible", "description": ""},
+        {"brand": "Camino", "name": "Watermelon Gummies 10pk", "category": "edible", "description": "10 x 10mg"},
+        {"brand": "Camino", "name": "WATERMELON GUMMIES (100MG)", "category": "edible", "description": "10 pieces"}
+      ]
+    },
+    {
+      "id": "clust-gmo-preroll",
+      "expect_same": ["category", "subtype", "strain", "variant"],
+      "canonical": {"category": "preroll", "subtype": "single", "strain": "GMO", "variant": "1g"},
+      "members": [
+        {"brand": "Jetpacks", "name": "GMO Pre-Roll 1g", "category": "preroll", "description": ""},
+        {"brand": "Jetpacks", "name": "GMO Preroll 1 gram", "category": "preroll", "description": ""},
+        {"brand": "Jetpacks", "name": "GMO PR 1g", "category": "preroll", "description": "single joint"}
+      ]
+    },
+    {
+      "id": "clust-ruby-elderberry-sage",
+      "note": "REAL listings of ONE product (Ruby Farms 'Night Cap' Elderberry Sage live-resin gummies, 20pk, 100mg THC) pulled from 7 dispensary scrapes. Enrichment split them apart because: (1) cannabinoid ratios leak into strain ('Elderberry Sage 1:2:3 THC:CBD:CBN'), (2) the product line leaks into strain ('Night Cap Elderberry Sage'), (3) the line spelling varies (Night Cap / Nightcap / missing), (4) one used physical weight (3.9g) instead of total THC mg. NOTE: product_line convergence on the canonical 'Night Cap' depends on the brand-examples nudge, which run_eval.py currently disables (brand_examples={}); strain/variant/category/subtype are model-fixable here.",
+      "expect_same": ["category", "subtype", "strain", "product_line", "variant"],
+      "canonical": {"category": "edible", "subtype": "gummy", "strain": "Elderberry Sage", "product_line": "Night Cap", "variant": "100mg"},
+      "members": [
+        {"_src": "dagmar-cannabis-wburg", "brand": "Ruby Farms", "name": "Ruby Farms Elderberry Sage Gummies 20pk", "category": "edible", "variant": "100mg", "description": ""},
+        {"_src": "kaya-bliss-bay-ridge", "brand": "Ruby Farms", "name": "Ruby Farms - ''Night Cap'' Elderberry Sage Live Resin Gummies 1:2:3 THC:CBD:CBN 20 pk - 100mg", "category": "edible", "variant": "100mg", "description": ""},
+        {"_src": "kaya-bliss-brooklyn-heights", "brand": "Ruby Farms", "name": "Ruby Farms - ''Night Cap'' Elderberry Sage Gummies 1:2:3 THC:CBD:CBN 20 pk - 100mg", "category": "edible", "variant": "100mg", "description": ""},
+        {"_src": "soulmate-fort-greene", "brand": "Ruby Farms", "name": "Ruby Farms | Nightcap - Elderberry Sage | Gummies", "category": "edible", "variant": "100mg", "description": ""},
+        {"_src": "oc-dispensary-bk", "brand": "Ruby Farms", "name": "Edible Gummies | Ruby Farms | Night Cap - Elderberry Sage | 20pk 100MG CBN 300MG CBD 200MG", "category": "edible", "variant": "100mg", "description": ""},
+        {"_src": "the-spot-bk", "brand": "Ruby Farms", "name": "\"Night Cap\" Elderberry Sage -Indica- 5:10:15mg THC|CBD|CBN | 100:200:300mg THC/CBD/CBN (20 Pack Live Resin Vegan Gummies) | Ruby Farms   -Z12", "category": "edible", "variant": "100mg", "description": ""},
+        {"_src": "bedford-club-bk", "brand": "Ruby Farms", "name": "X| Ruby Farms | Elderberry Sage | Night Cap | Gummy | 20pk | 100mg", "category": "edible", "variant": "3.9g", "description": ""}
+      ]
+    }
+  ]
+}

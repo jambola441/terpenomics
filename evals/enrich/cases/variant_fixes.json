@@ -1,0 +1,16 @@
+{
+  "eval_type": "variant_fix",
+  "description": "Fix common dispensary variant-labeling errors: edibles to TOTAL package THC in mg (pack math from the description), flower fractions to grams, and never converting fluid ounces of a drink to grams.",
+  "cases": [
+    {"id": "var-edible-packmath-10x10", "input": {"brand": "Wyld", "name": "Raspberry Gummies 10pk", "category": "edible", "description": "10 pieces, 10mg THC each"}, "expect": {"variant": "100mg"}},
+    {"id": "var-edible-packmath-20x5", "input": {"brand": "Kiva", "name": "Blackberry Gummies", "category": "edible", "description": "20 pieces x 5mg"}, "expect": {"variant": "100mg"}},
+    {"id": "var-edible-grams-wrong", "input": {"brand": "Camino", "name": "Watermelon Gummies", "category": "edible", "description": "net weight 80g, 100mg THC total (10 x 10mg)"}, "expect": {"variant": "100mg"}},
+    {"id": "var-flower-eighth-oz", "input": {"brand": "Stone Road", "name": "Blue Dream Flower 1/8 oz", "category": "flower", "description": ""}, "expect": {"variant": "3.5g"}},
+    {"id": "var-flower-quarter", "input": {"brand": "Revert", "name": "Durban Kush Quarter", "category": "flower", "description": "1/4 oz"}, "expect": {"variant": "7g"}},
+    {"id": "var-cart-halfg", "input": {"brand": "Stiiizy", "name": "Gelato 510 Cartridge .5g", "category": "vaporizers", "description": ""}, "expect": {"variant": "0.5g"}},
+    {"id": "var-beverage-floz-keep", "input": {"brand": "Ayrloom", "name": "Citrus Seltzer 12oz", "category": "edible", "description": "12 fl oz sparkling drink, 5mg THC"}, "expect": {"variant": "5mg"}},
+    {"id": "var-tincture-ml", "input": {"brand": "Releaf", "name": "1:1 Tincture 30ml", "category": "tinctures", "description": ""}, "expect": {"variant": "30ml"}},
+    {"id": "var-concentrate-1g", "input": {"brand": "Punch", "name": "GMO Live Rosin Badder 1g", "category": "concentrate", "description": ""}, "expect": {"variant": "1g"}},
+    {"id": "var-flower-eighth-grams", "input": {"brand": "MFNY", "name": "Papaya Eighth", "category": "flower", "description": "3.5 grams"}, "expect": {"variant": "3.5g"}}
+  ]
+}

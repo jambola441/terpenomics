@@ -2,20 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import type { CartItem, DispensaryListing } from '../types'
-
-const CATEGORY_COLORS: Record<string, string> = {
-  flower: '#4caf50',
-  cart: '#2196f3',
-  vaporizers: '#2196f3',
-  edible: '#ff9800',
-  concentrate: '#9c27b0',
-  preroll: '#00bcd4',
-  tincture: '#8bc34a',
-  tinctures: '#8bc34a',
-  topical: '#f44336',
-  merch: '#607d8b',
-  other: '#9e9e9e',
-}
+import { t, radius, font, categoryColor, alpha } from '../theme'
+import { Pressable, Pill, FeedState, Skeleton } from './ui'
 
 const CATEGORY_EMOJI: Record<string, string> = {
   flower: '🌸',
@@ -71,6 +59,7 @@ export default function DispensaryListings({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchInput, setSearchInput] = useState(() => searchParams.get('q') ?? '')
+  const [searchFocus, setSearchFocus] = useState(false)
   const [distanceMi, setDistanceMi] = useState<number | null>(null)
   const offset = useRef(0)
   const LIMIT = 100
@@ -126,33 +115,34 @@ export default function DispensaryListings({
 
   function renderCard(l: DispensaryListing) {
     const cat = l.scraped_category ?? 'other'
-    const catColor = CATEGORY_COLORS[cat] ?? '#9e9e9e'
+    const catColor = categoryColor(cat)
     const price = formatPrice(l.price_cents)
     const cartQty = cart.filter(i => i.listingId === l.id).reduce((s, i) => s + i.quantity, 0)
 
     return (
-      <div
+      <Pressable
         key={l.id}
         onClick={() => navigate(`/portal/map/${dispensaryId}/listings/${l.id}`)}
         style={{
-          width: 130, flexShrink: 0,
-          background: '#111', borderRadius: 14, border: '1px solid #1a1a1a',
-          cursor: 'pointer', overflow: 'hidden', display: 'flex', flexDirection: 'column',
+          width: 132, flexShrink: 0, scrollSnapAlign: 'start',
+          background: t.surface1, borderRadius: radius.lg, border: `1px solid ${t.border}`,
+          overflow: 'hidden', display: 'flex', flexDirection: 'column',
         }}
       >
-        <div style={{ position: 'relative', height: 110, background: catColor + '11', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ position: 'relative', height: 110, background: t.tile, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.06)' }}>
           {l.image_url ? (
             <img
               src={l.image_url}
               alt={l.scraped_name ?? ''}
-              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 10, boxSizing: 'border-box' }}
               onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
             />
           ) : (
-            <span style={{ fontSize: 32, opacity: 0.4 }}>{CATEGORY_EMOJI[cat] ?? '📦'}</span>
+            <span style={{ fontSize: 30, opacity: 0.5 }}>{CATEGORY_EMOJI[cat] ?? '📦'}</span>
           )}
           {acceptsPickup && onAddToCart && (
             <button
+              aria-label="Add to cart"
               onClick={e => {
                 e.stopPropagation()
                 onAddToCart({
@@ -165,11 +155,12 @@ export default function DispensaryListings({
               style={{
                 position: 'absolute', bottom: 8, right: 8,
                 width: 30, height: 30, borderRadius: '50%',
-                background: cartQty > 0 ? '#a8e063' : '#fff',
+                background: cartQty > 0 ? t.accent : '#fff',
                 border: 'none', cursor: 'pointer', padding: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 12, fontWeight: 700, color: '#0a0a0a',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.35)', flexShrink: 0,
+                boxShadow: '0 2px 10px rgba(0,0,0,0.45)', flexShrink: 0,
+                transition: `background var(--t-fast), transform var(--t-fast)`,
               } as React.CSSProperties}
             >
               {cartQty > 0 ? cartQty : (
@@ -181,84 +172,87 @@ export default function DispensaryListings({
             </button>
           )}
         </div>
-        <div style={{ padding: '8px 8px 10px', flex: 1 }}>
-          {price && <div style={{ color: '#a8e063', fontWeight: 700, fontSize: 12, marginBottom: 2 }}>{price}</div>}
+        <div style={{ padding: '9px 9px 11px', flex: 1 }}>
+          {price && <div style={{ color: t.accent, fontWeight: font.weight.bold, fontSize: font.size.small + 1, marginBottom: 3 }}>{price}</div>}
           <div style={{
-            color: '#f1f5f9', fontWeight: 600, fontSize: 12, lineHeight: 1.3,
+            color: t.text1, fontWeight: font.weight.semibold, fontSize: font.size.small, lineHeight: 1.3,
             display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
           } as React.CSSProperties}>
             {l.scraped_name ?? '—'}
           </div>
+          {catColor && l.variant && (
+            <div style={{ color: t.text3, fontSize: font.size.caption, marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.variant}</div>
+          )}
         </div>
-      </div>
+      </Pressable>
     )
   }
 
   return (
-    <div style={{ height: 'calc(100dvh - 64px)', overflowY: 'auto', background: '#0a0a0a' }}>
+    <div style={{ height: 'calc(100dvh - 64px)', overflowY: 'auto', background: t.bg }}>
 
       {/* Banner */}
-      <div style={{ position: 'relative', height: 160, background: '#111' }}>
+      <div style={{ position: 'relative', height: 160, background: t.surface1 }}>
         {dispensaryBannerUrl ? (
           <img src={dispensaryBannerUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
         ) : (
-          <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #1a2a1a 0%, #0f1f0f 100%)' }} />
+          <div style={{ width: '100%', height: '100%', background: `linear-gradient(135deg, ${alpha('#a8e063', 0.18)} 0%, ${t.surface1} 72%)` }} />
         )}
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.5) 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to bottom, ${alpha('#000', 0.15)} 0%, ${t.bg} 100%)` }} />
         <button
           onClick={onBack}
           style={{
-            position: 'absolute', top: 12, left: 12,
-            background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,255,255,0.15)',
-            backdropFilter: 'blur(8px)', borderRadius: 20, color: '#fff',
-            fontSize: 13, padding: '6px 14px', cursor: 'pointer',
+            position: 'absolute', top: 14, left: 14,
+            background: alpha('#000', 0.5), border: `1px solid ${alpha('#fff', 0.15)}`,
+            backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', borderRadius: radius.pill, color: '#fff',
+            fontSize: font.size.small, fontWeight: font.weight.medium, padding: '7px 14px', cursor: 'pointer',
+            display: 'inline-flex', alignItems: 'center', gap: 5,
           }}
         >← Map</button>
       </div>
 
       {/* Identity block */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: -32, marginBottom: 16, position: 'relative', zIndex: 1, padding: '0 16px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: -34, marginBottom: 18, position: 'relative', zIndex: 1, padding: '0 16px' }}>
         <div style={{
-          width: 64, height: 64, borderRadius: 16, border: '2px solid #222',
-          overflow: 'hidden', background: '#1a1a1a', display: 'flex',
-          alignItems: 'center', justifyContent: 'center', marginBottom: 10,
+          width: 66, height: 66, borderRadius: radius.xl, border: `2px solid ${t.bg}`,
+          overflow: 'hidden', background: t.surface2, display: 'flex',
+          alignItems: 'center', justifyContent: 'center', marginBottom: 12,
+          boxShadow: 'var(--e-2)',
         }}>
           {dispensaryLogoUrl ? (
             <img src={dispensaryLogoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
           ) : (
-            <span style={{ color: '#a8e063', fontWeight: 800, fontSize: 26 }}>
+            <span style={{ color: t.accent, fontWeight: font.weight.heavy, fontSize: 26 }}>
               {dispensaryName.charAt(0).toUpperCase()}
             </span>
           )}
         </div>
-        <div style={{ color: '#fff', fontWeight: 800, fontSize: 20, lineHeight: 1.2, marginBottom: 6, textAlign: 'center' }}>
+        <div style={{ color: t.text1, fontWeight: font.weight.heavy, fontSize: font.size.heading, lineHeight: 1.2, marginBottom: 7, textAlign: 'center', letterSpacing: '-0.01em' }}>
           {dispensaryName}
         </div>
         {(dispensaryAddress || distanceMi != null) && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
-            {dispensaryAddress && <span style={{ color: '#555', fontSize: 12 }}>📍 {dispensaryAddress}</span>}
-            {distanceMi != null && <span style={{ color: '#444', fontSize: 12 }}>· {distanceMi < 0.1 ? '< 0.1' : distanceMi.toFixed(1)} mi away</span>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+            {dispensaryAddress && <span style={{ color: t.text3, fontSize: font.size.small }}>📍 {dispensaryAddress}</span>}
+            {distanceMi != null && <span style={{ color: t.text4, fontSize: font.size.small }}>· {distanceMi < 0.1 ? '< 0.1' : distanceMi.toFixed(1)} mi away</span>}
           </div>
         )}
         {acceptsPickup ? (
-          <span style={{ background: '#1a2a10', border: '1px solid #2a4a1a', color: '#6abf2e', fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20 }}>
-            🛒 Pickup orders
-          </span>
+          <Pill color={categoryColor('flower')} tone="category" size="md">🛒 Pickup orders</Pill>
         ) : (
-          <span style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', color: '#555', fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20 }}>
-            In store only
-          </span>
+          <Pill size="md">In store only</Pill>
         )}
       </div>
 
       {/* Sticky search */}
-      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: '#0a0a0a', borderBottom: '1px solid #161616', padding: '8px 16px' }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: alpha('#0b0b0d', 0.86), backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderBottom: `1px solid ${t.border}`, padding: '8px 16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <input
             value={searchInput}
             onChange={e => setSearchInput(e.target.value)}
+            onFocus={() => setSearchFocus(true)}
+            onBlur={() => setSearchFocus(false)}
             onKeyDown={e => {
               if (e.key === 'Enter') setSearchParams(prev => {
                 const next = new URLSearchParams(prev)
@@ -268,73 +262,103 @@ export default function DispensaryListings({
               }, { replace: true })
             }}
             placeholder="Search menu…"
-            style={{ flex: 1, background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 10, color: '#fff', fontSize: 14, padding: '9px 12px', outline: 'none' }}
+            style={{
+              flex: 1, background: t.surface2,
+              border: `1px solid ${searchFocus ? t.accent : t.border}`,
+              boxShadow: searchFocus ? 'var(--ring)' : 'none',
+              borderRadius: radius.md, color: t.text1, fontSize: font.size.body, padding: '10px 13px', outline: 'none',
+              transition: `border-color var(--t-fast), box-shadow var(--t-fast)`,
+            }}
           />
           {search && (
             <button
               onClick={() => { setSearchInput(''); setSearchParams(prev => { const n = new URLSearchParams(prev); n.delete('q'); return n }, { replace: true }) }}
-              style={{ background: '#1a1a1a', border: '1px solid #333', borderRadius: 10, color: '#666', fontSize: 13, padding: '0 12px', height: 38, cursor: 'pointer' }}
+              style={{ background: t.surface2, border: `1px solid ${t.border}`, borderRadius: radius.md, color: t.text3, fontSize: 13, padding: '0 12px', height: 40, cursor: 'pointer' }}
             >✕</button>
           )}
         </div>
       </div>
 
       {/* Category icon strip */}
-      <div style={{ display: 'flex', overflowX: 'auto', gap: 0, padding: '16px 12px 8px', scrollbarWidth: 'none' } as React.CSSProperties}>
-        {CATEGORIES.map(cat => (
-          <button
-            key={cat}
-            onClick={() => navigate(`/portal/map/${dispensaryId}/aisle/${encodeURIComponent(cat)}`)}
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', padding: '0 10px' }}
-          >
-            <div style={{
-              width: 52, height: 52, borderRadius: '50%',
-              background: '#161616', border: '1px solid #222',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 22,
-            }}>
-              {CATEGORY_EMOJI[cat] ?? '📦'}
-            </div>
-            <span style={{ color: '#888', fontSize: 10, whiteSpace: 'nowrap' }}>{cat}</span>
-          </button>
-        ))}
+      <div className="no-scrollbar" style={{ display: 'flex', overflowX: 'auto', gap: 0, padding: '16px 8px 8px' }}>
+        {CATEGORIES.map(cat => {
+          const c = categoryColor(cat)
+          return (
+            <Pressable
+              key={cat}
+              onClick={() => navigate(`/portal/map/${dispensaryId}/aisle/${encodeURIComponent(cat)}`)}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, flexShrink: 0, padding: '0 9px' }}
+            >
+              <div style={{
+                width: 52, height: 52, borderRadius: '50%',
+                background: alpha(c, 0.12), border: `1px solid ${alpha(c, 0.3)}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 22,
+              }}>
+                {CATEGORY_EMOJI[cat] ?? '📦'}
+              </div>
+              <span style={{ color: t.text2, fontSize: font.size.micro, fontWeight: font.weight.medium, whiteSpace: 'nowrap', textTransform: 'capitalize' }}>{cat}</span>
+            </Pressable>
+          )
+        })}
       </div>
 
       {/* Aisle rows */}
       {loading ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
-          <span style={{ color: '#333', fontSize: 14 }}>Loading…</span>
-        </div>
+        <AisleSkeleton />
       ) : error ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
-          <span style={{ color: '#f44336', fontSize: 14 }}>{error}</span>
-        </div>
+        <FeedState kind="error" message={error} />
       ) : listingsByCategory.size === 0 ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
-          <span style={{ color: '#333', fontSize: 14 }}>Nothing found</span>
-        </div>
+        <FeedState kind="empty" message="Nothing found" hint={search ? `No menu items match “${search}”.` : 'This menu has no items right now.'} icon="🔍" />
       ) : (
         <div style={{ paddingBottom: 80 }}>
-          {[...listingsByCategory.entries()].map(([catKey, items]) => (
-            <div key={catKey} style={{ marginBottom: 4 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 16px 10px' }}>
-                <span style={{ color: '#e0e0e0', fontWeight: 700, fontSize: 15 }}>
-                  {CATEGORY_EMOJI[catKey] ?? ''} {catKey}
-                </span>
-                <button
-                  onClick={() => navigate(`/portal/map/${dispensaryId}/aisle/${encodeURIComponent(catKey)}`)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#a8e063', fontSize: 13, fontWeight: 600, padding: '2px 0', display: 'flex', alignItems: 'center', gap: 3 }}
-                >
-                  See all <span style={{ fontSize: 15 }}>→</span>
-                </button>
+          {[...listingsByCategory.entries()].map(([catKey, items]) => {
+            const c = categoryColor(catKey)
+            return (
+              <div key={catKey} style={{ marginBottom: 6 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 16px 11px' }}>
+                  <span style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.callout, letterSpacing: '-0.01em', display: 'inline-flex', alignItems: 'center', gap: 7, textTransform: 'capitalize' }}>
+                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: c, display: 'inline-block' }} />
+                    {catKey}
+                  </span>
+                  <button
+                    onClick={() => navigate(`/portal/map/${dispensaryId}/aisle/${encodeURIComponent(catKey)}`)}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.accent, fontSize: font.size.small, fontWeight: font.weight.semibold, padding: '2px 0', display: 'flex', alignItems: 'center', gap: 4 }}
+                  >
+                    See all <span aria-hidden>→</span>
+                  </button>
+                </div>
+                <div className="no-scrollbar" style={{ display: 'flex', overflowX: 'auto', gap: 10, padding: '0 16px 12px', scrollSnapType: 'x proximity' }}>
+                  {items.slice(0, 10).map(l => renderCard(l))}
+                </div>
               </div>
-              <div style={{ display: 'flex', overflowX: 'auto', gap: 10, padding: '0 16px 12px', scrollbarWidth: 'none' } as React.CSSProperties}>
-                {items.slice(0, 10).map(l => renderCard(l))}
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
+    </div>
+  )
+}
+
+function AisleSkeleton() {
+  return (
+    <div style={{ paddingBottom: 80 }}>
+      {[0, 1].map(row => (
+        <div key={row} style={{ marginBottom: 6 }}>
+          <div style={{ padding: '18px 16px 11px' }}><Skeleton width={110} height={15} /></div>
+          <div style={{ display: 'flex', gap: 10, padding: '0 16px', overflow: 'hidden' }}>
+            {[0, 1, 2].map(i => (
+              <div key={i} style={{ width: 132, flexShrink: 0, background: 'var(--surface-1)', borderRadius: radius.lg, border: `1px solid ${t.border}`, overflow: 'hidden' }}>
+                <Skeleton height={110} radius="0" />
+                <div style={{ padding: '9px 9px 11px' }}>
+                  <Skeleton width="45%" height={12} style={{ marginBottom: 7 }} />
+                  <Skeleton width="90%" height={11} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   )
 }

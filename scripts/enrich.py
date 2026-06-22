@@ -125,136 +125,334 @@ def _save_cache(cache: dict, slug: str) -> None:
 # Haiku
 # ---------------------------------------------------------------------------
 
-def _load_api_key() -> str | None:
-    if key := os.environ.get("ANTHROPIC_API_KEY"):
+def _load_key(env_name: str) -> str | None:
+    """Read a key from the environment, falling back to the repo-root .env file."""
+    if key := os.environ.get(env_name):
         return key
     env_path = Path(__file__).parent.parent / ".env"
     if env_path.exists():
         for line in env_path.read_text().splitlines():
-            if line.startswith("ANTHROPIC_API_KEY="):
+            if line.startswith(f"{env_name}="):
                 return line.split("=", 1)[1].strip()
     return None
 
 
-_ENRICH_PROMPT = """\
-You enrich cannabis dispensary product listings with five fields.
+# ---------------------------------------------------------------------------
+# Model registry — select with enrich(..., model="<id>")
+#
+#   provider "anthropic"  → native SDK, prompt caching on the system prompt
+#   provider "openrouter" → OpenAI-compatible gateway (Claude, MiMo, Gemini, ...)
+#                           needs OPENROUTER_API_KEY and `pip install openai`
+#
+# cost is USD per token. Cache costs only apply to the anthropic provider.
+# Find exact OpenRouter slugs + live pricing at https://openrouter.ai/models
+# ---------------------------------------------------------------------------
 
-For each listing:
-  category     — top-level product category (correct hint_category if wrong)
-  subtype      — the product sub-format within its category
-  strain       — the specific strain, flavor, or differentiator for this product
-  product_line — the named sub-brand or product series, if one exists (else null)
-  variant      — the canonical size/dose for this product (see rules below)
+DEFAULT_MODEL = "haiku"
 
-Allowed categories: flower, preroll, vaporizers, edible, concentrate, tinctures, topical, merch, other
-hint_category is the scraper's best guess — confirm it if correct, override if not.
-Common misclassifications to fix:
-- "Live Rosin AIO", "Live Resin Cart", anything with vape/cart/pod/aio/disposable in name → vaporizers (even if hint says concentrate)
-- "Pills", "Tablets", "Capsules" → edible
-- Accessories (grinders, papers, lighters) → merch
+# Per-request defaults; a model entry may override "timeout"/"max_tokens".
+_DEFAULT_TIMEOUT = 90      # seconds — a stalled batch fails fast instead of hanging
+_DEFAULT_MAX_TOKENS = 4096
 
-Subtypes by category:
-  vaporizers:  cart, all-in-one, pod, battery, other
-  edible:      gummy, chocolate, beverage, tablet, other
-  concentrate: rosin, resin, hash, rso, other
-  preroll:     single, infused, pack
-  flower:      flower, smalls, preground, infused
-  tinctures:   tincture
-  topical:     topical
-  merch:       merch
-  other:       other
-
-hint_subtype is a rule-based guess — confirm it if correct, override if not.
-
-For variant:
-- hint_variant is the scraper's best guess — confirm it if correct, fix it if not
-- Edibles: TOTAL package THC in mg (e.g. 10pk × 10mg/piece = "100mg")
-  Use description to find per-piece dose and pack count when hint is wrong
-  Physical weight (grams) is wrong for edibles unless it's a whole-food product with no THC dose
-- Flower / preroll / concentrate / vaporizers: weight or volume in compact form ("3.5g", "1g", "0.5g")
-  Fluid ounces (fl oz, oz liquid) must NOT be converted to grams — return as-is (e.g. "12oz")
-- Tinctures: volume if stated, else total mg
-- Merch / accessories with no meaningful size: return ""
-- If genuinely unsure, return hint_variant unchanged
-
-For strain:
-- Strip brand name and pure format words (Cart, Pre-Roll, Tincture, Gummy, Disposable, etc.) and size/qty
-- Normalize to Title Case; crosses use " x " separator
-- Preserve cannabis abbreviations in all-caps: OG, AK, RSO, CBD, THC, BC, NYC, LA
-- Do not correct other spellings — keep source spelling (e.g. "Tie Die", "Perisimmon")
-- If Sativa/Indica/Hybrid is the only differentiator left, use it as strain
-- Return null only for merch/accessories with no cannabis identifier
-
-For product_line:
-- A word/phrase the brand uses to group a family of products (e.g. "Releaf", "Protab", "22's")
-- Return null if no named line exists within the brand
-
-Reply ONLY with a JSON array, no explanation, no markdown fences:
-[{"id": "0", "category": "edible", "subtype": "gummy", "strain": "Watermelon Lemonade", "product_line": null, "variant": "100mg"}, ...]
-"""
-
-
-_HAIKU_COST = {
-    "input":        0.80  / 1_000_000,
-    "output":       4.00  / 1_000_000,
-    "cache_write":  1.00  / 1_000_000,
-    "cache_read":   0.08  / 1_000_000,
+MODELS: dict[str, dict] = {
+    "haiku": {
+        "provider":  "anthropic",
+        "api_model": "claude-haiku-4-5-20251001",
+        "cost": {"input": 0.80 / 1e6, "output": 4.00 / 1e6,
+                 "cache_write": 1.00 / 1e6, "cache_read": 0.08 / 1e6},
+    },
+    # ---- comparison models (via OpenRouter) ----
+    # TODO: confirm the exact slug + pricing from openrouter.ai/models.
+    "mimo": {
+        "provider":  "openrouter",
+        "api_model": "xiaomi/mimo-v2.5",        # non-reasoning MiMo on OpenRouter
+        # OpenRouter pricing. cache_read is tracked only on the anthropic path,
+        # so the $0.0036/M cached-input rate doesn't apply to this OpenAI-style call.
+        "cost": {"input": 0.14 / 1e6, "output": 0.28 / 1e6},
+        # MiMo returned empty/truncated JSON on 50-item batches, nulling most fields.
+        # Use a SMALL batch_size (fewer items per call → shorter, complete output)
+        # and keep max_tokens generous so a full batch's JSON is never cut off.
+        # Firm timeout so a stalled batch fails fast instead of hanging the run.
+        "batch_size": 15, "timeout": 120, "max_tokens": 8192,
+    },
+    "deepseek": {
+        "provider":  "openrouter",
+        "api_model": "deepseek/deepseek-v4-flash",   # <-- verify slug on OpenRouter
+        "cost": {"input": 0.09 / 1e6, "output": 0.18 / 1e6},
+        # Truncated/nulled the extract pass at the default 50-item batch. Small
+        # batch + generous max_tokens keeps each batch's JSON complete (same fix
+        # that stabilized mimo).
+        "batch_size": 15, "max_tokens": 8192,
+    },
 }
 
 
-def _call_batch(
-    client,
-    chunk: list[tuple[int, dict]],
-    batch_num: int,
-    total_batches: int,
-    hint_subtypes: list[str | None],
-    print_lock,
-) -> tuple[dict, dict]:
-    """Call Haiku for one batch. Returns (items_by_local_id, usage_dict). Thread-safe."""
-    payload = [
-        {
-            "id":            str(i),
-            "hint_category": r.get("category", ""),
-            "brand":         r.get("brand", ""),
-            "name":          r.get("name", ""),
-            "description":   r.get("description", ""),
-            "hint_subtype":  hint_subtypes[orig_idx],
-            "hint_variant":  r.get("variant", ""),
-        }
-        for i, (orig_idx, r) in enumerate(chunk)
-    ]
+def _make_client(model_cfg: dict):
+    """Build the SDK client for a model's provider. Returns None if its key is missing."""
+    if model_cfg["provider"] == "anthropic":
+        import anthropic
+        key = _load_key("ANTHROPIC_API_KEY")
+        if not key:
+            print("  [warn] ANTHROPIC_API_KEY not set", file=sys.stderr)
+            return None
+        return anthropic.Anthropic(api_key=key)
+    # openrouter — OpenAI-compatible. Cap SDK retries so a slow batch can't
+    # silently multiply its wait (default is 2 retries with backoff).
+    from openai import OpenAI
+    key = _load_key("OPENROUTER_API_KEY")
+    if not key:
+        print("  [warn] OPENROUTER_API_KEY not set", file=sys.stderr)
+        return None
+    return OpenAI(base_url="https://openrouter.ai/api/v1", api_key=key, max_retries=1)
 
+
+# ---------------------------------------------------------------------------
+# Rails — the only answers each enum field is allowed to take. Code validates
+# every model response against these; anything off-list snaps to a hint/default.
+# ---------------------------------------------------------------------------
+
+CATEGORIES = ["flower", "preroll", "vaporizers", "edible", "concentrate",
+              "tinctures", "topical", "merch", "other"]
+
+SUBTYPES: dict[str, list[str]] = {
+    "vaporizers":  ["cart", "all-in-one", "pod", "battery", "other"],
+    "edible":      ["gummy", "chocolate", "beverage", "tablet", "other"],
+    "concentrate": ["rosin", "resin", "hash", "rso", "other"],
+    "preroll":     ["single", "infused", "pack"],
+    "flower":      ["flower", "smalls", "preground", "infused"],
+    "tinctures":   ["tincture"],
+    "topical":     ["topical"],
+    "merch":       ["merch"],
+    "other":       ["other"],
+}
+
+_CATEGORY_LIST = ", ".join(CATEGORIES)
+_SUBTYPE_LINES = "\n".join(f"  {c}: {', '.join(s)}" for c, s in SUBTYPES.items())
+
+# ---------------------------------------------------------------------------
+# Prompts — one targeted prompt per pass. The classification pass has two
+# variants: a "trust the hints" prompt for rows the rule engine could tag, and
+# a "decide from scratch" prompt for rows with no reliable sub-format hint.
+# ---------------------------------------------------------------------------
+
+_CLASSIFY_BODY = f"""\
+category — choose EXACTLY one of: {_CATEGORY_LIST}
+  Override hint_category only when the name clearly contradicts it:
+  - vape / cart / pod / aio / disposable in the name → vaporizers (even if hint says concentrate)
+  - pills / tablets / capsules → edible
+  - grinders / papers / lighters / apparel → merch
+
+subtype — choose EXACTLY one from the chosen category's list:
+{_SUBTYPE_LINES}
+
+variant — the canonical size/dose, in compact form:
+  - edible: TOTAL package THC in mg (10pk × 10mg/piece = "100mg"); grams are wrong unless the
+    item has no THC dose or the quantity is at least 0.5g, in which case it must be reported as grams. 
+    Use the description for per-piece dose and pack count. Non standard reporting like "halfgram" 
+    should be reported as their standard equivalent.
+  - flower / preroll / concentrate / vaporizers: weight or volume ("3.5g", "1g", "0.5g");
+    keep fluid ounces as-is, never convert to grams ("12oz"). 
+  - tinctures: total mg
+  - merch / no meaningful size: ""
+
+Reply ONLY with a JSON array, no prose, no markdown fences:
+[{{"id": "0", "category": "edible", "subtype": "gummy", "variant": "100mg"}}, ...]"""
+
+_CLASSIFY_PROMPT_HINTED = f"""\
+You classify a cannabis dispensary product into three fields: category, subtype, variant.
+Each item includes hint_category (scraper guess), hint_subtype (rule-based guess) and
+hint_variant. These hints are usually correct — TRUST them and confirm them; only override
+when the name or description clearly contradicts the hint. If unsure about variant, return
+hint_variant unchanged.
+
+{_CLASSIFY_BODY}"""
+
+_CLASSIFY_PROMPT_FRESH = f"""\
+You classify a cannabis dispensary product into three fields: category, subtype, variant.
+No reliable sub-format hint is available for these items, so DECIDE from scratch: read the
+name and description carefully. hint_category and hint_variant may be present but are weak —
+treat them as loose suggestions, not answers.
+
+{_CLASSIFY_BODY}"""
+
+_EXTRACT_PROMPT = """\
+You extract two fields from a cannabis product whose category is already known: strain and
+product_line.
+
+strain — the specific strain, flavor, or differentiator. A FLAVOR IS A STRAIN: for edibles,
+beverages, vapes, and any product without a cannabis strain name, the flavor name is the strain
+(e.g. "Limeade", "Watermelon Lemonade", "Blue Razz", "Wild Cherry"). Always extract it — never
+return null just because the product is a drink, gummy, or other flavored item.
+- Strip the brand name, pure format words (Cart, Pre-Roll, Tincture, Gummy, Disposable, etc.)
+  and any size/quantity.
+- The strain is ONLY the strain/flavor. NEVER fold the product_line / sub-brand into it — if you
+  put a value in product_line, it must NOT also appear in strain
+  ("Night Cap Elderberry Sage" → strain "Elderberry Sage", product_line "Night Cap").
+- Strip cannabinoid ratios and potency from the strain: ratios like "1:2:3", "5:10:15mg",
+  "THC:CBD:CBN", and mg/percent amounts are NOT part of the strain
+  ("Elderberry Sage 1:2:3 THC:CBD:CBN" → "Elderberry Sage").
+- Normalize to Title Case; crosses use " x " as the separator.
+- Preserve cannabis abbreviations in all-caps: OG, AK, RSO, CBD, THC, BC, NYC, LA.
+- Do NOT correct other spellings — keep the source spelling (e.g. "Tie Die", "Perisimmon").
+- If Sativa / Indica / Hybrid is the only differentiator left, use that as the strain.
+- Return null ONLY when category is merch/topical, or nothing but the brand and a format/size
+  word remains (no flavor, strain, or other differentiator at all).
+
+product_line — a word/phrase the brand uses to group a family of products (e.g. "Releaf",
+"Protab", "22's"). Assign one ONLY when the product name actually contains that line's text;
+otherwise return null. Never infer a line just because the brand has one.
+
+Some items carry known_strains / known_product_lines — values ALREADY recorded for this brand
+in our catalog. Use them to stay consistent:
+- If the product is clearly the SAME strain as one of known_strains, REUSE that exact spelling.
+  This overrides "keep source spelling": it consolidates typos/variants ("Blu Dreem" → "Blue Dream").
+- They are a shortlist, not a constraint — if none genuinely matches, extract the strain normally.
+- For product_line, every value in known_product_lines already appears in this product's name —
+  reuse the matching one's exact spelling; if the list is absent/empty, return null.
+
+Reply ONLY with a JSON array, no prose, no markdown fences:
+[{"id": "0", "strain": "Watermelon Lemonade", "product_line": null}, ...]"""
+
+
+_ZERO_USAGE = {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0}
+
+
+# ---------------------------------------------------------------------------
+# Validators — clamp every model answer to a legal value (rails enforcement).
+# ---------------------------------------------------------------------------
+
+def _valid_category(answer: str | None, hint: str | None) -> str:
+    a = (answer or "").strip().lower()
+    if a in CATEGORIES:
+        return a
+    h = (hint or "").strip().lower()
+    return h if h in CATEGORIES else "other"
+
+
+def _valid_subtype(answer: str | None, category: str, hint: str | None) -> str:
+    allowed = SUBTYPES.get(category, ["other"])
+    for cand in (answer, hint, _CATEGORY_DEFAULTS.get(category)):
+        c = (cand or "").strip().lower()
+        if c in allowed:
+            return c
+    return "other" if "other" in allowed else allowed[0]
+
+
+# ---------------------------------------------------------------------------
+# Model call — one targeted call (one pass, one batch). Thread-safe.
+# ---------------------------------------------------------------------------
+
+def _call_llm(
+    client, provider: str, api_model: str, system_prompt: str,
+    payload: list[dict], timeout: float, max_tokens: int,
+    label: str, print_lock,
+) -> tuple[dict, dict]:
+    """Returns (items_by_local_id, usage_dict). Empty items on any failure."""
     try:
-        resp = client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=4096,
-            system=[{"type": "text", "text": _ENRICH_PROMPT, "cache_control": {"type": "ephemeral"}}],
-            messages=[{"role": "user", "content": json.dumps(payload)}],
-        )
-        text = resp.content[0].text.strip()
+        if provider == "anthropic":
+            resp = client.messages.create(
+                model=api_model, max_tokens=max_tokens, timeout=timeout,
+                system=[{"type": "text", "text": system_prompt, "cache_control": {"type": "ephemeral"}}],
+                messages=[{"role": "user", "content": json.dumps(payload)}],
+            )
+            text = (resp.content[0].text or "").strip()
+            u = resp.usage
+            usage = {
+                "input_tokens":       u.input_tokens,
+                "output_tokens":      u.output_tokens,
+                "cache_write_tokens": getattr(u, "cache_creation_input_tokens", 0) or 0,
+                "cache_read_tokens":  getattr(u, "cache_read_input_tokens", 0) or 0,
+            }
+        else:  # openrouter — OpenAI-compatible chat completions
+            resp = client.chat.completions.create(
+                model=api_model, max_tokens=max_tokens, timeout=timeout,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user",   "content": json.dumps(payload)},
+                ],
+            )
+            text = (resp.choices[0].message.content or "").strip()
+            u = resp.usage
+            usage = {
+                "input_tokens":       u.prompt_tokens,
+                "output_tokens":      u.completion_tokens,
+                "cache_write_tokens": 0,
+                "cache_read_tokens":  0,
+            }
         if text.startswith("```"):
             text = text.split("\n", 1)[1].rsplit("```", 1)[0].strip()
         items = {item["id"]: item for item in json.loads(text)}
-        u = resp.usage
-        batch_usage = {
-            "input_tokens":       u.input_tokens,
-            "output_tokens":      u.output_tokens,
-            "cache_write_tokens": getattr(u, "cache_creation_input_tokens", 0) or 0,
-            "cache_read_tokens":  getattr(u, "cache_read_input_tokens", 0) or 0,
-        }
     except Exception as exc:
         with print_lock:
-            print(f"  [model error] batch {batch_num}: {exc}", file=sys.stderr)
-        items = {}
-        batch_usage = {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0}
+            print(f"  [model error] {label}: {exc}", file=sys.stderr)
+        items, usage = {}, dict(_ZERO_USAGE)
 
     with print_lock:
-        print(f"    enrich batch {batch_num}/{total_batches} done")
+        print(f"    {label} done")
+    return items, usage
 
-    return items, batch_usage
+
+def _chunks(items: list, n: int) -> list[list]:
+    return [items[s : s + n] for s in range(0, len(items), n)]
 
 
-def _run_haiku(
+def _load_brand_examples(brands: set[str] | None = None) -> dict[str, dict]:
+    """brand(lowercased) -> {"strains": [...], "product_lines": [...]} from the DB listings
+    table — strains/lines already recorded for each brand across every dispensary.
+
+    `brands` (lowercased) scopes the query to just the brands in the batch; None loads all.
+    Best-effort: returns {} when DATABASE_URL is unset or the query fails, so enrichment
+    still runs (just without the consistency nudge) anywhere the DB isn't reachable.
+    """
+    db_url = _load_key("DATABASE_URL")
+    if not db_url:
+        return {}
+    if brands is not None and not brands:
+        return {}
+    try:
+        import psycopg2
+        conn = psycopg2.connect(db_url)
+        try:
+            cur = conn.cursor()
+            sql = ("SELECT scraped_brand, strain, product_line FROM listings "
+                   "WHERE scraped_brand IS NOT NULL AND strain IS NOT NULL")
+            params: tuple = ()
+            if brands is not None:
+                sql += " AND lower(scraped_brand) = ANY(%s)"
+                params = (list(brands),)
+            cur.execute(sql, params)
+            idx: dict[str, dict] = {}
+            for brand, strain, pline in cur.fetchall():
+                e = idx.setdefault(brand.strip().lower(), {"strains": set(), "product_lines": set()})
+                if strain:
+                    e["strains"].add(strain)
+                if pline:
+                    e["product_lines"].add(pline)
+        finally:
+            conn.close()
+        out = {b: {"strains": sorted(v["strains"]), "product_lines": sorted(v["product_lines"])}
+               for b, v in idx.items()}
+        print(f"    brand examples: {len(out)} brand(s) loaded from DB")
+        return out
+    except Exception as exc:
+        print(f"  [warn] brand-examples lookup skipped: {exc}", file=sys.stderr)
+        return {}
+
+
+def _nearest(name: str, pool: list[str], n: int = 5) -> list[str]:
+    """Up to n catalog strains most similar to the product name (the shortlist to nudge with)."""
+    import difflib
+    if len(pool) <= n:
+        return list(pool)
+    return difflib.get_close_matches(name, pool, n=n, cutoff=0.0)
+
+
+def _squash(s: str) -> str:
+    """Lowercase and drop all non-alphanumerics, so 'Night Cap' / 'Nightcap' / 'night-cap' match."""
+    return re.sub(r"[^a-z0-9]", "", (s or "").lower())
+
+
+def _run_enrich(
     pending: list[tuple[int, dict]],
     cache: dict,
     slug: str,
@@ -263,65 +461,145 @@ def _run_haiku(
     strains: list[str | None],
     product_lines: list[str | None],
     variants: list[str | None],
+    model_cfg: dict,
     batch_size: int = 50,
+    brand_examples: dict[str, dict] | None = None,
 ) -> dict:
-    import anthropic
+    """Field-decomposed enrichment in two dependent passes:
+      A) classify category+subtype+variant (hinted rows and fresh rows get different prompts)
+      B) extract strain+product_line, conditioned on the category decided in A, and nudged
+         toward known_strains/known_product_lines already recorded for the brand
+    Every answer is clamped to a legal value by the validators above.
+    """
     from concurrent.futures import ThreadPoolExecutor, as_completed
     import threading
 
-    api_key = _load_api_key()
-    if not api_key:
-        print("  [warn] ANTHROPIC_API_KEY not set", file=sys.stderr)
-        return {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0}
+    client = _make_client(model_cfg)
+    if client is None:
+        return dict(_ZERO_USAGE)
 
-    client = anthropic.Anthropic(api_key=api_key)
-    batches = [pending[s : s + batch_size] for s in range(0, len(pending), batch_size)]
-    total_batches = len(batches)
+    provider, api_model = model_cfg["provider"], model_cfg["api_model"]
+    timeout    = model_cfg.get("timeout", _DEFAULT_TIMEOUT)
+    max_tokens = model_cfg.get("max_tokens", _DEFAULT_MAX_TOKENS)
+    batch_size = model_cfg.get("batch_size", batch_size)  # per-model override (small for flaky models)
     print_lock = threading.Lock()
-    usage = {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0}
+    usage = dict(_ZERO_USAGE)
 
-    # Fire all batches concurrently; each thread is pure (no shared writes).
-    # Results are applied by the main thread after all futures complete.
-    max_workers = min(total_batches, 8)
-    batch_results: dict[int, tuple[dict, dict]] = {}
+    def run_phase(tasks: list[tuple]) -> None:
+        """tasks = [(label, system_prompt, payload, on_result), ...]; runs them concurrently."""
+        if not tasks:
+            return
+        with ThreadPoolExecutor(max_workers=min(len(tasks), 8)) as ex:
+            futs = {
+                ex.submit(_call_llm, client, provider, api_model, sp, pl, timeout, max_tokens, label, print_lock): onr
+                for (label, sp, pl, onr) in tasks
+            }
+            for fut in as_completed(futs):
+                items, u = fut.result()
+                for k in usage:
+                    usage[k] += u[k]
+                futs[fut](items)
 
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        future_to_idx = {
-            executor.submit(
-                _call_batch, client, chunk, i + 1, total_batches, subtypes, print_lock
-            ): (i, chunk)
-            for i, chunk in enumerate(batches)
+    # ---- Pass A: classification, split by hint availability ----
+    hinted   = [(oi, r) for (oi, r) in pending if _hint_subtype(r) is not None]
+    fresh    = [(oi, r) for (oi, r) in pending if _hint_subtype(r) is None]
+
+    def classify_payload(chunk):
+        return [
+            {
+                "id":            str(i),
+                "hint_category": r.get("category", ""),
+                "brand":         r.get("brand", ""),
+                "name":          r.get("name", ""),
+                "description":   r.get("description", ""),
+                "hint_subtype":  _hint_subtype(r),
+                "hint_variant":  r.get("variant", ""),
+            }
+            for i, (oi, r) in enumerate(chunk)
+        ]
+
+    def classify_applier(chunk):
+        def on_result(items):
+            for local_id, (oi, row) in enumerate(chunk):
+                it  = items.get(str(local_id), {})
+                cat = _valid_category(it.get("category"), row.get("category"))
+                categories[oi] = cat
+                subtypes[oi]   = _valid_subtype(it.get("subtype"), cat, _hint_subtype(row))
+                v = it.get("variant")
+                variants[oi]   = v if v is not None else row.get("variant", "")
+        return on_result
+
+    classify_tasks = []
+    for kind, bucket, prompt in (("hinted", hinted, _CLASSIFY_PROMPT_HINTED),
+                                 ("fresh",  fresh,  _CLASSIFY_PROMPT_FRESH)):
+        for bi, chunk in enumerate(_chunks(bucket, batch_size)):
+            classify_tasks.append(
+                (f"classify[{kind}] {bi + 1}", prompt, classify_payload(chunk), classify_applier(chunk))
+            )
+
+    print(f"    pass A: classify {len(pending)} item(s) "
+          f"({len(hinted)} hinted, {len(fresh)} fresh) → {api_model}")
+    run_phase(classify_tasks)
+
+    # ---- Pass B: extraction, conditioned on the now-known category ----
+    # Brand index: known strains/lines already in our catalog, to nudge for consistency.
+    # OFF by default (the product_line vocabulary still needs canonicalizing). It only
+    # auto-loads from the DB when ENRICH_BRAND_NUDGE=1; callers may also inject a dict.
+    if brand_examples is None:
+        if os.environ.get("ENRICH_BRAND_NUDGE") == "1":
+            batch_brands = {(r.get("brand") or "").strip().lower() for (_, r) in pending}
+            batch_brands.discard("")
+            brand_examples = _load_brand_examples(batch_brands)
+        else:
+            brand_examples = {}
+
+    def extract_applier(chunk):
+        def on_result(items):
+            for local_id, (oi, row) in enumerate(chunk):
+                it = items.get(str(local_id), {})
+                strains[oi]       = it.get("strain")
+                product_lines[oi] = it.get("product_line")
+        return on_result
+
+    def extract_payload_item(i, oi, r):
+        item = {
+            "id":          str(i),
+            "brand":       r.get("brand", ""),
+            "name":        r.get("name", ""),
+            "category":    categories[oi] or r.get("category", "other"),
+            "description": r.get("description", ""),
         }
-        for future in as_completed(future_to_idx):
-            i, chunk = future_to_idx[future]
-            items, batch_usage = future.result()
-            batch_results[i] = (chunk, items)
-            for k in usage:
-                usage[k] += batch_usage[k]
+        ex = brand_examples.get((r.get("brand") or "").strip().lower())
+        if ex:
+            name = r.get("name", "")
+            known_s = _nearest(name, ex["strains"])
+            # product_line nudge: surface lines that appear in the name, matched on a
+            # normalized form (case/space/punctuation-insensitive) so a known "Night Cap"
+            # still matches a listing that writes it "Nightcap" / "night-cap".
+            name_sq = _squash(name)
+            known_pl = [pl for pl in ex["product_lines"] if _squash(pl) and _squash(pl) in name_sq][:5]
+            if known_s:
+                item["known_strains"] = known_s
+            if known_pl:
+                item["known_product_lines"] = known_pl
+        return item
 
-    # Apply results in batch order, then save cache once.
-    for i in sorted(batch_results):
-        chunk, items = batch_results[i]
-        for local_id, (orig_idx, row) in enumerate(chunk):
-            item         = items.get(str(local_id), {})
-            category     = item.get("category") or categories[orig_idx] or row.get("category", "other")
-            sub          = item.get("subtype") or subtypes[orig_idx] or "other"
-            strain       = item.get("strain")
-            product_line = item.get("product_line")
-            variant      = item.get("variant") if "variant" in item else row.get("variant", "")
+    extract_tasks = []
+    for bi, chunk in enumerate(_chunks(pending, batch_size)):
+        payload = [extract_payload_item(i, oi, r) for i, (oi, r) in enumerate(chunk)]
+        extract_tasks.append((f"extract {bi + 1}", _EXTRACT_PROMPT, payload, extract_applier(chunk)))
 
-            categories[orig_idx]    = category
-            subtypes[orig_idx]      = sub
-            strains[orig_idx]       = strain
-            product_lines[orig_idx] = product_line
-            variants[orig_idx]      = variant
+    print(f"    pass B: extract strain/product_line for {len(pending)} item(s) → {api_model}")
+    run_phase(extract_tasks)
 
-            key = _cache_key(row)
-            if key:
-                cache[key] = {
-                    "category": category, "subtype": sub, "strain": strain,
-                    "product_line": product_line, "variant": variant,
-                }
+    # ---- Write cache once, both passes applied ----
+    for (oi, row) in pending:
+        key = _cache_key(row)
+        if key:
+            cache[key] = {
+                "category": categories[oi], "subtype": subtypes[oi], "strain": strains[oi],
+                "product_line": product_lines[oi], "variant": variants[oi],
+            }
 
     _save_cache(cache, slug)
     return usage
@@ -331,8 +609,16 @@ def _run_haiku(
 # Public API
 # ---------------------------------------------------------------------------
 
-def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False) -> dict:
+def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
+           model: str = DEFAULT_MODEL, brand_examples: dict[str, dict] | None = None) -> dict:
     """Enrich every row in place: corrects category, adds subtype/strain/product_line/variant.
+
+    `model` selects an entry from MODELS (default "haiku"). Each non-default model
+    gets its own cache file so a comparison run never reads another model's answers.
+
+    `brand_examples` injects a brand→{strains, product_lines} index to nudge strain/line
+    consistency. The nudge is OFF by default; when brand_examples is None it auto-loads from
+    the DB only if ENRICH_BRAND_NUDGE=1. Pass an explicit dict to force-use it, or {} to disable.
 
     Returns a token usage dict: {input_tokens, output_tokens, cache_write_tokens,
     cache_read_tokens, cost_usd}. All zeros when everything was cached.
@@ -344,7 +630,14 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False) -> d
             row.setdefault("product_line", None)
         return {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0, "cost_usd": 0.0}
 
-    slug = _slug_for_rows(rows) or "unknown"
+    if model not in MODELS:
+        raise ValueError(f"unknown model '{model}'; choose from {', '.join(MODELS)}")
+    model_cfg = MODELS[model]
+
+    base_slug = _slug_for_rows(rows) or "unknown"
+    # Keep the default model on the original slug (preserves existing cache);
+    # isolate every other model so comparisons don't cross-contaminate.
+    slug = base_slug if model == DEFAULT_MODEL else f"{base_slug}.{model}"
     cache = _load_cache(slug)
 
     categories:    list[str | None] = []
@@ -374,10 +667,10 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False) -> d
 
     cached_count = len(rows) - len(pending)
     if pending:
-        print(f"  enrich: {cached_count} cached, {len(pending)} → Haiku")
-        usage = _run_haiku(pending, cache, slug, categories, subtypes, strains, product_lines, variants, batch_size)
+        print(f"  enrich: {cached_count} cached, {len(pending)} → {model}")
+        usage = _run_enrich(pending, cache, slug, categories, subtypes, strains, product_lines, variants, model_cfg, batch_size, brand_examples)
     else:
-        print(f"  enrich: {cached_count} cached, 0 → Haiku")
+        print(f"  enrich: {cached_count} cached, 0 → {model}")
         usage = {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0}
 
     for i, row in enumerate(rows):
@@ -388,11 +681,12 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False) -> d
         v = variants[i] if variants[i] is not None else row.get("variant", "")
         row["variant"]      = normalize_variant(v) if v else v
 
+    c = model_cfg["cost"]
     cost = (
-        usage["input_tokens"]         * _HAIKU_COST["input"]
-        + usage["output_tokens"]      * _HAIKU_COST["output"]
-        + usage["cache_write_tokens"] * _HAIKU_COST["cache_write"]
-        + usage["cache_read_tokens"]  * _HAIKU_COST["cache_read"]
+        usage["input_tokens"]         * c.get("input", 0)
+        + usage["output_tokens"]      * c.get("output", 0)
+        + usage["cache_write_tokens"] * c.get("cache_write", 0)
+        + usage["cache_read_tokens"]  * c.get("cache_read", 0)
     )
     usage["cost_usd"] = round(cost, 4)
     return usage

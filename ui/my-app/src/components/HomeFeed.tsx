@@ -2,19 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import type { PortalBrand, PortalCategory } from '../types'
-
-const CATEGORY_COLORS: Record<string, string> = {
-  flower: '#4caf50',
-  vaporizers: '#2196f3',
-  cart: '#2196f3',
-  edible: '#ff9800',
-  concentrate: '#9c27b0',
-  preroll: '#00bcd4',
-  tinctures: '#8bc34a',
-  topical: '#f44336',
-  merch: '#607d8b',
-  other: '#9e9e9e',
-}
+import { t, radius, font, categoryColor, alpha } from '../theme'
+import { Pressable, Skeleton, Pill } from './ui'
 
 const CATEGORY_EMOJI: Record<string, string> = {
   flower: '🌸',
@@ -89,76 +78,92 @@ export default function HomeFeed() {
     })
   }, [dispensaries, userPos])
 
-  const gridStyle: React.CSSProperties = {
+  const railStyle: React.CSSProperties = {
     display: 'grid',
     gridTemplateRows: 'repeat(2, auto)',
     gridAutoFlow: 'column',
     overflowX: 'auto',
-    gap: 10,
-    padding: '0 16px 4px',
-    scrollbarWidth: 'none',
+    gap: 12,
+    padding: '0 16px 6px',
+    scrollSnapType: 'x proximity',
   }
 
   return (
-    <div style={{ height: 'calc(100dvh - 64px)', overflowY: 'auto', background: '#0a0a0a' }}>
+    <div style={{ height: 'calc(100dvh - 64px)', overflowY: 'auto', background: t.bg }}>
 
       {/* Header */}
-      <div style={{ padding: '20px 16px 8px' }}>
-        <div style={{ color: '#fff', fontWeight: 800, fontSize: 22 }}>Explore</div>
+      <div style={{ padding: '22px 16px 6px' }}>
+        <div style={{ color: t.text1, fontWeight: font.weight.heavy, fontSize: font.size.hero, letterSpacing: '-0.02em' }}>
+          Explore
+        </div>
+        <div style={{ color: t.text3, fontSize: font.size.small, marginTop: 2 }}>
+          Discover dispensaries, brands &amp; products near you
+        </div>
       </div>
 
       {loading ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
-          <span style={{ color: '#333', fontSize: 14 }}>Loading…</span>
-        </div>
+        <LoadingSkeleton />
       ) : (
         <>
           {/* ── Dispensaries near you ── */}
           <Section title="Dispensaries near you">
-            <div style={{ ...gridStyle, gridAutoColumns: 155 }}>
+            <div className="no-scrollbar" style={{ ...railStyle, gridAutoColumns: 162 }}>
               {sortedDispensaries.map(d => {
                 const dist = (userPos && d.lat != null && d.lng != null)
                   ? haversineMi(userPos.lat, userPos.lng, d.lat, d.lng)
                   : null
+                const banner = d.banner_url || d.logo_url
                 return (
-                  <div
+                  <Pressable
                     key={d.id}
                     onClick={() => navigate('/portal/map/' + d.id)}
-                    style={{ cursor: 'pointer', background: '#111', borderRadius: 14, border: '1px solid #1a1a1a', overflow: 'hidden' }}
+                    lift
+                    style={{
+                      scrollSnapAlign: 'start',
+                      background: t.surface1,
+                      borderRadius: radius.lg,
+                      border: `1px solid ${t.border}`,
+                      overflow: 'hidden',
+                    }}
                   >
                     {/* Photo area */}
-                    <div style={{ height: 90, background: '#1a1a1a', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {d.banner_url || d.logo_url ? (
+                    <div style={{
+                      height: 92,
+                      background: banner ? t.surface2 : `linear-gradient(135deg, ${alpha('#a8e063', 0.16)} 0%, ${t.surface2} 70%)`,
+                      position: 'relative',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                      {banner ? (
                         <img
-                          src={d.banner_url ?? d.logo_url ?? ''}
+                          src={banner}
                           alt=""
                           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                           onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
                         />
                       ) : (
-                        <span style={{ color: '#a8e063', fontWeight: 800, fontSize: 32 }}>
+                        <span style={{ color: t.accent, fontWeight: font.weight.heavy, fontSize: 34, letterSpacing: '-0.02em' }}>
                           {d.name.charAt(0).toUpperCase()}
                         </span>
                       )}
                     </div>
                     {/* Info */}
-                    <div style={{ padding: '8px 10px 10px' }}>
-                      <div style={{ color: '#f1f5f9', fontWeight: 700, fontSize: 13, marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ padding: '10px 11px 11px' }}>
+                      <div style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.small + 1, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {d.name}
                       </div>
-                      <div style={{ color: '#666', fontSize: 11, marginBottom: 5 }}>
-                        ⭐ 4.5{dist != null ? ` · ${formatDist(dist)}` : ''}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: t.text2, fontSize: font.size.caption, marginBottom: 7 }}>
+                        <span style={{ color: t.accent }}>★</span> 4.5
+                        {dist != null && <span style={{ color: t.text3 }}>· {formatDist(dist)}</span>}
                       </div>
-                      <div style={{
-                        display: 'inline-block', fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 20,
-                        background: d.accepts_pickup ? '#1a2a10' : '#1a1a1a',
-                        border: `1px solid ${d.accepts_pickup ? '#2a4a1a' : '#2a2a2a'}`,
-                        color: d.accepts_pickup ? '#6abf2e' : '#444',
-                      }}>
-                        {d.accepts_pickup ? '🛒 Pickup' : 'In-store only'}
-                      </div>
+                      {d.accepts_pickup ? (
+                        <Pill color={categoryColor('flower')} tone="category">🛒 Pickup</Pill>
+                      ) : (
+                        <Pill>In-store only</Pill>
+                      )}
                     </div>
-                  </div>
+                  </Pressable>
                 )
               })}
             </div>
@@ -167,30 +172,35 @@ export default function HomeFeed() {
           {/* ── Brands ── */}
           {brands.length > 0 && (
             <Section title="Brands">
-              <div style={{ ...gridStyle, gridAutoColumns: 90 }}>
+              <div className="no-scrollbar" style={{ ...railStyle, gridAutoColumns: 92 }}>
                 {brands.map(b => (
-                  <div key={b.name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+                  <Pressable
+                    key={b.name}
+                    onClick={() => navigate('/portal/brands/' + encodeURIComponent(b.name))}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7 }}
+                  >
                     <div style={{
                       width: 72, height: 72, borderRadius: '50%',
-                      background: '#1a1a1a', border: '1px solid #252525',
+                      background: t.surface2, border: `1px solid ${t.border}`,
+                      boxShadow: 'inset 0 0 0 2px rgba(255,255,255,0.02)',
                       overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                     }}>
                       {b.image_url ? (
                         <img src={b.image_url} alt={b.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                           onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
                       ) : (
-                        <span style={{ color: '#a8e063', fontWeight: 800, fontSize: 22 }}>
+                        <span style={{ color: t.accent, fontWeight: font.weight.heavy, fontSize: 24 }}>
                           {b.name.charAt(0).toUpperCase()}
                         </span>
                       )}
                     </div>
                     <span style={{
-                      color: '#888', fontSize: 10, textAlign: 'center', lineHeight: 1.2,
+                      color: t.text2, fontSize: font.size.caption, fontWeight: font.weight.medium, textAlign: 'center', lineHeight: 1.2,
                       width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                     }}>
                       {b.name}
                     </span>
-                  </div>
+                  </Pressable>
                 ))}
               </div>
             </Section>
@@ -199,40 +209,43 @@ export default function HomeFeed() {
           {/* ── Shop by category ── */}
           {categories.length > 0 && (
             <Section title="Shop by category">
-              <div style={{ display: 'flex', overflowX: 'auto', gap: 10, padding: '0 16px 4px', scrollbarWidth: 'none' } as React.CSSProperties}>
+              <div className="no-scrollbar" style={{ display: 'flex', overflowX: 'auto', gap: 12, padding: '0 16px 6px', scrollSnapType: 'x proximity' }}>
                 {categories.map(c => {
-                  const color = CATEGORY_COLORS[c.name] ?? '#9e9e9e'
+                  const color = categoryColor(c.name)
                   const emoji = CATEGORY_EMOJI[c.name] ?? '📦'
                   return (
-                    <div
+                    <Pressable
                       key={c.name}
-                      onClick={() => navigate('/portal/map')}
+                      onClick={() => navigate('/portal/search?category=' + encodeURIComponent(c.name))}
                       style={{
-                        width: 140, flexShrink: 0, cursor: 'pointer',
-                        background: color + '14', border: `1px solid ${color}30`,
-                        borderRadius: 16, overflow: 'hidden', position: 'relative',
+                        width: 144, flexShrink: 0, scrollSnapAlign: 'start',
+                        background: alpha(color, 0.10), border: `1px solid ${alpha(color, 0.28)}`,
+                        borderRadius: radius.xl, overflow: 'hidden',
                       }}
                     >
-                      {c.image_url ? (
-                        <img src={c.image_url} alt={c.name} style={{ width: '100%', height: 90, objectFit: 'cover', display: 'block', opacity: 0.5 }}
-                          onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
-                      ) : (
-                        <div style={{ height: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40 }}>
-                          {emoji}
-                        </div>
-                      )}
-                      <div style={{ padding: '8px 12px 12px' }}>
-                        <div style={{ color: '#fff', fontWeight: 700, fontSize: 13, textTransform: 'capitalize', marginBottom: 2 }}>{c.name}</div>
-                        <div style={{ color: color, fontSize: 11 }}>{c.listing_count.toLocaleString()} listings</div>
+                      <div style={{ position: 'relative', height: 92 }}>
+                        {c.image_url ? (
+                          <img src={c.image_url} alt={c.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: 0.6 }}
+                            onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                        ) : (
+                          <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40 }}>
+                            {emoji}
+                          </div>
+                        )}
+                        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to bottom, transparent 30%, ${alpha('#000', 0.55)} 100%)` }} />
                       </div>
-                    </div>
+                      <div style={{ padding: '9px 12px 12px' }}>
+                        <div style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.small + 1, textTransform: 'capitalize', marginBottom: 3 }}>{c.name}</div>
+                        <div style={{ color, fontSize: font.size.caption, fontWeight: font.weight.semibold }}>{c.listing_count.toLocaleString()} listings</div>
+                      </div>
+                    </Pressable>
                   )
                 })}
               </div>
             </Section>
           )}
 
-          <div style={{ height: 24 }} />
+          <div style={{ height: 28 }} />
         </>
       )}
     </div>
@@ -241,9 +254,37 @@ export default function HomeFeed() {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{ marginBottom: 8 }}>
-      <div style={{ color: '#fff', fontWeight: 700, fontSize: 16, padding: '16px 16px 10px' }}>{title}</div>
+    <div style={{ marginBottom: 10 }}>
+      <div style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.title, letterSpacing: '-0.01em', padding: '18px 16px 11px' }}>{title}</div>
       {children}
+    </div>
+  )
+}
+
+function LoadingSkeleton() {
+  return (
+    <div style={{ padding: '8px 0' }}>
+      <div style={{ padding: '18px 16px 11px' }}><Skeleton width={170} height={18} /></div>
+      <div className="no-scrollbar" style={{ display: 'flex', gap: 12, padding: '0 16px', overflow: 'hidden' }}>
+        {[0, 1, 2].map(i => (
+          <div key={i} style={{ width: 162, flexShrink: 0 }}>
+            <Skeleton height={92} radius={radius.lg} />
+            <div style={{ padding: '10px 2px' }}>
+              <Skeleton width="80%" height={13} style={{ marginBottom: 8 }} />
+              <Skeleton width="55%" height={11} />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ padding: '24px 16px 11px' }}><Skeleton width={120} height={18} /></div>
+      <div style={{ display: 'flex', gap: 16, padding: '0 16px' }}>
+        {[0, 1, 2, 3].map(i => (
+          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7 }}>
+            <Skeleton width={72} height={72} radius="50%" />
+            <Skeleton width={52} height={10} />
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

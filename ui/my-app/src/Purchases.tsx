@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import api from './api/client'
 import type { PurchaseRow } from './types'
 import { SearchBar } from './components/SearchBar'
+import { AdminTable, navBtnStyle, selectStyle, Dash, type Column } from './components/AdminTable'
 import { useSearch } from './hooks/useSearch'
 
 function dollars(cents: number | null | undefined) {
@@ -52,6 +53,19 @@ export default function Purchases() {
   function onSearchSubmit(e: React.FormEvent) { handleSearch(e); void load(true) }
   function onSearchClear() { clearSearch(); void load(true) }
 
+  const columns: Column<PurchaseRow>[] = [
+    { key: 'date', header: 'Date', render: r => new Date(r.purchased_at).toLocaleString() },
+    { key: 'total', header: 'Total', align: 'right', th: { textAlign: 'right' }, td: { fontVariantNumeric: 'tabular-nums' },
+      render: r => dollars(r.total_amount_cents) },
+    { key: 'source', header: 'Source', render: r => r.source },
+    { key: 'customer', header: 'Customer', td: { color: '#f1f5f9', fontWeight: 500 },
+      render: r => r.customer_name ?? r.customer_id },
+    { key: 'phone', header: 'Phone', render: r => r.customer_phone ?? <Dash /> },
+    { key: 'items', header: 'Items', align: 'right', th: { textAlign: 'right' }, render: r => r.item_count ?? <Dash /> },
+    { key: 'external', header: 'External', td: { color: '#475569', fontSize: 11 },
+      render: r => r.external_id ?? '—' },
+  ]
+
   return (
     <div style={{ padding: 24, fontFamily: "'Inter', system-ui, sans-serif", background: '#080d18', minHeight: '100vh', color: '#f1f5f9' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
@@ -98,38 +112,12 @@ export default function Purchases() {
         ) : rows.length === 0 ? (
           <div style={{ color: '#475569', padding: 16 }}>No purchases found.</div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-            <thead>
-              <tr style={{ color: '#475569', textAlign: 'left', borderBottom: '1px solid #1e293b' }}>
-                <th style={thStyle}>Date</th>
-                <th style={{ ...thStyle, textAlign: 'right' }}>Total</th>
-                <th style={thStyle}>Source</th>
-                <th style={thStyle}>Customer</th>
-                <th style={thStyle}>Phone</th>
-                <th style={{ ...thStyle, textAlign: 'right' }}>Items</th>
-                <th style={thStyle}>External</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map(r => (
-                <tr
-                  key={r.id}
-                  style={{ borderBottom: '1px solid #0f172a', cursor: 'pointer' }}
-                  onClick={() => navigate(`/admin/customers/${r.customer_id}`)}
-                  onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#0f172a'}
-                  onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}
-                >
-                  <td style={tdStyle}>{new Date(r.purchased_at).toLocaleString()}</td>
-                  <td style={{ ...tdStyle, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{dollars(r.total_amount_cents)}</td>
-                  <td style={tdStyle}>{r.source}</td>
-                  <td style={{ ...tdStyle, color: '#f1f5f9', fontWeight: 500 }}>{r.customer_name ?? r.customer_id}</td>
-                  <td style={tdStyle}>{r.customer_phone ?? <span style={{ color: '#475569' }}>—</span>}</td>
-                  <td style={{ ...tdStyle, textAlign: 'right' }}>{r.item_count ?? <span style={{ color: '#475569' }}>—</span>}</td>
-                  <td style={{ ...tdStyle, color: '#475569', fontSize: 11 }}>{r.external_id ?? '—'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <AdminTable
+            columns={columns}
+            rows={rows}
+            rowKey={r => r.id}
+            onRowClick={r => navigate(`/admin/customers/${r.customer_id}`)}
+          />
         )}
 
         {loading && rows.length > 0 && (
@@ -145,8 +133,3 @@ export default function Purchases() {
     </div>
   )
 }
-
-const thStyle: React.CSSProperties = { padding: '8px 12px', fontWeight: 500, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }
-const tdStyle: React.CSSProperties = { padding: '10px 12px', color: '#cbd5e1' }
-const navBtnStyle: React.CSSProperties = { padding: '6px 12px', background: '#0f172a', border: '1px solid #1e293b', borderRadius: 6, color: '#94a3b8', cursor: 'pointer', fontSize: 13 }
-const selectStyle: React.CSSProperties = { fontSize: 13, padding: '5px 8px', borderRadius: 4, background: '#0f172a', border: '1px solid #1e293b', color: '#94a3b8' }

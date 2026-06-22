@@ -35,7 +35,7 @@ import sys
 import time
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../scripts"))
-from scraper_common import canonical_brands, map_category, normalize_variant, now_iso, write_csv  # noqa: E402
+from scraper_common import canonical_brands, map_category, normalize_variant, now_iso, stamped_path, write_csv  # noqa: E402
 from enrich import enrich, write_usage  # noqa: E402
 
 import httpx
@@ -219,10 +219,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Scrape The Travel Agency menu")
     parser.add_argument("--pages", type=int, default=0,
                         help="Max pages to fetch (0 = all, default)")
-    parser.add_argument("-o", "--output", default=OUTPUT_FILE)
+    parser.add_argument("-o", "--output", default=None)
     parser.add_argument("--parallel",  action="store_true", help="Fetch pages 2..N concurrently")
     parser.add_argument("--no-enrich", action="store_true", help="Skip Haiku enrichment")
+    parser.add_argument("--model", default="haiku", help="Enrichment model id (see MODELS in scripts/enrich.py)")
     args = parser.parse_args()
+    args.output = args.output or stamped_path(OUTPUT_FILE)
 
     scraped_at = now_iso()
     all_rows:  list[dict] = []
@@ -303,7 +305,7 @@ def main() -> None:
 
     if not args.no_enrich:
         print("\nEnriching listings (subtype + strain) ...")
-    usage = enrich(all_rows, no_enrich=args.no_enrich)
+    usage = enrich(all_rows, no_enrich=args.no_enrich, model=args.model)
     write_usage(usage, args.output)
 
     n = write_csv(all_rows, args.output)

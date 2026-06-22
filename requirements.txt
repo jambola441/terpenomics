@@ -68,6 +68,7 @@ nbdime==4.0.2
 nbformat==5.10.4
 nest-asyncio==1.6.0
 notebook_shim==0.2.4
+openai==2.38.0
 packaging==25.0
 pandocfilters==1.5.1
 parso==0.8.5
@@ -110,6 +111,7 @@ starlette==0.52.1
 terminado==0.18.1
 tinycss2==1.4.0
 tornado==6.5.2
+tqdm==4.67.3
 traitlets==5.14.3
 typing-inspection==0.4.2
 typing_extensions==4.15.0

@@ -25,7 +25,7 @@ import time
 import requests
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../scripts"))
-from scraper_common import apply_brand_aliases, canonical_brands, map_category, normalize_variant, now_iso, write_csv  # noqa: E402
+from scraper_common import apply_brand_aliases, canonical_brands, map_category, normalize_variant, now_iso, stamped_path, write_csv  # noqa: E402
 from enrich import enrich, write_usage  # noqa: E402
 
 # ---------------------------------------------------------------------------
@@ -167,7 +167,7 @@ def _fetch_blaze_offset(blaze_id: str, offset: int, retries: int = 3) -> tuple[l
     raise RuntimeError(f"offset {offset} failed after {retries} attempts: {last_exc}") from last_exc
 
 
-def scrape_store(blaze_id: str, dispensary_slug: str, dispensary_name: str, out_path: str, parallel: bool = False, no_enrich: bool = False) -> int:
+def scrape_store(blaze_id: str, dispensary_slug: str, dispensary_name: str, out_path: str, parallel: bool = False, no_enrich: bool = False, model: str = "haiku") -> int:
     print(f"\n{'='*60}")
     print(f"Scraping: {dispensary_name}")
     print(f"  blaze_id: {blaze_id}")
@@ -245,7 +245,7 @@ def scrape_store(blaze_id: str, dispensary_slug: str, dispensary_name: str, out_
 
     if not no_enrich:
         print("  Enriching (subtype + strain) ...")
-    usage = enrich(all_rows, no_enrich=no_enrich)
+    usage = enrich(all_rows, no_enrich=no_enrich, model=model)
     write_usage(usage, out_path)
 
     write_csv(all_rows, out_path)
@@ -271,6 +271,7 @@ def parse_args():
                       help="Output directory for --all mode")
     p.add_argument("--parallel",  action="store_true", help="Fetch pages concurrently")
     p.add_argument("--no-enrich", action="store_true", help="Skip Haiku enrichment")
+    p.add_argument("--model",     default="haiku", help="Enrichment model id (see MODELS in scripts/enrich.py)")
     return p.parse_args()
 
 
@@ -298,8 +299,8 @@ def main():
                 skipped += 1
                 continue
 
-            out_path = os.path.join(args.out_dir, f"{s['dispensary_slug']}_listings.csv")
-            n = scrape_store(blaze_id, s["dispensary_slug"], s["name"], out_path, parallel=args.parallel, no_enrich=args.no_enrich)
+            out_path = os.path.join(args.out_dir, stamped_path(f"{s['dispensary_slug']}_listings.csv"))
+            n = scrape_store(blaze_id, s["dispensary_slug"], s["name"], out_path, parallel=args.parallel, no_enrich=args.no_enrich, model=args.model)
             total_rows += n
             if n == 0:
                 skipped += 1
@@ -319,8 +320,8 @@ def main():
             or re.sub(r"[^a-z0-9]+", "-", args.name.lower()).strip("-")
             or args.blaze_id
         )
-        out_path = args.out or os.path.join(HERE, f"{disp_slug}_listings.csv")
-        scrape_store(args.blaze_id, disp_slug, args.name or args.blaze_id, out_path, parallel=args.parallel, no_enrich=args.no_enrich)
+        out_path = args.out or stamped_path(os.path.join(HERE, f"{disp_slug}_listings.csv"))
+        scrape_store(args.blaze_id, disp_slug, args.name or args.blaze_id, out_path, parallel=args.parallel, no_enrich=args.no_enrich, model=args.model)
 
 
 if __name__ == "__main__":

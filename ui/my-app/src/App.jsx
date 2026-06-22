@@ -8,6 +8,7 @@ import CustomerEdit from './CustomerEdit'
 import Purchases from './Purchases'
 import Dispensaries from './Dispensaries'
 import DispensaryEdit from './DispensaryEdit'
+import DispensaryListingsAdmin from './DispensaryListingsAdmin'
 import CustomerRegister from './CustomerRegister'
 import CustomerPortal from './CustomerPortal'
 import LabReportUpload from './LabReportUpload'
@@ -36,6 +37,7 @@ function App() {
         <Route path="/admin/lab-reports/:reportId" element={<LabReportDetail />} />
         <Route path="/admin/dispensaries" element={<Dispensaries />} />
         <Route path="/admin/dispensaries/:dispensaryId" element={<DispensaryEdit />} />
+        <Route path="/admin/dispensaries/:dispensaryId/listings" element={<DispensaryListingsAdmin />} />
         <Route path="/admin/listings" element={<Listings />} />
         <Route path="/admin/listings/match" element={<ListingMatch />} />
         <Route path="/admin/listings/:listingId" element={<AdminListingDetail />} />

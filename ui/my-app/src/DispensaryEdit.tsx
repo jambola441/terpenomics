@@ -99,6 +99,14 @@ export default function DispensaryEdit() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 32 }}>
           <button onClick={() => navigate('/admin/dispensaries')} style={navBtnStyle}>← Dispensaries</button>
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>{isNew ? 'New Dispensary' : 'Edit Dispensary'}</h2>
+          {!isNew && (
+            <button
+              onClick={() => navigate(`/admin/dispensaries/${dispensaryId}/listings`)}
+              style={{ ...navBtnStyle, marginLeft: 'auto', color: '#a5b4fc', borderColor: '#3730a3' }}
+            >
+              View listings →
+            </button>
+          )}
         </div>
 
         <form onSubmit={handleSubmit}>

@@ -1,0 +1,54 @@
+# Render Blueprint — daily dispensary scrape worker.
+#
+# This file defines ONLY the scraper worker. The existing `terpenomics` (Docker
+# web service) and `terpenomics-ui` (static site) were created from the Render
+# dashboard and are NOT managed here — adding this blueprint does not touch them.
+#
+# Why a worker and not a cron job: Render cron jobs cannot mount a persistent
+# disk, and the per-SKU enrich cache (data/enrich_cache) is what keeps Haiku
+# spend low. A background worker can hold the disk; scrape_worker.py provides the
+# daily schedule internally. See scripts/scrape_worker.py and SCRAPERS.md.
+#
+# NOTE: Render auto-detects Blueprints only from a render.yaml at the REPO ROOT.
+# This file lives in scripts/, so it is reference, not auto-synced. Create the
+# worker manually: Render Dashboard -> New -> Background Worker -> this repo,
+# Docker runtime, then transcribe the command / disk / env vars below. (To use
+# Blueprint auto-sync instead, move this file back to the repo root.)
+#
+# Either way, fill the sync:false env vars from the terpenomics web service's
+# Environment tab.
+services:
+  - type: worker
+    name: terpenomics-scraper
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerCommand: python scripts/scrape_worker.py
+    plan: starter          # smallest paid instance; disks require a paid plan
+    region: oregon         # TODO: match the region of the existing services
+    autoDeploy: true       # redeploy on every push to main
+    disk:
+      name: enrich-cache
+      mountPath: /app/data/enrich_cache   # exactly where enrich.py reads/writes
+      sizeGB: 1
+    envVars:
+      # --- secrets: set these in the dashboard (copy from the web service) ---
+      - key: DATABASE_URL
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ALLEAVES_USER
+        sync: false
+      - key: ALLEAVES_PASS
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: COA_API_KEY
+        sync: false
+      # --- schedule / behavior knobs (safe defaults, edit freely) ---
+      - key: SCRAPE_RUN_AT_ET
+        value: "09:00"      # daily run time, America/New_York
+      - key: SCRAPE_RUN_ON_START
+        value: "false"      # set "true" to also scrape immediately on deploy
+      - key: PYTHONUNBUFFERED
+        value: "1"          # stream logs in real time to Render

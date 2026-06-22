@@ -2,20 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import type { ListingDetail, CartItem } from '../types'
-
-const CATEGORY_COLORS: Record<string, string> = {
-  flower: '#4caf50',
-  cart: '#2196f3',
-  vaporizers: '#2196f3',
-  edible: '#ff9800',
-  concentrate: '#9c27b0',
-  preroll: '#00bcd4',
-  tincture: '#8bc34a',
-  tinctures: '#8bc34a',
-  topical: '#f44336',
-  merch: '#607d8b',
-  other: '#9e9e9e',
-}
+import { t, radius, font, categoryColor, alpha } from '../theme'
+import { FeedState, Pill, CategoryTag, Label, ClassificationTag, DetailBlock, CollapsibleBlock, SpecRow } from './ui'
 
 interface Props {
   dispensaryId: string
@@ -44,32 +32,25 @@ export default function ListingDetailView({ dispensaryId, listingId, onProductCl
   const containerStyle: React.CSSProperties = {
     height: 'calc(100dvh - 64px)',
     overflowY: 'auto',
-    background: '#0a0a0a',
+    background: t.bg,
   }
 
   if (loading) {
-    return (
-      <div style={{ ...containerStyle, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ color: '#555', fontSize: 14 }}>Loading…</span>
-      </div>
-    )
+    return <div style={containerStyle}><FeedState kind="loading" message="Loading…" style={{ height: '100%' }} /></div>
   }
 
   if (error || !listing) {
-    return (
-      <div style={{ ...containerStyle, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ color: '#f44336', fontSize: 14 }}>{error ?? 'Not found'}</span>
-      </div>
-    )
+    return <div style={containerStyle}><FeedState kind="error" message={error ?? 'Not found'} style={{ height: '100%' }} /></div>
   }
 
   const cat = listing.scraped_category ?? 'other'
-  const catColor = CATEGORY_COLORS[cat] ?? '#9e9e9e'
+  const catColor = categoryColor(cat)
   const price = listing.price_cents ? `$${(listing.price_cents / 100).toFixed(2)}` : null
   const cartSupported = listing.dispensary_accepts_pickup
   const hasProductLink = !!(listing.product_id && onProductClick)
   const hasTerpenes = listing.terpenes.length > 0
   const hasCannabinoids = listing.cannabinoids.length > 0
+  const hasSpecs = !!(listing.strain || listing.subtype || listing.product_line || listing.variant || listing.classification)
 
   function handleAddToCart() {
     if (!onAddToCart || !listing) return
@@ -97,81 +78,69 @@ export default function ListingDetailView({ dispensaryId, listingId, onProductCl
         onClick={() => navigate(-1)}
         style={{
           position: 'absolute', top: 16, left: 16, zIndex: 10,
-          background: 'rgba(0,0,0,0.6)', border: '1px solid #333',
-          borderRadius: 20, color: '#fff', fontSize: 13,
-          padding: '6px 14px', cursor: 'pointer',
+          background: alpha('#000', 0.55), border: `1px solid ${alpha('#fff', 0.15)}`,
+          backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+          borderRadius: radius.pill, color: '#fff', fontSize: font.size.small, fontWeight: font.weight.medium,
+          padding: '7px 14px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5,
+          maxWidth: 'calc(100% - 32px)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}
       >
         ← {listing.dispensary_name}
       </button>
 
-      {/* Hero image */}
+      {/* Hero image — unified light product plate */}
       {listing.image_url ? (
-        <div style={{ position: 'relative', width: '100%', paddingTop: '75%', background: '#111' }}>
+        <div style={{ position: 'relative', width: '100%', paddingTop: '72%', background: t.tile }}>
           <img
             src={listing.image_url}
             alt={listing.scraped_name ?? ''}
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', padding: 24, boxSizing: 'border-box' }}
             onError={e => { (e.target as HTMLImageElement).parentElement!.style.display = 'none' }}
           />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, #0a0a0a 100%)' }} />
         </div>
       ) : (
-        <div style={{ height: 140, background: `linear-gradient(135deg, ${catColor}33 0%, #111 100%)` }} />
+        <div style={{ height: 150, background: `linear-gradient(135deg, ${alpha(catColor, 0.28)} 0%, ${t.surface1} 100%)` }} />
       )}
 
       {/* Content */}
-      <div style={{ padding: '20px 20px 24px' }}>
+      <div style={{ padding: '20px 20px 32px' }}>
         {/* Category + stock */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 14, alignItems: 'center' }}>
-          <span style={{
-            background: catColor + '22', border: `1px solid ${catColor}`,
-            color: catColor, fontSize: 10, fontWeight: 700,
-            padding: '3px 10px', borderRadius: 20,
-            textTransform: 'uppercase', letterSpacing: '0.05em',
-          }}>
-            {cat}
-          </span>
-          {listing.variant && (
-            <span style={{ background: '#1a1a1a', color: '#666', fontSize: 11, padding: '3px 10px', borderRadius: 20 }}>
-              {listing.variant}
-            </span>
-          )}
-          {!listing.in_stock && (
-            <span style={{ background: '#1a1a1a', color: '#555', fontSize: 10, padding: '3px 10px', borderRadius: 20 }}>
-              Out of stock
-            </span>
-          )}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+          <CategoryTag category={cat} />
+          {listing.classification && <ClassificationTag classification={listing.classification} />}
+          {listing.variant && <Pill>{listing.variant}</Pill>}
+          {!listing.in_stock && <Pill color={t.danger} tone="category">Out of stock</Pill>}
         </div>
 
         {/* Name */}
-        <div style={{ color: '#fff', fontSize: 24, fontWeight: 800, lineHeight: 1.2, marginBottom: 6 }}>
+        <div style={{ color: t.text1, fontSize: font.size.display, fontWeight: font.weight.heavy, lineHeight: 1.2, marginBottom: 6, letterSpacing: '-0.01em' }}>
           {listing.scraped_name ?? '—'}
         </div>
 
         {/* Brand */}
         {listing.scraped_brand && (
-          <div style={{ color: '#666', fontSize: 14, marginBottom: 20 }}>{listing.scraped_brand}</div>
+          <div style={{ color: t.text2, fontSize: font.size.body, marginBottom: 20 }}>{listing.scraped_brand}</div>
         )}
 
         {/* Price + Order */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: (hasCannabinoids || hasTerpenes || hasProductLink) ? 28 : 0, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: (hasCannabinoids || hasTerpenes || hasProductLink) ? 28 : 0, flexWrap: 'wrap' }}>
           {price && (
-            <div style={{ color: '#a8e063', fontWeight: 800, fontSize: 28 }}>{price}</div>
+            <div style={{ color: t.accent, fontWeight: font.weight.heavy, fontSize: font.size.hero, letterSpacing: '-0.01em' }}>{price}</div>
           )}
           {cartSupported && onAddToCart && (
             <button
               onClick={handleAddToCart}
               style={{
-                background: addedFlash ? '#6abf2e' : '#a8e063',
-                border: 'none', borderRadius: 10,
-                color: '#0a0a0a', fontSize: 14, fontWeight: 700,
-                padding: '10px 20px', cursor: 'pointer',
+                background: addedFlash ? '#7fae46' : t.accent,
+                border: 'none', borderRadius: radius.md,
+                color: '#0a0a0a', fontSize: font.size.body, fontWeight: font.weight.bold,
+                padding: '11px 22px', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: 6,
-                transition: 'background 0.2s',
+                boxShadow: 'var(--e-1)',
+                transition: `background var(--t-base), transform var(--t-fast)`,
               }}
             >
-              {addedFlash ? 'Added!' : cartQuantity > 0 ? `In cart (${cartQuantity})` : 'Add to cart'}
+              {addedFlash ? '✓ Added' : cartQuantity > 0 ? `In cart (${cartQuantity})` : 'Add to cart'}
             </button>
           )}
         </div>
@@ -179,25 +148,23 @@ export default function ListingDetailView({ dispensaryId, listingId, onProductCl
         {/* Cannabinoids */}
         {hasCannabinoids && (
           <div style={{ marginBottom: (hasTerpenes || hasProductLink) ? 24 : 0 }}>
-            <div style={{ color: '#555', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-              Cannabinoids
-            </div>
+            <Label style={{ marginBottom: 10 }}>Cannabinoids</Label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {listing.cannabinoids.map(c => (
                 <div key={c.name} style={{
-                  background: '#1a1a1a', border: '1px solid #2a2a2a',
-                  borderRadius: 10, padding: '8px 14px',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, minWidth: 72,
+                  background: t.surface1, border: `1px solid ${t.border}`,
+                  borderRadius: radius.md, padding: '9px 14px',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, minWidth: 74,
                 }}>
-                  <span style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>{c.name}</span>
+                  <span style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.body }}>{c.name}</span>
                   <span style={{
-                    color: c.family === 'thc' ? '#a8e063' : '#2196f3',
-                    fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em',
+                    color: c.family === 'thc' ? t.accent : '#3b9bf0',
+                    fontSize: font.size.micro, fontWeight: font.weight.bold, textTransform: 'uppercase', letterSpacing: '0.05em',
                   }}>
                     {c.family.toUpperCase()}
                   </span>
                   {c.percent != null && (
-                    <span style={{ color: '#555', fontSize: 11 }}>{c.percent}%</span>
+                    <span style={{ color: t.text3, fontSize: font.size.caption }}>{c.percent}%</span>
                   )}
                 </div>
               ))}
@@ -208,20 +175,40 @@ export default function ListingDetailView({ dispensaryId, listingId, onProductCl
         {/* Terpenes */}
         {hasTerpenes && (
           <div style={{ marginBottom: hasProductLink ? 28 : 0 }}>
-            <div style={{ color: '#555', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-              Terpenes
-            </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {listing.terpenes.map(t => (
-                <span key={t.name} style={{
-                  background: '#1a1a1a', color: '#888', fontSize: 12,
-                  padding: '5px 12px', borderRadius: 20,
+            <Label style={{ marginBottom: 10 }}>Terpenes</Label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+              {listing.terpenes.map(tp => (
+                <span key={tp.name} style={{
+                  background: t.surface2, color: t.text2, fontSize: font.size.small,
+                  padding: '6px 12px', borderRadius: radius.pill, border: `1px solid ${t.border}`,
                 }}>
-                  {t.name}{t.percent != null ? ` ${t.percent}%` : ''}
+                  {tp.name}{tp.percent != null ? ` ${tp.percent}%` : ''}
                 </span>
               ))}
             </div>
           </div>
+        )}
+
+        {/* Specs */}
+        {hasSpecs && (
+          <DetailBlock title="Details" style={{ marginTop: (hasCannabinoids || hasTerpenes) ? 28 : 0 }}>
+            <div>
+              {listing.strain && <SpecRow label="Strain" value={listing.strain} />}
+              {listing.classification && <SpecRow label="Type" value={listing.classification} />}
+              {listing.subtype && <SpecRow label="Form" value={listing.subtype} />}
+              {listing.product_line && <SpecRow label="Product line" value={listing.product_line} />}
+              {listing.variant && <SpecRow label="Size" value={listing.variant} />}
+            </div>
+          </DetailBlock>
+        )}
+
+        {/* Description */}
+        {listing.description && (
+          <CollapsibleBlock title="Product Description" style={{ marginTop: 28 }}>
+            <p style={{ color: t.text2, fontSize: font.size.small, lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>
+              {listing.description}
+            </p>
+          </CollapsibleBlock>
         )}
 
         {/* See product link */}
@@ -231,9 +218,10 @@ export default function ListingDetailView({ dispensaryId, listingId, onProductCl
             style={{
               marginTop: 'auto',
               width: '100%', background: 'transparent',
-              border: '1px solid #2a2a2a', borderRadius: 10,
-              color: '#555', fontSize: 13, padding: '12px',
+              border: `1px solid ${t.border}`, borderRadius: radius.md,
+              color: t.text2, fontSize: font.size.small + 1, fontWeight: font.weight.medium, padding: '13px',
               cursor: 'pointer', textAlign: 'center',
+              transition: `border-color var(--t-fast), color var(--t-fast)`,
             }}
           >
             See product across dispensaries →

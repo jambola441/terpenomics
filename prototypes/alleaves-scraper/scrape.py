@@ -28,7 +28,7 @@ import time
 from urllib.parse import urlencode
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../scripts"))
-from scraper_common import _norm, canonical_brands, map_category, now_iso, store_slug, write_csv  # noqa: E402
+from scraper_common import _norm, canonical_brands, map_category, now_iso, stamped_path, store_slug, write_csv  # noqa: E402
 from enrich import enrich, write_usage  # noqa: E402
 
 try:
@@ -385,6 +385,7 @@ def parse_args():
     p.add_argument("--carrot-location-id", default="1")
     p.add_argument("--parallel",  action="store_true", help="Fetch catalog and inventory concurrently")
     p.add_argument("--no-enrich", action="store_true", help="Skip Haiku enrichment")
+    p.add_argument("--model", default="haiku", help="Enrichment model id (see MODELS in scripts/enrich.py)")
     return p.parse_args()
 
 
@@ -398,9 +399,9 @@ def main():
               file=sys.stderr)
         sys.exit(1)
 
-    out_path = args.out or os.path.join(
+    out_path = args.out or stamped_path(os.path.join(
         os.path.dirname(__file__), f"{args.tenant}_listings.csv"
-    )
+    ))
     dispensary_slug = args.dispensary_slug
     scraped_at = now_iso()
 
@@ -458,7 +459,7 @@ def main():
 
     if not args.no_enrich:
         print("\nEnriching listings (subtype + strain) ...")
-    usage = enrich(rows, no_enrich=args.no_enrich)
+    usage = enrich(rows, no_enrich=args.no_enrich, model=args.model)
     write_usage(usage, out_path)
 
     write_csv(rows, out_path)

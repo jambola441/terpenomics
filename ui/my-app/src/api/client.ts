@@ -15,6 +15,7 @@ import type {
   PortalPurchase,
   PortalProduct,
   PortalBrand,
+  PortalBrandDetail,
   PortalCategory,
   FeedbackResponse,
   Feedback,
@@ -299,7 +300,7 @@ export const api = {
     getRecommendations: (customerId: string, params?: { limit?: number; window_days?: number }) =>
       portalFetch<RecommendedProduct[]>(`/customer/${customerId}/recommendations${buildQueryString(params)}`),
 
-    getProducts: (params?: { q?: string; limit?: number; offset?: number }) =>
+    getProducts: (params?: { q?: string; category?: string; brand?: string; limit?: number; offset?: number }) =>
       portalFetch<PortalProduct[]>(`/customer/products${buildQueryString(params)}`),
 
     getProduct: (productId: string) =>
@@ -319,6 +320,9 @@ export const api = {
 
     getBrands: (limit = 24) =>
       portalFetch<PortalBrand[]>(`/customer/brands?limit=${limit}`),
+
+    getBrand: (name: string) =>
+      portalFetch<PortalBrandDetail>(`/customer/brands/${encodeURIComponent(name)}`),
 
     getCategories: () =>
       portalFetch<PortalCategory[]>(`/customer/categories`),

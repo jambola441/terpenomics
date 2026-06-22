@@ -1,0 +1,210 @@
+{
+  "model": "deepseek",
+  "api_model": "deepseek/deepseek-v4-flash",
+  "secs": 44.580928325653076,
+  "usage": {
+    "input_tokens": 5501,
+    "output_tokens": 2937,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "cost_usd": 0.001
+  },
+  "error": null,
+  "scores": {
+    "identity_clusters.json": [
+      {
+        "id": "clust-blue-dream-eighth",
+        "converged": true,
+        "split": {},
+        "canonical_match": true,
+        "canon_fails": [],
+        "members": [
+          {
+            "category": "flower",
+            "subtype": "flower",
+            "strain": "Blue Dream",
+            "product_line": null,
+            "variant": "3.5g"
+          },
+          {
+            "category": "flower",
+            "subtype": "flower",
+            "strain": "Blue Dream",
+            "product_line": null,
+            "variant": "3.5g"
+          },
+          {
+            "category": "flower",
+            "subtype": "flower",
+            "strain": "Blue Dream",
+            "product_line": null,
+            "variant": "3.5g"
+          },
+          {
+            "category": "flower",
+            "subtype": "flower",
+            "strain": "Blue Dream",
+            "product_line": null,
+            "variant": "3.5g"
+          }
+        ]
+      },
+      {
+        "id": "clust-gelato-cart",
+        "converged": true,
+        "split": {},
+        "canonical_match": true,
+        "canon_fails": [],
+        "members": [
+          {
+            "category": "vaporizers",
+            "subtype": "cart",
+            "strain": "Gelato",
+            "product_line": null,
+            "variant": "0.5g"
+          },
+          {
+            "category": "vaporizers",
+            "subtype": "cart",
+            "strain": "Gelato",
+            "product_line": null,
+            "variant": "0.5g"
+          },
+          {
+            "category": "vaporizers",
+            "subtype": "cart",
+            "strain": "Gelato",
+            "product_line": null,
+            "variant": "0.5g"
+          }
+        ]
+      },
+      {
+        "id": "clust-watermelon-gummy",
+        "converged": true,
+        "split": {},
+        "canonical_match": true,
+        "canon_fails": [],
+        "members": [
+          {
+            "category": "edible",
+            "subtype": "gummy",
+            "strain": "Watermelon",
+            "product_line": null,
+            "variant": "100mg"
+          },
+          {
+            "category": "edible",
+            "subtype": "gummy",
+            "strain": "Watermelon",
+            "product_line": null,
+            "variant": "100mg"
+          },
+          {
+            "category": "edible",
+            "subtype": "gummy",
+            "strain": "Watermelon",
+            "product_line": null,
+            "variant": "100mg"
+          }
+        ]
+      },
+      {
+        "id": "clust-gmo-preroll",
+        "converged": true,
+        "split": {},
+        "canonical_match": false,
+        "canon_fails": [
+          "strain"
+        ],
+        "members": [
+          {
+            "category": "preroll",
+            "subtype": "single",
+            "strain": "GMO Cookies",
+            "product_line": null,
+            "variant": "1g"
+          },
+          {
+            "category": "preroll",
+            "subtype": "single",
+            "strain": "GMO Cookies",
+            "product_line": null,
+            "variant": "1g"
+          },
+          {
+            "category": "preroll",
+            "subtype": "single",
+            "strain": "GMO Cookies",
+            "product_line": null,
+            "variant": "1g"
+          }
+        ]
+      },
+      {
+        "id": "clust-ruby-elderberry-sage",
+        "converged": false,
+        "split": {
+          "product_line": [
+            "",
+            "Night Cap",
+            "Nightcap"
+          ]
+        },
+        "canonical_match": false,
+        "canon_fails": [],
+        "members": [
+          {
+            "category": "edible",
+            "subtype": "gummy",
+            "strain": "Elderberry Sage",
+            "product_line": null,
+            "variant": "100mg"
+          },
+          {
+            "category": "edible",
+            "subtype": "gummy",
+            "strain": "Elderberry Sage",
+            "product_line": "Night Cap",
+            "variant": "100mg"
+          },
+          {
+            "category": "edible",
+            "subtype": "gummy",
+            "strain": "Elderberry Sage",
+            "product_line": "Night Cap",
+            "variant": "100mg"
+          },
+          {
+            "category": "edible",
+            "subtype": "gummy",
+            "strain": "Elderberry Sage",
+            "product_line": "Nightcap",
+            "variant": "100mg"
+          },
+          {
+            "category": "edible",
+            "subtype": "gummy",
+            "strain": "Elderberry Sage",
+            "product_line": "Night Cap",
+            "variant": "100mg"
+          },
+          {
+            "category": "edible",
+            "subtype": "gummy",
+            "strain": "Elderberry Sage",
+            "product_line": "Night Cap",
+            "variant": "100mg"
+          },
+          {
+            "category": "edible",
+            "subtype": "gummy",
+            "strain": "Elderberry Sage",
+            "product_line": "Night Cap",
+            "variant": "100mg"
+          }
+        ]
+      }
+    ]
+  }
+}
