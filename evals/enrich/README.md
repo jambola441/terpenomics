@@ -42,6 +42,36 @@ models) / `ANTHROPIC_API_KEY` (haiku) in `.env`.
 Enrichment runs with `brand_examples={}` (model only, no DB nudge) and clears the eval cache
 each run, so the **current** prompts are always exercised.
 
+## Gold dispensary set
+
+`cases/gold_the_plug.json` — 108 hand-labeled real listings from The Plug (Crown
+Heights), stratified across categories. Includes the failure modes that matter in
+production: a whole raw category the scraper's CATEGORY_MAP missed (vapes landing in
+`other` — tests hint override at scale), edible pack math, typo strains that must be
+kept verbatim ("Red Zprite", "Marakesh"), product lines (UP, Flyers, Noir, Quicks,
+Releaf), flavor-as-strain beverages, and null-strain merch/topicals. Ambiguous fields
+(infused-vs-pack prerolls, unknown pack counts) are omitted from `expect` so the pass
+rate reflects real errors, not taxonomy judgment calls.
+
+```bash
+python evals/enrich/run_eval.py --models haiku --cases cases/gold_the_plug.json
+```
+
+## Audit sweep (full output, no labels)
+
+`audit.py` complements the eval: it queries FULL enriched output — scrape CSVs or the
+live listings table — and surfaces suspects (category/name token conflicts, near-
+duplicate strain spellings within a brand, product lines leaking into strains, variant
+unit anomalies, brand spelling splits, unenriched rows). Use it as the query layer of
+an audit loop: run it, have an agent (or a human) adjudicate the JSON, then encode
+confirmed fixes as `brand_aliases.json` entries, CATEGORY_MAP additions, or prompt
+changes — deterministic fixes beat re-prompting.
+
+```bash
+python evals/enrich/audit.py --csv data/scrapes/the-plug-crown-heights_*.csv --json audit.json
+python evals/enrich/audit.py --db     # active listings via DATABASE_URL
+```
+
 ## Adding cases
 
 Append to the relevant `cases/*.json`. Keep `expect`/`canonical` to fields with a single clear
