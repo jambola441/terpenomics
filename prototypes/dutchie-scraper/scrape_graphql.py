@@ -148,7 +148,7 @@ def normalise_gql(p: dict, dispensary_slug: str, scraped_at: str) -> list[dict]:
         rows.append({
             "dispensary_slug": dispensary_slug,
             "sku":             sku,
-            "batch_id":        f"{sku}-{i}" if len(options) > 1 else sku,
+            "batch_id":        "",  # reserved for real batch/lot IDs (METRC); Dutchie doesn't expose one
             "name":            name,
             "brand":           brand,
             "category":        cat,

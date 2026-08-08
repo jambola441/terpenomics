@@ -95,8 +95,13 @@ _CACHE_DIR = _DATA_DIR / "enrich_cache"
 
 
 def _cache_key(row: dict) -> str | None:
+    """Key on sku + scraped variant: platforms reuse one SKU across weight tiers,
+    and a bare-sku key would let tiers overwrite each other's cache entry. Uses the
+    scraper's variant (pre-enrichment), which is stable across runs for a given row."""
     sku = (row.get("sku") or "").strip()
-    return sku if sku else None
+    if not sku:
+        return None
+    return f"{sku}|{(row.get('variant') or '').strip()}"
 
 
 def _slug_for_rows(rows: list[dict]) -> str | None:
@@ -346,8 +351,9 @@ def _call_llm(
     client, provider: str, api_model: str, system_prompt: str,
     payload: list[dict], timeout: float, max_tokens: int,
     label: str, print_lock,
-) -> tuple[dict, dict]:
-    """Returns (items_by_local_id, usage_dict). Empty items on any failure."""
+) -> tuple[dict | None, dict]:
+    """Returns (items_by_local_id, usage_dict). items is None on any failure —
+    callers must treat those rows as unanswered (fall back to hints, do NOT cache)."""
     try:
         if provider == "anthropic":
             resp = client.messages.create(
@@ -385,7 +391,7 @@ def _call_llm(
     except Exception as exc:
         with print_lock:
             print(f"  [model error] {label}: {exc}", file=sys.stderr)
-        items, usage = {}, dict(_ZERO_USAGE)
+        items, usage = None, dict(_ZERO_USAGE)
 
     with print_lock:
         print(f"    {label} done")
@@ -478,6 +484,11 @@ def _run_enrich(
     if client is None:
         return dict(_ZERO_USAGE)
 
+    # Rows whose batch errored or whose id the model dropped (truncation). They
+    # still get hint/default values for this run's output, but are excluded from
+    # the cache so the next run retries them instead of freezing the fallback.
+    failed_rows: set[int] = set()
+
     provider, api_model = model_cfg["provider"], model_cfg["api_model"]
     timeout    = model_cfg.get("timeout", _DEFAULT_TIMEOUT)
     max_tokens = model_cfg.get("max_tokens", _DEFAULT_MAX_TOKENS)
@@ -521,7 +532,10 @@ def _run_enrich(
     def classify_applier(chunk):
         def on_result(items):
             for local_id, (oi, row) in enumerate(chunk):
-                it  = items.get(str(local_id), {})
+                it = (items or {}).get(str(local_id))
+                if it is None:
+                    failed_rows.add(oi)
+                    it = {}
                 cat = _valid_category(it.get("category"), row.get("category"))
                 categories[oi] = cat
                 subtypes[oi]   = _valid_subtype(it.get("subtype"), cat, _hint_subtype(row))
@@ -556,7 +570,10 @@ def _run_enrich(
     def extract_applier(chunk):
         def on_result(items):
             for local_id, (oi, row) in enumerate(chunk):
-                it = items.get(str(local_id), {})
+                it = (items or {}).get(str(local_id))
+                if it is None:
+                    failed_rows.add(oi)
+                    it = {}
                 strains[oi]       = it.get("strain")
                 product_lines[oi] = it.get("product_line")
         return on_result
@@ -593,7 +610,14 @@ def _run_enrich(
     run_phase(extract_tasks)
 
     # ---- Write cache once, both passes applied ----
+    # Rows in failed_rows carry fallback values, not model answers — leaving them
+    # out of the cache means the next run re-enriches them instead of trusting junk.
+    if failed_rows:
+        print(f"  [warn] {len(failed_rows)} row(s) not cached (model error/truncation); "
+              f"will retry next run", file=sys.stderr)
     for (oi, row) in pending:
+        if oi in failed_rows:
+            continue
         key = _cache_key(row)
         if key:
             cache[key] = {

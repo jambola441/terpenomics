@@ -142,7 +142,7 @@ def normalise_dp(p: dict, dispensary_slug: str, scraped_at: str) -> list[dict]:
         rows.append({
             "dispensary_slug": dispensary_slug,
             "sku":             sku,
-            "batch_id":        str(v.get("id") or "").strip(),
+            "batch_id":        "",  # v["id"] is Dutchie's variant id, not a batch — reserved for METRC lot IDs
             "name":            name,
             "brand":           brand,
             "category":        cat,
@@ -282,7 +282,7 @@ def normalise_fh(p: dict, dispensary_slug: str, scraped_at: str) -> dict:
     return {
         "dispensary_slug": dispensary_slug,
         "sku":             sku,
-        "batch_id":        str(p.get("variant_id") or "").strip(),
+        "batch_id":        "",  # variant_id is Flowhub's variant id, not a batch — reserved for METRC lot IDs
         "name":            name,
         "brand":           brand,
         "category":        cat,
