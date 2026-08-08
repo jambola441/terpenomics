@@ -123,7 +123,8 @@ def normalise_dp(p: dict, dispensary_slug: str, scraped_at: str) -> list[dict]:
     """Dutchie Plus — one row per variant tier."""
     name     = str(p.get("name") or "").strip()
     brand    = str((p.get("brand") or {}).get("name") or "").strip()
-    cat      = map_category(str(p.get("category") or "").strip())
+    raw_cat  = str(p.get("category") or "").strip()
+    cat      = map_category(raw_cat)
     desc     = str(p.get("description") or "").strip()
     strain   = str(p.get("strainType") or "").strip().lower()
     thc      = str((p.get("potencyThc") or {}).get("formatted") or "").strip()
@@ -146,6 +147,7 @@ def normalise_dp(p: dict, dispensary_slug: str, scraped_at: str) -> list[dict]:
             "name":            name,
             "brand":           brand,
             "category":        cat,
+            "raw_category":    raw_cat,
             "variant":         variant,
             "price_cents":     price_cents,
             "thc_percent":     thc,
@@ -255,7 +257,8 @@ def normalise_fh(p: dict, dispensary_slug: str, scraped_at: str) -> dict:
     """Flowhub — one row per product (single price point)."""
     name   = str(p.get("name") or "").strip()
     brand  = str(p.get("brand") or "").strip()
-    cat    = map_category(str(p.get("category") or p.get("type") or "").strip())
+    raw_cat = str(p.get("category") or p.get("type") or "").strip()
+    cat    = map_category(raw_cat)
     desc   = " ".join(str(p.get("description") or "").split())
     strain = str(p.get("species") or "").strip().lower()
     image  = str(p.get("image_url") or "").strip()
@@ -286,6 +289,7 @@ def normalise_fh(p: dict, dispensary_slug: str, scraped_at: str) -> dict:
         "name":            name,
         "brand":           brand,
         "category":        cat,
+        "raw_category":    raw_cat,
         "variant":         variant,
         "price_cents":     price_cents,
         "thc_percent":     thc,

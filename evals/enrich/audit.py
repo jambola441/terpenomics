@@ -14,6 +14,9 @@ Checks
                             an edible, gummies in flower, ...)
   unmapped_category_bucket  large 'other' share whose names look categorizable —
                             usually a missing CATEGORY_MAP entry upstream
+  unmapped_raw_category     exact raw source strings CATEGORY_MAP sends to 'other'
+                            (needs the raw_category CSV column) — each is a
+                            ready-to-add map entry
   strain_split              near-duplicate strain spellings within one brand
                             ("Blu Dreem" vs "Blue Dream") — splits product groups
   line_leaked_into_strain   a known product_line of the brand also appears inside
@@ -43,6 +46,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "scripts"))
 from enrich import CATEGORIES, SUBTYPES  # noqa: E402
+from scraper_common import map_category  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Category token signals — conservative on purpose: every hit is a *suspect*,
@@ -125,6 +129,21 @@ def check_unmapped_category_bucket(rows: list[dict]) -> list[dict]:
                         "other_total": len(other),
                         "samples": [_ref(r)["name"] for r in hits[:5]]})
     return out
+
+
+def check_unmapped_raw_category(rows: list[dict]) -> list[dict]:
+    """Raw source category strings that CATEGORY_MAP sends to 'other' — each one is
+    a candidate map entry. Needs the raw_category CSV column (scrapes made after it
+    was added); silently empty on older CSVs."""
+    counts: dict[str, int] = defaultdict(int)
+    samples: dict[str, str] = {}
+    for r in rows:
+        raw = (r.get("raw_category") or "").strip()
+        if raw and map_category(raw) == "other":
+            counts[raw] += 1
+            samples.setdefault(raw, r.get("name") or "")
+    return [{"raw_category": raw, "count": n, "sample_name": samples[raw]}
+            for raw, n in sorted(counts.items(), key=lambda x: -x[1])]
 
 
 def check_strain_split(rows: list[dict]) -> list[dict]:
@@ -211,6 +230,7 @@ def check_missing_enrichment(rows: list[dict]) -> list[dict]:
 CHECKS = [
     ("category_token_conflict",  check_category_token_conflict),
     ("unmapped_category_bucket", check_unmapped_category_bucket),
+    ("unmapped_raw_category",    check_unmapped_raw_category),
     ("strain_split",             check_strain_split),
     ("line_leaked_into_strain",  check_line_leaked_into_strain),
     ("lineage_as_strain",        check_lineage_as_strain),

@@ -128,6 +128,7 @@ def normalise_blaze(p: dict, included_map: dict, dispensary_slug: str, scraped_a
             "name":            name,
             "brand":           brand,
             "category":        category,
+            "raw_category":    cat_raw,
             "variant":         variant,
             "price_cents":     price_cents,
             "thc_percent":     thc_pct,

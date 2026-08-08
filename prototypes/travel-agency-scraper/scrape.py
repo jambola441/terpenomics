@@ -200,6 +200,7 @@ def normalise(p: dict, scraped_at: str) -> dict:
         "name":            str(p.get("name") or "").strip(),
         "brand":           str(p.get("brand") or "").strip(),
         "category":        category,
+        "raw_category":    str(raw_cat or "").strip(),
         "variant":         variant,
         "price_cents":     price_cents,
         "thc_percent":     thc,

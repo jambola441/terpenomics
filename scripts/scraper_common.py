@@ -24,6 +24,7 @@ CSV_COLUMNS = [
     "name",
     "brand",
     "category",
+    "raw_category",   # source string before map_category — makes CATEGORY_MAP gaps diagnosable
     "variant",
     "price_cents",
     "classification",
