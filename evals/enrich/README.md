@@ -103,9 +103,11 @@ no generic vape token at all; the curated tokens settle 23 listings deterministi
 It is consulted *before* the model call, so the category it fixes also gives the model
 the right subtype rails, and it overrules the model's answer afterwards.
 
-Taxonomy rulings encoded in v2: beverages are dosed in mg, not volume; topical scent
-names ARE strains; version suffixes ("2.0") stay in the strain; concentrate
-`diamonds` is its own subtype. `_ENRICH_VERSION` in `scripts/enrich.py` stamps every
+Taxonomy rulings encoded so far: beverages are dosed in mg, not volume; topical scent
+names ARE strains; version suffixes ("2.0") stay in the strain; concentrate `diamonds`
+is its own subtype; and a word that only restates the format is not a strain — "Milk
+Chocolate" on a chocolate bar is the format, so the lineage (Sativa) is the strain,
+while a strain that merely contains a format word ("Chocolate Diesel") is kept. `_ENRICH_VERSION` in `scripts/enrich.py` stamps every
 cache entry — bump it with any prompt/rail change and stale rows re-enrich themselves
 rather than needing cache files deleted by hand.
 

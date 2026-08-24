@@ -115,7 +115,9 @@ _CACHE_DIR = _DATA_DIR / "enrich_cache"
 #   3 — data/format_tokens.json settles the category for brand device names
 #   4 — beverage variant rule scoped so it stops pulling subtype toward 'beverage';
 #       pack multiply-out scoped to mg doses so it stops overriding weight hints
-_ENRICH_VERSION = 4
+#   5 — a format word alone is not a strain ("Milk Chocolate" on a chocolate bar),
+#       so lineage is reached when nothing else differentiates
+_ENRICH_VERSION = 5
 
 
 def _cache_key(row: dict) -> str | None:
@@ -332,6 +334,10 @@ return null just because the product is a drink, gummy, or other flavored item.
   Beltz 2.0" keeps the "2.0"). Only pure size/format words are stripped.
 - Preserve cannabis abbreviations in all-caps: OG, AK, RSO, CBD, THC, BC, NYC, LA.
 - Do NOT correct other spellings — keep the source spelling (e.g. "Tie Die", "Perisimmon").
+- A candidate that only restates the product's own FORMAT is not a differentiator: "Milk
+  Chocolate" on a chocolate bar, "Gummies" on a gummy, "Cart" on a cartridge. Skip it and
+  keep looking. This applies only when the format word is the WHOLE candidate — a strain
+  that merely contains one is real and must be kept ("Chocolate Diesel", "Gummy Bearz").
 - If Sativa / Indica / Hybrid is the only differentiator left, use that as the strain.
 - Topicals DO have strains: a balm's scent or blend name is its strain ("Ayrloom Balm - Revive"
   → "Revive"). Treat it exactly like a flavor.
