@@ -73,7 +73,15 @@ accuracy is.** Note `cache_write`/`cache_read` came back 0: the system prompts s
 under the model's minimum cacheable length, so `cache_control` is currently a no-op.
 
 The deterministic layer (`scripts/canonical.py`) was built from these failures and
-fixes 6 of the 18 failing fields at zero marginal cost. Re-run to confirm.
+fixes 6 of the 18 at zero marginal cost; three more were taxonomy rulings the model
+had already answered correctly, taking the verified rate to **91.7%**. Seven more
+depend on the v2 prompt/taxonomy changes and need a re-run to confirm (ceiling 98.1%).
+
+Taxonomy rulings encoded in v2: beverages are dosed in mg, not volume; topical scent
+names ARE strains; version suffixes ("2.0") stay in the strain; concentrate
+`diamonds` is its own subtype. `_ENRICH_VERSION` in `scripts/enrich.py` stamps every
+cache entry — bump it with any prompt/rail change and stale rows re-enrich themselves
+rather than needing cache files deleted by hand.
 
 ## Audit sweep (full output, no labels)
 

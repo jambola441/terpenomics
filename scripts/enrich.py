@@ -50,6 +50,7 @@ _TOKENS: dict[str, OrderedDict] = {
         ("infused",   re.compile(r"\bdiamond\s+infused\b|\binfused\b", re.I)),
     ]),
     "concentrate": OrderedDict([
+        ("diamonds", re.compile(r"\bdiamonds?\b", re.I)),
         ("rosin", re.compile(r"\brosin\b", re.I)),
         ("resin", re.compile(r"\bresin\b", re.I)),
         ("hash",  re.compile(r"\bhash\b", re.I)),
@@ -93,6 +94,15 @@ def _hint_subtype(row: dict) -> str | None:
 # ---------------------------------------------------------------------------
 
 _CACHE_DIR = _DATA_DIR / "enrich_cache"
+
+# Bump when a prompt, rail, or token rule changes in a way that should invalidate
+# previously cached answers. Cache entries stamped with a different version are
+# re-enriched instead of trusted, so a taxonomy change reaches old rows without
+# anyone hand-deleting cache files.
+#   1 — baseline
+#   2 — 'diamonds' concentrate subtype; beverages dosed in mg not volume; topical
+#       scent names are strains; version suffixes ("2.0") kept in strain
+_ENRICH_VERSION = 2
 
 
 def _cache_key(row: dict) -> str | None:
@@ -223,7 +233,7 @@ CATEGORIES = ["flower", "preroll", "vaporizers", "edible", "concentrate",
 SUBTYPES: dict[str, list[str]] = {
     "vaporizers":  ["cart", "all-in-one", "pod", "battery", "other"],
     "edible":      ["gummy", "chocolate", "beverage", "tablet", "other"],
-    "concentrate": ["rosin", "resin", "hash", "rso", "other"],
+    "concentrate": ["diamonds", "rosin", "resin", "hash", "rso", "other"],
     "preroll":     ["single", "infused", "pack"],
     "flower":      ["flower", "smalls", "preground", "infused"],
     "tinctures":   ["tincture"],
@@ -255,10 +265,14 @@ variant — the canonical size/dose, in compact form:
   - edible: TOTAL package THC in mg (10pk × 10mg/piece = "100mg"); grams are wrong unless the
     item has no THC dose or the quantity is at least 0.5g, in which case it must be reported as grams. 
     Use the description for per-piece dose and pack count. Non standard reporting like "halfgram" 
-    should be reported as their standard equivalent.
-  - flower / preroll / concentrate / vaporizers: weight or volume ("3.5g", "1g", "0.5g");
-    keep fluid ounces as-is, never convert to grams ("12oz"). 
-  - tinctures: total mg
+    should be reported as their standard equivalent. A per-piece dose written next to a pack
+    count MUST be multiplied out ("20MG x 2PK" = "40mg", "5mg 20pk" = "100mg") — reporting the
+    per-piece dose alone is wrong.
+  - beverages are edibles: report the THC DOSE in mg, never the liquid volume — a 12oz can
+    holding 5mg THC is "5mg", not "12oz" and not "355ml". Only fall back to the volume when
+    no dose is stated anywhere in the name or description.
+  - flower / preroll / concentrate / vaporizers: weight ("3.5g", "1g", "0.5g").
+  - tinctures: total mg ("1000mg") — never converted to grams.
   - merch / no meaningful size: ""
 
 Reply ONLY with a JSON array, no prose, no markdown fences:
@@ -298,11 +312,15 @@ return null just because the product is a drink, gummy, or other flavored item.
   "THC:CBD:CBN", and mg/percent amounts are NOT part of the strain
   ("Elderberry Sage 1:2:3 THC:CBD:CBN" → "Elderberry Sage").
 - Normalize to Title Case; crosses use " x " as the separator.
+- KEEP version/edition suffixes — they distinguish real products ("Creamsicle x Rainbow
+  Beltz 2.0" keeps the "2.0"). Only pure size/format words are stripped.
 - Preserve cannabis abbreviations in all-caps: OG, AK, RSO, CBD, THC, BC, NYC, LA.
 - Do NOT correct other spellings — keep the source spelling (e.g. "Tie Die", "Perisimmon").
 - If Sativa / Indica / Hybrid is the only differentiator left, use that as the strain.
-- Return null ONLY when category is merch/topical, or nothing but the brand and a format/size
-  word remains (no flavor, strain, or other differentiator at all).
+- Topicals DO have strains: a balm's scent or blend name is its strain ("Ayrloom Balm - Revive"
+  → "Revive"). Treat it exactly like a flavor.
+- Return null ONLY when category is merch, or nothing but the brand and a format/size
+  word remains (no flavor, scent, strain, or other differentiator at all).
 
 product_line — a word/phrase the brand uses to group a family of products (e.g. "Releaf",
 "Protab", "22's"). Assign one ONLY when the product name actually contains that line's text;
@@ -622,6 +640,7 @@ def _run_enrich(
         key = _cache_key(row)
         if key:
             cache[key] = {
+                "v": _ENRICH_VERSION,
                 "category": categories[oi], "subtype": subtypes[oi], "strain": strains[oi],
                 "product_line": product_lines[oi], "variant": variants[oi],
             }
@@ -675,8 +694,10 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
     for i, row in enumerate(rows):
         key = _cache_key(row)
         entry = cache.get(key) if key else None
-        # Re-enrich if not cached or cache pre-dates variant/category fields
-        if entry and "variant" in entry and "category" in entry:
+        # Re-enrich if not cached, if the cache pre-dates the variant/category
+        # fields, or if it was written under an older prompt/taxonomy version.
+        if entry and "variant" in entry and "category" in entry \
+                and entry.get("v") == _ENRICH_VERSION:
             categories.append(entry.get("category"))
             subtypes.append(entry.get("subtype"))
             strains.append(entry.get("strain"))

@@ -1,6 +1,6 @@
 {
  "eval_type": "gold_dispensary",
- "description": "Hand-labeled gold set: 108 real listings from The Plug (Crown Heights), stratified across categories, incl. the 'other' bucket the scraper's CATEGORY_MAP missed (mostly vapes — tests hint override), pack-math edibles, typo strains that must be kept verbatim (Red Zprite, Marakesh), product lines (UP, Flyers, Noir, Quicks, Releaf), and null-strain merch/topicals. Ambiguous fields are omitted from expect on purpose.",
+ "description": "Hand-labeled gold set: 108 real listings from The Plug (Crown Heights), stratified across categories, incl. the 'other' bucket the scraper's CATEGORY_MAP missed (mostly vapes — tests hint override), pack-math edibles, typo strains that must be kept verbatim (Red Zprite, Marakesh), product lines (UP, Flyers, Noir, Quicks, Releaf), and null-strain merch/topicals. Ambiguous fields are omitted from expect on purpose. Rulings: beverages are dosed in mg not volume; topical scent names ARE strains; version suffixes (2.0) are kept; concentrate 'diamonds' is its own subtype.",
  "cases": [
   {
    "id": "gold-000-off-hours-razz-lemonade-live-resin-rope",
@@ -247,7 +247,7 @@
    "expect": {
     "category": "edible",
     "subtype": "gummy",
-    "strain": "Apple"
+    "strain": "Apple-A-Day"
    }
   },
   {
@@ -1338,7 +1338,7 @@
    },
    "expect": {
     "category": "concentrate",
-    "subtype": "other",
+    "subtype": "diamonds",
     "strain": "Donny Burger",
     "variant": "1g"
    }
@@ -1369,7 +1369,7 @@
    },
    "expect": {
     "category": "concentrate",
-    "subtype": "other",
+    "subtype": "diamonds",
     "strain": "Panama Punch",
     "variant": "1g"
    }
@@ -1680,7 +1680,7 @@
    "expect": {
     "category": "topical",
     "subtype": "topical",
-    "strain": null
+    "strain": "Revive"
    }
   },
   {
@@ -1695,7 +1695,7 @@
    "expect": {
     "category": "topical",
     "subtype": "topical",
-    "strain": null
+    "strain": "Restore"
    }
   }
  ]
