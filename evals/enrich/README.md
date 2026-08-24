@@ -77,6 +77,14 @@ fixes 6 of the 18 at zero marginal cost; three more were taxonomy rulings the mo
 had already answered correctly, taking the verified rate to **91.7%**. Seven more
 depend on the v2 prompt/taxonomy changes and need a re-run to confirm (ceiling 98.1%).
 
+A third vocabulary, `data/format_tokens.json`, settles the category for products
+identifiable only by a brand's hardware name — "Select Briq V2" and "Florist Farms
+Rechargeable OVL" are vapes with no vape word in them, so the model reads "1G
+<something>" and answers concentrate. Of The Plug's 228 `other`-bucket rows, 24 carry
+no generic vape token at all; the curated tokens settle 23 listings deterministically.
+It is consulted *before* the model call, so the category it fixes also gives the model
+the right subtype rails, and it overrules the model's answer afterwards.
+
 Taxonomy rulings encoded in v2: beverages are dosed in mg, not volume; topical scent
 names ARE strains; version suffixes ("2.0") stay in the strain; concentrate
 `diamonds` is its own subtype. `_ENRICH_VERSION` in `scripts/enrich.py` stamps every

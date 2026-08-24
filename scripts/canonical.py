@@ -2,7 +2,10 @@
 canonical.py — Deterministic post-enrichment canonicalization.
 
 The LLM decides *what* a listing is; this module makes the answer *consistent*.
-Two curated, brand-scoped vocabularies are applied after enrichment:
+Three curated, brand-scoped vocabularies back that up. Two are applied after
+enrichment (product_lines, strain_aliases); format_tokens is consulted by
+enrich.py *before* the model call, so the category it settles also gives the
+model the right subtype rails to answer within.
 
   product_lines   data/product_lines.json — {brand: [line, ...]}
                   A line is assigned when its text actually appears in the product
@@ -21,7 +24,12 @@ Two curated, brand-scoped vocabularies are applied after enrichment:
                   — only a shared map can. "" as the canonical value clears the
                   strain.
 
-Both files use "*" as a brand key for entries that apply to every brand.
+  format_tokens   data/format_tokens.json — {brand: {token: category}}
+                  Settles the category for products identifiable only by a brand's
+                  hardware name ("Select Briq V2" is a vape with no vape word in
+                  it). See find_format_category.
+
+All three files use "*" as a brand key for entries that apply to every brand.
 
 Why deterministic: these fixes cost nothing per run, are auditable, apply
 identically across every dispensary, and compound — each entry added from an
@@ -41,11 +49,11 @@ from pathlib import Path
 _DATA_DIR = Path(__file__).parent.parent / "data"
 _LINES_PATH = _DATA_DIR / "product_lines.json"
 _ALIASES_PATH = _DATA_DIR / "strain_aliases.json"
+_FORMATS_PATH = _DATA_DIR / "format_tokens.json"
 
 _ANY = "*"
 
-_lines_cache: dict | None = None
-_aliases_cache: dict | None = None
+_caches: dict[str, dict] = {}
 
 
 def _norm_brand(s: str) -> str:
@@ -57,17 +65,11 @@ def _norm_brand(s: str) -> str:
 
 def _load(path: Path, cache_name: str) -> dict:
     """Load a canonical map, dropping "_comment"-style keys. Missing file -> {}."""
-    global _lines_cache, _aliases_cache
-    cached = _lines_cache if cache_name == "lines" else _aliases_cache
-    if cached is None:
+    if cache_name not in _caches:
         raw = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
-        cached = {_norm_brand(k) if k != _ANY else _ANY: v
-                  for k, v in raw.items() if not k.startswith("_")}
-        if cache_name == "lines":
-            _lines_cache = cached
-        else:
-            _aliases_cache = cached
-    return cached
+        _caches[cache_name] = {_norm_brand(k) if k != _ANY else _ANY: v
+                               for k, v in raw.items() if not k.startswith("_")}
+    return _caches[cache_name]
 
 
 def _for_brand(table: dict, brand: str):
@@ -134,6 +136,19 @@ def canonical_strain(brand: str, strain: str) -> str | None:
         if table and key in {k.lower() for k in table}:
             return next(v for k, v in table.items() if k.lower() == key)
     return None
+
+
+def find_format_category(brand: str, name: str) -> str | None:
+    """Category implied by a curated device/format token in the name, else None.
+
+    Covers products whose only category signal is a brand's hardware name — a
+    "Select Briq V2" or "Florist Farms Rechargeable OVL" carries no generic vape
+    word, so the model reads "1G <something>" and answers concentrate. Longest
+    token wins."""
+    own, shared = _for_brand(_load(_FORMATS_PATH, "formats"), brand)
+    merged = {**(shared or {}), **(own or {})}
+    hits = [(tok, cat) for tok, cat in merged.items() if _pattern(tok).search(name or "")]
+    return max(hits, key=lambda tc: len(tc[0]))[1] if hits else None
 
 
 def _strip_line_from_strain(strain: str, line: str) -> str:

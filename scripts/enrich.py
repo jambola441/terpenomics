@@ -18,7 +18,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from scraper_common import normalize_variant  # noqa: E402
-from canonical import canonicalize  # noqa: E402
+from canonical import canonicalize, find_format_category  # noqa: E402
 
 _DATA_DIR = Path(__file__).parent.parent / "data"
 
@@ -81,12 +81,22 @@ def classify_by_token(category: str, name: str) -> str | None:
     return None
 
 
+def _hint_category(row: dict) -> str:
+    """The scraper's category, overridden by a curated device/format token when one
+    is present ("Select Briq V2" is a vape, whatever the source category said).
+    Used both as the hint sent to the model and as the value the model's answer is
+    overruled by, so category, subtype and variant are all settled consistently."""
+    forced = find_format_category(row.get("brand", ""), row.get("name", ""))
+    return forced or row.get("category", "")
+
+
 def _hint_subtype(row: dict) -> str | None:
     """Token match first, then category default. May return None."""
-    sub = classify_by_token(row.get("category", ""), row.get("name", ""))
+    category = _hint_category(row)
+    sub = classify_by_token(category, row.get("name", ""))
     if sub:
         return sub
-    return _CATEGORY_DEFAULTS.get(row.get("category", ""))
+    return _CATEGORY_DEFAULTS.get(category)
 
 
 # ---------------------------------------------------------------------------
@@ -102,7 +112,8 @@ _CACHE_DIR = _DATA_DIR / "enrich_cache"
 #   1 — baseline
 #   2 — 'diamonds' concentrate subtype; beverages dosed in mg not volume; topical
 #       scent names are strains; version suffixes ("2.0") kept in strain
-_ENRICH_VERSION = 2
+#   3 — data/format_tokens.json settles the category for brand device names
+_ENRICH_VERSION = 3
 
 
 def _cache_key(row: dict) -> str | None:
@@ -538,7 +549,7 @@ def _run_enrich(
         return [
             {
                 "id":            str(i),
-                "hint_category": r.get("category", ""),
+                "hint_category": _hint_category(r),
                 "brand":         r.get("brand", ""),
                 "name":          r.get("name", ""),
                 "description":   r.get("description", ""),
@@ -555,7 +566,11 @@ def _run_enrich(
                 if it is None:
                     failed_rows.add(oi)
                     it = {}
-                cat = _valid_category(it.get("category"), row.get("category"))
+                # A curated device token is a string fact about the name, so it wins
+                # over the model; _valid_subtype then snaps the subtype into that
+                # category's rail.
+                forced = find_format_category(row.get("brand", ""), row.get("name", ""))
+                cat = forced or _valid_category(it.get("category"), row.get("category"))
                 categories[oi] = cat
                 subtypes[oi]   = _valid_subtype(it.get("subtype"), cat, _hint_subtype(row))
                 v = it.get("variant")

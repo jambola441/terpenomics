@@ -1,7 +1,7 @@
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from canonical import canonicalize, canonical_strain, find_product_line
+from canonical import canonicalize, canonical_strain, find_format_category, find_product_line
 from scraper_common import normalize_variant
 
 
@@ -123,3 +123,29 @@ class TestCanonicalize:
     def test_no_changes_is_all_zero(self):
         rows = [{"brand": "Nobody", "name": "Nobody - Blue Dream 3.5g", "strain": "Blue Dream", "product_line": None}]
         assert not any(canonicalize(rows).values())
+
+
+# ---------------------------------------------------------------------------
+# Format tokens — brand device names that settle the category
+# ---------------------------------------------------------------------------
+
+class TestFormatTokens:
+    def test_briq_is_a_vape(self):
+        assert find_format_category("Select", "Select Flavor Series - Grape Ape | 1G Briq V2") == "vaporizers"
+
+    def test_ovl_is_a_vape(self):
+        assert find_format_category("Florist Farms", "Florist Farms - Jack Herer | 1G Rechargeable OVL") == "vaporizers"
+
+    def test_two_fer_is_a_vape(self):
+        assert find_format_category("MFNY", "MFNY - Honey Banana | 0.5G Two-Fer (2pk)") == "vaporizers"
+
+    def test_flower_and_concentrate_unaffected(self):
+        assert find_format_category("Revert", "Revert - Maui Wowie | 14G Pre-Ground Kief Infused Flower") is None
+        assert find_format_category("Jetpacks", "Jetpacks - Donny Burger | 1G Indica Diamonds") is None
+
+    def test_token_is_brand_scoped(self):
+        # the same word under an uncurated brand must not fire
+        assert find_format_category("Nobody", "Nobody - Grape Ape | 1G Briq V2") is None
+
+    def test_word_boundaries_respected(self):
+        assert find_format_category("Select", "Select - Briquette Sampler") is None
