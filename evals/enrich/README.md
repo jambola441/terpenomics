@@ -57,7 +57,25 @@ rate reflects real errors, not taxonomy judgment calls.
 python evals/enrich/run_eval.py --models haiku --cases cases/gold_the_plug.json
 ```
 
-## Baseline (haiku, gold_the_plug)
+## Results (haiku, gold_the_plug)
+
+| run | cases | fields | cost |
+| --- | --- | --- | --- |
+| baseline | 90/108 (83.3%) | 382/400 (95.5%) | $0.0454 |
+| v3 (deterministic layer) | 105/108 (97.2%) | 397/400 (99.2%) | $0.0461 |
+
+category and product_line both reach 100%. The v3 run fixed 18 fields and broke 3;
+all three regressions came from prompt edits, not from the deterministic layer, and
+are addressed in v4 (beverage variant rule scoped so it stops pulling subtype toward
+'beverage'; pack multiply-out scoped to mg doses so it stops overriding a correct
+weight hint). Cost is flat — the accuracy came from curated data, not more tokens.
+
+**A model that scores ~10% is almost always a broken config, not a bad model.** The
+first deepseek run reported 11/108 having burned 0 tokens: the api_model slug was
+never verified and no call was made, so the rule-based hints scored on their own.
+run_eval now fails loudly on a zero-token run.
+
+## Baseline detail (haiku, gold_the_plug)
 
 | field | n | accuracy |
 | --- | --- | --- |

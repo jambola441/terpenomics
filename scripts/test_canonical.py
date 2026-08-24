@@ -149,3 +149,10 @@ class TestFormatTokens:
 
     def test_word_boundaries_respected(self):
         assert find_format_category("Select", "Select - Briquette Sampler") is None
+
+    def test_weight_categories_stay_in_grams(self):
+        # a 0.4g pre-roll must not render as "400mg" beside its 0.5g/0.6g siblings
+        assert normalize_variant("0.4g", "preroll") == "0.4g"
+        assert normalize_variant("0.25g", "preroll") == "0.25g"
+        assert normalize_variant("350mg", "vaporizers") == "0.35g"
+        assert normalize_variant("0.3g", "edible") == "300mg"   # dose category unchanged

@@ -170,6 +170,11 @@ _OZ_PER_G = 28  # cannabis convention: 1 oz = 28g
 # tincture into "1g" and a 12oz beverage into "336g").
 _DOSE_CATEGORIES = {"edible", "tinctures"}
 
+# Categories whose variant is a physical WEIGHT. These stay in grams at every
+# magnitude: a 0.4g pre-roll rendered as "400mg" sits inconsistently beside its
+# own 0.5g and 0.6g siblings, and reads as a dose it is not.
+_WEIGHT_CATEGORIES = {"flower", "preroll", "vaporizers", "concentrate"}
+
 
 def normalize_variant(v: str, category: str | None = None) -> str:
     """Normalize variant strings for cross-source consistency.
@@ -184,13 +189,18 @@ def normalize_variant(v: str, category: str | None = None) -> str:
       1oz         → 28g    (whole ounces → grams)
     Fluid ounces (fl oz) are left unchanged.
 
-    `category` opts a row out of the weight conversions when its variant is a dose
-    (edible, tinctures): mg stays mg at any magnitude and oz stays oz, so
-    "1000mg" and "12oz" survive instead of becoming "1g" and "336g". Callers that
-    don't know the final category omit it and get the weight-oriented behavior.
+    `category` pins the unit to what the category actually measures:
+      - dose categories (edible, tinctures): mg stays mg at any magnitude and oz
+        stays oz, so "1000mg" and "12oz" survive instead of becoming "1g"/"336g".
+      - weight categories (flower, preroll, vaporizers, concentrate): grams at
+        any magnitude, so "0.4g" stays "0.4g" instead of becoming "400mg" and
+        "350mg" becomes "0.35g".
+    Callers that don't know the final category omit it and keep the legacy
+    magnitude-based behavior.
     """
     v = v.strip()
-    dose = (category or "").strip().lower() in _DOSE_CATEGORIES
+    cat = (category or "").strip().lower()
+    dose, weight = cat in _DOSE_CATEGORIES, cat in _WEIGHT_CATEGORIES
     if not dose:
         # Fractional ounces: "1/8oz", "1/4oz", "1/2oz", "1/2oz.|14g"
         m = _OZ_FRAC_RE.match(v)
@@ -210,13 +220,13 @@ def normalize_variant(v: str, category: str | None = None) -> str:
     m = _GRAM_RE.match(v) or _G_RE.match(v)
     if m:
         grams = float(m.group(1))
-        if grams > 0 and grams < 0.5:
+        if grams > 0 and grams < 0.5 and not weight:
             return f"{round(grams * 1000):g}mg"
         return f"{grams:g}g"
     m = _MG_RE.match(v)
     if m:
         mg = float(m.group(1))
-        if mg >= 500 and not dose:
+        if weight or (mg >= 500 and not dose):
             return f"{mg / 1000:g}g"
         return f"{mg:g}mg"
     return v

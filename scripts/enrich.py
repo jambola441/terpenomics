@@ -113,7 +113,9 @@ _CACHE_DIR = _DATA_DIR / "enrich_cache"
 #   2 — 'diamonds' concentrate subtype; beverages dosed in mg not volume; topical
 #       scent names are strains; version suffixes ("2.0") kept in strain
 #   3 — data/format_tokens.json settles the category for brand device names
-_ENRICH_VERSION = 3
+#   4 — beverage variant rule scoped so it stops pulling subtype toward 'beverage';
+#       pack multiply-out scoped to mg doses so it stops overriding weight hints
+_ENRICH_VERSION = 4
 
 
 def _cache_key(row: dict) -> str | None:
@@ -276,12 +278,15 @@ variant — the canonical size/dose, in compact form:
   - edible: TOTAL package THC in mg (10pk × 10mg/piece = "100mg"); grams are wrong unless the
     item has no THC dose or the quantity is at least 0.5g, in which case it must be reported as grams. 
     Use the description for per-piece dose and pack count. Non standard reporting like "halfgram" 
-    should be reported as their standard equivalent. A per-piece dose written next to a pack
+    should be reported as their standard equivalent. A per-piece mg DOSE written next to a pack
     count MUST be multiplied out ("20MG x 2PK" = "40mg", "5mg 20pk" = "100mg") — reporting the
-    per-piece dose alone is wrong.
-  - beverages are edibles: report the THC DOSE in mg, never the liquid volume — a 12oz can
-    holding 5mg THC is "5mg", not "12oz" and not "355ml". Only fall back to the volume when
-    no dose is stated anywhere in the name or description.
+    per-piece dose alone is wrong. This multiply-out rule is for mg doses only: for a
+    flower/preroll/vape WEIGHT, prefer hint_variant when it disagrees with your own per-unit
+    math, since source names misplace decimals ("5 x .05g" with hint_variant "2.5g" → "2.5g").
+    This applies to a drinkable edible too: its variant is the THC dose in mg, never the
+    liquid volume — a 12oz can holding 5mg THC has variant "5mg", not "12oz" and not "355ml".
+    Fall back to the volume only when no dose appears in the name or description. (This is a
+    rule about VARIANT only — it says nothing about which subtype to choose.)
   - flower / preroll / concentrate / vaporizers: weight ("3.5g", "1g", "0.5g").
   - tinctures: total mg ("1000mg") — never converted to grams.
   - merch / no meaningful size: ""
