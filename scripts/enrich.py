@@ -18,6 +18,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from scraper_common import normalize_variant  # noqa: E402
+from canonical import canonicalize  # noqa: E402
 
 _DATA_DIR = Path(__file__).parent.parent / "data"
 
@@ -703,7 +704,16 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
         row["strain"]       = strains[i] or ""
         row["product_line"] = product_lines[i] or None
         v = variants[i] if variants[i] is not None else row.get("variant", "")
-        row["variant"]      = normalize_variant(v) if v else v
+        # Pass the settled category: an edible/tincture dose must not be run through
+        # the weight conversions (1000mg is a dose, not 1g).
+        row["variant"]      = normalize_variant(v, row["category"]) if v else v
+
+    # Deterministic canonicalization last: curated product lines and strain aliases
+    # override the model, so identity is consistent across dispensaries and runs.
+    # Applied to cached rows too — adding a map entry takes effect without re-enriching.
+    canon_stats = canonicalize(rows)
+    if any(canon_stats.values()):
+        print("  canonical: " + ", ".join(f"{k}={v}" for k, v in canon_stats.items() if v))
 
     c = model_cfg["cost"]
     cost = (

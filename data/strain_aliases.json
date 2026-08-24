@@ -1,0 +1,10 @@
+{
+  "_comment": "Curated brand -> {strain variant: canonical spelling}. Collapses spelling drift so the same strain lands on one value across every dispensary — the enrichment prompt's 'keep the source spelling' rule prevents hallucination but cannot make two dispensaries agree, so that job belongs here. Matching is case-insensitive. A canonical value of \"\" clears the strain. Keys starting with _ are ignored; the key \"*\" applies to every brand. Populate from the `strain_split` findings of `python evals/enrich/audit.py --db`.",
+
+  "Kickfly's": {
+    "Black Scotti": "Blackscotti"
+  },
+  "Alchemy Pure": {
+    "Marrakesh": "Marakesh"
+  }
+}

@@ -57,6 +57,24 @@ rate reflects real errors, not taxonomy judgment calls.
 python evals/enrich/run_eval.py --models haiku --cases cases/gold_the_plug.json
 ```
 
+## Baseline (haiku, gold_the_plug)
+
+| field | n | accuracy |
+| --- | --- | --- |
+| category | 108 | 99.1% |
+| subtype | 94 | 97.9% |
+| variant | 88 | 95.5% |
+| strain | 99 | 92.9% |
+| product_line | 11 | 63.6% |
+
+83.3% of cases fully clean; 95.5% of individual fields. ~$0.00042/listing
+(≈$0.46 for a 1,087-listing dispensary), so **cost is not the binding constraint —
+accuracy is.** Note `cache_write`/`cache_read` came back 0: the system prompts sit
+under the model's minimum cacheable length, so `cache_control` is currently a no-op.
+
+The deterministic layer (`scripts/canonical.py`) was built from these failures and
+fixes 6 of the 18 failing fields at zero marginal cost. Re-run to confirm.
+
 ## Audit sweep (full output, no labels)
 
 `audit.py` complements the eval: it queries FULL enriched output — scrape CSVs or the
