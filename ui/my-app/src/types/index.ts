@@ -153,6 +153,7 @@ export type PortalProduct = {
   brand: string | null
   category: string
   subtype: string | null
+  product_line: string | null
   strain: string | null
   variant: string | null
   listing_count: number

@@ -514,7 +514,8 @@ def list_portal_products(
 
     if q:
         conditions.append(
-            "(brand ILIKE :q OR category ILIKE :q OR strain ILIKE :q)"
+            "(brand ILIKE :q OR category ILIKE :q OR subtype ILIKE :q"
+            " OR product_line ILIKE :q OR strain ILIKE :q)"
         )
         params["q"] = f"%{q.strip()}%"
     if category:
@@ -526,13 +527,13 @@ def list_portal_products(
 
     where = " AND ".join(conditions)
     sql = text(f"""
-        SELECT brand, category, subtype, strain, variant,
+        SELECT brand, category, subtype, product_line, strain, variant,
                listing_count, dispensary_count,
                min_price_cents, max_price_cents,
                any_in_stock
         FROM products
         WHERE {where}
-        ORDER BY brand, category, subtype, strain, variant
+        ORDER BY brand, category, subtype, product_line, strain, variant
         LIMIT :limit OFFSET :offset
     """)
     params["limit"] = limit

@@ -5,11 +5,12 @@ import supabase from './utils/supabase'
 import DispensaryMap from './components/DispensaryMap'
 import HomeFeed from './components/HomeFeed'
 import CategoryView from './components/CategoryView'
+import SearchView from './components/SearchView'
 import ListingDetailView from './components/ListingDetail'
-import type { PortalPurchase, RecommendedProduct, Feedback, PortalProduct, CartItem, PortalBrandDetail, PortalBrandProduct, PortalBrandOffering, ListingDetail } from './types'
+import type { PortalPurchase, RecommendedProduct, Feedback, CartItem, PortalBrandDetail, PortalBrandProduct, PortalBrandOffering, ListingDetail } from './types'
 import type { Session } from '@supabase/supabase-js'
 import { t, radius, font, alpha } from './theme'
-import { Pressable, Pill, CategoryTag, FeedState, Skeleton, Label, ClassificationTag, DetailBlock, CollapsibleBlock, SpecRow } from './components/ui'
+import { Pressable, CategoryTag, FeedState, ClassificationTag, DetailBlock, CollapsibleBlock, SpecRow } from './components/ui'
 import 'leaflet/dist/leaflet.css'
 
 type Tab = 'home' | 'map' | 'search' | 'account'
@@ -430,325 +431,6 @@ function RecsFeed({ recommendations, loading, error, onProductClick }: RecsFeedP
 }
 
 // ─── Products Feed ────────────────────────────────────────────────────────────
-
-interface ProductsFeedProps {
-  onProductClick: (productId: string) => void
-}
-
-function ProductsFeed({ onProductClick }: ProductsFeedProps) {
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const category = searchParams.get('category')
-  const [products, setProducts] = useState<PortalProduct[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [searchInput, setSearchInput] = useState('')
-  const [search, setSearch] = useState('')
-
-  useEffect(() => {
-    let cancelled = false
-    setLoading(true)
-    setError(null)
-    api.portal.getProducts({ q: search || undefined, category: category || undefined, limit: 50 })
-      .then(data => { if (!cancelled) setProducts(data) })
-      .catch(() => { if (!cancelled) setError('Failed to load products') })
-      .finally(() => { if (!cancelled) setLoading(false) })
-    return () => { cancelled = true }
-  }, [search, category])
-
-  const feedStyle: React.CSSProperties = {
-    height: '100dvh',
-    overflowY: 'auto',
-    WebkitOverflowScrolling: 'touch' as any,
-  }
-
-  return (
-    <div style={feedStyle}>
-      {/* Search bar */}
-      <div style={{ padding: '16px 16px 8px', display: 'flex', gap: 8 }}>
-        <input
-          value={searchInput}
-          onChange={e => setSearchInput(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') setSearch(searchInput) }}
-          placeholder="Search products..."
-          style={{
-            flex: 1,
-            background: t.surface2,
-            border: `1px solid ${t.border}`,
-            borderRadius: radius.md,
-            color: t.text1,
-            fontSize: font.size.body,
-            padding: '11px 14px',
-            outline: 'none',
-          }}
-        />
-        {search && (
-          <button
-            onClick={() => { setSearchInput(''); setSearch('') }}
-            style={{
-              background: t.surface2,
-              border: `1px solid ${t.border}`,
-              borderRadius: radius.md,
-              color: t.text3,
-              fontSize: font.size.body,
-              padding: '0 14px',
-              cursor: 'pointer',
-            }}
-          >
-            ✕
-          </button>
-        )}
-      </div>
-
-      {/* Active category chip (from "Shop by category") */}
-      {category && (
-        <div style={{ padding: '0 16px 8px', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            background: 'var(--accent-tint)', border: `1px solid ${alpha('#a8e063', 0.4)}`, color: t.accent,
-            fontSize: font.size.small, fontWeight: font.weight.semibold, padding: '5px 6px 5px 12px', borderRadius: radius.pill,
-            textTransform: 'capitalize',
-          }}>
-            {category}
-            <button onClick={() => navigate('/portal/search')} aria-label="Clear category"
-              style={{ background: 'none', border: 'none', color: t.accent, cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: '0 2px' }}>✕</button>
-          </span>
-        </div>
-      )}
-
-      {loading ? (
-        <div style={{ padding: '4px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {[0, 1, 2, 3, 4, 5].map(i => (
-            <div key={i} style={{ display: 'flex', gap: 14, alignItems: 'center', background: t.surface1, borderRadius: radius.lg, padding: 14, border: `1px solid ${t.border}` }}>
-              <Skeleton width={52} height={52} radius={radius.md} />
-              <div style={{ flex: 1 }}>
-                <Skeleton width="60%" height={14} style={{ marginBottom: 8 }} />
-                <Skeleton width="35%" height={11} />
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : error ? (
-        <FeedState kind="error" message={error} />
-      ) : products.length === 0 ? (
-        <FeedState kind="empty" message="No products found" hint={search ? `Nothing matches “${search}”${category ? ` in ${category}` : ''}.` : category ? `No ${category} products right now.` : 'Try a different search.'} icon="🔍" />
-      ) : (
-        <div style={{ padding: '0 16px 92px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {products.map((p) => {
-            const imgSrc = CATEGORY_IMAGES[p.category]
-            return (
-              <Pressable
-                key={p.id}
-                onClick={() => onProductClick(p.id)}
-                style={{
-                  background: t.surface1,
-                  borderRadius: radius.lg,
-                  padding: 14,
-                  display: 'flex',
-                  gap: 14,
-                  alignItems: 'center',
-                  border: `1px solid ${t.border}`,
-                }}
-              >
-                {/* Thumbnail */}
-                <div style={{
-                  width: 54,
-                  height: 54,
-                  borderRadius: radius.md,
-                  overflow: 'hidden',
-                  flexShrink: 0,
-                  background: t.tile,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.06)',
-                }}>
-                  {imgSrc
-                    ? <img src={imgSrc} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 6, boxSizing: 'border-box' }} />
-                    : <span style={{ fontSize: 20, opacity: 0.6 }}>🌿</span>
-                  }
-                </div>
-
-                {/* Info */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.callout, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {p.name}
-                  </div>
-                  {p.brand && (
-                    <div style={{ color: t.text2, fontSize: font.size.small, marginTop: 2 }}>{p.brand}</div>
-                  )}
-                  <div style={{ display: 'flex', gap: 6, marginTop: 7, flexWrap: 'wrap' }}>
-                    <CategoryTag category={p.category} />
-                    {p.terpenes.length > 0 && (
-                      <Pill>{p.terpenes.length} terpene{p.terpenes.length !== 1 ? 's' : ''}</Pill>
-                    )}
-                    {p.cannabinoids.length > 0 && (
-                      <Pill>{p.cannabinoids.length} cannabinoid{p.cannabinoids.length !== 1 ? 's' : ''}</Pill>
-                    )}
-                  </div>
-                </div>
-
-                <span style={{ color: t.text4, fontSize: 18, flexShrink: 0 }}>›</span>
-              </Pressable>
-            )
-          })}
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ─── Product Detail ───────────────────────────────────────────────────────────
-
-interface ProductDetailProps {
-  productId: string
-  onBack: () => void
-}
-
-function ProductDetail({ productId, onBack }: ProductDetailProps) {
-  const [product, setProduct] = useState<PortalProduct | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    setLoading(true)
-    setError(null)
-    api.portal.getProduct(productId)
-      .then(setProduct)
-      .catch(() => setError('Failed to load product'))
-      .finally(() => setLoading(false))
-  }, [productId])
-
-  const feedStyle: React.CSSProperties = {
-    height: '100dvh',
-    overflowY: 'auto',
-    WebkitOverflowScrolling: 'touch' as any,
-  }
-
-  if (loading) {
-    return <div style={feedStyle}><FeedState kind="loading" message="Loading…" style={{ height: '100%' }} /></div>
-  }
-
-  if (error || !product) {
-    return <div style={feedStyle}><FeedState kind="error" message={error ?? 'Not found'} style={{ height: '100%' }} /></div>
-  }
-
-  const catColor = CATEGORY_COLORS[product.category] ?? '#555'
-  const imgSrc = CATEGORY_IMAGES[product.category]
-
-  return (
-    <div style={feedStyle}>
-      {/* Back button */}
-      <button
-        onClick={onBack}
-        style={{
-          position: 'absolute',
-          top: 16,
-          left: 16,
-          zIndex: 10,
-          background: alpha('#000', 0.55),
-          border: `1px solid ${alpha('#fff', 0.15)}`,
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-          borderRadius: radius.pill,
-          color: '#fff',
-          fontSize: font.size.small,
-          fontWeight: font.weight.medium,
-          padding: '7px 14px',
-          cursor: 'pointer',
-        }}
-      >
-        ← Back
-      </button>
-
-      {/* Hero — unified light product plate */}
-      {imgSrc ? (
-        <div style={{ position: 'relative', width: '100%', paddingTop: '64%', background: t.tile }}>
-          <img src={imgSrc} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', padding: 24, boxSizing: 'border-box' }} />
-        </div>
-      ) : (
-        <div style={{ height: 130, background: `linear-gradient(135deg, ${alpha(catColor, 0.28)} 0%, ${t.surface1} 100%)` }} />
-      )}
-
-      {/* Content */}
-      <div style={{ padding: '20px 20px 32px' }}>
-        {/* Category pill */}
-        <div style={{ marginBottom: 12 }}>
-          <CategoryTag category={product.category} />
-        </div>
-
-        {/* Name */}
-        <div style={{ color: t.text1, fontSize: font.size.hero, fontWeight: font.weight.heavy, lineHeight: 1.2, marginBottom: 6, letterSpacing: '-0.01em' }}>
-          {product.name}
-        </div>
-
-        {/* Brand */}
-        {product.brand && (
-          <div style={{ color: t.text2, fontSize: font.size.body, marginBottom: 24 }}>{product.brand}</div>
-        )}
-
-        {/* Cannabinoids */}
-        {product.cannabinoids.length > 0 && (
-          <div style={{ marginBottom: 24 }}>
-            <Label style={{ marginBottom: 10 }}>Cannabinoids</Label>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 , justifyContent: 'center'}}>
-              {product.cannabinoids.map((c) => (
-                <div key={c.name} style={{
-                  background: t.surface1,
-                  border: `1px solid ${t.border}`,
-                  borderRadius: radius.md,
-                  padding: '9px 14px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 3,
-                  minWidth: 74,
-                }}>
-                  <span style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.body }}>{c.name}</span>
-                  <span style={{
-                    color: c.family === 'thc' ? t.accent : '#3b9bf0',
-                    fontSize: font.size.micro,
-                    fontWeight: font.weight.bold,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                  }}>
-                    {c.family.toUpperCase()}
-                  </span>
-                  {c.percent != null && (
-                    <span style={{ color: t.text3, fontSize: font.size.caption }}>{c.percent}%</span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Terpenes */}
-        {product.terpenes.length > 0 && (
-          <div>
-            <Label style={{ marginBottom: 10 }}>Terpenes</Label>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 , justifyContent: 'center'}}>
-              {product.terpenes.map((tp) => (
-                <span key={tp.name} style={{
-                  background: t.surface2,
-                  color: t.text2,
-                  border: `1px solid ${t.border}`,
-                  fontSize: font.size.small,
-                  padding: '6px 12px',
-                  borderRadius: radius.pill,
-                }}>
-                  {tp.name}{tp.percent != null ? ` ${tp.percent}%` : ''}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-// ─── Login Screen ─────────────────────────────────────────────────────────────
 
 function LoginScreen() {
   const [email, setEmail] = useState('')
@@ -1767,7 +1449,7 @@ function ProductView({ brandName, productKey, onBack, onListingClick }: ProductV
 
 export default function CustomerPortal() {
   const navigate = useNavigate()
-  const matchProduct = useMatch('/portal/products/:productId')
+  const [searchParams] = useSearchParams()
   const matchBrandProduct = useMatch('/portal/brands/:brandName/products/:productKey')
   const matchBrand = useMatch('/portal/brands/:brandName')
   const matchCategory = useMatch('/portal/categories/:category')
@@ -1776,7 +1458,6 @@ export default function CustomerPortal() {
   const matchDispensary = useMatch('/portal/map/:dispensaryId')
   const matchTab = useMatch('/portal/:tab')
 
-  const selectedProductId = matchProduct?.params.productId ?? null
   const brandProductBrand = matchBrandProduct?.params.brandName ? decodeURIComponent(matchBrandProduct.params.brandName) : null
   const brandProductKey = matchBrandProduct?.params.productKey ? decodeURIComponent(matchBrandProduct.params.productKey) : null
   const selectedBrandName = matchBrand?.params.brandName ? decodeURIComponent(matchBrand.params.brandName) : null
@@ -1786,11 +1467,9 @@ export default function CustomerPortal() {
   const selectedDispensaryId = matchDispensary?.params.dispensaryId ?? null
   const activeTab: Tab = (matchListing || matchDispensary || matchAisle)
     ? 'map'
-    : matchProduct
-      ? 'search'
-      : (matchBrand || matchBrandProduct || matchCategory)
-        ? 'home'
-        : ((matchTab?.params.tab as Tab | undefined) ?? 'home')
+    : (matchBrand || matchBrandProduct || matchCategory)
+      ? 'home'
+      : ((matchTab?.params.tab as Tab | undefined) ?? 'home')
 
   const [session, setSession] = useState<Session | null | undefined>(undefined)
   const [customerId, setCustomerId] = useState<string | null>(null)
@@ -1865,10 +1544,6 @@ export default function CustomerPortal() {
 
   async function handleSignOut() {
     await supabase.auth.signOut()
-  }
-
-  function handleProductClick(productId: string) {
-    navigate('/portal/products/' + productId)
   }
 
   function handleAddToCart(item: CartItem) {
@@ -1950,27 +1625,25 @@ export default function CustomerPortal() {
         />
       )}
       {activeTab === 'home' && !brandProductBrand && !selectedBrandName && !selectedCategory && <HomeFeed />}
-      {activeTab === 'search' && selectedProductId && (
-        <ProductDetail
-          productId={selectedProductId}
-          onBack={() => navigate(-1)}
+      {activeTab === 'search' && (
+        <SearchView
+          initialCategory={searchParams.get('category')}
+          onOpenBrandProduct={(brandName, key) =>
+            navigate(`/portal/brands/${encodeURIComponent(brandName)}/products/${encodeURIComponent(key)}`)}
+          onOpenCategory={(categoryName) =>
+            navigate('/portal/categories/' + encodeURIComponent(categoryName))}
         />
-      )}
-      {activeTab === 'search' && !selectedProductId && (
-        <ProductsFeed onProductClick={handleProductClick} />
       )}
       {activeTab === 'map' && selectedListingId && selectedListingDispensaryId ? (
         <ListingDetailView
           dispensaryId={selectedListingDispensaryId}
           listingId={selectedListingId}
-          onProductClick={handleProductClick}
           onAddToCart={handleAddToCart}
           cartQuantity={cart.filter(i => i.listingId === selectedListingId).reduce((s, i) => s + i.quantity, 0)}
         />
       ) : activeTab === 'map' && (
         <DispensaryMap
           activeDispensaryId={selectedDispensaryId}
-          onProductClick={handleProductClick}
           onAddToCart={handleAddToCart}
           cart={cart}
         />
