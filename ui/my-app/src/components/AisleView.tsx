@@ -205,6 +205,7 @@ export default function AisleView({
                   name: l.scraped_name ?? '—', brand: l.scraped_brand ?? null,
                   variant: l.variant ?? null, price_cents: l.price_cents ?? null,
                   url: l.url ?? null, image_url: l.image_url ?? null, quantity: 1,
+                  acceptsOnlineOrders: acceptsPickup,
                 })
               }}
               style={{

@@ -66,6 +66,7 @@ export default function ListingDetailView({ dispensaryId, listingId, onProductCl
       url: listing.url ?? null,
       image_url: listing.image_url ?? null,
       quantity: 1,
+      acceptsOnlineOrders: listing.dispensary_accepts_pickup ?? false,
     })
     setAddedFlash(true)
     setTimeout(() => setAddedFlash(false), 1500)

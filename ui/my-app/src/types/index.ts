@@ -227,9 +227,11 @@ export type ListingDetail = DispensaryListing & {
   dispensary_id: string
   dispensary_name: string
   dispensary_slug: string
+  dispensary_accepts_pickup: boolean
   in_stock: boolean
   classification: string | null
   description: string | null
+  product_id?: string | null
 }
 
 export type CartItem = {
@@ -244,6 +246,62 @@ export type CartItem = {
   url: string | null
   image_url: string | null
   quantity: number
+  // Whether the dispensary takes online orders (checkout enabled)
+  acceptsOnlineOrders?: boolean
+}
+
+// ─── Checkout / Orders ───────────────────────────────────────────────────────
+
+export type OrderPaymentMethod = 'bitpay' | 'in_store'
+
+export type OrderStatus =
+  | 'pending_payment'
+  | 'placed'
+  | 'completed'
+  | 'cancelled'
+  | 'expired'
+
+export type OrderItem = {
+  id: string
+  listing_id: string
+  name: string | null
+  variant: string | null
+  image_url: string | null
+  quantity: number
+  unit_price_cents: number | null
+  line_total_cents: number | null
+}
+
+export type Order = {
+  id: string
+  status: OrderStatus
+  payment_method: OrderPaymentMethod
+  total_cents: number
+  pickup_name: string | null
+  notes: string | null
+  created_at: string
+  paid_at: string | null
+  dispensary_id: string
+  dispensary_name: string | null
+  dispensary_slug: string | null
+  dispensary_address: string | null
+  items: OrderItem[]
+  bitpay?: {
+    invoice_id: string | null
+    invoice_url: string | null
+    invoice_status: string | null
+  }
+  // present on the create response only
+  checkout_url?: string | null
+}
+
+export type OrderCreatePayload = {
+  dispensary_id: string
+  payment_method: OrderPaymentMethod
+  items: { listing_id: string; quantity: number }[]
+  pickup_name?: string
+  notes?: string
+  redirect_origin?: string
 }
 
 export type Dispensary = {

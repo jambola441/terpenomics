@@ -5,7 +5,7 @@ import supabase from './utils/supabase'
 import DispensaryMap from './components/DispensaryMap'
 import HomeFeed from './components/HomeFeed'
 import ListingDetailView from './components/ListingDetail'
-import type { PortalPurchase, RecommendedProduct, Feedback, PortalProduct, CartItem, PortalBrandDetail, PortalBrandProduct, PortalBrandOffering, ListingDetail } from './types'
+import type { PortalPurchase, RecommendedProduct, Feedback, PortalProduct, CartItem, PortalBrandDetail, PortalBrandProduct, PortalBrandOffering, ListingDetail, Order, OrderPaymentMethod, OrderStatus } from './types'
 import type { Session } from '@supabase/supabase-js'
 import { t, radius, font, alpha } from './theme'
 import { Pressable, Pill, CategoryTag, FeedState, Skeleton, Label, ClassificationTag, DetailBlock, CollapsibleBlock, SpecRow } from './components/ui'
@@ -32,6 +32,14 @@ const CATEGORY_COLORS: Record<string, string> = {
   topical: '#f0655a',
   merch: '#7a8a99',
   other: '#9aa0a6',
+}
+
+const ORDER_STATUS_META: Record<OrderStatus, { label: string; color: string; icon: string }> = {
+  pending_payment: { label: 'Awaiting payment', color: '#ff9f43', icon: '⏳' },
+  placed: { label: 'Order placed', color: '#a8e063', icon: '✅' },
+  completed: { label: 'Picked up', color: '#a8e063', icon: '🎉' },
+  cancelled: { label: 'Cancelled', color: '#f44336', icon: '✕' },
+  expired: { label: 'Payment expired', color: '#f44336', icon: '⌛' },
 }
 
 function formatDate(iso: string) {
@@ -943,14 +951,82 @@ function NotLinkedScreen() {
 interface CartDrawerProps {
   items: CartItem[]
   open: boolean
+  customerId: string
   onClose: () => void
   onRemove: (listingId: string) => void
   onClear: () => void
+  onOrderPlaced: (order: Order, redirectingToPayment: boolean) => void
 }
 
-function CartDrawer({ items, open, onClose, onRemove, onClear }: CartDrawerProps) {
+function CartDrawer({ items, open, customerId, onClose, onRemove, onClear, onOrderPlaced }: CartDrawerProps) {
   const total = items.reduce((sum, i) => sum + (i.price_cents ?? 0) * i.quantity, 0)
   const dispensaryName = items[0]?.dispensaryName ?? ''
+
+  const [stage, setStage] = useState<'cart' | 'checkout'>('cart')
+  const [payMethod, setPayMethod] = useState<OrderPaymentMethod>('bitpay')
+  const [placing, setPlacing] = useState(false)
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
+
+  // Checkout is offered when the cart's dispensary takes online orders
+  const canCheckout = items.length >= 1 && items[0].acceptsOnlineOrders === true
+  // Crypto needs every line priced — BitPay invoices a fixed amount
+  const allPriced = items.every(i => i.price_cents != null)
+
+  useEffect(() => {
+    if (!open) {
+      setStage('cart')
+      setPlacing(false)
+      setCheckoutError(null)
+    }
+  }, [open])
+
+  useEffect(() => {
+    if (items.length === 0) setStage('cart')
+  }, [items.length])
+
+  useEffect(() => {
+    if (!allPriced && payMethod === 'bitpay') setPayMethod('in_store')
+  }, [allPriced, payMethod])
+
+  async function handlePlaceOrder() {
+    if (placing || items.length === 0) return
+    setPlacing(true)
+    setCheckoutError(null)
+    try {
+      const order = await api.portal.createOrder(customerId, {
+        dispensary_id: items[0].dispensaryId,
+        payment_method: payMethod,
+        items: items.map(i => ({ listing_id: i.listingId, quantity: i.quantity })),
+        redirect_origin: window.location.origin,
+      })
+      const redirecting = payMethod === 'bitpay' && !!order.checkout_url
+      onOrderPlaced(order, redirecting)
+      if (redirecting) {
+        // Hand off to the hosted BitPay invoice; it redirects back to
+        // /portal/orders/{id} after payment.
+        window.location.href = order.checkout_url!
+      }
+    } catch (e: any) {
+      let message = 'Failed to place order'
+      try {
+        const parsed = JSON.parse(e.message)
+        if (parsed?.detail) message = String(parsed.detail)
+      } catch { /* keep default */ }
+      setCheckoutError(message)
+      setPlacing(false)
+    }
+  }
+
+  const payOptions: { value: OrderPaymentMethod; icon: string; title: string; hint: string; disabled?: boolean }[] = [
+    {
+      value: 'bitpay',
+      icon: '₿',
+      title: 'Pay with crypto',
+      hint: allPriced ? 'Bitcoin & more, via BitPay' : 'Unavailable — some items have no price',
+      disabled: !allPriced,
+    },
+    { value: 'in_store', icon: '🏬', title: 'Pay in store', hint: 'Pay when you pick up' },
+  ]
 
   return (
     <>
@@ -988,13 +1064,17 @@ function CartDrawer({ items, open, onClose, onRemove, onClear }: CartDrawerProps
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px 0' }}>
           <div>
-            <div style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.title, letterSpacing: '-0.01em' }}>Your cart</div>
+            <div style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.title, letterSpacing: '-0.01em' }}>
+              {stage === 'checkout' ? 'Checkout' : 'Your cart'}
+            </div>
             {dispensaryName && (
-              <div style={{ color: t.text3, fontSize: font.size.small, marginTop: 2 }}>{dispensaryName}</div>
+              <div style={{ color: t.text3, fontSize: font.size.small, marginTop: 2 }}>
+                {stage === 'checkout' ? `Pickup at ${dispensaryName}` : dispensaryName}
+              </div>
             )}
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            {items.length > 0 && (
+            {items.length > 0 && stage === 'cart' && (
               <button
                 onClick={onClear}
                 style={{
@@ -1080,26 +1160,126 @@ function CartDrawer({ items, open, onClose, onRemove, onClear }: CartDrawerProps
           <div style={{ padding: 20, borderTop: `1px solid ${t.border}`, marginTop: 16 }}>
             {total > 0 && (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <span style={{ color: t.text2, fontSize: font.size.body }}>Estimated total</span>
+                <span style={{ color: t.text2, fontSize: font.size.body }}>
+                  {stage === 'checkout' ? 'Total' : 'Estimated total'}
+                </span>
                 <span style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.title }}>
                   ${(total / 100).toFixed(2)}
                 </span>
               </div>
             )}
-            <a
-              href={items[0]?.url ?? '#'}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: 'block', width: '100%', boxSizing: 'border-box',
-                background: t.accent, borderRadius: radius.lg,
-                color: '#0a0a0a', fontWeight: font.weight.bold, fontSize: font.size.callout,
-                padding: '14px', textAlign: 'center', textDecoration: 'none',
-                boxShadow: 'var(--e-1)',
-              }}
-            >
-              Order at {dispensaryName} →
-            </a>
+
+            {stage === 'cart' ? (
+              <>
+                {canCheckout && (
+                  <button
+                    onClick={() => { setCheckoutError(null); setStage('checkout') }}
+                    style={{
+                      display: 'block', width: '100%', boxSizing: 'border-box',
+                      background: t.accent, border: 'none', borderRadius: radius.lg,
+                      color: '#0a0a0a', fontWeight: font.weight.bold, fontSize: font.size.callout,
+                      padding: '14px', textAlign: 'center', cursor: 'pointer',
+                      boxShadow: 'var(--e-1)',
+                    }}
+                  >
+                    Checkout →
+                  </button>
+                )}
+                <a
+                  href={items[0]?.url ?? '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={canCheckout ? {
+                    display: 'block', width: '100%', boxSizing: 'border-box',
+                    background: 'transparent', border: `1px solid ${t.border}`, borderRadius: radius.lg,
+                    color: t.text2, fontWeight: font.weight.medium, fontSize: font.size.small + 1,
+                    padding: '11px', textAlign: 'center', textDecoration: 'none', marginTop: 10,
+                  } : {
+                    display: 'block', width: '100%', boxSizing: 'border-box',
+                    background: t.accent, borderRadius: radius.lg,
+                    color: '#0a0a0a', fontWeight: font.weight.bold, fontSize: font.size.callout,
+                    padding: '14px', textAlign: 'center', textDecoration: 'none',
+                    boxShadow: 'var(--e-1)',
+                  }}
+                >
+                  {canCheckout ? `Or order on ${dispensaryName}'s site →` : `Order at ${dispensaryName} →`}
+                </a>
+              </>
+            ) : (
+              <>
+                {/* Payment method */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
+                  {payOptions.map(opt => {
+                    const active = payMethod === opt.value
+                    return (
+                      <button
+                        key={opt.value}
+                        disabled={opt.disabled}
+                        onClick={() => setPayMethod(opt.value)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 12, width: '100%', boxSizing: 'border-box',
+                          background: active ? 'var(--accent-tint)' : t.surface2,
+                          border: `1px solid ${active ? t.accent : t.border}`,
+                          borderRadius: radius.lg, padding: '12px 14px', textAlign: 'left',
+                          cursor: opt.disabled ? 'default' : 'pointer',
+                          opacity: opt.disabled ? 0.45 : 1,
+                          transition: 'all var(--t-fast)',
+                        }}
+                      >
+                        <span style={{ fontSize: 20, width: 26, textAlign: 'center', flexShrink: 0 }}>{opt.icon}</span>
+                        <span style={{ flex: 1, minWidth: 0 }}>
+                          <span style={{ display: 'block', color: active ? t.accent : t.text1, fontWeight: font.weight.bold, fontSize: font.size.body }}>
+                            {opt.title}
+                          </span>
+                          <span style={{ display: 'block', color: t.text3, fontSize: font.size.small, marginTop: 1 }}>
+                            {opt.hint}
+                          </span>
+                        </span>
+                        <span style={{
+                          width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
+                          border: `2px solid ${active ? t.accent : t.border}`,
+                          background: active ? t.accent : 'transparent',
+                          boxSizing: 'border-box',
+                        }} />
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {checkoutError && (
+                  <div style={{ color: t.danger, fontSize: font.size.small, marginBottom: 12, textAlign: 'center' }}>
+                    {checkoutError}
+                  </div>
+                )}
+
+                <button
+                  onClick={handlePlaceOrder}
+                  disabled={placing}
+                  style={{
+                    display: 'block', width: '100%', boxSizing: 'border-box',
+                    background: placing ? t.surface3 : t.accent, border: 'none', borderRadius: radius.lg,
+                    color: placing ? t.text3 : '#0a0a0a', fontWeight: font.weight.bold, fontSize: font.size.callout,
+                    padding: '14px', textAlign: 'center', cursor: placing ? 'default' : 'pointer',
+                    boxShadow: placing ? 'none' : 'var(--e-1)',
+                  }}
+                >
+                  {placing
+                    ? 'Placing order…'
+                    : payMethod === 'bitpay' ? 'Continue to payment →' : 'Place order'}
+                </button>
+                <button
+                  onClick={() => setStage('cart')}
+                  disabled={placing}
+                  style={{
+                    display: 'block', width: '100%', background: 'none', border: 'none',
+                    color: t.text3, fontSize: font.size.small + 1, padding: '12px 0 0',
+                    cursor: placing ? 'default' : 'pointer', textAlign: 'center',
+                  }}
+                >
+                  ← Back to cart
+                </button>
+              </>
+            )}
           </div>
         )}
         <div style={{ height: 'env(safe-area-inset-bottom, 0px)' }} />
@@ -1108,56 +1288,306 @@ function CartDrawer({ items, open, onClose, onRemove, onClear }: CartDrawerProps
   )
 }
 
+// ─── Order Status View ───────────────────────────────────────────────────────
+
+interface OrderStatusViewProps {
+  customerId: string
+  orderId: string
+  onBack: () => void
+}
+
+function OrderStatusView({ customerId, orderId, onBack }: OrderStatusViewProps) {
+  const [order, setOrder] = useState<Order | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [cancelling, setCancelling] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    setLoading(true)
+    setError(null)
+    // refresh-payment also returns the order, and settles pending crypto
+    // payments even when the BitPay webhook can't reach this backend
+    api.portal.refreshOrderPayment(customerId, orderId)
+      .then(o => { if (!cancelled) setOrder(o) })
+      .catch(() => { if (!cancelled) setError('Failed to load order') })
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
+  }, [customerId, orderId])
+
+  // While awaiting crypto payment, keep polling
+  const status = order?.status
+  useEffect(() => {
+    if (status !== 'pending_payment') return
+    const timer = setInterval(() => {
+      api.portal.refreshOrderPayment(customerId, orderId)
+        .then(setOrder)
+        .catch(() => { /* transient — retry next tick */ })
+    }, 6000)
+    return () => clearInterval(timer)
+  }, [status, customerId, orderId])
+
+  async function handleCancel() {
+    if (!order || cancelling) return
+    setCancelling(true)
+    try {
+      setOrder(await api.portal.cancelOrder(customerId, orderId))
+    } catch {
+      // leave current state; user can retry
+    } finally {
+      setCancelling(false)
+    }
+  }
+
+  const feedStyle: React.CSSProperties = { height: '100dvh', overflowY: 'auto', background: t.bg }
+
+  if (loading) {
+    return <div style={feedStyle}><FeedState kind="loading" message="Loading order…" style={{ height: '100%' }} /></div>
+  }
+  if (error || !order) {
+    return <div style={feedStyle}><FeedState kind="error" message={error ?? 'Order not found'} style={{ height: '100%' }} /></div>
+  }
+
+  const meta = ORDER_STATUS_META[order.status]
+  const cancellable = order.status === 'pending_payment' || order.status === 'placed'
+  const awaitingPayment = order.status === 'pending_payment'
+  const invoiceUrl = order.bitpay?.invoice_url ?? null
+
+  return (
+    <div style={feedStyle}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '20px 16px 8px' }}>
+        <button
+          onClick={onBack}
+          aria-label="Back"
+          style={{ background: 'none', border: 'none', color: t.accent, fontSize: 24, cursor: 'pointer', padding: 0, lineHeight: 1 }}
+        >
+          ‹
+        </button>
+        <div style={{ color: t.text3, fontSize: font.size.small, fontWeight: font.weight.semibold }}>Order</div>
+      </div>
+
+      {/* Status hero */}
+      <div style={{ textAlign: 'center', padding: '18px 20px 22px' }}>
+        <div style={{ fontSize: 44, marginBottom: 12 }}>{meta.icon}</div>
+        <div style={{ color: meta.color, fontWeight: font.weight.heavy, fontSize: font.size.heading, letterSpacing: '-0.01em' }}>
+          {meta.label}
+        </div>
+        <div style={{ color: t.text2, fontSize: font.size.body, marginTop: 8 }}>
+          Pickup at <span style={{ fontWeight: font.weight.semibold }}>{order.dispensary_name ?? '—'}</span>
+        </div>
+        {order.dispensary_address && (
+          <div style={{ color: t.text3, fontSize: font.size.small, marginTop: 3 }}>{order.dispensary_address}</div>
+        )}
+        <div style={{ color: t.text4, fontSize: font.size.caption, marginTop: 8 }}>
+          #{order.id.slice(0, 8)} · {formatDate(order.created_at)}
+        </div>
+      </div>
+
+      {/* Awaiting payment: hand back to the BitPay invoice */}
+      {awaitingPayment && invoiceUrl && (
+        <div style={{ padding: '0 20px 20px' }}>
+          <a
+            href={invoiceUrl}
+            style={{
+              display: 'block', width: '100%', boxSizing: 'border-box',
+              background: t.accent, borderRadius: radius.lg,
+              color: '#0a0a0a', fontWeight: font.weight.bold, fontSize: font.size.callout,
+              padding: '14px', textAlign: 'center', textDecoration: 'none',
+              boxShadow: 'var(--e-1)',
+            }}
+          >
+            Complete crypto payment →
+          </a>
+          <div style={{ color: t.text3, fontSize: font.size.caption, textAlign: 'center', marginTop: 10 }}>
+            This page updates automatically once your payment is detected.
+          </div>
+        </div>
+      )}
+
+      {/* Items */}
+      <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {order.items.map(item => (
+          <div key={item.id} style={{
+            display: 'flex', gap: 12, alignItems: 'center',
+            background: t.surface1, borderRadius: radius.lg, padding: 12, border: `1px solid ${t.border}`,
+          }}>
+            {item.image_url ? (
+              <img
+                src={item.image_url}
+                alt=""
+                style={{ width: 44, height: 44, borderRadius: radius.sm, objectFit: 'contain', background: t.tile, padding: 4, boxSizing: 'border-box', flexShrink: 0 }}
+                onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+              />
+            ) : (
+              <div style={{ width: 44, height: 44, borderRadius: radius.sm, background: t.surface3, flexShrink: 0 }} />
+            )}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ color: t.text1, fontWeight: font.weight.semibold, fontSize: font.size.body, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {item.name ?? '—'}
+              </div>
+              <div style={{ color: t.text3, fontSize: font.size.small, marginTop: 2 }}>
+                {item.variant ? `${item.variant} · ` : ''}×{item.quantity}
+              </div>
+            </div>
+            {item.line_total_cents != null && (
+              <div style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.body, flexShrink: 0 }}>
+                {formatDollars(item.line_total_cents)}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Summary */}
+      <div style={{ padding: '18px 20px 0' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+          <span style={{ color: t.text2, fontSize: font.size.body }}>Payment</span>
+          <span style={{ color: t.text1, fontSize: font.size.body, fontWeight: font.weight.semibold }}>
+            {order.payment_method === 'bitpay' ? 'Crypto (BitPay)' : 'Pay in store'}
+          </span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <span style={{ color: t.text2, fontSize: font.size.body }}>Total</span>
+          <span style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.title }}>
+            {formatDollars(order.total_cents)}
+          </span>
+        </div>
+      </div>
+
+      {/* Cancel */}
+      {cancellable && (
+        <div style={{ padding: '24px 20px 0', textAlign: 'center' }}>
+          <button
+            onClick={handleCancel}
+            disabled={cancelling}
+            style={{
+              background: 'transparent', border: `1px solid ${t.border}`, borderRadius: radius.lg,
+              color: t.danger, fontSize: font.size.small + 1, fontWeight: font.weight.semibold,
+              padding: '10px 24px', cursor: cancelling ? 'default' : 'pointer', opacity: cancelling ? 0.5 : 1,
+            }}
+          >
+            {cancelling ? 'Cancelling…' : 'Cancel order'}
+          </button>
+        </div>
+      )}
+
+      <div style={{ height: 110 }} />
+    </div>
+  )
+}
+
 // ─── Account View ─────────────────────────────────────────────────────────────
 
 interface AccountViewProps {
   session: import('@supabase/supabase-js').Session
+  customerId: string
   onSignOut: () => void
+  onOrderClick: (orderId: string) => void
 }
 
-function AccountView({ session, onSignOut }: AccountViewProps) {
+function AccountView({ session, customerId, onSignOut, onOrderClick }: AccountViewProps) {
+  const [orders, setOrders] = useState<Order[]>([])
+  const [ordersLoading, setOrdersLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    api.portal.getOrders(customerId, { limit: 20 })
+      .then(data => { if (!cancelled) setOrders(data) })
+      .catch(() => { /* orders section is best-effort */ })
+      .finally(() => { if (!cancelled) setOrdersLoading(false) })
+    return () => { cancelled = true }
+  }, [customerId])
+
   return (
     <div style={{
       height: '100dvh',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '0 32px 92px',
+      overflowY: 'auto',
       background: t.bg,
     }}>
-      <div style={{
-        width: 72,
-        height: 72,
-        borderRadius: '50%',
-        background: t.surface2,
-        border: `1px solid ${t.border}`,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 20,
-      }}>
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="var(--text-3)">
-          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-        </svg>
-      </div>
-      <div style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.title, marginBottom: 6 }}>Your account</div>
-      <div style={{ color: t.text3, fontSize: font.size.body, marginBottom: 40 }}>{session.user.email}</div>
-      <button
-        onClick={onSignOut}
-        style={{
-          background: 'transparent',
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '48px 32px 28px' }}>
+        <div style={{
+          width: 72,
+          height: 72,
+          borderRadius: '50%',
+          background: t.surface2,
           border: `1px solid ${t.border}`,
-          borderRadius: radius.lg,
-          color: t.danger,
-          fontSize: font.size.callout,
-          fontWeight: font.weight.semibold,
-          padding: '12px 32px',
-          cursor: 'pointer',
-        }}
-      >
-        Sign out
-      </button>
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: 20,
+        }}>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="var(--text-3)">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+        </div>
+        <div style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.title, marginBottom: 6 }}>Your account</div>
+        <div style={{ color: t.text3, fontSize: font.size.body }}>{session.user.email}</div>
+      </div>
+
+      {/* Orders */}
+      <div style={{ padding: '0 20px' }}>
+        <Label style={{ marginBottom: 10 }}>Orders</Label>
+        {ordersLoading ? (
+          <Skeleton width="100%" height={62} radius={radius.lg} />
+        ) : orders.length === 0 ? (
+          <div style={{ color: t.text3, fontSize: font.size.small, padding: '8px 2px 0' }}>
+            No orders yet — checkout from your cart to place one.
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {orders.map(o => {
+              const meta = ORDER_STATUS_META[o.status]
+              const count = o.items.reduce((s, i) => s + i.quantity, 0)
+              return (
+                <Pressable
+                  key={o.id}
+                  onClick={() => onOrderClick(o.id)}
+                  style={{
+                    background: t.surface1, borderRadius: radius.lg, padding: 14,
+                    display: 'flex', gap: 12, alignItems: 'center', border: `1px solid ${t.border}`,
+                  }}
+                >
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.body, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {o.dispensary_name ?? '—'}
+                    </div>
+                    <div style={{ color: t.text3, fontSize: font.size.small, marginTop: 3 }}>
+                      {formatDate(o.created_at)} · {count} item{count !== 1 ? 's' : ''} · {formatDollars(o.total_cents)}
+                    </div>
+                  </div>
+                  <span style={{
+                    color: meta.color, fontSize: font.size.caption, fontWeight: font.weight.bold,
+                    border: `1px solid ${alpha(meta.color, 0.4)}`, background: alpha(meta.color, 0.12),
+                    padding: '3px 10px', borderRadius: radius.pill, flexShrink: 0, whiteSpace: 'nowrap',
+                  }}>
+                    {meta.label}
+                  </span>
+                  <span style={{ color: t.text4, fontSize: 18, flexShrink: 0 }}>›</span>
+                </Pressable>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '36px 0 120px' }}>
+        <button
+          onClick={onSignOut}
+          style={{
+            background: 'transparent',
+            border: `1px solid ${t.border}`,
+            borderRadius: radius.lg,
+            color: t.danger,
+            fontSize: font.size.callout,
+            fontWeight: font.weight.semibold,
+            padding: '12px 32px',
+            cursor: 'pointer',
+          }}
+        >
+          Sign out
+        </button>
+      </div>
     </div>
   )
 }
@@ -1772,6 +2202,7 @@ export default function CustomerPortal() {
   const matchListing = useMatch('/portal/map/:dispensaryId/listings/:listingId')
   const matchAisle = useMatch('/portal/map/:dispensaryId/aisle/:category')
   const matchDispensary = useMatch('/portal/map/:dispensaryId')
+  const matchOrder = useMatch('/portal/orders/:orderId')
   const matchTab = useMatch('/portal/:tab')
 
   const selectedProductId = matchProduct?.params.productId ?? null
@@ -1781,13 +2212,16 @@ export default function CustomerPortal() {
   const selectedListingId = matchListing?.params.listingId ?? null
   const selectedListingDispensaryId = matchListing?.params.dispensaryId ?? null
   const selectedDispensaryId = matchDispensary?.params.dispensaryId ?? null
+  const selectedOrderId = matchOrder?.params.orderId ?? null
   const activeTab: Tab = (matchListing || matchDispensary || matchAisle)
     ? 'map'
     : matchProduct
       ? 'search'
       : (matchBrand || matchBrandProduct)
         ? 'home'
-        : ((matchTab?.params.tab as Tab | undefined) ?? 'home')
+        : matchOrder
+          ? 'account'
+          : ((matchTab?.params.tab as Tab | undefined) ?? 'home')
 
   const [session, setSession] = useState<Session | null | undefined>(undefined)
   const [customerId, setCustomerId] = useState<string | null>(null)
@@ -1884,6 +2318,16 @@ export default function CustomerPortal() {
     setCart(prev => prev.filter(i => i.listingId !== listingId))
   }
 
+  function handleOrderPlaced(order: Order, redirectingToPayment: boolean) {
+    setCart([])
+    setCartOpen(false)
+    // When paying with crypto the browser navigates to the hosted BitPay
+    // invoice, which redirects back to /portal/orders/{id} afterwards.
+    if (!redirectingToPayment) {
+      navigate(`/portal/orders/${order.id}`)
+    }
+  }
+
   async function handleFeedback(itemId: string, value: Feedback) {
     if (!id) return
     const previous = feedback[itemId] ?? null
@@ -1962,17 +2406,31 @@ export default function CustomerPortal() {
           cart={cart}
         />
       )}
-      {activeTab === 'account' && session && (
-        <AccountView session={session} onSignOut={handleSignOut} />
+      {activeTab === 'account' && selectedOrderId && (
+        <OrderStatusView
+          customerId={customerId}
+          orderId={selectedOrderId}
+          onBack={() => navigate('/portal/account')}
+        />
+      )}
+      {activeTab === 'account' && !selectedOrderId && session && (
+        <AccountView
+          session={session}
+          customerId={customerId}
+          onSignOut={handleSignOut}
+          onOrderClick={(orderId) => navigate(`/portal/orders/${orderId}`)}
+        />
       )}
 
       {/* Cart drawer */}
       <CartDrawer
         items={cart}
         open={cartOpen}
+        customerId={customerId}
         onClose={() => setCartOpen(false)}
         onRemove={handleRemoveFromCart}
         onClear={() => setCart([])}
+        onOrderPlaced={handleOrderPlaced}
       />
 
       {/* Floating bottom nav */}

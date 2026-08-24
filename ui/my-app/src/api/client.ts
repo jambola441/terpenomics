@@ -27,6 +27,8 @@ import type {
   Dispensary,
   DispensaryListing,
   ListingDetail,
+  Order,
+  OrderCreatePayload,
 } from '../types'
 
 // Get API base URL from environment variable or use default
@@ -326,6 +328,28 @@ export const api = {
 
     getCategories: () =>
       portalFetch<PortalCategory[]>(`/customer/categories`),
+
+    createOrder: (customerId: string, payload: OrderCreatePayload) =>
+      portalFetch<Order>(`/customer/${customerId}/orders`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }),
+
+    getOrders: (customerId: string, params?: { limit?: number; offset?: number }) =>
+      portalFetch<Order[]>(`/customer/${customerId}/orders${buildQueryString(params)}`),
+
+    getOrder: (customerId: string, orderId: string) =>
+      portalFetch<Order>(`/customer/${customerId}/orders/${orderId}`),
+
+    refreshOrderPayment: (customerId: string, orderId: string) =>
+      portalFetch<Order>(`/customer/${customerId}/orders/${orderId}/refresh-payment`, {
+        method: 'POST',
+      }),
+
+    cancelOrder: (customerId: string, orderId: string) =>
+      portalFetch<Order>(`/customer/${customerId}/orders/${orderId}/cancel`, {
+        method: 'POST',
+      }),
   },
 }
 

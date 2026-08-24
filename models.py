@@ -233,6 +233,67 @@ class Purchase(SQLModel, TimestampMixin, table=True):
     items:    list["PurchaseItem"] = Relationship(back_populates="purchase")
 
 
+# ---------------------------
+# Online Orders (checkout)
+# ---------------------------
+
+class OrderPaymentMethod(str, Enum):
+    bitpay   = "bitpay"    # crypto via BitPay hosted invoice
+    in_store = "in_store"  # pay at pickup
+
+
+class OrderStatus(str, Enum):
+    pending_payment = "pending_payment"  # bitpay invoice created, awaiting payment
+    placed          = "placed"           # active order with the store (in-store orders start here)
+    completed       = "completed"        # picked up / fulfilled
+    cancelled       = "cancelled"
+    expired         = "expired"          # bitpay invoice expired unpaid
+
+
+class Order(SQLModel, TimestampMixin, table=True):
+    __tablename__ = "orders"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    customer_id:   UUID = Field(foreign_key="customers.id", index=True, nullable=False)
+    dispensary_id: UUID = Field(foreign_key="dispensaries.id", index=True, nullable=False)
+
+    status:         OrderStatus        = Field(default=OrderStatus.placed, nullable=False, index=True)
+    payment_method: OrderPaymentMethod = Field(nullable=False)
+    total_cents:    int                = Field(default=0, ge=0, nullable=False)
+
+    pickup_name: Optional[str] = Field(default=None, max_length=200)
+    notes:       Optional[str] = Field(default=None, max_length=2000)
+
+    # BitPay invoice tracking (bitpay orders only)
+    bitpay_invoice_id:  Optional[str]      = Field(default=None, max_length=100, index=True)
+    bitpay_invoice_url: Optional[str]      = Field(default=None, max_length=1000)
+    bitpay_status:      Optional[str]      = Field(default=None, max_length=50)
+    paid_at:            Optional[datetime] = Field(default=None)
+
+    items: list["OrderItem"] = Relationship(back_populates="order")
+
+
+class OrderItem(SQLModel, table=True):
+    __tablename__ = "order_items"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    order_id:   UUID = Field(foreign_key="orders.id", index=True, nullable=False)
+    listing_id: UUID = Field(foreign_key="listings.id", index=True, nullable=False)
+
+    quantity:         int           = Field(default=1, ge=1, nullable=False)
+    unit_price_cents: Optional[int] = Field(default=None, ge=0)
+    line_total_cents: Optional[int] = Field(default=None, ge=0)
+
+    # Snapshot of the listing at order time — listings get rescraped/repriced
+    product_name: Optional[str] = Field(default=None, max_length=300)
+    variant:      Optional[str] = Field(default=None, max_length=100)
+    image_url:    Optional[str] = Field(default=None, max_length=1000)
+
+    order: Order = Relationship(back_populates="items")
+
+
 class ItemFeedback(str, Enum):
     like    = "like"
     dislike = "dislike"
