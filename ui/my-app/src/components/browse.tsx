@@ -252,6 +252,7 @@ export type BrowseCardItem = {
   priceCents: number | null
   /** True when offerings span a range, so the price reads "from $X". */
   multiPriced: boolean
+  /** How many dispensaries carry it. 1 on single-store surfaces (an aisle). */
   dispensaryCount: number
   /** Miles to the nearest offering; null without a location fix. */
   distanceMi: number | null
@@ -259,15 +260,22 @@ export type BrowseCardItem = {
   storeName: string | null
 }
 
-export function BrowseCard({ item, color, suppressSubtype, onOpen }: {
+export function BrowseCard({ item, color, suppressSubtype, action, onOpen }: {
   item: BrowseCardItem
   color: string
   /** Hide the subtype tag when it just restates the page (e.g. "flower" on /flower). */
   suppressSubtype?: string | null
+  /** Overlaid bottom-right on the image — e.g. an add-to-cart button. */
+  action?: ReactNode
   onOpen: () => void
 }) {
   const showSubtype = !!item.subtype
     && item.subtype.toLowerCase() !== (suppressSubtype ?? '').toLowerCase()
+  // Single-store surfaces have nothing useful to say here; stay quiet instead
+  // of printing a placeholder.
+  const availability = item.dispensaryCount > 1
+    ? `📍 At ${item.dispensaryCount} dispensaries`
+    : item.storeName
 
   return (
     <Pressable
@@ -303,6 +311,10 @@ export function BrowseCard({ item, color, suppressSubtype, onOpen }: {
           }}>
             {formatDist(item.distanceMi)}
           </span>
+        )}
+
+        {action && (
+          <div style={{ position: 'absolute', bottom: 8, right: 8 }}>{action}</div>
         )}
       </div>
 
@@ -350,14 +362,14 @@ export function BrowseCard({ item, color, suppressSubtype, onOpen }: {
         )}
 
         {/* Availability footer, pinned to the bottom so cards align in the grid */}
-        <div style={{
-          marginTop: 'auto', paddingTop: 8, color: t.text3, fontSize: font.size.micro,
-          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-        }}>
-          {item.dispensaryCount > 1
-            ? `📍 At ${item.dispensaryCount} dispensaries`
-            : item.storeName ?? '—'}
-        </div>
+        {availability && (
+          <div style={{
+            marginTop: 'auto', paddingTop: 8, color: t.text3, fontSize: font.size.micro,
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}>
+            {availability}
+          </div>
+        )}
       </div>
     </Pressable>
   )
