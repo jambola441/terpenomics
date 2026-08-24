@@ -17,6 +17,7 @@ import type {
   PortalBrand,
   PortalBrandDetail,
   PortalCategory,
+  PortalCategoryDetail,
   FeedbackResponse,
   Feedback,
   LabReport,
@@ -326,6 +327,9 @@ export const api = {
 
     getCategories: () =>
       portalFetch<PortalCategory[]>(`/customer/categories`),
+
+    getCategory: (name: string) =>
+      portalFetch<PortalCategoryDetail>(`/customer/categories/${encodeURIComponent(name)}`),
   },
 }
 

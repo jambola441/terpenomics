@@ -4,6 +4,7 @@ import api from './api/client'
 import supabase from './utils/supabase'
 import DispensaryMap from './components/DispensaryMap'
 import HomeFeed from './components/HomeFeed'
+import CategoryView from './components/CategoryView'
 import ListingDetailView from './components/ListingDetail'
 import type { PortalPurchase, RecommendedProduct, Feedback, PortalProduct, CartItem, PortalBrandDetail, PortalBrandProduct, PortalBrandOffering, ListingDetail } from './types'
 import type { Session } from '@supabase/supabase-js'
@@ -1769,6 +1770,7 @@ export default function CustomerPortal() {
   const matchProduct = useMatch('/portal/products/:productId')
   const matchBrandProduct = useMatch('/portal/brands/:brandName/products/:productKey')
   const matchBrand = useMatch('/portal/brands/:brandName')
+  const matchCategory = useMatch('/portal/categories/:category')
   const matchListing = useMatch('/portal/map/:dispensaryId/listings/:listingId')
   const matchAisle = useMatch('/portal/map/:dispensaryId/aisle/:category')
   const matchDispensary = useMatch('/portal/map/:dispensaryId')
@@ -1778,6 +1780,7 @@ export default function CustomerPortal() {
   const brandProductBrand = matchBrandProduct?.params.brandName ? decodeURIComponent(matchBrandProduct.params.brandName) : null
   const brandProductKey = matchBrandProduct?.params.productKey ? decodeURIComponent(matchBrandProduct.params.productKey) : null
   const selectedBrandName = matchBrand?.params.brandName ? decodeURIComponent(matchBrand.params.brandName) : null
+  const selectedCategory = matchCategory?.params.category ? decodeURIComponent(matchCategory.params.category) : null
   const selectedListingId = matchListing?.params.listingId ?? null
   const selectedListingDispensaryId = matchListing?.params.dispensaryId ?? null
   const selectedDispensaryId = matchDispensary?.params.dispensaryId ?? null
@@ -1785,7 +1788,7 @@ export default function CustomerPortal() {
     ? 'map'
     : matchProduct
       ? 'search'
-      : (matchBrand || matchBrandProduct)
+      : (matchBrand || matchBrandProduct || matchCategory)
         ? 'home'
         : ((matchTab?.params.tab as Tab | undefined) ?? 'home')
 
@@ -1936,7 +1939,17 @@ export default function CustomerPortal() {
           onOpenProduct={(productKey) => navigate(`/portal/brands/${encodeURIComponent(selectedBrandName)}/products/${encodeURIComponent(productKey)}`)}
         />
       )}
-      {activeTab === 'home' && !brandProductBrand && !selectedBrandName && <HomeFeed />}
+      {activeTab === 'home' && !brandProductBrand && !selectedBrandName && selectedCategory && (
+        <CategoryView
+          categoryName={selectedCategory}
+          onBack={() => navigate(-1)}
+          onOpenBrandProduct={(brand, productKey) =>
+            navigate(`/portal/brands/${encodeURIComponent(brand)}/products/${encodeURIComponent(productKey)}`)}
+          onOpenListing={(dispensaryId, listingId) =>
+            navigate(`/portal/map/${dispensaryId}/listings/${listingId}`)}
+        />
+      )}
+      {activeTab === 'home' && !brandProductBrand && !selectedBrandName && !selectedCategory && <HomeFeed />}
       {activeTab === 'search' && selectedProductId && (
         <ProductDetail
           productId={selectedProductId}

@@ -195,6 +195,67 @@ textarea::placeholder {
   display: none;
 }
 
+/* ── Dual-thumb range slider (price filter) ───────────────────────────────── */
+
+/* Two stacked range inputs share one track. The inputs themselves ignore
+   pointer events so the track behind stays visible; only the thumbs are live. */
+.range-dual {
+  position: relative;
+  height: 28px;
+}
+.range-dual input[type='range'] {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  width: 100%;
+  height: 28px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  pointer-events: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.range-dual input[type='range']::-webkit-slider-runnable-track {
+  background: transparent;
+  height: 28px;
+}
+.range-dual input[type='range']::-moz-range-track {
+  background: transparent;
+  height: 28px;
+}
+.range-dual input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  pointer-events: auto;
+  width: 20px;
+  height: 20px;
+  margin-top: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--bg);
+  box-shadow: var(--e-1);
+  cursor: grab;
+}
+.range-dual input[type='range']::-moz-range-thumb {
+  pointer-events: auto;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--bg);
+  box-shadow: var(--e-1);
+  cursor: grab;
+}
+.range-dual input[type='range']:active::-webkit-slider-thumb { cursor: grabbing; }
+.range-dual input[type='range']:active::-moz-range-thumb { cursor: grabbing; }
+.range-dual input[type='range']:focus-visible {
+  box-shadow: none;
+}
+.range-dual input[type='range']:focus-visible::-webkit-slider-thumb { box-shadow: var(--ring); }
+.range-dual input[type='range']:focus-visible::-moz-range-thumb { box-shadow: var(--ring); }
+
 /* ── Reusable motion ──────────────────────────────────────────────────────── */
 
 @keyframes ds-fade-in {

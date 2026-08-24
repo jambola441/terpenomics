@@ -185,6 +185,128 @@ def list_portal_categories(session: Session = Depends(get_session)):
 
 
 # ---------------------------
+# GET /categories/{category_name}
+# ---------------------------
+
+# A category spans every dispensary, so it can pull far more listings than a
+# single brand does. Cap the scan and tell the client when we truncated.
+CATEGORY_LISTING_CAP = 6000
+
+
+@router.get("/categories/{category_name}")
+def get_portal_category(
+    category_name: str,
+    session: Session = Depends(get_session),
+    in_stock: bool = Query(default=True),
+):
+    stmt = (
+        select(Listing, Dispensary)
+        .join(Dispensary, Dispensary.id == Listing.dispensary_id)
+        .where(Listing.scraped_category == category_name)
+        .where(Listing.is_active == True)  # noqa: E712
+        .where(Dispensary.is_active == True)  # noqa: E712
+    )
+    if in_stock:
+        stmt = stmt.where(Listing.in_stock == True)  # noqa: E712
+    # Cheapest first so a truncated scan keeps the offerings a shopper cares about.
+    stmt = stmt.order_by(
+        Listing.price_cents.is_(None),
+        Listing.price_cents,
+        Listing.scraped_brand,
+        Listing.scraped_name,
+    ).limit(CATEGORY_LISTING_CAP + 1)
+
+    rows = session.exec(stmt).all()
+    if not rows:
+        raise HTTPException(status_code=404, detail="category not found")
+
+    truncated = len(rows) > CATEGORY_LISTING_CAP
+    if truncated:
+        rows = rows[:CATEGORY_LISTING_CAP]
+
+    # Group listings into products by identity. Brand is part of the key here
+    # (unlike /brands/{name}, where it is fixed), since a category spans brands.
+    products: dict[tuple, dict] = {}
+    category_image = None
+    dispensary_ids = set()
+    brand_names = set()
+
+    for listing, dispensary in rows:
+        if category_image is None and listing.image_url:
+            category_image = listing.image_url
+        dispensary_ids.add(str(dispensary.id))
+        if listing.scraped_brand:
+            brand_names.add(listing.scraped_brand)
+
+        key = (
+            listing.scraped_brand,
+            listing.subtype,
+            listing.product_line,
+            listing.strain,
+            listing.variant,
+        )
+        product = products.get(key)
+        if product is None:
+            name = (
+                listing.strain
+                or listing.product_line
+                or listing.scraped_name
+                or listing.scraped_brand
+                or category_name
+                or "\u2014"
+            )
+            product = {
+                "key": "|".join("" if k is None else str(k) for k in key),
+                "name": name,
+                "brand": listing.scraped_brand,
+                "category": listing.scraped_category,
+                "subtype": listing.subtype,
+                "product_line": listing.product_line,
+                "strain": listing.strain,
+                "variant": listing.variant,
+                "image_url": listing.image_url,
+                "offerings": [],
+            }
+            products[key] = product
+
+        if product["image_url"] is None and listing.image_url:
+            product["image_url"] = listing.image_url
+
+        product["offerings"].append({
+            "listing_id": str(listing.id),
+            "dispensary_id": str(dispensary.id),
+            "dispensary_name": dispensary.name,
+            "dispensary_slug": dispensary.slug,
+            "lat": dispensary.lat,
+            "lng": dispensary.lng,
+            "price_cents": listing.price_cents,
+            "in_stock": listing.in_stock,
+            "url": listing.url,
+        })
+
+    product_list = []
+    for product in products.values():
+        prices = [o["price_cents"] for o in product["offerings"] if o["price_cents"] is not None]
+        product["min_price_cents"] = min(prices) if prices else None
+        product["max_price_cents"] = max(prices) if prices else None
+        product["dispensary_count"] = len({o["dispensary_id"] for o in product["offerings"]})
+        product_list.append(product)
+
+    product_list.sort(key=lambda p: ((p["brand"] or "\uffff").lower(), p["name"].lower()))
+
+    return {
+        "name": category_name,
+        "image_url": category_image,
+        "product_count": len(product_list),
+        "dispensary_count": len(dispensary_ids),
+        "brand_count": len(brand_names),
+        "truncated": truncated,
+        "products": product_list,
+    }
+
+
+
+# ---------------------------
 # GET /dispensaries/{id}/filter-options
 # ---------------------------
 
