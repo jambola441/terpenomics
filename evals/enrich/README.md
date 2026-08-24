@@ -42,7 +42,31 @@ models) / `ANTHROPIC_API_KEY` (haiku) in `.env`.
 Enrichment runs with `brand_examples={}` (model only, no DB nudge) and clears the eval cache
 each run, so the **current** prompts are always exercised.
 
-## Gold dispensary set
+## Gold dispensary sets
+
+Five frozen suites, 284 listings total (~$0.12/model/run). Inputs are literal strings in
+the case files — no scraping, no DB — so runs are comparable; only the model call is live.
+
+| suite | n | store / platform | what it stresses |
+| --- | --- | --- | --- |
+| `gold_the_plug.json` | 108 | The Plug (Dutchie) | `Brand - Strain \| Size Format`; `other` = **vapes** |
+| `gold_the_spot_bk.json` | 50 | The Spot BK (Tymber) | brand **last**, lineage + THC% inline, trailing shelf codes; `other` = **flower** |
+| `gold_hold_up_roll_up.json` | 48 | Hold Up Roll Up (Tymber) | brand **absent from the name**; 64% of the menu is `other` |
+| `gold_coney_island.json` | 56 | Coney Island (Dutchie) | **no descriptions at all**; variant column actively wrong (`.1g` for a 100mg gummy); `other` = **pre-rolls** |
+| `gold_cross_dispensary.json` | 6 clusters / 22 rows | six stores | same product across stores must converge to one identity tuple |
+
+Three stores, three different meanings of `other` — which is why hint override is the
+single most load-bearing behavior in the pipeline.
+
+`gold_cross_dispensary.json` is the one that measures what a wrong answer *costs*: a split
+product group in the products view. It includes a matched pair — Ayrloom Honeycrisp as a
+beverage and as a vape — that must converge within each cluster without merging across them.
+
+```bash
+python evals/enrich/run_eval.py --models haiku --cases 'cases/gold_*.json'
+```
+
+### The Plug set (first, most detailed)
 
 `cases/gold_the_plug.json` — 108 hand-labeled real listings from The Plug (Crown
 Heights), stratified across categories. Includes the failure modes that matter in
