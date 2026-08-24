@@ -17,6 +17,8 @@ import ListingMatch from './ListingMatch'
 import Listings from './Listings'
 import AdminListingDetail from './AdminListingDetail'
 
+import PreviewBadge from './components/PreviewBadge'
+
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 function App() {
@@ -44,6 +46,7 @@ function App() {
         <Route path="/portal/*" element={<CustomerPortal />} />
       </Routes>
       </BrowserRouter>
+      <PreviewBadge />
   </>
   )
 }

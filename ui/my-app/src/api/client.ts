@@ -29,8 +29,9 @@ import type {
   ListingDetail,
 } from '../types'
 
-// Get API base URL from environment variable or use default
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://sturdy-parakeet-qg59j4pjp9q29j9j-8000.app.github.dev'
+// Which API this session talks to — build env var, Render PR preview, or a
+// manual ?api= override. See src/api/base.ts and PREVIEWS.md.
+import { API_BASE } from './base'
 
 // Helper function to build query string from params
 function buildQueryString(params?: Record<string, any>): string {

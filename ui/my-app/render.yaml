@@ -1,3 +1,7 @@
+# Reference only — this static site was created from the Render dashboard as
+# `terpenomics-ui`, and Blueprints are auto-detected only from a render.yaml at
+# the REPO ROOT. PR previews for it are enabled in the dashboard, not here:
+# see PREVIEWS.md.
 services:
   - type: web
     name: my-app
