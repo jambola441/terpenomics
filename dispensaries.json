@@ -570,6 +570,7 @@
   {
     "name": "Brooklyn Organic Buds",
     "slug": "brooklyn-organic-buds",
+    "accepts_pickup": true,
     "platform": "alleaves",
     "scraper": "prototypes/alleaves-scraper/scrape.py",
     "status": "pending",

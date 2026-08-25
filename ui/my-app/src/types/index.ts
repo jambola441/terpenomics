@@ -228,6 +228,7 @@ export type ListingDetail = DispensaryListing & {
   dispensary_id: string
   dispensary_name: string
   dispensary_slug: string
+  dispensary_accepts_pickup: boolean
   in_stock: boolean
   classification: string | null
   description: string | null

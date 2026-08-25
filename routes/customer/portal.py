@@ -479,6 +479,7 @@ def get_dispensary_listing(
         "dispensary_id": str(dispensary.id),
         "dispensary_name": dispensary.name,
         "dispensary_slug": dispensary.slug,
+        "dispensary_accepts_pickup": dispensary.accepts_pickup,
         "scraped_name": listing.scraped_name,
         "scraped_brand": listing.scraped_brand,
         "scraped_category": listing.scraped_category,
