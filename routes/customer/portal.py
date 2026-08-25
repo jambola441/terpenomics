@@ -234,13 +234,27 @@ def get_portal_category(
     # (unlike /brands/{name}, where it is fixed), since a category spans brands.
     products: dict[tuple, dict] = {}
     category_image = None
-    dispensary_ids = set()
     brand_names = set()
+    # Stores are sent once and referenced by index. Repeating name/slug/lat/lng
+    # on every offering was ~95% of this response.
+    dispensaries: list[dict] = []
+    dispensary_index: dict[str, int] = {}
 
     for listing in rows:
         if category_image is None and listing.image_url:
             category_image = listing.image_url
-        dispensary_ids.add(str(listing.d_id))
+        d_id = str(listing.d_id)
+        idx = dispensary_index.get(d_id)
+        if idx is None:
+            idx = len(dispensaries)
+            dispensary_index[d_id] = idx
+            dispensaries.append({
+                "id": d_id,
+                "name": listing.d_name,
+                "slug": listing.d_slug,
+                "lat": listing.lat,
+                "lng": listing.lng,
+            })
         if listing.scraped_brand:
             brand_names.add(listing.scraped_brand)
 
@@ -278,24 +292,19 @@ def get_portal_category(
         if product["image_url"] is None and listing.image_url:
             product["image_url"] = listing.image_url
 
-        product["offerings"].append({
-            "listing_id": str(listing.id),
-            "dispensary_id": str(listing.d_id),
-            "dispensary_name": listing.d_name,
-            "dispensary_slug": listing.d_slug,
-            "lat": listing.lat,
-            "lng": listing.lng,
-            "price_cents": listing.price_cents,
-            "in_stock": listing.in_stock,
-            "url": listing.url,
-        })
+        offering = {"dispensary_index": idx, "price_cents": listing.price_cents}
+        # A branded product opens the brand-product view, which is addressed by
+        # key; only an unbranded one needs a specific listing to navigate to.
+        if not listing.scraped_brand:
+            offering["listing_id"] = str(listing.id)
+        product["offerings"].append(offering)
 
     product_list = []
     for product in products.values():
         prices = [o["price_cents"] for o in product["offerings"] if o["price_cents"] is not None]
         product["min_price_cents"] = min(prices) if prices else None
         product["max_price_cents"] = max(prices) if prices else None
-        product["dispensary_count"] = len({o["dispensary_id"] for o in product["offerings"]})
+        product["dispensary_count"] = len({o["dispensary_index"] for o in product["offerings"]})
         product_list.append(product)
 
     product_list.sort(key=lambda p: ((p["brand"] or "\uffff").lower(), p["name"].lower()))
@@ -304,7 +313,8 @@ def get_portal_category(
         "name": category_name,
         "image_url": category_image,
         "product_count": len(product_list),
-        "dispensary_count": len(dispensary_ids),
+        "dispensary_count": len(dispensaries),
+        "dispensaries": dispensaries,
         "brand_count": len(brand_names),
         "truncated": truncated,
         "products": product_list,

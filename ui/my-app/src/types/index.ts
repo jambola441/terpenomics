@@ -335,6 +335,31 @@ export type PortalBrandDetail = {
   products: PortalBrandProduct[]
 }
 
+/** A store carrying products in a category. Sent once; offerings index into it. */
+export type PortalCategoryDispensary = {
+  id: string
+  name: string
+  slug: string
+  lat: number | null
+  lng: number | null
+}
+
+/**
+ * One store's price for a product. Deliberately thin — the store's name and
+ * coordinates live in `PortalCategoryDetail.dispensaries[dispensary_index]`,
+ * because repeating them per offering was most of this response's weight.
+ */
+export type PortalCategoryOffering = {
+  dispensary_index: number
+  price_cents: number | null
+  /**
+   * Present only on products with no brand. A branded product opens the
+   * brand-product view, addressed by key; an unbranded one has no such page,
+   * so it needs a specific listing to navigate to.
+   */
+  listing_id?: string
+}
+
 export type PortalCategoryProduct = {
   key: string
   name: string
@@ -348,7 +373,7 @@ export type PortalCategoryProduct = {
   min_price_cents: number | null
   max_price_cents: number | null
   dispensary_count: number
-  offerings: PortalBrandOffering[]
+  offerings: PortalCategoryOffering[]
 }
 
 export type PortalCategoryDetail = {
@@ -358,5 +383,7 @@ export type PortalCategoryDetail = {
   dispensary_count: number
   brand_count: number
   truncated: boolean
+  /** Every store appearing in `products[].offerings`, in index order. */
+  dispensaries: PortalCategoryDispensary[]
   products: PortalCategoryProduct[]
 }
