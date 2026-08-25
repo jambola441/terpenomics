@@ -348,6 +348,7 @@ def normalise(
         "name":            clean_name(item_name, brand),
         "brand":           brand,
         "category":        map_category(r.get("category")),
+        "raw_category":    (r.get("category") or "").strip(),
         "variant":         derive_variant(r.get("weight_useable"), r.get("uom_weight_useable")),
         "price_cents":     price_cents,
         "thc_percent":     thc if thc else "",

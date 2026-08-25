@@ -68,6 +68,10 @@ def suite_rows(suite: dict) -> list[tuple[str, dict]]:
     return rows
 
 
+def model_cfg_slug(model: str) -> str:
+    return (enrich.MODELS.get(model) or {}).get("api_model", "?")
+
+
 def clear_eval_cache(model: str) -> None:
     for name in (f"{EVAL_SLUG}.json", f"{EVAL_SLUG}.{model}.json"):
         p = enrich._CACHE_DIR / name
@@ -103,6 +107,15 @@ def enrich_with_model(model: str, suites: list[dict], brand_nudge: bool = False)
         usage, err = {}, f"{type(e).__name__}: {e}"
     secs = time.time() - t
     clear_eval_cache(model)
+
+    # A run that burned no tokens never reached the model — a bad OpenRouter slug or a
+    # missing key. Without this the fallback hints still score (~10%), which reads like a
+    # terrible model rather than a broken config. Fail loudly instead.
+    if err is None and rows and not any(
+        usage.get(k, 0) for k in ("input_tokens", "output_tokens", "cache_read_tokens")
+    ):
+        err = (f"no tokens used — the model was never called. Check the api_model slug "
+               f"({model_cfg_slug(model)!r}) and the provider API key.")
 
     enriched = {k: {f: r.get(f) for f in FIELDS} for k, r in zip(keys, rows)}
     return enriched, usage, secs, err

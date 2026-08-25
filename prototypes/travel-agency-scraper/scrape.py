@@ -184,7 +184,9 @@ def normalise(p: dict, scraped_at: str) -> dict:
         in_stock = "FALSE" if str(stock_val).lower() in ("0", "out_of_stock", "false") else "TRUE"
 
     sku      = str(p.get("slug") or p.get("sku") or "").strip()
-    batch_id = str(p.get("id") or "").strip()
+    # p["id"] is the platform's product id, not a batch — batch_id is reserved
+    # for real batch/lot IDs (METRC lookups), so it stays empty here.
+    batch_id = ""
 
     image_url = str(
         p.get("image") or p.get("imageUrl") or p.get("image_url") or
@@ -198,6 +200,7 @@ def normalise(p: dict, scraped_at: str) -> dict:
         "name":            str(p.get("name") or "").strip(),
         "brand":           str(p.get("brand") or "").strip(),
         "category":        category,
+        "raw_category":    str(raw_cat or "").strip(),
         "variant":         variant,
         "price_cents":     price_cents,
         "thc_percent":     thc,

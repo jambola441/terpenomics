@@ -1,0 +1,253 @@
+{
+ "eval_type": "identity_cluster",
+ "description": "CROSS-DISPENSARY identity clusters built from real rows in six store snapshots. Each case is the SAME physical product as listed by different stores, whose naming conventions disagree on everything: brand first vs last vs absent, lineage and THC% inline, shelf codes appended, and three different meanings of the 'other' category. Enrichment must land every member on one identity tuple — this is the products view's 'same product -> same key' contract, and the only test here that measures what a wrong answer actually costs: a split product group. x-ayrloom-honeycrisp-beverage and x-ayrloom-honeycrisp-vape are a matched pair: the same brand and strain in two formats, which must converge WITHIN each cluster without merging ACROSS them. Clusters carry a partial `canonical` where the sources genuinely disagree on the right value (dose vs volume), so they score convergence without asserting a spelling the data does not settle.",
+ "cases": [
+  {
+   "id": "x-ayrloom-revive-balm",
+   "expect_same": [
+    "category",
+    "subtype",
+    "strain"
+   ],
+   "canonical": {
+    "category": "topical",
+    "subtype": "topical",
+    "strain": "Revive"
+   },
+   "members": [
+    {
+     "brand": "Ayrloom",
+     "name": "Ayrloom Balm (1000mg THC; 1000MG CBD) - Revive (BCS)",
+     "category": "topical",
+     "variant": "65.2g",
+     "description": ""
+    },
+    {
+     "brand": "ayrloom",
+     "name": "ayrloom | Revive 1:1 Topical | 1000MG THC : 1000MG CBD",
+     "category": "topical",
+     "variant": "1g",
+     "description": ""
+    },
+    {
+     "brand": "ayrloom",
+     "name": "Revive - 1000.00mg (THC Balm) | 2.3oz Tin  -b11",
+     "category": "topical",
+     "variant": "",
+     "description": "this combination of essential oils is designed to uplift the mind, body and spirit. bergamot and grapefruit can help elevate mood, while sandalwood is believed to help purify negative energy and promo"
+    },
+    {
+     "brand": "ayrloom",
+     "name": "Balm Revive - 1000mg Topical",
+     "category": "topical",
+     "variant": "1000.0 milligrams",
+     "description": "This combination of essential oils is designed to uplift the mind, body and spirit. Bergamot and grapefruit can help elevate mood, while sandalwood is believed to help purify negative energy and promo"
+    },
+    {
+     "brand": "ayrloom",
+     "name": "X| Ayrloom | Revive | Bergamot, Grapefruit, & Sandalwood |  Balm | 2.3oz",
+     "category": "topical",
+     "variant": "",
+     "description": "1,000mg THC + 1,000mg CBD Bergamot, Citrus + Sandalwood. This combination of essential oils is designed to uplift the mind, body and spirit. Bergamot and Grapefruit can help elevate mood, while Sandal"
+    },
+    {
+     "brand": "ayrloom",
+     "name": "Revive (BGS) - Balm - Topical | 1:1 THC:CBD | 2.3oz | Ayrloom",
+     "category": "topical",
+     "variant": "",
+     "description": ""
+    }
+   ]
+  },
+  {
+   "id": "x-camino-watermelon-lemonade-bliss",
+   "expect_same": [
+    "category",
+    "subtype",
+    "strain",
+    "variant"
+   ],
+   "canonical": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Watermelon Lemonade",
+    "variant": "100mg"
+   },
+   "members": [
+    {
+     "brand": "Camino",
+     "name": "Camino - Bliss | Watermelon Lemonade 5mg 20pk.",
+     "category": "edible",
+     "variant": "72g",
+     "description": "Ready for a whole new vibe? A versatile gummy made for moments great and small, whether social or solo, Watermelon Lemonade Bliss Camino gummies are your go-to to dial up the delight. Each mouthwateri"
+    },
+    {
+     "brand": "Camino",
+     "name": "Camino | Watermelon Lemonade 'Bliss' Gummies [20pk]",
+     "category": "edible",
+     "variant": ".1g",
+     "description": ""
+    },
+    {
+     "brand": "CAMINO",
+     "name": "Watermelon Lemonade \"Bliss\" Gummies | 100 mg 20pk | Camino   -x11",
+     "category": "edible",
+     "variant": "100.0 milligrams",
+     "description": "5mg THC per piece | 100mg THC total in 20 pieces Find yourself on a blissful beach with our 'Bliss' Watermelon Lemonade gummies. Let sativa and indica terpenes alongside juicy watermelon and tart citr"
+    },
+    {
+     "brand": "Camino",
+     "name": "X| Camino | Watermelon Lemonade | Gummy | 20ct",
+     "category": "edible",
+     "variant": "72.0 milligrams",
+     "description": "Watermelon Lemonade Camino gummies combine a synergistic blend of sativa and indica-like terpenes with notes of juicy watermelon and tart citrus. Quench your thirst on the warm beaches of California w"
+    }
+   ]
+  },
+  {
+   "id": "x-jaunty-mango-haze-aio",
+   "expect_same": [
+    "category",
+    "subtype",
+    "strain",
+    "variant"
+   ],
+   "canonical": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Mango Haze",
+    "variant": "1.5g"
+   },
+   "members": [
+    {
+     "brand": "Jaunty",
+     "name": "Jaunty- Mango Haze 1.5g AIO",
+     "category": "other",
+     "variant": "1.5g",
+     "description": "Mango Haze is a sativa known for its uplifting, cerebral, happy effects and a sweet mango aroma and flavor that will keep you coming back for more."
+    },
+    {
+     "brand": "Jaunty",
+     "name": "Mango Haze -Sativa-  90% THC All-In-One Palm (Vape Pen) 1.5g | Jaunty      -o2 front",
+     "category": "vaporizers",
+     "variant": "",
+     "description": "Mango Haze is a sativa known for its uplifting cerebral happy effects and a sweet mango aroma and flavor that will keep you coming back for more."
+    },
+    {
+     "brand": "Jaunty",
+     "name": "Mango Haze - 1.5g AIO Vape",
+     "category": "other",
+     "variant": "1.5 grams",
+     "description": "Mango Haze is a sativa known for its uplifting, cerebral, happy effects and a sweet mango aroma and flavor that will keep you coming back for more. Jaunty Palms combine cannabis-derived terpenes with "
+    }
+   ]
+  },
+  {
+   "id": "x-ayrloom-honeycrisp-beverage",
+   "expect_same": [
+    "category",
+    "subtype",
+    "strain"
+   ],
+   "canonical": {
+    "category": "edible",
+    "subtype": "beverage"
+   },
+   "members": [
+    {
+     "brand": "Ayrloom",
+     "name": "Ayrloom UP (12oz) Beverage - Honeycrisp Cider | 10 THC : 5 CBD",
+     "category": "edible",
+     "variant": "12fl oz",
+     "description": "Sip into a moment of pure bliss with Ayrloom’s Honeycrisp Cider, a perfectly balanced beverage that combines the crisp, refreshing taste of orchard-fresh apples with the gentle power of cannabinoids. "
+    },
+    {
+     "brand": "ayrloom",
+     "name": "\"Up\" Honeycrisp Apple Cider - 10mg Beverage",
+     "category": "edible",
+     "variant": "10.0 milligrams",
+     "description": "Get a taste of our 5th generation family orchard with the juicy and sweet flavors of the honeycrisp flavors of the naturally sweet but never heavy, our hemp infused fresh apple cider is the perfect wa"
+    },
+    {
+     "brand": "ayrloom",
+     "name": "X| Ayrloom | Honeycrisp | Beverage 12oz | 1:1 THC:CBD",
+     "category": "edible",
+     "variant": "5.0 milligrams",
+     "description": "Get a taste of our 5th generation family orchard with the juicy and sweet flavors of the honeycrisp apple. naturally sweet but never heavy, our cannabis infused fresh apple cider is the perfect way to"
+    },
+    {
+     "brand": "ayrloom",
+     "name": "Honeycrisp Cider (H) (2:1 THC:CBD) 10mg THC : 5mg CBD - 12oz - Beverages - Ayrloom",
+     "category": "edible",
+     "variant": "",
+     "description": ""
+    }
+   ]
+  },
+  {
+   "id": "x-ayrloom-honeycrisp-vape",
+   "expect_same": [
+    "category",
+    "subtype",
+    "strain",
+    "variant"
+   ],
+   "canonical": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Honeycrisp",
+    "variant": "1g"
+   },
+   "members": [
+    {
+     "brand": "ayrloom",
+     "name": "Ayrloom | Honeycrisp | AIO | 1g",
+     "category": "vaporizers",
+     "variant": "1g",
+     "description": ""
+    },
+    {
+     "brand": "ayrloom",
+     "name": "Honeycrisp -Hybrid- 90.00% THC | 1g All-In-One (Vape Pen) | Ayrloom    -g3 back",
+     "category": "vaporizers",
+     "variant": "1g",
+     "description": "Get a taste of our 5th generation family orchard with the juicy + sweet flavors of the fan-favorite honeycrisp apple. naturally sweet, but never heavy. Ingredients Cannabis Extract, Botanical Derived "
+    }
+   ]
+  },
+  {
+   "id": "x-papa-barkley-releaf-balm",
+   "expect_same": [
+    "category",
+    "subtype"
+   ],
+   "canonical": {
+    "category": "topical",
+    "subtype": "topical"
+   },
+   "members": [
+    {
+     "brand": "Papa and Barkley",
+     "name": "Papa & Barkley - 1:3 Releaf Balm - | 50ml",
+     "category": "topical",
+     "variant": "15",
+     "description": "The 1:3 balm is rich in THC and provides relief to deep discomfort and sore muscles. Our award-winning, all-natural balm formula is enriched with nourishing oils including eucalyptus, tea tree, pepper"
+    },
+    {
+     "brand": "Papa & Barkley",
+     "name": "Relief Balm - 486mg CBD | 168mg THC | 3:1 | 50ml (Topical) Papa & Barkley       - xxx7 middle",
+     "category": "topical",
+     "variant": "",
+     "description": "\"CBD-rich balm designed to support joint and muscle comfort and promote healthy joint function and mobility. The 3:1 Releaf Balm is rich in CBD and ideal for easing daily discomfort, as well as suppor"
+    },
+    {
+     "brand": "Papa & Barkley",
+     "name": "X| Releaf Balm | Papa & Barkley | 3:1 CBD:THC | 50ml",
+     "category": "topical",
+     "variant": "",
+     "description": "\"CBD-rich balm designed to support joint and muscle comfort and promote healthy joint function and mobility. The 3:1 Releaf Balm is rich in CBD and ideal for easing daily discomfort, as well as suppor"
+    }
+   ]
+  }
+ ]
+}

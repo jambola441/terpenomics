@@ -1,0 +1,898 @@
+{
+ "eval_type": "gold_dispensary",
+ "description": "Hand-labeled gold set: all 56 unique listings from Coney Island Cannabis (Dutchie GraphQL). Every description is EMPTY, so the model must work from the name alone — no pack counts or per-piece doses to read. The scraped variant column is actively wrong for edibles ('.1g', '0.001g' for a 100mg gummy), so a correct answer means overriding the hint rather than trusting it. Its 'other' bucket holds PRE-ROLLS — a third meaning of 'other' across the three stores. Also covers version suffixes ('Gorilla Glue #4'), a strain containing a format word that must survive ('Chocolate Haze'), and a source typo to preserve ('Dirty Sherley').",
+ "cases": [
+  {
+   "id": "coney-000-ayrloom-cran-haze-aio-1g",
+   "input": {
+    "brand": "ayrloom",
+    "name": "Ayrloom | Cran Haze | AIO | 1g",
+    "category": "vaporizers",
+    "variant": "1g",
+    "description": ""
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Cran Haze",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "coney-001-ayrloom-honeycrisp-aio-1g",
+   "input": {
+    "brand": "ayrloom",
+    "name": "Ayrloom | Honeycrisp | AIO | 1g",
+    "category": "vaporizers",
+    "variant": "1g",
+    "description": ""
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Honeycrisp",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "coney-002-ayrloom-lime-haze-aio-1g",
+   "input": {
+    "brand": "ayrloom",
+    "name": "Ayrloom | Lime Haze | AIO | 1g",
+    "category": "vaporizers",
+    "variant": "1g",
+    "description": ""
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Lime Haze",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "coney-003-ayrloom-mood-energy-aio-1g-thc-thcv-cbg",
+   "input": {
+    "brand": "ayrloom",
+    "name": "Ayrloom | Mood Energy | AIO | 1g | THC : THCV : CBG",
+    "category": "vaporizers",
+    "variant": "1g",
+    "description": ""
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "coney-004-camino-sours-balance-orchard-peach-gummi",
+   "input": {
+    "brand": "Camino",
+    "name": "Camino Sours 'Balance' Orchard Peach Gummies [10pk] (100mg CBD : 100mg THC)",
+    "category": "edible",
+    "variant": ".1g",
+    "description": ""
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Orchard Peach",
+    "product_line": "Balance",
+    "variant": "100mg"
+   }
+  },
+  {
+   "id": "coney-005-camino-midnight-blueberry-5-1-sleep-gumm",
+   "input": {
+    "brand": "Camino",
+    "name": "Camino | Midnight Blueberry 5:1 'Sleep' Gummies [20pk]",
+    "category": "edible",
+    "variant": ".1g",
+    "description": ""
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Midnight Blueberry",
+    "product_line": "Sleep"
+   }
+  },
+  {
+   "id": "coney-006-camino-pineapple-habanero-gummies-100mg-",
+   "input": {
+    "brand": "Camino",
+    "name": "Camino | Pineapple Habanero | Gummies | 100mg (20pk)",
+    "category": "edible",
+    "variant": ".1g",
+    "description": ""
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Pineapple Habanero",
+    "variant": "100mg"
+   }
+  },
+  {
+   "id": "coney-007-camino-watermelon-lemonade-bliss-gummies",
+   "input": {
+    "brand": "Camino",
+    "name": "Camino | Watermelon Lemonade 'Bliss' Gummies [20pk]",
+    "category": "edible",
+    "variant": ".1g",
+    "description": ""
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Watermelon Lemonade",
+    "product_line": "Bliss"
+   }
+  },
+  {
+   "id": "coney-008-camino-wild-berry-chill-gummies-20pk",
+   "input": {
+    "brand": "Camino",
+    "name": "Camino | Wild Berry 'Chill' Gummies [20pk]",
+    "category": "edible",
+    "variant": ".1g",
+    "description": ""
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Wild Berry",
+    "product_line": "Chill"
+   }
+  },
+  {
+   "id": "coney-009-camino-wild-cherry-excite-gummies-20pk",
+   "input": {
+    "brand": "Camino",
+    "name": "Camino | Wild Cherry 'Excite' Gummies [20pk]",
+    "category": "edible",
+    "variant": "0.001g",
+    "description": ""
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Wild Cherry",
+    "product_line": "Excite"
+   }
+  },
+  {
+   "id": "coney-010-chicken-n-waffle-flower-mixed-buds",
+   "input": {
+    "brand": "Good Green",
+    "name": "Chicken N Waffle | Flower (Mixed Buds)",
+    "category": "flower",
+    "variant": "1/4oz",
+    "description": ""
+   },
+   "expect": {
+    "category": "flower",
+    "strain": "Chicken N Waffle",
+    "variant": "7g"
+   }
+  },
+  {
+   "id": "coney-011-dr-jekyll-and-mr-high-chem-dog",
+   "input": {
+    "brand": "Dr. Jekyll and Mr. High",
+    "name": "Dr. Jekyll and Mr. High | Chem Dog",
+    "category": "flower",
+    "variant": "1/8oz",
+    "description": ""
+   },
+   "expect": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Chem Dog",
+    "variant": "3.5g"
+   }
+  },
+  {
+   "id": "coney-012-dr-jekyll-and-mr-high-do-si-do-flower",
+   "input": {
+    "brand": "Dr. Jekyll and Mr. High",
+    "name": "Dr. Jekyll and Mr. High | Do-Si-Do |  Flower",
+    "category": "flower",
+    "variant": "1/8oz",
+    "description": ""
+   },
+   "expect": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Do-Si-Do",
+    "variant": "3.5g"
+   }
+  },
+  {
+   "id": "coney-013-dr-jekyll-and-mr-high-gelato",
+   "input": {
+    "brand": "Dr. Jekyll and Mr. High",
+    "name": "Dr. Jekyll and Mr. High | Gelato",
+    "category": "flower",
+    "variant": "1/8oz",
+    "description": ""
+   },
+   "expect": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Gelato",
+    "variant": "3.5g"
+   }
+  },
+  {
+   "id": "coney-014-dr-jekyll-and-mr-high-girl-scout-cookies",
+   "input": {
+    "brand": "Dr. Jekyll and Mr. High",
+    "name": "Dr. Jekyll and Mr. High | Girl Scout Cookies",
+    "category": "flower",
+    "variant": "1/8oz",
+    "description": ""
+   },
+   "expect": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Girl Scout Cookies",
+    "variant": "3.5g"
+   }
+  },
+  {
+   "id": "coney-015-dr-jekyll-and-mr-high-mango-kush",
+   "input": {
+    "brand": "Dr. Jekyll and Mr. High",
+    "name": "Dr. Jekyll and Mr. High | Mango Kush",
+    "category": "flower",
+    "variant": "1/8oz",
+    "description": ""
+   },
+   "expect": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Mango Kush",
+    "variant": "3.5g"
+   }
+  },
+  {
+   "id": "coney-016-dr-jekyll-and-mr-high-white-widow",
+   "input": {
+    "brand": "Dr. Jekyll and Mr. High",
+    "name": "Dr. Jekyll and Mr. High | White Widow",
+    "category": "flower",
+    "variant": "1/8oz",
+    "description": ""
+   },
+   "expect": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "White Widow",
+    "variant": "3.5g"
+   }
+  },
+  {
+   "id": "coney-017-fernway-berry-haze-510-cart",
+   "input": {
+    "brand": "Fernway",
+    "name": "Fernway | Berry Haze | 510 Cart",
+    "category": "vaporizers",
+    "variant": "1g",
+    "description": ""
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "cart",
+    "strain": "Berry Haze",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "coney-018-herb-chocolate-haze-flower",
+   "input": {
+    "brand": "Herb",
+    "name": "Herb | Chocolate Haze | Flower",
+    "category": "flower",
+    "variant": "1/8oz",
+    "description": ""
+   },
+   "expect": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Chocolate Haze",
+    "variant": "3.5g"
+   }
+  },
+  {
+   "id": "coney-019-herb-runtz-flower",
+   "input": {
+    "brand": "Herb",
+    "name": "Herb | Runtz | Flower",
+    "category": "flower",
+    "variant": "1/2oz",
+    "description": ""
+   },
+   "expect": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Runtz",
+    "variant": "14g"
+   }
+  },
+  {
+   "id": "coney-020-herb-sour-og-flower",
+   "input": {
+    "brand": "Herb",
+    "name": "Herb | Sour OG | Flower",
+    "category": "flower",
+    "variant": "1/8oz",
+    "description": ""
+   },
+   "expect": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Sour OG",
+    "variant": "3.5g"
+   }
+  },
+  {
+   "id": "coney-021-maui-mac-nut-infused-pre-roll",
+   "input": {
+    "brand": "Nanticoke",
+    "name": "Maui Mac Nut | Infused Pre Roll",
+    "category": "other",
+    "variant": "1g",
+    "description": ""
+   },
+   "expect": {
+    "category": "preroll",
+    "subtype": "infused",
+    "strain": "Maui Mac Nut",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "coney-022-moods-banana-diesel-aio",
+   "input": {
+    "brand": "MOODS",
+    "name": "Moods | Banana Diesel | AIO",
+    "category": "vaporizers",
+    "variant": "1g",
+    "description": ""
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Banana Diesel",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "coney-023-moods-cream-cheese-zushi-aio",
+   "input": {
+    "brand": "MOODS",
+    "name": "Moods | Cream Cheese Zushi | AIO",
+    "category": "vaporizers",
+    "variant": "1g",
+    "description": ""
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Cream Cheese Zushi",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "coney-024-moods-ny-minute-mini-aio",
+   "input": {
+    "brand": "MOODS",
+    "name": "Moods | NY Minute Mini | AIO",
+    "category": "vaporizers",
+    "variant": "1g",
+    "description": ""
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "coney-025-moods-wedding-cake-aio",
+   "input": {
+    "brand": "MOODS",
+    "name": "Moods | Wedding Cake | AIO",
+    "category": "vaporizers",
+    "variant": "1g",
+    "description": ""
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Wedding Cake",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "coney-026-moony-s-zooties-biscotti-pre-roll-2pk",
+   "input": {
+    "brand": "Moony's Zooties",
+    "name": "Moony's Zooties | Biscotti | Pre-Roll 2pk",
+    "category": "other",
+    "variant": "1g",
+    "description": ""
+   },
+   "expect": {
+    "category": "preroll",
+    "subtype": "pack",
+    "strain": "Biscotti",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "coney-027-moony-s-zooties-vanilla-frosting-pre-rol",
+   "input": {
+    "brand": "Moony's Zooties",
+    "name": "Moony's Zooties | Vanilla Frosting | Pre-Roll | Infused",
+    "category": "other",
+    "variant": ".5g",
+    "description": ""
+   },
+   "expect": {
+    "category": "preroll",
+    "subtype": "infused",
+    "strain": "Vanilla Frosting",
+    "variant": "0.5g"
+   }
+  },
+  {
+   "id": "coney-028-nanticoke-mac-nilla-infused-pre-roll",
+   "input": {
+    "brand": "Nanticoke",
+    "name": "Nanticoke | Mac Nilla | Infused Pre Roll",
+    "category": "other",
+    "variant": "1g",
+    "description": ""
+   },
+   "expect": {
+    "category": "preroll",
+    "subtype": "infused",
+    "strain": "Mac Nilla",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "coney-029-preload-starter-kit-1g-fusion-sour-apple",
+   "input": {
+    "brand": "EUREKA",
+    "name": "PRELOAD Starter Kit - 1g FUSION - Sour Appleicious (3:1:1 THC/CBG/THCV)",
+    "category": "vaporizers",
+    "variant": "1g",
+    "description": ""
+   },
+   "expect": {
+    "category": "vaporizers",
+    "strain": "Sour Appleicious",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "coney-030-rec-roots-super-candy",
+   "input": {
+    "brand": "Rec Roots",
+    "name": "Rec Roots | Super Candy",
+    "category": "flower",
+    "variant": "1/8oz",
+    "description": ""
+   },
+   "expect": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Super Candy",
+    "variant": "3.5g"
+   }
+  },
+  {
+   "id": "coney-031-rezziano",
+   "input": {
+    "brand": "Good Green",
+    "name": "Rezziano",
+    "category": "flower",
+    "variant": "1/2oz",
+    "description": ""
+   },
+   "expect": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Rezziano",
+    "variant": "14g"
+   }
+  },
+  {
+   "id": "coney-032-smartbud-motorhead-flower",
+   "input": {
+    "brand": "SmartBud",
+    "name": "Smartbud | Motorhead | Flower",
+    "category": "flower",
+    "variant": "1/8oz",
+    "description": ""
+   },
+   "expect": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Motorhead",
+    "variant": "3.5g"
+   }
+  },
+  {
+   "id": "coney-033-smoakland-durban-poison-flower",
+   "input": {
+    "brand": "Smoakland",
+    "name": "Smoakland | Durban Poison | Flower",
+    "category": "flower",
+    "variant": "1oz",
+    "description": ""
+   },
+   "expect": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Durban Poison",
+    "variant": "28g"
+   }
+  },
+  {
+   "id": "coney-034-smoothie-bar-lava-cake-x-sour-diesel-dua",
+   "input": {
+    "brand": "Smoothie Bar",
+    "name": "Smoothie Bar | Lava Cake x Sour Diesel | Dual Chamber AIO",
+    "category": "vaporizers",
+    "variant": "2g",
+    "description": ""
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Lava Cake x Sour Diesel",
+    "variant": "2g"
+   }
+  },
+  {
+   "id": "coney-035-smoothie-bar-mimosa-x-dirty-sherley-dual",
+   "input": {
+    "brand": "Smoothie Bar",
+    "name": "Smoothie Bar | Mimosa x Dirty Sherley | Dual Chamber AIO",
+    "category": "vaporizers",
+    "variant": "2g",
+    "description": ""
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Mimosa x Dirty Sherley",
+    "variant": "2g"
+   }
+  },
+  {
+   "id": "coney-036-smoothie-bar-papaya-x-lemonade-dual-cham",
+   "input": {
+    "brand": "Smoothie Bar",
+    "name": "Smoothie Bar | Papaya x Lemonade | Dual Chamber AIO",
+    "category": "vaporizers",
+    "variant": "2g",
+    "description": ""
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Papaya x Lemonade",
+    "variant": "2g"
+   }
+  },
+  {
+   "id": "coney-037-smoothie-bar-sour-lemon-og-x-pineapple-j",
+   "input": {
+    "brand": "Smoothie Bar",
+    "name": "Smoothie Bar | Sour Lemon OG x Pineapple Jack | Dual Chamber AIO",
+    "category": "vaporizers",
+    "variant": "2g",
+    "description": ""
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Sour Lemon OG x Pineapple Jack",
+    "variant": "2g"
+   }
+  },
+  {
+   "id": "coney-038-toke-blueberry-glue-pre-roll",
+   "input": {
+    "brand": "TOKE",
+    "name": "Toke | Blueberry Glue | Pre-Roll",
+    "category": "other",
+    "variant": ".5g",
+    "description": ""
+   },
+   "expect": {
+    "category": "preroll",
+    "subtype": "single",
+    "strain": "Blueberry Glue",
+    "variant": "0.5g"
+   }
+  },
+  {
+   "id": "coney-039-toke-quatro-killa-pre-roll",
+   "input": {
+    "brand": "TOKE",
+    "name": "Toke | Quatro Killa | Pre Roll",
+    "category": "other",
+    "variant": ".5g",
+    "description": ""
+   },
+   "expect": {
+    "category": "preroll",
+    "subtype": "single",
+    "strain": "Quatro Killa",
+    "variant": "0.5g"
+   }
+  },
+  {
+   "id": "coney-040-vacation-blue-raspberry-aio",
+   "input": {
+    "brand": "Vacation",
+    "name": "Vacation | Blue Raspberry | AIO",
+    "category": "vaporizers",
+    "variant": "1g",
+    "description": ""
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Blue Raspberry",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "coney-041-vacation-blue-raspberry-hash-rosin-gummi",
+   "input": {
+    "brand": "Vacation",
+    "name": "Vacation | Blue Raspberry | Hash Rosin | Gummies | 100mg",
+    "category": "edible",
+    "variant": ".1g",
+    "description": ""
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Blue Raspberry",
+    "variant": "100mg"
+   }
+  },
+  {
+   "id": "coney-042-vacation-gorilla-glue-4-flower",
+   "input": {
+    "brand": "Vacation",
+    "name": "Vacation | Gorilla Glue #4 | Flower",
+    "category": "flower",
+    "variant": "1/8oz",
+    "description": ""
+   },
+   "expect": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Gorilla Glue #4",
+    "variant": "3.5g"
+   }
+  },
+  {
+   "id": "coney-043-vacation-gorilla-glue-4-pre-roll-10pk",
+   "input": {
+    "brand": "Vacation",
+    "name": "Vacation | Gorilla Glue #4 | Pre-Roll | 10pk",
+    "category": "other",
+    "variant": "1/8oz",
+    "description": ""
+   },
+   "expect": {
+    "category": "preroll",
+    "subtype": "pack",
+    "strain": "Gorilla Glue #4",
+    "variant": "3.5g"
+   }
+  },
+  {
+   "id": "coney-044-vacation-memory-loss-og-flower",
+   "input": {
+    "brand": "Vacation",
+    "name": "Vacation | Memory Loss OG | Flower",
+    "category": "flower",
+    "variant": "1/8oz",
+    "description": ""
+   },
+   "expect": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Memory Loss OG",
+    "variant": "3.5g"
+   }
+  },
+  {
+   "id": "coney-045-vacation-memory-loss-og-pre-roll-10pk",
+   "input": {
+    "brand": "Vacation",
+    "name": "Vacation | Memory Loss OG | Pre-Roll | 10pk",
+    "category": "other",
+    "variant": "1/8oz",
+    "description": ""
+   },
+   "expect": {
+    "category": "preroll",
+    "subtype": "pack",
+    "strain": "Memory Loss OG",
+    "variant": "3.5g"
+   }
+  },
+  {
+   "id": "coney-046-vacation-peach-rings-hash-rosin-gummies-",
+   "input": {
+    "brand": "Vacation",
+    "name": "Vacation | Peach Rings | Hash Rosin | Gummies | 100mg",
+    "category": "edible",
+    "variant": ".1g",
+    "description": ""
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Peach Rings",
+    "variant": "100mg"
+   }
+  },
+  {
+   "id": "coney-047-vacation-pineapple-coconut-aio",
+   "input": {
+    "brand": "Vacation",
+    "name": "Vacation | Pineapple Coconut | AIO",
+    "category": "vaporizers",
+    "variant": "1g",
+    "description": ""
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Pineapple Coconut",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "coney-048-vacation-pineapple-coconut-hash-rosin-gu",
+   "input": {
+    "brand": "Vacation",
+    "name": "Vacation | Pineapple Coconut | Hash Rosin | Gummies | 100mg",
+    "category": "edible",
+    "variant": ".1g",
+    "description": ""
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Pineapple Coconut",
+    "variant": "100mg"
+   }
+  },
+  {
+   "id": "coney-049-vacation-sour-fuel-flower",
+   "input": {
+    "brand": "Vacation",
+    "name": "Vacation | Sour Fuel | Flower",
+    "category": "flower",
+    "variant": "1/8oz",
+    "description": ""
+   },
+   "expect": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Sour Fuel",
+    "variant": "3.5g"
+   }
+  },
+  {
+   "id": "coney-050-vacation-sour-fuel-pre-roll-10pk",
+   "input": {
+    "brand": "Vacation",
+    "name": "Vacation | Sour Fuel | Pre-Roll | 10pk",
+    "category": "other",
+    "variant": "1/8oz",
+    "description": ""
+   },
+   "expect": {
+    "category": "preroll",
+    "subtype": "pack",
+    "strain": "Sour Fuel",
+    "variant": "3.5g"
+   }
+  },
+  {
+   "id": "coney-051-vacation-tiki-fruit-punch-aio",
+   "input": {
+    "brand": "Vacation",
+    "name": "Vacation | Tiki Fruit Punch | AIO",
+    "category": "vaporizers",
+    "variant": "1g",
+    "description": ""
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Tiki Fruit Punch",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "coney-052-vacation-tiki-fruit-punch-hash-rosin-gum",
+   "input": {
+    "brand": "Vacation",
+    "name": "Vacation | Tiki Fruit Punch | Hash Rosin | Gummies | 100 mg",
+    "category": "edible",
+    "variant": ".1g",
+    "description": ""
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Tiki Fruit Punch",
+    "variant": "100mg"
+   }
+  },
+  {
+   "id": "coney-053-ayrloom-low-dose-everyday-drops-150mg-th",
+   "input": {
+    "brand": "ayrloom",
+    "name": "ayrloom | Low Dose Everyday Drops | 150MG THC : 450MG CBD",
+    "category": "tinctures",
+    "variant": ".15g",
+    "description": ""
+   },
+   "expect": {
+    "category": "tinctures",
+    "subtype": "tincture",
+    "variant": "150mg"
+   }
+  },
+  {
+   "id": "coney-054-ayrloom-rescue-1-1-topical-1000mg-thc-10",
+   "input": {
+    "brand": "ayrloom",
+    "name": "ayrloom | Rescue 1:1 Topical | 1000MG THC : 1000MG CBD",
+    "category": "topical",
+    "variant": "1g",
+    "description": ""
+   },
+   "expect": {
+    "category": "topical",
+    "subtype": "topical",
+    "strain": "Rescue",
+    "variant": "1000mg"
+   }
+  },
+  {
+   "id": "coney-055-ayrloom-revive-1-1-topical-1000mg-thc-10",
+   "input": {
+    "brand": "ayrloom",
+    "name": "ayrloom | Revive 1:1 Topical | 1000MG THC : 1000MG CBD",
+    "category": "topical",
+    "variant": "1g",
+    "description": ""
+   },
+   "expect": {
+    "category": "topical",
+    "subtype": "topical",
+    "strain": "Revive",
+    "variant": "1000mg"
+   }
+  }
+ ]
+}

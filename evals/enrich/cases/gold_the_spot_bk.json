@@ -1,0 +1,793 @@
+{
+ "eval_type": "gold_dispensary",
+ "description": "Hand-labeled gold set: 50 real listings from The Spot BK (Tymber). A deliberately different naming convention from The Plug: brand comes LAST, lineage and THC% are inline (\"-Hybrid- 24.00% THC\"), and every name carries a trailing shelf code (\"-ii8\", \"-p4 middle\") that must not leak into the strain. Its 'other' bucket is FLOWER, not vapes, so it tests the hint override in the opposite direction. Ambiguous fields are omitted from expect on purpose.",
+ "cases": [
+  {
+   "id": "spot-000-tropicana-cookies-hybrid-48-7-5pk-2-5g-t",
+   "input": {
+    "brand": "Heavy Hitters",
+    "name": "Tropicana Cookies -Hybrid- 48.7%| 5pk, 2.5g (THC Diamond Infused Pre-Roll) | Heavy Hitters         -p4 middle",
+    "category": "preroll",
+    "variant": "2.5 grams",
+    "description": "Tropicana Cookies is a cross of a Forum Cut version of Girl Scout Cookies and Tangie created by the breeders at Oni Seed Co. It exudes an earthy, sweet scent and tart fruit flavor with a hint of cream matched with high THC content, accordin"
+   },
+   "expect": {
+    "category": "preroll",
+    "strain": "Tropicana Cookies",
+    "variant": "2.5g"
+   }
+  },
+  {
+   "id": "spot-001-dream-star-31-thc-cherry-diesel-34-thc-s",
+   "input": {
+    "brand": "Alibi",
+    "name": "Dream Star -31% THC / Cherry Diesel -34% THC -Sativa/Hybrid- 1g (Pre-Roll) 4pk | Alibi    -JJ9 BACK",
+    "category": "preroll",
+    "variant": "4.0 grams",
+    "description": "Effects: A combination of 2 Sativa prerolls and 2 Hybrid prerolls to match your mood Aromas/Flavors: Dream Star- Sweet Berries & Cherry Diesel - Notes of citrus, berries, earthy pine"
+   },
+   "expect": {
+    "category": "preroll",
+    "subtype": "pack",
+    "variant": "4g"
+   }
+  },
+  {
+   "id": "spot-002-big-bad-wolf-hybrid-21-67-thc-1g-pre-rol",
+   "input": {
+    "brand": "HEAD SPACE (NY)",
+    "name": "Big Bad Wolf -Hybrid- 21.67% THC | 1g (Pre-Roll) | Head Space   -r5 front",
+    "category": "preroll",
+    "variant": "1.0 grams",
+    "description": "Don’t let the name fool you, Big Bad Wolf balances power with poise. This indicadominant hybrid starts with an energetic, euphoric lift before easing into calm, creative relaxation. Expect funky diesel and pine notes with a twist of citrus "
+   },
+   "expect": {
+    "category": "preroll",
+    "subtype": "single",
+    "strain": "Big Bad Wolf",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "spot-003-kosher-kush-indica-29-thc-7-x-0-7g-5g-pr",
+   "input": {
+    "brand": "Ruby Farms",
+    "name": "Kosher Kush -Indica- 29% THC | 7 x 0.7g (5g Pre-Roll Pack) | Ruby Farms   -t10 front",
+    "category": "preroll",
+    "variant": "5.0 grams",
+    "description": "Kosher Kush is a legendary indica strain, winning High Times Cannabis Cup's Best Indica in 2010 and 2011, and Best Strain in 2011. Known for its potent THC levels and rich, earthy aroma with fruity notes, it's celebrated as one of the most "
+   },
+   "expect": {
+    "category": "preroll",
+    "subtype": "pack",
+    "strain": "Kosher Kush",
+    "variant": "5g"
+   }
+  },
+  {
+   "id": "spot-004-super-lemon-haze-hybrid-30-thc-5g-pre-ro",
+   "input": {
+    "brand": "OHHO",
+    "name": "SUPER LEMON HAZE -HYBRID- 30% THC | .5G (Pre-Roll) SINGLE | OHHo     -ii6 front",
+    "category": "preroll",
+    "variant": ".5g",
+    "description": "A zesty Sativa hybrid created from Lemon Skunk x Super Silver Haze. Perfect for feel good vibes"
+   },
+   "expect": {
+    "category": "preroll",
+    "subtype": "single",
+    "strain": "Super Lemon Haze",
+    "variant": "0.5g"
+   }
+  },
+  {
+   "id": "spot-005-lemon-candy-runtz-hybrid-28-2-thc-2pk-pr",
+   "input": {
+    "brand": "Runtz",
+    "name": "Lemon Candy Runtz -Hybrid- 28.2% THC | 2pk (Pre-Roll) 1.5g | Runtz     -u1",
+    "category": "preroll",
+    "variant": "1.5 grams",
+    "description": "2 x .75g pre rolls Double the zest, double the mischief. Lemon Candy Runtz in 1.5g brings that extra citrus crackle to your sesh with a juicy balance of head-lift and chill. The flavor’s still sugar-rush sweet with that lemony twist—but now"
+   },
+   "expect": {
+    "category": "preroll",
+    "subtype": "pack",
+    "strain": "Lemon Candy Runtz",
+    "variant": "1.5g"
+   }
+  },
+  {
+   "id": "spot-006-purple-punch-indica-23-75-thc-1g-pre-rol",
+   "input": {
+    "brand": "Canna Cure Farms LLC",
+    "name": "Purple Punch -Indica- 23.75% THC | 1g (Pre-Roll) | Canna Cure    -x3 front",
+    "category": "preroll",
+    "variant": "1.0 grams",
+    "description": "Purple Punch is a rare indica dominant hybrid (80% indica/20% sativa) strain created through crossing the classic Larry OG with the deliciously potent Grand Daddy Purps. With a one-two punch to the head of euphoric lifted effects and a supe"
+   },
+   "expect": {
+    "category": "preroll",
+    "subtype": "single",
+    "strain": "Purple Punch",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "spot-007-pink-cookies-indica-36-40-thc-presidenti",
+   "input": {
+    "brand": "DUMBO ELECTRIC",
+    "name": "Pink Cookies -Indica- 36.40% THC | Presidential Moon Rock (Infused-Preroll) 1g | Dumbo Electric     -jj12 front",
+    "category": "preroll",
+    "variant": "1g",
+    "description": "Introducing the Dumbo Electric Presidential Moon Rock Blunt — featuring estate-grown, single-sourced flower from the award-winning THC Design, infused with premium distillate and coated in top-tier kief. This expertly crafted blunt is groun"
+   },
+   "expect": {
+    "category": "preroll",
+    "subtype": "infused",
+    "strain": "Pink Cookies",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "spot-008-sugar-runtz-hybrid-18-35-thc-2g-hash-inf",
+   "input": {
+    "brand": "Slap That Ass",
+    "name": "Sugar Runtz -Hybrid- 18.35% THC | 2g (Hash Infused Pre-Roll) | Slap That Ass   -r1",
+    "category": "preroll",
+    "variant": "",
+    "description": "Sugar Runtz – 2g Wood Tip Blunt (Hash-Infused) Type: Hybrid Experience: Gassy Sweetness • Heavy Pull • Long Session Level up your session with the 2g hash-infused Sugar Runtz blunt, finished with our signature STA wood tip. The smoke is cre"
+   },
+   "expect": {
+    "category": "preroll",
+    "subtype": "infused",
+    "strain": "Sugar Runtz",
+    "variant": "2g"
+   }
+  },
+  {
+   "id": "spot-009-alaskan-thunder-fuck-sativa-90-00-thc-2g",
+   "input": {
+    "brand": "ayrloom",
+    "name": "Alaskan Thunder Fuck -Sativa- 90.00% THC | 2g All-In-One (Vape Pen) | Ayrloom   -e6 front",
+    "category": "vaporizers",
+    "variant": "2.0 grams",
+    "description": "known for its combination of flavors + aromas, this iconic strain boasts notes of fresh pine, citrus + slightly sweet mint. expect to feel uplifted, social + relaxed all at the same time"
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Alaskan Thunder Fuck",
+    "variant": "2g"
+   }
+  },
+  {
+   "id": "spot-010-blueberry-jam-indica-1ml-live-resin-rech",
+   "input": {
+    "brand": "Littles",
+    "name": "Blueberry Jam  -Indica- 1ml Live Resin Rechargeable Disposable (Vape Pen) | Littles        -e11 middle 1",
+    "category": "vaporizers",
+    "variant": "1g",
+    "description": "TASTE + SCENT Apple & Fruity Disposable vaporizers contain concentrated cannabis oil that is heated by an attached battery and inhaled. These products come charged and ready to go, and are not designed to be reused, refilled, or recharged. "
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Blueberry Jam",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "spot-011-sour-z-sativa-85-95-thc-1g-vape-cartridg",
+   "input": {
+    "brand": "Select",
+    "name": "Sour Z -Sativa- 85.95%THC | 1g (Vape Cartridge) | Select    -ttt9 middle",
+    "category": "vaporizers",
+    "variant": "1.0 grams",
+    "description": "Select Elite delivers an activated, broad-spectrum oil with the highest THC level possible and big flavor. Available in a variety of strains to suit a wide range of patient needs."
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "cart",
+    "strain": "Sour Z",
+    "variant": "1g",
+    "product_line": null
+   }
+  },
+  {
+   "id": "spot-012-maui-wowie-sativa-90-thc-510-vape-cartri",
+   "input": {
+    "brand": "Heavy Hitters",
+    "name": "Maui Wowie -Sativa- 90% THC | 510 Vape Cartridge, 1G | Heavy Hitters    -yyy2 middle 1",
+    "category": "vaporizers",
+    "variant": "1g",
+    "description": "“HEAVY HITTERS ULTRA EXTRACT REPRESENTS THE PINNACLE OF CANNABIS PURITY. COMBINING PREMIER INPUT MATERIAL AND UNCOMPROMISING QUALITY CONTROL, HEAVY HITTERS BENCHMARK OIL DELIVERS AN ULTRA PURE, PERFECTLY CRAFTED CANNABIS EXPERIENCE. ULTRA E"
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "cart",
+    "strain": "Maui Wowie",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "spot-013-granddaddy-purp-indica-97-thc-melted-dia",
+   "input": {
+    "brand": "ROVE",
+    "name": "Granddaddy Purp -Indica- 97% THC | Melted Diamond Live Resin All In One (Vape Pen) | 1.0g (Ready-To-Use)   |  ROVE     -i9",
+    "category": "vaporizers",
+    "variant": "1g",
+    "description": "Granddaddy Purp - Indica - TAC: 97.0% DIAMONDS INSIDE Our live resin diamonds, extracted from fresh frozen flowers, use a gradual separation process creating large faceted diamond-like crystals. The 99%+ potency diamond crystals are then li"
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Granddaddy Purp",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "spot-014-apricot-punch-indica-85-45-thc-0-5g-clas",
+   "input": {
+    "brand": "BLOOM",
+    "name": "Apricot Punch -Indica- 85.45% THC | 0.5g Classic Surf All-In-One (Vape) | Bloom         -sss11 front",
+    "category": "vaporizers",
+    "variant": ".5g",
+    "description": "Known for energizing highs, this strain is a great option for a wake and bake to fuel whatever the day has in store. The effects of this strain have been said to have a longer last high than the average strain. A cross between the popular s"
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Apricot Punch",
+    "variant": "0.5g"
+   }
+  },
+  {
+   "id": "spot-015-super-jack-sativa-80-thc-1g-aio-vape-pen",
+   "input": {
+    "brand": "PLUGPLAY",
+    "name": "Super Jack -Sativa- 80% THC | 1g AIO (Vape Pen) | PLUGPLAY      -uuu12 front",
+    "category": "vaporizers",
+    "variant": "1.0 grams",
+    "description": "Introducing the PLUGPLAY™ AIO—your new everyday essential. This all-in-one package pairs our sleek, redesigned 300mAh rechargeable battery with your favorite PLUG™ in a single grab-and-go kit. Engineered with optimized voltage specs, USB-C "
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Super Jack",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "spot-016-big-apple-hybrid-79-thc-1g-aio-vape-pen-",
+   "input": {
+    "brand": "PLUGPLAY",
+    "name": "Big Apple -Hybrid- 79% THC | 1g AIO (Vape Pen) | PLUGPLAY    -UUU12 BACK",
+    "category": "vaporizers",
+    "variant": "1.0 grams",
+    "description": "About All-in-One Kit: Introducing the PLUGPLAY™ AIO—your new everyday essential. This all-in-one package pairs our sleek, redesigned 300mAh rechargeable battery with your favorite PLUG™ in a single grab-and-go kit. Engineered with optimized"
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Big Apple",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "spot-017-strawberry-diesel-hybrid-88-5-thc-1g-aio",
+   "input": {
+    "brand": "Hashtag Honey",
+    "name": "Strawberry Diesel - Hybrid- 88.5% THC | 1g AIO (Vape) | Hashtag Honey   -ii3 front",
+    "category": "vaporizers",
+    "variant": "1g",
+    "description": "Experience the balanced effects of Strawberry Diesel with our 1g vape, made from premium distillate. This hybrid strain provides muscle relaxation and a clear-headed energy boost. With its fast-acting intensity, Strawberry Diesel is versati"
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Strawberry Diesel",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "spot-018-trainwreck-sativa-19-00-thc-sun-soil-gro",
+   "input": {
+    "brand": "Alchemy Pure",
+    "name": "Trainwreck -Sativa- 19.00% THC | Sun+Soil Grown 28g (FLOWER) | ALCHEMY PURE      -N12",
+    "category": "other",
+    "variant": "28.0 grams",
+    "description": "Our \"TRAINWRECK\" (SATIVA- DOMINANT HYBRID, 28G) has a potency of 19% Is uplifting and provides an energetic cerebral high balanced with a smooth body relaxation"
+   },
+   "expect": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Trainwreck",
+    "variant": "28g"
+   }
+  },
+  {
+   "id": "spot-019-lilac-diesel-hybrid-24-00-thc-3-5g-jar-f",
+   "input": {
+    "brand": "Nanticoke",
+    "name": "Lilac Diesel -Hybrid- 24.00% THC | 3.5g Jar (Flower) | Nanticoke   -ii8",
+    "category": "other",
+    "variant": "1/8 oz",
+    "description": "Hybrid THC: 22% Total Terpenes 2.8% Silver Lemon Haze x Forbidden Fruit x with NYC Cherry Pie and Citral Glue. Super flavorful. Notes of citrus, sweet berries, earthy pine. 3.5 grams of Greenhouse Grown Whole Flower packaged in a sustainabl"
+   },
+   "expect": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Lilac Diesel",
+    "variant": "3.5g"
+   }
+  },
+  {
+   "id": "spot-020-jelly-cake-indica-23-5-thc-28g-flower-ma",
+   "input": {
+    "brand": "matter.",
+    "name": "Jelly Cake -Indica- 23.5% THC | 28g (Flower) | Matter   -uu0",
+    "category": "other",
+    "variant": "",
+    "description": "Jelly Cake is an indica dominant hybrid strain created through crossing the delicious Biscotti X Sunset Sherbet strains. This celebrity child boasts an amazing flavor with happy effects that will boost the spirits before helping you to fina"
+   },
+   "expect": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Jelly Cake",
+    "variant": "28g"
+   }
+  },
+  {
+   "id": "spot-021-lemon-skunk-sativa-26-65-thc-28g-jar-flo",
+   "input": {
+    "brand": "Hashtag Honey",
+    "name": "Lemon Skunk -Sativa- 26.65% THC | 28g Jar (Flower) | Hashtag Honey -f04 front",
+    "category": "other",
+    "variant": "28.0 grams",
+    "description": "Strain- Lemon Skunk Sativa dominant- HYBRID THC%- 26.6% *Lineage- A hybrid strain that is a cross between Las Vegas Lemon Skunk x OG #18. Flavor Profile- Citrus notes with extra skunky, earthy tones. Effects- Balanced, Uplifting and Energet"
+   },
+   "expect": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Lemon Skunk",
+    "variant": "28g"
+   }
+  },
+  {
+   "id": "spot-022-sativa-29-thc-7g-pre-ground-flower-in-my",
+   "input": {
+    "brand": "READY 2 ROLL (NY)",
+    "name": "-Sativa- 29% THC | 7g Pre-Ground (Flower) in Mylar | Ready 2 Roll   -l7 back",
+    "category": "other",
+    "variant": "7.0 grams",
+    "description": "THC: 29% Seven grams of premium ground sativa flower, placed into an easy access bag. Perfect for pinching and rolling your own joints or blunts. Effects: Sativa are often known for their mind high and creative focus effects. Many find them"
+   },
+   "expect": {
+    "category": "flower",
+    "subtype": "preground",
+    "strain": "Sativa",
+    "variant": "7g"
+   }
+  },
+  {
+   "id": "spot-023-lemon-skunk-og-sativa-dominant-hybrid-31",
+   "input": {
+    "brand": "Hashtag Honey",
+    "name": "Lemon Skunk OG -Sativa Dominant Hybrid- 31.8% THC | 3.5 Premium (Flower) | Hashtag Honey   -ff5",
+    "category": "other",
+    "variant": "1/8 oz",
+    "description": "Lemon Skunk OG is a sativa-dominant hybrid strain developed from two special Skunk phenotypes hand-picked by the breeder, known for its energizing yet mellow high Flavor & Aroma Skunky base with bright citrus undertones, especially lemon Te"
+   },
+   "expect": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Lemon Skunk OG",
+    "variant": "3.5g"
+   }
+  },
+  {
+   "id": "spot-024-purple-sunset-indica-21-53-thc-14g-flowe",
+   "input": {
+    "brand": "LIVWELL",
+    "name": "Purple Sunset -Indica- 21.53% THC | 14g (Flower) | LivWell   -dd0 front",
+    "category": "other",
+    "variant": "14.0 grams",
+    "description": "LivWells Purple Sunset is an indica-dominant hybrid strain created from a flavorful cross of Purple Punch, Sunset Sherbet, and Mandarin Sunset. Known for its calming effects and rich flavor profile, this strain typically carries THC levels "
+   },
+   "expect": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Purple Sunset",
+    "variant": "14g"
+   }
+  },
+  {
+   "id": "spot-025-frank-rizzo-hybrid-24-90-thc-3-5g-flower",
+   "input": {
+    "brand": "Wavy",
+    "name": "Frank Rizzo -Hybrid- 24.90% THC | 3.5g (Flower) | Wavy   -l4",
+    "category": "other",
+    "variant": "1/8 oz",
+    "description": "Frank Rizzo is a relaxing hybrid that leaves you focused but very calm and chill. Perfect for when you're out and about or for relaxing at home - focused or faded. Spicy, berry, and sweet candy flavors give it a unique profile."
+   },
+   "expect": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Frank Rizzo",
+    "variant": "3.5g"
+   }
+  },
+  {
+   "id": "spot-026-reserve-hybrid-16-45-thc-1-1-thc-cbd-7g-",
+   "input": {
+    "brand": "Toast",
+    "name": "Reserve -Hybrid- 16.45% THC | 1:1 THC/CBD 7g Infused Ground Flower | Toast     -cc7 back",
+    "category": "other",
+    "variant": "7.0 grams",
+    "description": "Float like a butterfly. Small-batch crafted, this top-shelf flower features our most highly sought-after strains. With a TAC 2363.53mg/33.83% 1:1 ratio of CBD to THC, reach for Reserve to promote balanced bliss and full body relaxation."
+   },
+   "expect": {
+    "category": "flower",
+    "variant": "7g"
+   }
+  },
+  {
+   "id": "spot-027-permanent-marker-indica-28-thc-dime-bag-",
+   "input": {
+    "brand": "5 Boro Cannabis",
+    "name": "Permanent Marker -Indica-28% THC |  Dime Bag .7G (Flower) | 5 Boro   -aD3 BACK",
+    "category": "other",
+    "variant": "0.7 grams",
+    "description": "Strain Type: Indica Terpenes: B-Caryophyllene, Limonene, B-Myrcene, B-Pinene, Linalool Lineage: Cherry Pie x Tangie Effects: This strain will fill your mind with a sense of lifted creativity, that has you feeling happy and artistically insp"
+   },
+   "expect": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Permanent Marker",
+    "variant": "0.7g"
+   }
+  },
+  {
+   "id": "spot-028-sour-grape-indica-100mg-10-pcs-live-resi",
+   "input": {
+    "brand": "Chew & Chill",
+    "name": "Sour Grape -Indica- 100mg | 10 PCS Live Resin (Gummies) | Chew & Chill  -AC4",
+    "category": "edible",
+    "variant": "",
+    "description": "a☁sour grape☁indica☁sour grape☁indica☁ sour grape ☁ indica ☁ Indulge in the perfect balance of sweet and tart with our Sour Grape gummies. This potent indica blend of THC, CBN, and CBD creates a deeply relaxing high that melts away stress a"
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Sour Grape",
+    "variant": "100mg"
+   }
+  },
+  {
+   "id": "spot-029-strawberry-sativa-100mg-thc-10-pcs-live-",
+   "input": {
+    "brand": "Hashtag Honey",
+    "name": "Strawberry -Sativa- 100mg THC | 10 pcs Live Resin Infused (Gummies) | Hashtag Honey   -ee3 back",
+    "category": "edible",
+    "variant": "",
+    "description": "Hashtag Honey Strawberry Live Resin Gummies Sativa 100mg THC/pack deliver a bright, flavorful edible experience designed for uplifting moments. From the very first bite, these gummies combine sweet strawberry flavor with premium live resin "
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Strawberry",
+    "variant": "100mg"
+   }
+  },
+  {
+   "id": "spot-030-camino-sour-orchard-peach-balance-hybrid",
+   "input": {
+    "brand": "CAMINO",
+    "name": "Camino | Sour Orchard Peach 'Balance' -Hybrid- 10:10 THC:CBD 10pk Gummies (Edibles) |      -v11",
+    "category": "edible",
+    "variant": "100.0 milligrams",
+    "description": "10mg THC & 10mg CBD per piece | 100mg THC & 100mg CBD total in 10 pieces Come back to center as the vivid rays of twilight hour sweep across rolling orchard hills. Orchard Peach Camino Sours are characterized by tart notes of lush, ripe pea"
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Sour Orchard Peach",
+    "product_line": "Balance",
+    "variant": "100mg"
+   }
+  },
+  {
+   "id": "spot-031-cali-melon-sativa-100mg-thc-10pcs-live-r",
+   "input": {
+    "brand": "Hashtag Honey",
+    "name": "Cali Melon -Sativa- 100mg THC | 10pcs Live Resin Infused (Gummies) | Hashtag Honey  -hh4 back",
+    "category": "edible",
+    "variant": "",
+    "description": "Hashtag Honey Cali Melon Live Resin Gummies Sativa 100mg THC are crafted for those who want bright flavor, uplifting effects, and dependable quality. From the first bite, these gummies deliver a refreshing melon taste with a smooth finish. "
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Cali Melon",
+    "variant": "100mg"
+   }
+  },
+  {
+   "id": "spot-032-permanent-marker-hybrid-100mg-10-pack-ne",
+   "input": {
+    "brand": "nama",
+    "name": "Permanent Marker -Hybrid- 100mg 10 Pack Nectarine Euphoria Live Resin Gummies (Edibles) | nama      -o6 front",
+    "category": "edible",
+    "variant": "100.0 milligrams",
+    "description": "100mg THC | 2 gummies | 10 servings Flavor: Nectarine Size: 2 vegan gummies - made with real fruit - all natural vegan ingredients - low sugar | high potency vegan | gluten free | all natural"
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "gummy",
+    "variant": "100mg"
+   }
+  },
+  {
+   "id": "spot-033-watermelon-lemonade-bliss-gummies-100-mg",
+   "input": {
+    "brand": "CAMINO",
+    "name": "Watermelon Lemonade \"Bliss\" Gummies | 100 mg 20pk | Camino   -x11",
+    "category": "edible",
+    "variant": "100.0 milligrams",
+    "description": "5mg THC per piece | 100mg THC total in 20 pieces Find yourself on a blissful beach with our 'Bliss' Watermelon Lemonade gummies. Let sativa and indica terpenes alongside juicy watermelon and tart citrus welcome you to your happy place. TERP"
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Watermelon Lemonade",
+    "product_line": "Bliss",
+    "variant": "100mg"
+   }
+  },
+  {
+   "id": "spot-034-grape-honey-indica-10-20-thc-cbn-100mg-1",
+   "input": {
+    "brand": "Beezy Beez",
+    "name": "Grape & Honey -Indica- 10:20 THC:CBN | 100mg 10pk Hard Candy (Edible) | Beezy Beez       -PP1 MIDDLE",
+    "category": "edible",
+    "variant": "100.0 milligrams",
+    "description": "Beezy Beez Hard Suckies Night Time are soothing grape and honey-flavored lozenges formulated to support restful sleep. Each piece delivers 10mg THC and 20mg CBN in a 1:2 ratio designed to ease the body and quiet the mind. With 10 pieces per"
+   },
+   "expect": {
+    "category": "edible",
+    "strain": "Grape & Honey",
+    "variant": "100mg"
+   }
+  },
+  {
+   "id": "spot-035-tropical-burst-energy-sativa-10mg-2-1-th",
+   "input": {
+    "brand": "CAMINO",
+    "name": "Tropical Burst 'Energy' -Sativa- 10mg 2:1 THC:THCV 10pk Sour Gummy (Edible) | Camino       -W12",
+    "category": "edible",
+    "variant": "100.0 milligrams",
+    "description": "10mg THC and 5mg THCV per piece | 100mg THC total and 50mg THCV total in 10 pieces Have you ever dealt with a demanding schedule, approaching deadlines, and a sense of fatigue creeping in? This is precisely when Camino Sours Tropical Burst "
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Tropical Burst",
+    "product_line": "Energy",
+    "variant": "100mg"
+   }
+  },
+  {
+   "id": "spot-036-mendo-breath-indica-65-56-thc-all-in-one",
+   "input": {
+    "brand": "Dabgo",
+    "name": "Mendo Breath -Indica- 65.56% THC | All-In-One AIO 0.5g Dab Pen (Vaporizer) | Dabgo      -mf28",
+    "category": "concentrate",
+    "variant": ".5g",
+    "description": "Mendo Breath is an indica marijuana strain made by crossing OGKB with Mendo Montage. This strain produces a euphoric high with powerful body effects that help relieve pain and discomfort. Mendo Breath smells like sweet vanilla and caramel. "
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Mendo Breath",
+    "variant": "0.5g"
+   }
+  },
+  {
+   "id": "spot-037-10-honey-banana-sativa-70-93-thc-1g-live",
+   "input": {
+    "brand": "MFNY",
+    "name": "#10 Honey Banana -Sativa- 70.93% THC | 1g Live Resin Badder (Concentrate) | MFNY  -TF4",
+    "category": "concentrate",
+    "variant": "1.0 grams",
+    "description": "1st place winner of the Best of New York Competition in 2023: MFNY’s Honey Banana Live Resin badder is a premium concentrate made in house, using a hydrocarbon extraction method. It starts with our best, in-house grown Honey Banana buds. We"
+   },
+   "expect": {
+    "category": "concentrate",
+    "subtype": "resin",
+    "strain": "Honey Banana",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "spot-038-papaya-juice-sativa-79-95-thc-1g-wax-sug",
+   "input": {
+    "brand": "#HASH",
+    "name": "Papaya Juice -Sativa- 79.95% THC |1g (Wax Sugar) | #HASH    -bf#16",
+    "category": "concentrate",
+    "variant": "1.0 grams",
+    "description": "Papaya Juice Sugar is a sativa-dominant hybrid concentrate that delivers an uplifting, energetic buzz with a smooth layer of body relaxation. This terpene-rich sugar extract offers a crystalline, easy-to-work-with texture and a bright, mood"
+   },
+   "expect": {
+    "category": "concentrate",
+    "strain": "Papaya Juice",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "spot-039-tropical-punch-hybrid-65-56-thc-all-in-o",
+   "input": {
+    "brand": "Dabgo",
+    "name": "Tropical Punch -Hybrid- 65.56% THC | All-In-One AIO 0.5g Badder Dab Pen (Vaporizer) | Dabgo      -mf30",
+    "category": "concentrate",
+    "variant": ".5g",
+    "description": "Tropical Punch is a hybrid weed strain made from a genetic cross between Tropicana Cookies and Purple Punch. Tropical Punch is 23% THC and 1% CBG, making this strain an ideal choice for experienced cannabis consumers. Leafly customers tell "
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Tropical Punch",
+    "variant": "0.5g"
+   }
+  },
+  {
+   "id": "spot-040-12-candy-rain-hybrid-68-50-thc-live-resi",
+   "input": {
+    "brand": "MFNY",
+    "name": "#12 Candy Rain -Hybrid- 68.50% THC | Live Resin Badder (Concentrate) 1g - 80.06% TAC | MFNY   - refrigerator TF4",
+    "category": "concentrate",
+    "variant": "1g",
+    "description": "MFNY’s Candy Rain is a premium concentrate made in house, using hydrocarbon extraction method. It starts with our best, in-house grown, bred, and fresh-frozen Candy Rain buds. We flash freeze our plants right after harvest to lock in all th"
+   },
+   "expect": {
+    "category": "concentrate",
+    "subtype": "resin",
+    "strain": "Candy Rain",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "spot-041-pink-certz-hybrid-81-37-thc-1g-badder-co",
+   "input": {
+    "brand": "Jetpacks",
+    "name": "Pink Certz -Hybrid- 81.37% THC | 1g Badder (Concentrate) | Jetpacks  -MF FRIDGE DOOR",
+    "category": "concentrate",
+    "variant": "1g",
+    "description": "The badder is a smooth, creamy form of extract known for its potency and rich flavor profile. Strain: Pink Certz (a cross of The Menthol and Grape Gasoline) Type: Hybrid, generally considered well-balanced (often 50% indica/50% sativa) Form"
+   },
+   "expect": {
+    "category": "concentrate",
+    "strain": "Pink Certz",
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "spot-042-watermelon-drip-x-2pk-hemp-wraps-billion",
+   "input": {
+    "brand": "Billionaire",
+    "name": "Watermelon Drip x 2pk Hemp Wraps | Billionaire",
+    "category": "merch",
+    "variant": "",
+    "description": "Watermelon Drip: We all love that nice refreshing taste of a watermelon, but too bad it’s a seasonal fruit. We now offer that rich flavor year-round with our Watermelon Drip Billionaire Hemp Wraps. Feel refreshed and enjoy that luxurious fl"
+   },
+   "expect": {
+    "category": "merch",
+    "subtype": "merch",
+    "strain": null
+   }
+  },
+  {
+   "id": "spot-043-bambu-x-classic-natural",
+   "input": {
+    "brand": "Big Bambu",
+    "name": "Bambu x Classic Natural",
+    "category": "merch",
+    "variant": "",
+    "description": "• Natural Glue • Made in Spain • 100% Bambú Quality Since 1764 • Same trusted Highest grade paper formula for 255 years • 33 Slow burning leaves per booklet The papers are crafted from classic white wood pulp and finished with natural Arab"
+   },
+   "expect": {
+    "category": "merch",
+    "subtype": "merch",
+    "strain": null
+   }
+  },
+  {
+   "id": "spot-044-matte-black-3-2v-auto-start-510-vape-car",
+   "input": {
+    "brand": "Heavy Hitters",
+    "name": "Matte Black 3.2v Auto Start 510 Vape Cartridge Battery & Charger | Heavy Hitters     -ttt0",
+    "category": "merch",
+    "variant": "",
+    "description": "The Ultimate Variable Voltage Battery. Engineered to provide the best Heavy Hitters vaping experience for Ultra & Live to preserve the flavorful terpenes and extend the life of the cartridge. Easy To Use | Choose Your Ideal Temperature | Bu"
+   },
+   "expect": {
+    "category": "merch",
+    "subtype": "merch",
+    "strain": null
+   }
+  },
+  {
+   "id": "spot-045-zzz-s-rolling-tray-with-magnetic-cover-d",
+   "input": {
+    "brand": "ZZZ's Collective",
+    "name": "ZZZ's Rolling Tray with Magnetic Cover - Dead Flowers by Dan Macura",
+    "category": "merch",
+    "variant": "",
+    "description": "Dan Macura's \"Dead Flowers\" design is now available on rolling trays, perfect for adding a touch of galaxy and creativity to your rolling setup. This compact tray rolling accessory features a 5\" x 7\" tray with a magnetic cover, keeping your"
+   },
+   "expect": {
+    "category": "merch",
+    "subtype": "merch",
+    "strain": null
+   }
+  },
+  {
+   "id": "spot-046-turbo-blueberry-indica-73-38-thc-15ml-ti",
+   "input": {
+    "brand": "MFNY",
+    "name": "Turbo Blueberry -Indica- 73.38% THC | 15ml (Tincture) | MFNY    -w4 front",
+    "category": "tinctures",
+    "variant": "1g",
+    "description": "Our tinctures are the “Liquid Gold” of cannabis. Through rigorous research and phenotype hunts, we’ve found a group of terpenes that need no altering. These liquid live resin tinctures deliver more terps, effects, and flavor - in any dose y"
+   },
+   "expect": {
+    "category": "tinctures",
+    "subtype": "tincture",
+    "strain": "Turbo Blueberry"
+   }
+  },
+  {
+   "id": "spot-047-focus-tincture-13-40-thc-864mg-tac-thc-c",
+   "input": {
+    "brand": "Head & Heal",
+    "name": "Focus Tincture 13.40% THC | 864mg TAC THC:CBG 150mg:600mg | Head and Heal   -ii12 back",
+    "category": "tinctures",
+    "variant": "0.15 grams",
+    "description": "1:4 ratio of THC:CBG 5mg THC per dropper 20mg CBG per dropper Your daily to-do list’s best friend. A great alternative to coffee or energy drinks as a way to naturally support mental clarity, focus, and creativity. Precise-dosing informatio"
+   },
+   "expect": {
+    "category": "tinctures",
+    "subtype": "tincture"
+   }
+  },
+  {
+   "id": "spot-048-restore-1000-00mg-thc-balm-2-3oz-tin-a11",
+   "input": {
+    "brand": "ayrloom",
+    "name": "Restore - 1000.00mg (THC Balm) | 2.3oz Tin   -a11 back",
+    "category": "topical",
+    "variant": "",
+    "description": "a classic combination of lavender, rosemary and eucalyptus, this scent profile was formulated with r&r in mind."
+   },
+   "expect": {
+    "category": "topical",
+    "subtype": "topical",
+    "strain": "Restore",
+    "variant": "1000mg"
+   }
+  },
+  {
+   "id": "spot-049-relief-balm-130mg-cbd-40mg-thc-3-1-15ml-",
+   "input": {
+    "brand": "Papa & Barkley",
+    "name": "Relief Balm - 130mg CBD | 40mg THC | 3:1 | 15ml (Topical) Papa & Barkley      -yyy7 front",
+    "category": "topical",
+    "variant": "",
+    "description": "\"CBD-rich balm designed to support joint and muscle comfort and promote healthy joint function and mobility. The 3:1 Releaf Balm is rich in CBD and ideal for easing daily discomfort, as well as supporting muscle and joint care. Our award-wi"
+   },
+   "expect": {
+    "category": "topical",
+    "subtype": "topical"
+   }
+  }
+ ]
+}

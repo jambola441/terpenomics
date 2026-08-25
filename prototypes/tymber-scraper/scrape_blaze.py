@@ -121,14 +121,14 @@ def normalise_blaze(p: dict, included_map: dict, dispensary_slug: str, scraped_a
         price_raw   = (tier.get("price") or {}).get("amount")
         price_cents = int(price_raw) if price_raw is not None else ""
         variant     = _variant_for_tier(tier, size_display)
-        batch_id    = f"{sku}-{i}" if len(tiers) > 1 else sku
         rows.append({
             "dispensary_slug": dispensary_slug,
             "sku":             sku,
-            "batch_id":        batch_id,
+            "batch_id":        "",  # reserved for real batch/lot IDs (METRC); BLAZE doesn't expose one
             "name":            name,
             "brand":           brand,
             "category":        category,
+            "raw_category":    cat_raw,
             "variant":         variant,
             "price_cents":     price_cents,
             "thc_percent":     thc_pct,

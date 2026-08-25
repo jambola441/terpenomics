@@ -153,6 +153,7 @@ class ListingBase(SQLModel):
     in_stock:         bool          = Field(default=True, nullable=False)
     is_active:        bool          = Field(default=True, nullable=False)
     scraped_at:       Optional[datetime] = Field(default=None)
+    last_seen_at:     Optional[datetime] = Field(default=None)
     # Scraped identity fields
     scraped_name:     Optional[str] = Field(default=None, max_length=300)
     scraped_brand:    Optional[str] = Field(default=None, max_length=200)
@@ -168,10 +169,15 @@ class ListingBase(SQLModel):
 class Listing(ListingBase, TimestampMixin, table=True):
     __tablename__ = "listings"
     __table_args__ = (
+        # One row per (dispensary, sku, variant): platforms like Dutchie and Tymber
+        # reuse one SKU across weight/price tiers, so the variant is part of identity.
+        # COALESCE folds NULL variants into '' — otherwise Postgres treats NULLs as
+        # distinct and the upsert could never match a variant-less row.
         Index(
-            "listings_dispensary_sku_unique",
+            "listings_dispensary_sku_variant_unique",
             "dispensary_id",
             "sku",
+            text("COALESCE(variant, '')"),
             unique=True,
             postgresql_where=text("sku IS NOT NULL"),
         ),
