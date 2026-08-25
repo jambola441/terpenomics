@@ -200,7 +200,13 @@ def get_portal_category(
     in_stock: bool = Query(default=True),
 ):
     stmt = (
-        select(Listing, Dispensary)
+        select(
+            Listing.id, Listing.scraped_brand, Listing.scraped_category, Listing.subtype,
+            Listing.product_line, Listing.strain, Listing.variant, Listing.scraped_name,
+            Listing.image_url, Listing.price_cents, Listing.in_stock, Listing.url,
+            Dispensary.id.label("d_id"), Dispensary.name.label("d_name"),
+            Dispensary.slug.label("d_slug"), Dispensary.lat, Dispensary.lng,
+        )
         .join(Dispensary, Dispensary.id == Listing.dispensary_id)
         .where(Listing.scraped_category == category_name)
         .where(Listing.is_active == True)  # noqa: E712
@@ -231,10 +237,10 @@ def get_portal_category(
     dispensary_ids = set()
     brand_names = set()
 
-    for listing, dispensary in rows:
+    for listing in rows:
         if category_image is None and listing.image_url:
             category_image = listing.image_url
-        dispensary_ids.add(str(dispensary.id))
+        dispensary_ids.add(str(listing.d_id))
         if listing.scraped_brand:
             brand_names.add(listing.scraped_brand)
 
@@ -274,11 +280,11 @@ def get_portal_category(
 
         product["offerings"].append({
             "listing_id": str(listing.id),
-            "dispensary_id": str(dispensary.id),
-            "dispensary_name": dispensary.name,
-            "dispensary_slug": dispensary.slug,
-            "lat": dispensary.lat,
-            "lng": dispensary.lng,
+            "dispensary_id": str(listing.d_id),
+            "dispensary_name": listing.d_name,
+            "dispensary_slug": listing.d_slug,
+            "lat": listing.lat,
+            "lng": listing.lng,
             "price_cents": listing.price_cents,
             "in_stock": listing.in_stock,
             "url": listing.url,
