@@ -1,8 +1,8 @@
-# Per-dispensary enrichment report — 24 stores, 18,264 listings
+# Per-dispensary enrichment report — 25 stores, 19,106 listings
 
 `suspects/100` counts audit findings per 100 listings. A finding is a row **worth reviewing**, not a row known to be wrong — there is no label behind it. Rank stores with it; do not read it as an error rate.
 
-## Enriched — 24 stores, 18,264 listings
+## Enriched — 25 stores, 19,106 listings
 
 | store | listings | desc % | other % | strain fill | variant fill | suspects/100 |
 |---|---:|---:|---:|---:|---:|---:|
@@ -17,6 +17,7 @@
 | `the-spot-bk` | 1,255 | 97.3 | 0.5 | 99.6 | 99.9 | **3.1** |
 | `hii-nyc-bay-ridge` | 733 | 100.0 | 0.0 | 99.7 | 100.0 | **3.0** |
 | `ignyte-red-hook` | 666 | 0.6 | 0.0 | 95.8 | 95.2 | **2.9** |
+| `the-plug-crown-heights` | 842 | 100.0 | 0.0 | 99.5 | 100.0 | **2.9** |
 | `grow-together-bk` | 845 | 6.7 | 0.0 | 99.0 | 98.5 | **2.8** |
 | `oc-dispensary-bk` | 1,950 | 98.2 | 0.0 | 99.3 | 99.4 | **2.8** |
 | `hii-nyc-williamsburg` | 730 | 100.0 | 0.0 | 99.4 | 100.0 | **2.7** |
@@ -46,6 +47,7 @@
 | `the-spot-bk` | 10 | 5 | 2 | 8 | 2 | 8 | 0 | 0 | 4 |
 | `hii-nyc-bay-ridge` | 2 | 0 | 0 | 5 | 5 | 8 | 0 | 0 | 2 |
 | `ignyte-red-hook` | 1 | 0 | 0 | 2 | 0 | 0 | 0 | 0 | 16 |
+| `the-plug-crown-heights` | 4 | 0 | 0 | 3 | 10 | 3 | 0 | 0 | 4 |
 | `grow-together-bk` | 2 | 0 | 0 | 6 | 0 | 6 | 2 | 0 | 8 |
 | `oc-dispensary-bk` | 2 | 0 | 0 | 21 | 11 | 5 | 1 | 0 | 14 |
 | `hii-nyc-williamsburg` | 1 | 0 | 0 | 3 | 3 | 9 | 0 | 0 | 4 |
@@ -64,11 +66,11 @@
 
 | check | findings |
 |---|---:|
-| missing enrichment | 163 |
-| lineage as strain | 125 |
-| category token conflict | 85 |
-| strain split | 85 |
-| line leaked into strain | 85 |
+| missing enrichment | 167 |
+| lineage as strain | 128 |
+| line leaked into strain | 95 |
+| category token conflict | 89 |
+| strain split | 88 |
 | unmapped category bucket | 5 |
 | unmapped raw category | 4 |
 | variant anomaly | 3 |

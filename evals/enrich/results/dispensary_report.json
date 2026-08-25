@@ -5530,6 +5530,263 @@
   }
  },
  {
+  "slug": "the-plug-crown-heights",
+  "listings": 842,
+  "enriched": true,
+  "coverage": {
+   "with_description": 100.0,
+   "other_share": 0.0,
+   "categories": {
+    "preroll": 235,
+    "edible": 205,
+    "vaporizers": 193,
+    "flower": 170,
+    "concentrate": 26,
+    "tinctures": 7,
+    "topical": 5,
+    "merch": 1
+   }
+  },
+  "fill": {
+   "strain": 99.5,
+   "strain_n": 829,
+   "subtype": 100.0,
+   "subtype_n": 841,
+   "variant": 100.0,
+   "variant_n": 836,
+   "product_line": 17.2
+  },
+  "suspects": {
+   "total": 24,
+   "per_100": 2.9,
+   "by_check": {
+    "category_token_conflict": 4,
+    "unmapped_category_bucket": 0,
+    "unmapped_raw_category": 0,
+    "strain_split": 3,
+    "line_leaked_into_strain": 10,
+    "lineage_as_strain": 3,
+    "variant_anomaly": 0,
+    "brand_split": 0,
+    "missing_enrichment": 4
+   }
+  },
+  "findings": {
+   "category_token_conflict": [
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54dc9d1e18e930668a08f4",
+     "name": "Fill-a-Blunt - Wood Tip Blunt Tubes | 4pk",
+     "brand": "Fill-a-blunt",
+     "category": "merch",
+     "token": "Blunt",
+     "suggests": "preroll"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54dc9d1e18e930668a08a9",
+     "name": "CHOCOLATE DIESEL 1G PRE-ROLL JOINT",
+     "brand": "Dank By Definition",
+     "category": "preroll",
+     "token": "CHOCOLATE",
+     "suggests": "edible"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54dc9d1e18e930668a0812",
+     "name": "ayrloom | Beverage Enhancer | 300mg THC",
+     "brand": "Ayrloom",
+     "category": "tinctures",
+     "token": "Beverage",
+     "suggests": "edible"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54df42196a70673879ce6b",
+     "name": "Chocolate Diesel | AIO Palm | Sativa | 1.5g",
+     "brand": "Jaunty",
+     "category": "vaporizers",
+     "token": "Chocolate",
+     "suggests": "edible"
+    }
+   ],
+   "unmapped_category_bucket": [],
+   "unmapped_raw_category": [],
+   "strain_split": [
+    {
+     "brand": "runtz",
+     "strains": [
+      "Amaretto Di Lemon",
+      "Amaretto di Lemon"
+     ]
+    },
+    {
+     "brand": "ruby farms",
+     "strains": [
+      "Biscotti Jealousy",
+      "Biscotti x Jealousy"
+     ]
+    },
+    {
+     "brand": "ruby farms",
+     "strains": [
+      "Ghost Train Haze",
+      "Ghost Train Haze #2"
+     ]
+    }
+   ],
+   "line_leaked_into_strain": [
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54df42196a70673879cffc",
+     "name": "Runtz - Lemon Tree Runtz | 3.5G",
+     "brand": "Runtz",
+     "strain": "Lemon Tree Runtz",
+     "product_line": "Runtz"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a7fb42d569d633fb46d3a06",
+     "name": "Runtz - White Cherry Runtz | 3.5g Flower",
+     "brand": "Runtz",
+     "strain": "White Cherry Runtz",
+     "product_line": "Runtz"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54df42196a70673879d001",
+     "name": "Runtz - Trump Runtz | 3.5G",
+     "brand": "Runtz",
+     "strain": "Trump Runtz",
+     "product_line": "Runtz"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a7fb42d569d633fb46d3a0a",
+     "name": "Runtz - Bubblegum Runtz | 3.5g Flower",
+     "brand": "Runtz",
+     "strain": "Bubblegum Runtz",
+     "product_line": "Runtz"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54df42196a70673879cffb",
+     "name": "Runtz - Lemon Candy Runtz | 3.5G",
+     "brand": "Runtz",
+     "strain": "Lemon Candy Runtz",
+     "product_line": "Runtz"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54df42196a70673879d002",
+     "name": "Runtz - Trump Runtz | 5 x 0.75G PreRolls",
+     "brand": "Runtz",
+     "strain": "Trump Runtz",
+     "product_line": "Runtz"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a6a78fc5a036073adcfe868",
+     "name": "Runtz - Lemon Candy Runtz | .75g Pre-Roll 2 - Pack",
+     "brand": "Runtz",
+     "strain": "Lemon Candy Runtz",
+     "product_line": "Runtz"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a6a78fc5a036073adcfe867",
+     "name": "Runtz - Obama Runtz | 1.5G PreRoll",
+     "brand": "Runtz",
+     "strain": "Obama Runtz",
+     "product_line": "Runtz"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54df42196a70673879cf82",
+     "name": "Papa & Barkley - 1:3 Releaf Balm",
+     "brand": "Papa & Barkley",
+     "strain": "Releaf",
+     "product_line": "Releaf"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54df42196a70673879cd66",
+     "name": "Cactus Chiller Chill Cartridge | 1g",
+     "brand": "Timeless",
+     "strain": "Cactus Chiller",
+     "product_line": "Chill"
+    }
+   ],
+   "lineage_as_strain": [
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54dc9d1e18e930668a0960",
+     "name": "Gron- 5mg Milk Chocolate Pips | Sativa",
+     "brand": "Grön",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54dc9d1e18e930668a095d",
+     "name": "Gron- 5mg Dark Chocolate Pips | Indica",
+     "brand": "Grön",
+     "strain": "Indica"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54df42196a70673879cd92",
+     "name": "Umamii - Indica Micro Dots | Variety Pack (33pk)",
+     "brand": "Umamii",
+     "strain": "Indica"
+    }
+   ],
+   "variant_anomaly": [],
+   "brand_split": [],
+   "missing_enrichment": [
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54df42196a70673879ce09",
+     "name": "Head & Heal - Full Spectrum RSO | 1G Dablicator",
+     "brand": "Head & Heal",
+     "category": "concentrate",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54df42196a70673879ceba",
+     "name": "Kiva Bars- Milk Chocolate 100mg 20ct",
+     "brand": "Kiva",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54df42196a70673879ceb9",
+     "name": "Kiva Bars- Dark Chocolate 100mg 20ct",
+     "brand": "Kiva",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54df42196a70673879cd8e",
+     "name": "TTM Flight Pack - Cyber Diesel + PB&Jealousy + Skywalker | 3x1GVariety Pack",
+     "brand": "To The Moon",
+     "category": "flower",
+     "missing": [
+      "strain"
+     ]
+    }
+   ]
+  }
+ },
+ {
   "slug": "the-spot-bk",
   "listings": 1255,
   "enriched": true,

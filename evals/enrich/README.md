@@ -219,19 +219,19 @@ python evals/enrich/dispensary_report.py --csv 'data/scrapes/*.csv' \
     --md results/dispensary_report.md --json results/dispensary_report.json
 ```
 
-24 stores, 18,264 listings, **555 suspects = 3.04 per 100**. Spread runs from
+25 stores, 19,106 listings, **579 suspects = 3.03 per 100**. Spread runs from
 `emerald-dispensary-bk` at 0.2 to `garden-club-carroll-gardens` at 6.7 — a 30×
 range, but every store lands in single digits.
 
 | metric | fleet |
 | --- | --- |
-| rows landing in `other` | **8 of 18,264 (0.04%)** |
+| rows landing in `other` | **8 of 19,106 (0.04%)** |
 | strain fill | min 95.8%, median 99.2% |
 | variant fill | min 95.2%, median 99.9% |
 
 **The category result generalizes.** `category` held 100% on the gold suites;
-across the fleet only 8 rows out of 18,264 fall through to `other`. CATEGORY_MAP
-plus `format_tokens.json` now covers 24 stores, not just the one they were seeded
+across the fleet only 8 rows out of 19,106 fall through to `other`. CATEGORY_MAP
+plus `format_tokens.json` now covers 25 stores, not just the one they were seeded
 from. That is the strongest evidence so far for moving work out of the model and
 into curated data.
 
@@ -241,7 +241,7 @@ audit catches fill gaps, strain splits and line leaks; it is structurally blind 
 the subtype and variant judgment errors that dominate the gold failures. Use the
 rate to target curation, not to rank quality.
 
-### Where the 555 findings sit
+### Where the 579 findings sit
 
 | check | n | what it implies |
 | --- | ---: | --- |
@@ -255,6 +255,33 @@ rate to target curation, not to rank quality.
 Four raw categories are unmapped and each is a one-line fix: `CBD (Non-Cannabis)`
 (21 rows), `Pet CBD (Non-Cannabis)` (8), `Gift Cards` (4), `Infused Pre-Rolled
 Flower` (2).
+
+### The Plug moved platforms — its gold suite no longer mirrors production
+
+The Plug left Flowhub for Dutchie (`theplug-brooklyn.dispensary.shop` → the store
+now sits at `dutchie.com/dispensary/the-plug-brooklyn`, dispensaryId
+`68dc46d938899896d40a1beb`; `dispensaries.json` updated). It scrapes cleanly again:
+842 listings, 2.9 suspects/100, 99.5% strain fill, full descriptions.
+
+But the migration invalidated the suite's premise. `gold_the_plug.json` is built
+around "a whole raw category the scraper's CATEGORY_MAP missed — vapes landing in
+`other`, testing hint override at scale". On the new Dutchie feed the raw
+categories are clean:
+
+```
+Pre-Rolls 233 · Edible 204 · Vaporizers 190 · Flower 174 · Concentrate 29 · ...
+```
+
+**0% of the live store now lands in `other`.** The 108 frozen cases stay valid as a
+regression test — that is what freezing is for, and the naming convention
+(`Brand - Strain | Size Format`) is unchanged — but the store no longer exercises
+the failure mode the suite was built to measure. Coney Island, the other
+`other`-heavy suite, is gone entirely (marked `inactive`; its domain 404s at the
+root). Of the three stores that gave `other` three different meanings, only
+`hold_up_roll_up` is still live and still `other`-heavy.
+
+If hint override at scale matters going forward, it needs a new gold set from a
+store that still has the problem.
 
 ### The de-lining bug, measured at fleet scale
 
