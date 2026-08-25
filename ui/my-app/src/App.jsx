@@ -1,4 +1,5 @@
 import Login from './Login'
+import AuthCallback from './AuthCallback'
 import AdminHome from './AdminHome'
 import AddProduct from './AddProduct'
 import Products from './Products'
@@ -25,6 +26,7 @@ function App() {
       <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/admin" element={<AdminHome />} />
         <Route path="/admin/add-product" element={<AddProduct />} />
         <Route path="/admin/products" element={<Products />} />
