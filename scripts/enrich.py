@@ -13,6 +13,7 @@ import json
 import os
 import re
 import sys
+import time
 from collections import OrderedDict
 from pathlib import Path
 
@@ -439,6 +440,60 @@ def _call_llm(
 ) -> tuple[dict | None, dict]:
     """Returns (items_by_local_id, usage_dict). items is None on any failure —
     callers must treat those rows as unanswered (fall back to hints, do NOT cache)."""
+    for attempt in range(_MAX_ATTEMPTS):
+        items, usage, retry_after = _call_llm_once(
+            client, provider, api_model, system_prompt, payload,
+            timeout, max_tokens, label, print_lock)
+        if items is not None or retry_after is None:
+            return items, usage
+        # Transient: the gateway told us to wait (rate limit / in-flight budget).
+        # Sleeping here holds this worker's slot, which is exactly the throttle we
+        # want — it stops the pool from re-flooding the gateway.
+        if attempt < _MAX_ATTEMPTS - 1:
+            with print_lock:
+                print(f"    {label} retrying in {retry_after:.0f}s "
+                      f"(attempt {attempt + 2}/{_MAX_ATTEMPTS})", file=sys.stderr)
+            time.sleep(retry_after)
+    return None, dict(_ZERO_USAGE)
+
+
+# Transient gateway failures worth waiting out rather than dropping the batch.
+_MAX_ATTEMPTS = 3
+_RETRY_STATUS = {402, 408, 429, 500, 502, 503, 504}
+_DEFAULT_RETRY_AFTER = 30.0
+_MAX_RETRY_AFTER = 180.0
+
+
+def _retry_delay(exc: Exception) -> float | None:
+    """Seconds to wait before retrying, or None if the error is not transient.
+    Prefers the gateway's own Retry-After when it sends one."""
+    status = getattr(exc, "status_code", None)
+    if status is None:
+        resp = getattr(exc, "response", None)
+        status = getattr(resp, "status_code", None)
+    if status not in _RETRY_STATUS:
+        return None
+    hinted = None
+    resp = getattr(exc, "response", None)
+    headers = getattr(resp, "headers", None)
+    if headers:
+        try:
+            hinted = float(headers.get("Retry-After") or headers.get("retry-after"))
+        except (TypeError, ValueError):
+            hinted = None
+    if hinted is None:
+        # OpenRouter nests it in the error body rather than the HTTP headers.
+        m = re.search(r"'Retry-After':\s*'(\d+)'", str(exc))
+        hinted = float(m.group(1)) if m else _DEFAULT_RETRY_AFTER
+    return min(hinted, _MAX_RETRY_AFTER)
+
+
+def _call_llm_once(
+    client, provider: str, api_model: str, system_prompt: str,
+    payload: list[dict], timeout: float, max_tokens: int,
+    label: str, print_lock,
+) -> tuple[dict | None, dict, float | None]:
+    """One attempt. Third element is the retry delay when the failure is transient."""
     try:
         if provider == "anthropic":
             resp = client.messages.create(
@@ -474,13 +529,14 @@ def _call_llm(
             text = text.split("\n", 1)[1].rsplit("```", 1)[0].strip()
         items = {item["id"]: item for item in json.loads(text)}
     except Exception as exc:
+        delay = _retry_delay(exc)
         with print_lock:
-            print(f"  [model error] {label}: {exc}", file=sys.stderr)
-        items, usage = None, dict(_ZERO_USAGE)
+            print(f"  [model error] {label}: {str(exc)[:200]}", file=sys.stderr)
+        return None, dict(_ZERO_USAGE), delay
 
     with print_lock:
         print(f"    {label} done")
-    return items, usage
+    return items, usage, None
 
 
 def _chunks(items: list, n: int) -> list[list]:
@@ -585,7 +641,15 @@ def _run_enrich(
         """tasks = [(label, system_prompt, payload, on_result), ...]; runs them concurrently."""
         if not tasks:
             return
-        with ThreadPoolExecutor(max_workers=min(len(tasks), 8)) as ex:
+        # Concurrency is capped by ENRICH_MAX_WORKERS (default 8). Gateways that
+        # meter *in-flight* tokens rather than requests — OpenRouter's in-flight
+        # budget among them — reject whole batches with 402 when 8 full-description
+        # batches are open at once. Lower it to 2-3 for a large fleet run.
+        try:
+            _workers = max(1, int(os.environ.get("ENRICH_MAX_WORKERS", "8")))
+        except ValueError:
+            _workers = 8
+        with ThreadPoolExecutor(max_workers=min(len(tasks), _workers)) as ex:
             futs = {
                 ex.submit(_call_llm, client, provider, api_model, sp, pl, timeout, max_tokens, label, print_lock): onr
                 for (label, sp, pl, onr) in tasks
