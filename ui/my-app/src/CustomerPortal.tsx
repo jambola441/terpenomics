@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useNavigate, useMatch, useSearchParams } from 'react-router-dom'
+import { useNavigate, useMatch, useSearchParams, Navigate, useLocation } from 'react-router-dom'
 import api from './api/client'
 import supabase from './utils/supabase'
 import DispensaryMap from './components/DispensaryMap'
@@ -431,170 +431,6 @@ function RecsFeed({ recommendations, loading, error, onProductClick }: RecsFeedP
 }
 
 // ─── Products Feed ────────────────────────────────────────────────────────────
-
-function LoginScreen() {
-  const [email, setEmail] = useState('')
-  const [sent, setSent] = useState(false)
-  const [code, setCode] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [verifying, setVerifying] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    maxWidth: 320,
-    background: t.surface2,
-    border: `1px solid ${t.border}`,
-    borderRadius: radius.md,
-    color: t.text1,
-    fontSize: 16,
-    padding: '14px 16px',
-    outline: 'none',
-    marginBottom: 12,
-    boxSizing: 'border-box',
-  }
-
-  async function handleSend() {
-    if (!email.trim()) return
-    setLoading(true)
-    setError(null)
-    try {
-      const { error: err } = await supabase.auth.signInWithOtp({ email: email.trim() })
-      if (err) throw err
-      setSent(true)
-      setCode('')
-    } catch (e: any) {
-      setError(e.message ?? 'Failed to send code')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function handleVerify() {
-    const token = code.trim()
-    if (!token) return
-    setVerifying(true)
-    setError(null)
-    try {
-      const { error: err } = await supabase.auth.verifyOtp({ email: email.trim(), token, type: 'email' })
-      if (err) throw err
-    } catch (e: any) {
-      setError(e.message ?? 'Invalid code')
-    } finally {
-      setVerifying(false)
-    }
-  }
-
-  return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '100dvh',
-      padding: '0 32px',
-      background: t.bg,
-    }}>
-      <div style={{ fontSize: 40, marginBottom: 18 }}>🌿</div>
-      <div style={{ color: t.text1, fontWeight: font.weight.heavy, fontSize: font.size.display, marginBottom: 8, textAlign: 'center', letterSpacing: '-0.01em' }}>
-        Sign in
-      </div>
-
-      {!sent ? (
-        <>
-          <div style={{ color: t.text3, fontSize: font.size.body, marginBottom: 32, textAlign: 'center' }}>
-            We'll send a code to your email.
-          </div>
-          <input
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') handleSend() }}
-            placeholder="your@email.com"
-            style={inputStyle}
-          />
-          <button
-            onClick={handleSend}
-            disabled={loading || !email.trim()}
-            style={{
-              width: '100%',
-              maxWidth: 320,
-              background: loading ? t.surface3 : t.accent,
-              border: 'none',
-              borderRadius: radius.md,
-              color: loading ? t.text3 : '#0a0a0a',
-              fontSize: font.size.callout,
-              fontWeight: font.weight.bold,
-              padding: '14px',
-              cursor: loading ? 'default' : 'pointer',
-              boxShadow: loading ? 'none' : 'var(--e-1)',
-              transition: `background var(--t-base)`,
-            }}
-          >
-            {loading ? 'Sending…' : 'Send code'}
-          </button>
-        </>
-      ) : (
-        <>
-          <div style={{ color: t.text3, fontSize: font.size.body, marginBottom: 32, textAlign: 'center' }}>
-            Enter the code sent to <span style={{ color: t.text2, fontWeight: font.weight.medium }}>{email}</span>
-          </div>
-          <input
-            type="text"
-            inputMode="numeric"
-            value={code}
-            onChange={e => {
-              const v = e.target.value.replace(/\D/g, '').slice(0, 8)
-              setCode(v)
-            }}
-            onKeyDown={e => { if (e.key === 'Enter') handleVerify() }}
-            placeholder="8-digit code"
-            autoFocus
-            style={{ ...inputStyle, fontSize: 24, letterSpacing: '0.3em', textAlign: 'center' }}
-          />
-          <button
-            onClick={handleVerify}
-            disabled={verifying || code.trim().length < 8}
-            style={{
-              width: '100%',
-              maxWidth: 320,
-              background: verifying || code.trim().length < 8 ? t.surface3 : t.accent,
-              border: 'none',
-              borderRadius: radius.md,
-              color: verifying || code.trim().length < 8 ? t.text3 : '#0a0a0a',
-              fontSize: font.size.callout,
-              fontWeight: font.weight.bold,
-              padding: '14px',
-              cursor: verifying || code.trim().length < 8 ? 'default' : 'pointer',
-              marginBottom: 12,
-              boxShadow: verifying || code.trim().length < 8 ? 'none' : 'var(--e-1)',
-              transition: `background var(--t-base)`,
-            }}
-          >
-            {verifying ? 'Verifying…' : 'Verify'}
-          </button>
-          <button
-            onClick={() => { setSent(false); setCode(''); setError(null) }}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: t.text3,
-              fontSize: font.size.small + 1,
-              cursor: 'pointer',
-              padding: '4px 0',
-            }}
-          >
-            Use a different email
-          </button>
-        </>
-      )}
-
-      {error && (
-        <div style={{ color: t.danger, fontSize: font.size.small + 1, marginTop: 12, textAlign: 'center' }}>{error}</div>
-      )}
-    </div>
-  )
-}
 
 // ─── Not Linked Screen ────────────────────────────────────────────────────────
 
@@ -1449,6 +1285,7 @@ function ProductView({ brandName, productKey, onBack, onListingClick }: ProductV
 
 export default function CustomerPortal() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams] = useSearchParams()
   const matchBrandProduct = useMatch('/portal/brands/:brandName/products/:productKey')
   const matchBrand = useMatch('/portal/brands/:brandName')
@@ -1585,7 +1422,13 @@ export default function CustomerPortal() {
   if (session === undefined) {
     return <div style={{ height: '100dvh', background: t.bg }}><FeedState kind="loading" message="Loading…" style={{ height: '100%' }} /></div>
   }
-  if (!session) return <LoginScreen />
+  // The portal has no login screen of its own — the one at "/" is the only
+  // sign-in surface, so it stays the single place SMS, email and social
+  // sign-in are wired up. Carry where they were headed so signing in returns
+  // them there rather than dropping them on the portal home.
+  if (!session) {
+    return <Navigate to="/" replace state={{ from: location.pathname + location.search }} />
+  }
   if (profileError) return <NotLinkedScreen />
   if (!customerId) {
     return <div style={{ height: '100dvh', background: t.bg }}><FeedState kind="loading" message="Loading…" style={{ height: '100%' }} /></div>
