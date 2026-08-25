@@ -5,6 +5,7 @@ from database import create_db_and_tables
 from routes_me import router as me_router
 from routes.admin import router as admin_router
 from routes.customer import router as customer_router
+from routes.auth_sms import router as auth_sms_router
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Dispensary MVP API")
@@ -16,6 +17,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth_sms_router)
 app.include_router(me_router)
 app.include_router(admin_router)
 app.include_router(customer_router)

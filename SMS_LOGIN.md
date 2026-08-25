@@ -1,10 +1,11 @@
 # SMS Login
 
-Phone-number login for terpenomics, using the Supabase Auth we already have. No
-new backend code and no new dependency. Read "The two hurdles" and "The cannabis
-problem" below before committing to a provider — the shipped code targets Twilio
-Verify, which skips A2P 10DLC registration but not Twilio's own identity check,
-and Twilio's policy on cannabis traffic is a live risk for this product.
+Phone-number login for terpenomics, built on Message Central's VerifyNow for
+delivery and Supabase for the resulting session. No A2P 10DLC brand or campaign
+registration, and no identity check to get started.
+
+The sections below record why that combination, and what it costs — the choice
+is less obvious than it looks, and the reasoning matters more than the wiring.
 
 ## The two hurdles, which are not the same thing
 
@@ -65,76 +66,150 @@ fit either:
   OTP and returns a `verificationId`; `/verification/v3/validateOtp` checks it.
   There is no "send this exact string" mode on the OTP product.
 
-Those two contracts are incompatible. Using VerifyNow means taking phone login
-out of Supabase Auth's OTP path entirely: backend endpoints that call
-send/validate, then finding-or-creating the Supabase user by phone via the admin
-API and minting a session server-side to hand back to the client. Workable, but
-it is custom auth code that a solo maintainer owns forever.
+Those two contracts are incompatible, so phone login sits outside Supabase Auth's
+OTP path: our backend calls send/validate, then finds-or-creates the Supabase
+user and mints the session itself. That is what is implemented here. It is real
+custom auth code that a solo maintainer owns forever — the honest price of
+skipping both gates.
 
 The other Supabase-native providers do not rescue this: MessageBird and Vonage
 send Supabase's generated code over an ordinary long code, which puts you back on
 gate (1).
 
-## Setup for Twilio Verify (~20 minutes of work, plus ~2 days for ID approval)
+**Before spending more on this vendor**, confirm with Message Central that they
+will carry a cannabis-adjacent sender on their US route. Their signup does not
+ask, which is convenient right up until an account review.
 
-1. **Twilio account.** Sign up at twilio.com. Trial accounts can send to numbers
-   you've verified on the console; upgrade (add a card) to text anyone.
-2. **Create a Verify service.** Console → Verify → Services → Create. Name it —
-   the name shows up in the message body ("Your Terpenomics code is 123456"). Copy
-   the **Verify Service SID** (starts `VA`).
-3. Copy your **Account SID** (`AC…`) and **Auth Token** from the Twilio console
-   home.
-4. **Supabase dashboard** → Authentication → Sign In / Providers → **Phone**:
-   - Enable phone provider
-   - SMS provider: **Twilio Verify**
-   - Paste Account SID, Auth Token, Verify Service SID
-   - Leave "Enable phone confirmations" on
-5. **Rate limits** (Authentication → Rate Limits): lower the SMS limit to
-   something sane for the MVP. Every send costs money and toll fraud is real.
-6. **Turn on CAPTCHA** (Authentication → Attack Protection) before the login page
-   is publicly reachable.
+## How it works
 
-That's it. Nothing to deploy.
+```
+browser                    our API                     VerifyNow        Supabase
+   |  POST /auth/sms/start    |                            |               |
+   |------------------------->| send(phone) -------------->|               |
+   |<-- challenge_id ---------| (stores challenge)         |  ~~ SMS ~~>   |
+   |                          |                            |               |
+   |  POST /auth/sms/verify   |                            |               |
+   |------------------------->| validateOtp(ref, code) --->|               |
+   |                          | find/create user ---------------------->   |
+   |                          | rotate password, get session ---------->   |
+   |<-- access + refresh -----|                            |               |
+   |  supabase.auth.setSession()                                           |
+```
+
+The provider owns the code end to end; we only ever hold a reference to it. Once
+it confirms, we exchange that for an ordinary Supabase session, so every existing
+route keeps verifying ordinary Supabase JWTs through JWKS — `auth.py`,
+`/me/link-customer` and the admin guards are all untouched.
+
+## Setup
+
+1. **Sign up at Message Central** and create a VerifyNow application. Signup
+   grants free trial credits; there is no ID check and nothing to wait for.
+2. Copy your **customer ID** and **key** from the console. The key is the
+   base-64 encoded password, not the plaintext one.
+3. **Supabase service-role key**: dashboard → Project Settings → API. This grants
+   full admin over your auth users — backend only, never in the browser bundle.
+4. Fill in `.env` from `.env.example`: `VERIFYNOW_CUSTOMER_ID`, `VERIFYNOW_KEY`,
+   `VERIFYNOW_EMAIL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_ANON_KEY`.
+5. Leave the Supabase dashboard's **Phone provider switched off**. We do not use
+   Supabase's own SMS, and the session exchange falls back to an email grant so
+   it works either way.
+6. Restart the API. `create_db_and_tables()` adds `phone_auth_challenges` and
+   `phone_auth_identities` on startup.
 
 ## What's in the code
 
-- `ui/my-app/src/Login.jsx` — one login page, tabbed between **Text message**
-  (default) and **Email**. SMS path calls `signInWithOtp({ phone })` then
-  `verifyOtp({ phone, token, type: 'sms' })`. Includes a 60s resend cooldown
-  matching Supabase's per-recipient window, and `autocomplete="one-time-code"` so
-  iOS/Android offer the code from the notification.
-- `ui/my-app/src/utils/phone.ts` — E.164 normalization. Supabase and Twilio only
-  accept `+15551234567`; users type `(555) 123-4567`. Default country code comes
-  from `VITE_DEFAULT_COUNTRY_CODE`.
-- **Backend: unchanged.** `auth.py` already verifies Supabase RS256 JWTs via JWKS
-  and reads the `phone` claim, and `/me/link-customer` already falls back to
-  `user.phone` when linking a `Customer` row. A phone-issued JWT works everywhere
-  an email-issued one does.
+**Backend**
+
+- `services/sms_otp.py` — the provider boundary. `SmsOtpProvider` is a two-method
+  protocol (`send`, `check`); `VerifyNowProvider` implements it, caches the auth
+  token and refreshes it once on a 401. Swapping vendors means a new class and a
+  branch in `get_provider()`; nothing above this module changes.
+- `services/supabase_admin.py` — finds or creates the user and mints the session.
+  The password it exchanges is generated server-side, never returned to the
+  client, and rotated on every login, so a leaked one is stale by the next
+  sign-in.
+- `services/phone.py` — E.164 normalization, mirroring the frontend's.
+- `routes/auth_sms.py` — `POST /auth/sms/start` and `POST /auth/sms/verify`, plus
+  the challenge lifecycle and rate limits.
+- `models.py` — `PhoneAuthChallenge` (one outstanding code request; the code
+  itself never touches our database) and `PhoneAuthIdentity` (E.164 → Supabase
+  user, so repeat logins never search Supabase's user list).
+
+**Frontend**
+
+- `ui/my-app/src/Login.jsx` — one page, tabbed **Text message** (default) and
+  **Email**. Email still uses Supabase's own OTP; SMS calls our endpoints and
+  then `supabase.auth.setSession()`. Resend cooldown follows the server's
+  `Retry-After` rather than a hardcoded guess, and `autocomplete="one-time-code"`
+  lets phones autofill from the notification.
+- `ui/my-app/src/utils/phone.ts` — E.164 normalization and as-you-type
+  formatting.
+
+## Abuse limits
+
+Every send costs money, and an unprotected OTP endpoint is a standing invitation
+to toll fraud. Defaults, all tunable from `.env`:
+
+| Limit | Default | Env |
+| --- | --- | --- |
+| Resend cooldown per number | 60s | `SMS_OTP_RESEND_SECONDS` |
+| Sends per number per hour | 5 | `SMS_OTP_MAX_PER_PHONE_PER_HOUR` |
+| Sends per IP per hour | 20 | `SMS_OTP_MAX_PER_IP_PER_HOUR` |
+| Guesses per challenge | 5 | `SMS_OTP_MAX_ATTEMPTS` |
+| Challenge lifetime | 300s | `SMS_OTP_TTL_SECONDS` |
+
+`/auth/sms/verify` returns one generic message for every failure — wrong code,
+expired, unknown id, already used — so it cannot be used to probe which numbers
+or challenges exist. A challenge is burned before any session is minted, so a
+replayed request cannot yield a second session.
+
+The IP limit reads `X-Forwarded-For`, which only means anything behind a trusted
+proxy. It is a speed bump, not an authorization check.
 
 ## Routing after sign-in
 
 Admins carry `role="admin"` on the JWT (see `routes/admin/auth.py`) and land on
 `/admin`. Anyone else signing in by text lands on `/portal`; email sign-in still
 goes to `/admin`, preserving the previous behaviour. `CustomerPortal` already
-calls `/me/link-customer` on mount, so the `Customer` row gets created/linked on
-first portal visit — no extra call from the login page.
+calls `/me/link-customer` on mount, so the `Customer` row gets created and linked
+on first portal visit — no extra call from the login page.
 
-## Costs and caveats
+## Tests
 
-- Twilio Verify bills per verification attempt plus carrier fees — budget roughly
-  $0.05 per verification in the US; a plain 10DLC OTP segment is ~$0.013–0.018,
-  so you are paying a premium to skip registration. At MVP volume that premium is
-  a rounding error; at 100k logins/month, revisit and register 10DLC properly.
-- Phone numbers get recycled. A number that once belonged to customer A can be
-  reassigned to customer B, who then inherits the account. Worth an email or ID
-  step before anything sensitive is exposed.
-- The `Customer.phone` column is a free-text unique field. Existing rows were
-  entered by hand and are probably *not* E.164, so `link-customer` matching
-  against a JWT phone claim can miss and create a duplicate customer. Backfilling
-  those to E.164 is the natural follow-up.
-- International: `toE164` handles a `+`-prefixed number from any country and
-  bare national numbers for the configured default. It is deliberately not a full
-  libphonenumber; if you go multi-country, swap it for `libphonenumber-js`.
+```
+pytest tests/ -m "not live"
+```
+
+- `tests/test_phone.py` — normalization, including the junk it must reject.
+- `tests/test_sms_otp_provider.py` — the VerifyNow wire contract (parameter
+  names, `authToken` header, every `responseCode` branch, token refresh). This
+  contract came from the vendor's docs, so this is where a vendor change should
+  break first.
+- `tests/test_sms_login_routes.py` — challenge lifecycle with the provider and
+  Supabase stubbed: cooldowns, hourly caps, wrong codes, attempt lockout,
+  expiry, replay, and returning users keeping one Supabase identity.
+
+## Caveats
+
+- **Custom auth is custom risk.** This is the part of the system where a bug
+  means account takeover rather than a broken page. It has tests; it has not had
+  a second pair of eyes.
+- **Vendor concentration.** Message Central is a smaller vendor than Twilio, and
+  a shared sender pool you do not control can be throttled or flagged by
+  something another customer did. The provider boundary in `services/sms_otp.py`
+  exists so that swapping is a day, not a rewrite.
+- **Phone numbers get recycled.** A number that belonged to customer A can be
+  reassigned to customer B, who then inherits the account. Worth a second factor
+  before anything sensitive is exposed.
+- **`Customer.phone` is not E.164.** Existing rows were hand-entered, so
+  `/me/link-customer` matching a JWT phone claim can miss and create a duplicate
+  customer. A backfill is the natural follow-up.
+- **International is deliberately shallow.** `to_e164` handles `+`-prefixed
+  numbers from anywhere and bare national numbers for the configured default,
+  and `split_e164` knows a fixed list of country codes (`SMS_COUNTRY_CODES`). If
+  you go multi-country in earnest, swap in `phonenumbers` and
+  `libphonenumber-js`.
 
 ## Sources
 

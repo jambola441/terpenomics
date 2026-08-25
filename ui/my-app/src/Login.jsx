@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react'
 import supabase from './utils/supabase'
 import { useNavigate } from 'react-router-dom'
 import { toE164, formatPhoneInput, formatE164ForDisplay } from './utils/phone'
+import api from './api/client'
 
-// Supabase enforces a 60s window between OTP requests for the same recipient.
+// Fallback cooldown. The SMS path uses whatever the backend reports instead.
 const RESEND_SECONDS = 60
 
 export default function Login() {
@@ -12,6 +13,7 @@ export default function Login() {
   const [phone, setPhone]     = useState('')
   const [email, setEmail]     = useState('')
   const [sentTo, setSentTo]   = useState('')   // E.164 or email actually used for the send
+  const [challengeId, setChallengeId] = useState('')  // backend handle for the SMS code
   const [code, setCode]       = useState('')
   const [msg, setMsg]         = useState('')
   const [loading, setLoading] = useState(false)
@@ -29,6 +31,7 @@ export default function Login() {
     setChannel(next)
     setStep('send')
     setCode('')
+    setChallengeId('')
     setMsg('')
     setIsError(false)
   }
@@ -38,17 +41,33 @@ export default function Login() {
     setMsg(message)
   }
 
+  function handleFailure(err) {
+    // A 429 carries Retry-After; mirror it in the UI so the button reflects the
+    // server's actual cooldown rather than our guess at it.
+    if (err?.status === 429 && err.retryAfter) setCooldown(err.retryAfter)
+    fail(err?.message || 'Something went wrong. Try again.')
+  }
+
+  /**
+   * Request a code and return how many seconds until a resend is allowed.
+   *
+   * The two channels take different routes: email OTP is Supabase's own, while
+   * SMS goes through our backend, which drives the SMS provider and hands back
+   * a Supabase session only once the provider has validated the code.
+   */
   async function requestCode(destination) {
     if (channel === 'sms') {
-      return supabase.auth.signInWithOtp({
-        phone: destination,
-        options: { shouldCreateUser: true, channel: 'sms' },
-      })
+      const { challenge_id, resend_in } = await api.auth.smsStart(destination)
+      setChallengeId(challenge_id)
+      return resend_in || RESEND_SECONDS
     }
-    return supabase.auth.signInWithOtp({
+
+    const { error } = await supabase.auth.signInWithOtp({
       email: destination,
       options: { shouldCreateUser: true },
     })
+    if (error) throw new Error(error.message)
+    return RESEND_SECONDS
   }
 
   async function sendCode(e) {
@@ -66,15 +85,17 @@ export default function Login() {
     }
 
     setLoading(true)
-    const { error } = await requestCode(destination)
-    setLoading(false)
-
-    if (error) return fail(explainError(error, channel))
-
-    setSentTo(destination)
-    setStep('verify')
-    setCooldown(RESEND_SECONDS)
-    setMsg(channel === 'sms' ? 'Code sent by text.' : 'Check your email for a 6-digit code.')
+    try {
+      const wait = await requestCode(destination)
+      setSentTo(destination)
+      setStep('verify')
+      setCooldown(wait)
+      setMsg(channel === 'sms' ? 'Code sent by text.' : 'Check your email for a 6-digit code.')
+    } catch (err) {
+      handleFailure(err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function resendCode() {
@@ -82,11 +103,14 @@ export default function Login() {
     setMsg('')
     setIsError(false)
     setLoading(true)
-    const { error } = await requestCode(sentTo)
-    setLoading(false)
-    if (error) return fail(explainError(error, channel))
-    setCooldown(RESEND_SECONDS)
-    setMsg('New code sent.')
+    try {
+      setCooldown(await requestCode(sentTo))
+      setMsg('New code sent.')
+    } catch (err) {
+      handleFailure(err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function verifyCode(e) {
@@ -95,18 +119,34 @@ export default function Login() {
     setMsg('')
     setIsError(false)
 
-    const { data, error } =
-      channel === 'sms'
-        ? await supabase.auth.verifyOtp({ phone: sentTo, token: code, type: 'sms' })
-        : await supabase.auth.verifyOtp({ email: sentTo, token: code, type: 'email' })
+    try {
+      let user
 
-    setLoading(false)
-    if (error) return fail(error.message)
+      if (channel === 'sms') {
+        const session = await api.auth.smsVerify(challengeId, code)
+        const { data, error } = await supabase.auth.setSession({
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
+        })
+        if (error) throw new Error(error.message)
+        user = data?.user
+      } else {
+        const { data, error } = await supabase.auth.verifyOtp({
+          email: sentTo,
+          token: code,
+          type: 'email',
+        })
+        if (error) throw new Error(error.message)
+        user = data?.user
+      }
 
-    // Admins carry role="admin" on the Supabase JWT (see routes/admin/auth.py).
-    // Everyone else who signs in by text lands in the customer portal.
-    const isAdmin = data?.user?.role === 'admin'
-    navigate(isAdmin || channel === 'email' ? '/admin' : '/portal')
+      // Admins carry role="admin" on the Supabase JWT (see routes/admin/auth.py).
+      // Everyone else who signs in by text lands in the customer portal.
+      navigate(user?.role === 'admin' || channel === 'email' ? '/admin' : '/portal')
+    } catch (err) {
+      handleFailure(err)
+      setLoading(false)
+    }
   }
 
   const sendDisabled = loading || (channel === 'sms' ? !phone.trim() : !email.trim())
@@ -271,14 +311,6 @@ export default function Login() {
       </div>
     </div>
   )
-}
-
-function explainError(error, channel) {
-  const raw = error?.message || 'Something went wrong.'
-  if (channel === 'sms' && /provider|not enabled|unsupported phone/i.test(raw)) {
-    return `${raw} — check that Phone auth is enabled in the Supabase dashboard.`
-  }
-  return raw
 }
 
 const headingStyle = {
