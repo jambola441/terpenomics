@@ -207,6 +207,85 @@ pre-truncated at 300 chars (median 220), so this measures a *floor*. Production
 descriptions are ~4× longer, where the input side is a bigger share and the cap
 would save more. Re-test against real scrape CSVs before adopting.
 
+## Fleet report — all 24 live stores (2026-08-25)
+
+`dispensary_report.py` runs the audit checks **per store** and normalizes to
+findings per 100 listings, so every menu can be ranked. Full output in
+`results/dispensary_report.md` / `.json`.
+
+```bash
+python evals/enrich/enrich_csvs.py     --csv 'data/scrapes/*.csv' --model haiku-or
+python evals/enrich/dispensary_report.py --csv 'data/scrapes/*.csv' \
+    --md results/dispensary_report.md --json results/dispensary_report.json
+```
+
+24 stores, 18,264 listings, **555 suspects = 3.04 per 100**. Spread runs from
+`emerald-dispensary-bk` at 0.2 to `garden-club-carroll-gardens` at 6.7 — a 30×
+range, but every store lands in single digits.
+
+| metric | fleet |
+| --- | --- |
+| rows landing in `other` | **8 of 18,264 (0.04%)** |
+| strain fill | min 95.8%, median 99.2% |
+| variant fill | min 95.2%, median 99.9% |
+
+**The category result generalizes.** `category` held 100% on the gold suites;
+across the fleet only 8 rows out of 18,264 fall through to `other`. CATEGORY_MAP
+plus `format_tokens.json` now covers 24 stores, not just the one they were seeded
+from. That is the strongest evidence so far for moving work out of the model and
+into curated data.
+
+**Suspect rate is not accuracy, and does not track it.** `hold-up-roll-up` is the
+*worst* gold store (84.9% of cases) yet scores 3.3 suspects/100 — mid-pack. The
+audit catches fill gaps, strain splits and line leaks; it is structurally blind to
+the subtype and variant judgment errors that dominate the gold failures. Use the
+rate to target curation, not to rank quality.
+
+### Where the 555 findings sit
+
+| check | n | what it implies |
+| --- | ---: | --- |
+| missing enrichment | 163 | rows with no strain/subtype in an enrichable category |
+| lineage as strain | 125 | strain is just Indica/Sativa/Hybrid |
+| category token conflict | 85 | 22 tinctures look like edibles, 18 merch look like prerolls |
+| strain split | 85 | near-duplicate spellings within a brand (ruby farms 6, ayrloom 5) |
+| line leaked into strain | 85 | see below |
+| unmapped raw category | 4 | ready-to-add CATEGORY_MAP entries |
+
+Four raw categories are unmapped and each is a one-line fix: `CBD (Non-Cannabis)`
+(21 rows), `Pet CBD (Non-Cannabis)` (8), `Gift Cards` (4), `Infused Pre-Rolled
+Flower` (2).
+
+### The de-lining bug, measured at fleet scale
+
+`gold-105` traced `_strip_line_from_strain` returning `stripped or strain`, so a
+strain that is *nothing but* the product line keeps the line as its strain. Across
+the fleet that is **24 of the 85 line leaks** — `Ayrloom` "Pillow Talk",
+`Papa & Barkley` "Releaf", `Eaton Botanicals` "Apple-A-Day", `Off Hours` "Offline".
+Returning `None` on a total match is a safe one-line fix worth 24 rows.
+
+**The other 61 are not the same bug and must not be fixed the same way.** 72 of 85
+leaks are on brands with no curated entry, where de-lining never runs at all — but
+blindly de-lining with the *model's* product_line would corrupt real strains:
+
+```
+Weekenders     strain='Blue Dream'  line='Dream'    ->  de-lining gives 'Blue'
+Camino         strain='Sour Deep Sleep Blackberry Dream'  line='Sleep'
+Supernaturals  strain='Interspecies Erotica'  line='Erotica'
+```
+
+These are the model over-extracting a product line out of a genuine strain name,
+not a strain that swallowed a line. De-line only against **curated** vocabularies,
+never against the model's own guess — which is the whole argument for
+`product_lines.json` over prompt instructions.
+
+### Papa & Barkley Releaf / Relief, now with counts
+
+The open spelling question has numbers: **`Releaf` 11 rows, `Relief` 2**, plus
+`1906` using `Relief` as its own line and `Papa & Barkley` "Relief Balm" appearing
+as a strain. `Releaf` as canonical is the majority spelling as well as the brand's
+trademark. Still not encoded — your ruling.
+
 ## What is actually broken — the 11 always-fail cases
 
 Failing on all four runs, so these are real defects rather than noise. Grouped by
