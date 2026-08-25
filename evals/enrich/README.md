@@ -33,6 +33,17 @@ python evals/enrich/run_eval.py --models haiku --cases cases/categorization.json
 Models are the ids in `MODELS` in `scripts/enrich.py`. Needs `OPENROUTER_API_KEY` (OpenRouter
 models) / `ANTHROPIC_API_KEY` (haiku) in `.env`.
 
+**No `ANTHROPIC_API_KEY`?** Use `--models haiku-or` — same model
+(`anthropic/claude-haiku-4.5`) over OpenRouter. Accuracy is comparable; **cost is not**
+(OpenRouter bills $1.00/$5.00 per M vs Anthropic's $0.80/$4.00, ~25% higher), so don't
+compare its cost column against a native `haiku` run.
+
+**Gotcha — `ANTHROPIC_BASE_URL`.** The Anthropic SDK reads that variable from the
+environment, and some agent runtimes (Claude Code among them) set it to a local proxy.
+`_make_client` passes only `api_key`, so in such a shell the native `haiku` path will
+silently route to the proxy rather than the API even with a valid key. Unset it for the
+eval, or use `haiku-or`.
+
 ## Outputs (`results/`)
 
 - `comparison.md` — per case, every model's answer side by side (✓/✗ vs expected, or split-detail for clusters).
@@ -95,9 +106,182 @@ are addressed in v4 (beverage variant rule scoped so it stops pulling subtype to
 weight hint). Cost is flat — the accuracy came from curated data, not more tokens.
 
 **A model that scores ~10% is almost always a broken config, not a bad model.** The
-first deepseek run reported 11/108 having burned 0 tokens: the api_model slug was
-never verified and no call was made, so the rule-based hints scored on their own.
-run_eval now fails loudly on a zero-token run.
+first deepseek run reported 11/108 having burned 0 tokens: no call was made, so the
+rule-based hints scored on their own. run_eval now fails loudly on a zero-token run.
+
+Since checked against the live OpenRouter catalogue: **`deepseek/deepseek-v4-flash` is
+a valid slug** — the cause was the missing call, not a bad name, so the "verify slug"
+TODO is resolved. Its listed price is $0.0826/$0.1652 per M, slightly under the
+$0.09/$0.18 in `MODELS`. Still unrun end to end here (no accuracy number for it yet).
+
+## Full gold-suite run — v5, all five suites (2026-08-25)
+
+First run of `_ENRICH_VERSION` 4 and 5, and the first run of the four newer suites.
+All 268 cases / 284 listings, `anthropic/claude-haiku-4.5`.
+
+**Transport caveat:** run via OpenRouter (`haiku-or`), not the native Anthropic
+path — this environment has `OPENROUTER_API_KEY` but no `ANTHROPIC_API_KEY`. Same
+model, same prompts; the OpenAI-compatible transport differs and OpenRouter bills
+$1.00/$5.00 per M vs Anthropic's $0.80/$4.00, so **cost here runs ~25% high** and
+absolute comparison to the recorded 97.2% is confounded. Accuracy comparisons
+*within* this report are all same-transport and unaffected.
+
+| suite | mean pass | range over 4 runs | n |
+| --- | --- | --- | --- |
+| `gold_the_plug` | 104.5 (96.8%) | 104–106 | 108 |
+| `gold_coney_island` | 53.0 (94.6%) | 53–53 | 56 |
+| `gold_the_spot_bk` | 46.75 (93.5%) | 46–49 | 50 |
+| `gold_hold_up_roll_up` | 40.75 (84.9%) | 40–42 | 48 |
+| `gold_cross_dispensary` | 4.75 (79.2%) | 4–5 | 6 |
+| **total** | **249.75 (93.2%)** | **249–250** | **268** |
+
+Per field, across the four item suites: **category 262/262 (100%)**, subtype 97.9%,
+strain 97.9%, variant 97.3%, product_line 17/20 (85%). 98.1% of individual fields.
+
+Two things this establishes:
+
+- **`category` generalizes.** 100% across three stores with three different meanings
+  of `other` (vapes / flower / pre-rolls) and one store with brand absent from the
+  name. Hint override plus `format_tokens.json` is the most load-bearing and most
+  portable part of the pipeline.
+- **`product_line` does not, exactly as predicted.** The Plug 11/11 and Coney Island
+  5/5, but The Spot BK **1/4** — the maps are seeded from The Plug's brands, and
+  CAMINO is absent from `product_lines.json` entirely. This is a data gap, not a
+  model failure: all three misses spell the line in quotes in the name
+  (`Sour Orchard Peach 'Balance'`), so a curated entry converts them to string facts.
+
+The Plug scored 104–106 against the recorded 105/108, i.e. **v4 and v5 changed
+nothing measurable there** — the delta is inside the noise floor below.
+
+## Noise floor — the same commit, run four times
+
+Every prior conclusion attributed single-case deltas to prompt edits without knowing
+run-to-run variance. Measured, it is large enough to invalidate that reasoning at the
+suite level.
+
+| level | spread over 4 identical runs |
+| --- | --- |
+| full-suite total | 249–250, sd **0.50 cases** (0.19pp) — stable |
+| per suite | up to **±3 cases** (The Spot BK 46→49, ±6pp on 50 cases) |
+| per case | **13/268 (4.9%) are non-deterministic** |
+
+Only 244/268 cases (91%) pass on all four runs; 11 (4.1%) fail on all four; the
+remaining 13 flip. So:
+
+- **The full-suite total is a usable metric. A single suite's score is not.** A
+  2-case per-suite improvement is indistinguishable from noise in a single run.
+- **Noise is batch-correlated, not per-case independent.** The three Spot BK
+  `product_line` misses flip in lockstep (all wrong, all wrong, all wrong, all
+  right) because they share one Pass B batch — verified: rows 264/267/269, all in
+  batch 6 at `batch_size=50`. The Spot BK's ±3 swing is really *one* batch event.
+  Effective independent sample size for batch-correlated failure modes is ~6, not 284.
+- Treat a per-suite delta as real only with replicates, or when it moves the
+  full-suite total by more than ~1.5 cases.
+
+## Description cap on Pass A — tested, not worth it
+
+Pass A gets category/subtype mostly from the name's format words, so capping its
+description while Pass B keeps the full text was projected to cut ~25% of cost.
+Measured over 3 runs per condition, it cuts **3–5%**, and destabilizes the pipeline:
+
+| cap | mean pass (sd) | input tokens | cost | vs base |
+| --- | --- | --- | --- | --- |
+| off | 249.75 (0.50) | 70,443 | $0.1497 | — |
+| 120 chars | 248.33 (1.15) | 66,043 (−6.2%) | $0.1454 | −2.9% |
+| 60 chars | 247.00 (**4.36**) | 63,319 (−10.1%) | $0.1426 | −4.7% |
+
+The projection assumed cost tracks the description payload. It does not:
+
+- **Output tokens are 52.9% of cost and are invariant to the cap** (15,851 → 15,867,
+  +0.1%). Output bills at 5× input. The cap can only reach the input side, and only
+  Pass A's half of it, so ~25% was never available.
+- Accuracy falls monotonically, and **variance grows 8.7×** at cap=60 (sd 0.50 →
+  4.36; The Plug swings 97–105). Truncation removes the disambiguating text
+  unevenly, so which cases break changes per run.
+
+Trading a stable pipeline for 3% is a bad deal at $0.21/dispensary. **Left off.**
+
+The instrument is kept: `ENRICH_PASS_A_DESC_CAP` (chars, 0 = off, word-boundary
+truncation) in `enrich.py`. One reason to revisit — gold-set descriptions are
+pre-truncated at 300 chars (median 220), so this measures a *floor*. Production
+descriptions are ~4× longer, where the input side is a bigger share and the cap
+would save more. Re-test against real scrape CSVs before adopting.
+
+## What is actually broken — the 11 always-fail cases
+
+Failing on all four runs, so these are real defects rather than noise. Grouped by
+root cause, with the deterministic fix each one implies. Together they are 11 of the
+18.25 mean failures; the other ~7 are the flaky cases above.
+
+| # | root cause | cases | fix |
+| --- | --- | --- | --- |
+| 5 | **mg dose in the name never reaches `variant` for topicals/balms/sprays** — `variant` comes back empty | `coney-054`, `coney-055`, `holdup-046`, `holdup-047`, `spot-048` | rule: when category is `topical`/`tincture` and variant is empty, take `\d+(\.\d+)?\s*mg` from the name (note `spot-048` writes it `1000.00mg`) |
+| 3 | **CAMINO absent from `product_lines.json`** | `spot-030` Balance, `spot-033` Bliss, `spot-035` Energy | add the brand's lines; all three are quoted in the name |
+| 2 | **descriptor read as strain** | `holdup-016` `Lemon Lavender Serenity`, `gold-022` `Milk Chocolate` | see below — `gold-022` is the v5 regression fix that **did not work** |
+| 1 | **10-pack preroll weight** — 10 × 0.28g instead of 10 × 0.35g | `coney-050` (`holdup-014` flaky, same shape) | pack math rail, or a curated pack-weight default |
+| 1 | **`Releaf` lands in `strain`** rather than being dropped | `gold-105` | see open question below |
+| 1 | **Honeycrisp cluster splits 3 ways** — `Honeycrisp` / `Honeycrisp Apple Cider` / `Honeycrisp Cider` | `x-ayrloom-honeycrisp-beverage` | `strain_aliases.json` entry for Ayrloom |
+| 1 | **tea sachet → `other`, want `beverage`** | `holdup-023` | `_TOKENS['edible']` already has `tea\s+sachet`; the row isn't reaching the edible branch — needs tracing |
+
+The single highest-value item is the first: one regex fixes 5 of 11, and it is a
+string fact about the name, not a model judgment.
+
+### v5 did not do what it was meant to
+
+`_ENRICH_VERSION` 5 was the ruling that "a format word alone is not a strain" —
+written specifically for `gold-022`, `GR N Milk Chocolate Full Bar Sativa`, which
+should answer `strain: Sativa`. It still answers `Milk Chocolate`, **0/4 runs**.
+That is a fourth data point for the pattern already in this file: every regression
+so far came from a prompt edit, and prompt edits have done the least work. This one
+should move to `format_tokens.json`-style curated data or a post-model rule.
+
+### Flagged for a human ruling — not encoded
+
+Three gold labels look arguable; leaving them as-is rather than silently deciding:
+
+- `holdup-016` — expects `strain: Lemon Lavender`, dropping `Serenity`. But
+  `Serenity` reads like a **product line** (cf. CAMINO's `Balance`/`Bliss`/`Energy`,
+  which the labels *do* treat as lines). If it is a line, the label wants
+  `product_line: Serenity` too, and the case is mislabeled rather than failing.
+- `holdup-046` — expects `strain: None` for `Unscented CBD Lotion`. Consistent with
+  merch/topical null-strain, but the file's own taxonomy note says "topical scent
+  names ARE strains", and `Unscented` is a scent name. `spot-048` cuts the other way:
+  it expects `strain: Restore`, a topical scent/benefit name. One of these two is wrong.
+- `holdup-043` — `Organic Medium Dog CBD Oil`: expects `strain: None`, model answers
+  `Medium Dog` on 2/4 runs. `Medium Dog` is a size descriptor, not a strain, so the
+  label looks right — but this is the same "descriptor as strain" failure as
+  `gold-022`, and fixing one should fix both.
+
+### Papa & Barkley `Releaf` / `Relief` — the open question
+
+`Papa & Barkley -> ["Releaf"]` is **already** in `product_lines.json`, and `gold-105`
+still fails: `product_line: Releaf` is set correctly but `strain: Releaf` stays.
+Traced to `canonical._strip_line_from_strain`, last line:
+
+```python
+return stripped or strain   # "Releaf" minus "Releaf" -> "" -> falls back to "Releaf"
+```
+
+The fallback is deliberate ("returns strain unchanged if removing the line would
+leave nothing") and right for a partial match, but wrong when the strain is
+*nothing but* the product line — there is no strain then, and it should go to `None`.
+Confirmed directly:
+
+```
+_strip_line_from_strain("Releaf Balm", "Releaf") -> 'Balm'     # correct
+_strip_line_from_strain("Releaf",      "Releaf") -> 'Releaf'   # should be None
+```
+
+Two notes: `strain_delined` counts this as a de-line that did not happen, so that
+stat over-reports; and this is a de-lining bug **independent of the spelling
+question**, worth fixing first since it is what actually breaks the cluster.
+
+On the spelling itself (`Releaf` at two stores, `Relief` at The Spot BK, a genuine
+source typo): this is exactly the `strain_aliases.json` shape — one canonical
+spelling, variants mapped onto it — except it needs the same mechanism for
+`product_lines`. Recommend `Releaf` as canonical (it is the brand's actual trademark,
+and two of three stores spell it that way), with `Relief` as the mapped variant.
+Still your call; not encoded.
 
 ## Baseline detail (haiku, gold_the_plug)
 

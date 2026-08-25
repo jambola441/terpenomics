@@ -100,6 +100,39 @@ def _hint_subtype(row: dict) -> str | None:
 
 
 # ---------------------------------------------------------------------------
+# Pass A description cap  —  MEASURED, LEFT OFF (0)
+#
+# Pass A (category/subtype) decides mostly from the name's format words, while
+# Pass B (strain/product_line) needs the full text for edible pack math, so
+# capping Pass A alone looked like a ~25% cost saving. Measured on the gold
+# suites it is worth 3-5%, because output tokens are 53% of cost, bill at 5x
+# input, and do not shrink when the input does. Accuracy also drops and its
+# run-to-run variance grows ~9x at cap=60. Not a good trade — keep it at 0.
+#
+# Retained as an instrument: gold-set descriptions are pre-truncated at 300
+# chars, so that measurement is a floor. Production descriptions are ~4x longer
+# and the arithmetic may differ; re-test against real scrape CSVs before
+# adopting. Set ENRICH_PASS_A_DESC_CAP=<chars> to A/B it. See evals/enrich/README.md.
+# ---------------------------------------------------------------------------
+
+def _pass_a_desc_cap() -> int:
+    try:
+        return max(0, int(os.environ.get("ENRICH_PASS_A_DESC_CAP", "0")))
+    except ValueError:
+        return 0
+
+
+def _cap_desc(text: str, cap: int) -> str:
+    """Truncate on a word boundary so a cut never invents a token ('choc' from
+    'chocolate') that the classifier could read as a format word."""
+    if not cap or len(text) <= cap:
+        return text
+    cut = text[:cap]
+    sp = cut.rfind(" ")
+    return (cut[:sp] if sp > cap // 2 else cut).rstrip() + "\u2026"
+
+
+# ---------------------------------------------------------------------------
 # Cache — one file per dispensary: data/enrich_cache/{slug}.json
 # ---------------------------------------------------------------------------
 
@@ -192,6 +225,17 @@ MODELS: dict[str, dict] = {
         "cost": {"input": 0.80 / 1e6, "output": 4.00 / 1e6,
                  "cache_write": 1.00 / 1e6, "cache_read": 0.08 / 1e6},
     },
+    # Same model, OpenRouter transport. For environments that have
+    # OPENROUTER_API_KEY but no ANTHROPIC_API_KEY. Scores from this entry are
+    # comparable to "haiku" on accuracy but NOT on cost: OpenRouter's rate is
+    # $1.00/$5.00 per M vs Anthropic's $0.80/$4.00, ~25% higher. There is also
+    # no prompt-cache accounting on this path (a no-op today either way, since
+    # the system prompts sit under the minimum cacheable length).
+    "haiku-or": {
+        "provider":  "openrouter",
+        "api_model": "anthropic/claude-haiku-4.5",
+        "cost": {"input": 1.00 / 1e6, "output": 5.00 / 1e6},
+    },
     # ---- comparison models (via OpenRouter) ----
     # TODO: confirm the exact slug + pricing from openrouter.ai/models.
     "mimo": {
@@ -208,7 +252,7 @@ MODELS: dict[str, dict] = {
     },
     "deepseek": {
         "provider":  "openrouter",
-        "api_model": "deepseek/deepseek-v4-flash",   # <-- verify slug on OpenRouter
+        "api_model": "deepseek/deepseek-v4-flash",   # verified live on OpenRouter 2026-08-25
         "cost": {"input": 0.09 / 1e6, "output": 0.18 / 1e6},
         # Truncated/nulled the extract pass at the default 50-item batch. Small
         # batch + generous max_tokens keeps each batch's JSON complete (same fix
@@ -556,6 +600,8 @@ def _run_enrich(
     hinted   = [(oi, r) for (oi, r) in pending if _hint_subtype(r) is not None]
     fresh    = [(oi, r) for (oi, r) in pending if _hint_subtype(r) is None]
 
+    _cap_a = _pass_a_desc_cap()
+
     def classify_payload(chunk):
         return [
             {
@@ -563,7 +609,7 @@ def _run_enrich(
                 "hint_category": _hint_category(r),
                 "brand":         r.get("brand", ""),
                 "name":          r.get("name", ""),
-                "description":   r.get("description", ""),
+                "description":   _cap_desc(r.get("description", ""), _cap_a),
                 "hint_subtype":  _hint_subtype(r),
                 "hint_variant":  r.get("variant", ""),
             }

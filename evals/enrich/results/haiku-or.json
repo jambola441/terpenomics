@@ -1,0 +1,4927 @@
+{
+  "model": "haiku-or",
+  "api_model": "anthropic/claude-haiku-4.5",
+  "secs": 14.975128889083862,
+  "usage": {
+    "input_tokens": 70443,
+    "output_tokens": 15845,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "cost_usd": 0.1497
+  },
+  "error": null,
+  "scores": {
+    "gold_coney_island.json": [
+      {
+        "id": "coney-000-ayrloom-cran-haze-aio-1g",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Cran Haze",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Cran Haze",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-001-ayrloom-honeycrisp-aio-1g",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Honeycrisp",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Honeycrisp",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-002-ayrloom-lime-haze-aio-1g",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Lime Haze",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Lime Haze",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-003-ayrloom-mood-energy-aio-1g-thc-thcv-cbg",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Mood Energy",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-004-camino-sours-balance-orchard-peach-gummi",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Orchard Peach",
+          "product_line": "Balance",
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Orchard Peach",
+          "product_line": "Balance",
+          "variant": "100mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-005-camino-midnight-blueberry-5-1-sleep-gumm",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Midnight Blueberry",
+          "product_line": "Sleep",
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Midnight Blueberry",
+          "product_line": "Sleep"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-006-camino-pineapple-habanero-gummies-100mg-",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Pineapple Habanero",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Pineapple Habanero",
+          "variant": "100mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-007-camino-watermelon-lemonade-bliss-gummies",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Watermelon Lemonade",
+          "product_line": "Bliss",
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Watermelon Lemonade",
+          "product_line": "Bliss"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-008-camino-wild-berry-chill-gummies-20pk",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Wild Berry",
+          "product_line": "Chill",
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Wild Berry",
+          "product_line": "Chill"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-009-camino-wild-cherry-excite-gummies-20pk",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Wild Cherry",
+          "product_line": "Excite",
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Wild Cherry",
+          "product_line": "Excite"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-010-chicken-n-waffle-flower-mixed-buds",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Chicken N Waffle",
+          "product_line": null,
+          "variant": "7g"
+        },
+        "expect": {
+          "category": "flower",
+          "strain": "Chicken N Waffle",
+          "variant": "7g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-011-dr-jekyll-and-mr-high-chem-dog",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Chem Dog",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Chem Dog",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-012-dr-jekyll-and-mr-high-do-si-do-flower",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Do-Si-Do",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Do-Si-Do",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-013-dr-jekyll-and-mr-high-gelato",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Gelato",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Gelato",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-014-dr-jekyll-and-mr-high-girl-scout-cookies",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Girl Scout Cookies",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Girl Scout Cookies",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-015-dr-jekyll-and-mr-high-mango-kush",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Mango Kush",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Mango Kush",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-016-dr-jekyll-and-mr-high-white-widow",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "White Widow",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "White Widow",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-017-fernway-berry-haze-510-cart",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "cart",
+          "strain": "Berry Haze",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "cart",
+          "strain": "Berry Haze",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-018-herb-chocolate-haze-flower",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Chocolate Haze",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Chocolate Haze",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-019-herb-runtz-flower",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Runtz",
+          "product_line": null,
+          "variant": "14g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Runtz",
+          "variant": "14g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-020-herb-sour-og-flower",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Sour OG",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Sour OG",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-021-maui-mac-nut-infused-pre-roll",
+        "got": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Maui Mac Nut",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Maui Mac Nut",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-022-moods-banana-diesel-aio",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Banana Diesel",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Banana Diesel",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-023-moods-cream-cheese-zushi-aio",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Cream Cheese Zushi",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Cream Cheese Zushi",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-024-moods-ny-minute-mini-aio",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "NY Minute Mini",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-025-moods-wedding-cake-aio",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Wedding Cake",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Wedding Cake",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-026-moony-s-zooties-biscotti-pre-roll-2pk",
+        "got": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Biscotti",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Biscotti",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-027-moony-s-zooties-vanilla-frosting-pre-rol",
+        "got": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Vanilla Frosting",
+          "product_line": null,
+          "variant": "0.5g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Vanilla Frosting",
+          "variant": "0.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-028-nanticoke-mac-nilla-infused-pre-roll",
+        "got": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Mac Nilla",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Mac Nilla",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-029-preload-starter-kit-1g-fusion-sour-apple",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "cart",
+          "strain": "Sour Appleicious",
+          "product_line": "Fusion",
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "strain": "Sour Appleicious",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-030-rec-roots-super-candy",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Super Candy",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Super Candy",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-031-rezziano",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Rezziano",
+          "product_line": null,
+          "variant": "14g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Rezziano",
+          "variant": "14g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-032-smartbud-motorhead-flower",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Motorhead",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Motorhead",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-033-smoakland-durban-poison-flower",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Durban Poison",
+          "product_line": null,
+          "variant": "28g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Durban Poison",
+          "variant": "28g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-034-smoothie-bar-lava-cake-x-sour-diesel-dua",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Lava Cake x Sour Diesel",
+          "product_line": null,
+          "variant": "2g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Lava Cake x Sour Diesel",
+          "variant": "2g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-035-smoothie-bar-mimosa-x-dirty-sherley-dual",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Mimosa x Dirty Sherley",
+          "product_line": null,
+          "variant": "2g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Mimosa x Dirty Sherley",
+          "variant": "2g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-036-smoothie-bar-papaya-x-lemonade-dual-cham",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Papaya x Lemonade",
+          "product_line": null,
+          "variant": "2g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Papaya x Lemonade",
+          "variant": "2g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-037-smoothie-bar-sour-lemon-og-x-pineapple-j",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Sour Lemon OG x Pineapple Jack",
+          "product_line": null,
+          "variant": "2g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Sour Lemon OG x Pineapple Jack",
+          "variant": "2g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-038-toke-blueberry-glue-pre-roll",
+        "got": {
+          "category": "preroll",
+          "subtype": "single",
+          "strain": "Blueberry Glue",
+          "product_line": null,
+          "variant": "0.5g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "single",
+          "strain": "Blueberry Glue",
+          "variant": "0.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-039-toke-quatro-killa-pre-roll",
+        "got": {
+          "category": "preroll",
+          "subtype": "single",
+          "strain": "Quatro Killa",
+          "product_line": null,
+          "variant": "0.5g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "single",
+          "strain": "Quatro Killa",
+          "variant": "0.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-040-vacation-blue-raspberry-aio",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Blue Raspberry",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Blue Raspberry",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-041-vacation-blue-raspberry-hash-rosin-gummi",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Blue Raspberry",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Blue Raspberry",
+          "variant": "100mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-042-vacation-gorilla-glue-4-flower",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Gorilla Glue #4",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Gorilla Glue #4",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-043-vacation-gorilla-glue-4-pre-roll-10pk",
+        "got": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Gorilla Glue #4",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Gorilla Glue #4",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-044-vacation-memory-loss-og-flower",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Memory Loss OG",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Memory Loss OG",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-045-vacation-memory-loss-og-pre-roll-10pk",
+        "got": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Memory Loss OG",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Memory Loss OG",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-046-vacation-peach-rings-hash-rosin-gummies-",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Peach Rings",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Peach Rings",
+          "variant": "100mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-047-vacation-pineapple-coconut-aio",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Pineapple Coconut",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Pineapple Coconut",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-048-vacation-pineapple-coconut-hash-rosin-gu",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Pineapple Coconut",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Pineapple Coconut",
+          "variant": "100mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-049-vacation-sour-fuel-flower",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Sour Fuel",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Sour Fuel",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-050-vacation-sour-fuel-pre-roll-10pk",
+        "got": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Sour Fuel",
+          "product_line": null,
+          "variant": "2.8g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Sour Fuel",
+          "variant": "3.5g"
+        },
+        "passed": false,
+        "fails": [
+          "variant"
+        ]
+      },
+      {
+        "id": "coney-051-vacation-tiki-fruit-punch-aio",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Tiki Fruit Punch",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Tiki Fruit Punch",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-052-vacation-tiki-fruit-punch-hash-rosin-gum",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Tiki Fruit Punch",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Tiki Fruit Punch",
+          "variant": "100mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-053-ayrloom-low-dose-everyday-drops-150mg-th",
+        "got": {
+          "category": "tinctures",
+          "subtype": "tincture",
+          "strain": "Low Dose Everyday Drops",
+          "product_line": null,
+          "variant": "150mg"
+        },
+        "expect": {
+          "category": "tinctures",
+          "subtype": "tincture",
+          "variant": "150mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "coney-054-ayrloom-rescue-1-1-topical-1000mg-thc-10",
+        "got": {
+          "category": "topical",
+          "subtype": "topical",
+          "strain": "Rescue",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "topical",
+          "subtype": "topical",
+          "strain": "Rescue",
+          "variant": "1000mg"
+        },
+        "passed": false,
+        "fails": [
+          "variant"
+        ]
+      },
+      {
+        "id": "coney-055-ayrloom-revive-1-1-topical-1000mg-thc-10",
+        "got": {
+          "category": "topical",
+          "subtype": "topical",
+          "strain": "Revive",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "topical",
+          "subtype": "topical",
+          "strain": "Revive",
+          "variant": "1000mg"
+        },
+        "passed": false,
+        "fails": [
+          "variant"
+        ]
+      }
+    ],
+    "gold_cross_dispensary.json": [
+      {
+        "id": "x-ayrloom-revive-balm",
+        "converged": true,
+        "split": {},
+        "canonical_match": true,
+        "canon_fails": [],
+        "members": [
+          {
+            "category": "topical",
+            "subtype": "topical",
+            "strain": "Revive",
+            "product_line": null,
+            "variant": ""
+          },
+          {
+            "category": "topical",
+            "subtype": "topical",
+            "strain": "Revive",
+            "product_line": null,
+            "variant": ""
+          },
+          {
+            "category": "topical",
+            "subtype": "topical",
+            "strain": "Revive",
+            "product_line": null,
+            "variant": ""
+          },
+          {
+            "category": "topical",
+            "subtype": "topical",
+            "strain": "Revive",
+            "product_line": null,
+            "variant": ""
+          },
+          {
+            "category": "topical",
+            "subtype": "topical",
+            "strain": "Revive",
+            "product_line": null,
+            "variant": ""
+          },
+          {
+            "category": "topical",
+            "subtype": "topical",
+            "strain": "Revive",
+            "product_line": null,
+            "variant": ""
+          }
+        ]
+      },
+      {
+        "id": "x-camino-watermelon-lemonade-bliss",
+        "converged": true,
+        "split": {},
+        "canonical_match": true,
+        "canon_fails": [],
+        "members": [
+          {
+            "category": "edible",
+            "subtype": "gummy",
+            "strain": "Watermelon Lemonade",
+            "product_line": "Bliss",
+            "variant": "100mg"
+          },
+          {
+            "category": "edible",
+            "subtype": "gummy",
+            "strain": "Watermelon Lemonade",
+            "product_line": "Bliss",
+            "variant": "100mg"
+          },
+          {
+            "category": "edible",
+            "subtype": "gummy",
+            "strain": "Watermelon Lemonade",
+            "product_line": "Bliss",
+            "variant": "100mg"
+          },
+          {
+            "category": "edible",
+            "subtype": "gummy",
+            "strain": "Watermelon Lemonade",
+            "product_line": null,
+            "variant": "100mg"
+          }
+        ]
+      },
+      {
+        "id": "x-jaunty-mango-haze-aio",
+        "converged": true,
+        "split": {},
+        "canonical_match": true,
+        "canon_fails": [],
+        "members": [
+          {
+            "category": "vaporizers",
+            "subtype": "all-in-one",
+            "strain": "Mango Haze",
+            "product_line": null,
+            "variant": "1.5g"
+          },
+          {
+            "category": "vaporizers",
+            "subtype": "all-in-one",
+            "strain": "Mango Haze",
+            "product_line": null,
+            "variant": "1.5g"
+          },
+          {
+            "category": "vaporizers",
+            "subtype": "all-in-one",
+            "strain": "Mango Haze",
+            "product_line": null,
+            "variant": "1.5g"
+          }
+        ]
+      },
+      {
+        "id": "x-ayrloom-honeycrisp-beverage",
+        "converged": false,
+        "split": {
+          "strain": [
+            "Honeycrisp",
+            "Honeycrisp Apple Cider",
+            "Honeycrisp Cider"
+          ]
+        },
+        "canonical_match": false,
+        "canon_fails": [],
+        "members": [
+          {
+            "category": "edible",
+            "subtype": "beverage",
+            "strain": "Honeycrisp Cider",
+            "product_line": "UP",
+            "variant": "10mg"
+          },
+          {
+            "category": "edible",
+            "subtype": "beverage",
+            "strain": "Honeycrisp Apple Cider",
+            "product_line": "UP",
+            "variant": "10mg"
+          },
+          {
+            "category": "edible",
+            "subtype": "beverage",
+            "strain": "Honeycrisp",
+            "product_line": null,
+            "variant": "5mg"
+          },
+          {
+            "category": "edible",
+            "subtype": "beverage",
+            "strain": "Honeycrisp Cider",
+            "product_line": null,
+            "variant": "10mg"
+          }
+        ]
+      },
+      {
+        "id": "x-ayrloom-honeycrisp-vape",
+        "converged": true,
+        "split": {},
+        "canonical_match": true,
+        "canon_fails": [],
+        "members": [
+          {
+            "category": "vaporizers",
+            "subtype": "all-in-one",
+            "strain": "Honeycrisp",
+            "product_line": null,
+            "variant": "1g"
+          },
+          {
+            "category": "vaporizers",
+            "subtype": "all-in-one",
+            "strain": "Honeycrisp",
+            "product_line": null,
+            "variant": "1g"
+          }
+        ]
+      },
+      {
+        "id": "x-papa-barkley-releaf-balm",
+        "converged": true,
+        "split": {},
+        "canonical_match": true,
+        "canon_fails": [],
+        "members": [
+          {
+            "category": "topical",
+            "subtype": "topical",
+            "strain": "Balm",
+            "product_line": "Releaf",
+            "variant": ""
+          },
+          {
+            "category": "topical",
+            "subtype": "topical",
+            "strain": "Relief Balm",
+            "product_line": "Releaf",
+            "variant": ""
+          },
+          {
+            "category": "topical",
+            "subtype": "topical",
+            "strain": "Balm",
+            "product_line": "Releaf",
+            "variant": ""
+          }
+        ]
+      }
+    ],
+    "gold_hold_up_roll_up.json": [
+      {
+        "id": "holdup-000-cereal-milk-x-banana-mochi-1-5g-2pk-full",
+        "got": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Cereal Milk x Banana Mochi",
+          "product_line": null,
+          "variant": "1.5g"
+        },
+        "expect": {
+          "category": "preroll",
+          "strain": "Cereal Milk x Banana Mochi",
+          "variant": "1.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-001-blue-razz-lemonade-1g-botanica-blend-pod",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "pod",
+          "strain": "Blue Razz Lemonade",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "pod",
+          "strain": "Blue Razz Lemonade",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-002-runtz-28g-flower",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Runtz",
+          "product_line": null,
+          "variant": "28g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Runtz",
+          "variant": "28g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-003-nyc-vapor-3-5g-flower",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "NYC Vapor",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "NYC Vapor",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-004-bubba-kush-14g-infused-pre-ground-flower",
+        "got": {
+          "category": "flower",
+          "subtype": "preground",
+          "strain": "Bubba Kush",
+          "product_line": null,
+          "variant": "14g"
+        },
+        "expect": {
+          "category": "flower",
+          "strain": "Bubba Kush",
+          "variant": "14g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-005-watermelon-og-1g-live-resin-aio-disposab",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Watermelon OG",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Watermelon OG",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-006-blackberry-kush-2g-starter-kit",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "battery",
+          "strain": "Blackberry Kush",
+          "product_line": null,
+          "variant": "2g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "strain": "Blackberry Kush",
+          "variant": "2g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-007-blue-oreos-1g-ice-water-hash-pre-roll",
+        "got": {
+          "category": "preroll",
+          "subtype": "single",
+          "strain": "Blue Oreos",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Blue Oreos",
+          "variant": "1g"
+        },
+        "passed": false,
+        "fails": [
+          "subtype"
+        ]
+      },
+      {
+        "id": "holdup-008-gorilla-glue-1g-aio-vape",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Gorilla Glue",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Gorilla Glue",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-009-heir-heads-1g-live-resin-510-vape",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "cart",
+          "strain": "Heir Heads",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "cart",
+          "strain": "Heir Heads",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-010-blue-dream-4g-aio-vape",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Blue Dream",
+          "product_line": null,
+          "variant": "4g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Blue Dream",
+          "variant": "4g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-011-moonbeam-gelato-7g-flower-smalls",
+        "got": {
+          "category": "flower",
+          "subtype": "smalls",
+          "strain": "Moonbeam Gelato",
+          "product_line": null,
+          "variant": "7g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "smalls",
+          "strain": "Moonbeam Gelato",
+          "variant": "7g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-012-sour-apple-glue-1g-ice-water-hash-pre-ro",
+        "got": {
+          "category": "preroll",
+          "subtype": "single",
+          "strain": "Sour Apple Glue",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Sour Apple Glue",
+          "variant": "1g"
+        },
+        "passed": false,
+        "fails": [
+          "subtype"
+        ]
+      },
+      {
+        "id": "holdup-013-king-louis-xiii-0-5g-pod",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "pod",
+          "strain": "King Louis XIII",
+          "product_line": null,
+          "variant": "0.5g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "pod",
+          "strain": "King Louis XIII",
+          "variant": "0.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-014-northern-lights-10pk-live-resin-infused-",
+        "got": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Northern Lights",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "preroll",
+          "strain": "Northern Lights",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-015-northern-lights-2g-infused-preroll",
+        "got": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Northern Lights",
+          "product_line": null,
+          "variant": "2g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Northern Lights",
+          "variant": "2g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-016-lemon-lavender-serenity-50mg-gummies",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Lemon Lavender Serenity",
+          "product_line": null,
+          "variant": "50mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Lemon Lavender",
+          "variant": "50mg"
+        },
+        "passed": false,
+        "fails": [
+          "strain"
+        ]
+      },
+      {
+        "id": "holdup-017-blue-razzleberry-mega-100mg-gummy",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Blue Razzleberry Mega",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Blue Razzleberry Mega",
+          "variant": "100mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-018-nordic-blueberry-100mg-gummies",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Nordic Blueberry",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Nordic Blueberry",
+          "variant": "100mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-019-cookies-n-cream-cones-100mg-ice-cream-co",
+        "got": {
+          "category": "edible",
+          "subtype": "other",
+          "strain": "Cookies N Cream",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "strain": "Cookies N Cream",
+          "variant": "100mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-020-pineapple-float-100mg-20pk-gummies",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Pineapple Float",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Pineapple Float",
+          "variant": "100mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-021-black-cherry-sparkling-water-5mg",
+        "got": {
+          "category": "edible",
+          "subtype": "beverage",
+          "strain": "Black Cherry Sparkling Water",
+          "product_line": null,
+          "variant": "5mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "beverage",
+          "strain": "Black Cherry",
+          "variant": "5mg"
+        },
+        "passed": false,
+        "fails": [
+          "strain"
+        ]
+      },
+      {
+        "id": "holdup-022-sour-blue-raspberry-lemonade-100mg-multi",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Sour Blue Raspberry Lemonade",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Sour Blue Raspberry Lemonade",
+          "variant": "100mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-023-wake-and-bake-yaupon-and-mint-10mg-tea-s",
+        "got": {
+          "category": "edible",
+          "subtype": "other",
+          "strain": "Yaupon And Mint",
+          "product_line": null,
+          "variant": "50mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "beverage",
+          "variant": "50mg"
+        },
+        "passed": false,
+        "fails": [
+          "subtype"
+        ]
+      },
+      {
+        "id": "holdup-024-mega-dose-cherry-rings-100mg-gummy",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Cherry",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "variant": "100mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-025-midnight-mango-1-1-1-thc-cbd-cbn-20pk-sl",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Midnight Mango",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Midnight Mango"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-026-donny-burger-1g-preroll",
+        "got": {
+          "category": "preroll",
+          "subtype": "single",
+          "strain": "Donny Burger",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "single",
+          "strain": "Donny Burger",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-027-platinum-life-breath-1g-preroll",
+        "got": {
+          "category": "preroll",
+          "subtype": "single",
+          "strain": "Platinum Life Breath",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "single",
+          "strain": "Platinum Life Breath",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-028-shock-bloom-x-pinnacle-3-3-5g-7pk-prerol",
+        "got": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Shock Bloom x Pinnacle 3",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Shock Bloom x Pinnacle 3",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-029-lilac-diesel-8pk-preroll",
+        "got": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Lilac Diesel",
+          "product_line": null,
+          "variant": "4g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Lilac Diesel",
+          "variant": "4g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-030-blue-lobster-1g-pre-roll",
+        "got": {
+          "category": "preroll",
+          "subtype": "single",
+          "strain": "Blue Lobster",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "single",
+          "strain": "Blue Lobster",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-031-animal-face-5pk-pre-rolls",
+        "got": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Animal Face",
+          "product_line": null,
+          "variant": "1.75g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Animal Face",
+          "variant": "1.75g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-032-citronella-1g-preroll",
+        "got": {
+          "category": "preroll",
+          "subtype": "single",
+          "strain": "Citronella",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "single",
+          "strain": "Citronella",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-033-empire-state-cake-0-5g-6pk-perolls",
+        "got": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Empire State Cake",
+          "product_line": null,
+          "variant": "3g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Empire State Cake",
+          "variant": "3g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-034-silly-nice-bubble-hash-1g",
+        "got": {
+          "category": "concentrate",
+          "subtype": "hash",
+          "strain": "",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "concentrate",
+          "subtype": "hash",
+          "strain": null,
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-035-chem-dawg-1g-cured-resin-crumble",
+        "got": {
+          "category": "concentrate",
+          "subtype": "resin",
+          "strain": "Chem Dawg",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "concentrate",
+          "subtype": "resin",
+          "strain": "Chem Dawg",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-036-burnout-cookies-1g-crumble",
+        "got": {
+          "category": "concentrate",
+          "subtype": "other",
+          "strain": "Burnout Cookies",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "concentrate",
+          "strain": "Burnout Cookies",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-037-biscotti-1g-cured-resin-budder",
+        "got": {
+          "category": "concentrate",
+          "subtype": "resin",
+          "strain": "Biscotti",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "concentrate",
+          "subtype": "resin",
+          "strain": "Biscotti",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-038-blue-cookies-1g-badder",
+        "got": {
+          "category": "concentrate",
+          "subtype": "resin",
+          "strain": "Blue Cookies",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "concentrate",
+          "strain": "Blue Cookies",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-039-mk-lighter-cultivate-series-jet-pocket-l",
+        "got": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": null
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-040-peaches-n-cream-juicy-jay-s-flavored-rol",
+        "got": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": null
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-041-black-510-thread-stick-battery",
+        "got": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": null
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-042-dab-tool",
+        "got": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": null
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-043-organic-medium-dog-cbd-oil-600mg-tinctur",
+        "got": {
+          "category": "tinctures",
+          "subtype": "tincture",
+          "strain": "",
+          "product_line": null,
+          "variant": "600mg"
+        },
+        "expect": {
+          "category": "tinctures",
+          "subtype": "tincture",
+          "strain": null,
+          "variant": "600mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-044-pillow-talk-sleep-drops-300mg-thc-1500mg",
+        "got": {
+          "category": "tinctures",
+          "subtype": "tincture",
+          "strain": "Pillow Talk",
+          "product_line": null,
+          "variant": "300mg"
+        },
+        "expect": {
+          "category": "tinctures",
+          "subtype": "tincture",
+          "strain": "Pillow Talk",
+          "variant": "300mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-045-unflavored-beverage-enhancer-300mg-thc-t",
+        "got": {
+          "category": "tinctures",
+          "subtype": "tincture",
+          "strain": "Unflavored",
+          "product_line": null,
+          "variant": "300mg"
+        },
+        "expect": {
+          "category": "tinctures",
+          "subtype": "tincture",
+          "variant": "300mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "holdup-046-unscented-cbd-lotion-300mg",
+        "got": {
+          "category": "topical",
+          "subtype": "topical",
+          "strain": "Unscented",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "topical",
+          "subtype": "topical",
+          "strain": null,
+          "variant": "300mg"
+        },
+        "passed": false,
+        "fails": [
+          "strain",
+          "variant"
+        ]
+      },
+      {
+        "id": "holdup-047-on-heat-relief-muscle-spray-300mg",
+        "got": {
+          "category": "topical",
+          "subtype": "topical",
+          "strain": "On Heat Relief",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "topical",
+          "subtype": "topical",
+          "variant": "300mg"
+        },
+        "passed": false,
+        "fails": [
+          "variant"
+        ]
+      }
+    ],
+    "gold_the_plug.json": [
+      {
+        "id": "gold-000-off-hours-razz-lemonade-live-resin-rope",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Razz Lemonade",
+          "product_line": null,
+          "variant": "30mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Razz Lemonade"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-001-ayrloom-up-12oz-beverage-honeycrisp-5mg-1-1-",
+        "got": {
+          "category": "edible",
+          "subtype": "beverage",
+          "strain": "Honeycrisp",
+          "product_line": "UP",
+          "variant": "5mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "beverage",
+          "strain": "Honeycrisp",
+          "variant": "5mg",
+          "product_line": "UP"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-002-ayrloom-up-12oz-beverage-lemonade",
+        "got": {
+          "category": "edible",
+          "subtype": "beverage",
+          "strain": "Lemonade",
+          "product_line": "UP",
+          "variant": "5mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "beverage",
+          "strain": "Lemonade",
+          "product_line": "UP"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-003-old-pal-x-babish-thc-infused-sugar-100mg",
+        "got": {
+          "category": "edible",
+          "subtype": "other",
+          "strain": "",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "other",
+          "variant": "100mg",
+          "strain": null
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-004-wyld-kiwi-1-1-thc-thcv",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Kiwi",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Kiwi"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-005-florist-farms-peach-gummies-20mg-x-2pk-1-1-t",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Peach",
+          "product_line": null,
+          "variant": "40mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Peach",
+          "variant": "40mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-006-camino-sleep-midnight-blueberry-5-1-cbn-20pk",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Midnight Blueberry",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Midnight Blueberry",
+          "variant": "100mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-007-foy-strawberry-nighttime-1-1-1-chews",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Strawberry",
+          "product_line": null,
+          "variant": "70mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-008-myhi-boisterous-berry-3-x-10mg-thc-stir-stik",
+        "got": {
+          "category": "edible",
+          "subtype": "beverage",
+          "strain": "Boisterous Berry",
+          "product_line": null,
+          "variant": "30mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "beverage",
+          "strain": "Boisterous Berry",
+          "variant": "30mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-009-mfny-live-resin-gummies-creamsicle-x-rainbow",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Creamsicle x Rainbow Beltz 2.0",
+          "product_line": null,
+          "variant": "26mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Creamsicle x Rainbow Beltz 2.0"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-010-revert-grape-100mg-scored-gummy",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Grape",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Grape",
+          "variant": "100mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-011-myhi-simply-flavorless-3-x-10mg-thc-stir-sti",
+        "got": {
+          "category": "edible",
+          "subtype": "beverage",
+          "strain": "Simply Flavorless",
+          "product_line": null,
+          "variant": "30mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "beverage",
+          "strain": "Simply Flavorless",
+          "variant": "30mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-012-kushy-punch-blue-raspberry-gummies-100mg",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Blue Raspberry",
+          "product_line": null,
+          "variant": "200mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Blue Raspberry"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-013-gr-n-baja-blaze-mega",
+        "got": {
+          "category": "edible",
+          "subtype": "other",
+          "strain": "Baja Blaze Mega",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Baja Blaze Mega"
+        },
+        "passed": false,
+        "fails": [
+          "subtype"
+        ]
+      },
+      {
+        "id": "gold-014-wana-fast-asleep-5-1-1-1-dream-berry",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Dream Berry",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Dream Berry"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-015-eaton-botanicals-apple-a-day-apple-2-5mg-gum",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Apple-A-Day",
+          "product_line": null,
+          "variant": "120mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Apple-A-Day"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-016-gr-n-milk-chocolate-mini-bar-daytime-sativa-",
+        "got": {
+          "category": "edible",
+          "subtype": "chocolate",
+          "strain": "Milk Chocolate",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "chocolate",
+          "variant": "100mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-017-ayrloom-up-12oz-beverage-pineapple-mango",
+        "got": {
+          "category": "edible",
+          "subtype": "beverage",
+          "strain": "Pineapple Mango",
+          "product_line": "UP",
+          "variant": "5mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "beverage",
+          "strain": "Pineapple Mango",
+          "product_line": "UP"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-018-camino-balance-yuzu-lemon-100mg-20pk",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Yuzu Lemon",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Yuzu Lemon",
+          "variant": "100mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-019-ayrloom-10-mg-thc-5mg-thcv-gummies-sol-burst",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Sol Burst",
+          "product_line": null,
+          "variant": "40mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Sol Burst"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-020-camino-recover-freshly-squeezed-1-2-cbg-20pk",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Freshly Squeezed",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Freshly Squeezed",
+          "variant": "100mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-021-camino-chews-pineapple-paradise-1-1-thc-cbc-",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Pineapple Paradise",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Pineapple Paradise",
+          "variant": "100mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-022-gr-n-milk-chocolate-full-bar-sativa",
+        "got": {
+          "category": "edible",
+          "subtype": "chocolate",
+          "strain": "Milk Chocolate",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "chocolate",
+          "strain": "Sativa"
+        },
+        "passed": false,
+        "fails": [
+          "strain"
+        ]
+      },
+      {
+        "id": "gold-023-hashtag-honey-tropical-punch-live-resin-gumm",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Tropical Punch",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Tropical Punch",
+          "variant": "100mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-024-purple-punch-infused-5pk-0-5g-pre-rolls",
+        "got": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Purple Punch",
+          "product_line": null,
+          "variant": "2.5g"
+        },
+        "expect": {
+          "category": "preroll",
+          "strain": "Purple Punch",
+          "variant": "2.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-025-aphrodite-vanilla-gelato-foam-tip-pre-roll-5",
+        "got": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Vanilla Gelato",
+          "product_line": null,
+          "variant": "2.5g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Vanilla Gelato",
+          "variant": "2.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-026-jaunty-stay-puft-x-strawberry-meltz-1g-hash-",
+        "got": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Stay Puft x Strawberry Meltz",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Stay Puft x Strawberry Meltz",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-027-budd-lemon-cherry-gelato-1g-pre-roll",
+        "got": {
+          "category": "preroll",
+          "subtype": "single",
+          "strain": "Lemon Cherry Gelato",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "single",
+          "strain": "Lemon Cherry Gelato",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-028-claybourne-co-strawberry-cough-flyers-infuse",
+        "got": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Strawberry Cough",
+          "product_line": "Flyers",
+          "variant": "1.5g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Strawberry Cough",
+          "product_line": "Flyers",
+          "variant": "1.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-029-claybourne-co-king-louis-og-diamond-frosted-",
+        "got": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "King Louis OG",
+          "product_line": "Flyers",
+          "variant": "2.5g"
+        },
+        "expect": {
+          "category": "preroll",
+          "strain": "King Louis OG",
+          "variant": "2.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-030-the-plug-pack-tequila-sunrise-1g-preroll",
+        "got": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Tequila Sunrise",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "single",
+          "strain": "Tequila Sunrise",
+          "variant": "1g"
+        },
+        "passed": false,
+        "fails": [
+          "subtype"
+        ]
+      },
+      {
+        "id": "gold-031-nanticoke-coconut-cream-1g-infused-pre-roll",
+        "got": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Coconut Cream",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Coconut Cream",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-032-lowell-smokes-quicks-afternoon-delight-0-35g",
+        "got": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Afternoon Delight",
+          "product_line": "Quicks",
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Afternoon Delight",
+          "product_line": "Quicks",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-033-claybourne-co-banana-og-flyers-infused-1-5g-",
+        "got": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Banana OG",
+          "product_line": "Flyers",
+          "variant": "1.5g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Banana OG",
+          "product_line": "Flyers",
+          "variant": "1.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-034-ruby-farms-classics-7pk-pre-rolls-trop-cherr",
+        "got": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Trop Cherry",
+          "product_line": "Classics",
+          "variant": "5g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Trop Cherry",
+          "variant": "5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-035-boutiq-snack-pack-cherry-lime-x-rz-11-5-x-05",
+        "got": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Cherry Lime x RZ-11",
+          "product_line": null,
+          "variant": "2.5g"
+        },
+        "expect": {
+          "category": "preroll",
+          "strain": "Cherry Lime x RZ-11",
+          "variant": "2.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-036-ruby-farms-hash-infused-blueberry-dj-cut-2pk",
+        "got": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Blueberry DJ Cut",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Blueberry DJ Cut",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-037-florist-farms-mule-fuel-1g-live-resin-infuse",
+        "got": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Mule Fuel",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Mule Fuel",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-038-claybourne-co-fast-lane-sativa-flyers-blends",
+        "got": {
+          "category": "preroll",
+          "subtype": "single",
+          "strain": "Fast Lane Sativa",
+          "product_line": "Flyers",
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "preroll",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-039-alibi-dream-star-cherry-diesel-4g-variety-pr",
+        "got": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Dream Star & Cherry Diesel",
+          "product_line": null,
+          "variant": "4g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "pack",
+          "variant": "4g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-040-eaton-botanicals-little-pandas-tropical-cool",
+        "got": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Tropical Cooler",
+          "product_line": "Little Pandas",
+          "variant": "1.75g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "pack",
+          "variant": "1.75g",
+          "product_line": "Little Pandas"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-041-jetpacks-fj-mini-0-6g-infused-preroll-strawb",
+        "got": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Strawberry Sour Diesel",
+          "product_line": null,
+          "variant": "0.6g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Strawberry Sour Diesel",
+          "variant": "0.6g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-042-smoke-wrld-mochi-runtz-3-5g-flower",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Mochi Runtz",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Mochi Runtz",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-043-the-plug-pack-sapphire-haze-28g-flower",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Sapphire Haze",
+          "product_line": null,
+          "variant": "28g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Sapphire Haze",
+          "variant": "28g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-044-umamii-ice-cream-cake-3-5g-flower",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Ice Cream Cake",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Ice Cream Cake",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-045-revert-crumble-cake-3-5g-flower",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Crumble Cake",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Crumble Cake",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-046-alchemy-pure-space-panda-0-7g-flower-bag",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Space Panda",
+          "product_line": null,
+          "variant": "0.7g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Space Panda",
+          "variant": "0.7g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-047-ttm-essentials-northern-lights-3-5g-flower-b",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Northern Lights",
+          "product_line": "Essentials",
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Northern Lights",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-048-smoke-wrld-red-zprite-3-5g",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Red Zprite",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Red Zprite",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-049-budd-lemon-cherry-gelato-3-5g-premium-smalls",
+        "got": {
+          "category": "flower",
+          "subtype": "smalls",
+          "strain": "Lemon Cherry Gelato",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "smalls",
+          "strain": "Lemon Cherry Gelato",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-050-kickfly-s-blackscotti-14g-flower",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Blackscotti",
+          "product_line": null,
+          "variant": "14g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Blackscotti",
+          "variant": "14g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-051-leal-chronic-tonic-3-5g",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Chronic Tonic",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Chronic Tonic",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-052-the-botanist-gsc-3-5g-flower",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "GSC",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "GSC",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-053-untitled-sour-diesel-7g",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Sour Diesel",
+          "product_line": null,
+          "variant": "7g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Sour Diesel",
+          "variant": "7g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-054-revert-golden-pineapple-14g-flower",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Golden Pineapple",
+          "product_line": null,
+          "variant": "14g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Golden Pineapple",
+          "variant": "14g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-055-noizey-ny-super-glue-4g-flower",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "NY Super Glue",
+          "product_line": null,
+          "variant": "4g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "NY Super Glue",
+          "variant": "4g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-056-smoakland-tropical-haze-28g-flower",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Tropical Haze",
+          "product_line": null,
+          "variant": "28g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Tropical Haze",
+          "variant": "28g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-057-matter-grape-gas-3-5g-flower",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Grape Gas",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Grape Gas",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-058-gypsy-weed-kombucha-oreo-28g",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Kombucha Oreo",
+          "product_line": null,
+          "variant": "28g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Kombucha Oreo",
+          "variant": "28g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-059-munchkins-trop-cherry-3-5g-small-buds",
+        "got": {
+          "category": "flower",
+          "subtype": "smalls",
+          "strain": "Trop Cherry",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "smalls",
+          "strain": "Trop Cherry",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-060-blends-by-basin-fruity-pebbles-1g-cart",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "cart",
+          "strain": "Fruity Pebbles",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "cart",
+          "strain": "Fruity Pebbles",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-061-select-flavor-series-grape-ape-1g-briq-v2",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "cart",
+          "strain": "Grape Ape",
+          "product_line": "Flavor Series",
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "strain": "Grape Ape",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-062-timeless-t2-blue-dream-chill-2g-rechargeable",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Blue Dream",
+          "product_line": "T2",
+          "variant": "2g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "strain": "Blue Dream",
+          "variant": "2g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-063-florist-farms-durban-poison-1g-cart",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "cart",
+          "strain": "Durban Poison",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "cart",
+          "strain": "Durban Poison",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-064-select-ace-terpologist-durban-fizz-1g-cart",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "cart",
+          "strain": "Durban Fizz",
+          "product_line": "ACE",
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "cart",
+          "strain": "Durban Fizz",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-065-jetty-el-chiveoz-1g-solventless-live-rosin-a",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "El Chiveoz",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "El Chiveoz",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-066-jaunty-mango-haze-1-5g-aio",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Mango Haze",
+          "product_line": null,
+          "variant": "1.5g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Mango Haze",
+          "variant": "1.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-067-timeless-t1-new-york-sour-diesel-1g-recharga",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "New York Sour Diesel",
+          "product_line": "T1",
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "strain": "New York Sour Diesel",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-068-toast-royal-rntz-7g-infused-pre-ground-hybri",
+        "got": {
+          "category": "flower",
+          "subtype": "infused",
+          "strain": "Royal Rntz",
+          "product_line": null,
+          "variant": "7g"
+        },
+        "expect": {
+          "category": "flower",
+          "strain": "Royal Rntz",
+          "variant": "7g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-069-jaunty-sugar-cookie-1-5g-all-in-one-palm",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Sugar Cookie",
+          "product_line": null,
+          "variant": "1.5g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Sugar Cookie",
+          "variant": "1.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-070-timeless-noir-707-headband-live-resin-1g-vap",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "cart",
+          "strain": "707 Headband",
+          "product_line": "Noir",
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "cart",
+          "strain": "707 Headband",
+          "product_line": "Noir",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-071-the-plug-pack-lemon-berry-kush-28g-infused-p",
+        "got": {
+          "category": "flower",
+          "subtype": "infused",
+          "strain": "Lemon Berry Kush",
+          "product_line": null,
+          "variant": "28g"
+        },
+        "expect": {
+          "category": "flower",
+          "strain": "Lemon Berry Kush",
+          "variant": "28g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-072-ayrloom-0-5g-disposable-lychee-dream",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Lychee Dream",
+          "product_line": null,
+          "variant": "0.5g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Lychee Dream",
+          "variant": "0.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-073-ayrloom-0-5g-disposable-blue-widow",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Blue Widow",
+          "product_line": null,
+          "variant": "0.5g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Blue Widow",
+          "variant": "0.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-074-timeless-noir-panamango-live-resin-1g-vape-c",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "cart",
+          "strain": "Panamango",
+          "product_line": "Noir",
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "cart",
+          "strain": "Panamango",
+          "product_line": "Noir",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-075-mfny-0-5g-live-resin-dispo-gelonade",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Gelonade",
+          "product_line": null,
+          "variant": "0.5g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Gelonade",
+          "variant": "0.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-076-kushy-punch-pineapple-jealousy-1g-510-thread",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "cart",
+          "strain": "Pineapple Jealousy",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "cart",
+          "strain": "Pineapple Jealousy",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-077-doja-zoap-1g-aio-live-resin",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Zoap",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Zoap",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-078-jaunty-strawnana-1-5g-aio",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Strawnana",
+          "product_line": null,
+          "variant": "1.5g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Strawnana",
+          "variant": "1.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-079-mfny-0-5g-live-resin-dispo-honey-banana",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Honey Banana",
+          "product_line": null,
+          "variant": "0.5g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Honey Banana",
+          "variant": "0.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-080-ayrloom-rest-1g-disposable",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Rest",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-081-revert-galactic-jack-14g-kief-infused-ground",
+        "got": {
+          "category": "flower",
+          "subtype": "infused",
+          "strain": "Galactic Jack",
+          "product_line": null,
+          "variant": "14g"
+        },
+        "expect": {
+          "category": "flower",
+          "strain": "Galactic Jack",
+          "variant": "14g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-082-stiiizy-blue-burst-1g-disposable",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Blue Burst",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Blue Burst",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-083-stiiizy-premium-jack-5g-pod",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "pod",
+          "strain": "Premium Jack",
+          "product_line": null,
+          "variant": "0.5g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "pod",
+          "strain": "Premium Jack",
+          "variant": "0.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-084-jetpacks-donny-burger-1g-indica-diamonds",
+        "got": {
+          "category": "concentrate",
+          "subtype": "diamonds",
+          "strain": "Donny Burger",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "concentrate",
+          "subtype": "diamonds",
+          "strain": "Donny Burger",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-085-jetty-gdp-1g-concentrate-dablicator",
+        "got": {
+          "category": "concentrate",
+          "subtype": "other",
+          "strain": "GDP",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "concentrate",
+          "strain": "GDP",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-086-jetpacks-panama-punch-1g-sativa-diamonds",
+        "got": {
+          "category": "concentrate",
+          "subtype": "diamonds",
+          "strain": "Panama Punch",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "concentrate",
+          "subtype": "diamonds",
+          "strain": "Panama Punch",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-087-blotter-runtz-mintz-1g-live-resin-sugar",
+        "got": {
+          "category": "concentrate",
+          "subtype": "resin",
+          "strain": "Runtz Mintz",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "concentrate",
+          "subtype": "resin",
+          "strain": "Runtz Mintz",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-088-mfny-chemdog-2g-live-resin-badder",
+        "got": {
+          "category": "concentrate",
+          "subtype": "resin",
+          "strain": "Chemdog",
+          "product_line": null,
+          "variant": "2g"
+        },
+        "expect": {
+          "category": "concentrate",
+          "subtype": "resin",
+          "strain": "Chemdog",
+          "variant": "2g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-089-jetpacks-cherry-limeade-1g-sativa-badder",
+        "got": {
+          "category": "concentrate",
+          "subtype": "resin",
+          "strain": "Cherry Limeade",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "concentrate",
+          "strain": "Cherry Limeade",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-090-alchemy-pure-marakesh-1g-live-rosin",
+        "got": {
+          "category": "concentrate",
+          "subtype": "rosin",
+          "strain": "Marakesh",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "concentrate",
+          "subtype": "rosin",
+          "strain": "Marakesh",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-091-mind-melters-permanent-marker-1g-cold-cure-l",
+        "got": {
+          "category": "concentrate",
+          "subtype": "rosin",
+          "strain": "Permanent Marker",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "concentrate",
+          "subtype": "rosin",
+          "strain": "Permanent Marker",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-092-hashtag-honey-chocolate-diesel-1g-live-sugar",
+        "got": {
+          "category": "concentrate",
+          "subtype": "other",
+          "strain": "Chocolate Diesel",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "concentrate",
+          "strain": "Chocolate Diesel",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-093-jetty-alien-og-1g-concentrate-dablicator",
+        "got": {
+          "category": "concentrate",
+          "subtype": "other",
+          "strain": "Alien OG",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "concentrate",
+          "strain": "Alien OG",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-094-timeless-combo-510-battery-and-case-black-ye",
+        "got": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": null,
+          "variant": ""
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-095-raw-classic-cones-1-1-4-6-pack",
+        "got": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": null,
+          "variant": ""
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-096-stiiizy-lite-battery-promo",
+        "got": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": null,
+          "variant": ""
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-097-human-grade-5-recycler-1a-dab-rig-smoke",
+        "got": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": null
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-098-mushroom-holder-dab-tool",
+        "got": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": null
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-099-stiiizy-pro-xl-battery-red",
+        "got": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": null
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-100-papa-barkley-thc1000-releaf-tincture-30ml",
+        "got": {
+          "category": "tinctures",
+          "subtype": "tincture",
+          "strain": "Releaf",
+          "product_line": "Releaf",
+          "variant": "1000mg"
+        },
+        "expect": {
+          "category": "tinctures",
+          "subtype": "tincture",
+          "variant": "1000mg",
+          "product_line": "Releaf"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-101-mfny-yellow-beltz-live-resin-tincture",
+        "got": {
+          "category": "tinctures",
+          "subtype": "tincture",
+          "strain": "Yellow Beltz",
+          "product_line": null,
+          "variant": "15mg"
+        },
+        "expect": {
+          "category": "tinctures",
+          "subtype": "tincture",
+          "strain": "Yellow Beltz"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-102-ayrloom-beverage-enhancer-tincture-300mg",
+        "got": {
+          "category": "tinctures",
+          "subtype": "tincture",
+          "strain": "Beverage Enhancer",
+          "product_line": null,
+          "variant": "300mg"
+        },
+        "expect": {
+          "category": "tinctures",
+          "subtype": "tincture",
+          "variant": "300mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-103-mfny-rainbow-driver",
+        "got": {
+          "category": "tinctures",
+          "subtype": "tincture",
+          "strain": "Rainbow Driver",
+          "product_line": null,
+          "variant": "15mg"
+        },
+        "expect": {
+          "category": "tinctures",
+          "subtype": "tincture",
+          "strain": "Rainbow Driver"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-104-ayrloom-tincture-1000mg-thc-high-dose",
+        "got": {
+          "category": "tinctures",
+          "subtype": "tincture",
+          "strain": "High Dose",
+          "product_line": null,
+          "variant": "1000mg"
+        },
+        "expect": {
+          "category": "tinctures",
+          "subtype": "tincture",
+          "variant": "1000mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-105-papa-barkley-1-3-releaf-balm-50ml",
+        "got": {
+          "category": "topical",
+          "subtype": "topical",
+          "strain": "Releaf",
+          "product_line": "Releaf",
+          "variant": "50ml"
+        },
+        "expect": {
+          "category": "topical",
+          "subtype": "topical",
+          "strain": null,
+          "product_line": "Releaf"
+        },
+        "passed": false,
+        "fails": [
+          "strain"
+        ]
+      },
+      {
+        "id": "gold-106-ayrloom-balm-1000mg-thc-1000mg-cbd-revive-bc",
+        "got": {
+          "category": "topical",
+          "subtype": "topical",
+          "strain": "Revive",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "topical",
+          "subtype": "topical",
+          "strain": "Revive"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "gold-107-ayrloom-balm-1000mg-thc-1000mg-cbd-restore-l",
+        "got": {
+          "category": "topical",
+          "subtype": "topical",
+          "strain": "Restore",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "topical",
+          "subtype": "topical",
+          "strain": "Restore"
+        },
+        "passed": true,
+        "fails": []
+      }
+    ],
+    "gold_the_spot_bk.json": [
+      {
+        "id": "spot-000-tropicana-cookies-hybrid-48-7-5pk-2-5g-t",
+        "got": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Tropicana Cookies",
+          "product_line": null,
+          "variant": "2.5g"
+        },
+        "expect": {
+          "category": "preroll",
+          "strain": "Tropicana Cookies",
+          "variant": "2.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-001-dream-star-31-thc-cherry-diesel-34-thc-s",
+        "got": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Dream Star / Cherry Diesel",
+          "product_line": null,
+          "variant": "4g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "pack",
+          "variant": "4g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-002-big-bad-wolf-hybrid-21-67-thc-1g-pre-rol",
+        "got": {
+          "category": "preroll",
+          "subtype": "single",
+          "strain": "Big Bad Wolf",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "single",
+          "strain": "Big Bad Wolf",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-003-kosher-kush-indica-29-thc-7-x-0-7g-5g-pr",
+        "got": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Kosher Kush",
+          "product_line": null,
+          "variant": "5g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Kosher Kush",
+          "variant": "5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-004-super-lemon-haze-hybrid-30-thc-5g-pre-ro",
+        "got": {
+          "category": "preroll",
+          "subtype": "single",
+          "strain": "Super Lemon Haze",
+          "product_line": null,
+          "variant": "0.5g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "single",
+          "strain": "Super Lemon Haze",
+          "variant": "0.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-005-lemon-candy-runtz-hybrid-28-2-thc-2pk-pr",
+        "got": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Lemon Candy Runtz",
+          "product_line": null,
+          "variant": "1.5g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "pack",
+          "strain": "Lemon Candy Runtz",
+          "variant": "1.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-006-purple-punch-indica-23-75-thc-1g-pre-rol",
+        "got": {
+          "category": "preroll",
+          "subtype": "single",
+          "strain": "Purple Punch",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "single",
+          "strain": "Purple Punch",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-007-pink-cookies-indica-36-40-thc-presidenti",
+        "got": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Pink Cookies",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Pink Cookies",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-008-sugar-runtz-hybrid-18-35-thc-2g-hash-inf",
+        "got": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Sugar Runtz",
+          "product_line": null,
+          "variant": "2g"
+        },
+        "expect": {
+          "category": "preroll",
+          "subtype": "infused",
+          "strain": "Sugar Runtz",
+          "variant": "2g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-009-alaskan-thunder-fuck-sativa-90-00-thc-2g",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Alaskan Thunder Fuck",
+          "product_line": null,
+          "variant": "2g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Alaskan Thunder Fuck",
+          "variant": "2g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-010-blueberry-jam-indica-1ml-live-resin-rech",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Blueberry Jam",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Blueberry Jam",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-011-sour-z-sativa-85-95-thc-1g-vape-cartridg",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "cart",
+          "strain": "Sour Z",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "cart",
+          "strain": "Sour Z",
+          "variant": "1g",
+          "product_line": null
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-012-maui-wowie-sativa-90-thc-510-vape-cartri",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "cart",
+          "strain": "Maui Wowie",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "cart",
+          "strain": "Maui Wowie",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-013-granddaddy-purp-indica-97-thc-melted-dia",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Granddaddy Purp",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Granddaddy Purp",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-014-apricot-punch-indica-85-45-thc-0-5g-clas",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Apricot Punch",
+          "product_line": null,
+          "variant": "0.5g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Apricot Punch",
+          "variant": "0.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-015-super-jack-sativa-80-thc-1g-aio-vape-pen",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Super Jack",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Super Jack",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-016-big-apple-hybrid-79-thc-1g-aio-vape-pen-",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Big Apple",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Big Apple",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-017-strawberry-diesel-hybrid-88-5-thc-1g-aio",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Strawberry Diesel",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Strawberry Diesel",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-018-trainwreck-sativa-19-00-thc-sun-soil-gro",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Trainwreck",
+          "product_line": null,
+          "variant": "28g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Trainwreck",
+          "variant": "28g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-019-lilac-diesel-hybrid-24-00-thc-3-5g-jar-f",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Lilac Diesel",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Lilac Diesel",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-020-jelly-cake-indica-23-5-thc-28g-flower-ma",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Jelly Cake",
+          "product_line": null,
+          "variant": "28g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Jelly Cake",
+          "variant": "28g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-021-lemon-skunk-sativa-26-65-thc-28g-jar-flo",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Lemon Skunk",
+          "product_line": null,
+          "variant": "28g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Lemon Skunk",
+          "variant": "28g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-022-sativa-29-thc-7g-pre-ground-flower-in-my",
+        "got": {
+          "category": "flower",
+          "subtype": "preground",
+          "strain": "Sativa",
+          "product_line": null,
+          "variant": "7g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "preground",
+          "strain": "Sativa",
+          "variant": "7g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-023-lemon-skunk-og-sativa-dominant-hybrid-31",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Lemon Skunk OG",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Lemon Skunk OG",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-024-purple-sunset-indica-21-53-thc-14g-flowe",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Purple Sunset",
+          "product_line": null,
+          "variant": "14g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Purple Sunset",
+          "variant": "14g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-025-frank-rizzo-hybrid-24-90-thc-3-5g-flower",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Frank Rizzo",
+          "product_line": null,
+          "variant": "3.5g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Frank Rizzo",
+          "variant": "3.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-026-reserve-hybrid-16-45-thc-1-1-thc-cbd-7g-",
+        "got": {
+          "category": "flower",
+          "subtype": "infused",
+          "strain": "Reserve",
+          "product_line": null,
+          "variant": "7g"
+        },
+        "expect": {
+          "category": "flower",
+          "variant": "7g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-027-permanent-marker-indica-28-thc-dime-bag-",
+        "got": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Permanent Marker",
+          "product_line": null,
+          "variant": "0.7g"
+        },
+        "expect": {
+          "category": "flower",
+          "subtype": "flower",
+          "strain": "Permanent Marker",
+          "variant": "0.7g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-028-sour-grape-indica-100mg-10-pcs-live-resi",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Sour Grape",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Sour Grape",
+          "variant": "100mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-029-strawberry-sativa-100mg-thc-10-pcs-live-",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Strawberry",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Strawberry",
+          "variant": "100mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-030-camino-sour-orchard-peach-balance-hybrid",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Sour Orchard Peach",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Sour Orchard Peach",
+          "product_line": "Balance",
+          "variant": "100mg"
+        },
+        "passed": false,
+        "fails": [
+          "product_line"
+        ]
+      },
+      {
+        "id": "spot-031-cali-melon-sativa-100mg-thc-10pcs-live-r",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Cali Melon",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Cali Melon",
+          "variant": "100mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-032-permanent-marker-hybrid-100mg-10-pack-ne",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Nectarine Euphoria",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "variant": "100mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-033-watermelon-lemonade-bliss-gummies-100-mg",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Watermelon Lemonade",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Watermelon Lemonade",
+          "product_line": "Bliss",
+          "variant": "100mg"
+        },
+        "passed": false,
+        "fails": [
+          "product_line"
+        ]
+      },
+      {
+        "id": "spot-034-grape-honey-indica-10-20-thc-cbn-100mg-1",
+        "got": {
+          "category": "edible",
+          "subtype": "other",
+          "strain": "Grape & Honey",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "strain": "Grape & Honey",
+          "variant": "100mg"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-035-tropical-burst-energy-sativa-10mg-2-1-th",
+        "got": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Tropical Burst",
+          "product_line": null,
+          "variant": "100mg"
+        },
+        "expect": {
+          "category": "edible",
+          "subtype": "gummy",
+          "strain": "Tropical Burst",
+          "product_line": "Energy",
+          "variant": "100mg"
+        },
+        "passed": false,
+        "fails": [
+          "product_line"
+        ]
+      },
+      {
+        "id": "spot-036-mendo-breath-indica-65-56-thc-all-in-one",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Mendo Breath",
+          "product_line": null,
+          "variant": "0.5g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Mendo Breath",
+          "variant": "0.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-037-10-honey-banana-sativa-70-93-thc-1g-live",
+        "got": {
+          "category": "concentrate",
+          "subtype": "resin",
+          "strain": "Honey Banana",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "concentrate",
+          "subtype": "resin",
+          "strain": "Honey Banana",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-038-papaya-juice-sativa-79-95-thc-1g-wax-sug",
+        "got": {
+          "category": "concentrate",
+          "subtype": "hash",
+          "strain": "Papaya Juice",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "concentrate",
+          "strain": "Papaya Juice",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-039-tropical-punch-hybrid-65-56-thc-all-in-o",
+        "got": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Tropical Punch",
+          "product_line": null,
+          "variant": "0.5g"
+        },
+        "expect": {
+          "category": "vaporizers",
+          "subtype": "all-in-one",
+          "strain": "Tropical Punch",
+          "variant": "0.5g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-040-12-candy-rain-hybrid-68-50-thc-live-resi",
+        "got": {
+          "category": "concentrate",
+          "subtype": "resin",
+          "strain": "Candy Rain",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "concentrate",
+          "subtype": "resin",
+          "strain": "Candy Rain",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-041-pink-certz-hybrid-81-37-thc-1g-badder-co",
+        "got": {
+          "category": "concentrate",
+          "subtype": "resin",
+          "strain": "Pink Certz",
+          "product_line": null,
+          "variant": "1g"
+        },
+        "expect": {
+          "category": "concentrate",
+          "strain": "Pink Certz",
+          "variant": "1g"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-042-watermelon-drip-x-2pk-hemp-wraps-billion",
+        "got": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": null
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-043-bambu-x-classic-natural",
+        "got": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": null
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-044-matte-black-3-2v-auto-start-510-vape-car",
+        "got": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": null
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-045-zzz-s-rolling-tray-with-magnetic-cover-d",
+        "got": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": "",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "merch",
+          "subtype": "merch",
+          "strain": null
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-046-turbo-blueberry-indica-73-38-thc-15ml-ti",
+        "got": {
+          "category": "tinctures",
+          "subtype": "tincture",
+          "strain": "Turbo Blueberry",
+          "product_line": null,
+          "variant": "1000mg"
+        },
+        "expect": {
+          "category": "tinctures",
+          "subtype": "tincture",
+          "strain": "Turbo Blueberry"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-047-focus-tincture-13-40-thc-864mg-tac-thc-c",
+        "got": {
+          "category": "tinctures",
+          "subtype": "tincture",
+          "strain": "Focus",
+          "product_line": null,
+          "variant": "864mg"
+        },
+        "expect": {
+          "category": "tinctures",
+          "subtype": "tincture"
+        },
+        "passed": true,
+        "fails": []
+      },
+      {
+        "id": "spot-048-restore-1000-00mg-thc-balm-2-3oz-tin-a11",
+        "got": {
+          "category": "topical",
+          "subtype": "topical",
+          "strain": "Restore",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "topical",
+          "subtype": "topical",
+          "strain": "Restore",
+          "variant": "1000mg"
+        },
+        "passed": false,
+        "fails": [
+          "variant"
+        ]
+      },
+      {
+        "id": "spot-049-relief-balm-130mg-cbd-40mg-thc-3-1-15ml-",
+        "got": {
+          "category": "topical",
+          "subtype": "topical",
+          "strain": "Relief Balm",
+          "product_line": null,
+          "variant": ""
+        },
+        "expect": {
+          "category": "topical",
+          "subtype": "topical"
+        },
+        "passed": true,
+        "fails": []
+      }
+    ]
+  }
+}
