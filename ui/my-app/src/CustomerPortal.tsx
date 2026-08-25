@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useNavigate, useMatch, useSearchParams, Navigate } from 'react-router-dom'
+import { useNavigate, useMatch, useSearchParams, Navigate, useLocation } from 'react-router-dom'
 import api from './api/client'
 import supabase from './utils/supabase'
 import DispensaryMap from './components/DispensaryMap'
@@ -1285,6 +1285,7 @@ function ProductView({ brandName, productKey, onBack, onListingClick }: ProductV
 
 export default function CustomerPortal() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams] = useSearchParams()
   const matchBrandProduct = useMatch('/portal/brands/:brandName/products/:productKey')
   const matchBrand = useMatch('/portal/brands/:brandName')
@@ -1423,8 +1424,11 @@ export default function CustomerPortal() {
   }
   // The portal has no login screen of its own — the one at "/" is the only
   // sign-in surface, so it stays the single place SMS, email and social
-  // sign-in are wired up.
-  if (!session) return <Navigate to="/" replace />
+  // sign-in are wired up. Carry where they were headed so signing in returns
+  // them there rather than dropping them on the portal home.
+  if (!session) {
+    return <Navigate to="/" replace state={{ from: location.pathname + location.search }} />
+  }
   if (profileError) return <NotLinkedScreen />
   if (!customerId) {
     return <div style={{ height: '100dvh', background: t.bg }}><FeedState kind="loading" message="Loading…" style={{ height: '100%' }} /></div>

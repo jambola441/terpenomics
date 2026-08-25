@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import supabase from './utils/supabase'
+import { takeNext } from './utils/redirect'
 
 /**
  * Landing point for OAuth redirects.
@@ -31,11 +32,16 @@ export default function AuthCallback() {
     if (error) return
     let cancelled = false
 
+    // Claimed once: a second read would find it already cleared.
+    const next = takeNext()
+
     async function land(user) {
       if (cancelled) return
       // Mirrors the rule in Login.jsx: admins carry role="admin" on the JWT,
-      // everyone else belongs in the customer portal.
-      navigate(user?.role === 'admin' ? '/admin' : '/portal', { replace: true })
+      // everyone else belongs in the customer portal — unless they were headed
+      // somewhere specific before signing in.
+      const fallback = user?.role === 'admin' ? '/admin' : '/portal'
+      navigate(next || fallback, { replace: true })
     }
 
     // The session may already be in place by the time this mounts, so check
