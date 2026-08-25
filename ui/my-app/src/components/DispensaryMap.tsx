@@ -17,6 +17,8 @@ type PortalDispensary = {
   lat: number | null
   lng: number | null
   website_url: string | null
+  /** Whether this store takes orders — drives every add-to-cart affordance. */
+  accepts_pickup: boolean
 }
 
 interface Props {
@@ -162,7 +164,7 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
             dispensaryLng={activeDispensary.lng}
             dispensaryLogoUrl={null}
             dispensaryBannerUrl={null}
-            acceptsPickup={false}
+            acceptsPickup={activeDispensary.accepts_pickup}
             onBack={() => navigate(-1)}
             onAddToCart={onAddToCart}
             cart={cart}
@@ -178,7 +180,7 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
             dispensaryName={aisleDispensary.name}
             dispensarySlug={aisleDispensary.slug}
             category={aisleCategory}
-            acceptsPickup={false}
+            acceptsPickup={aisleDispensary.accepts_pickup}
             onAddToCart={onAddToCart}
             cart={cart}
           />

@@ -6,6 +6,10 @@ Upserts dispensaries keyed on `slug`. On conflict, updates `address`,
 creates a row with name/slug/website_url/address/location populated from
 the JSON.
 
+`accepts_pickup` is synced in both directions on every run: the JSON is the
+source of truth for which stores take orders, so an entry without the key is
+actively set back to false. Omitting it is how you turn ordering off.
+
 Usage:
   python scripts/import_dispensaries.py [--dry-run]
 
@@ -68,6 +72,7 @@ def main() -> int:
                 or e.get("dutchie_id")
                 or e.get("blaze_id")
             )
+            accepts_pickup = bool(e.get("accepts_pickup", False))
 
             d = existing.get(slug)
             if d is None:
@@ -81,6 +86,7 @@ def main() -> int:
                     lng=lng,
                     pos_type=pos_type,
                     pos_tenant_id=pos_tenant,
+                    accepts_pickup=accepts_pickup,
                 )
                 print(f"INSERT {slug:40s} address={addr_str!r} coords=({lat},{lng})")
                 if not args.dry_run:
@@ -104,6 +110,10 @@ def main() -> int:
             if lng is not None and d.lng != lng:
                 changes.append(f"lng: {d.lng} -> {lng}")
                 d.lng = lng
+            # Unconditional: dropping the key from the JSON must turn ordering off.
+            if d.accepts_pickup != accepts_pickup:
+                changes.append(f"accepts_pickup: {d.accepts_pickup} -> {accepts_pickup}")
+                d.accepts_pickup = accepts_pickup
 
             if changes:
                 print(f"UPDATE {slug:40s} {'; '.join(changes)}")
