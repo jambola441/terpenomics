@@ -248,6 +248,40 @@ export type CartItem = {
   quantity: number
 }
 
+export type OrderStatus = 'submitted' | 'ready' | 'completed' | 'cancelled'
+
+export type OrderItem = {
+  id: string
+  listing_id: string | null
+  name: string
+  brand: string | null
+  variant: string | null
+  image_url: string | null
+  quantity: number
+  unit_price_cents: number | null
+  line_amount_cents: number
+}
+
+export type Order = {
+  id: string
+  status: OrderStatus
+  /** Read out at the counter to collect the order. */
+  pickup_code: string
+  total_amount_cents: number
+  note: string | null
+  submitted_at: string
+  ready_at: string | null
+  completed_at: string | null
+  cancelled_at: string | null
+  dispensary_id: string
+  dispensary_name: string | null
+  dispensary_slug: string | null
+  dispensary_address: string | null
+  /** Always 'pay_at_pickup' — nothing is charged online. */
+  payment_method: string
+  items: OrderItem[]
+}
+
 export type Dispensary = {
   id: string
   name: string

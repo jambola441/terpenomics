@@ -7,6 +7,7 @@ import ProductDetail from './ProductDetail'
 import Customers from './Customers'
 import CustomerEdit from './CustomerEdit'
 import Purchases from './Purchases'
+import Orders from './Orders'
 import Dispensaries from './Dispensaries'
 import DispensaryEdit from './DispensaryEdit'
 import DispensaryListingsAdmin from './DispensaryListingsAdmin'
@@ -35,6 +36,7 @@ function App() {
         <Route path="/admin/customers/new" element={<CustomerRegister />} />
         <Route path="/admin/customers/:customerId" element={<CustomerEdit />} />
         <Route path="/admin/purchases" element={<Purchases />} />
+        <Route path="/admin/orders" element={<Orders />} />
         <Route path="/admin/lab-reports" element={<LabReportUpload />} />
         <Route path="/admin/lab-reports/:reportId" element={<LabReportDetail />} />
         <Route path="/admin/dispensaries" element={<Dispensaries />} />
