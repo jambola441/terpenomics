@@ -159,23 +159,45 @@ def find_or_create_user(e164: str, known_user_id: UUID | None = None) -> UUID:
     )
 
 
+def _current_email(base_url: str, service_key: str, user_id: UUID) -> str | None:
+    """The address already on the account, or None if it has none."""
+    resp = _request(
+        "GET",
+        f"{base_url}/auth/v1/admin/users/{user_id}",
+        headers=_admin_headers(service_key),
+    )
+    if resp.status_code != 200:
+        raise SupabaseAdminError(f"Reading the Supabase user returned {resp.status_code}")
+    return (resp.json() or {}).get("email") or None
+
+
 def issue_session(user_id: UUID, e164: str) -> dict[str, Any]:
     """Rotate a fresh password onto the user and exchange it for a session."""
     base_url, service_key, anon_key = _config()
     password = secrets.token_urlsafe(48)
-    email = synthetic_email(e164)
+
+    # Never overwrite an address the account already has. find_or_create_user
+    # matches on phone alone, so the user we are about to update may predate
+    # phone login entirely — clobbering their email with the synthetic one
+    # would silently destroy their email sign-in, and with it any admin access
+    # that depends on it. Only fill in an address when there is none.
+    existing_email = _current_email(base_url, service_key, user_id)
+    email = existing_email or synthetic_email(e164)
+
+    update: dict[str, Any] = {
+        "password": password,
+        "phone": e164,
+        "phone_confirm": True,
+    }
+    if existing_email is None:
+        update["email"] = email
+        update["email_confirm"] = True
 
     resp = _request(
         "PUT",
         f"{base_url}/auth/v1/admin/users/{user_id}",
         headers=_admin_headers(service_key),
-        json={
-            "password": password,
-            "phone": e164,
-            "phone_confirm": True,
-            "email": email,
-            "email_confirm": True,
-        },
+        json=update,
     )
     if resp.status_code != 200:
         raise SupabaseAdminError(f"Rotating the login password returned {resp.status_code}")

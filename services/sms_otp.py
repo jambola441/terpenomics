@@ -95,10 +95,25 @@ class VerifyNowProvider:
         if resp.status_code != 200:
             raise SmsOtpUnavailable(f"VerifyNow token request returned {resp.status_code}")
 
-        token = (resp.json() or {}).get("token")
-        if not token:
-            raise SmsOtpUnavailable("VerifyNow token response contained no token")
-        return token
+        try:
+            body = resp.json() or {}
+        except ValueError as exc:
+            raise SmsOtpUnavailable("VerifyNow token response was not JSON") from exc
+
+        token = body.get("token")
+        if token:
+            return token
+
+        # The auth endpoint reports failures as HTTP 200 with an error body
+        # (e.g. {"status":400,"error":"password is wrong"}), so surface that
+        # text rather than the useless "no token" it would otherwise produce.
+        # A wrong VERIFYNOW_KEY is the common cause: it must be the base-64
+        # encoding of the account password, not a console API key.
+        reason = body.get("error") or body.get("message")
+        raise SmsOtpUnavailable(
+            f"VerifyNow rejected our credentials: {reason}" if reason
+            else "VerifyNow token response contained no token"
+        )
 
     def _auth_header(self, force_refresh: bool = False) -> dict[str, str]:
         with self._token_lock:
