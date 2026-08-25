@@ -190,7 +190,15 @@ def list_portal_categories(session: Session = Depends(get_session)):
 
 # A category spans every dispensary, so it can pull far more listings than a
 # single brand does. Cap the scan and tell the client when we truncated.
-CATEGORY_LISTING_CAP = 6000
+#
+# This is a safety valve, not a budget: cost scales with what a category
+# actually holds, so a generous ceiling is free for normal categories and only
+# bounds a pathological one. Measured on 31 stores, the whole request runs
+# ~390ms/65KB at 6k listings and ~1.1s/150KB at this ceiling, so a category
+# large enough to hit it pays about a second rather than showing a partial
+# catalogue. Beyond ~12k listings the product count plateaus and extra rows
+# only add offerings, so raising it further buys accuracy, not content.
+CATEGORY_LISTING_CAP = 20000
 
 
 @router.get("/categories/{category_name}")
