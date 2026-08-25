@@ -153,6 +153,7 @@ export type PortalProduct = {
   brand: string | null
   category: string
   subtype: string | null
+  product_line: string | null
   strain: string | null
   variant: string | null
   listing_count: number
@@ -331,4 +332,30 @@ export type PortalBrandDetail = {
   product_count: number
   dispensary_count: number
   products: PortalBrandProduct[]
+}
+
+export type PortalCategoryProduct = {
+  key: string
+  name: string
+  brand: string | null
+  category: string | null
+  subtype: string | null
+  product_line: string | null
+  strain: string | null
+  variant: string | null
+  image_url: string | null
+  min_price_cents: number | null
+  max_price_cents: number | null
+  dispensary_count: number
+  offerings: PortalBrandOffering[]
+}
+
+export type PortalCategoryDetail = {
+  name: string
+  image_url: string | null
+  product_count: number
+  dispensary_count: number
+  brand_count: number
+  truncated: boolean
+  products: PortalCategoryProduct[]
 }

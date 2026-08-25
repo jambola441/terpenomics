@@ -216,7 +216,7 @@ export default function HomeFeed() {
                   return (
                     <Pressable
                       key={c.name}
-                      onClick={() => navigate('/portal/search?category=' + encodeURIComponent(c.name))}
+                      onClick={() => navigate('/portal/categories/' + encodeURIComponent(c.name))}
                       style={{
                         width: 144, flexShrink: 0, scrollSnapAlign: 'start',
                         background: alpha(color, 0.10), border: `1px solid ${alpha(color, 0.28)}`,
