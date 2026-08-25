@@ -18,6 +18,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from scraper_common import normalize_variant  # noqa: E402
+from canonical import canonicalize, find_format_category  # noqa: E402
 
 _DATA_DIR = Path(__file__).parent.parent / "data"
 
@@ -49,6 +50,7 @@ _TOKENS: dict[str, OrderedDict] = {
         ("infused",   re.compile(r"\bdiamond\s+infused\b|\binfused\b", re.I)),
     ]),
     "concentrate": OrderedDict([
+        ("diamonds", re.compile(r"\bdiamonds?\b", re.I)),
         ("rosin", re.compile(r"\brosin\b", re.I)),
         ("resin", re.compile(r"\bresin\b", re.I)),
         ("hash",  re.compile(r"\bhash\b", re.I)),
@@ -79,12 +81,22 @@ def classify_by_token(category: str, name: str) -> str | None:
     return None
 
 
+def _hint_category(row: dict) -> str:
+    """The scraper's category, overridden by a curated device/format token when one
+    is present ("Select Briq V2" is a vape, whatever the source category said).
+    Used both as the hint sent to the model and as the value the model's answer is
+    overruled by, so category, subtype and variant are all settled consistently."""
+    forced = find_format_category(row.get("brand", ""), row.get("name", ""))
+    return forced or row.get("category", "")
+
+
 def _hint_subtype(row: dict) -> str | None:
     """Token match first, then category default. May return None."""
-    sub = classify_by_token(row.get("category", ""), row.get("name", ""))
+    category = _hint_category(row)
+    sub = classify_by_token(category, row.get("name", ""))
     if sub:
         return sub
-    return _CATEGORY_DEFAULTS.get(row.get("category", ""))
+    return _CATEGORY_DEFAULTS.get(category)
 
 
 # ---------------------------------------------------------------------------
@@ -93,10 +105,29 @@ def _hint_subtype(row: dict) -> str | None:
 
 _CACHE_DIR = _DATA_DIR / "enrich_cache"
 
+# Bump when a prompt, rail, or token rule changes in a way that should invalidate
+# previously cached answers. Cache entries stamped with a different version are
+# re-enriched instead of trusted, so a taxonomy change reaches old rows without
+# anyone hand-deleting cache files.
+#   1 — baseline
+#   2 — 'diamonds' concentrate subtype; beverages dosed in mg not volume; topical
+#       scent names are strains; version suffixes ("2.0") kept in strain
+#   3 — data/format_tokens.json settles the category for brand device names
+#   4 — beverage variant rule scoped so it stops pulling subtype toward 'beverage';
+#       pack multiply-out scoped to mg doses so it stops overriding weight hints
+#   5 — a format word alone is not a strain ("Milk Chocolate" on a chocolate bar),
+#       so lineage is reached when nothing else differentiates
+_ENRICH_VERSION = 5
+
 
 def _cache_key(row: dict) -> str | None:
+    """Key on sku + scraped variant: platforms reuse one SKU across weight tiers,
+    and a bare-sku key would let tiers overwrite each other's cache entry. Uses the
+    scraper's variant (pre-enrichment), which is stable across runs for a given row."""
     sku = (row.get("sku") or "").strip()
-    return sku if sku else None
+    if not sku:
+        return None
+    return f"{sku}|{(row.get('variant') or '').strip()}"
 
 
 def _slug_for_rows(rows: list[dict]) -> str | None:
@@ -217,7 +248,7 @@ CATEGORIES = ["flower", "preroll", "vaporizers", "edible", "concentrate",
 SUBTYPES: dict[str, list[str]] = {
     "vaporizers":  ["cart", "all-in-one", "pod", "battery", "other"],
     "edible":      ["gummy", "chocolate", "beverage", "tablet", "other"],
-    "concentrate": ["rosin", "resin", "hash", "rso", "other"],
+    "concentrate": ["diamonds", "rosin", "resin", "hash", "rso", "other"],
     "preroll":     ["single", "infused", "pack"],
     "flower":      ["flower", "smalls", "preground", "infused"],
     "tinctures":   ["tincture"],
@@ -249,10 +280,17 @@ variant — the canonical size/dose, in compact form:
   - edible: TOTAL package THC in mg (10pk × 10mg/piece = "100mg"); grams are wrong unless the
     item has no THC dose or the quantity is at least 0.5g, in which case it must be reported as grams. 
     Use the description for per-piece dose and pack count. Non standard reporting like "halfgram" 
-    should be reported as their standard equivalent.
-  - flower / preroll / concentrate / vaporizers: weight or volume ("3.5g", "1g", "0.5g");
-    keep fluid ounces as-is, never convert to grams ("12oz"). 
-  - tinctures: total mg
+    should be reported as their standard equivalent. A per-piece mg DOSE written next to a pack
+    count MUST be multiplied out ("20MG x 2PK" = "40mg", "5mg 20pk" = "100mg") — reporting the
+    per-piece dose alone is wrong. This multiply-out rule is for mg doses only: for a
+    flower/preroll/vape WEIGHT, prefer hint_variant when it disagrees with your own per-unit
+    math, since source names misplace decimals ("5 x .05g" with hint_variant "2.5g" → "2.5g").
+    This applies to a drinkable edible too: its variant is the THC dose in mg, never the
+    liquid volume — a 12oz can holding 5mg THC has variant "5mg", not "12oz" and not "355ml".
+    Fall back to the volume only when no dose appears in the name or description. (This is a
+    rule about VARIANT only — it says nothing about which subtype to choose.)
+  - flower / preroll / concentrate / vaporizers: weight ("3.5g", "1g", "0.5g").
+  - tinctures: total mg ("1000mg") — never converted to grams.
   - merch / no meaningful size: ""
 
 Reply ONLY with a JSON array, no prose, no markdown fences:
@@ -292,11 +330,19 @@ return null just because the product is a drink, gummy, or other flavored item.
   "THC:CBD:CBN", and mg/percent amounts are NOT part of the strain
   ("Elderberry Sage 1:2:3 THC:CBD:CBN" → "Elderberry Sage").
 - Normalize to Title Case; crosses use " x " as the separator.
+- KEEP version/edition suffixes — they distinguish real products ("Creamsicle x Rainbow
+  Beltz 2.0" keeps the "2.0"). Only pure size/format words are stripped.
 - Preserve cannabis abbreviations in all-caps: OG, AK, RSO, CBD, THC, BC, NYC, LA.
 - Do NOT correct other spellings — keep the source spelling (e.g. "Tie Die", "Perisimmon").
+- A candidate that only restates the product's own FORMAT is not a differentiator: "Milk
+  Chocolate" on a chocolate bar, "Gummies" on a gummy, "Cart" on a cartridge. Skip it and
+  keep looking. This applies only when the format word is the WHOLE candidate — a strain
+  that merely contains one is real and must be kept ("Chocolate Diesel", "Gummy Bearz").
 - If Sativa / Indica / Hybrid is the only differentiator left, use that as the strain.
-- Return null ONLY when category is merch/topical, or nothing but the brand and a format/size
-  word remains (no flavor, strain, or other differentiator at all).
+- Topicals DO have strains: a balm's scent or blend name is its strain ("Ayrloom Balm - Revive"
+  → "Revive"). Treat it exactly like a flavor.
+- Return null ONLY when category is merch, or nothing but the brand and a format/size
+  word remains (no flavor, scent, strain, or other differentiator at all).
 
 product_line — a word/phrase the brand uses to group a family of products (e.g. "Releaf",
 "Protab", "22's"). Assign one ONLY when the product name actually contains that line's text;
@@ -346,8 +392,9 @@ def _call_llm(
     client, provider: str, api_model: str, system_prompt: str,
     payload: list[dict], timeout: float, max_tokens: int,
     label: str, print_lock,
-) -> tuple[dict, dict]:
-    """Returns (items_by_local_id, usage_dict). Empty items on any failure."""
+) -> tuple[dict | None, dict]:
+    """Returns (items_by_local_id, usage_dict). items is None on any failure —
+    callers must treat those rows as unanswered (fall back to hints, do NOT cache)."""
     try:
         if provider == "anthropic":
             resp = client.messages.create(
@@ -385,7 +432,7 @@ def _call_llm(
     except Exception as exc:
         with print_lock:
             print(f"  [model error] {label}: {exc}", file=sys.stderr)
-        items, usage = {}, dict(_ZERO_USAGE)
+        items, usage = None, dict(_ZERO_USAGE)
 
     with print_lock:
         print(f"    {label} done")
@@ -478,6 +525,11 @@ def _run_enrich(
     if client is None:
         return dict(_ZERO_USAGE)
 
+    # Rows whose batch errored or whose id the model dropped (truncation). They
+    # still get hint/default values for this run's output, but are excluded from
+    # the cache so the next run retries them instead of freezing the fallback.
+    failed_rows: set[int] = set()
+
     provider, api_model = model_cfg["provider"], model_cfg["api_model"]
     timeout    = model_cfg.get("timeout", _DEFAULT_TIMEOUT)
     max_tokens = model_cfg.get("max_tokens", _DEFAULT_MAX_TOKENS)
@@ -508,7 +560,7 @@ def _run_enrich(
         return [
             {
                 "id":            str(i),
-                "hint_category": r.get("category", ""),
+                "hint_category": _hint_category(r),
                 "brand":         r.get("brand", ""),
                 "name":          r.get("name", ""),
                 "description":   r.get("description", ""),
@@ -521,8 +573,15 @@ def _run_enrich(
     def classify_applier(chunk):
         def on_result(items):
             for local_id, (oi, row) in enumerate(chunk):
-                it  = items.get(str(local_id), {})
-                cat = _valid_category(it.get("category"), row.get("category"))
+                it = (items or {}).get(str(local_id))
+                if it is None:
+                    failed_rows.add(oi)
+                    it = {}
+                # A curated device token is a string fact about the name, so it wins
+                # over the model; _valid_subtype then snaps the subtype into that
+                # category's rail.
+                forced = find_format_category(row.get("brand", ""), row.get("name", ""))
+                cat = forced or _valid_category(it.get("category"), row.get("category"))
                 categories[oi] = cat
                 subtypes[oi]   = _valid_subtype(it.get("subtype"), cat, _hint_subtype(row))
                 v = it.get("variant")
@@ -556,7 +615,10 @@ def _run_enrich(
     def extract_applier(chunk):
         def on_result(items):
             for local_id, (oi, row) in enumerate(chunk):
-                it = items.get(str(local_id), {})
+                it = (items or {}).get(str(local_id))
+                if it is None:
+                    failed_rows.add(oi)
+                    it = {}
                 strains[oi]       = it.get("strain")
                 product_lines[oi] = it.get("product_line")
         return on_result
@@ -593,10 +655,18 @@ def _run_enrich(
     run_phase(extract_tasks)
 
     # ---- Write cache once, both passes applied ----
+    # Rows in failed_rows carry fallback values, not model answers — leaving them
+    # out of the cache means the next run re-enriches them instead of trusting junk.
+    if failed_rows:
+        print(f"  [warn] {len(failed_rows)} row(s) not cached (model error/truncation); "
+              f"will retry next run", file=sys.stderr)
     for (oi, row) in pending:
+        if oi in failed_rows:
+            continue
         key = _cache_key(row)
         if key:
             cache[key] = {
+                "v": _ENRICH_VERSION,
                 "category": categories[oi], "subtype": subtypes[oi], "strain": strains[oi],
                 "product_line": product_lines[oi], "variant": variants[oi],
             }
@@ -650,8 +720,10 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
     for i, row in enumerate(rows):
         key = _cache_key(row)
         entry = cache.get(key) if key else None
-        # Re-enrich if not cached or cache pre-dates variant/category fields
-        if entry and "variant" in entry and "category" in entry:
+        # Re-enrich if not cached, if the cache pre-dates the variant/category
+        # fields, or if it was written under an older prompt/taxonomy version.
+        if entry and "variant" in entry and "category" in entry \
+                and entry.get("v") == _ENRICH_VERSION:
             categories.append(entry.get("category"))
             subtypes.append(entry.get("subtype"))
             strains.append(entry.get("strain"))
@@ -679,7 +751,16 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
         row["strain"]       = strains[i] or ""
         row["product_line"] = product_lines[i] or None
         v = variants[i] if variants[i] is not None else row.get("variant", "")
-        row["variant"]      = normalize_variant(v) if v else v
+        # Pass the settled category: an edible/tincture dose must not be run through
+        # the weight conversions (1000mg is a dose, not 1g).
+        row["variant"]      = normalize_variant(v, row["category"]) if v else v
+
+    # Deterministic canonicalization last: curated product lines and strain aliases
+    # override the model, so identity is consistent across dispensaries and runs.
+    # Applied to cached rows too — adding a map entry takes effect without re-enriching.
+    canon_stats = canonicalize(rows)
+    if any(canon_stats.values()):
+        print("  canonical: " + ", ".join(f"{k}={v}" for k, v in canon_stats.items() if v))
 
     c = model_cfg["cost"]
     cost = (

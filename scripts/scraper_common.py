@@ -24,6 +24,7 @@ CSV_COLUMNS = [
     "name",
     "brand",
     "category",
+    "raw_category",   # source string before map_category — makes CATEGORY_MAP gaps diagnosable
     "variant",
     "price_cents",
     "classification",
@@ -163,7 +164,19 @@ _OZ_WORD_MAP = {
 _OZ_PER_G = 28  # cannabis convention: 1 oz = 28g
 
 
-def normalize_variant(v: str) -> str:
+# Categories whose variant is a DOSE, not a physical weight. For these, mg is the
+# canonical unit at every magnitude and ounces are package volume — so the
+# weight-oriented conversions below must not run (they were turning a 1000mg
+# tincture into "1g" and a 12oz beverage into "336g").
+_DOSE_CATEGORIES = {"edible", "tinctures"}
+
+# Categories whose variant is a physical WEIGHT. These stay in grams at every
+# magnitude: a 0.4g pre-roll rendered as "400mg" sits inconsistently beside its
+# own 0.5g and 0.6g siblings, and reads as a dose it is not.
+_WEIGHT_CATEGORIES = {"flower", "preroll", "vaporizers", "concentrate"}
+
+
+def normalize_variant(v: str, category: str | None = None) -> str:
     """Normalize variant strings for cross-source consistency.
 
     Canonical form: mg for <0.5g, grams (compact) for ≥0.5g.
@@ -175,33 +188,45 @@ def normalize_variant(v: str) -> str:
       1/8oz       → 3.5g   (fractional ounces → grams)
       1oz         → 28g    (whole ounces → grams)
     Fluid ounces (fl oz) are left unchanged.
+
+    `category` pins the unit to what the category actually measures:
+      - dose categories (edible, tinctures): mg stays mg at any magnitude and oz
+        stays oz, so "1000mg" and "12oz" survive instead of becoming "1g"/"336g".
+      - weight categories (flower, preroll, vaporizers, concentrate): grams at
+        any magnitude, so "0.4g" stays "0.4g" instead of becoming "400mg" and
+        "350mg" becomes "0.35g".
+    Callers that don't know the final category omit it and keep the legacy
+    magnitude-based behavior.
     """
     v = v.strip()
-    # Fractional ounces: "1/8oz", "1/4oz", "1/2oz", "1/2oz.|14g"
-    m = _OZ_FRAC_RE.match(v)
-    if m:
-        grams = (int(m.group(1)) / int(m.group(2))) * _OZ_PER_G
-        return f"{grams:g}g"
-    # Whole/decimal ounces: "1oz", "3.0 ounces" — but not "fl oz"
-    m = _OZ_WHOLE_RE.match(v)
-    if m:
-        grams = float(m.group(1)) * _OZ_PER_G
-        return f"{grams:g}g"
-    # Word forms: "ounce", "halfounce", "quarterounceflower"
-    g = _OZ_WORD_MAP.get(v.lower().replace(" ", ""))
-    if g is not None:
-        return f"{g}g"
+    cat = (category or "").strip().lower()
+    dose, weight = cat in _DOSE_CATEGORIES, cat in _WEIGHT_CATEGORIES
+    if not dose:
+        # Fractional ounces: "1/8oz", "1/4oz", "1/2oz", "1/2oz.|14g"
+        m = _OZ_FRAC_RE.match(v)
+        if m:
+            grams = (int(m.group(1)) / int(m.group(2))) * _OZ_PER_G
+            return f"{grams:g}g"
+        # Whole/decimal ounces: "1oz", "3.0 ounces" — but not "fl oz"
+        m = _OZ_WHOLE_RE.match(v)
+        if m:
+            grams = float(m.group(1)) * _OZ_PER_G
+            return f"{grams:g}g"
+        # Word forms: "ounce", "halfounce", "quarterounceflower"
+        g = _OZ_WORD_MAP.get(v.lower().replace(" ", ""))
+        if g is not None:
+            return f"{g}g"
     # Gram forms
     m = _GRAM_RE.match(v) or _G_RE.match(v)
     if m:
         grams = float(m.group(1))
-        if grams > 0 and grams < 0.5:
+        if grams > 0 and grams < 0.5 and not weight:
             return f"{round(grams * 1000):g}mg"
         return f"{grams:g}g"
     m = _MG_RE.match(v)
     if m:
         mg = float(m.group(1))
-        if mg >= 500:
+        if weight or (mg >= 500 and not dose):
             return f"{mg / 1000:g}g"
         return f"{mg:g}mg"
     return v

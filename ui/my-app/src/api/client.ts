@@ -98,6 +98,49 @@ async function authenticatedFetch<T>(
   return res.json()
 }
 
+// SMS login endpoints. Unauthenticated by definition, and their errors go
+// straight on screen, so surface FastAPI's `detail` string rather than the raw
+// JSON body that portalFetch would throw.
+export class ApiError extends Error {
+  status: number
+  retryAfter?: number
+
+  constructor(message: string, status: number, retryAfter?: number) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+    this.retryAfter = retryAfter
+  }
+}
+
+async function authFetch<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+
+  const text = await res.text()
+  let payload: any = null
+  try {
+    payload = text ? JSON.parse(text) : null
+  } catch {
+    // Non-JSON error body (proxy timeout, HTML error page) — fall back to text.
+  }
+
+  if (!res.ok) {
+    const detail = typeof payload?.detail === 'string' ? payload.detail : null
+    const retryAfter = Number(res.headers.get('Retry-After'))
+    throw new ApiError(
+      detail || text || `Request failed with status ${res.status}`,
+      res.status,
+      Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : undefined,
+    )
+  }
+
+  return payload as T
+}
+
 // Centralized API client
 export const api = {
   customers: {
@@ -275,6 +318,23 @@ export const api = {
 
     filterOptions: () =>
       authenticatedFetch<{ dispensaries: { id: string; name: string }[]; brands: string[]; classifications: string[]; subtypes: string[] }>(`/admin/listings/filter-options`),
+  },
+
+  auth: {
+    smsStart: (phone: string) =>
+      authFetch<{ challenge_id: string; expires_in: number; resend_in: number }>(
+        `/auth/sms/start`,
+        { phone },
+      ),
+
+    smsVerify: (challengeId: string, code: string) =>
+      authFetch<{
+        access_token: string
+        refresh_token: string
+        token_type: string
+        expires_in?: number
+        user_id: string
+      }>(`/auth/sms/verify`, { challenge_id: challengeId, code }),
   },
 
   me: {

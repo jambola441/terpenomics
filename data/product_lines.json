@@ -1,0 +1,13 @@
+{
+  "_comment": "Curated brand -> product lines. A line is assigned when its text appears in the product name (word-boundary match, spacing/punctuation insensitive); longest match wins. Keys starting with _ are ignored; the key \"*\" applies to every brand. Grow this from `python evals/enrich/audit.py --db` — it is the cheapest, most durable accuracy fix available, since assignment becomes a string fact instead of a model judgment. Seeded from The Plug (Crown Heights) product names.",
+
+  "Claybourne Co.": ["Flyers", "Classic Cuts", "Gold Cuts", "Gassers"],
+  "Lowell Smokes": ["Quicks"],
+  "Eaton Botanicals": ["Little Pandas", "Chairlifts"],
+  "Papa & Barkley": ["Releaf"],
+  "Ayrloom": ["UP"],
+  "Timeless": ["Noir", "T1", "T2"],
+  "Select": ["Flavor Series", "ACE", "Elite"],
+  "Ruby Farms": ["Classics"],
+  "To The Moon": ["Essentials", "Flight Pack", "Spray Can"]
+}

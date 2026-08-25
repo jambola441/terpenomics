@@ -1,0 +1,10 @@
+{
+  "_comment": "Curated brand -> {device/format token: category}. Some products are only identifiable by a brand's hardware name — 'Select Briq V2' and 'Florist Farms Rechargeable OVL' are vapes with no generic vape word anywhere in the name, so the model has to guess and guesses concentrate. A token here is matched on word boundaries in the product name and settles the category outright, before the model is asked. That is brand trivia, not reasoning: it does not belong in a prompt (paid for on every call, never scales past a handful of brands) but it costs nothing here and applies identically across every dispensary. Keys starting with _ are ignored; the key \"*\" applies to every brand. Category must be one of CATEGORIES in scripts/enrich.py. Grow from the `unmapped_category_bucket` / `category_token_conflict` findings of evals/enrich/audit.py.",
+
+  "Select":        {"Briq": "vaporizers", "Cliq": "vaporizers"},
+  "Florist Farms": {"OVL": "vaporizers"},
+  "STIIIZY":       {"Starter Pack": "vaporizers"},
+  "Eureka":        {"Starter Kit": "vaporizers"},
+  "MFNY":          {"Two-Fer": "vaporizers"},
+  "Boutiq":        {"Switch": "vaporizers"}
+}

@@ -1,9 +1,11 @@
 """
 import_listings.py — Import scraped listing CSVs into the DB.
 
-Upserts listings keyed on (dispensary_id, sku). On conflict, updates volatile
-fields (in_stock, price_cents, image_url, url, scraped_at, subtype, strain,
-scraped_name, scraped_brand, scraped_category, description).
+Upserts listings keyed on (dispensary_id, sku, COALESCE(variant, '')) — several
+platforms reuse one SKU across weight/price tiers, so the variant is part of a
+listing's identity. On conflict, updates volatile fields (in_stock, price_cents,
+image_url, url, scraped_at, subtype, strain, scraped_name, scraped_brand,
+scraped_category, description).
 
 Usage:
   python scripts/import_listings.py \\
@@ -36,6 +38,12 @@ def parse_args():
     p = argparse.ArgumentParser(description="Import scraped listings into terpenomics DB")
     p.add_argument("--csv", required=True, help="Path to scraper CSV file")
     p.add_argument("--dry-run", action="store_true", help="Print actions without writing")
+    p.add_argument(
+        "--stale-threshold", type=float, default=0.5,
+        help="Skip marking absent listings inactive when this scrape carries fewer "
+             "than THRESHOLD × the dispensary's currently-active listings (default 0.5). "
+             "Guards a partial scrape from deactivating the rest of the menu. 0 disables.",
+    )
     return p.parse_args()
 
 
@@ -176,13 +184,13 @@ def main():
                 """
                 SELECT sku, in_stock, price_cents, image_url,
                        scraped_name, scraped_brand, scraped_category,
-                       subtype, strain, url, product_line
+                       subtype, strain, url, product_line, COALESCE(variant, '')
                 FROM listings
                 WHERE dispensary_id = %s AND sku = ANY(%s)
                 """,
                 (dispensary_id, skus),
             )
-            existing: dict[str, tuple] = {row[0]: row for row in cur.fetchall()}
+            existing: dict[tuple, tuple] = {(row[0], row[11]): row for row in cur.fetchall()}
 
             TRACKED = [
                 # (label, record_idx, existing_col_idx)
@@ -203,10 +211,11 @@ def main():
 
             for rec in to_upsert:
                 sku_val = rec[2]
-                if sku_val not in existing:
+                key = (sku_val, rec[5] or "")
+                if key not in existing:
                     new_skus.append(sku_val)
                     continue
-                db_row = existing[sku_val]
+                db_row = existing[key]
                 diffs = []
                 for label, ri, di in TRACKED:
                     nv, ov = rec[ri], db_row[di]
@@ -232,10 +241,10 @@ def main():
 
         if not args.dry_run:
             if to_upsert:
-                # Deduplicate by SKU — last row wins (avoids CardinalityViolation)
-                seen: dict[str, tuple] = {}
+                # Deduplicate by (sku, variant) — last row wins (avoids CardinalityViolation)
+                seen: dict[tuple, tuple] = {}
                 for rec in to_upsert:
-                    seen[rec[2]] = rec
+                    seen[(rec[2], rec[5] or "")] = rec
                 to_upsert = list(seen.values())
 
                 psycopg2.extras.execute_values(
@@ -248,7 +257,7 @@ def main():
                          subtype, strain, classification, description, product_line,
                          created_at, updated_at, last_seen_at)
                     VALUES %s
-                    ON CONFLICT (dispensary_id, sku)
+                    ON CONFLICT (dispensary_id, sku, COALESCE(variant, ''))
                     WHERE sku IS NOT NULL
                     DO UPDATE SET
                         in_stock         = EXCLUDED.in_stock,
@@ -287,31 +296,52 @@ def main():
                     no_sku_insert,
                 )
 
-        # Mark stale listings inactive — SKUs present in DB but absent from this scrape
-        upserted_skus = [rec[2] for rec in to_upsert if rec[2]]
+        # Mark stale listings inactive — (sku, variant) rows present in DB but absent
+        # from this scrape. Guarded: a partial scrape (pagination break, platform API
+        # change) must not deactivate the rest of the menu, so we skip the step when
+        # this scrape carries suspiciously few rows vs. what's currently active.
+        upserted_keys = [f"{rec[2]}|{rec[5] or ''}" for rec in to_upsert if rec[2]]
         cur.execute(
             """
-            SELECT sku, scraped_name FROM listings
-            WHERE dispensary_id = %s AND sku IS NOT NULL
-              AND is_active = TRUE AND sku != ALL(%s)
+            SELECT COUNT(*) FROM listings
+            WHERE dispensary_id = %s AND sku IS NOT NULL AND is_active = TRUE
             """,
-            (dispensary_id, upserted_skus),
+            (dispensary_id,),
         )
-        stale = cur.fetchall()
-        if stale:
-            print(f"  marking {len(stale)} stale listings inactive:")
-            for sku, name in stale[:5]:
-                print(f"    [{sku}] {name}")
-            if len(stale) > 5:
-                print(f"    ... and {len(stale) - 5} more")
-            if not args.dry_run:
-                cur.execute(
-                    """
-                    UPDATE listings SET is_active = FALSE, in_stock = FALSE, updated_at = %s
-                    WHERE dispensary_id = %s AND sku IS NOT NULL AND sku != ALL(%s)
-                    """,
-                    (now, dispensary_id, upserted_skus),
-                )
+        active_count = cur.fetchone()[0]
+
+        if not upserted_keys:
+            if active_count:
+                print(f"  [WARN] scrape carried no SKU'd rows; skipping stale-marking "
+                      f"({active_count} active listings left untouched)")
+        elif active_count and len(upserted_keys) < args.stale_threshold * active_count:
+            print(f"  [WARN] scrape carried {len(upserted_keys)} rows vs {active_count} active "
+                  f"(< {args.stale_threshold:.0%}); looks partial — skipping stale-marking")
+        else:
+            cur.execute(
+                """
+                SELECT sku, variant, scraped_name FROM listings
+                WHERE dispensary_id = %s AND sku IS NOT NULL AND is_active = TRUE
+                  AND sku || '|' || COALESCE(variant, '') != ALL(%s)
+                """,
+                (dispensary_id, upserted_keys),
+            )
+            stale = cur.fetchall()
+            if stale:
+                print(f"  marking {len(stale)} stale listings inactive:")
+                for sku, variant, name in stale[:5]:
+                    print(f"    [{sku}|{variant or ''}] {name}")
+                if len(stale) > 5:
+                    print(f"    ... and {len(stale) - 5} more")
+                if not args.dry_run:
+                    cur.execute(
+                        """
+                        UPDATE listings SET is_active = FALSE, in_stock = FALSE, updated_at = %s
+                        WHERE dispensary_id = %s AND sku IS NOT NULL
+                          AND sku || '|' || COALESCE(variant, '') != ALL(%s)
+                        """,
+                        (now, dispensary_id, upserted_keys),
+                    )
 
         total_inserted += len(to_upsert) + len(no_sku_insert)
         print(f"  {slug}: {len(to_upsert)} upserted, {len(no_sku_insert)} inserted (no SKU), "

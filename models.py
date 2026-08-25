@@ -153,6 +153,7 @@ class ListingBase(SQLModel):
     in_stock:         bool          = Field(default=True, nullable=False)
     is_active:        bool          = Field(default=True, nullable=False)
     scraped_at:       Optional[datetime] = Field(default=None)
+    last_seen_at:     Optional[datetime] = Field(default=None)
     # Scraped identity fields
     scraped_name:     Optional[str] = Field(default=None, max_length=300)
     scraped_brand:    Optional[str] = Field(default=None, max_length=200)
@@ -168,10 +169,15 @@ class ListingBase(SQLModel):
 class Listing(ListingBase, TimestampMixin, table=True):
     __tablename__ = "listings"
     __table_args__ = (
+        # One row per (dispensary, sku, variant): platforms like Dutchie and Tymber
+        # reuse one SKU across weight/price tiers, so the variant is part of identity.
+        # COALESCE folds NULL variants into '' — otherwise Postgres treats NULLs as
+        # distinct and the upsert could never match a variant-less row.
         Index(
-            "listings_dispensary_sku_unique",
+            "listings_dispensary_sku_variant_unique",
             "dispensary_id",
             "sku",
+            text("COALESCE(variant, '')"),
             unique=True,
             postgresql_where=text("sku IS NOT NULL"),
         ),
@@ -253,3 +259,43 @@ class PurchaseItem(SQLModel, table=True):
 
     purchase: Purchase         = Relationship(back_populates="items")
     listing:  Optional[Listing] = Relationship(back_populates="purchase_items")
+
+
+# ---------------------------
+# Phone (SMS) login
+# ---------------------------
+
+class PhoneAuthIdentity(SQLModel, TimestampMixin, table=True):
+    """Maps an E.164 number to its Supabase user.
+
+    Our own source of truth for the mapping, so repeat logins never have to
+    search Supabase's user list. See services/supabase_admin.py.
+    """
+
+    __tablename__ = "phone_auth_identities"
+
+    phone:         str            = Field(primary_key=True, max_length=32)
+    auth_user_id:  UUID           = Field(index=True, nullable=False)
+    last_login_at: Optional[datetime] = Field(default=None)
+
+
+class PhoneAuthChallenge(SQLModel, table=True):
+    """One outstanding SMS code request.
+
+    The code itself lives with the SMS provider and never touches this database;
+    provider_ref is the handle we exchange for a verdict.
+    """
+
+    __tablename__ = "phone_auth_challenges"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    phone:        str  = Field(index=True, max_length=32, nullable=False)
+    provider:     str  = Field(max_length=32, nullable=False)
+    provider_ref: str  = Field(max_length=128, nullable=False)
+
+    created_at:  datetime           = Field(default_factory=utcnow, index=True, nullable=False)
+    expires_at:  datetime           = Field(nullable=False)
+    attempts:    int                = Field(default=0, nullable=False)
+    consumed_at: Optional[datetime] = Field(default=None)
+    request_ip:  Optional[str]      = Field(default=None, max_length=64, index=True)
