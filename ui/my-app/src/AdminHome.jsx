@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 const sections = [
   { label: 'Products',       path: '/admin/products',       desc: 'Browse and edit the product catalog' },
   { label: 'Customers',      path: '/admin/customers',      desc: 'View customer profiles and history' },
+  { label: 'Pickup Orders',  path: '/admin/orders',         desc: 'Incoming orders to prepare for pickup' },
   { label: 'Purchases',      path: '/admin/purchases',      desc: 'All purchase transactions' },
   { label: 'Lab Reports',    path: '/admin/lab-reports',    desc: 'Upload and review COAs' },
   { label: 'Dispensaries',   path: '/admin/dispensaries',   desc: 'Manage dispensary locations and POS settings' },

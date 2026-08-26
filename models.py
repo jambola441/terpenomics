@@ -262,6 +262,99 @@ class PurchaseItem(SQLModel, table=True):
 
 
 # ---------------------------
+# Pickup orders
+# ---------------------------
+
+class OrderStatus(str, Enum):
+    submitted = "submitted"   # customer placed it; the store has not acted yet
+    ready     = "ready"       # staff set it aside, waiting at the counter
+    completed = "completed"   # picked up and paid for in store
+    cancelled = "cancelled"
+
+
+# Terminal states never transition again; the API enforces this table.
+ORDER_TRANSITIONS: dict[str, set[str]] = {
+    OrderStatus.submitted: {OrderStatus.ready, OrderStatus.cancelled},
+    OrderStatus.ready:     {OrderStatus.completed, OrderStatus.cancelled},
+    OrderStatus.completed: set(),
+    OrderStatus.cancelled: set(),
+}
+
+
+class Order(SQLModel, TimestampMixin, table=True):
+    """A pickup order placed through the customer portal.
+
+    Payment is not handled here and never will be by this table: the customer
+    pays at the counter. `total_amount_cents` is therefore the quoted total at
+    submission time, not a charge -- it exists so the customer and the store are
+    looking at the same number, and so a later price change on the listing does
+    not silently rewrite what was agreed.
+
+    Distinct from `Purchase`, which records a completed transaction for the
+    recommendation engine. An order only becomes purchase-like once it is picked
+    up, and until then it must not feed recommendations.
+    """
+
+    __tablename__ = "orders"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    customer_id:   UUID = Field(foreign_key="customers.id", index=True, nullable=False)
+    dispensary_id: UUID = Field(foreign_key="dispensaries.id", index=True, nullable=False)
+
+    status: OrderStatus = Field(default=OrderStatus.submitted, index=True, nullable=False)
+
+    # Shown to the customer and read back at the counter. Short enough to say out
+    # loud; scoped per order, not globally meaningful.
+    pickup_code: str = Field(max_length=12, index=True, nullable=False)
+
+    total_amount_cents: int = Field(default=0, ge=0, nullable=False)
+    note:               Optional[str] = Field(default=None, max_length=500)
+
+    submitted_at: datetime           = Field(default_factory=utcnow, index=True, nullable=False)
+    ready_at:     Optional[datetime] = Field(default=None)
+    completed_at: Optional[datetime] = Field(default=None)
+    cancelled_at: Optional[datetime] = Field(default=None)
+
+    customer:   "Customer"          = Relationship()
+    dispensary: "Dispensary"        = Relationship()
+    items:      list["OrderItem"]   = Relationship(
+        back_populates="order",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    )
+
+
+class OrderItem(SQLModel, table=True):
+    """One line of an order, with the product details copied in.
+
+    Listings are re-scraped continuously -- prices move, rows go inactive, SKUs
+    get rewritten. Rendering an order by joining live listing rows would let a
+    scrape silently change what a customer sees they ordered, so the name, brand,
+    variant and unit price are snapshotted at submission. `listing_id` stays for
+    lineage but is nullable and is never the source of display data.
+    """
+
+    __tablename__ = "order_items"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    order_id:   UUID           = Field(foreign_key="orders.id", index=True, nullable=False)
+    listing_id: Optional[UUID] = Field(default=None, foreign_key="listings.id", index=True)
+
+    quantity:          int = Field(default=1, ge=1, nullable=False)
+    unit_price_cents:  Optional[int] = Field(default=None, ge=0)
+    line_amount_cents: int = Field(default=0, ge=0, nullable=False)
+
+    # Snapshot of the listing at submission time.
+    name:      str           = Field(max_length=300, nullable=False)
+    brand:     Optional[str] = Field(default=None, max_length=200)
+    variant:   Optional[str] = Field(default=None, max_length=100)
+    image_url: Optional[str] = Field(default=None, max_length=1000)
+
+    order: Order = Relationship(back_populates="items")
+
+
+# ---------------------------
 # Phone (SMS) login
 # ---------------------------
 
