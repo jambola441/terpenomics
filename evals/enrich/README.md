@@ -207,6 +207,67 @@ pre-truncated at 300 chars (median 220), so this measures a *floor*. Production
 descriptions are ~4× longer, where the input side is a bigger share and the cap
 would save more. Re-test against real scrape CSVs before adopting.
 
+## Model comparison — DeepSeek v4 vs Haiku 4.5 (2026-08-25)
+
+Same gold suites, same prompts, `haiku-or` transport throughout. Haiku has 4 runs
+(the noise-floor set); DeepSeek 2 each, except `-0813` which was cut after one.
+
+| model | n | acc | sd | secs | out tok | $/run | $/fleet¹ |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| **claude-haiku-4.5** | 4 | **93.2%** | **0.50** | **15** | 15,851 | $0.1497 | $10.07 |
+| deepseek-v4-flash | 2 | 89.0% | 4.95 | 332 | 58,647 | **$0.0152** | **$1.03** |
+| deepseek-v4-pro | 2 | 85.3% | 2.12 | 538 | 81,436 | $0.1346 | $9.05 |
+| deepseek-v4-pro-0813 | 1 | 51.1% | — | 821 | 100,453 | $0.4054 | $27.27 |
+
+¹ scaled from $/run to the 19,106-listing fleet.
+
+**Haiku wins on every axis except price.** Three findings worth keeping:
+
+- **"Pro" is worse than "flash", at 9× the cost.** deepseek-v4-pro scores 85.3% vs
+  its cheaper sibling's 89.0%. Its per-token rate is roughly half Haiku's, but it
+  emits **5× the output tokens**, so a run costs the same. Per-token price is not
+  cost; verbosity is. The dated `-0813` pin is worse again — 51.1% and $0.41/run,
+  mostly truncated JSON — and was cut after one run, a 42-point gap being 84× the
+  noise floor.
+- **The sd column decides it for this system.** deepseek-v4-flash's run-to-run
+  variance is **10× Haiku's** (4.95 vs 0.50 cases). Since `products` is a VIEW keyed
+  on the model's own strings, unstable output means product groups churn between
+  runs. Consistency matters more than raw accuracy here, and that is the axis
+  DeepSeek loses worst on — the 4.2pp accuracy gap is the smaller problem.
+- **Wall clock is a real constraint at fleet scale.** 15s vs 332–821s on 284
+  listings. Extrapolated to a fleet refresh, Haiku's ~11 minutes becomes ~6.5 hours.
+  Part of this is that the DeepSeek entries run `batch_size=15` (vs 50) because they
+  truncate JSON at larger batches — which is itself a robustness signal.
+
+deepseek-v4-flash remains the one genuinely interesting option: **10× cheaper**
+($1.03 vs $10.07 per fleet refresh). It is a reasonable fallback if cost ever
+becomes the binding constraint. It is not one today — the README's own baseline
+note stands: accuracy is binding, not cost.
+
+### claude-haiku-4.5:batch — half price, but not reachable from here
+
+Worth knowing since it is the same weights and therefore cannot differ on accuracy:
+`anthropic/claude-haiku-4.5:batch` bills **$0.50/$2.50 per M, exactly half** the
+sync rate. OpenRouter rejects it on `/chat/completions`:
+
+```
+404 — This model is only available through the Batch API.
+      Use the /api/beta/batches endpoint instead.
+```
+
+So it is not a `MODELS` entry, it is a submit → poll → retrieve rewrite against an
+async endpoint with a 24h SLA. For a nightly scrape → enrich → import run that
+latency is free, and it would halve a fleet refresh from **$6.65 to $3.32**
+(~$100/month at nightly cadence). Worth doing as plumbing; there is nothing to
+eval, because the weights are identical.
+
+A related trap found while checking slugs: `~deepseek/deepseek-v4-flash-latest`
+(the tilde is part of the slug) currently **resolves to** `deepseek-v4-flash-0731`,
+but bills $0.035/$0.280 against that pin's $0.040/$0.080 — cheaper input, 3.5× the
+output rate. For output-light work the pin is cheaper. More importantly, a floating
+alias changes weights without notice, which silently invalidates a frozen gold
+suite. Pin models in the eval path.
+
 ## Fleet report — all 24 live stores (2026-08-25)
 
 `dispensary_report.py` runs the audit checks **per store** and normalizes to

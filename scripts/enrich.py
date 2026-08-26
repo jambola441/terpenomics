@@ -237,6 +237,13 @@ MODELS: dict[str, dict] = {
         "api_model": "anthropic/claude-haiku-4.5",
         "cost": {"input": 1.00 / 1e6, "output": 5.00 / 1e6},
     },
+    # NOTE: anthropic/claude-haiku-4.5:batch is half price ($0.50/$2.50 per M) and
+    # is the SAME weights, so it cannot differ on accuracy — but it is not reachable
+    # from here. OpenRouter rejects it on /chat/completions with
+    #   "This model is only available through the Batch API. Use /api/beta/batches"
+    # so adopting it means submit-poll-retrieve against an async endpoint (24h SLA),
+    # not a MODELS entry. Worth doing for a nightly scrape->enrich->import run,
+    # where latency is free; it is a plumbing change, not a model choice.
     # ---- comparison models (via OpenRouter) ----
     # TODO: confirm the exact slug + pricing from openrouter.ai/models.
     "mimo": {
@@ -251,10 +258,20 @@ MODELS: dict[str, dict] = {
         # Firm timeout so a stalled batch fails fast instead of hanging the run.
         "batch_size": 15, "timeout": 120, "max_tokens": 8192,
     },
+    # DeepSeek v4 Pro. MEASURED 2026-08-25 on the gold suites: 85.3% vs haiku's
+    # 93.2%, i.e. WORSE than its own cheaper sibling deepseek-v4-flash (89.0%), at
+    # 9x the cost and 36x the wall clock. Kept only so the result stays reproducible.
+    # The dated -0813 pin is worse still (51.1%, $0.41/run) and is not worth an entry.
+    "deepseek-pro": {
+        "provider":  "openrouter",
+        "api_model": "deepseek/deepseek-v4-pro",
+        "cost": {"input": 0.556 / 1e6, "output": 1.112 / 1e6},
+        "batch_size": 15, "max_tokens": 8192,
+    },
     "deepseek": {
         "provider":  "openrouter",
         "api_model": "deepseek/deepseek-v4-flash",   # verified live on OpenRouter 2026-08-25
-        "cost": {"input": 0.09 / 1e6, "output": 0.18 / 1e6},
+        "cost": {"input": 0.077 / 1e6, "output": 0.154 / 1e6},   # live catalogue price
         # Truncated/nulled the extract pass at the default 50-item batch. Small
         # batch + generous max_tokens keeps each batch's JSON complete (same fix
         # that stabilized mimo).
