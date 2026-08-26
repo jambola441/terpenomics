@@ -8,8 +8,13 @@ from routes.admin import router as admin_router
 from routes.customer import router as customer_router
 from routes.auth_sms import router as auth_sms_router
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 
 app = FastAPI(title="Dispensary MVP API")
+# The portal's browse endpoints return large JSON documents (a busy category
+# runs to megabytes uncompressed). Nothing in front of the app compresses for
+# us, so do it here.
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
