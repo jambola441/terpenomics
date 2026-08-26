@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import api from '../api/client'
-import type { PortalBrandOffering, PortalCategoryDetail, PortalCategoryProduct } from '../types'
+import type {
+  PortalCategoryDetail, PortalCategoryDispensary, PortalCategoryOffering, PortalCategoryProduct,
+} from '../types'
 import { t, font, categoryColor, alpha } from '../theme'
 import { FeedState } from './ui'
 import {
@@ -11,12 +13,18 @@ import {
 
 /* ── Product enrichment ───────────────────────────────────────────────────── */
 
+/** An offering resolved against the response's store table. */
+type Placed = {
+  offering: PortalCategoryOffering
+  store: PortalCategoryDispensary
+}
+
 /** A product plus the location/price facts derived from its offerings. */
 type EnrichedProduct = {
   product: PortalCategoryProduct
-  closest: PortalBrandOffering | null
+  closest: Placed | null
   closestDist: number | null
-  cheapest: PortalBrandOffering | null
+  cheapest: Placed | null
   /** Haystack for the in-category search box. */
   haystack: string
 }
@@ -53,7 +61,7 @@ function matches(e: EnrichedProduct, f: Filters, except?: FacetKey | 'price' | '
 
 function toCard(e: EnrichedProduct): BrowseCardItem {
   const p = e.product
-  const store = e.closest ?? e.cheapest ?? p.offerings[0] ?? null
+  const store = (e.closest ?? e.cheapest)?.store ?? null
   return {
     name: p.name,
     brand: p.brand,
@@ -65,7 +73,7 @@ function toCard(e: EnrichedProduct): BrowseCardItem {
     multiPriced: p.min_price_cents != null && p.max_price_cents != null && p.max_price_cents > p.min_price_cents,
     dispensaryCount: p.dispensary_count,
     distanceMi: e.closestDist,
-    storeName: store?.dispensary_name ?? null,
+    storeName: store?.name ?? null,
   }
 }
 
@@ -130,18 +138,22 @@ export default function CategoryView({ categoryName, onBack, onOpenBrandProduct,
   // Resolve each product's closest and cheapest offering once per position change.
   const enriched = useMemo<EnrichedProduct[]>(() => {
     if (!data) return []
+    const stores = data.dispensaries
     return data.products.map(product => {
-      let closest: PortalBrandOffering | null = null
+      let closest: Placed | null = null
       let closestDist = Infinity
-      let cheapest: PortalBrandOffering | null = null
+      let cheapest: Placed | null = null
 
       for (const o of product.offerings) {
-        if (o.price_cents != null && (cheapest == null || o.price_cents < cheapest.price_cents!)) {
-          cheapest = o
+        const store = stores[o.dispensary_index]
+        if (!store) continue
+        if (o.price_cents != null
+          && (cheapest == null || o.price_cents < cheapest.offering.price_cents!)) {
+          cheapest = { offering: o, store }
         }
-        if (userPos && o.lat != null && o.lng != null) {
-          const d = haversineMi(userPos.lat, userPos.lng, o.lat, o.lng)
-          if (d < closestDist) { closestDist = d; closest = o }
+        if (userPos && store.lat != null && store.lng != null) {
+          const d = haversineMi(userPos.lat, userPos.lng, store.lat, store.lng)
+          if (d < closestDist) { closestDist = d; closest = { offering: o, store } }
         }
       }
 
@@ -250,8 +262,14 @@ export default function CategoryView({ categoryName, onBack, onOpenBrandProduct,
       onOpenBrandProduct(p.brand, productKey(p))
       return
     }
-    const o = e.closest ?? e.cheapest ?? p.offerings[0]
-    if (o) onOpenListing(o.dispensary_id, o.listing_id)
+    // Unbranded products carry listing_id on their offerings for exactly this.
+    const placed = e.closest ?? e.cheapest
+    const first = placed ?? (p.offerings[0] && data
+      ? { offering: p.offerings[0], store: data.dispensaries[p.offerings[0].dispensary_index] }
+      : null)
+    if (first?.offering.listing_id && first.store) {
+      onOpenListing(first.store.id, first.offering.listing_id)
+    }
   }
 
   // Drop a nearest sort / radius filter that location permission can't support.
