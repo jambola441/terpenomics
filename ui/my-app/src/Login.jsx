@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import supabase from './utils/supabase'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { toE164, formatPhoneInput, formatE164ForDisplay } from './utils/phone'
 import api from './api/client'
+import { safeNext, rememberNext } from './utils/redirect'
 
 // Fallback cooldown. The SMS path uses whatever the backend reports instead.
 const RESEND_SECONDS = 60
@@ -21,6 +22,9 @@ export default function Login() {
   const [cooldown, setCooldown] = useState(0)
   const [providers, setProviders] = useState([])  // OAuth providers actually enabled
   const navigate = useNavigate()
+  const location = useLocation()
+  // Where the visitor was headed before being bounced here, if anywhere.
+  const next = safeNext(location.state?.from)
 
   // Ask Supabase which social providers are live rather than hardcoding them.
   // signInWithOAuth redirects the browser instead of making a request, so a
@@ -165,8 +169,10 @@ export default function Login() {
       }
 
       // Admins carry role="admin" on the Supabase JWT (see routes/admin/auth.py).
-      // Everyone else who signs in by text lands in the customer portal.
-      navigate(user?.role === 'admin' || channel === 'email' ? '/admin' : '/portal')
+      // Everyone else who signs in by text lands in the customer portal —
+      // unless they were bounced here from somewhere specific.
+      const fallback = user?.role === 'admin' || channel === 'email' ? '/admin' : '/portal'
+      navigate(next || fallback)
     } catch (err) {
       handleFailure(err)
       setLoading(false)
@@ -183,6 +189,9 @@ export default function Login() {
     setIsError(false)
     setMsg('')
     setLoading(true)
+    // The provider round trip discards router state, so hand the destination
+    // to sessionStorage for AuthCallback to pick up.
+    rememberNext(next)
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: { redirectTo: `${window.location.origin}/auth/callback` },
