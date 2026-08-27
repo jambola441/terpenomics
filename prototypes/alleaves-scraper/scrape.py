@@ -19,10 +19,12 @@ Output columns (the shared scrape schema — same as the Dutchie/Tymber scrapers
     price_cents, classification, in_stock, product_url, image_url, scraped_at,
     description, subtype, strain, product_line
 
-Pass 3 is best-effort. Carrot retired the Typesense storefront index (the settings
-endpoint now returns typesense_nodes="retired"), so the cross-reference is skipped
-and `in_stock` means "in POS inventory" rather than "published for sale" — 213 of
-638 rows as of 2026-08-27, against a smaller number under the old filter.
+Pass 3 goes through Carrot's search-products proxy. They retired direct Typesense
+access (settings report typesense_nodes="retired"), so the old code built
+https://retired/... and failed DNS. Same multi_search body, same documents, 250
+hits per page. It is still best-effort: if the storefront is unreachable the
+cross-reference is skipped and `in_stock` widens to "in POS inventory" rather
+than "published for sale".
 """
 
 import argparse
@@ -55,6 +57,14 @@ _API_HEADERS = {
 }
 
 CARROT_SETTINGS_URL = "https://api.nevada.getcarrot.io/api/v1/store/settings/public2"
+# Carrot retired direct Typesense access (settings now report typesense_nodes and
+# typesense_public_key as the literal string "retired") and proxy the same index
+# behind their own API. Same multi-search request shape, same 250-hit page cap.
+CARROT_SEARCH_URL = "https://api.nevada.getcarrot.io/api/v1/store/search-products"
+CARROT_STORE_ORIGIN = "https://brooklynorganicbuds.com"
+CARROT_PAGE_SIZE = 250          # Carrot rejects >250: "Only upto 250 hits can be fetched per page."
+BROWSER_UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+              "(KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36")
 
 
 # ---------------------------------------------------------------------------
@@ -189,64 +199,58 @@ def fetch_in_stock_ids(client: httpx.Client) -> dict[str, str]:
 # Pass 3 — Carrot/Typesense storefront cross-reference
 # ---------------------------------------------------------------------------
 
-# Carrot signals a decommissioned Typesense index by returning this in place of a
-# hostname. Left unhandled, the code builds "https://retired/collections/..." and
-# dies on DNS ("Name or service not known") — an upstream retirement that reads
-# like a local network fault.
-_RETIRED_NODES = {"retired", "deprecated", "disabled", "", None}
-
-
 def fetch_storefront_products(space_id: str, location_id: str = "1") -> dict[str, dict] | None:
     """{batchName: {slug, price}} for products published to the Carrot storefront.
 
-    Returns None when Carrot reports the Typesense index retired, so the caller can
-    carry on without the cross-reference instead of failing the whole scrape."""
-    with httpx.Client(timeout=15) as c:
-        resp = c.get(
-            CARROT_SETTINGS_URL,
-            params={"locId": location_id},
-            headers={"Carrot-Space-Id": space_id, "Accept": "application/json"},
-        )
-        resp.raise_for_status()
-        settings = resp.json()
+    Goes through Carrot's search-products proxy. They retired direct Typesense
+    access — settings report typesense_nodes="retired", and building a URL from
+    that yields https://retired/... which fails DNS and looks like a local network
+    fault. The proxy takes the same multi_search body and returns the same
+    documents, so only the transport changed.
 
-    ts_node = settings.get("typesense_nodes")
-    if isinstance(ts_node, str) and ts_node.strip().lower() in _RETIRED_NODES:
-        print(f"  [warn] Carrot reports typesense_nodes={ts_node!r} — storefront index "
-              f"retired upstream; skipping the cross-reference.", file=sys.stderr)
-        return None
-    if not ts_node:
-        print("  [warn] Carrot returned no typesense_nodes; skipping the cross-reference.",
-              file=sys.stderr)
-        return None
-
-    ts_key = settings["typesense_public_key"]
-    indexes = settings.get("typesense_indexes_by_location", {})
-    index_name = indexes.get(location_id) or indexes.get(int(location_id))
-    if not index_name:
-        raise RuntimeError(f"No Typesense index for location {location_id}")
-
-    published: dict[str, str] = {}
+    Returns None if the endpoint is unreachable, so a storefront outage degrades
+    the scrape instead of failing it.
+    """
+    headers = {
+        "carrot-space-id": space_id,
+        "content-type": "application/json",
+        "accept": "*/*",
+        # Carrot checks Origin/Referer; without them the proxy rejects the call.
+        "origin": CARROT_STORE_ORIGIN,
+        "referer": f"{CARROT_STORE_ORIGIN}/",
+        "user-agent": BROWSER_UA,
+    }
+    published: dict[str, dict] = {}
     page = 1
-    with httpx.Client(timeout=15) as c:
-        while True:
-            resp = c.get(
-                f"https://{ts_node}/collections/{index_name}/documents/search",
-                params={"q": "*", "per_page": 250, "page": page, "include_fields": "batchName,slug,option1Price"},
-                headers={"X-Typesense-Api-Key": ts_key},
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            hits = data.get("hits", [])
-            for hit in hits:
-                doc = hit["document"]
-                bn = doc.get("batchName")
-                slug = doc.get("slug")
-                if bn and slug:
-                    published[bn] = {"slug": slug, "price": doc.get("option1Price")}
-            if len(hits) < 250:
-                break
-            page += 1
+    try:
+        with httpx.Client(timeout=30) as c:
+            while True:
+                body = {"searches": [{
+                    "q": "*", "query_by": "name", "exhaustive_search": True,
+                    "per_page": CARROT_PAGE_SIZE, "page": page,
+                    "include_fields": "batchName,slug,option1Price",
+                }]}
+                resp = c.post(CARROT_SEARCH_URL, params={"locId": location_id},
+                              headers=headers, json=body)
+                resp.raise_for_status()
+                payload = resp.json()
+                result = (payload.get("results") or [payload])[0]
+                if result.get("error"):
+                    print(f"  [warn] Carrot search error: {result['error']}", file=sys.stderr)
+                    return None
+                hits = result.get("hits", [])
+                for hit in hits:
+                    doc = hit.get("document", {})
+                    bn, slug = doc.get("batchName"), doc.get("slug")
+                    if bn and slug:
+                        published[bn] = {"slug": slug, "price": doc.get("option1Price")}
+                if len(hits) < CARROT_PAGE_SIZE:
+                    break
+                page += 1
+    except httpx.HTTPError as exc:
+        print(f"  [warn] Carrot storefront unreachable ({type(exc).__name__}); "
+              f"skipping the cross-reference.", file=sys.stderr)
+        return None
 
     return published
 
