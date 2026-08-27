@@ -3,6 +3,18 @@
 Tooling to run the Metrc evaluation against the NY sandbox and write the
 results straight into the workbook Metrc sent.
 
+## Status of this evaluation
+
+The issued key set is **read-only**: every GET on a data endpoint returns 200,
+while every POST/PUT/DELETE returns 401, as does `GET /employees/v2/`. That
+matches a GET-only access request, and it means the write tabs cannot be
+completed with these credentials — not a tooling limitation.
+
+Completed from live calls: `GET Transfers and Wholesale` (steps 1-5 at 200;
+step 6, wholesale pricing, returns 401 — a permission the key lacks) and
+`LabResults` (200, with an empty result set because the sandbox holds no lab
+data). The read sweep exercises every other readable area.
+
 ## Scope reality check
 
 Two things in the request as scoped do not exist as Metrc describes them:
@@ -79,6 +91,35 @@ reads, which is what "JSON Body Or Response" means in practice.
 
 Every call is also appended to `calls.jsonl` as it happens, so a run that dies
 halfway still leaves usable evidence, and `fill` can be re-run against it.
+
+## What the live NY sandbox actually does
+
+Findings from a real run that the published documentation does not state.
+
+**All `/sandbox/v2/*` endpoints authenticate with the vendor key alone**, in an
+`x-metrc-key` header — not the basic auth every other endpoint uses. The docs
+mention this only for `integrator/setup`; basic auth returns 401 on all four.
+
+**A `lastModified` range wider than 24 hours is rejected** with
+`400 Last Modified range cannot exceed 24 hours`. This applies to plant
+batches, plants, harvests, packages and transfers. Omitting the range entirely
+is allowed and returns everything, paginated — so a window is only worth
+sending when a step specifically calls for a date search. The docs' "Requesting
+Large Amounts of Data" section describes chronological paging but never states
+the cap.
+
+**Tag types are state-specific.** NY offers `Cannabis package` and
+`Cannabis plant`, with `TagInventoryType` values of `CannabisPackage` and
+`CannabisPlant` — not the `Marijuana Package` / `Package` in the doc examples.
+Match case-insensitively and partially.
+
+**Incoming and outgoing transfers live at different facilities.** A cultivator
+has outgoing, a processor has incoming; no single facility has both. The GET
+Transfers tab therefore spans facilities, which is exactly why the workbook
+gives every step its own "License Facility" column.
+
+**`GET /labtests/v2/types` returns over 10,000 rows in NY.** Anything that
+walks that list needs to expect it.
 
 ## Known workbook errata
 

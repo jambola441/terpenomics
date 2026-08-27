@@ -57,6 +57,23 @@ def declared_calls() -> set:
             return consts.get(node.id)
         return None
 
+    # A step label handed to a local helper ("search(path, 'Step 1', True)")
+    # is a variable at the client.get call site, so collect the literals each
+    # function is actually called with and treat those as its step labels.
+    step_re = __import__("re").compile(r"^Step\s*\d+[a-z]?$", __import__("re").I)
+    via_callsite = {}
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Name):
+            continue
+        labels = {
+            a.value for a in list(node.args) + [k.value for k in node.keywords]
+            if isinstance(a, ast.Constant)
+            and isinstance(a.value, str)
+            and step_re.match(a.value)
+        }
+        if labels:
+            via_callsite.setdefault(node.func.id, set()).update(labels)
+
     for fn in [n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)]:
         local_sheet = None
 
@@ -92,6 +109,16 @@ def declared_calls() -> set:
                         sheet = literal(kw.value)
             if step and sheet:
                 found.add((sheet, step))
+            elif sheet and not step:
+                # step came in as a parameter — use the labels this helper is
+                # called with.
+                for enclosing, labels in via_callsite.items():
+                    if any(
+                        isinstance(inner, ast.FunctionDef) and inner.name == enclosing
+                        for inner in ast.walk(fn)
+                    ):
+                        for label in labels:
+                            found.add((sheet, label))
 
     return found
 

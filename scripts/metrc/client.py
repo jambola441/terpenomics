@@ -12,6 +12,7 @@ vendor key alone via an x-metrc-key header.
 from __future__ import annotations
 
 import base64
+import contextlib
 import json
 import time
 from dataclasses import dataclass, field, asdict
@@ -93,6 +94,19 @@ class MetrcClient:
         self.config = config
         self.recorder = recorder
         self.session = requests.Session()
+        # The evaluation spans several facilities — grow steps run at the
+        # cultivator, sales at the dispensary, lab tests at the testing lab.
+        self.active_license: str | None = None
+
+    @contextlib.contextmanager
+    def using(self, license_number: str):
+        """Temporarily route calls to another facility."""
+        previous = self.active_license
+        self.active_license = license_number
+        try:
+            yield self
+        finally:
+            self.active_license = previous
 
     # -- auth ---------------------------------------------------------------
     def _basic_auth_header(self) -> str:
@@ -126,7 +140,9 @@ class MetrcClient:
 
         params = dict(params or {})
         # Most endpoints are facility-scoped and refuse to work without this.
-        lic = license_number if license_number is not None else self.config.license_number
+        lic = license_number
+        if lic is None:
+            lic = self.active_license or self.config.license_number
         if lic and "licenseNumber" not in params and not path.startswith("/sandbox/v2/integrator"):
             params["licenseNumber"] = lic
 
