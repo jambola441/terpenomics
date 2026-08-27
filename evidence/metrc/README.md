@@ -5,15 +5,18 @@ results straight into the workbook Metrc sent.
 
 ## Status of this evaluation
 
-The issued key set is **read-only**: every GET on a data endpoint returns 200,
-while every POST/PUT/DELETE returns 401, as does `GET /employees/v2/`. That
-matches a GET-only access request, and it means the write tabs cannot be
-completed with these credentials — not a tooling limitation.
+**48 of 53 steps return HTTP 200.** Every tab NY requires is populated from
+live sandbox calls.
 
-Completed from live calls: `GET Transfers and Wholesale` (steps 1-5 at 200;
-step 6, wholesale pricing, returns 401 — a permission the key lacks) and
-`LabResults` (200, with an empty result set because the sandbox holds no lab
-data). The read sweep exercises every other readable area.
+Two permissions are not granted on the current key, and both need Metrc to
+enable them before the evaluation can be submitted complete:
+
+| Blocked | Steps | Evidence |
+|---|---|---|
+| Patients | Sales with Patient Look Up, step 4 | `GET /patients/v2/active` 401s at every dispensary, so it is the permission and not a bad patient number |
+| External incoming transfers | Transfer External Incoming, steps 1a/1b (and 3/4, which depend on their ids) | `POST /transfers/v2/external/incoming` 401s with any populated body, while an empty array returns 400 — the route is reachable, the action is not |
+
+Step 2 of Transfer External Incoming is an ordinary read and passes at 200.
 
 ## Scope reality check
 
@@ -120,6 +123,36 @@ gives every step its own "License Facility" column.
 
 **`GET /labtests/v2/types` returns over 10,000 rows in NY.** Anything that
 walks that list needs to expect it.
+
+**`PUT /packages/v2/adjust` sets the quantity, it does not adjust by it.** The
+documented example passes `-2.0` as if it were a delta. In NY, sending the
+negative of the current quantity leaves the package at that negative value, and
+step 4 then refuses it: "cannot be Finished because it's not empty". Send `0`
+to empty a package.
+
+**Item categories declare their own requirements** through `Requires*` flags,
+and they differ per facility. A cultivator's "Bud/Flower - Bulk" needs only a
+strain; a dispensary's "Bud/Flower - Each" also demands a brand, a THC percent,
+a unit weight and an expiration date. Build the body from the flags.
+
+**`ProductCategoryType` decides what a package may contain.** Packaging clones
+needs an item that is both `Plants`-typed and count-based, or the call fails
+with "the selected Item must be of Plant type".
+
+**`GET /sales/v2/customertypes` returns a plain array of strings**, not objects
+with a `Name`, unlike every neighbouring vocabulary.
+
+**Vocabularies are state-specific and some are empty.** NY publishes no plant
+waste methods at all (the field is nullable), one delivery return reason
+("Unable to Deliver", not the documented "Spoilage"), and no transfer type
+called "Transfer" — outgoing templates need one flagged `ForLicensedShipments`.
+
+**`POST /sales/v2/deliveries` requires `DriverEmployeeId`** and rejects
+duplicate package labels across a delivery's transactions.
+
+**`POST /sandbox/v2/packages/create` only sees weight-based items by default.**
+A dispensary restricted to finished goods has none, so pass
+`FilterBy: "Name"` to reach its count-based items.
 
 ## Known workbook errata
 

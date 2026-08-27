@@ -18,7 +18,7 @@ and inventory before you can make a package.
 """
 from __future__ import annotations
 
-from .client import MetrcClient, rows
+from .client import MetrcClient, MetrcError, rows
 
 PLANT_TAG_TYPES = ("Cannabis Plant", "Marijuana Plant")
 PACKAGE_TAG_TYPES = ("Cannabis Package", "Marijuana Package")
@@ -145,6 +145,43 @@ def mint_opening_packages(
         sheet="_bootstrap",
     )
     return record.object_ids
+
+
+def seed_inventory(client: MetrcClient, ctx, count: int = 10) -> list:
+    """Give a facility sellable inventory, creating an item first if needed.
+
+    POST /sandbox/v2/packages/create picks from weight-based items by default
+    and fails with "No weight-based items found for the facility" where there
+    are none — a dispensary that may only hold finished goods stocks nothing
+    but count-based categories. Naming an item explicitly reaches those.
+    """
+    from .steps import (
+        build_item_body, ensure_brand, load_reference, _pick, _pick_category,
+    )
+
+    try:
+        return mint_opening_packages(client, count)
+    except MetrcError as exc:
+        if "weight-based" not in str(exc).lower():
+            raise
+
+    ref = load_reference(client)
+    category = _pick_category(ref["item_categories"])
+    strains = _names(
+        client.get("/strains/v2/active", step="seed", sheet="_bootstrap").response_body
+    )
+    name = f"Terpenomics Seed Item {ctx.suffix}"
+    unit = _pick(
+        ref["units"], "Each" if category.get("QuantityType") == "CountBased" else "Grams"
+    )
+    body = build_item_body(
+        category, name=name, unit=unit,
+        strain=strains[0] if strains else None,
+        brand=ensure_brand(client, ctx) if category.get("RequiresItemBrand") else None,
+        weight_unit=_pick(ref["units"], "Grams"),
+    )
+    client.post("/items/v2/", body=[body], step="seed item", sheet="_bootstrap")
+    return mint_opening_packages(client, count, filter_by="Name", filter_value=name)
 
 
 def prepare_environment(
