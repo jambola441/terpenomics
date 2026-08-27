@@ -327,18 +327,150 @@ def read_sweep(client: MetrcClient, ctx: Context, *, window_days: int = 1) -> li
 # ---------------------------------------------------------------------------
 
 def _names(payload, key: str = "Name") -> list:
-    return [r.get(key) for r in rows(payload) if isinstance(r, dict) and r.get(key)]
+    """Names out of a vocabulary read.
+
+    Some vocabularies return objects with a Name, others a plain array of
+    strings — /sales/v2/customertypes is the latter — so handle both.
+    """
+    out = []
+    for row in rows(payload):
+        if isinstance(row, dict):
+            if row.get(key):
+                out.append(row[key])
+        elif isinstance(row, str) and row:
+            out.append(row)
+    return out
 
 
-def _pick(options: list, *preferred: str) -> str:
-    """First preferred option that the facility actually offers, else the first."""
+def _pick(options: list, *preferred: str, optional: bool = False):
+    """First preferred option the facility offers, else the first it has.
+
+    Some vocabularies come back empty — NY publishes no plant waste methods at
+    all — and the corresponding field is nullable in those cases, so an
+    optional pick yields None rather than failing the whole tab.
+    """
     for want in preferred:
         for option in options:
             if option and option.lower() == want.lower():
                 return option
-    if not options:
-        raise RuntimeError("facility offers no options for a required reference field")
-    return options[0]
+    if options:
+        return options[0]
+    if optional:
+        return None
+    raise RuntimeError(
+        "facility offers no options for a required reference field "
+        f"(wanted one of {list(preferred) or 'any'})"
+    )
+
+
+def _pick_category(categories: list, *preferred: str, exclude: str | None = None) -> dict:
+    """An item category the facility offers, by name, avoiding one already used.
+
+    Category names are state-specific: NY has "Bud/Flower - Bulk" where the
+    docs show "Buds".
+    """
+    usable = [c for c in categories if c.get("Name") and c.get("Name") != exclude]
+    if not usable:
+        raise RuntimeError("facility offers no usable item categories")
+    for want in preferred:
+        for category in usable:
+            if category["Name"].lower() == want.lower():
+                return category
+    # Prefer weight-based: count-based categories force Each and complicate
+    # every downstream quantity.
+    weighted = [c for c in usable if c.get("QuantityType") == "WeightBased"]
+    return (weighted or usable)[0]
+
+
+# Category flag -> the field(s) it makes mandatory. A category object declares
+# its own requirements, and they differ sharply by facility: a cultivator's
+# "Bud/Flower - Bulk" needs only a strain, while a dispensary's
+# "Bud/Flower - Each" also demands a brand, a THC percent, a unit weight and an
+# expiration date. Reading the flags beats hardcoding any one facility's rules.
+ITEM_REQUIREMENTS = {
+    "RequiresUnitThcPercent": {"UnitThcPercent": 15.0},
+    "RequiresUnitCbdPercent": {"UnitCbdPercent": 1.0},
+    "RequiresUnitThcAPercent": {"UnitThcAPercent": 1.0},
+    "RequiresUnitCbdAPercent": {"UnitCbdAPercent": 1.0},
+    "RequiresServingSize": {"ServingSize": "1 unit"},
+    "RequiresSupplyDurationDays": {"SupplyDurationDays": 1},
+    "RequiresNumberOfDoses": {"NumberOfDoses": 1},
+    "RequiresPublicIngredients": {"PublicIngredients": "Cannabis"},
+    "RequiresAllergens": {"Allergens": "None"},
+    "RequiresDescription": {"Description": "Created for the Metrc API evaluation."},
+    "RequiresAdministrationMethod": {"AdministrationMethod": "Inhalation"},
+}
+
+
+def build_item_body(
+    category: dict,
+    *,
+    name: str,
+    unit: str,
+    strain: str | None = None,
+    brand: str | None = None,
+    weight_unit: str = "Grams",
+) -> dict:
+    """An item body satisfying whatever the category declares it needs."""
+    body = {"ItemCategory": category["Name"], "Name": name, "UnitOfMeasure": unit}
+
+    if category.get("RequiresStrain") and strain:
+        body["Strain"] = strain
+    if category.get("RequiresItemBrand") and brand:
+        body["ItemBrand"] = brand
+
+    for flag, fields in ITEM_REQUIREMENTS.items():
+        if category.get(flag):
+            body.update(fields)
+
+    # Paired value/unit fields.
+    if category.get("RequiresUnitWeight"):
+        body["UnitWeight"] = 1.0
+        body["UnitWeightUnitOfMeasure"] = weight_unit
+    if category.get("RequiresUnitVolume"):
+        body["UnitVolume"] = 1.0
+        body["UnitVolumeUnitOfMeasure"] = "Milliliters"
+    if category.get("RequiresUnitThcContent"):
+        body["UnitThcContent"] = 10.0
+        body["UnitThcContentUnitOfMeasure"] = "Milligrams"
+    if category.get("RequiresUnitCbdContent"):
+        body["UnitCbdContent"] = 1.0
+        body["UnitCbdContentUnitOfMeasure"] = "Milligrams"
+
+    # Date fields are capped by the category's own days-in-advance limit.
+    def ahead(days) -> str:
+        return (utc_now() + timedelta(days=min(int(days or 30), 30))).strftime("%Y-%m-%d")
+
+    if category.get("RequiresExpirationDate"):
+        body["ExpirationDate"] = ahead(category.get("ExpirationDateDaysInAdvance"))
+    if category.get("RequiresSellByDate"):
+        body["SellByDate"] = ahead(category.get("SellByDateDaysInAdvance"))
+    if category.get("RequiresUseByDate"):
+        body["UseByDate"] = ahead(category.get("UseByDateDaysInAdvance"))
+
+    return body
+
+
+def ensure_brand(client: MetrcClient, ctx: Context) -> str | None:
+    """A brand name for categories that require one, creating it if needed."""
+    if ctx.created.get("item_brand"):
+        return ctx.created["item_brand"]
+    existing = client.get(
+        "/items/v2/brands", step="brands", sheet="_reference", raise_on_error=False,
+    )
+    names = _names(existing.response_body) if existing.ok else []
+    if names:
+        ctx.created["item_brand"] = names[0]
+        return names[0]
+    brand = f"Terpenomics {ctx.suffix}"
+    created = client.post(
+        "/items/v2/brand", body=[{"Name": brand}],
+        step="brand", sheet="_reference", raise_on_error=False,
+    )
+    if created.ok:
+        ctx.created["item_brand"] = brand
+        return brand
+    return None
 
 
 def load_reference(client: MetrcClient) -> dict:
@@ -368,7 +500,28 @@ def load_reference(client: MetrcClient) -> dict:
         "harvest_waste_types": _names(read("/harvests/v2/waste/types")),
         "adjust_reasons": _names(read("/packages/v2/adjust/reasons")),
         "customer_types": _names(read("/sales/v2/customertypes")),
+        "return_reasons": [
+            r for r in rows(read("/sales/v2/deliveries/returnreasons"))
+            if isinstance(r, dict)
+        ],
+        # Transfer type names are state-specific and split by direction: NY has
+        # no plain "Transfer", and an outgoing template will not accept a type
+        # flagged for external incoming shipments.
+        "transfer_types": [
+            t for t in rows(read("/transfers/v2/types")) if isinstance(t, dict)
+        ],
     }
+
+
+def _transfer_type(types: list, *, external_incoming: bool) -> str:
+    flag = "ForExternalIncomingShipments" if external_incoming else "ForLicensedShipments"
+    for t in types:
+        if t.get(flag):
+            return t["Name"]
+    raise RuntimeError(
+        f"no transfer type flagged {flag}; facility offers "
+        f"{[t.get('Name') for t in types]}"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -446,25 +599,26 @@ def items_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
     strain = ctx.created.get("strain_name")
 
     categories = ref["item_categories"]
-    category = next(
-        (c for c in categories if c.get("Name") == "Buds"),
-        categories[0] if categories else {},
-    )
-    category_name = category.get("Name")
-    if not category_name:
-        raise RuntimeError("no item categories available for this facility")
+    category = _pick_category(categories, "Buds", "Bud/Flower - Bulk")
+    category_name = category["Name"]
 
     # A category dictates its own unit-of-measure family; ignoring that is the
-    # usual cause of a 400 here.
-    quantity_type = category.get("QuantityType", "WeightBased")
-    if quantity_type == "CountBased":
-        first_unit, second_unit = "Each", "Each"
+    # usual cause of a 400 here. Both units must be ones the state publishes.
+    if category.get("QuantityType") == "CountBased":
+        first_unit = second_unit = _pick(ref["units"], "Each")
     else:
-        first_unit, second_unit = "Ounces", "Grams"
+        first_unit = _pick(ref["units"], "Grams", "Ounces")
+        second_unit = _pick(ref["units"], "Kilograms", "Ounces", "Grams")
+        if second_unit == first_unit:
+            second_unit = _pick(
+                [u for u in ref["units"] if u != first_unit], "Ounces", "Kilograms"
+            )
 
-    body = {"ItemCategory": category_name, "Name": name, "UnitOfMeasure": first_unit}
-    if category.get("RequiresStrain") and strain:
-        body["Strain"] = strain
+    brand = ensure_brand(client, ctx) if category.get("RequiresItemBrand") else None
+    body = build_item_body(
+        category, name=name, unit=first_unit, strain=strain, brand=brand,
+        weight_unit=_pick(ref["units"], "Grams"),
+    )
 
     created = client.post("/items/v2/", body=[body], step="Step 1", sheet=sheet)
     item_id = created.object_ids[0]
@@ -481,6 +635,34 @@ def items_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
 
     ctx.created["item_name"] = name
     ctx.created["item_id"] = item_id
+    ctx.created["item_category"] = category_name
+    ctx.created["item_unit"] = second_unit
+
+    # Packaging clones or immature plants requires an item that is both
+    # Plant-typed and count-based; a weight-based bud item is rejected with
+    # "the selected Item must be of Plant type".
+    plant_category = next(
+        (
+            c for c in categories
+            if c.get("ProductCategoryType") == "Plants"
+            and c.get("QuantityType") == "CountBased"
+        ),
+        None,
+    )
+    if plant_category:
+        plant_item = f"Terpenomics Clone {ctx.suffix}"
+        plant_body = build_item_body(
+            plant_category, name=plant_item, unit=_pick(ref["units"], "Each"),
+            strain=strain,
+            brand=ensure_brand(client, ctx) if plant_category.get("RequiresItemBrand") else None,
+            weight_unit=_pick(ref["units"], "Grams"),
+        )
+        made = client.post(
+            "/items/v2/", body=[plant_body], step="plant item", sheet="_reference",
+            raise_on_error=False,
+        )
+        if made.ok:
+            ctx.created["plant_item_name"] = plant_item
 
 
 def plantbatches_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
@@ -509,7 +691,8 @@ def plantbatches_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
         body=[{
             "Id": None, "PlantBatch": batch_name, "Count": 3,
             "Location": location, "Sublocation": None,
-            "Item": ctx.created["item_name"], "Tag": package_tag,
+            "Item": ctx.created.get("plant_item_name", ctx.created["item_name"]),
+            "Tag": package_tag,
             "PatientLicenseNumber": None, "Note": "Evaluation step",
             "IsTradeSample": False, "IsDonation": False, "ActualDate": today(),
         }],
@@ -537,8 +720,8 @@ def plantbatches_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
         "/plantbatches/v2/",
         body=[{
             "PlantBatch": batch_name, "Count": 1,
-            "WasteMethodName": _pick(ref["waste_methods"], "Compost"),
-            "WasteMaterialMixed": "Soil",
+            "WasteMethodName": _pick(ref["waste_methods"], "Compost", optional=True),
+            "WasteMaterialMixed": None,
             "WasteReasonName": _pick(ref["waste_reasons"], "Contamination", "Destroy"),
             "ReasonNote": "Evaluation step — destroying one immature plant.",
             "WasteWeight": 1.0, "WasteUnitOfMeasure": "Grams",
@@ -600,7 +783,8 @@ def plants_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
         "/plants/v2/plantbatch/packages",
         body=[{
             "PlantLabel": plants[0]["Label"], "PackageTag": clone_tag,
-            "PlantBatchType": "Clone", "Item": ctx.created["item_name"],
+            "PlantBatchType": "Clone",
+            "Item": ctx.created.get("plant_item_name", ctx.created["item_name"]),
             "Location": location, "Sublocation": None, "Note": None,
             "IsTradeSample": False, "PatientLicenseNumber": None,
             "IsDonation": False, "Count": 3, "ActualDate": stamp(utc_now()),
@@ -613,8 +797,8 @@ def plants_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
         "/plants/v2/",
         body=[{
             "Id": None, "Label": plants[1]["Label"],
-            "WasteMethodName": _pick(ref["waste_methods"], "Compost"),
-            "WasteMaterialMixed": "Soil", "WasteWeight": 15.0,
+            "WasteMethodName": _pick(ref["waste_methods"], "Compost", optional=True),
+            "WasteMaterialMixed": None, "WasteWeight": 15.0,
             "WasteUnitOfMeasureName": "Grams",
             "WasteReasonName": _pick(ref["waste_reasons"], "Contamination", "Destroy"),
             "Count": 0, "ReasonNote": "Evaluation step — plant destruction.",
@@ -752,14 +936,22 @@ def packages_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
 
     # Step 2 wants a different item, so create a second one to switch to.
     alt_name = f"Terpenomics Alt Item {ctx.suffix}"
-    categories = ref["item_categories"]
-    category = next((c for c in categories if c.get("Name") == "Shake"), categories[0])
-    alt_body = {
-        "ItemCategory": category.get("Name"), "Name": alt_name,
-        "UnitOfMeasure": "Grams",
-    }
-    if category.get("RequiresStrain"):
-        alt_body["Strain"] = ctx.created["strain_name"]
+    # A different category to move the package to, but the same quantity type
+    # so the unit of measure stays valid.
+    category = _pick_category(
+        ref["item_categories"], "Shake", "Shake/Trim (by strain) - Bulk",
+        exclude=ctx.created.get("item_category"),
+    )
+    alt_unit = (
+        _pick(ref["units"], "Each") if category.get("QuantityType") == "CountBased"
+        else _pick(ref["units"], "Grams")
+    )
+    alt_body = build_item_body(
+        category, name=alt_name, unit=alt_unit,
+        strain=ctx.created.get("strain_name"),
+        brand=ensure_brand(client, ctx) if category.get("RequiresItemBrand") else None,
+        weight_unit=_pick(ref["units"], "Grams"),
+    )
     client.post("/items/v2/", body=[alt_body], step="alt item", sheet="_reference")
 
     reitemed = client.put(
@@ -769,11 +961,25 @@ def packages_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
     )
     annotate(reitemed, tags=[new_tag], names=[alt_name])
 
-    # Step 3: adjust down to zero. The quantity is a delta, so it must be negative.
+    # Step 3: adjust down to zero. The quantity is a delta, so it must be the
+    # exact negative of what the package currently holds — changing the item in
+    # step 2 can change the unit, and a package that is not empty cannot be
+    # finished in step 4.
+    current = client.get(
+        f"/packages/v2/{new_tag}", step="read package", sheet="_reference",
+        raise_on_error=False,
+    )
+    row = (rows(current.response_body) or [{}])[0]
+    unit = row.get("UnitOfMeasureName") or "Grams"
+
+    # Quantity here is the package's NEW total, not a delta. The documented
+    # example shows a negative number, which in NY sets the package negative and
+    # then step 4 refuses to finish it: "cannot be Finished because it's not
+    # empty". Zero is what empties a package.
     adjusted = client.put(
         "/packages/v2/adjust",
         body=[{
-            "Label": new_tag, "Quantity": -10.0, "UnitOfMeasure": "Grams",
+            "Label": new_tag, "Quantity": 0, "UnitOfMeasure": unit,
             "AdjustmentReason": _pick(ref["adjust_reasons"], "Drying", "Scale Variance"),
             "AdjustmentDate": today(),
             "ReasonNote": "Evaluation step — adjusting to zero.",
@@ -814,24 +1020,72 @@ def _all_write_tabs() -> list:
     return _GROW_TABS + SALES_TABS + TRANSFER_TABS
 
 
-def run_full(client: MetrcClient, ctx: Context, only: set | None = None) -> list:
-    """Run the write tabs in dependency order, reporting per-tab outcomes."""
-    ref = load_reference(client)
+# Which facility each tab runs at. Sales endpoints 401 at a cultivator and
+# grow endpoints 401 at a dispensary, so the tabs are routed, not run all in
+# one place. The workbook expects this: License Facility is a per-step column.
+TAB_FACILITY = {
+    "Sales with Patient Look Up": "sales",
+    "Sales Deliveries (NOT CA)": "sales",
+}
+
+
+def run_full(
+    client: MetrcClient,
+    ctx: Context,
+    only: set | None = None,
+    licenses: dict | None = None,
+) -> list:
+    """Run the write tabs in dependency order, reporting per-tab outcomes.
+
+    `licenses` maps a role ("grow", "sales") to a license number. A tab runs at
+    its mapped facility, falling back to the configured one.
+    """
+    licenses = licenses or {}
+    grow = licenses.get("grow") or ctx.license_number
     results = []
+    reference_cache = {}
+
     for name, fn in _all_write_tabs():
         if only and name not in only:
             continue
+        role = TAB_FACILITY.get(name, "grow")
+        lic = licenses.get(role) or grow
         try:
-            fn(client, ctx, ref)
-            results.append((name, "ok", ""))
+            with client.using(lic):
+                if lic not in reference_cache:
+                    reference_cache[lic] = load_reference(client)
+                fn(client, ctx, reference_cache[lic])
+            results.append((name, "ok", lic))
         except Exception as exc:
-            results.append((name, "FAIL", str(exc)))
+            results.append((name, "FAIL", f"[{lic}] {exc}"))
     return results
 
 
 # ---------------------------------------------------------------------------
 # Sales
 # ---------------------------------------------------------------------------
+
+def _sellable_packages(client: MetrcClient, ctx: Context, count: int = 1) -> list:
+    """Active packages with quantity left, to sell from.
+
+    The Packages tab deliberately adjusts its own package to zero, so that one
+    is never a candidate.
+    """
+    active = client.get(
+        "/packages/v2/active", params=None,
+        step="discover sellable", sheet="_reference",
+    )
+    found = [
+        p for p in rows(active.response_body)
+        if (p.get("Quantity") or 0) > 1 and p.get("Label")
+    ]
+    if len(found) < count:
+        raise RuntimeError(
+            f"need {count} active package(s) with quantity > 1, found {len(found)}. "
+            "Run bootstrap against this facility to create opening balance packages."
+        )
+    return found[:count]
+
 
 def _sellable_package(client: MetrcClient, ctx: Context) -> dict:
     """An active package with quantity left, to sell from.
@@ -871,7 +1125,7 @@ def sales_tab(
     """
     package = _sellable_package(client, ctx)
     label = package["Label"]
-    unit = package.get("UnitOfMeasure") or "Grams"
+    unit = package.get("UnitOfMeasureName") or "Grams"
     customer_type = _pick(ref["customer_types"], "Consumer", "Patient")
 
     def receipt(external: str, amount: float, quantity: float) -> dict:
@@ -915,7 +1169,19 @@ def sales_tab(
         return
 
     # Steps 4 and 5 exist only on the patient-lookup variant of the tab.
-    patient_license = ctx.created.get("patient_license") or "PTN-123-456"
+    # Reaching a real patient number requires the Patients permission; without
+    # it every /patients/v2 route 401s, including the plain active list.
+    patient_license = ctx.created.get("patient_license")
+    if not patient_license:
+        listed = client.get(
+            "/patients/v2/active", step="discover patient", sheet="_reference",
+            raise_on_error=False,
+        )
+        found = rows(listed.response_body) if listed.ok else []
+        patient_license = next(
+            (p.get("PatientLicenseNumber") for p in found if p.get("PatientLicenseNumber")),
+            "PTN-123-456",
+        )
     status = client.get(
         f"/patients/v2/statuses/{patient_license}",
         step="Step 4", sheet=sheet, raise_on_error=False,
@@ -942,20 +1208,25 @@ def sales_tab(
 def sales_deliveries_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
     """Sales Deliveries (NOT CA) — three steps, three transactions down to one."""
     sheet = "Sales Deliveries (NOT CA)"
-    label = ctx.created.get("sale_package_label")
-    unit = ctx.created.get("sale_unit", "Grams")
-    if not label:
-        package = _sellable_package(client, ctx)
-        label, unit = package["Label"], package.get("UnitOfMeasure") or "Grams"
+    # Three transactions are required, and Metrc rejects duplicates within one
+    # delivery, so each needs its own package.
+    packages = _sellable_packages(client, ctx, count=3)
+    label = packages[0]["Label"]
 
     customer_type = _pick(ref["customer_types"], "Consumer", "Patient")
+    # Return reasons are a state vocabulary: NY publishes only "Unable to
+    # Deliver", so the documented "Spoilage" is rejected.
+    return_reason = _pick(
+        [r.get("Name") for r in ref["return_reasons"]], "Spoilage", "Unable to Deliver",
+    )
     depart = utc_now() + timedelta(hours=1)
     arrive = utc_now() + timedelta(hours=3)
 
-    def transaction(amount: float) -> dict:
+    def transaction(package: dict, amount: float) -> dict:
         return {
-            "PackageLabel": label, "Quantity": 1.0,
-            "UnitOfMeasure": unit, "TotalAmount": amount,
+            "PackageLabel": package["Label"], "Quantity": 1.0,
+            "UnitOfMeasure": package.get("UnitOfMeasureName") or "Grams",
+            "TotalAmount": amount,
         }
 
     delivery = {
@@ -963,6 +1234,9 @@ def sales_deliveries_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
         "SalesCustomerType": customer_type,
         "PatientLicenseNumber": None,
         "ConsumerId": None,
+        # Deliveries reject a missing driver id with "Driver Employee ID was
+        # not specified", even though the docs show it as an ordinary field.
+        "DriverEmployeeId": "1",
         "DriverName": "Evaluation Driver",
         "DriversLicenseNumber": "D0000001",
         "PhoneNumberForQuestions": "+1-555-000-0000",
@@ -976,7 +1250,11 @@ def sales_deliveries_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
         "PlannedRoute": "Drive to destination.",
         "EstimatedDepartureDateTime": stamp(depart),
         "EstimatedArrivalDateTime": stamp(arrive),
-        "Transactions": [transaction(9.99), transaction(19.98), transaction(29.97)],
+        "Transactions": [
+            transaction(packages[0], 9.99),
+            transaction(packages[1], 19.98),
+            transaction(packages[2], 29.97),
+        ],
     }
 
     created = client.post(
@@ -986,8 +1264,9 @@ def sales_deliveries_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
     annotate(created, ids=[delivery_id], tags=[label])
 
     # Step 2: drop one of the three transactions back out.
-    trimmed = dict(delivery, Id=delivery_id,
-                   Transactions=[transaction(9.99), transaction(19.98)])
+    trimmed = dict(delivery, Id=delivery_id, Transactions=[
+        transaction(packages[0], 9.99), transaction(packages[1], 19.98),
+    ])
     updated = client.put(
         "/sales/v2/deliveries", body=[trimmed], step="Step 2", sheet=sheet,
     )
@@ -999,10 +1278,13 @@ def sales_deliveries_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
             "Id": delivery_id,
             "ActualArrivalDateTime": stamp(utc_now()),
             "PaymentType": None,
-            "AcceptedPackages": [label],
+            # Step 3 asks for exactly one accepted and one returned package.
+            "AcceptedPackages": [packages[0]["Label"]],
             "ReturnedPackages": [{
-                "Label": label, "ReturnQuantityVerified": 1.0,
-                "ReturnUnitOfMeasure": unit, "ReturnReason": "Spoilage",
+                "Label": packages[1]["Label"], "ReturnQuantityVerified": 1.0,
+                "ReturnUnitOfMeasure": packages[1].get("UnitOfMeasureName") or "Grams",
+                "ReturnReason": return_reason,
+                # Some reasons declare RequiresNote, and omitting it is a 400.
                 "ReturnReasonNote": "Evaluation step",
             }],
         }],
@@ -1035,6 +1317,7 @@ def _counterparty_license(client: MetrcClient, ctx: Context) -> str:
 def transfer_templates_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
     sheet = "Transfer Templates"
     recipient = _counterparty_license(client, ctx)
+    transfer_type = _transfer_type(ref["transfer_types"], external_incoming=False)
     depart = utc_now() + timedelta(hours=1)
     arrive = utc_now() + timedelta(hours=4)
 
@@ -1050,7 +1333,7 @@ def transfer_templates_tab(client: MetrcClient, ctx: Context, ref: dict) -> None
             "Destinations": [{
                 "RecipientLicenseNumber": recipient,
                 "InvoiceNumber": invoice,
-                "TransferTypeName": "Transfer",
+                "TransferTypeName": transfer_type,
                 "PlannedRoute": "Evaluation route.",
                 "EstimatedDepartureDateTime": stamp(depart),
                 "EstimatedArrivalDateTime": stamp(arrive),
@@ -1112,6 +1395,7 @@ def transfer_external_incoming_tab(client: MetrcClient, ctx: Context, ref: dict)
     sheet = "Transfer External Incoming"
     recipient = ctx.license_number
     shipper = _counterparty_license(client, ctx)
+    transfer_type = _transfer_type(ref["transfer_types"], external_incoming=True)
     depart = utc_now() + timedelta(hours=1)
     arrive = utc_now() + timedelta(hours=4)
 
@@ -1134,7 +1418,7 @@ def transfer_external_incoming_tab(client: MetrcClient, ctx: Context, ref: dict)
             "Destinations": [{
                 "RecipientLicenseNumber": recipient,
                 "InvoiceNumber": invoice,
-                "TransferTypeName": "Transfer",
+                "TransferTypeName": transfer_type,
                 "PlannedRoute": "Evaluation route.",
                 "EstimatedDepartureDateTime": stamp(depart),
                 "EstimatedArrivalDateTime": stamp(arrive),
@@ -1145,15 +1429,18 @@ def transfer_external_incoming_tab(client: MetrcClient, ctx: Context, ref: dict)
             }],
         }
 
+    # Creating external incoming transfers is a separately granted permission
+    # and 401s without it. Step 2 is an ordinary read that stands on its own,
+    # so record it either way rather than losing the whole tab to step 1.
     a = client.post(
         "/transfers/v2/external/incoming", body=[transfer(f"EXT-A-{ctx.suffix}")],
-        step="Step 1a", sheet=sheet,
+        step="Step 1a", sheet=sheet, raise_on_error=False,
     )
     annotate(a, ids=a.object_ids, names=[f"EXT-A-{ctx.suffix}"])
 
     b = client.post(
         "/transfers/v2/external/incoming", body=[transfer(f"EXT-B-{ctx.suffix}")],
-        step="Step 1b", sheet=sheet,
+        step="Step 1b", sheet=sheet, raise_on_error=False,
     )
     annotate(b, ids=b.object_ids, names=[f"EXT-B-{ctx.suffix}"])
 
@@ -1173,7 +1460,12 @@ def transfer_external_incoming_tab(client: MetrcClient, ctx: Context, ref: dict)
     transfer_a = (a.object_ids or [None])[0]
     transfer_b = (b.object_ids or [None])[0]
     if transfer_a is None or transfer_b is None:
-        raise RuntimeError("external incoming transfers did not return ids to update/delete")
+        raise RuntimeError(
+            "steps 1a/1b returned no ids "
+            f"(HTTP {a.status}/{b.status}) so steps 3 and 4 have nothing to act on. "
+            "A 401 here means the external incoming transfer permission is not "
+            "granted for this key."
+        )
 
     updated_body = dict(transfer(f"EXT-A-{ctx.suffix}"), TransferId=transfer_a)
     updated_body["Destinations"][0]["TransferDestinationId"] = None

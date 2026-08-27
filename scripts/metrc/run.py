@@ -18,9 +18,10 @@ from .bootstrap import (
     list_facilities,
     prepare_environment,
     request_user_key,
+    seed_inventory,
 )
 from .client import MetrcClient
-from .client import CallRecord, MetrcError
+from .client import CallRecord, MetrcError, rows
 from .config import ConfigError, MetrcConfig
 from .recorder import Recorder
 from .steps import (
@@ -149,11 +150,47 @@ def cmd_full(args, config: MetrcConfig, recorder: Recorder) -> int:
         print(f"no environment file at {env_path} — run `bootstrap` first", file=sys.stderr)
         return 1
 
+    # Sales endpoints are unauthorized at a cultivator and grow endpoints at a
+    # dispensary, so each tab runs where it is permitted.
+    facilities = list_facilities(client)
+    def _find(*needles):
+        for f in facilities:
+            name = (f.get("DisplayName") or "").lower()
+            if all(n in name for n in needles):
+                return (f.get("License") or {}).get("Number") or f.get("LicenseNumber")
+        return None
+
+    licenses = {
+        "grow": config.license_number,
+        "sales": args.sales_license or _find("dispensary"),
+    }
+    ctx.facilities = [
+        (f.get("License") or {}).get("Number") or f.get("LicenseNumber") for f in facilities
+    ]
+    print(f"grow={licenses['grow']}  sales={licenses['sales']}")
+
+    # The sales tabs need sellable inventory at the dispensary, which is a
+    # different facility from the one bootstrap prepared.
+    if licenses.get("sales") and licenses["sales"] != licenses["grow"]:
+        with client.using(licenses["sales"]):
+            existing = rows(
+                client.get(
+                    "/packages/v2/active", step="check inventory",
+                    sheet="_bootstrap", raise_on_error=False,
+                ).response_body
+            )
+            if not any((p.get("Quantity") or 0) > 1 for p in existing):
+                try:
+                    seed_inventory(client, ctx)
+                    print(f"seeded inventory at {licenses['sales']}")
+                except Exception as exc:
+                    print(f"could not seed {licenses['sales']}: {exc}")
+
     only = set(args.only.split(",")) if args.only else None
-    results = run_full(client, ctx, only=only)
+    results = run_full(client, ctx, only=only, licenses=licenses)
     print()
     for name, status, detail in results:
-        print(f"  {status:<4} {name}" + (f": {detail}" if detail else ""))
+        print(f"  {status:<4} {name:<28} {detail}")
 
     summary_path = recorder.write_summary()
     print(f"\n{len(recorder.records)} calls recorded -> {recorder.run_dir}")
@@ -167,18 +204,23 @@ def cmd_fill(args, config: MetrcConfig, recorder: Recorder) -> int:
         print(f"workbook not found: {src}", file=sys.stderr)
         return 1
 
-    run_dir = args.run if os.path.isdir(args.run) else os.path.join(config.run_dir, args.run)
-    calls_path = os.path.join(run_dir, "calls.jsonl")
-    if not os.path.exists(calls_path):
-        print(f"no transcript at {calls_path}", file=sys.stderr)
-        return 1
-
-    replay = Recorder(config.run_dir, run_id=os.path.basename(run_dir.rstrip("/")))
+    # A complete evaluation is several runs — the read tabs and the write tabs
+    # are separate passes — so runs merge, later ones winning per step.
+    run_ids = [r.strip() for r in args.run.split(",") if r.strip()]
+    replay = Recorder(config.run_dir, run_id=run_ids[-1])
     replay.records = []
-    with open(calls_path, encoding="utf-8") as fh:
-        for line in fh:
-            if line.strip():
-                replay.records.append(CallRecord(**json.loads(line)))
+
+    for run_id in run_ids:
+        run_dir = run_id if os.path.isdir(run_id) else os.path.join(config.run_dir, run_id)
+        calls_path = os.path.join(run_dir, "calls.jsonl")
+        if not os.path.exists(calls_path):
+            print(f"no transcript at {calls_path}", file=sys.stderr)
+            return 1
+        with open(calls_path, encoding="utf-8") as fh:
+            for line in fh:
+                if line.strip():
+                    replay.records.append(CallRecord(**json.loads(line)))
+    print(f"merged {len(run_ids)} run(s), {len(replay.records)} calls")
 
     company = None
     if args.company and os.path.exists(args.company):
@@ -225,10 +267,14 @@ def main(argv=None) -> int:
     p = sub.add_parser("full", help="run the write tabs (Locations -> Packages)")
     p.add_argument("--environment", default="", help="environment.json from bootstrap")
     p.add_argument("--only", default="", help="comma-separated tab names")
+    p.add_argument("--sales-license", default="", help="facility for the sales tabs")
     p.set_defaults(fn=cmd_full)
 
     p = sub.add_parser("fill", help="write a recorded run into the workbook")
-    p.add_argument("--run", required=True, help="run id or directory")
+    p.add_argument(
+        "--run", required=True,
+        help="run id or directory; comma-separate several to merge them",
+    )
     p.add_argument("--workbook", default=DEFAULT_WORKBOOK)
     p.add_argument("--out", default="evidence/metrc/Evaluation_completed.xlsx")
     p.add_argument("--company", default="evidence/metrc/company.json")
