@@ -26,23 +26,27 @@ Needs SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (service role — it bypasses R
 KNOWN LIVE ISSUE — read before running
 --------------------------------------
 The production DB still enforces `listings_dispensary_sku_unique` on
-(dispensary_id, sku), WITHOUT variant. migrate_listing_variant_key.py tried to
-remove it with `DROP INDEX IF EXISTS listings_dispensary_sku_unique`, but that
-index backs a UNIQUE *constraint* and Postgres refuses to drop those via DROP
-INDEX (`IF EXISTS` only suppresses "does not exist", not "constraint requires
-it"). So the variant-aware key never took effect, and the SKU-reuse problem the
-migration was written to fix is still live.
+(dispensary_id, sku), WITHOUT variant, so any row whose SKU already exists for
+that dispensary under a different variant is rejected. A 2026-08-25 run of this
+script had 924 rows rejected across 22 stores for exactly that reason. They are
+real products sold across weight tiers, not duplicates.
 
-Practical effect: any row whose SKU already exists for that dispensary under a
-different variant is rejected. A 2026-08-25 run of this script had 924 rows
-rejected across 22 stores for exactly this reason. They are real products, not
-duplicates. Fix with
+The cause is simply that migrate_listing_variant_key.py has never run against
+this database. Verified against the catalogue:
 
-    ALTER TABLE listings DROP CONSTRAINT listings_dispensary_sku_unique;
+    pg_constraint on listings   -> only listings_pkey and the dispensary FK
+    pg_indexes   on listings    -> listings_dispensary_sku_unique still present,
+                                   listings_dispensary_sku_variant_unique absent
 
-(then confirm listings_dispensary_sku_variant_unique exists) and re-run — this
-script is idempotent, keyed on (sku, COALESCE(variant,'')), so a re-run updates
-what already landed rather than duplicating it.
+Neither of the migration's first two statements is reflected, and the old index
+is a plain UNIQUE INDEX (not constraint-backed), so its `DROP INDEX IF EXISTS`
+would have worked had it run. Fix by running the migration where 5432 is
+reachable:
+
+    python scripts/migrate_listing_variant_key.py --run
+
+then re-run this import — it is idempotent, keyed on (sku, COALESCE(variant,'')),
+so a re-run updates what already landed rather than duplicating it.
 
 Usage
 -----
