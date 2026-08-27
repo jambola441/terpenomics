@@ -23,7 +23,13 @@ from .client import MetrcClient
 from .client import CallRecord, MetrcError
 from .config import ConfigError, MetrcConfig
 from .recorder import Recorder
-from .steps import Context, get_transfers_and_wholesale, read_lab_results, read_sweep
+from .steps import (
+    Context,
+    get_transfers_and_wholesale,
+    read_lab_results,
+    read_sweep,
+    run_full,
+)
 from .workbook import map_workbook, write_results
 
 DEFAULT_WORKBOOK = "evidence/metrc/Generic_Evaluation_for_All_States_MASTER_10.2025.xlsx"
@@ -111,6 +117,35 @@ def cmd_get_only(args, config: MetrcConfig, recorder: Recorder) -> int:
     return 1 if failures else 0
 
 
+def cmd_full(args, config: MetrcConfig, recorder: Recorder) -> int:
+    """Run the write tabs. Needs tags and inventory — run `bootstrap` first."""
+    config.require("license_number")
+    client = _client(config, recorder)
+    ctx = Context(license_number=config.license_number)
+
+    env_path = args.environment
+    if env_path and os.path.exists(env_path):
+        with open(env_path, encoding="utf-8") as fh:
+            env = json.load(fh)
+        ctx.plant_tags = list(env.get("plant_tags") or [])
+        ctx.package_tags = list(env.get("package_tags") or [])
+        print(f"loaded {len(ctx.plant_tags)} plant / {len(ctx.package_tags)} package tags")
+    else:
+        print(f"no environment file at {env_path} — run `bootstrap` first", file=sys.stderr)
+        return 1
+
+    only = set(args.only.split(",")) if args.only else None
+    results = run_full(client, ctx, only=only)
+    print()
+    for name, status, detail in results:
+        print(f"  {status:<4} {name}" + (f": {detail}" if detail else ""))
+
+    summary_path = recorder.write_summary()
+    print(f"\n{len(recorder.records)} calls recorded -> {recorder.run_dir}")
+    print(f"summary: {summary_path}")
+    return 1 if any(s == "FAIL" for _, s, _ in results) else 0
+
+
 def cmd_fill(args, config: MetrcConfig, recorder: Recorder) -> int:
     src = args.workbook
     if not os.path.exists(src):
@@ -171,6 +206,11 @@ def main(argv=None) -> int:
     p = sub.add_parser("get-only", help="run the read-only evaluation")
     p.add_argument("--window", type=int, default=90, help="lastModified window in days")
     p.set_defaults(fn=cmd_get_only)
+
+    p = sub.add_parser("full", help="run the write tabs (Locations -> Packages)")
+    p.add_argument("--environment", default="", help="environment.json from bootstrap")
+    p.add_argument("--only", default="", help="comma-separated tab names")
+    p.set_defaults(fn=cmd_full)
 
     p = sub.add_parser("fill", help="write a recorded run into the workbook")
     p.add_argument("--run", required=True, help="run id or directory")
