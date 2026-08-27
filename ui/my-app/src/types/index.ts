@@ -228,6 +228,7 @@ export type ListingDetail = DispensaryListing & {
   dispensary_id: string
   dispensary_name: string
   dispensary_slug: string
+  dispensary_accepts_pickup: boolean
   in_stock: boolean
   classification: string | null
   description: string | null
@@ -245,6 +246,40 @@ export type CartItem = {
   url: string | null
   image_url: string | null
   quantity: number
+}
+
+export type OrderStatus = 'submitted' | 'ready' | 'completed' | 'cancelled'
+
+export type OrderItem = {
+  id: string
+  listing_id: string | null
+  name: string
+  brand: string | null
+  variant: string | null
+  image_url: string | null
+  quantity: number
+  unit_price_cents: number | null
+  line_amount_cents: number
+}
+
+export type Order = {
+  id: string
+  status: OrderStatus
+  /** Read out at the counter to collect the order. */
+  pickup_code: string
+  total_amount_cents: number
+  note: string | null
+  submitted_at: string
+  ready_at: string | null
+  completed_at: string | null
+  cancelled_at: string | null
+  dispensary_id: string
+  dispensary_name: string | null
+  dispensary_slug: string | null
+  dispensary_address: string | null
+  /** Always 'pay_at_pickup' — nothing is charged online. */
+  payment_method: string
+  items: OrderItem[]
 }
 
 export type Dispensary = {
@@ -334,6 +369,31 @@ export type PortalBrandDetail = {
   products: PortalBrandProduct[]
 }
 
+/** A store carrying products in a category. Sent once; offerings index into it. */
+export type PortalCategoryDispensary = {
+  id: string
+  name: string
+  slug: string
+  lat: number | null
+  lng: number | null
+}
+
+/**
+ * One store's price for a product. Deliberately thin — the store's name and
+ * coordinates live in `PortalCategoryDetail.dispensaries[dispensary_index]`,
+ * because repeating them per offering was most of this response's weight.
+ */
+export type PortalCategoryOffering = {
+  dispensary_index: number
+  price_cents: number | null
+  /**
+   * Present only on products with no brand. A branded product opens the
+   * brand-product view, addressed by key; an unbranded one has no such page,
+   * so it needs a specific listing to navigate to.
+   */
+  listing_id?: string
+}
+
 export type PortalCategoryProduct = {
   key: string
   name: string
@@ -347,7 +407,7 @@ export type PortalCategoryProduct = {
   min_price_cents: number | null
   max_price_cents: number | null
   dispensary_count: number
-  offerings: PortalBrandOffering[]
+  offerings: PortalCategoryOffering[]
 }
 
 export type PortalCategoryDetail = {
@@ -357,5 +417,7 @@ export type PortalCategoryDetail = {
   dispensary_count: number
   brand_count: number
   truncated: boolean
+  /** Every store appearing in `products[].offerings`, in index order. */
+  dispensaries: PortalCategoryDispensary[]
   products: PortalCategoryProduct[]
 }

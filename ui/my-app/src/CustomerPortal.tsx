@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useNavigate, useMatch, useSearchParams } from 'react-router-dom'
+import { useNavigate, useMatch, useSearchParams, Navigate, useLocation } from 'react-router-dom'
 import api from './api/client'
 import supabase from './utils/supabase'
 import DispensaryMap from './components/DispensaryMap'
@@ -7,7 +7,8 @@ import HomeFeed from './components/HomeFeed'
 import CategoryView from './components/CategoryView'
 import SearchView from './components/SearchView'
 import ListingDetailView from './components/ListingDetail'
-import type { PortalPurchase, RecommendedProduct, Feedback, CartItem, PortalBrandDetail, PortalBrandProduct, PortalBrandOffering, ListingDetail } from './types'
+import Checkout from './components/Checkout'
+import type { PortalPurchase, RecommendedProduct, Feedback, CartItem, PortalBrandDetail, PortalBrandProduct, PortalBrandOffering, ListingDetail, Order, OrderStatus } from './types'
 import type { Session } from '@supabase/supabase-js'
 import { t, radius, font, alpha } from './theme'
 import { Pressable, CategoryTag, FeedState, ClassificationTag, DetailBlock, CollapsibleBlock, SpecRow } from './components/ui'
@@ -432,170 +433,6 @@ function RecsFeed({ recommendations, loading, error, onProductClick }: RecsFeedP
 
 // ─── Products Feed ────────────────────────────────────────────────────────────
 
-function LoginScreen() {
-  const [email, setEmail] = useState('')
-  const [sent, setSent] = useState(false)
-  const [code, setCode] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [verifying, setVerifying] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    maxWidth: 320,
-    background: t.surface2,
-    border: `1px solid ${t.border}`,
-    borderRadius: radius.md,
-    color: t.text1,
-    fontSize: 16,
-    padding: '14px 16px',
-    outline: 'none',
-    marginBottom: 12,
-    boxSizing: 'border-box',
-  }
-
-  async function handleSend() {
-    if (!email.trim()) return
-    setLoading(true)
-    setError(null)
-    try {
-      const { error: err } = await supabase.auth.signInWithOtp({ email: email.trim() })
-      if (err) throw err
-      setSent(true)
-      setCode('')
-    } catch (e: any) {
-      setError(e.message ?? 'Failed to send code')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function handleVerify() {
-    const token = code.trim()
-    if (!token) return
-    setVerifying(true)
-    setError(null)
-    try {
-      const { error: err } = await supabase.auth.verifyOtp({ email: email.trim(), token, type: 'email' })
-      if (err) throw err
-    } catch (e: any) {
-      setError(e.message ?? 'Invalid code')
-    } finally {
-      setVerifying(false)
-    }
-  }
-
-  return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '100dvh',
-      padding: '0 32px',
-      background: t.bg,
-    }}>
-      <div style={{ fontSize: 40, marginBottom: 18 }}>🌿</div>
-      <div style={{ color: t.text1, fontWeight: font.weight.heavy, fontSize: font.size.display, marginBottom: 8, textAlign: 'center', letterSpacing: '-0.01em' }}>
-        Sign in
-      </div>
-
-      {!sent ? (
-        <>
-          <div style={{ color: t.text3, fontSize: font.size.body, marginBottom: 32, textAlign: 'center' }}>
-            We'll send a code to your email.
-          </div>
-          <input
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') handleSend() }}
-            placeholder="your@email.com"
-            style={inputStyle}
-          />
-          <button
-            onClick={handleSend}
-            disabled={loading || !email.trim()}
-            style={{
-              width: '100%',
-              maxWidth: 320,
-              background: loading ? t.surface3 : t.accent,
-              border: 'none',
-              borderRadius: radius.md,
-              color: loading ? t.text3 : '#0a0a0a',
-              fontSize: font.size.callout,
-              fontWeight: font.weight.bold,
-              padding: '14px',
-              cursor: loading ? 'default' : 'pointer',
-              boxShadow: loading ? 'none' : 'var(--e-1)',
-              transition: `background var(--t-base)`,
-            }}
-          >
-            {loading ? 'Sending…' : 'Send code'}
-          </button>
-        </>
-      ) : (
-        <>
-          <div style={{ color: t.text3, fontSize: font.size.body, marginBottom: 32, textAlign: 'center' }}>
-            Enter the code sent to <span style={{ color: t.text2, fontWeight: font.weight.medium }}>{email}</span>
-          </div>
-          <input
-            type="text"
-            inputMode="numeric"
-            value={code}
-            onChange={e => {
-              const v = e.target.value.replace(/\D/g, '').slice(0, 8)
-              setCode(v)
-            }}
-            onKeyDown={e => { if (e.key === 'Enter') handleVerify() }}
-            placeholder="8-digit code"
-            autoFocus
-            style={{ ...inputStyle, fontSize: 24, letterSpacing: '0.3em', textAlign: 'center' }}
-          />
-          <button
-            onClick={handleVerify}
-            disabled={verifying || code.trim().length < 8}
-            style={{
-              width: '100%',
-              maxWidth: 320,
-              background: verifying || code.trim().length < 8 ? t.surface3 : t.accent,
-              border: 'none',
-              borderRadius: radius.md,
-              color: verifying || code.trim().length < 8 ? t.text3 : '#0a0a0a',
-              fontSize: font.size.callout,
-              fontWeight: font.weight.bold,
-              padding: '14px',
-              cursor: verifying || code.trim().length < 8 ? 'default' : 'pointer',
-              marginBottom: 12,
-              boxShadow: verifying || code.trim().length < 8 ? 'none' : 'var(--e-1)',
-              transition: `background var(--t-base)`,
-            }}
-          >
-            {verifying ? 'Verifying…' : 'Verify'}
-          </button>
-          <button
-            onClick={() => { setSent(false); setCode(''); setError(null) }}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: t.text3,
-              fontSize: font.size.small + 1,
-              cursor: 'pointer',
-              padding: '4px 0',
-            }}
-          >
-            Use a different email
-          </button>
-        </>
-      )}
-
-      {error && (
-        <div style={{ color: t.danger, fontSize: font.size.small + 1, marginTop: 12, textAlign: 'center' }}>{error}</div>
-      )}
-    </div>
-  )
-}
-
 // ─── Not Linked Screen ────────────────────────────────────────────────────────
 
 function NotLinkedScreen() {
@@ -629,18 +466,28 @@ interface CartDrawerProps {
   onClose: () => void
   onRemove: (listingId: string) => void
   onClear: () => void
+  onPlaced: (order: Order) => void
+  onViewOrders: () => void
 }
 
-function CartDrawer({ items, open, onClose, onRemove, onClear }: CartDrawerProps) {
+function CartDrawer({ items, open, onClose, onRemove, onClear, onPlaced, onViewOrders }: CartDrawerProps) {
+  const [checkingOut, setCheckingOut] = useState(false)
   const total = items.reduce((sum, i) => sum + (i.price_cents ?? 0) * i.quantity, 0)
   const dispensaryName = items[0]?.dispensaryName ?? ''
+
+  // The drawer is reused for checkout, so reopening it must always land on the
+  // cart rather than on a stale checkout step.
+  function close() {
+    setCheckingOut(false)
+    onClose()
+  }
 
   return (
     <>
       {/* Backdrop */}
       {open && (
         <div
-          onClick={onClose}
+          onClick={close}
           style={{
             position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
             zIndex: 2200, backdropFilter: 'blur(2px)',
@@ -671,13 +518,15 @@ function CartDrawer({ items, open, onClose, onRemove, onClear }: CartDrawerProps
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px 0' }}>
           <div>
-            <div style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.title, letterSpacing: '-0.01em' }}>Your cart</div>
+            <div style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.title, letterSpacing: '-0.01em' }}>
+              {checkingOut ? 'Confirm pickup order' : 'Your cart'}
+            </div>
             {dispensaryName && (
               <div style={{ color: t.text3, fontSize: font.size.small, marginTop: 2 }}>{dispensaryName}</div>
             )}
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            {items.length > 0 && (
+            {items.length > 0 && !checkingOut && (
               <button
                 onClick={onClear}
                 style={{
@@ -690,7 +539,7 @@ function CartDrawer({ items, open, onClose, onRemove, onClear }: CartDrawerProps
               </button>
             )}
             <button
-              onClick={onClose}
+              onClick={close}
               aria-label="Close cart"
               style={{
                 background: t.surface2, border: `1px solid ${t.border}`,
@@ -704,6 +553,16 @@ function CartDrawer({ items, open, onClose, onRemove, onClear }: CartDrawerProps
           </div>
         </div>
 
+        {checkingOut ? (
+          <Checkout
+            items={items}
+            onBack={() => setCheckingOut(false)}
+            onPlaced={onPlaced}
+            onViewOrders={() => { setCheckingOut(false); onViewOrders() }}
+            onClose={close}
+          />
+        ) : (
+        <>
         {/* Items */}
         <div style={{ overflowY: 'auto', flex: 1, padding: '16px 20px 0' }}>
           {items.length === 0 ? (
@@ -769,21 +628,21 @@ function CartDrawer({ items, open, onClose, onRemove, onClear }: CartDrawerProps
                 </span>
               </div>
             )}
-            <a
-              href={items[0]?.url ?? '#'}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={() => setCheckingOut(true)}
               style={{
                 display: 'block', width: '100%', boxSizing: 'border-box',
-                background: t.accent, borderRadius: radius.lg,
-                color: '#0a0a0a', fontWeight: font.weight.bold, fontSize: font.size.callout,
-                padding: '14px', textAlign: 'center', textDecoration: 'none',
+                background: t.accent, border: 'none', borderRadius: radius.lg,
+                color: t.accentInk, fontWeight: font.weight.bold, fontSize: font.size.callout,
+                padding: '14px', textAlign: 'center', cursor: 'pointer',
                 boxShadow: 'var(--e-1)',
               }}
             >
-              Order at {dispensaryName} →
-            </a>
+              Checkout · pay at the store
+            </button>
           </div>
+        )}
+        </>
         )}
         <div style={{ height: 'env(safe-area-inset-bottom, 0px)' }} />
       </div>
@@ -793,54 +652,225 @@ function CartDrawer({ items, open, onClose, onRemove, onClear }: CartDrawerProps
 
 // ─── Account View ─────────────────────────────────────────────────────────────
 
+const ORDER_STATUS_STYLE: Record<OrderStatus, { label: string; color: string; hint: string }> = {
+  submitted: { label: 'Submitted', color: '#f0b93b', hint: 'The store is preparing your order.' },
+  ready:     { label: 'Ready',     color: '#4ac97e', hint: 'Waiting at the counter — pay when you collect it.' },
+  completed: { label: 'Picked up', color: 'var(--text-3)', hint: '' },
+  cancelled: { label: 'Cancelled', color: 'var(--danger)', hint: '' },
+}
+
+function OrderCard({ order, onCancel, cancelling }: {
+  order: Order
+  onCancel: (orderId: string) => void
+  cancelling: boolean
+}) {
+  const style = ORDER_STATUS_STYLE[order.status]
+  const open = order.status === 'submitted' || order.status === 'ready'
+
+  return (
+    <div style={{
+      background: t.surface2, border: `1px solid ${t.border}`,
+      borderRadius: radius.lg, padding: 16,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+        <div style={{ minWidth: 0 }}>
+          <div style={{
+            color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.body,
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>
+            {order.dispensary_name}
+          </div>
+          <div style={{ color: t.text3, fontSize: font.size.small, marginTop: 2 }}>
+            {formatDate(order.submitted_at)} · {order.items.length} item{order.items.length === 1 ? '' : 's'}
+          </div>
+        </div>
+        <span style={{
+          flexShrink: 0, borderRadius: radius.pill, padding: '4px 10px',
+          fontSize: font.size.small, fontWeight: font.weight.bold,
+          color: style.color, background: alpha(style.color, 0.12),
+          border: `1px solid ${alpha(style.color, 0.3)}`,
+        }}>
+          {style.label}
+        </span>
+      </div>
+
+      {/* The code is only useful while the order is still collectable. */}
+      {open && (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: 12, marginTop: 12, padding: '10px 12px',
+          background: t.surface1, border: `1px solid ${t.border}`, borderRadius: radius.md,
+        }}>
+          <div>
+            <div style={{
+              color: t.text3, fontSize: font.size.small,
+              textTransform: 'uppercase', letterSpacing: '0.07em',
+            }}>
+              Pickup code
+            </div>
+            <div style={{
+              color: t.accent, fontWeight: font.weight.bold, fontSize: 20,
+              letterSpacing: '0.12em', fontVariantNumeric: 'tabular-nums', marginTop: 2,
+            }}>
+              {order.pickup_code}
+            </div>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ color: t.text3, fontSize: font.size.small }}>Due at pickup</div>
+            <div style={{
+              color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.callout,
+              fontVariantNumeric: 'tabular-nums', marginTop: 2,
+            }}>
+              {formatDollars(order.total_amount_cents)}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {style.hint && (
+        <div style={{ color: t.text3, fontSize: font.size.small, marginTop: 10, lineHeight: 1.5 }}>
+          {style.hint}
+        </div>
+      )}
+
+      <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {order.items.map(item => (
+          <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+            <span style={{
+              color: t.text2, fontSize: font.size.small, minWidth: 0,
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            }}>
+              {item.quantity > 1 ? `${item.quantity}× ` : ''}{item.name}
+              {item.variant ? ` · ${item.variant}` : ''}
+            </span>
+            <span style={{
+              color: t.text3, fontSize: font.size.small, flexShrink: 0,
+              fontVariantNumeric: 'tabular-nums',
+            }}>
+              {formatDollars(item.line_amount_cents)}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {!open && (
+        <div style={{
+          display: 'flex', justifyContent: 'space-between',
+          marginTop: 12, paddingTop: 10, borderTop: `1px solid ${t.border}`,
+        }}>
+          <span style={{ color: t.text3, fontSize: font.size.small }}>Total</span>
+          <span style={{
+            color: t.text2, fontWeight: font.weight.semibold, fontSize: font.size.small,
+            fontVariantNumeric: 'tabular-nums',
+          }}>
+            {formatDollars(order.total_amount_cents)}
+          </span>
+        </div>
+      )}
+
+      {open && (
+        <button
+          onClick={() => onCancel(order.id)}
+          disabled={cancelling}
+          style={{
+            width: '100%', marginTop: 12, boxSizing: 'border-box',
+            background: 'transparent', border: `1px solid ${t.border}`,
+            borderRadius: radius.md, color: t.text3,
+            fontSize: font.size.small, fontWeight: font.weight.semibold,
+            padding: '9px 0', cursor: cancelling ? 'default' : 'pointer',
+          }}
+        >
+          {cancelling ? 'Cancelling…' : 'Cancel order'}
+        </button>
+      )}
+    </div>
+  )
+}
+
 interface AccountViewProps {
   session: import('@supabase/supabase-js').Session
   onSignOut: () => void
+  orders: Order[]
+  loading: boolean
+  error: string | null
+  onCancelOrder: (orderId: string) => void
+  cancellingIds: Set<string>
 }
 
-function AccountView({ session, onSignOut }: AccountViewProps) {
+function AccountView({
+  session, onSignOut, orders, loading, error, onCancelOrder, cancellingIds,
+}: AccountViewProps) {
   return (
-    <div style={{
-      height: '100dvh',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '0 32px 92px',
-      background: t.bg,
-    }}>
-      <div style={{
-        width: 72,
-        height: 72,
-        borderRadius: '50%',
-        background: t.surface2,
-        border: `1px solid ${t.border}`,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 20,
-      }}>
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="var(--text-3)">
-          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-        </svg>
+    <div style={{ height: '100dvh', overflowY: 'auto', background: t.bg }}>
+      <div style={{ padding: '40px 20px 108px', maxWidth: 560, margin: '0 auto' }}>
+        {/* Identity */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{
+            width: 64, height: 64, borderRadius: '50%',
+            background: t.surface2, border: `1px solid ${t.border}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            marginBottom: 14,
+          }}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="var(--text-3)">
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+          </div>
+          <div style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.title }}>Your account</div>
+          <div style={{ color: t.text3, fontSize: font.size.body, marginTop: 4 }}>
+            {session.user.email ?? session.user.phone}
+          </div>
+        </div>
+
+        {/* Orders */}
+        <div style={{ marginTop: 36 }}>
+          <div style={{
+            color: t.text3, fontSize: font.size.small, textTransform: 'uppercase',
+            letterSpacing: '0.07em', marginBottom: 12,
+          }}>
+            Your orders
+          </div>
+
+          {loading ? (
+            <FeedState kind="loading" message="Loading your orders…" />
+          ) : error ? (
+            <FeedState kind="error" message={error} />
+          ) : orders.length === 0 ? (
+            <div style={{
+              background: t.surface2, border: `1px solid ${t.border}`, borderRadius: radius.lg,
+              padding: '28px 20px', textAlign: 'center',
+            }}>
+              <div style={{ fontSize: 26, marginBottom: 8 }} aria-hidden>🛍️</div>
+              <div style={{ color: t.text2, fontSize: font.size.body }}>No orders yet</div>
+              <div style={{ color: t.text3, fontSize: font.size.small, marginTop: 6, lineHeight: 1.5 }}>
+                Orders you place for pickup will show up here with their pickup code.
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {orders.map(order => (
+                <OrderCard
+                  key={order.id}
+                  order={order}
+                  onCancel={onCancelOrder}
+                  cancelling={cancellingIds.has(order.id)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        <button
+          onClick={onSignOut}
+          style={{
+            display: 'block', margin: '36px auto 0',
+            background: 'transparent', border: `1px solid ${t.border}`, borderRadius: radius.lg,
+            color: t.danger, fontSize: font.size.callout, fontWeight: font.weight.semibold,
+            padding: '12px 32px', cursor: 'pointer',
+          }}
+        >
+          Sign out
+        </button>
       </div>
-      <div style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.title, marginBottom: 6 }}>Your account</div>
-      <div style={{ color: t.text3, fontSize: font.size.body, marginBottom: 40 }}>{session.user.email}</div>
-      <button
-        onClick={onSignOut}
-        style={{
-          background: 'transparent',
-          border: `1px solid ${t.border}`,
-          borderRadius: radius.lg,
-          color: t.danger,
-          fontSize: font.size.callout,
-          fontWeight: font.weight.semibold,
-          padding: '12px 32px',
-          cursor: 'pointer',
-        }}
-      >
-        Sign out
-      </button>
     </div>
   )
 }
@@ -1449,6 +1479,7 @@ function ProductView({ brandName, productKey, onBack, onListingClick }: ProductV
 
 export default function CustomerPortal() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams] = useSearchParams()
   const matchBrandProduct = useMatch('/portal/brands/:brandName/products/:productKey')
   const matchBrand = useMatch('/portal/brands/:brandName')
@@ -1490,6 +1521,11 @@ export default function CustomerPortal() {
   const [cart, setCart] = useState<CartItem[]>([])
   const [cartOpen, setCartOpen] = useState(false)
 
+  const [orders, setOrders] = useState<Order[]>([])
+  const [ordersLoading, setOrdersLoading] = useState(true)
+  const [ordersError, setOrdersError] = useState<string | null>(null)
+  const [cancellingIds, setCancellingIds] = useState<Set<string>>(new Set())
+
   // Track Supabase session
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session ?? null))
@@ -1528,6 +1564,33 @@ export default function CustomerPortal() {
       .catch(() => setPurchasesError('failed'))
       .finally(() => setPurchasesLoading(false))
   }, [id])
+
+  // Orders come from /me/orders, which identifies the customer by token, so this
+  // waits on the session rather than on customerId.
+  useEffect(() => {
+    if (!session) return
+    setOrdersLoading(true)
+    api.orders.list()
+      .then(setOrders)
+      .catch(() => setOrdersError('Could not load your orders.'))
+      .finally(() => setOrdersLoading(false))
+  }, [session])
+
+  async function handleCancelOrder(orderId: string) {
+    setCancellingIds(prev => new Set(prev).add(orderId))
+    try {
+      const updated = await api.orders.cancel(orderId)
+      setOrders(prev => prev.map(o => (o.id === orderId ? updated : o)))
+    } catch {
+      setOrdersError('Could not cancel that order.')
+    } finally {
+      setCancellingIds(prev => {
+        const next = new Set(prev)
+        next.delete(orderId)
+        return next
+      })
+    }
+  }
 
   function loadRecommendations() {
     if (!id) return
@@ -1585,7 +1648,13 @@ export default function CustomerPortal() {
   if (session === undefined) {
     return <div style={{ height: '100dvh', background: t.bg }}><FeedState kind="loading" message="Loading…" style={{ height: '100%' }} /></div>
   }
-  if (!session) return <LoginScreen />
+  // The portal has no login screen of its own — the one at "/" is the only
+  // sign-in surface, so it stays the single place SMS, email and social
+  // sign-in are wired up. Carry where they were headed so signing in returns
+  // them there rather than dropping them on the portal home.
+  if (!session) {
+    return <Navigate to="/" replace state={{ from: location.pathname + location.search }} />
+  }
   if (profileError) return <NotLinkedScreen />
   if (!customerId) {
     return <div style={{ height: '100dvh', background: t.bg }}><FeedState kind="loading" message="Loading…" style={{ height: '100%' }} /></div>
@@ -1649,7 +1718,15 @@ export default function CustomerPortal() {
         />
       )}
       {activeTab === 'account' && session && (
-        <AccountView session={session} onSignOut={handleSignOut} />
+        <AccountView
+          session={session}
+          onSignOut={handleSignOut}
+          orders={orders}
+          loading={ordersLoading}
+          error={ordersError}
+          onCancelOrder={handleCancelOrder}
+          cancellingIds={cancellingIds}
+        />
       )}
 
       {/* Cart drawer */}
@@ -1659,6 +1736,12 @@ export default function CustomerPortal() {
         onClose={() => setCartOpen(false)}
         onRemove={handleRemoveFromCart}
         onClear={() => setCart([])}
+        onPlaced={(order) => {
+          // The cart is now an order; keep the list fresh without a refetch.
+          setCart([])
+          setOrders(prev => [order, ...prev])
+        }}
+        onViewOrders={() => { setCartOpen(false); navigate('/portal/account') }}
       />
 
       {/* Floating bottom nav */}

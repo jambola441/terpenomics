@@ -22,6 +22,8 @@ DROP_ORDER = [
     "product_terpenes",       # old — may not exist
     "product_cannabinoids",   # old — may not exist
     "lab_reports",
+    "order_items",
+    "orders",
     "purchase_items",
     "purchases",
     "listings",

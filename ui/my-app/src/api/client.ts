@@ -13,6 +13,8 @@ import type {
   PurchaseItemCreateParams,
   PurchaseItem,
   PortalPurchase,
+  Order,
+  OrderStatus,
   PortalProduct,
   PortalBrand,
   PortalBrandDetail,
@@ -98,7 +100,74 @@ async function authenticatedFetch<T>(
   return res.json()
 }
 
+// SMS login endpoints. Unauthenticated by definition, and their errors go
+// straight on screen, so surface FastAPI's `detail` string rather than the raw
+// JSON body that portalFetch would throw.
+export class ApiError extends Error {
+  status: number
+  retryAfter?: number
+
+  constructor(message: string, status: number, retryAfter?: number) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+    this.retryAfter = retryAfter
+  }
+}
+
+async function authFetch<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+
+  const text = await res.text()
+  let payload: any = null
+  try {
+    payload = text ? JSON.parse(text) : null
+  } catch {
+    // Non-JSON error body (proxy timeout, HTML error page) — fall back to text.
+  }
+
+  if (!res.ok) {
+    const detail = typeof payload?.detail === 'string' ? payload.detail : null
+    const retryAfter = Number(res.headers.get('Retry-After'))
+    throw new ApiError(
+      detail || text || `Request failed with status ${res.status}`,
+      res.status,
+      Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : undefined,
+    )
+  }
+
+  return payload as T
+}
+
 // Centralized API client
+export type AdminOrderRow = {
+  id: string
+  status: OrderStatus
+  pickup_code: string
+  total_amount_cents: number
+  note: string | null
+  submitted_at: string
+  dispensary_id: string
+  dispensary_name: string | null
+  customer_id: string
+  customer_name: string | null
+  customer_phone: string | null
+  item_count: number
+}
+
+export type AdminOrderDetail = Omit<Order, 'dispensary_slug' | 'dispensary_address'> & {
+  customer_id: string
+  customer_name: string | null
+  customer_phone: string | null
+  customer_email: string | null
+  /** Statuses this order may legally move to next; empty once terminal. */
+  allowed_transitions: OrderStatus[]
+}
+
 export const api = {
   customers: {
     list: (params?: ListParams) =>
@@ -260,6 +329,20 @@ export const api = {
       }),
   },
 
+  adminOrders: {
+    list: (params?: { status?: OrderStatus; dispensary_id?: string; limit?: number; offset?: number }) =>
+      authenticatedFetch<AdminOrderRow[]>(`/admin/orders${buildQueryString(params)}`),
+
+    get: (id: string) =>
+      authenticatedFetch<AdminOrderDetail>(`/admin/orders/${id}`),
+
+    setStatus: (id: string, status: Exclude<OrderStatus, 'submitted'>) =>
+      authenticatedFetch<AdminOrderDetail>(`/admin/orders/${id}/status`, {
+        method: 'POST',
+        body: JSON.stringify({ status }),
+      }),
+  },
+
   listings: {
     list: (params?: { q?: string; dispensary_id?: string; category?: string; brand?: string; subtype?: string; classification?: string; in_stock?: boolean; sort?: string; order?: string; limit?: number; offset?: number }) =>
       authenticatedFetch<Listing[]>(`/admin/listings${buildQueryString(params)}`),
@@ -277,6 +360,23 @@ export const api = {
       authenticatedFetch<{ dispensaries: { id: string; name: string }[]; brands: string[]; classifications: string[]; subtypes: string[] }>(`/admin/listings/filter-options`),
   },
 
+  auth: {
+    smsStart: (phone: string) =>
+      authFetch<{ challenge_id: string; expires_in: number; resend_in: number }>(
+        `/auth/sms/start`,
+        { phone },
+      ),
+
+    smsVerify: (challengeId: string, code: string) =>
+      authFetch<{
+        access_token: string
+        refresh_token: string
+        token_type: string
+        expires_in?: number
+        user_id: string
+      }>(`/auth/sms/verify`, { challenge_id: challengeId, code }),
+  },
+
   me: {
     getProfile: () =>
       authenticatedFetch<{ id: string; name: string | null; phone: string | null; email: string | null; marketing_opt_in: boolean }>(`/me`),
@@ -286,6 +386,28 @@ export const api = {
         method: 'POST',
         body: JSON.stringify(payload ?? {}),
       }),
+  },
+
+  /**
+   * Pickup orders. Authenticated, unlike `portal` below: the customer is
+   * resolved from the Supabase token rather than a UUID in the path, because
+   * placing an order commits a real person to collecting goods.
+   */
+  orders: {
+    create: (payload: { dispensary_id: string; items: { listing_id: string; quantity: number }[]; note?: string }) =>
+      authenticatedFetch<Order>(`/me/orders`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }),
+
+    list: (params?: { limit?: number; offset?: number }) =>
+      authenticatedFetch<Order[]>(`/me/orders${buildQueryString(params)}`),
+
+    get: (orderId: string) =>
+      authenticatedFetch<Order>(`/me/orders/${orderId}`),
+
+    cancel: (orderId: string) =>
+      authenticatedFetch<Order>(`/me/orders/${orderId}/cancel`, { method: 'POST' }),
   },
 
   portal: {
