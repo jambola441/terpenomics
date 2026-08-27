@@ -3,23 +3,11 @@ import { useMatch, useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import DispensaryListings from './DispensaryListings'
 import AisleView from './AisleView'
-import type { CartItem } from '../types'
+import type { CartItem, PortalDispensary } from '../types'
 import { t, radius, font, alpha } from '../theme'
 import { FeedState, Spinner, Label } from './ui'
 
 const BROOKLYN: [number, number] = [40.6782, -73.9442]
-
-type PortalDispensary = {
-  id: string
-  name: string
-  slug: string
-  address: string | null
-  lat: number | null
-  lng: number | null
-  website_url: string | null
-  /** Whether this store takes orders — drives every add-to-cart affordance. */
-  accepts_pickup: boolean
-}
 
 interface Props {
   activeDispensaryId?: string | null
@@ -49,7 +37,7 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
   useEffect(() => {
     api.portal.getDispensaries()
       .then(data => {
-        setDispensaries(data as PortalDispensary[])
+        setDispensaries(data)
         setLoadingDispensaries(false)
       })
       .catch(() => {

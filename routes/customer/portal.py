@@ -50,8 +50,20 @@ def list_portal_dispensaries(session: Session = Depends(get_session)):
 # ---------------------------
 
 @router.get("/brands")
-def list_portal_brands(limit: int = 24, session: Session = Depends(get_session)):
-    rows = session.exec(
+def list_portal_brands(
+    session: Session = Depends(get_session),
+    q: Optional[str] = Query(default=None),
+    limit: int = Query(default=24, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    sort: Literal["listings", "name"] = Query(default="listings"),
+):
+    """Brands with a listing count, biggest first by default.
+
+    The home rail wants the top handful; the brands section pages through all of
+    them and needs a name sort and a search box, so both live behind the same
+    aggregate rather than a second endpoint that could drift from it.
+    """
+    stmt = (
         select(
             Listing.scraped_brand,
             func.count(Listing.id).label("cnt"),
@@ -59,9 +71,17 @@ def list_portal_brands(limit: int = 24, session: Session = Depends(get_session))
         )
         .where(Listing.scraped_brand.isnot(None))
         .where(Listing.scraped_brand != "")
-        .group_by(Listing.scraped_brand)
-        .order_by(func.count(Listing.id).desc())
-        .limit(limit)
+    )
+    if q and q.strip():
+        stmt = stmt.where(Listing.scraped_brand.ilike(f"%{q.strip()}%"))
+
+    order = (
+        Listing.scraped_brand
+        if sort == "name"
+        else func.count(Listing.id).desc()
+    )
+    rows = session.exec(
+        stmt.group_by(Listing.scraped_brand).order_by(order).offset(offset).limit(limit)
     ).all()
     return [{"name": r.scraped_brand, "listing_count": r.cnt, "image_url": r.image_url} for r in rows]
 

@@ -421,3 +421,52 @@ export type PortalCategoryDetail = {
   dispensaries: PortalCategoryDispensary[]
   products: PortalCategoryProduct[]
 }
+
+/** A store as the portal sees it — the shape both `/customer/dispensaries` and
+ *  `/me/preferred-dispensaries` return. */
+export type PortalDispensary = {
+  id: string
+  name: string
+  slug: string
+  address: string | null
+  lat: number | null
+  lng: number | null
+  website_url: string | null
+  accepts_pickup: boolean
+  logo_url: string | null
+  banner_url: string | null
+}
+
+/** One followed store's slice of the home feed. */
+export type FeedSection = {
+  dispensary: PortalDispensary
+  /** Everything in stock at that store, of which `listings` is the first page. */
+  total: number
+  listings: FeedListing[]
+}
+
+/** A feed card. Lighter than `DispensaryListing`: the feed shows no lab data,
+ *  so the endpoint does not carry terpenes or cannabinoids. */
+export type FeedListing = {
+  id: string
+  scraped_name: string | null
+  scraped_brand: string | null
+  scraped_category: string | null
+  subtype: string | null
+  strain: string | null
+  product_line: string | null
+  price_cents: number | null
+  variant: string | null
+  url: string | null
+  image_url: string | null
+  in_stock: boolean
+}
+
+/** The signed-in customer as `/me` returns them. */
+export type CustomerProfile = {
+  id: string
+  name: string | null
+  phone: string | null
+  email: string | null
+  marketing_opt_in: boolean
+}
