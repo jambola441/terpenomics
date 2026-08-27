@@ -10,6 +10,11 @@
 import { useEffect, type ReactNode } from 'react'
 import { t, radius, font, alpha } from '../theme'
 import { Pressable, Skeleton, Label, ProductImage } from './ui'
+import { formatDist, formatDollars, formatDollarsShort, haversineMi } from '../utils/format'
+
+// Re-exported so the browse surfaces can keep pulling their whole toolkit from
+// one place; `utils/format` is where these are defined.
+export { formatDist, formatDollars, formatDollarsShort, haversineMi }
 
 /* ── Constants ────────────────────────────────────────────────────────────── */
 
@@ -45,28 +50,6 @@ export const RADII: { value: number | null; label: string }[] = [
 export type Facet = { value: string; count: number }
 
 /* ── Helpers ──────────────────────────────────────────────────────────────── */
-
-export function haversineMi(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 3958.8
-  const dLat = (lat2 - lat1) * Math.PI / 180
-  const dLng = (lng2 - lng1) * Math.PI / 180
-  const a = Math.sin(dLat / 2) ** 2
-    + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-}
-
-export function formatDist(mi: number) {
-  return mi < 0.1 ? '< 0.1 mi' : `${mi.toFixed(1)} mi`
-}
-
-export function formatDollars(cents: number) {
-  return `$${(cents / 100).toFixed(2)}`
-}
-
-/** Whole dollars, for the price slider readout where cents are noise. */
-export function formatDollarsShort(cents: number) {
-  return `$${Math.round(cents / 100)}`
-}
 
 /** Parse a variant like "3.5g" / "100mg" / "1 oz" into grams for natural ordering. */
 export function variantWeight(v: string): number {

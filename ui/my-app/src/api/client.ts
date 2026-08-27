@@ -30,6 +30,9 @@ import type {
   Dispensary,
   DispensaryListing,
   ListingDetail,
+  PortalDispensary,
+  FeedSection,
+  CustomerProfile,
 } from '../types'
 
 // Get API base URL from environment variable or use default
@@ -379,13 +382,39 @@ export const api = {
 
   me: {
     getProfile: () =>
-      authenticatedFetch<{ id: string; name: string | null; phone: string | null; email: string | null; marketing_opt_in: boolean }>(`/me`),
+      authenticatedFetch<CustomerProfile>(`/me`),
+
+    /** Name and marketing opt-in only — phone and email are identity, not profile. */
+    updateProfile: (payload: { name?: string; marketing_opt_in?: boolean }) =>
+      authenticatedFetch<CustomerProfile>(`/me`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }),
 
     linkCustomer: (payload?: { phone?: string; email?: string; name?: string }) =>
       authenticatedFetch<{ customer_id: string; linked: boolean; created?: boolean }>(`/me/link-customer`, {
         method: 'POST',
         body: JSON.stringify(payload ?? {}),
       }),
+
+    /** The stores the home feed is built from. Every mutation returns the whole
+     *  updated set, so the caller replaces its state rather than refetching. */
+    listPreferredDispensaries: () =>
+      authenticatedFetch<PortalDispensary[]>(`/me/preferred-dispensaries`),
+
+    addPreferredDispensary: (dispensaryId: string) =>
+      authenticatedFetch<PortalDispensary[]>(`/me/preferred-dispensaries/${dispensaryId}`, {
+        method: 'POST',
+      }),
+
+    removePreferredDispensary: (dispensaryId: string) =>
+      authenticatedFetch<PortalDispensary[]>(`/me/preferred-dispensaries/${dispensaryId}`, {
+        method: 'DELETE',
+      }),
+
+    /** The home feed: one section per followed store, fanned out server-side. */
+    getFeed: (params?: { per_dispensary?: number; category?: string }) =>
+      authenticatedFetch<{ sections: FeedSection[] }>(`/me/feed${buildQueryString(params)}`),
   },
 
   /**
@@ -430,7 +459,7 @@ export const api = {
       portalFetch<PortalProduct>(`/customer/products/${productId}`),
 
     getDispensaries: () =>
-      portalFetch<{ id: string; name: string; slug: string; address: string | null; lat: number; lng: number; website_url: string | null; accepts_pickup: boolean; logo_url: string | null; banner_url: string | null }[]>(`/customer/dispensaries`),
+      portalFetch<PortalDispensary[]>(`/customer/dispensaries`),
 
     getDispensaryFilterOptions: (dispensaryId: string) =>
       portalFetch<{ brands: string[]; variants: string[] }>(`/customer/dispensaries/${dispensaryId}/filter-options`),
@@ -441,8 +470,8 @@ export const api = {
     getListing: (dispensaryId: string, listingId: string) =>
       portalFetch<ListingDetail>(`/customer/dispensaries/${dispensaryId}/listings/${listingId}`),
 
-    getBrands: (limit = 24) =>
-      portalFetch<PortalBrand[]>(`/customer/brands?limit=${limit}`),
+    getBrands: (params?: { q?: string; limit?: number; offset?: number; sort?: 'listings' | 'name' }) =>
+      portalFetch<PortalBrand[]>(`/customer/brands${buildQueryString(params)}`),
 
     getBrand: (name: string) =>
       portalFetch<PortalBrandDetail>(`/customer/brands/${encodeURIComponent(name)}`),

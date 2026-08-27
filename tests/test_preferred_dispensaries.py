@@ -207,3 +207,40 @@ def test_feed_caps_each_section(world):
     assert len(section["listings"]) == 1
     # The cap trims what is shown, not what the count reports.
     assert section["total"] == 2
+
+
+# ---------------------------
+# Profile
+# ---------------------------
+
+def test_profile_edit_changes_name_and_opt_in(world):
+    client = _client()
+    res = client.post("/me", json={"name": "Ada L.", "marketing_opt_in": True})
+    assert res.status_code == 200
+    assert res.json()["name"] == "Ada L."
+    assert res.json()["marketing_opt_in"] is True
+    assert client.get("/me").json()["name"] == "Ada L."
+
+
+def test_profile_edit_leaves_omitted_fields_alone(world):
+    client = _client()
+    client.post("/me", json={"name": "Ada L.", "marketing_opt_in": True})
+    res = client.post("/me", json={"name": "Ada Lovelace"})
+    assert res.json()["marketing_opt_in"] is True
+
+
+def test_profile_edit_cannot_change_identity(world):
+    client = _client()
+    before = client.get("/me").json()
+    # phone and email are how sign-in and walk-in matching find this person, so
+    # the endpoint ignores them rather than letting a profile edit rewrite them.
+    client.post("/me", json={"phone": "+15559999999", "email": "someone@else.test"})
+    after = client.get("/me").json()
+    assert after["phone"] == before["phone"]
+    assert after["email"] == before["email"]
+
+
+def test_blank_name_clears_it(world):
+    client = _client()
+    client.post("/me", json={"name": "Ada L."})
+    assert client.post("/me", json={"name": "   "}).json()["name"] is None

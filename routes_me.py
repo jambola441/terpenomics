@@ -121,8 +121,7 @@ def link_customer(
 # GET /me — customer profile
 # ---------------------------
 
-@router.get("")
-def get_me(customer: Customer = Depends(get_current_customer)):
+def _serialize_customer(customer: Customer) -> dict:
     return {
         "id": str(customer.id),
         "name": customer.name,
@@ -130,6 +129,41 @@ def get_me(customer: Customer = Depends(get_current_customer)):
         "email": customer.email,
         "marketing_opt_in": customer.marketing_opt_in,
     }
+
+
+@router.get("")
+def get_me(customer: Customer = Depends(get_current_customer)):
+    return _serialize_customer(customer)
+
+
+class UpdateMeRequest(BaseModel):
+    name: Optional[str] = None
+    marketing_opt_in: Optional[bool] = None
+
+
+@router.post("")
+def update_me(
+    payload: UpdateMeRequest,
+    customer: Customer = Depends(get_current_customer),
+    session: Session = Depends(get_session),
+):
+    """What the customer may change about themselves.
+
+    Phone and email are deliberately not here: they are how the account is
+    identified at sign-in and how a walk-in purchase is matched back to a
+    person, so changing either is an identity change rather than a profile edit.
+    """
+    if payload.name is not None:
+        name = payload.name.strip()
+        customer.name = name or None
+    if payload.marketing_opt_in is not None:
+        customer.marketing_opt_in = payload.marketing_opt_in
+
+    customer.updated_at = datetime.utcnow()
+    session.add(customer)
+    session.commit()
+    session.refresh(customer)
+    return _serialize_customer(customer)
 
 
 # ---------------------------
