@@ -75,6 +75,12 @@ python scripts/db_http.py sql - < some_migration.sql
 This token is account-wide and can drop the database. Scope the environments
 that carry it accordingly.
 
+One trap if you write your own client against this endpoint: Cloudflare fronts
+`api.supabase.com` and blocks urllib's default `Python-urllib/3.x` agent with a
+403 whose entire body is `error code: 1010`. That is indistinguishable at a
+glance from a rejected token — but curl succeeds against the same credential.
+Send a named `User-Agent` and it goes through.
+
 ### 3. Run the script where 5432 is reachable
 
 The right home for the long batch jobs — `enrich.py`, `import_listings.py`,

@@ -69,6 +69,12 @@ _load_dotenv()
 MANAGEMENT_API = "https://api.supabase.com"
 TIMEOUT_SECONDS = float(os.getenv("DB_HTTP_TIMEOUT", "60"))
 
+# Cloudflare fronts api.supabase.com and rejects urllib's default
+# "Python-urllib/3.x" agent outright, with a 403 whose body is only
+# "error code: 1010". That reads exactly like a rejected token, so it is worth
+# never sending the default. Any named agent gets through.
+USER_AGENT = "terpenomics-db-http/1.0"
+
 
 class DbHttpError(RuntimeError):
     """An HTTPS call to Supabase failed, with the response body attached."""
@@ -80,6 +86,7 @@ def _request(
     headers: dict[str, str],
     body: Optional[bytes] = None,
 ) -> tuple[int, str]:
+    headers = {"User-Agent": USER_AGENT, **headers}
     req = urllib.request.Request(url, data=body, headers=headers, method=method)
     try:
         with urllib.request.urlopen(req, timeout=TIMEOUT_SECONDS) as resp:
@@ -87,7 +94,13 @@ def _request(
     except urllib.error.HTTPError as exc:
         # The body is where Postgres puts the actual error (constraint name,
         # column, hint). Surfacing only the status code would waste a round trip.
-        raise DbHttpError(f"{method} {url} -> {exc.code}: {exc.read().decode('utf-8')}") from exc
+        detail = exc.read().decode("utf-8")
+        if "1010" in detail:
+            detail += (
+                "\n(Cloudflare rejected the client signature, not the credential. "
+                "Check that the request sends a named User-Agent.)"
+            )
+        raise DbHttpError(f"{method} {url} -> {exc.code}: {detail}") from exc
     except urllib.error.URLError as exc:
         raise DbHttpError(f"{method} {url} -> {exc.reason}") from exc
 
