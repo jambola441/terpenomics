@@ -14,10 +14,15 @@ Usage:
         ALLEAVES_USER / ALLEAVES_PASS
         --username / --password
 
-Output columns (identical to travel_agency_listings.csv):
-    dispensary_slug, sku, product_uuid, name, brand, category, variant,
-    price_cents, thc_percent, cbd_percent, classification, in_stock,
-    product_url, scraped_at
+Output columns (the shared scrape schema — same as the Dutchie/Tymber scrapers):
+    dispensary_slug, sku, batch_id, name, brand, category, raw_category, variant,
+    price_cents, classification, in_stock, product_url, image_url, scraped_at,
+    description, subtype, strain, product_line
+
+Pass 3 is best-effort. Carrot retired the Typesense storefront index (the settings
+endpoint now returns typesense_nodes="retired"), so the cross-reference is skipped
+and `in_stock` means "in POS inventory" rather than "published for sale" — 213 of
+638 rows as of 2026-08-27, against a smaller number under the old filter.
 """
 
 import argparse
@@ -184,8 +189,18 @@ def fetch_in_stock_ids(client: httpx.Client) -> dict[str, str]:
 # Pass 3 — Carrot/Typesense storefront cross-reference
 # ---------------------------------------------------------------------------
 
-def fetch_storefront_products(space_id: str, location_id: str = "1") -> dict[str, dict]:
-    """Return {batchName: slug} for all products published on the Carrot storefront."""
+# Carrot signals a decommissioned Typesense index by returning this in place of a
+# hostname. Left unhandled, the code builds "https://retired/collections/..." and
+# dies on DNS ("Name or service not known") — an upstream retirement that reads
+# like a local network fault.
+_RETIRED_NODES = {"retired", "deprecated", "disabled", "", None}
+
+
+def fetch_storefront_products(space_id: str, location_id: str = "1") -> dict[str, dict] | None:
+    """{batchName: {slug, price}} for products published to the Carrot storefront.
+
+    Returns None when Carrot reports the Typesense index retired, so the caller can
+    carry on without the cross-reference instead of failing the whole scrape."""
     with httpx.Client(timeout=15) as c:
         resp = c.get(
             CARROT_SETTINGS_URL,
@@ -195,7 +210,16 @@ def fetch_storefront_products(space_id: str, location_id: str = "1") -> dict[str
         resp.raise_for_status()
         settings = resp.json()
 
-    ts_node = settings["typesense_nodes"]
+    ts_node = settings.get("typesense_nodes")
+    if isinstance(ts_node, str) and ts_node.strip().lower() in _RETIRED_NODES:
+        print(f"  [warn] Carrot reports typesense_nodes={ts_node!r} — storefront index "
+              f"retired upstream; skipping the cross-reference.", file=sys.stderr)
+        return None
+    if not ts_node:
+        print("  [warn] Carrot returned no typesense_nodes; skipping the cross-reference.",
+              file=sys.stderr)
+        return None
+
     ts_key = settings["typesense_public_key"]
     indexes = settings.get("typesense_indexes_by_location", {})
     index_name = indexes.get(location_id) or indexes.get(int(location_id))
@@ -433,15 +457,23 @@ def main():
     if args.carrot_space_id:
         print("Pass 3 — cross-referencing Carrot storefront ...")
         storefront = fetch_storefront_products(args.carrot_space_id, args.carrot_location_id)
-        print(f"  {len(storefront)} products published to storefront.")
-        batch_to_slug = storefront
-        before = len(in_stock_ids)
-        in_stock_ids = {
-            item_id: batch
-            for item_id, batch in in_stock_ids.items()
-            if batch in storefront
-        }
-        print(f"  {len(in_stock_ids)} in stock after storefront filter ({before - len(in_stock_ids)} unpublished).")
+        if storefront is None:
+            # in_stock now means "in POS inventory" rather than "published for sale",
+            # which is broader, and rows lose the storefront slug and price. Say so
+            # rather than letting a quieter dataset pass as the usual one.
+            print("  [warn] continuing without the storefront filter: in_stock reflects "
+                  "POS inventory, and product_url/price fall back to catalog values.",
+                  file=sys.stderr)
+        else:
+            print(f"  {len(storefront)} products published to storefront.")
+            batch_to_slug = storefront
+            before = len(in_stock_ids)
+            in_stock_ids = {
+                item_id: batch
+                for item_id, batch in in_stock_ids.items()
+                if batch in storefront
+            }
+            print(f"  {len(in_stock_ids)} in stock after storefront filter ({before - len(in_stock_ids)} unpublished).")
 
     raw_brands = {(r.get("brand") or "").strip() for r in items if r.get("brand")}
     brand_canon = canonical_brands(raw_brands)
