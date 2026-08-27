@@ -758,7 +758,7 @@ def packages_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
     ctx.created["package_tag"] = new_tag
 
 
-WRITE_TABS = [
+_GROW_TABS = [
     ("Locations", locations_tab),
     ("Strains", strains_tab),
     ("Items", items_tab),
@@ -769,11 +769,16 @@ WRITE_TABS = [
 ]
 
 
+def _all_write_tabs() -> list:
+    """Grow tabs first: sales and transfers both consume what they produce."""
+    return _GROW_TABS + SALES_TABS + TRANSFER_TABS
+
+
 def run_full(client: MetrcClient, ctx: Context, only: set | None = None) -> list:
     """Run the write tabs in dependency order, reporting per-tab outcomes."""
     ref = load_reference(client)
     results = []
-    for name, fn in WRITE_TABS:
+    for name, fn in _all_write_tabs():
         if only and name not in only:
             continue
         try:
@@ -782,3 +787,386 @@ def run_full(client: MetrcClient, ctx: Context, only: set | None = None) -> list
         except Exception as exc:
             results.append((name, "FAIL", str(exc)))
     return results
+
+
+# ---------------------------------------------------------------------------
+# Sales
+# ---------------------------------------------------------------------------
+
+def _sellable_package(client: MetrcClient, ctx: Context) -> dict:
+    """An active package with quantity left, to sell from.
+
+    The Packages tab deliberately adjusts its package to zero, so that one is
+    not a candidate — hence the explicit quantity filter.
+    """
+    active = client.get(
+        "/packages/v2/active",
+        params={
+            "lastModifiedStart": stamp(utc_now() - timedelta(days=90)),
+            "lastModifiedEnd": stamp(utc_now()),
+        },
+        step="discover sellable", sheet="_reference",
+    )
+    for package in rows(active.response_body):
+        if (package.get("Quantity") or 0) > 1 and package.get("Label"):
+            return package
+    raise RuntimeError(
+        "no active package with quantity > 1 to sell — run bootstrap to create "
+        "opening balance packages first"
+    )
+
+
+PATIENT_SALES_SHEET = "Sales with Patient Look Up"
+
+
+def sales_tab(
+    client: MetrcClient,
+    ctx: Context,
+    ref: dict,
+    *,
+    sheet: str = PATIENT_SALES_SHEET,
+) -> None:
+    """Sales receipts.
+
+    Steps 1-3 are identical on both sales tabs. The patient-lookup variant adds
+    steps 4 and 5, and is the one NY uses (States tab: Patients = YES). States
+    without a Patients tab pass sheet="Sales" for the three-step version.
+    """
+    package = _sellable_package(client, ctx)
+    label = package["Label"]
+    unit = package.get("UnitOfMeasure") or "Grams"
+    customer_type = _pick(ref["customer_types"], "Consumer", "Patient")
+
+    def receipt(external: str, amount: float, quantity: float) -> dict:
+        return {
+            "SalesDateTime": stamp(utc_now()),
+            "ExternalReceiptNumber": external,
+            "SalesCustomerType": customer_type,
+            "PatientLicenseNumber": None,
+            "CaregiverLicenseNumber": None,
+            "IdentificationMethod": None,
+            "PatientRegistrationLocationId": None,
+            "Transactions": [{
+                "PackageLabel": label, "Quantity": quantity,
+                "UnitOfMeasure": unit, "TotalAmount": amount,
+            }],
+        }
+
+    external = f"TP-{ctx.suffix}"
+    created = client.post(
+        "/sales/v2/receipts", body=[receipt(external, 9.99, 1.0)],
+        step="Step 1", sheet=sheet,
+    )
+    receipt_id = created.object_ids[0]
+    annotate(created, ids=[receipt_id], tags=[label], names=[external])
+
+    updated_body = dict(receipt(external, 19.98, 2.0), Id=receipt_id)
+    updated = client.put(
+        "/sales/v2/receipts", body=[updated_body], step="Step 2", sheet=sheet,
+    )
+    annotate(updated, ids=[receipt_id], tags=[label], names=[external])
+
+    voided = client.delete(
+        f"/sales/v2/receipts/{receipt_id}", step="Step 3", sheet=sheet,
+    )
+    annotate(voided, ids=[receipt_id], tags=[label], names=[external])
+
+    ctx.created["sale_package_label"] = label
+    ctx.created["sale_unit"] = unit
+
+    if sheet != PATIENT_SALES_SHEET:
+        return
+
+    # Steps 4 and 5 exist only on the patient-lookup variant of the tab.
+    patient_license = ctx.created.get("patient_license") or "PTN-123-456"
+    status = client.get(
+        f"/patients/v2/statuses/{patient_license}",
+        step="Step 4", sheet=sheet, raise_on_error=False,
+    )
+    row = (rows(status.response_body) or [{}])[0]
+    annotate(
+        status,
+        names=[str(row.get("FlowerOuncesAvailable", ""))],
+        ids=[row["Id"]] if isinstance(row, dict) and row.get("Id") else [],
+    )
+
+    external_patient = dict(
+        receipt(f"{external}-EP", 9.99, 1.0),
+        SalesCustomerType="ExternalPatient",
+        PatientLicenseNumber=patient_license,
+    )
+    ext = client.post(
+        "/sales/v2/receipts", body=[external_patient],
+        step="Step 5", sheet=sheet, raise_on_error=False,
+    )
+    annotate(ext, ids=ext.object_ids, tags=[label], names=[f"{external}-EP"])
+
+
+def sales_deliveries_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
+    """Sales Deliveries (NOT CA) — three steps, three transactions down to one."""
+    sheet = "Sales Deliveries (NOT CA)"
+    label = ctx.created.get("sale_package_label")
+    unit = ctx.created.get("sale_unit", "Grams")
+    if not label:
+        package = _sellable_package(client, ctx)
+        label, unit = package["Label"], package.get("UnitOfMeasure") or "Grams"
+
+    customer_type = _pick(ref["customer_types"], "Consumer", "Patient")
+    depart = utc_now() + timedelta(hours=1)
+    arrive = utc_now() + timedelta(hours=3)
+
+    def transaction(amount: float) -> dict:
+        return {
+            "PackageLabel": label, "Quantity": 1.0,
+            "UnitOfMeasure": unit, "TotalAmount": amount,
+        }
+
+    delivery = {
+        "SalesDateTime": stamp(utc_now()),
+        "SalesCustomerType": customer_type,
+        "PatientLicenseNumber": None,
+        "ConsumerId": None,
+        "DriverName": "Evaluation Driver",
+        "DriversLicenseNumber": "D0000001",
+        "PhoneNumberForQuestions": "+1-555-000-0000",
+        "VehicleMake": "Car",
+        "VehicleModel": "Small",
+        "VehicleLicensePlateNumber": "TP-0001",
+        "RecipientAddressStreet1": "1 Evaluation Way",
+        "RecipientAddressCity": "Albany",
+        "RecipientAddressState": "NY",
+        "RecipientAddressPostalCode": "12207",
+        "PlannedRoute": "Drive to destination.",
+        "EstimatedDepartureDateTime": stamp(depart),
+        "EstimatedArrivalDateTime": stamp(arrive),
+        "Transactions": [transaction(9.99), transaction(19.98), transaction(29.97)],
+    }
+
+    created = client.post(
+        "/sales/v2/deliveries", body=[delivery], step="Step 1", sheet=sheet,
+    )
+    delivery_id = created.object_ids[0]
+    annotate(created, ids=[delivery_id], tags=[label])
+
+    # Step 2: drop one of the three transactions back out.
+    trimmed = dict(delivery, Id=delivery_id,
+                   Transactions=[transaction(9.99), transaction(19.98)])
+    updated = client.put(
+        "/sales/v2/deliveries", body=[trimmed], step="Step 2", sheet=sheet,
+    )
+    annotate(updated, ids=[delivery_id], tags=[label])
+
+    completed = client.put(
+        "/sales/v2/deliveries/complete",
+        body=[{
+            "Id": delivery_id,
+            "ActualArrivalDateTime": stamp(utc_now()),
+            "PaymentType": None,
+            "AcceptedPackages": [label],
+            "ReturnedPackages": [{
+                "Label": label, "ReturnQuantityVerified": 1.0,
+                "ReturnUnitOfMeasure": unit, "ReturnReason": "Spoilage",
+                "ReturnReasonNote": "Evaluation step",
+            }],
+        }],
+        step="Step 3", sheet=sheet,
+    )
+    annotate(completed, ids=[delivery_id], tags=[label])
+
+
+# ---------------------------------------------------------------------------
+# Transfers
+# ---------------------------------------------------------------------------
+
+def _counterparty_license(client: MetrcClient, ctx: Context) -> str:
+    """A facility other than our own, to address transfers to.
+
+    Falls back to our own license: some sandboxes expose only one facility, and
+    a self-addressed template still exercises the endpoint.
+    """
+    record = client.get(
+        "/facilities/v2/", license_number="",
+        step="discover counterparty", sheet="_reference", raise_on_error=False,
+    )
+    for facility in rows(record.response_body):
+        number = (facility.get("License") or {}).get("Number") or facility.get("LicenseNumber")
+        if number and number != ctx.license_number:
+            return number
+    return ctx.license_number
+
+
+def transfer_templates_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
+    sheet = "Transfer Templates"
+    recipient = _counterparty_license(client, ctx)
+    depart = utc_now() + timedelta(hours=1)
+    arrive = utc_now() + timedelta(hours=4)
+
+    def template(name: str, invoice: str) -> dict:
+        return {
+            "Name": name,
+            "TransporterFacilityLicenseNumber": None,
+            "DriverOccupationalLicenseNumber": None,
+            "DriverName": None, "DriverLicenseNumber": None,
+            "PhoneNumberForQuestions": None,
+            "VehicleMake": None, "VehicleModel": None,
+            "VehicleLicensePlateNumber": None, "VehicleRegistrationNumber": None,
+            "Destinations": [{
+                "RecipientLicenseNumber": recipient,
+                "InvoiceNumber": invoice,
+                "TransferTypeName": "Transfer",
+                "PlannedRoute": "Evaluation route.",
+                "EstimatedDepartureDateTime": stamp(depart),
+                "EstimatedArrivalDateTime": stamp(arrive),
+                "Transporters": [],
+                "Packages": [],
+            }],
+        }
+
+    name_a = f"TP Template A {ctx.suffix}"
+    name_b = f"TP Template B {ctx.suffix}"
+
+    a = client.post(
+        "/transfers/v2/templates/outgoing", body=[template(name_a, f"INV-A-{ctx.suffix}")],
+        step="Step 1a", sheet=sheet,
+    )
+    annotate(a, ids=a.object_ids, names=[name_a])
+
+    b = client.post(
+        "/transfers/v2/templates/outgoing", body=[template(name_b, f"INV-B-{ctx.suffix}")],
+        step="Step 1b", sheet=sheet,
+    )
+    annotate(b, ids=b.object_ids, names=[name_b])
+
+    # Step 2: find both templates by date search. The workbook truncates this
+    # endpoint to 'GE'; it is GET /transfers/v2/templates/outgoing.
+    listed = client.get(
+        "/transfers/v2/templates/outgoing",
+        params={
+            "lastModifiedStart": stamp(utc_now() - timedelta(hours=2)),
+            "lastModifiedEnd": stamp(utc_now() + timedelta(minutes=5)),
+        },
+        step="Step 2", sheet=sheet,
+    )
+    found = [t for t in rows(listed.response_body) if t.get("Name") in {name_a, name_b}]
+    annotate(
+        listed,
+        ids=[t["Id"] for t in found if t.get("Id")],
+        names=[t.get("Name") for t in found],
+        last_modified=_lm(found[0]) if found else "",
+    )
+
+    template_id = (a.object_ids or [t.get("Id") for t in found])[0]
+    deliveries = client.get(
+        f"/transfers/v2/templates/outgoing/{template_id}/deliveries",
+        license_number="", step="Step 3", sheet=sheet,
+    )
+    annotate(deliveries, ids=[template_id], names=[name_a])
+
+    renamed = f"{name_a} (Updated)"
+    updated_body = dict(template(renamed, f"INV-A-{ctx.suffix}"), TransferTemplateId=template_id)
+    updated_body["Destinations"][0]["TransferDestinationId"] = 0
+    updated = client.put(
+        "/transfers/v2/templates/outgoing", body=[updated_body],
+        step="Step 4", sheet=sheet,
+    )
+    annotate(updated, ids=[template_id], names=[renamed])
+
+    ctx.created["template_id"] = template_id
+
+
+def transfer_external_incoming_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
+    sheet = "Transfer External Incoming"
+    recipient = ctx.license_number
+    shipper = _counterparty_license(client, ctx)
+    depart = utc_now() + timedelta(hours=1)
+    arrive = utc_now() + timedelta(hours=4)
+
+    def transfer(invoice: str) -> dict:
+        return {
+            "ShipperLicenseNumber": shipper,
+            "ShipperName": "Evaluation Shipper",
+            "ShipperMainPhoneNumber": "555-000-0000",
+            "ShipperAddress1": "1 Evaluation Way",
+            "ShipperAddress2": None,
+            "ShipperAddressCity": "Albany",
+            "ShipperAddressState": "NY",
+            "ShipperAddressPostalCode": "12207",
+            "TransporterFacilityLicenseNumber": None,
+            "DriverOccupationalLicenseNumber": None,
+            "DriverName": None, "DriverLicenseNumber": None,
+            "PhoneNumberForQuestions": None,
+            "VehicleMake": None, "VehicleModel": None,
+            "VehicleLicensePlateNumber": None, "VehicleRegistrationNumber": None,
+            "Destinations": [{
+                "RecipientLicenseNumber": recipient,
+                "InvoiceNumber": invoice,
+                "TransferTypeName": "Transfer",
+                "PlannedRoute": "Evaluation route.",
+                "EstimatedDepartureDateTime": stamp(depart),
+                "EstimatedArrivalDateTime": stamp(arrive),
+                "GrossWeight": None,
+                "GrossUnitOfWeightId": None,
+                "Transporters": [],
+                "Packages": [],
+            }],
+        }
+
+    a = client.post(
+        "/transfers/v2/external/incoming", body=[transfer(f"EXT-A-{ctx.suffix}")],
+        step="Step 1a", sheet=sheet,
+    )
+    annotate(a, ids=a.object_ids, names=[f"EXT-A-{ctx.suffix}"])
+
+    b = client.post(
+        "/transfers/v2/external/incoming", body=[transfer(f"EXT-B-{ctx.suffix}")],
+        step="Step 1b", sheet=sheet,
+    )
+    annotate(b, ids=b.object_ids, names=[f"EXT-B-{ctx.suffix}"])
+
+    listed = client.get(
+        "/transfers/v2/incoming",
+        params={
+            "lastModifiedStart": stamp(utc_now() - timedelta(hours=2)),
+            "lastModifiedEnd": stamp(utc_now() + timedelta(minutes=5)),
+        },
+        step="Step 2", sheet=sheet,
+    )
+    incoming = rows(listed.response_body)
+    annotate(
+        listed,
+        ids=[t["Id"] for t in incoming[:5] if t.get("Id")],
+        names=[t.get("ManifestNumber") for t in incoming[:5] if t.get("ManifestNumber")],
+        last_modified=_lm(incoming[0]) if incoming else "",
+    )
+
+    transfer_a = (a.object_ids or [None])[0]
+    transfer_b = (b.object_ids or [None])[0]
+    if transfer_a is None or transfer_b is None:
+        raise RuntimeError("external incoming transfers did not return ids to update/delete")
+
+    updated_body = dict(transfer(f"EXT-A-{ctx.suffix}"), TransferId=transfer_a)
+    updated_body["Destinations"][0]["TransferDestinationId"] = None
+    updated_body["Destinations"][0]["PlannedRoute"] = "Evaluation route (updated)."
+    updated = client.put(
+        "/transfers/v2/external/incoming", body=[updated_body],
+        step="Step 3", sheet=sheet,
+    )
+    annotate(updated, ids=[transfer_a])
+
+    # Step 4 deletes the one NOT updated in step 3.
+    deleted = client.delete(
+        f"/transfers/v2/external/incoming/{transfer_b}",
+        step="Step 4", sheet=sheet,
+    )
+    annotate(deleted, ids=[transfer_b])
+
+
+SALES_TABS = [
+    (PATIENT_SALES_SHEET, sales_tab),
+    ("Sales Deliveries (NOT CA)", sales_deliveries_tab),
+]
+
+TRANSFER_TABS = [
+    ("Transfer Templates", transfer_templates_tab),
+    ("Transfer External Incoming", transfer_external_incoming_tab),
+]
