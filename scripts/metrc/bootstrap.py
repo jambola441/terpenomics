@@ -3,10 +3,14 @@
 Metrc's sandbox exposes four endpoints that let an integrator stand up their
 own test environment without a licensee partner:
 
-    POST /sandbox/v2/integrator/setup   mint an industry user key (vendor key only)
+    POST /sandbox/v2/integrator/setup   mint an industry user key
     GET  /sandbox/v2/tagtypes           discover valid tag types
     POST /sandbox/v2/facility/tags      mint plant/package tags, instantly received
     POST /sandbox/v2/packages/create    create opening-balance packages
+
+All four authenticate with the vendor key alone, in an x-metrc-key header —
+NOT the basic auth every other endpoint uses. The published docs only mention
+this for integrator/setup; basic auth returns 401 on all of them.
 
 Together these solve the cold-start problem the workbook's 'Closed Loop
 Environment' tab describes: you need tags before you can make a plant batch,
@@ -18,6 +22,9 @@ from .client import MetrcClient, rows
 
 PLANT_TAG_TYPES = ("Cannabis Plant", "Marijuana Plant")
 PACKAGE_TAG_TYPES = ("Cannabis Package", "Marijuana Package")
+
+# Tag type names and inventory types vary by state ("Cannabis plant" in NY,
+# "Marijuana Plant" elsewhere), so matching is case-insensitive and partial.
 
 
 def request_user_key(client: MetrcClient, user_key: str = "") -> dict:
@@ -76,17 +83,23 @@ def facility_permissions(facility: dict) -> dict:
 
 
 def tag_types(client: MetrcClient) -> list:
-    record = client.get("/sandbox/v2/tagtypes", step="bootstrap", sheet="_bootstrap")
+    record = client.get(
+        "/sandbox/v2/tagtypes", vendor_only=True, step="bootstrap", sheet="_bootstrap",
+    )
     return rows(record.response_body)
 
 
 def _pick_tag_type(available: list, preferred: tuple, inventory_type: str) -> str:
     names = [t.get("Name", "") for t in available]
+    lowered = {n.lower(): n for n in names}
     for want in preferred:
-        if want in names:
-            return want
+        if want.lower() in lowered:
+            return lowered[want.lower()]
     for t in available:
-        if t.get("TagInventoryType") == inventory_type:
+        if inventory_type.lower() in str(t.get("TagInventoryType", "")).lower():
+            return t.get("Name", "")
+    for t in available:
+        if inventory_type.lower() in str(t.get("Name", "")).lower():
             return t.get("Name", "")
     raise RuntimeError(
         f"no {inventory_type} tag type available; sandbox offers: {names}"
@@ -100,6 +113,7 @@ def mint_tags(client: MetrcClient, tag_type: str, count: int) -> list:
     record = client.post(
         "/sandbox/v2/facility/tags",
         body={"TagType": tag_type, "Count": count},
+        vendor_only=True,
         step="bootstrap",
         sheet="_bootstrap",
     )
@@ -126,6 +140,7 @@ def mint_opening_packages(
     record = client.post(
         "/sandbox/v2/packages/create",
         body=body,
+        vendor_only=True,
         step="bootstrap",
         sheet="_bootstrap",
     )

@@ -87,6 +87,7 @@ def cmd_bootstrap(args, config: MetrcConfig, recorder: Recorder) -> int:
     path = os.path.join(recorder.run_dir, "environment.json")
     with open(path, "w", encoding="utf-8") as fh:
         json.dump(env, fh, indent=2)
+    recorder.flush()
     print(f"\nwrote {path}")
     return 0
 
@@ -95,6 +96,20 @@ def cmd_get_only(args, config: MetrcConfig, recorder: Recorder) -> int:
     config.require("license_number")
     client = _client(config, recorder)
     ctx = Context(license_number=config.license_number)
+
+    # Transfers and lab results may sit at a different facility than the one
+    # being evaluated, so the read steps range over everything reachable.
+    facilities = list_facilities(client)
+    ctx.facilities = [
+        (f.get("License") or {}).get("Number") or f.get("LicenseNumber")
+        for f in facilities
+    ]
+    ctx.facilities = [lic for lic in ctx.facilities if lic]
+    # Start with the configured facility so its data is preferred.
+    if config.license_number in ctx.facilities:
+        ctx.facilities.remove(config.license_number)
+        ctx.facilities.insert(0, config.license_number)
+    print(f"searching {len(ctx.facilities)} facilities\n")
 
     failures = []
     for label, fn in [

@@ -15,12 +15,31 @@ class Recorder:
         self.records: list[CallRecord] = []
         os.makedirs(self.run_dir, exist_ok=True)
 
+    # The live append-only stream, written before a step annotates its result.
+    RAW = "calls.raw.jsonl"
+    # The finalised transcript, written once every annotation is attached.
+    FINAL = "calls.jsonl"
+
     def add(self, record: CallRecord) -> CallRecord:
         self.records.append(record)
-        # Append-only: a crash mid-run still leaves usable evidence.
-        with open(os.path.join(self.run_dir, "calls.jsonl"), "a", encoding="utf-8") as fh:
+        # Append-only, so a crash mid-run still leaves usable evidence. This
+        # snapshot predates any annotation the step attaches afterwards.
+        with open(os.path.join(self.run_dir, self.RAW), "a", encoding="utf-8") as fh:
             fh.write(json.dumps(record.to_dict(), default=str) + "\n")
         return record
+
+    def flush(self) -> str:
+        """Write the transcript with every annotation applied.
+
+        Steps attach ids, tags and names to a record after the call returns, so
+        the append-only stream is always one step behind. Everything that reads
+        a run back — filling the workbook above all — needs the final state.
+        """
+        path = os.path.join(self.run_dir, self.FINAL)
+        with open(path, "w", encoding="utf-8") as fh:
+            for record in self.records:
+                fh.write(json.dumps(record.to_dict(), default=str) + "\n")
+        return path
 
     def for_step(self, sheet: str, step: str) -> CallRecord | None:
         """The record a given workbook cell block should report.
@@ -61,6 +80,7 @@ class Recorder:
         }
 
     def write_summary(self) -> str:
+        self.flush()
         path = os.path.join(self.run_dir, "summary.json")
         with open(path, "w", encoding="utf-8") as fh:
             json.dump(self.summary(), fh, indent=2, default=str)
