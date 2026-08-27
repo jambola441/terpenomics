@@ -355,6 +355,28 @@ class OrderItem(SQLModel, table=True):
 
 
 # ---------------------------
+# Preferred dispensaries
+# ---------------------------
+
+class PreferredDispensary(SQLModel, table=True):
+    """A dispensary the customer wants their home feed built from.
+
+    A link table rather than a column on `customers` because the home feed is a
+    multi-store view: a shopper follows the two or three stores they actually
+    drive to, and the feed reads that set directly. `created_at` is the feed's
+    section order -- first followed, first shown -- so the order is stable
+    without a separate rank column to keep contiguous on removal.
+    """
+
+    __tablename__ = "customer_preferred_dispensaries"
+
+    customer_id:   UUID = Field(foreign_key="customers.id", primary_key=True)
+    dispensary_id: UUID = Field(foreign_key="dispensaries.id", primary_key=True)
+
+    created_at: datetime = Field(default_factory=utcnow, nullable=False)
+
+
+# ---------------------------
 # Phone (SMS) login
 # ---------------------------
 
