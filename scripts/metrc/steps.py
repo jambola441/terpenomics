@@ -40,6 +40,9 @@ class Context:
     # them: the workbook has a "License Facility" column per step precisely
     # because one step may run at the cultivator and the next at the lab.
     facilities: list = field(default_factory=list)
+    # A licensee outside our own tenant, so transfers demonstrate a real
+    # inter-licensee shipment rather than one addressed to ourselves.
+    counterparty: str = ""
     plant_tags: list = field(default_factory=list)
     package_tags: list = field(default_factory=list)
     created: dict = field(default_factory=dict)
@@ -513,15 +516,19 @@ def load_reference(client: MetrcClient) -> dict:
     }
 
 
-def _transfer_type(types: list, *, external_incoming: bool) -> str:
+def _transfer_type(types: list, *, external_incoming: bool, affiliated: bool = True) -> str:
     flag = "ForExternalIncomingShipments" if external_incoming else "ForLicensedShipments"
-    for t in types:
-        if t.get(flag):
+    eligible = [t for t in types if t.get(flag)]
+    if not eligible:
+        raise RuntimeError(
+            f"no transfer type flagged {flag}; facility offers "
+            f"{[t.get('Name') for t in types]}"
+        )
+    wanted = "affiliated" if affiliated else "unaffiliated"
+    for t in eligible:
+        if wanted in str(t.get("Name", "")).lower():
             return t["Name"]
-    raise RuntimeError(
-        f"no transfer type flagged {flag}; facility offers "
-        f"{[t.get('Name') for t in types]}"
-    )
+    return eligible[0]["Name"]
 
 
 # ---------------------------------------------------------------------------
@@ -1298,11 +1305,15 @@ def sales_deliveries_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
 # ---------------------------------------------------------------------------
 
 def _counterparty_license(client: MetrcClient, ctx: Context) -> str:
-    """A facility other than our own, to address transfers to.
+    """A licensee to address transfers to.
 
-    Falls back to our own license: some sandboxes expose only one facility, and
-    a self-addressed template still exercises the endpoint.
+    Prefers an explicitly configured counterparty — a partner licensee in
+    another tenant makes the transfer a genuine inter-licensee shipment. Falls
+    back to another facility in our own tenant, then to ourselves, since a
+    self-addressed template still exercises the endpoint.
     """
+    if ctx.counterparty:
+        return ctx.counterparty
     record = client.get(
         "/facilities/v2/", license_number="",
         step="discover counterparty", sheet="_reference", raise_on_error=False,
@@ -1314,10 +1325,21 @@ def _counterparty_license(client: MetrcClient, ctx: Context) -> str:
     return ctx.license_number
 
 
+def _same_tenant(a: str, b: str) -> bool:
+    """Sandbox licenses share a trailing tenant id: SF-SBX-NY-<type>-<tenant>."""
+    return a.rsplit("-", 1)[-1] == b.rsplit("-", 1)[-1]
+
+
 def transfer_templates_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
     sheet = "Transfer Templates"
     recipient = _counterparty_license(client, ctx)
-    transfer_type = _transfer_type(ref["transfer_types"], external_incoming=False)
+    # Shipping to a different licensee is an unaffiliated transfer; within our
+    # own tenant an affiliated one is the honest description.
+    transfer_type = _transfer_type(
+        ref["transfer_types"],
+        external_incoming=False,
+        affiliated=_same_tenant(recipient, ctx.license_number),
+    )
     depart = utc_now() + timedelta(hours=1)
     arrive = utc_now() + timedelta(hours=4)
 
