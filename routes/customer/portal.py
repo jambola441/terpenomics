@@ -13,6 +13,7 @@ from models import (
     Terpene, Cannabinoid, Purchase, PurchaseItem,
 )
 from routes.admin.serializers import serialize_purchase_item
+from services.display_name import compose as compose_display_name
 
 router = APIRouter()
 
@@ -132,12 +133,13 @@ def get_portal_brand(
         )
         product = products.get(key)
         if product is None:
-            name = (
-                listing.strain
-                or listing.product_line
-                or listing.scraped_name
-                or listing.scraped_category
-                or "—"
+            name = compose_display_name(
+                scraped_name=listing.scraped_name,
+                brand=listing.scraped_brand,
+                product_line=listing.product_line,
+                strain=listing.strain,
+                subtype=listing.subtype,
+                category=listing.scraped_category,
             )
             product = {
                 "key": "|".join("" if k is None else str(k) for k in key),
@@ -182,6 +184,107 @@ def get_portal_brand(
         "product_count": len(product_list),
         "dispensary_count": len(dispensary_ids),
         "products": product_list,
+    }
+
+
+# ---------------------------
+# GET /products/detail
+# ---------------------------
+
+# A product's identity, in the order `key` serializes them. Brand is not part of
+# it: the same key under two brands is two products, so brand is passed
+# alongside rather than inside.
+_PRODUCT_KEY_COLUMNS = (
+    Listing.scraped_category,
+    Listing.subtype,
+    Listing.product_line,
+    Listing.strain,
+    Listing.variant,
+)
+
+
+@router.get("/products/detail")
+def get_portal_product(
+    key: str = Query(..., description="category|subtype|product_line|strain|variant"),
+    brand: Optional[str] = Query(default=None),
+    session: Session = Depends(get_session),
+    in_stock: bool = Query(default=True),
+):
+    """One product and every store carrying it.
+
+    Products used to be reachable only through their brand, which meant a
+    shopper tapping an unbranded product got sent somewhere else entirely --
+    into one store's shelf, or back to a category listing. Brand is a filter
+    here, not a prerequisite, so every product has the same page.
+
+    Passing no brand means *unbranded*, not *any brand*: the key alone does not
+    identify a product across brands.
+    """
+    parts = key.split("|")
+    if len(parts) != len(_PRODUCT_KEY_COLUMNS):
+        raise HTTPException(status_code=400, detail="malformed product key")
+
+    stmt = (
+        select(Listing, Dispensary)
+        .join(Dispensary, Dispensary.id == Listing.dispensary_id)
+        .where(Listing.is_active == True)  # noqa: E712
+        .where(Dispensary.is_active == True)  # noqa: E712
+    )
+    if in_stock:
+        stmt = stmt.where(Listing.in_stock == True)  # noqa: E712
+
+    for column, value in zip(_PRODUCT_KEY_COLUMNS, parts):
+        stmt = stmt.where(column.is_(None) if value == "" else column == value)
+
+    if brand:
+        stmt = stmt.where(Listing.scraped_brand == brand)
+    else:
+        stmt = stmt.where(or_(Listing.scraped_brand.is_(None), Listing.scraped_brand == ""))
+
+    rows = session.exec(stmt).all()
+    if not rows:
+        raise HTTPException(status_code=404, detail="product not found")
+
+    first_listing = rows[0][0]
+    offerings = []
+    image_url = None
+    for listing, dispensary in rows:
+        if image_url is None and listing.image_url:
+            image_url = listing.image_url
+        offerings.append({
+            "listing_id": str(listing.id),
+            "dispensary_id": str(dispensary.id),
+            "dispensary_name": dispensary.name,
+            "dispensary_slug": dispensary.slug,
+            "lat": dispensary.lat,
+            "lng": dispensary.lng,
+            "price_cents": listing.price_cents,
+            "in_stock": listing.in_stock,
+            "url": listing.url,
+        })
+
+    prices = [o["price_cents"] for o in offerings if o["price_cents"] is not None]
+
+    return {
+        "key": key,
+        "brand": first_listing.scraped_brand or None,
+        "name": compose_display_name(
+            scraped_name=first_listing.scraped_name,
+            brand=first_listing.scraped_brand,
+            product_line=first_listing.product_line,
+            strain=first_listing.strain,
+            subtype=first_listing.subtype,
+            category=first_listing.scraped_category,
+        ),
+        "category": first_listing.scraped_category,
+        "subtype": first_listing.subtype,
+        "product_line": first_listing.product_line,
+        "strain": first_listing.strain,
+        "variant": first_listing.variant,
+        "image_url": image_url,
+        "min_price_cents": min(prices) if prices else None,
+        "dispensary_count": len({o["dispensary_id"] for o in offerings}),
+        "offerings": offerings,
     }
 
 
@@ -295,13 +398,13 @@ def get_portal_category(
         )
         product = products.get(key)
         if product is None:
-            name = (
-                listing.strain
-                or listing.product_line
-                or listing.scraped_name
-                or listing.scraped_brand
-                or category_name
-                or "\u2014"
+            name = compose_display_name(
+                scraped_name=listing.scraped_name,
+                brand=listing.scraped_brand,
+                product_line=listing.product_line,
+                strain=listing.strain,
+                subtype=listing.subtype,
+                category=listing.scraped_category or category_name,
             )
             product = {
                 "key": "|".join("" if k is None else str(k) for k in key),
@@ -461,6 +564,14 @@ def get_dispensary_listings(
         lid = str(listing.id)
         result.append({
             "id": lid,
+            "display_name": compose_display_name(
+                scraped_name=listing.scraped_name,
+                brand=listing.scraped_brand,
+                product_line=listing.product_line,
+                strain=listing.strain,
+                subtype=listing.subtype,
+                category=listing.scraped_category,
+            ),
             "scraped_name": listing.scraped_name,
             "scraped_brand": listing.scraped_brand,
             "scraped_category": listing.scraped_category,
@@ -524,6 +635,14 @@ def get_dispensary_listing(
         "dispensary_name": dispensary.name,
         "dispensary_slug": dispensary.slug,
         "dispensary_accepts_pickup": dispensary.accepts_pickup,
+        "display_name": compose_display_name(
+            scraped_name=listing.scraped_name,
+            brand=listing.scraped_brand,
+            product_line=listing.product_line,
+            strain=listing.strain,
+            subtype=listing.subtype,
+            category=listing.scraped_category,
+        ),
         "scraped_name": listing.scraped_name,
         "scraped_brand": listing.scraped_brand,
         "scraped_category": listing.scraped_category,
@@ -587,7 +706,19 @@ def list_portal_products(
     with engine.connect() as conn:
         rows = conn.execute(sql, params).mappings().all()
 
-    return [dict(r) for r in rows]
+    return [
+        {
+            **dict(r),
+            "display_name": compose_display_name(
+                brand=r["brand"],
+                product_line=r["product_line"],
+                strain=r["strain"],
+                subtype=r["subtype"],
+                category=r["category"],
+            ),
+        }
+        for r in rows
+    ]
 
 
 # ---------------------------

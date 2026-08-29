@@ -18,6 +18,7 @@ import type {
   PortalProduct,
   PortalBrand,
   PortalBrandDetail,
+  PortalProductDetail,
   PortalCategory,
   PortalCategoryDetail,
   FeedbackResponse,
@@ -475,6 +476,13 @@ export const api = {
 
     getBrand: (name: string) =>
       portalFetch<PortalBrandDetail>(`/customer/brands/${encodeURIComponent(name)}`),
+
+    /** One product with its offerings. Brand is a filter, not a prerequisite:
+     *  omitting it asks for the unbranded product with that key. */
+    getProductDetail: (key: string, brand?: string | null) =>
+      portalFetch<PortalProductDetail>(
+        `/customer/products/detail${buildQueryString({ key, brand: brand ?? undefined })}`,
+      ),
 
     getCategories: () =>
       portalFetch<PortalCategory[]>(`/customer/categories`),

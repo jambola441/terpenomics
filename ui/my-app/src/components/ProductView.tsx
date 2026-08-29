@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import api from '../api/client'
-import type { PortalBrandDetail, ListingDetail } from '../types'
+import type { PortalProductDetail, ListingDetail } from '../types'
 import { t, radius, font } from '../theme'
 import {
   Pressable, CategoryTag, ClassificationTag, DetailBlock, CollapsibleBlock, SpecRow,
@@ -8,38 +8,37 @@ import {
 import { haversineMi, formatDist, formatDollars } from '../utils/format'
 
 interface ProductViewProps {
-  brandName: string
+  /** The brand that scopes the key, or null for an unbranded product. */
+  brandName: string | null
   productKey: string
   onBack: () => void
   onListingClick: (dispensaryId: string, listingId: string) => void
 }
 
 export default function ProductView({ brandName, productKey, onBack, onListingClick }: ProductViewProps) {
-  const [brand, setBrand] = useState<PortalBrandDetail | null>(null)
+  const [product, setProduct] = useState<PortalProductDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(null)
   const [detail, setDetail] = useState<ListingDetail | null>(null)
 
+  // One product, not the whole brand: this page used to download every product
+  // a brand makes just to pick one out of it, and had nothing at all to fetch
+  // for a product with no brand.
   useEffect(() => {
     setLoading(true)
     setError(null)
-    api.portal.getBrand(brandName)
-      .then(setBrand)
+    api.portal.getProductDetail(productKey, brandName)
+      .then(setProduct)
       .catch(() => setError('Failed to load product'))
       .finally(() => setLoading(false))
-  }, [brandName])
+  }, [brandName, productKey])
 
   useEffect(() => {
     navigator.geolocation?.getCurrentPosition(pos => {
       setUserPos({ lat: pos.coords.latitude, lng: pos.coords.longitude })
     })
   }, [])
-
-  const product = useMemo(
-    () => brand?.products.find(p => p.key === productKey) ?? null,
-    [brand, productKey],
-  )
 
   // Pull richer attributes (description, classification, terpenes, cannabinoids)
   // from a representative listing — the cheapest offering carrying this product.
@@ -104,7 +103,11 @@ export default function ProductView({ brandName, productKey, onBack, onListingCl
         >
           ‹
         </button>
-        <div style={{ color: t.text3, fontSize: font.size.small, fontWeight: font.weight.semibold }}>{brandName}</div>
+        {/* The header draws before the fetch resolves, and an unbranded product
+            never gets a brand line at all. */}
+        {product?.brand && (
+          <div style={{ color: t.text3, fontSize: font.size.small, fontWeight: font.weight.semibold }}>{product.brand}</div>
+        )}
       </div>
 
       {loading ? (

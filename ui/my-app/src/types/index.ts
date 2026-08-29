@@ -150,6 +150,9 @@ export type FeedbackResponse = {
 }
 
 export type PortalProduct = {
+  /** What the shopper reads. Derived server-side from the enriched fields,
+   *  falling back to a cleaned `scraped_name` -- see services/display_name.py. */
+  display_name: string
   brand: string | null
   category: string
   subtype: string | null
@@ -209,6 +212,11 @@ export type LabReportDetail = LabReport & {
 
 export type DispensaryListing = {
   id: string
+  /** What the shopper reads. Derived server-side from the enriched fields,
+   *  falling back to a cleaned `scraped_name` -- see services/display_name.py. */
+  display_name: string
+  /** The store's own catalogue string. Kept for search and provenance; show
+   *  `display_name` instead. */
   scraped_name: string | null
   scraped_brand: string | null
   scraped_category: string | null
@@ -361,6 +369,12 @@ export type PortalBrandProduct = {
   offerings: PortalBrandOffering[]
 }
 
+/** A product and every store carrying it, independent of brand.
+ *  `brand` is null for products the stores publish unbranded. */
+export type PortalProductDetail = PortalBrandProduct & {
+  brand: string | null
+}
+
 export type PortalBrandDetail = {
   name: string
   image_url: string | null
@@ -449,6 +463,9 @@ export type FeedSection = {
  *  so the endpoint does not carry terpenes or cannabinoids. */
 export type FeedListing = {
   id: string
+  /** What the shopper reads. Derived server-side from the enriched fields,
+   *  falling back to a cleaned `scraped_name` -- see services/display_name.py. */
+  display_name: string
   scraped_name: string | null
   scraped_brand: string | null
   scraped_category: string | null

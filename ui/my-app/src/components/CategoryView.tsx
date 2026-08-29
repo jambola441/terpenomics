@@ -82,13 +82,12 @@ function toCard(e: EnrichedProduct): BrowseCardItem {
 interface Props {
   categoryName: string
   onBack: () => void
-  /** Open the shared brand-product view for a product that has a brand. */
-  onOpenBrandProduct: (brand: string, key: string) => void
-  /** Fallback for unbranded products: jump straight to a specific listing. */
-  onOpenListing: (dispensaryId: string, listingId: string) => void
+  /** Open the product page. `brand` is null for unbranded products, which have
+   *  the same page as any other -- the key identifies them. */
+  onOpenProduct: (brand: string | null, key: string) => void
 }
 
-export default function CategoryView({ categoryName, onBack, onOpenBrandProduct, onOpenListing }: Props) {
+export default function CategoryView({ categoryName, onBack, onOpenProduct }: Props) {
   const [data, setData] = useState<PortalCategoryDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -257,19 +256,11 @@ export default function CategoryView({ categoryName, onBack, onOpenBrandProduct,
   }
 
   function openProduct(e: EnrichedProduct) {
-    const p = e.product
-    if (p.brand) {
-      onOpenBrandProduct(p.brand, productKey(p))
-      return
-    }
-    // Unbranded products carry listing_id on their offerings for exactly this.
-    const placed = e.closest ?? e.cheapest
-    const first = placed ?? (p.offerings[0] && data
-      ? { offering: p.offerings[0], store: data.dispensaries[p.offerings[0].dispensary_index] }
-      : null)
-    if (first?.offering.listing_id && first.store) {
-      onOpenListing(first.store.id, first.offering.listing_id)
-    }
+    // Every card leads to the same place. This used to fork on whether the
+    // product had a brand, so an unbranded one dropped the shopper into one
+    // store's shelf -- a different screen, in a different section, reached by
+    // the same tap.
+    onOpenProduct(e.product.brand ?? null, productKey(e.product))
   }
 
   // Drop a nearest sort / radius filter that location permission can't support.

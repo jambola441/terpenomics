@@ -13,9 +13,10 @@ import {
 const PAGE = 200
 const MAX_ROWS = 1000
 
-/** The `products` view has no display name — build one from what identifies it. */
+/** Named server-side like every other listing surface, so search results and
+ *  the pages they open agree on what a product is called. */
 function displayName(p: PortalProduct): string {
-  return p.strain || p.product_line || p.subtype || p.category || '—'
+  return p.display_name
 }
 
 type Filters = {
@@ -64,13 +65,12 @@ function toCard(p: PortalProduct): BrowseCardItem {
 interface Props {
   /** Pre-filter to one category, from `/portal/search?category=…`. */
   initialCategory?: string | null
-  /** Open the shared brand-product view for a product that has a brand. */
-  onOpenBrandProduct: (brand: string, key: string) => void
-  /** Unbranded rows have no product page — send the shopper to the category. */
-  onOpenCategory: (category: string) => void
+  /** Open the product page. `brand` is null for unbranded rows, which reach the
+   *  same page as any other -- the key identifies them. */
+  onOpenProduct: (brand: string | null, key: string) => void
 }
 
-export default function SearchView({ initialCategory, onOpenBrandProduct, onOpenCategory }: Props) {
+export default function SearchView({ initialCategory, onOpenProduct }: Props) {
   const [rows, setRows] = useState<PortalProduct[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -221,10 +221,10 @@ export default function SearchView({ initialCategory, onOpenBrandProduct, onOpen
   }
 
   function openProduct(p: PortalProduct) {
-    // A row's identity matches the key built by GET /customer/brands/{name},
-    // so a branded result opens the real product page.
-    if (p.brand) onOpenBrandProduct(p.brand, productKey(p))
-    else if (p.category) onOpenCategory(p.category)
+    // A row's identity is the same five-part key the product endpoint takes, so
+    // every result opens a product page. Unbranded rows used to be bounced back
+    // to a category listing instead, which read as the tap doing nothing.
+    onOpenProduct(p.brand ?? null, productKey(p))
   }
 
   const groups: SheetGroup[] = [

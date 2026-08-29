@@ -34,7 +34,7 @@ const FACET_FIELD: Record<FacetKey, 'scraped_brand' | 'subtype' | 'variant'> = {
 /** Does a listing survive the filter set? `except` skips one facet, for counting. */
 function matches(l: DispensaryListing, f: Filters, except?: FacetKey | 'price'): boolean {
   if (f.search) {
-    const hay = [l.scraped_name, l.scraped_brand, l.strain, l.subtype]
+    const hay = [l.display_name, l.scraped_name, l.scraped_brand, l.strain, l.subtype]
       .filter(Boolean).join(' ').toLowerCase()
     if (!hay.includes(f.search)) return false
   }
@@ -51,7 +51,7 @@ function matches(l: DispensaryListing, f: Filters, except?: FacetKey | 'price'):
 
 function toCard(l: DispensaryListing): BrowseCardItem {
   return {
-    name: l.scraped_name ?? l.strain ?? '—',
+    name: l.display_name,
     brand: l.scraped_brand,
     category: l.scraped_category,
     subtype: l.subtype,
@@ -183,7 +183,7 @@ export default function AisleView({
         return (a.price_cents - b.price_cents) * dir
       })
     } else if (sort === 'name') {
-      arr.sort((a, b) => (a.scraped_name ?? '').localeCompare(b.scraped_name ?? ''))
+      arr.sort((a, b) => a.display_name.localeCompare(b.display_name))
     } else {
       // Featured: listings that make a good card first — a photo, then a price.
       arr.sort((a, b) => {
@@ -233,7 +233,7 @@ export default function AisleView({
           e.stopPropagation()
           onAddToCart({
             listingId: l.id, dispensaryId, dispensarySlug, dispensaryName,
-            name: l.scraped_name ?? '—', brand: l.scraped_brand ?? null,
+            name: l.display_name, brand: l.scraped_brand ?? null,
             variant: l.variant ?? null, price_cents: l.price_cents ?? null,
             url: l.url ?? null, image_url: l.image_url ?? null, quantity: 1,
           })

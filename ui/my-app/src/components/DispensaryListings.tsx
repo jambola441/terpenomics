@@ -133,7 +133,7 @@ export default function DispensaryListings({
           {l.image_url ? (
             <img
               src={l.image_url}
-              alt={l.scraped_name ?? ''}
+              alt={l.display_name}
               style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 10, boxSizing: 'border-box' }}
               onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
             />
@@ -147,7 +147,7 @@ export default function DispensaryListings({
                 e.stopPropagation()
                 onAddToCart({
                   listingId: l.id, dispensaryId, dispensarySlug, dispensaryName,
-                  name: l.scraped_name ?? '—', brand: l.scraped_brand ?? null,
+                  name: l.display_name, brand: l.scraped_brand ?? null,
                   variant: l.variant ?? null, price_cents: l.price_cents ?? null,
                   url: l.url ?? null, image_url: l.image_url ?? null, quantity: 1,
                 })
@@ -178,7 +178,7 @@ export default function DispensaryListings({
             color: t.text1, fontWeight: font.weight.semibold, fontSize: font.size.small, lineHeight: 1.3,
             display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
           } as React.CSSProperties}>
-            {l.scraped_name ?? '—'}
+            {l.display_name}
           </div>
           {catColor && l.variant && (
             <div style={{ color: t.text3, fontSize: font.size.caption, marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.variant}</div>

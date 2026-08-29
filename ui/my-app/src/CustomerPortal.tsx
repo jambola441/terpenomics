@@ -79,17 +79,23 @@ export default function CustomerPortal() {
   const location = useLocation()
   const [searchParams] = useSearchParams()
 
-  const matchBrandProduct = useMatch('/portal/brands/:brandName/products/:productKey')
+  // A product page and a listing page can open under any section, and keep the
+  // shopper there. Both used to live only under one section, so opening a
+  // product from Shop moved you to Brands and opening a listing moved you to
+  // Map -- the same tap landing in a different part of the app.
+  const matchProduct = useMatch('/portal/:section/products/:productKey')
+  const matchListing = useMatch('/portal/:section/listings/:dispensaryId/:listingId')
   const matchBrand = useMatch('/portal/brands/:brandName')
   const matchCategory = useMatch('/portal/categories/:category')
-  const matchListing = useMatch('/portal/map/:dispensaryId/listings/:listingId')
   const matchAisle = useMatch('/portal/map/:dispensaryId/aisle/:category')
   const matchDispensary = useMatch('/portal/map/:dispensaryId')
+  // Products were addressed under their brand before they could exist without
+  // one; kept so older links still resolve.
+  const matchLegacyBrandProduct = useMatch('/portal/brands/:brandName/products/:productKey')
 
-  const brandProductBrand = matchBrandProduct?.params.brandName
-    ? decodeURIComponent(matchBrandProduct.params.brandName) : null
-  const brandProductKey = matchBrandProduct?.params.productKey
-    ? decodeURIComponent(matchBrandProduct.params.productKey) : null
+  const productKey = matchProduct?.params.productKey
+    ? decodeURIComponent(matchProduct.params.productKey) : null
+  const productBrand = searchParams.get('brand')
   const selectedBrandName = matchBrand?.params.brandName
     ? decodeURIComponent(matchBrand.params.brandName) : null
   const selectedCategory = matchCategory?.params.category
@@ -180,10 +186,14 @@ export default function CustomerPortal() {
     setCart(prev => prev.filter(i => i.listingId !== listingId))
   }
 
-  const openBrandProduct = (brand: string, key: string) =>
-    navigate(`/portal/brands/${encodeURIComponent(brand)}/products/${encodeURIComponent(key)}`)
+  // Drill-downs stay in the section the shopper is browsing.
+  const openProduct = (brand: string | null, key: string) =>
+    navigate(
+      `/portal/${activeTab}/products/${encodeURIComponent(key)}`
+      + (brand ? `?brand=${encodeURIComponent(brand)}` : ''),
+    )
   const openListing = (dispensaryId: string, listingId: string) =>
-    navigate(`/portal/map/${dispensaryId}/listings/${listingId}`)
+    navigate(`/portal/${activeTab}/listings/${dispensaryId}/${listingId}`)
 
   // Auth / loading gates
   if (session === undefined) {
@@ -206,85 +216,71 @@ export default function CustomerPortal() {
   if (section === 'account') {
     return <Navigate to="/portal/profile" replace />
   }
+  if (matchLegacyBrandProduct?.params.brandName && matchLegacyBrandProduct.params.productKey) {
+    const { brandName, productKey: legacyKey } = matchLegacyBrandProduct.params
+    return <Navigate replace to={`/portal/brands/products/${legacyKey}?brand=${encodeURIComponent(decodeURIComponent(brandName))}`} />
+  }
 
   const cartCount = cart.reduce((sum, i) => sum + i.quantity, 0)
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: t.bg, overflow: 'hidden' }}>
-      {/* ── Home ── */}
-      {activeTab === 'home' && (
+      {/* A product or a listing opens over whichever section the shopper is in;
+          otherwise the section decides. */}
+      {selectedListingId && selectedListingDispensaryId ? (
+        <ListingDetailView
+          dispensaryId={selectedListingDispensaryId}
+          listingId={selectedListingId}
+          onAddToCart={handleAddToCart}
+          cartQuantity={cart.filter(i => i.listingId === selectedListingId).reduce((s, i) => s + i.quantity, 0)}
+        />
+      ) : productKey ? (
+        <ProductView
+          brandName={productBrand}
+          productKey={productKey}
+          onBack={() => navigate(-1)}
+          onListingClick={openListing}
+        />
+      ) : activeTab === 'home' ? (
         <HomeFeed
           onOpenListing={openListing}
           onOpenDispensary={dispensaryId => navigate(`/portal/map/${dispensaryId}`)}
-          onOpenBrandProduct={openBrandProduct}
+          onOpenProduct={openProduct}
         />
-      )}
-
-      {/* ── Brands: index → brand → product ── */}
-      {activeTab === 'brands' && (
-        brandProductBrand && brandProductKey ? (
-          <ProductView
-            brandName={brandProductBrand}
-            productKey={brandProductKey}
-            onBack={() => navigate(-1)}
-            onListingClick={openListing}
-          />
-        ) : selectedBrandName ? (
+      ) : activeTab === 'brands' ? (
+        selectedBrandName ? (
           <BrandView
             brandName={selectedBrandName}
             onBack={() => navigate(-1)}
-            onOpenProduct={key => openBrandProduct(selectedBrandName, key)}
+            onOpenProduct={key => openProduct(selectedBrandName, key)}
           />
         ) : (
           <BrandsPage onOpenBrand={name => navigate('/portal/brands/' + encodeURIComponent(name))} />
         )
-      )}
-
-      {/* ── Categories: index → category ── */}
-      {activeTab === 'categories' && (
+      ) : activeTab === 'categories' ? (
         selectedCategory ? (
           <CategoryView
             categoryName={selectedCategory}
             onBack={() => navigate(-1)}
-            onOpenBrandProduct={openBrandProduct}
-            onOpenListing={openListing}
+            onOpenProduct={openProduct}
           />
         ) : (
           <CategoriesPage
             onOpenCategory={name => navigate('/portal/categories/' + encodeURIComponent(name))}
           />
         )
-      )}
-
-      {/* ── Search ── */}
-      {activeTab === 'search' && (
+      ) : activeTab === 'search' ? (
         <SearchView
           initialCategory={searchParams.get('category')}
-          onOpenBrandProduct={openBrandProduct}
-          onOpenCategory={name => navigate('/portal/categories/' + encodeURIComponent(name))}
+          onOpenProduct={openProduct}
         />
-      )}
-
-      {/* ── Map: stores, aisles and listing detail ── */}
-      {activeTab === 'map' && (
-        selectedListingId && selectedListingDispensaryId ? (
-          <ListingDetailView
-            dispensaryId={selectedListingDispensaryId}
-            listingId={selectedListingId}
-            onAddToCart={handleAddToCart}
-            cartQuantity={cart.filter(i => i.listingId === selectedListingId).reduce((s, i) => s + i.quantity, 0)}
-          />
-        ) : (
-          <DispensaryMap
-            activeDispensaryId={selectedDispensaryId}
-            onAddToCart={handleAddToCart}
-            cart={cart}
-          />
-        )
-      )}
-
-      {/* ── Profile ── */}
-      {activeTab === 'profile' && (
+      ) : activeTab === 'map' ? (
+        <DispensaryMap
+          activeDispensaryId={selectedDispensaryId}
+          onAddToCart={handleAddToCart}
+          cart={cart}
+        />
+      ) : (
         <ProfileView
           session={session}
           customerId={customerId}

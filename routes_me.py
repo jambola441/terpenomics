@@ -13,6 +13,7 @@ from sqlmodel import Session, select
 from auth import SupabaseAuthUser, get_current_user
 from database import get_session
 from models import Customer, Dispensary, Listing, PreferredDispensary, Purchase
+from services.display_name import compose as compose_display_name
 
 router = APIRouter(prefix="/me", tags=["me"])
 
@@ -328,6 +329,14 @@ def get_feed(
             "listings": [
                 {
                     "id": str(listing.id),
+                    "display_name": compose_display_name(
+                        scraped_name=listing.scraped_name,
+                        brand=listing.scraped_brand,
+                        product_line=listing.product_line,
+                        strain=listing.strain,
+                        subtype=listing.subtype,
+                        category=listing.scraped_category,
+                    ),
                     "scraped_name": listing.scraped_name,
                     "scraped_brand": listing.scraped_brand,
                     "scraped_category": listing.scraped_category,
