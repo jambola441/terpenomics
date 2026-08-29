@@ -50,6 +50,35 @@ _TOKENS: dict[str, OrderedDict] = {
         ("preground", re.compile(r"\bpre-?ground\b|\bground\s+flower\b|\bready\s*-?\s*to\s*-?\s*roll\b", re.I)),
         ("infused",   re.compile(r"\bdiamond\s+infused\b|\binfused\b", re.I)),
     ]),
+    # Merch had no entry until 2026-08-27, so classify_by_token returned None and
+    # every accessory fell through to _CATEGORY_DEFAULTS["merch"] == "merch". With
+    # strain/variant also blank, the products VIEW grouped merch on brand alone:
+    # 1,514 listings collapsed to 223 product rows, so all 108 Blazy Susan SKUs —
+    # pink and purple, cones and papers, 20pk and 50pk — became one product.
+    # Order matters: the first match wins, so narrower patterns come first.
+    "merch": OrderedDict([
+        ("gift-card",  re.compile(r"\bgift\s*cards?\b", re.I)),
+        ("filter-tip", re.compile(r"\bfilter\s*tips?\b|\btips?\s*tin\b|\bcrutch", re.I)),
+        ("roller",     re.compile(r"\broller\b|\brolling\s*machine\b", re.I)),
+        ("ashtray",    re.compile(r"\bash\s*trays?\b", re.I)),
+        ("cone",       re.compile(r"\bcones?\b", re.I)),
+        ("paper",      re.compile(r"\b(rolling\s+)?papers?\b|\bbooklet\b", re.I)),
+        ("wrap",       re.compile(r"\bwraps?\b", re.I)),
+        ("grinder",    re.compile(r"\bgrinders?\b", re.I)),
+        ("tray",       re.compile(r"\btrays?\b", re.I)),
+        # bong before pipe: "water pipe" is a bong, and \bpipes?\b would claim it
+        ("bong",       re.compile(r"\bbongs?\b|\bwater\s*pipe\b|\brigs?\b|\bbubbler\b", re.I)),
+        ("pipe",       re.compile(r"\bpipes?\b|\bspoon\b|\bchillum\b|\bone.?hitter\b", re.I)),
+        ("dab-tool",   re.compile(r"\bdabber\b|\bdab\s+tool\b|\bbanger\b|\bcarb\s*cap\b|\bnails?\b", re.I)),
+        # charger before battery — "510 Thread USB Charger" is not a battery
+        ("charger",    re.compile(r"\bchargers?\b", re.I)),
+        ("battery",    re.compile(r"\bbatter(?:y|ies)\b|\b510\s*thread\b", re.I)),
+        ("lighter",    re.compile(r"\blighters?\b|\btorch\b", re.I)),
+        ("storage",    re.compile(r"\b(jars?|stash|containers?|pouch|tins?)\b", re.I)),
+        ("apparel",    re.compile(r"\b(t-?shirts?|hoodie|hats?|caps?|socks|tee)\b", re.I)),
+        ("cleaning",   re.compile(r"\bclean(?:er|ing)\b|\bisopropyl\b|\bwipes?\b", re.I)),
+        ("scale",      re.compile(r"\bscales?\b", re.I)),
+    ]),
     "concentrate": OrderedDict([
         ("diamonds", re.compile(r"\bdiamonds?\b", re.I)),
         ("rosin", re.compile(r"\brosin\b", re.I)),
@@ -58,6 +87,61 @@ _TOKENS: dict[str, OrderedDict] = {
         ("rso",   re.compile(r"\brso\b", re.I)),
     ]),
 }
+
+# ---------------------------------------------------------------------------
+# Merch identity — deterministic, because none of it is a judgment call
+#
+# Accessories have no strain and no dose, so the two fields that normally
+# separate products are empty and the products VIEW groups them on brand alone.
+# What actually distinguishes one from another is form factor (the subtype tokens
+# above), pack/size, and colour or flavour. All three are string facts about the
+# name, so they are read here rather than asked of the model.
+#
+# Colour/flavour lands in `strain` by the same ruling that puts topical scent
+# names there: it is the field that separates otherwise identical products. For
+# merch, `strain` means "the variant of this thing" rather than a cultivar.
+# ---------------------------------------------------------------------------
+
+# Pack count is the purchasable unit, so it wins when a name carries both: "Pink
+# 98mm Cones 20pk" and "... 50pk" are different products, while 98mm is a spec
+# both share.
+_MERCH_PACK = re.compile(r"\b(\d+\s*(?:pk|pack|ct|count))\b", re.I)
+
+# Physical size, used only when there is no pack count.
+_MERCH_DIM = re.compile(
+    r"\b(king\s*size"
+    r"|1\s*1/4|1\.25"                      # paper widths
+    r"|\d+\s*mm"                           # 98mm, 110mm
+    r"|\d+(?:\.\d+)?\s*(?:inch|in)\b"     # 4 inch
+    r')|(\d+(?:\.\d+)?\s*(?:"|\u201d))',   # 4" — no \b, a quote is not a word char
+    re.I)
+
+_MERCH_COLOR = re.compile(
+    r"\b(pink|purple|green|blue|red|black|white|gold|silver|onyx|orange|yellow"
+    r"|rose|clear|assorted|rainbow|teal|natural|unbleached)\b", re.I)
+
+# Flavour words on wraps and papers — the differentiator when there is no colour.
+_MERCH_FLAVOR = re.compile(
+    r"\b(russian\s+cream|honey\s+lemon|black\s+tea|peach|mango|grape|cherry"
+    r"|vanilla|mint|banana|strawberry|blueberry|watermelon)\b", re.I)
+
+
+def merch_variant(name: str) -> str:
+    """Pack count, else physical size — '20pk', 'king size', '98mm'. '' when absent."""
+    m = _MERCH_PACK.search(name or "")
+    if not m:
+        m = _MERCH_DIM.search(name or "")
+    if not m:
+        return ""
+    hit = next(g for g in m.groups() if g)
+    return re.sub(r"\s+", " ", hit).strip().lower()
+
+
+def merch_strain(name: str) -> str | None:
+    """Colour or flavour, whichever the name carries. None when neither."""
+    m = _MERCH_COLOR.search(name or "") or _MERCH_FLAVOR.search(name or "")
+    return re.sub(r"\s+", " ", m.group(1)).strip().title() if m else None
+
 
 _CATEGORY_DEFAULTS: dict[str, str | None] = {
     "vaporizers":  None,
@@ -151,7 +235,12 @@ _CACHE_DIR = _DATA_DIR / "enrich_cache"
 #       pack multiply-out scoped to mg doses so it stops overriding weight hints
 #   5 — a format word alone is not a strain ("Milk Chocolate" on a chocolate bar),
 #       so lineage is reached when nothing else differentiates
-_ENRICH_VERSION = 5
+#   6 — merch gets a real identity: form-factor subtypes (cone, paper, grinder,
+#       ...), pack/size in variant, and colour or flavour in strain. Before this,
+#       every accessory was subtype "merch" with strain and variant blank, so the
+#       products VIEW grouped merch on brand alone — 1,514 listings collapsed into
+#       223 product rows.
+_ENRICH_VERSION = 6
 
 
 def _cache_key(row: dict) -> str | None:
@@ -315,7 +404,10 @@ SUBTYPES: dict[str, list[str]] = {
     "flower":      ["flower", "smalls", "preground", "infused"],
     "tinctures":   ["tincture"],
     "topical":     ["topical"],
-    "merch":       ["merch"],
+    "merch":       ["gift-card", "filter-tip", "roller", "ashtray", "cone", "paper",
+                    "wrap", "grinder", "tray", "bong", "pipe", "dab-tool", "charger",
+                    "battery", "lighter", "storage", "apparel", "cleaning", "scale",
+                    "merch"],
     "other":       ["other"],
 }
 
@@ -713,6 +805,13 @@ def _run_enrich(
                 subtypes[oi]   = _valid_subtype(it.get("subtype"), cat, _hint_subtype(row))
                 v = it.get("variant")
                 variants[oi]   = v if v is not None else row.get("variant", "")
+                # Merch identity is read from the name, not asked of the model —
+                # a pack count is a string fact and the model has no better view
+                # of it. Overrides whatever came back so it stays consistent.
+                if cat == "merch":
+                    mv = merch_variant(row.get("name", ""))
+                    if mv:
+                        variants[oi] = mv
         return on_result
 
     classify_tasks = []
@@ -748,6 +847,11 @@ def _run_enrich(
                     it = {}
                 strains[oi]       = it.get("strain")
                 product_lines[oi] = it.get("product_line")
+                # For merch, `strain` carries colour or flavour — the thing that
+                # separates otherwise identical accessories. Same ruling that puts
+                # topical scent names in `strain`.
+                if (categories[oi] or "").lower() == "merch":
+                    strains[oi] = merch_strain(row.get("name", ""))
         return on_result
 
     def extract_payload_item(i, oi, r):

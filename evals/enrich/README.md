@@ -207,6 +207,62 @@ pre-truncated at 300 chars (median 220), so this measures a *floor*. Production
 descriptions are ~4× longer, where the input side is a bigger share and the cap
 would save more. Re-test against real scrape CSVs before adopting.
 
+## Merch had no identity at all (2026-08-27)
+
+`_TOKENS` carried entries for vaporizers, edible, preroll, flower and concentrate
+but **not merch**, so `classify_by_token` returned `None` for every accessory and
+they fell through to `_CATEGORY_DEFAULTS["merch"] == "merch"`. `SUBTYPES["merch"]`
+was `["merch"]` — a single allowed value — so `_valid_subtype` could not return
+anything else even when the model tried. With strain and variant also blank, the
+products VIEW was grouping merch on **brand alone**.
+
+Measured across the fleet's 1,514 merch listings (7.7% of everything):
+
+| | |
+| --- | --- |
+| product rows they collapsed into | **223** |
+| distinct (brand, name) pairs | 1,496 |
+| products merged away | **1,273** |
+
+RAW: 183 listings → 1 product row. Blazy Susan: 108 → 1, so pink and purple,
+cones and papers, 20pk and 50pk were all one product.
+
+### The fix, and what each layer recovers
+
+Three deterministic layers, all string facts about the name, none asked of the
+model. Modeled over the same 1,514 rows:
+
+| grouping key | product rows | % of ceiling |
+| --- | ---: | ---: |
+| brand only (the bug) | 223 | 15% |
+| + subtype — 19 form-factor tokens | 309 | 21% |
+| + variant — pack count, else size | 468 | 31% |
+| + strain — colour or flavour | 765 | 51% |
+
+Verified end to end on kaya-bliss-bay-ridge: its 215 merch listings went from
+**57 to 143 product rows** against a 215 ceiling — 27% → 66%. Blazy Susan there
+went 18 listings → 15 product rows.
+
+Two rulings encoded:
+
+- **Pack count beats a dimension.** "Pink 98mm Cones 20pk" and "... 50pk" differ
+  by pack; 98mm is a spec they share. So `_MERCH_PACK` is tried before
+  `_MERCH_DIM`.
+- **Colour and flavour live in `strain`.** For merch, `strain` means "the variant
+  of this thing" rather than a cultivar — the same reasoning that already puts
+  topical scent names there. It is the only field that separates otherwise
+  identical accessories without a schema change.
+
+Token order matters and is load-bearing: `bong` before `pipe` (a "water pipe" is
+a bong), `charger` before `battery` ("510 Thread USB Charger" is not a battery),
+`ashtray` before `tray`, `filter-tip` before the generic patterns.
+
+**This bumps `_ENRICH_VERSION` to 6, which invalidates every cached answer**, not
+just merch — the stamp is per-entry but not per-category. A full fleet re-enrich
+is ~$5-6. To pay only for merch, drop the `"category": "merch"` entries from
+`data/enrich_cache/*.json` and leave the rest at v5; that is ~$0.40, at the cost
+of the version stamp no longer describing what is in the cache.
+
 ## Model comparison — DeepSeek v4 vs Haiku 4.5 (2026-08-25)
 
 Same gold suites, same prompts, `haiku-or` transport throughout. Haiku has 4 runs
