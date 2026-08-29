@@ -170,6 +170,21 @@ def seed_inventory(client: MetrcClient, ctx, count: int = 10) -> list:
     strains = _names(
         client.get("/strains/v2/active", step="seed", sheet="_bootstrap").response_body
     )
+    # A facility can have no strains at all — a freshly reset sandbox, or a
+    # dispensary that has never received product — while its only item
+    # categories require one.
+    if category.get("RequiresStrain") and not strains:
+        strain = f"Terpenomics Seed Strain {ctx.suffix}"
+        client.post(
+            "/strains/v2/",
+            body=[{
+                "Name": strain, "TestingStatus": "None",
+                "ThcLevel": 0.2, "CbdLevel": 0.1,
+                "IndicaPercentage": 50.0, "SativaPercentage": 50.0,
+            }],
+            step="seed strain", sheet="_bootstrap",
+        )
+        strains = [strain]
     name = f"Terpenomics Seed Item {ctx.suffix}"
     unit = _pick(
         ref["units"], "Each" if category.get("QuantityType") == "CountBased" else "Grams"
