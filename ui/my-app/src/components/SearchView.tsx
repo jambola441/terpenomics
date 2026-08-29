@@ -1,11 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import api from '../api/client'
 import type { PortalProduct } from '../types'
 import { t, font, categoryColor, alpha } from '../theme'
 import { FeedState } from './ui'
 import {
+  readEnum, readRange, readSet, useFilterParams, useScrollMemory, writeOne, writeRange, writeSet,
+} from '../utils/browseState'
+import {
   ActiveChip, BrowseCard, BrowseToolbar, Dot, FacetChip, FilterSheet, GridSkeleton,
-  SORTS_NO_LOCATION, SearchField, Stat, formatDollarsShort, productKey, variantWeight,
+  SORTS_NO_LOCATION, SORT_KEYS, SearchField, Stat, formatDollarsShort, productKey, variantWeight,
   type BrowseCardItem, type SheetGroup, type SortKey,
 } from './browse'
 
@@ -76,24 +80,42 @@ export default function SearchView({ initialCategory, onOpenProduct }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [truncated, setTruncated] = useState(false)
 
-  const [input, setInput] = useState('')
-  const [query, setQuery] = useState('')
+  // Seeded from the URL so returning from a product restores the search the
+  // shopper left, rather than an empty one.
+  const [initialParams] = useSearchParams()
+  const [input, setInput] = useState(() => initialParams.get('q') ?? '')
+  const [query, setQuery] = useState(() => initialParams.get('q') ?? '')
   const [searchFocus, setSearchFocus] = useState(false)
 
   const [category, setCategory] = useState<Set<string>>(
-    () => new Set(initialCategory ? [initialCategory] : []),
+    () => readSet(initialParams, 'category'),
   )
-  const [subtype, setSubtype] = useState<Set<string>>(new Set())
-  const [brand, setBrand] = useState<Set<string>>(new Set())
-  const [variant, setVariant] = useState<Set<string>>(new Set())
-  const [price, setPrice] = useState<[number, number] | null>(null)
-  const [sort, setSort] = useState<SortKey>('featured')
+  const [subtype, setSubtype] = useState<Set<string>>(() => readSet(initialParams, 'subtype'))
+  const [brand, setBrand] = useState<Set<string>>(() => readSet(initialParams, 'brand'))
+  const [variant, setVariant] = useState<Set<string>>(() => readSet(initialParams, 'variant'))
+  const [price, setPrice] = useState<[number, number] | null>(() => readRange(initialParams, 'price'))
+  const [sort, setSort] = useState<SortKey>(() => readEnum(initialParams, 'sort', SORT_KEYS, 'featured'))
   const [sheet, setSheet] = useState(false)
 
   const scrollRef = useRef<HTMLDivElement>(null)
+  const previousQuery = useRef(query)
 
-  // Adopt a category arriving from a deep link after mount (tapping a tile).
+  useFilterParams({
+    q: writeOne(input),
+    category: writeSet(category),
+    subtype: writeSet(subtype),
+    brand: writeSet(brand),
+    variant: writeSet(variant),
+    price: writeRange(price),
+    sort: sort === 'featured' ? [] : [sort],
+  })
+  useScrollMemory(scrollRef, !loading && rows.length > 0)
+
+  // A category arriving from a deep link after mount (tapping a category tile).
+  const previousInitial = useRef(initialCategory)
   useEffect(() => {
+    if (previousInitial.current === initialCategory) return
+    previousInitial.current = initialCategory
     setCategory(new Set(initialCategory ? [initialCategory] : []))
   }, [initialCategory])
 
@@ -108,7 +130,10 @@ export default function SearchView({ initialCategory, onOpenProduct }: Props) {
   useEffect(() => {
     let cancelled = false
     setLoading(true); setError(null); setTruncated(false)
-    scrollRef.current?.scrollTo({ top: 0 })
+    if (previousQuery.current !== query) {
+      previousQuery.current = query
+      scrollRef.current?.scrollTo({ top: 0 })
+    }
 
     ;(async () => {
       const acc: PortalProduct[] = []

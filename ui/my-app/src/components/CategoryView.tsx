@@ -1,13 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import api from '../api/client'
 import type {
   PortalCategoryDetail, PortalCategoryDispensary, PortalCategoryOffering, PortalCategoryProduct,
 } from '../types'
 import { t, font, categoryColor, alpha } from '../theme'
+import {
+  readEnum, readNumber, readRange, readSet, useFilterParams, useScrollMemory,
+  writeOne, writeRange, writeSet,
+} from '../utils/browseState'
 import { FeedState } from './ui'
 import {
   BrowseCard, BrowseToolbar, CATEGORY_EMOJI, Dot, FacetChip, FilterSheet, GridSkeleton,
-  SORTS, SearchField, Stat, ActiveChip, formatDollarsShort, haversineMi, productKey, variantWeight,
+  SORTS, SORT_KEYS, SearchField, Stat, ActiveChip, formatDollarsShort, haversineMi, productKey, variantWeight,
   type BrowseCardItem, type SheetGroup, type SortKey,
 } from './browse'
 
@@ -94,27 +99,38 @@ export default function CategoryView({ categoryName, onBack, onOpenProduct }: Pr
   const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(null)
   const [locationDenied, setLocationDenied] = useState(false)
 
-  const [search, setSearch] = useState('')
+  // Seeded from the URL so that coming back from a product restores the screen
+  // the shopper left, rather than an empty one.
+  const [initialParams] = useSearchParams()
+  const [search, setSearch] = useState(() => initialParams.get('q') ?? '')
   const [searchFocus, setSearchFocus] = useState(false)
-  const [subtype, setSubtype] = useState<Set<string>>(new Set())
-  const [brand, setBrand] = useState<Set<string>>(new Set())
-  const [variant, setVariant] = useState<Set<string>>(new Set())
-  const [radiusMi, setRadiusMi] = useState<number | null>(null)
-  const [price, setPrice] = useState<[number, number] | null>(null)
-  const [sort, setSort] = useState<SortKey>('featured')
+  const [subtype, setSubtype] = useState<Set<string>>(() => readSet(initialParams, 'subtype'))
+  const [brand, setBrand] = useState<Set<string>>(() => readSet(initialParams, 'brand'))
+  const [variant, setVariant] = useState<Set<string>>(() => readSet(initialParams, 'variant'))
+  const [radiusMi, setRadiusMi] = useState<number | null>(() => readNumber(initialParams, 'radius'))
+  const [price, setPrice] = useState<[number, number] | null>(() => readRange(initialParams, 'price'))
+  const [sort, setSort] = useState<SortKey>(() => readEnum(initialParams, 'sort', SORT_KEYS, 'featured'))
   const [sheet, setSheet] = useState(false)
 
   const c = categoryColor(categoryName)
   const emoji = CATEGORY_EMOJI[categoryName] ?? '📦'
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  // Load the category, resetting every control when the category changes.
+  useFilterParams({
+    q: writeOne(search),
+    subtype: writeSet(subtype),
+    brand: writeSet(brand),
+    variant: writeSet(variant),
+    radius: writeOne(radiusMi),
+    price: writeRange(price),
+    sort: sort === 'featured' ? [] : [sort],
+  })
+  useScrollMemory(scrollRef, data != null)
+
+  // Load the category.
   useEffect(() => {
     let cancelled = false
     setLoading(true); setError(null); setData(null)
-    setSearch(''); setSubtype(new Set()); setBrand(new Set()); setVariant(new Set())
-    setRadiusMi(null); setPrice(null); setSort('featured')
-    scrollRef.current?.scrollTo({ top: 0 })
 
     api.portal.getCategory(categoryName)
       .then(d => { if (!cancelled) setData(d) })
@@ -122,6 +138,17 @@ export default function CategoryView({ categoryName, onBack, onOpenProduct }: Pr
       .finally(() => { if (!cancelled) setLoading(false) })
 
     return () => { cancelled = true }
+  }, [categoryName])
+
+  // Moving to a different category clears the controls — its facets are not
+  // this one's. Skipped on mount, where the controls came from the URL.
+  const previousCategory = useRef(categoryName)
+  useEffect(() => {
+    if (previousCategory.current === categoryName) return
+    previousCategory.current = categoryName
+    setSearch(''); setSubtype(new Set()); setBrand(new Set()); setVariant(new Set())
+    setRadiusMi(null); setPrice(null); setSort('featured')
+    scrollRef.current?.scrollTo({ top: 0 })
   }, [categoryName])
 
   useEffect(() => {

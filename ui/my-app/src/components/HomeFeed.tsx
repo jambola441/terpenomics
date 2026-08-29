@@ -12,14 +12,15 @@
    as they pick one.
    ========================================================================== */
 
-import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import api from '../api/client'
 import type { FeedListing, FeedSection, PortalDispensary } from '../types'
 import { t, radius, font, categoryColor, alpha } from '../theme'
 import { FeedState, Pressable, Skeleton, Pill, ProductImage } from './ui'
 import { CATEGORY_EMOJI, productKey } from './browse'
 import { formatDist, formatDollars, haversineMi } from '../utils/format'
+import { readOne, useFilterParams, useScrollMemory, writeOne } from '../utils/browseState'
 
 /** How much of each store's shelf a section shows before "see all". */
 const PER_DISPENSARY = 12
@@ -34,7 +35,10 @@ interface Props {
 export default function HomeFeed({ onOpenListing, onOpenDispensary, onOpenProduct }: Props) {
   const [sections, setSections] = useState<FeedSection[] | null>(null)
   const [preferred, setPreferred] = useState<PortalDispensary[] | null>(null)
-  const [category, setCategory] = useState<string | null>(null)
+  // In the URL so a Back from a listing lands on the filtered feed.
+  const [initialParams] = useSearchParams()
+  const [category, setCategory] = useState<string | null>(() => readOne(initialParams, 'category'))
+  const scrollRef = useRef<HTMLDivElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [picking, setPicking] = useState(false)
 
@@ -70,6 +74,9 @@ export default function HomeFeed({ onOpenListing, onOpenDispensary, onOpenProduc
       .catch(() => setCategories([]))
   }, [])
 
+  useFilterParams({ category: writeOne(category) })
+  useScrollMemory(scrollRef, sections != null && sections.length > 0)
+
   if (error) {
     return (
       <div style={{ height: '100dvh', background: t.bg }}>
@@ -93,7 +100,7 @@ export default function HomeFeed({ onOpenListing, onOpenDispensary, onOpenProduc
   }
 
   return (
-    <div style={{ height: 'calc(100dvh - 64px)', overflowY: 'auto', background: t.bg }}>
+    <div ref={scrollRef} style={{ height: 'calc(100dvh - 64px)', overflowY: 'auto', background: t.bg }}>
       <div style={{ padding: '22px 16px 6px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
         <div style={{ minWidth: 0 }}>
           <div style={{ color: t.text1, fontWeight: font.weight.heavy, fontSize: font.size.hero, letterSpacing: '-0.02em' }}>

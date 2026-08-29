@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import type { CartItem, DispensaryListing } from '../types'
 import { t, radius, font, categoryColor, alpha } from '../theme'
+import { useScrollMemory } from '../utils/browseState'
 import { Pressable, Pill, FeedState, Skeleton } from './ui'
 
 const CATEGORY_EMOJI: Record<string, string> = {
@@ -61,6 +62,8 @@ export default function DispensaryListings({
   const [searchInput, setSearchInput] = useState(() => searchParams.get('q') ?? '')
   const [searchFocus, setSearchFocus] = useState(false)
   const [distanceMi, setDistanceMi] = useState<number | null>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  useScrollMemory(scrollRef, listings.length > 0)
   const offset = useRef(0)
   const LIMIT = 100
 
@@ -189,7 +192,7 @@ export default function DispensaryListings({
   }
 
   return (
-    <div style={{ height: 'calc(100dvh - 64px)', overflowY: 'auto', background: t.bg }}>
+    <div ref={scrollRef} style={{ height: 'calc(100dvh - 64px)', overflowY: 'auto', background: t.bg }}>
 
       {/* Banner */}
       <div style={{ position: 'relative', height: 160, background: t.surface1 }}>

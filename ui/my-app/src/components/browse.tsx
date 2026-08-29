@@ -23,7 +23,8 @@ export const CATEGORY_EMOJI: Record<string, string> = {
   preroll: '🌿', tincture: '🧪', tinctures: '🧪', topical: '🧴', merch: '🛍️', other: '📦',
 }
 
-export type SortKey = 'featured' | 'nearest' | 'price-asc' | 'price-desc' | 'name'
+export const SORT_KEYS = ['featured', 'nearest', 'price-asc', 'price-desc', 'name'] as const
+export type SortKey = typeof SORT_KEYS[number]
 
 export type SortOption = { key: SortKey; label: string; needsLocation?: boolean }
 

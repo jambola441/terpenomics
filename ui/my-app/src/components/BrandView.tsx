@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import api from '../api/client'
 import type { PortalBrandDetail, PortalBrandProduct, PortalBrandOffering } from '../types'
 import { t, radius, font, alpha, categoryColor } from '../theme'
 import { FeedState, Pressable, CategoryTag } from './ui'
 import { haversineMi, formatDist, formatDollars } from '../utils/format'
+import { readEnum, readOne, useFilterParams, useScrollMemory, writeOne } from '../utils/browseState'
 
 function FilterChip({ label, active, onClick, color }: {
   label: string
@@ -41,7 +43,8 @@ interface BrandViewProps {
   onOpenProduct: (productKey: string) => void
 }
 
-type BrandSort = 'featured' | 'nearest' | 'price-asc' | 'price-desc'
+const BRAND_SORTS = ['featured', 'nearest', 'price-asc', 'price-desc'] as const
+type BrandSort = typeof BRAND_SORTS[number]
 
 type EnrichedProduct = {
   product: PortalBrandProduct
@@ -55,15 +58,35 @@ export default function BrandView({ brandName, onBack, onOpenProduct }: BrandVie
   const [brand, setBrand] = useState<PortalBrandDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [category, setCategory] = useState<string | null>(null)
-  const [sort, setSort] = useState<BrandSort>('featured')
+  const [initialParams] = useSearchParams()
+  const [category, setCategory] = useState<string | null>(() => readOne(initialParams, 'category'))
+  const [sort, setSort] = useState<BrandSort>(
+    () => readEnum(initialParams, 'sort', BRAND_SORTS, 'featured'),
+  )
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  useFilterParams({
+    category: writeOne(category),
+    sort: sort === 'featured' ? [] : [sort],
+  })
+  useScrollMemory(scrollRef, brand != null)
   const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(null)
+
+  // Moving to a different brand clears the controls — its categories are not
+  // this one's. Skipped on the mount that follows a Back, where they came from
+  // the URL and clearing them would throw away the shopper's place.
+  const previousBrand = useRef(brandName)
+  useEffect(() => {
+    if (previousBrand.current === brandName) return
+    previousBrand.current = brandName
+    setCategory(null)
+    setSort('featured')
+    scrollRef.current?.scrollTo({ top: 0 })
+  }, [brandName])
 
   useEffect(() => {
     setLoading(true)
     setError(null)
-    setCategory(null)
-    setSort('featured')
     api.portal.getBrand(brandName)
       .then(setBrand)
       .catch(() => setError('Failed to load brand'))
@@ -138,7 +161,7 @@ export default function BrandView({ brandName, onBack, onOpenProduct }: BrandVie
   }, [enriched, category, sort])
 
   return (
-    <div style={{ height: '100dvh', overflowY: 'auto', background: t.bg }}>
+    <div ref={scrollRef} style={{ height: '100dvh', overflowY: 'auto', background: t.bg }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '20px 16px 12px' }}>
         <button
