@@ -742,23 +742,69 @@ def plantbatches_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
     ctx.created["veg_plant_tags"] = [starting_tag, second_tag]
 
 
+def _flowering_plants(client: MetrcClient, ctx: Context, needed: int = 3) -> list:
+    """Flowering plants for the Plants tab, growing some if there are none.
+
+    The PlantBatches tab moves its plants to Vegetative, because that is what
+    its step 3 asks for, and destroys the remainder — so it leaves nothing
+    flowering behind. A freshly reset sandbox has none either. Rather than
+    depend on whatever happens to be in the facility, grow a batch and phase it
+    to Flowering as setup.
+    """
+    def current() -> list:
+        record = client.get(
+            "/plants/v2/flowering", params=None,
+            step="discover flowering", sheet="_reference", raise_on_error=False,
+        )
+        return [p for p in rows(record.response_body) if p.get("Label")]
+
+    plants = current()
+    if len(plants) >= needed:
+        return plants
+
+    batch = f"TP Flowering {ctx.suffix}"
+    count = needed + 1
+    client.post(
+        "/plantbatches/v2/plantings",
+        body=[{
+            "Name": batch, "Type": "Clone", "Count": count,
+            "Strain": ctx.created["strain_name"],
+            "Location": ctx.created.get("location_name"), "Sublocation": None,
+            "PatientLicenseNumber": None, "ActualDate": today(),
+            "SourcePlantBatches": None,
+        }],
+        step="grow flowering batch", sheet="_reference",
+    )
+    # Each plant consumes a tag, assigned sequentially from StartingTag.
+    starting = ctx.take_plant_tag()
+    for _ in range(count - 1):
+        ctx.take_plant_tag()
+    client.post(
+        "/plantbatches/v2/growthphase",
+        body=[{
+            "Name": batch, "Count": count, "StartingTag": starting,
+            "GrowthPhase": "Flowering",
+            "NewLocation": ctx.created.get("location_name"), "NewSublocation": None,
+            "GrowthDate": today(), "PatientLicenseNumber": None,
+        }],
+        step="phase to flowering", sheet="_reference",
+    )
+
+    plants = current()
+    if len(plants) < needed:
+        raise RuntimeError(
+            f"needed {needed} flowering plants, have {len(plants)} after growing "
+            f"batch {batch!r}"
+        )
+    return plants
+
+
 def plants_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
     sheet = "Plants"
     location = ctx.created.get("location_name")
     strain = ctx.created["strain_name"]
 
-    flowering = client.get(
-        "/plants/v2/flowering",
-        params=None,
-        step="discover flowering", sheet="_reference",
-        raise_on_error=False,
-    )
-    plants = [p for p in rows(flowering.response_body) if p.get("Label")]
-    if len(plants) < 3:
-        raise RuntimeError(
-            f"need at least 3 flowering plants, found {len(plants)}. Move a batch "
-            "to Flowering via POST /plantbatches/v2/growthphase first."
-        )
+    plants = _flowering_plants(client, ctx, needed=3)
 
     moved = client.put(
         "/plants/v2/location",
