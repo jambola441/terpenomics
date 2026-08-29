@@ -369,6 +369,12 @@ export type PortalBrandProduct = {
   offerings: PortalBrandOffering[]
 }
 
+/** A product and every store carrying it, independent of brand.
+ *  `brand` is null for products the stores publish unbranded. */
+export type PortalProductDetail = PortalBrandProduct & {
+  brand: string | null
+}
+
 export type PortalBrandDetail = {
   name: string
   image_url: string | null

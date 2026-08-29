@@ -27,10 +27,11 @@ const PER_DISPENSARY = 12
 interface Props {
   onOpenListing: (dispensaryId: string, listingId: string) => void
   onOpenDispensary: (dispensaryId: string) => void
-  onOpenBrandProduct: (brand: string, productKey: string) => void
+  /** Open the product page; `brand` is null when the listing has no brand. */
+  onOpenProduct: (brand: string | null, productKey: string) => void
 }
 
-export default function HomeFeed({ onOpenListing, onOpenDispensary, onOpenBrandProduct }: Props) {
+export default function HomeFeed({ onOpenListing, onOpenDispensary, onOpenProduct }: Props) {
   const [sections, setSections] = useState<FeedSection[] | null>(null)
   const [preferred, setPreferred] = useState<PortalDispensary[] | null>(null)
   const [category, setCategory] = useState<string | null>(null)
@@ -144,7 +145,7 @@ export default function HomeFeed({ onOpenListing, onOpenDispensary, onOpenBrandP
               category={category}
               onOpenListing={onOpenListing}
               onOpenDispensary={onOpenDispensary}
-              onOpenBrandProduct={onOpenBrandProduct}
+              onOpenProduct={onOpenProduct}
             />
           ))}
           <div style={{ height: 28 }} />
@@ -156,12 +157,12 @@ export default function HomeFeed({ onOpenListing, onOpenDispensary, onOpenBrandP
 
 /* ── One store's slice of the feed ─────────────────────────────────────────── */
 
-function StoreSection({ section, category, onOpenListing, onOpenDispensary, onOpenBrandProduct }: {
+function StoreSection({ section, category, onOpenListing, onOpenDispensary, onOpenProduct }: {
   section: FeedSection
   category: string | null
   onOpenListing: (dispensaryId: string, listingId: string) => void
   onOpenDispensary: (dispensaryId: string) => void
-  onOpenBrandProduct: (brand: string, productKey: string) => void
+  onOpenProduct: (brand: string | null, productKey: string) => void
 }) {
   const { dispensary, listings, total } = section
   const more = total - listings.length
@@ -213,17 +214,13 @@ function StoreSection({ section, category, onOpenListing, onOpenDispensary, onOp
               key={listing.id}
               listing={listing}
               onOpen={() => onOpenListing(dispensary.id, listing.id)}
-              onOpenBrand={
-                listing.scraped_brand
-                  ? () => onOpenBrandProduct(listing.scraped_brand as string, productKey({
-                      category: listing.scraped_category,
-                      subtype: listing.subtype,
-                      product_line: listing.product_line,
-                      strain: listing.strain,
-                      variant: listing.variant,
-                    }))
-                  : undefined
-              }
+              onOpenBrand={() => onOpenProduct(listing.scraped_brand, productKey({
+                category: listing.scraped_category,
+                subtype: listing.subtype,
+                product_line: listing.product_line,
+                strain: listing.strain,
+                variant: listing.variant,
+              }))}
             />
           ))}
           {more > 0 && (
