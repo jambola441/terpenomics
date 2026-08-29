@@ -167,7 +167,9 @@ def cmd_full(args, config: MetrcConfig, recorder: Recorder) -> int:
     ctx.facilities = [
         (f.get("License") or {}).get("Number") or f.get("LicenseNumber") for f in facilities
     ]
-    print(f"grow={licenses['grow']}  sales={licenses['sales']}")
+    ctx.counterparty = args.recipient_license
+    print(f"grow={licenses['grow']}  sales={licenses['sales']}"
+          + (f"  recipient={ctx.counterparty}" if ctx.counterparty else ""))
 
     # The sales tabs need sellable inventory at the dispensary, which is a
     # different facility from the one bootstrap prepared.
@@ -268,6 +270,10 @@ def main(argv=None) -> int:
     p.add_argument("--environment", default="", help="environment.json from bootstrap")
     p.add_argument("--only", default="", help="comma-separated tab names")
     p.add_argument("--sales-license", default="", help="facility for the sales tabs")
+    p.add_argument(
+        "--recipient-license", default="",
+        help="counterparty licensee for transfers (e.g. a partner's facility)",
+    )
     p.set_defaults(fn=cmd_full)
 
     p = sub.add_parser("fill", help="write a recorded run into the workbook")

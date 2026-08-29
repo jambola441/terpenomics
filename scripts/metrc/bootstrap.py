@@ -156,7 +156,7 @@ def seed_inventory(client: MetrcClient, ctx, count: int = 10) -> list:
     but count-based categories. Naming an item explicitly reaches those.
     """
     from .steps import (
-        build_item_body, ensure_brand, load_reference, _pick, _pick_category,
+        build_item_body, ensure_brand, load_reference, _names, _pick, _pick_category,
     )
 
     try:
