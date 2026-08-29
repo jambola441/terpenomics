@@ -30,6 +30,32 @@ wall-clock ceiling, a heartbeat file and a non-zero exit on failure.
 `scripts/scrape_worker.py` runs that on a daily schedule and is what the Render
 worker is meant to execute.
 
+## The sequence, as of _ENRICH_VERSION 6
+
+The database was reset on 2026-08-26 (listings 0) and the variant-aware index is
+in place, so this is a clean load with nothing to reconcile against.
+
+```bash
+git pull                                          # need >= f06e52c
+
+# optional: keep 18,134 of 19,432 cached answers instead of re-enriching all
+tar xzf enrich_cache_v5.tar.gz                    # if restoring from a handoff
+cd data/enrich_cache && for f in *.haiku-or.json; do mv "$f" "${f%.haiku-or.json}.json"; done
+cd ../.. && python scripts/migrate_enrich_cache_v6.py --run
+
+python scripts/scrape.py --all --parallel         # scrape + enrich + import
+```
+
+`migrate_enrich_cache_v6.py` exists because the version stamp is per-entry but not
+per-category, so bumping 5 -> 6 for a merch-only change invalidates everything.
+The v5 -> v6 diff touches merch alone, so a non-merch v5 answer is still what v6
+would produce: it restamps those and drops the 1,298 merch entries, which
+re-enrich for about $0.40 instead of $5-6 for the whole fleet. That reasoning is
+specific to this bump — a later one needs its own.
+
+Skip the migration and `scrape.py` just re-enriches everything, which is equally
+correct, only slower and dearer.
+
 ## Landing this session's data
 
 The CSVs are already enriched, so importing them costs nothing and skips ~11 minutes
