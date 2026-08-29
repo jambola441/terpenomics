@@ -102,19 +102,70 @@ _TOKENS: dict[str, OrderedDict] = {
 # merch, `strain` means "the variant of this thing" rather than a cultivar.
 # ---------------------------------------------------------------------------
 
-# Pack count is the purchasable unit, so it wins when a name carries both: "Pink
-# 98mm Cones 20pk" and "... 50pk" are different products, while 98mm is a spec
-# both share.
-_MERCH_PACK = re.compile(r"\b(\d+\s*(?:pk|pack|ct|count))\b", re.I)
+# Merch variant is a composite of size and pack, because for accessories neither
+# alone is enough. Cones differ by pack ("Pink 98mm Cones 20pk" vs "... 50pk");
+# papers differ by width, since a brand ships its whole range at one count
+# ("Raw ... 1 1/4 - 33ct" vs "... KS - 33ct"). Emitting both separates each case
+# without needing a per-subtype rule.
 
-# Physical size, used only when there is no pack count.
+# Width is normalised because one brand writes it several ways in the same menu —
+# RAW has "KS Slim", "King Size Slim" and "Slim KS" for the same paper, and left
+# raw those split one product three ways. "Slim" alone is a thinness, not a width,
+# so it is deliberately not a key; "KS Wide" is a genuinely different width.
+_MERCH_WIDTH_ALIASES = [
+    (re.compile(r"\bks\s*wide\b|\bking\s*size\s*wide\b", re.I), "ks wide"),
+    (re.compile(r"\bking\s*size\b|\bkingsize\b|\bks\b", re.I),   "king size"),
+    (re.compile(r"\b1\s*1/4\b|\b1\.25\b", re.I),                  "1 1/4"),
+    (re.compile(r"\b1\s*1/2\b|\b1\.5\b", re.I),                   "1 1/2"),
+    (re.compile(r"\bsingle\s*wide\b", re.I),                       "single wide"),
+    (re.compile(r"\b100s\b", re.I),                                 "100s"),
+]
+
+# Free-form dimensions kept verbatim — 98mm, 110mm, 4".
 _MERCH_DIM = re.compile(
-    r"\b(king\s*size"
-    r"|1\s*1/4|1\.25"                      # paper widths
-    r"|\d+\s*mm"                           # 98mm, 110mm
-    r"|\d+(?:\.\d+)?\s*(?:inch|in)\b"     # 4 inch
-    r')|(\d+(?:\.\d+)?\s*(?:"|\u201d))',   # 4" — no \b, a quote is not a word char
+    r'\b(\d+\s*mm)\b|\b(\d+(?:\.\d+)?\s*(?:inch|in))\b|(\d+(?:\.\d+)?\s*(?:"|\u201d))',
     re.I)
+
+_MERCH_PACK = re.compile(r"\b(\d+)\s*(pk|pack|ct|count|leaves)\b", re.I)
+
+
+def _merch_size(name: str) -> str:
+    """Normalised width, else a verbatim dimension. '' when neither is present."""
+    for pat, canon in _MERCH_WIDTH_ALIASES:
+        if pat.search(name or ""):
+            return canon
+    m = _MERCH_DIM.search(name or "")
+    if not m:
+        return ""
+    hit = next(g for g in m.groups() if g)
+    return re.sub(r"\s+", "", hit).lower()
+
+
+def _merch_pack(name: str) -> str:
+    """Pack count as '<n>ct' — 'leaves', 'count' and 'ct' all mean the same thing,
+    so they collapse rather than splitting one product across three spellings."""
+    m = _MERCH_PACK.search(name or "")
+    if not m:
+        return ""
+    n, unit = m.group(1), m.group(2).lower()
+    return f"{n}pk" if unit in ("pk", "pack") else f"{n}ct"
+
+
+# A booklet sold with filter tips is a different SKU at a different price, and it
+# is otherwise identical in name to the plain one — so without this, every "w/Tips"
+# paper merges into its own base product.
+_MERCH_TIPS = re.compile(
+    r"w/\s*(?:pre[\s-]*rolled\s+)?tips?\b|\+\s*tips?\b|\bwith\s+tips?\b", re.I)
+
+
+def merch_variant(name: str) -> str:
+    """Size, pack and whether tips are included — '1 1/4 33ct', '98mm 20pk',
+    'king size 24ct w/tips'. '' when the name carries none of them."""
+    parts = [_merch_size(name), _merch_pack(name)]
+    if _MERCH_TIPS.search(name or ""):
+        parts.append("w/tips")
+    return " ".join(p for p in parts if p)
+
 
 _MERCH_COLOR = re.compile(
     r"\b(pink|purple|green|blue|red|black|white|gold|silver|onyx|orange|yellow"
@@ -124,17 +175,6 @@ _MERCH_COLOR = re.compile(
 _MERCH_FLAVOR = re.compile(
     r"\b(russian\s+cream|honey\s+lemon|black\s+tea|peach|mango|grape|cherry"
     r"|vanilla|mint|banana|strawberry|blueberry|watermelon)\b", re.I)
-
-
-def merch_variant(name: str) -> str:
-    """Pack count, else physical size — '20pk', 'king size', '98mm'. '' when absent."""
-    m = _MERCH_PACK.search(name or "")
-    if not m:
-        m = _MERCH_DIM.search(name or "")
-    if not m:
-        return ""
-    hit = next(g for g in m.groups() if g)
-    return re.sub(r"\s+", " ", hit).strip().lower()
 
 
 def merch_strain(name: str) -> str | None:
@@ -240,7 +280,11 @@ _CACHE_DIR = _DATA_DIR / "enrich_cache"
 #       every accessory was subtype "merch" with strain and variant blank, so the
 #       products VIEW grouped merch on brand alone — 1,514 listings collapsed into
 #       223 product rows.
-_ENRICH_VERSION = 6
+#   7 — merch variant is a composite of size and pack ("1 1/4 33ct"), with width
+#       normalised (KS / King Size / Slim KS were splitting one paper three ways).
+#       Papers differ by width at a constant count, cones by count at one size, so
+#       neither field alone separates both.
+_ENRICH_VERSION = 7
 
 
 def _cache_key(row: dict) -> str | None:
