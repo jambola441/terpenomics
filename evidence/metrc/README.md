@@ -57,6 +57,15 @@ The single exception is `POST /sandbox/v2/integrator/setup`, which takes the
 vendor key alone in an `x-metrc-key` header — this is how you mint a user key
 without a licensee partner.
 
+## Credentials
+
+Keys live in `metrc.env` (git-ignored) and are read from the environment. The
+workbook's CompanyInformation tab asks for both API keys, so a completed
+workbook contains live credentials — `evidence/metrc/Evaluation_*.xlsx` and
+`company.json` are git-ignored for that reason. Copy `company.example.json` to
+`company.json` for the contact fields; leave the key fields out, the runner
+fills them from the environment at fill time.
+
 ## Workflow
 
 ```bash
