@@ -138,7 +138,9 @@ def _merch_size(name: str) -> str:
     if not m:
         return ""
     hit = next(g for g in m.groups() if g)
-    return re.sub(r"\s+", "", hit).lower()
+    # collapse runs of whitespace but keep the separator — "2 inch", not "2inch",
+    # so a recomputed value matches one already stored
+    return re.sub(r"\s+", " ", hit).strip().lower()
 
 
 def _merch_pack(name: str) -> str:
