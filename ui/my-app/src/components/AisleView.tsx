@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import type { CartItem, DispensaryListing } from '../types'
@@ -6,9 +7,12 @@ import { t, font, categoryColor, alpha } from '../theme'
 import { FeedState } from './ui'
 import {
   ActiveChip, BrowseCard, BrowseToolbar, CATEGORY_EMOJI, Dot, FacetChip, FilterSheet,
-  GridSkeleton, SORTS_NO_LOCATION, SearchField, Stat, formatDollarsShort, variantWeight,
+  GridSkeleton, SORTS_NO_LOCATION, SORT_KEYS, SearchField, Stat, formatDollarsShort, variantWeight,
   type BrowseCardItem, type SheetGroup, type SortKey,
 } from './browse'
+import {
+  readEnum, readRange, readSet, useFilterParams, useScrollMemory, writeOne, writeRange, writeSet,
+} from '../utils/browseState'
 
 /** Aisles a shopper can switch to from within one dispensary. */
 const CATEGORIES = ['flower', 'preroll', 'vaporizers', 'edible', 'concentrate', 'tinctures', 'topical', 'merch', 'other']
@@ -87,27 +91,46 @@ export default function AisleView({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const [search, setSearch] = useState('')
+  // Seeded from the URL: a Back from a listing must land on the aisle the
+  // shopper had narrowed, not a fresh one.
+  const [initialParams] = useSearchParams()
+  const [search, setSearch] = useState(() => initialParams.get('q') ?? '')
   const [searchFocus, setSearchFocus] = useState(false)
-  const [brand, setBrand] = useState<Set<string>>(new Set())
-  const [subtype, setSubtype] = useState<Set<string>>(new Set())
-  const [variant, setVariant] = useState<Set<string>>(new Set())
-  const [price, setPrice] = useState<[number, number] | null>(null)
-  const [sort, setSort] = useState<SortKey>('featured')
+  const [brand, setBrand] = useState<Set<string>>(() => readSet(initialParams, 'brand'))
+  const [subtype, setSubtype] = useState<Set<string>>(() => readSet(initialParams, 'subtype'))
+  const [variant, setVariant] = useState<Set<string>>(() => readSet(initialParams, 'variant'))
+  const [price, setPrice] = useState<[number, number] | null>(() => readRange(initialParams, 'price'))
+  const [sort, setSort] = useState<SortKey>(() => readEnum(initialParams, 'sort', SORT_KEYS, 'featured'))
   const [sheet, setSheet] = useState(false)
 
   const c = categoryColor(category)
   const emoji = CATEGORY_EMOJI[category] ?? '📦'
   const scrollRef = useRef<HTMLDivElement>(null)
 
+  useFilterParams({
+    q: writeOne(search),
+    brand: writeSet(brand),
+    subtype: writeSet(subtype),
+    variant: writeSet(variant),
+    price: writeRange(price),
+    sort: sort === 'featured' ? [] : [sort],
+  })
+  useScrollMemory(scrollRef, all.length > 0)
+  const previousAisle = useRef(dispensaryId + '/' + category)
+
   // Load the whole aisle once (paginated; API caps limit at 100), then
   // filter/sort/facet entirely on the client for instant UX.
   useEffect(() => {
     let cancelled = false
     setLoading(true); setError(null); setAll([])
-    setSearch(''); setBrand(new Set()); setSubtype(new Set()); setVariant(new Set())
-    setPrice(null); setSort('featured')
-    scrollRef.current?.scrollTo({ top: 0 })
+    // Only a move to a different aisle clears the controls; on the mount that
+    // follows a Back they came from the URL and must stand.
+    if (previousAisle.current !== dispensaryId + '/' + category) {
+      previousAisle.current = dispensaryId + '/' + category
+      setSearch(''); setBrand(new Set()); setSubtype(new Set()); setVariant(new Set())
+      setPrice(null); setSort('featured')
+      scrollRef.current?.scrollTo({ top: 0 })
+    }
 
     ;(async () => {
       const PAGE = 100

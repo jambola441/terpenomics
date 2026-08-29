@@ -8,15 +8,18 @@
    ========================================================================== */
 
 import { useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import api from '../api/client'
 import type { PortalBrand } from '../types'
 import { t, radius, font, alpha } from '../theme'
 import { FeedState, Pressable, Skeleton } from './ui'
 import { SearchField } from './browse'
+import { readEnum, useFilterParams, useScrollMemory, writeOne } from '../utils/browseState'
 
 const PAGE = 48
 
-type Sort = 'listings' | 'name'
+const SORTS = ['listings', 'name'] as const
+type Sort = typeof SORTS[number]
 
 interface Props {
   onOpenBrand: (name: string) => void
@@ -29,10 +32,18 @@ export default function BrandsPage({ onOpenBrand }: Props) {
   const [exhausted, setExhausted] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const [input, setInput] = useState('')
-  const [query, setQuery] = useState('')
+  const [initialParams] = useSearchParams()
+  const [input, setInput] = useState(() => initialParams.get('q') ?? '')
+  const [query, setQuery] = useState(() => initialParams.get('q') ?? '')
   const [focused, setFocused] = useState(false)
-  const [sort, setSort] = useState<Sort>('listings')
+  const [sort, setSort] = useState<Sort>(() => readEnum(initialParams, 'sort', SORTS, 'listings'))
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  useFilterParams({
+    q: writeOne(input),
+    sort: sort === 'listings' ? [] : [sort],
+  })
+  useScrollMemory(scrollRef, brands.length > 0)
 
   // Debounced: the brand list is a grouped aggregate, so a request per keystroke
   // is a scan per keystroke.
@@ -93,7 +104,7 @@ export default function BrandsPage({ onOpenBrand }: Props) {
   }
 
   return (
-    <div style={{ height: 'calc(100dvh - 64px)', overflowY: 'auto', background: t.bg }}>
+    <div ref={scrollRef} style={{ height: 'calc(100dvh - 64px)', overflowY: 'auto', background: t.bg }}>
       <div style={{ padding: '22px 16px 6px' }}>
         <div style={{ color: t.text1, fontWeight: font.weight.heavy, fontSize: font.size.hero, letterSpacing: '-0.02em' }}>
           Brands
