@@ -59,7 +59,7 @@ export default function ListingDetailView({ dispensaryId, listingId, onProductCl
       dispensaryId: listing.dispensary_id,
       dispensarySlug: listing.dispensary_slug,
       dispensaryName: listing.dispensary_name,
-      name: listing.scraped_name ?? '—',
+      name: listing.display_name,
       brand: listing.scraped_brand ?? null,
       variant: listing.variant ?? null,
       price_cents: listing.price_cents ?? null,
@@ -93,7 +93,7 @@ export default function ListingDetailView({ dispensaryId, listingId, onProductCl
         <div style={{ position: 'relative', width: '100%', paddingTop: '72%', background: t.tile }}>
           <img
             src={listing.image_url}
-            alt={listing.scraped_name ?? ''}
+            alt={listing.display_name}
             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', padding: 24, boxSizing: 'border-box' }}
             onError={e => { (e.target as HTMLImageElement).parentElement!.style.display = 'none' }}
           />
@@ -114,7 +114,7 @@ export default function ListingDetailView({ dispensaryId, listingId, onProductCl
 
         {/* Name */}
         <div style={{ color: t.text1, fontSize: font.size.display, fontWeight: font.weight.heavy, lineHeight: 1.2, marginBottom: 6, letterSpacing: '-0.01em' }}>
-          {listing.scraped_name ?? '—'}
+          {listing.display_name}
         </div>
 
         {/* Brand */}

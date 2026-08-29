@@ -13,9 +13,10 @@ import {
 const PAGE = 200
 const MAX_ROWS = 1000
 
-/** The `products` view has no display name — build one from what identifies it. */
+/** Named server-side like every other listing surface, so search results and
+ *  the pages they open agree on what a product is called. */
 function displayName(p: PortalProduct): string {
-  return p.strain || p.product_line || p.subtype || p.category || '—'
+  return p.display_name
 }
 
 type Filters = {

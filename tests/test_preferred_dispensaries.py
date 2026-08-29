@@ -53,9 +53,13 @@ def world():
         session.commit()
 
         session.add_all([
+            # As a store actually publishes it: brand repeated, potency,
+            # classification, size, format and the scraper's own debris.
             Listing(
-                dispensary_id=bergen.id, scraped_name="Sunset Sherbet",
+                dispensary_id=bergen.id,
+                scraped_name="Sunset Sherbet -Indica- 88.5% THC | 3.5g Flower | Aeris  -ii3 front",
                 scraped_brand="Aeris", scraped_category="flower", variant="3.5g",
+                strain="Sunset Sherbet",
                 price_cents=4500, in_stock=True, is_active=True,
             ),
             Listing(
@@ -181,7 +185,7 @@ def test_feed_shows_only_stock_you_can_buy(world):
     client.post(f"/me/preferred-dispensaries/{world['bergen_id']}")
 
     section = client.get("/me/feed").json()["sections"][0]
-    names = {listing["scraped_name"] for listing in section["listings"]}
+    names = {listing["display_name"] for listing in section["listings"]}
     assert names == {"Sunset Sherbet", "Blue Dream Cart"}
     assert section["total"] == 2
 
@@ -192,11 +196,24 @@ def test_feed_filters_by_category(world):
     client.post(f"/me/preferred-dispensaries/{world['atlantic_id']}")
 
     sections = client.get("/me/feed", params={"category": "cart"}).json()["sections"]
-    assert [listing["scraped_name"] for listing in sections[0]["listings"]] == ["Blue Dream Cart"]
+    assert [listing["display_name"] for listing in sections[0]["listings"]] == ["Blue Dream Cart"]
     # Atlantic stocks no carts, but the shopper still follows it, so the empty
     # section stays rather than the store vanishing from their feed.
     assert sections[1]["listings"] == []
     assert sections[1]["total"] == 0
+
+
+def test_feed_names_listings_for_a_shopper_not_a_catalogue(world):
+    client = _client()
+    client.post(f"/me/preferred-dispensaries/{world['bergen_id']}")
+
+    listings = client.get("/me/feed").json()["sections"][0]["listings"]
+    dirty = next(l for l in listings if l["scraped_name"].startswith("Sunset Sherbet -Indica-"))
+
+    assert dirty["display_name"] == "Sunset Sherbet"
+    # The raw string stays on the payload: it is what search matches against and
+    # the only provenance for what the store actually published.
+    assert dirty["scraped_name"] == "Sunset Sherbet -Indica- 88.5% THC | 3.5g Flower | Aeris  -ii3 front"
 
 
 def test_feed_caps_each_section(world):

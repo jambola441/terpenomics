@@ -185,6 +185,19 @@ def test_items_are_snapshotted_against_later_scrapes(client, world):
     assert again["total_amount_cents"] == 4500
 
 
+def test_the_snapshot_takes_the_shopper_facing_name(client, world):
+    """What the customer ordered under, not the store's catalogue string."""
+    with Session(engine) as session:
+        listing = session.get(Listing, world["flower_id"])
+        listing.scraped_name = "Sunset Sherbet -Indica- 88.5% THC | 3.5g Flower | Aeris  -ii3 front"
+        listing.strain = "Sunset Sherbet"
+        session.add(listing)
+        session.commit()
+
+    body = client.post("/me/orders", json=_order_body(world)).json()
+    assert body["items"][0]["name"] == "Sunset Sherbet"
+
+
 def test_repeated_listings_merge_into_one_line(client, world):
     body = client.post("/me/orders", json={
         "dispensary_id": str(world["shop_id"]),

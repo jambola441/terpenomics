@@ -253,7 +253,7 @@ function FeedCard({ listing, onOpen, onOpenBrand }: {
   onOpenBrand?: () => void
 }) {
   const color = categoryColor(listing.scraped_category)
-  const name = listing.scraped_name || listing.strain || listing.product_line || '—'
+  const name = listing.display_name
 
   return (
     <Pressable
