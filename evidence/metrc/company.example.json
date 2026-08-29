@@ -1,0 +1,17 @@
+{
+  "_comment": "Copy to company.json and fill in. company.json is git-ignored because the workbook asks for live API keys. Leave the two key fields out entirely — the runner fills them from METRC_VENDOR_KEY and METRC_USER_KEY at fill time.",
+  "Integrator Company Name": "",
+  "Company Web Site": "",
+  "Company Telephone Number": "",
+  "Company Email Contact": "",
+  "Company Address": "",
+  "Company City and State": "",
+  "Company Zip Code": "",
+  "Primary Contact Name": "",
+  "Primary Contact Email": "",
+  "Primary Contact Telephone Number": "",
+  "Secondary Contact Name": "",
+  "Secondary Contact Email": "",
+  "Secondary Contact Telephone Number": "",
+  "Name of Vendor Software you are developing": ""
+}

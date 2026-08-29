@@ -224,10 +224,19 @@ def cmd_fill(args, config: MetrcConfig, recorder: Recorder) -> int:
                     replay.records.append(CallRecord(**json.loads(line)))
     print(f"merged {len(run_ids)} run(s), {len(replay.records)} calls")
 
-    company = None
+    company = {}
     if args.company and os.path.exists(args.company):
         with open(args.company, encoding="utf-8") as fh:
-            company = json.load(fh)
+            company = {
+                k: v for k, v in json.load(fh).items()
+                if not k.startswith("_") and str(v).strip()
+            }
+    # The workbook asks for both API keys. They come from the environment at
+    # fill time so they never need to live in a file that could be committed.
+    if config.vendor_key:
+        company["Vendor Key Used"] = config.vendor_key
+    if config.user_key:
+        company["User Key Used"] = config.user_key
 
     written = write_results(src, args.out, replay, company=company)
     for sheet, count in written.items():
