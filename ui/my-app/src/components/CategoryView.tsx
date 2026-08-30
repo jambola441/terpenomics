@@ -11,7 +11,7 @@ import {
 } from '../utils/browseState'
 import { FeedState } from './ui'
 import {
-  BrowseCard, BrowseToolbar, CATEGORY_EMOJI, Dot, FacetChip, FilterSheet, GridSkeleton,
+  BrowseCard, BrowseGrid, BrowseToolbar, CATEGORY_EMOJI, Dot, FacetChip, FilterSheet, GridSkeleton,
   SORTS, SORT_KEYS, SearchField, Stat, ActiveChip, formatDollarsShort, haversineMi, productKey, variantWeight,
   type BrowseCardItem, type SheetGroup, type SortKey,
 } from './browse'
@@ -457,8 +457,8 @@ export default function CategoryView({ categoryName, onBack, onOpenProduct }: Pr
               style={{ minHeight: 260 }}
             />
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, padding: '10px 12px 96px' }}>
-              {sorted.map(e => (
+            <BrowseGrid items={sorted}>
+              {e => (
                 <BrowseCard
                   key={e.product.key}
                   item={toCard(e)}
@@ -466,8 +466,8 @@ export default function CategoryView({ categoryName, onBack, onOpenProduct }: Pr
                   suppressSubtype={categoryName}
                   onOpen={() => openProduct(e)}
                 />
-              ))}
-            </div>
+              )}
+            </BrowseGrid>
           )}
         </>
       )}

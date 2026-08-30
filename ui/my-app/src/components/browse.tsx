@@ -7,8 +7,9 @@
    Only the data source and which facets apply differ per screen.
    ========================================================================== */
 
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { t, radius, font, alpha } from '../theme'
+import { useRenderWindow } from '../utils/browseState'
 import { Pressable, Skeleton, Label, ProductImage } from './ui'
 import { formatDist, formatDollars, formatDollarsShort, haversineMi } from '../utils/format'
 
@@ -356,6 +357,76 @@ export function BrowseCard({ item, color, suppressSubtype, action, onOpen }: {
         )}
       </div>
     </Pressable>
+  )
+}
+
+/* ── Product grid ─────────────────────────────────────────────────────────── */
+
+/** Cards mounted per window. Two columns, so this is twenty rows — several
+ *  screens of runway ahead of the shopper at any moment. */
+export const GRID_PAGE = 40
+
+/**
+ * The two-column product grid, rendered a window at a time.
+ *
+ * `items` is the whole filtered list and stays whole: the toolbar count, the
+ * facet counts and the filter sheet all describe every match, not the part
+ * currently on screen. What is windowed is the *mounting*. A category runs to a
+ * few thousand products, and each card is a couple of dozen nodes and an image,
+ * so handing the browser all of them up front cost seconds of layout and
+ * thousands of image requests before the first card was legible — on the phones
+ * this is built for, it read as a hang.
+ *
+ * The window grows by a page whenever the sentinel below the grid comes within
+ * a screen or so of the viewport, which keeps the next cards mounted before the
+ * shopper reaches them.
+ */
+export function BrowseGrid<T>({ items, page = GRID_PAGE, resetKey, children }: {
+  items: T[]
+  page?: number
+  /** Change this when the list becomes a different list rather than a narrowed
+   *  one — a new search — and the window starts over at one page. Filters do
+   *  not qualify: they leave the shopper where they were on the page, and
+   *  collapsing the grid under them would jump the view. */
+  resetKey?: string
+  /** Renders one card. Must set a `key` — this is a list. */
+  children: (item: T) => ReactNode
+}) {
+  const { count, grow } = useRenderWindow(page, resetKey)
+  const hasMore = count < items.length
+  const shown = hasMore ? items.slice(0, count) : items
+
+  // Re-armed on every growth rather than built once: observing an element
+  // delivers an immediate callback with its current state, so a page that lands
+  // with the sentinel still in view grows again instead of stalling until the
+  // shopper scrolls. Growth is synchronous, so this settles in a frame or two —
+  // once the sentinel is pushed below the margin, or once the list runs out and
+  // the sentinel stops rendering at all.
+  const sentinel = useRef<HTMLDivElement>(null)
+  const growRef = useRef(grow)
+  growRef.current = grow
+  useEffect(() => {
+    const node = sentinel.current
+    if (!node) return
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0]?.isIntersecting) growRef.current()
+    }, { rootMargin: '600px' })
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [count, items.length])
+
+  return (
+    <>
+      <div style={{
+        display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10,
+        padding: hasMore ? '10px 12px 0' : '10px 12px 96px',
+      }}>
+        {shown.map(children)}
+      </div>
+      {hasMore && (
+        <div ref={sentinel} style={{ height: 96 }} aria-hidden />
+      )}
+    </>
   )
 }
 
