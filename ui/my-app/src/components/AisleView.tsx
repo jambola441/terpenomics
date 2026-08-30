@@ -6,7 +6,7 @@ import type { CartItem, DispensaryListing } from '../types'
 import { t, font, categoryColor, alpha } from '../theme'
 import { FeedState } from './ui'
 import {
-  ActiveChip, BrowseCard, BrowseToolbar, CATEGORY_EMOJI, Dot, FacetChip, FilterSheet,
+  ActiveChip, BrowseCard, BrowseGrid, BrowseToolbar, CATEGORY_EMOJI, Dot, FacetChip, FilterSheet,
   GridSkeleton, SORTS_NO_LOCATION, SORT_KEYS, SearchField, Stat, formatDollarsShort, variantWeight,
   type BrowseCardItem, type SheetGroup, type SortKey,
 } from './browse'
@@ -420,18 +420,19 @@ export default function AisleView({
               style={{ minHeight: 240 }}
             />
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, padding: '10px 12px 96px' }}>
-              {sorted.map(l => (
+            <BrowseGrid
+              items={sorted}
+              keyOf={l => l.id}
+              render={l => (
                 <BrowseCard
-                  key={l.id}
                   item={toCard(l)}
                   color={c}
                   suppressSubtype={category}
                   action={cartAction(l)}
                   onOpen={() => navigate(`/portal/map/${dispensaryId}/listings/${l.id}`)}
                 />
-              ))}
-            </div>
+              )}
+            />
           )}
         </>
       )}

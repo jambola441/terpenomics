@@ -277,6 +277,11 @@ export function ProductImage({
         <img
           src={showSrc}
           alt={alt}
+          // A browse grid holds hundreds of these. Left eager, the browser opens
+          // a connection and decodes a bitmap for every one of them at once —
+          // most for cards the shopper will never scroll to.
+          loading="lazy"
+          decoding="async"
           onError={() => setErrored(true)}
           style={{ width: '100%', height: '100%', objectFit: 'contain', padding: pad, boxSizing: 'border-box' }}
         />
@@ -284,6 +289,8 @@ export function ProductImage({
         <img
           src={fallbackImg}
           alt={alt}
+          loading="lazy"
+          decoding="async"
           style={{ width: '100%', height: '100%', objectFit: 'contain', padding: pad, boxSizing: 'border-box', opacity: 0.92 }}
         />
       ) : (

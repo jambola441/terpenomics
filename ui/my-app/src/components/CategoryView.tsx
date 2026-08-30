@@ -11,10 +11,11 @@ import {
 } from '../utils/browseState'
 import { FeedState } from './ui'
 import {
-  BrowseCard, BrowseToolbar, CATEGORY_EMOJI, Dot, FacetChip, FilterSheet, GridSkeleton,
+  BrowseCard, BrowseGrid, BrowseToolbar, CATEGORY_EMOJI, Dot, FacetChip, FilterSheet, GridSkeleton,
   SORTS, SORT_KEYS, SearchField, Stat, ActiveChip, formatDollarsShort, haversineMi, productKey, variantWeight,
   type BrowseCardItem, type SheetGroup, type SortKey,
 } from './browse'
+import { useDebounced } from '../hooks/useDebounced'
 
 /* ── Product enrichment ───────────────────────────────────────────────────── */
 
@@ -112,12 +113,17 @@ export default function CategoryView({ categoryName, onBack, onOpenProduct }: Pr
   const [sort, setSort] = useState<SortKey>(() => readEnum(initialParams, 'sort', SORT_KEYS, 'featured'))
   const [sheet, setSheet] = useState(false)
 
+  // Typing re-filters the whole category and recounts every facet, so drive
+  // that off the settled value rather than the keystroke. The field itself
+  // stays on `search` and responds immediately.
+  const settledSearch = useDebounced(search)
+
   const c = categoryColor(categoryName)
   const emoji = CATEGORY_EMOJI[categoryName] ?? '📦'
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useFilterParams({
-    q: writeOne(search),
+    q: writeOne(settledSearch),
     subtype: writeSet(subtype),
     brand: writeSet(brand),
     variant: writeSet(variant),
@@ -195,17 +201,24 @@ export default function CategoryView({ categoryName, onBack, onOpenProduct }: Pr
   }, [data, userPos])
 
   // Full price span across the category — the bounds of the range slider.
+  // Folded rather than spread into Math.min/max: a category can hold tens of
+  // thousands of prices, and that many arguments overflows the call stack.
   const priceBounds = useMemo<[number, number] | null>(() => {
-    const prices = enriched
-      .map(e => e.product.min_price_cents)
-      .filter((p): p is number => p != null)
-    if (prices.length < 2) return null
-    const lo = Math.min(...prices)
-    const hi = Math.max(...prices)
-    return hi > lo ? [lo, hi] : null
+    let lo = Infinity
+    let hi = -Infinity
+    let seen = 0
+    for (const e of enriched) {
+      const p = e.product.min_price_cents
+      if (p == null) continue
+      seen++
+      if (p < lo) lo = p
+      if (p > hi) hi = p
+    }
+    if (seen < 2 || hi <= lo) return null
+    return [lo, hi]
   }, [enriched])
 
-  const filters: Filters = { search: search.trim().toLowerCase(), subtype, brand, variant, radiusMi, price }
+  const filters: Filters = { search: settledSearch.trim().toLowerCase(), subtype, brand, variant, radiusMi, price }
 
   /** Facet options with counts that respect every *other* active filter. */
   function facetFor(key: FacetKey) {
@@ -221,20 +234,20 @@ export default function CategoryView({ categoryName, onBack, onOpenProduct }: Pr
 
   const subtypeFacet = useMemo(
     () => facetFor('subtype').sort((a, b) => b.count - a.count),
-    [enriched, search, subtype, brand, variant, radiusMi, price],
+    [enriched, settledSearch, subtype, brand, variant, radiusMi, price],
   )
   const brandFacet = useMemo(
     () => facetFor('brand').sort((a, b) => b.count - a.count),
-    [enriched, search, subtype, brand, variant, radiusMi, price],
+    [enriched, settledSearch, subtype, brand, variant, radiusMi, price],
   )
   const variantFacet = useMemo(
     () => facetFor('variant').sort((a, b) => variantWeight(a.value) - variantWeight(b.value)),
-    [enriched, search, subtype, brand, variant, radiusMi, price],
+    [enriched, settledSearch, subtype, brand, variant, radiusMi, price],
   )
 
   const filtered = useMemo(
     () => enriched.filter(e => matches(e, filters)),
-    [enriched, search, subtype, brand, variant, radiusMi, price],
+    [enriched, settledSearch, subtype, brand, variant, radiusMi, price],
   )
 
   const sorted = useMemo(() => {
@@ -457,17 +470,18 @@ export default function CategoryView({ categoryName, onBack, onOpenProduct }: Pr
               style={{ minHeight: 260 }}
             />
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, padding: '10px 12px 96px' }}>
-              {sorted.map(e => (
+            <BrowseGrid
+              items={sorted}
+              keyOf={e => e.product.key}
+              render={e => (
                 <BrowseCard
-                  key={e.product.key}
                   item={toCard(e)}
                   color={c}
                   suppressSubtype={categoryName}
                   onOpen={() => openProduct(e)}
                 />
-              ))}
-            </div>
+              )}
+            />
           )}
         </>
       )}

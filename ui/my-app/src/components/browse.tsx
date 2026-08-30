@@ -7,9 +7,10 @@
    Only the data source and which facets apply differ per screen.
    ========================================================================== */
 
-import { useEffect, type ReactNode } from 'react'
+import { Fragment, memo, useEffect, useRef, type ReactNode } from 'react'
 import { t, radius, font, alpha } from '../theme'
 import { Pressable, Skeleton, Label, ProductImage } from './ui'
+import { useRevealed } from '../utils/browseState'
 import { formatDist, formatDollars, formatDollarsShort, haversineMi } from '../utils/format'
 
 // Re-exported so the browse surfaces can keep pulling their whole toolkit from
@@ -244,7 +245,7 @@ export type BrowseCardItem = {
   storeName: string | null
 }
 
-export function BrowseCard({ item, color, suppressSubtype, action, onOpen }: {
+type BrowseCardProps = {
   item: BrowseCardItem
   color: string
   /** Hide the subtype tag when it just restates the page (e.g. "flower" on /flower). */
@@ -252,7 +253,17 @@ export function BrowseCard({ item, color, suppressSubtype, action, onOpen }: {
   /** Overlaid bottom-right on the image — e.g. an add-to-cart button. */
   action?: ReactNode
   onOpen: () => void
-}) {
+}
+
+function BrowseCardImpl({ item, color, suppressSubtype, action, onOpen }: BrowseCardProps) {
+  // `onOpen` is a fresh closure on every parent render, so comparing it would
+  // defeat the memo below and re-render the whole grid on every keystroke.
+  // Read the current one at click time instead. Safe because every call site
+  // keys its cards by product identity: a skipped render can only ever leave a
+  // handler pointing at the same item it was already pointing at.
+  const latestOpen = useRef(onOpen)
+  latestOpen.current = onOpen
+
   const showSubtype = !!item.subtype
     && item.subtype.toLowerCase() !== (suppressSubtype ?? '').toLowerCase()
   // Single-store surfaces have nothing useful to say here; stay quiet instead
@@ -263,12 +274,17 @@ export function BrowseCard({ item, color, suppressSubtype, action, onOpen }: {
 
   return (
     <Pressable
-      onClick={onOpen}
+      onClick={() => latestOpen.current()}
       lift
       style={{
         background: t.surface1, borderRadius: radius.lg, border: `1px solid ${t.border}`,
         overflow: 'hidden', display: 'flex', flexDirection: 'column',
-      }}
+        // Offscreen cards skip style, layout and paint entirely. `auto` on the
+        // intrinsic size makes the browser remember each card's real height
+        // once measured, so the scrollbar settles instead of jittering.
+        contentVisibility: 'auto',
+        containIntrinsicSize: 'auto 300px',
+      } as React.CSSProperties}
     >
       <div style={{ position: 'relative' }}>
         <ProductImage src={item.imageUrl} alt={item.name} category={item.category} radius="0" pad={12} />
@@ -276,8 +292,7 @@ export function BrowseCard({ item, color, suppressSubtype, action, onOpen }: {
         {item.variant && (
           <span style={{
             position: 'absolute', top: 8, left: 8,
-            background: alpha('#000', 0.62), color: '#fff',
-            backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
+            background: alpha('#000', 0.68), color: '#fff',
             fontSize: font.size.micro, fontWeight: font.weight.bold,
             padding: '3px 8px', borderRadius: radius.pill,
           }}>
@@ -288,8 +303,7 @@ export function BrowseCard({ item, color, suppressSubtype, action, onOpen }: {
         {item.distanceMi != null && (
           <span style={{
             position: 'absolute', top: 8, right: 8,
-            background: alpha('#000', 0.62), color: t.accent,
-            backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
+            background: alpha('#000', 0.68), color: t.accent,
             fontSize: font.size.micro, fontWeight: font.weight.bold,
             padding: '3px 8px', borderRadius: radius.pill,
           }}>
@@ -356,6 +370,107 @@ export function BrowseCard({ item, color, suppressSubtype, action, onOpen }: {
         )}
       </div>
     </Pressable>
+  )
+}
+
+/** Card content, by value. `toCard` mints a fresh object every render, so the
+ *  default shallow compare would never hold. */
+function sameItem(a: BrowseCardItem, b: BrowseCardItem): boolean {
+  return a.name === b.name
+    && a.brand === b.brand
+    && a.category === b.category
+    && a.subtype === b.subtype
+    && a.variant === b.variant
+    && a.imageUrl === b.imageUrl
+    && a.priceCents === b.priceCents
+    && a.multiPriced === b.multiPriced
+    && a.dispensaryCount === b.dispensaryCount
+    && a.distanceMi === b.distanceMi
+    && a.storeName === b.storeName
+}
+
+/**
+ * A product card.
+ *
+ * Memoized: a browse screen re-renders on every keystroke, facet toggle and
+ * sort change, and without this each one re-renders every card on the page.
+ * `action` is compared by identity — a caller that rebuilds it (an aisle's
+ * add-to-cart button, which tracks the cart) opts its cards back into
+ * re-rendering, which is what it wants.
+ */
+export const BrowseCard = memo(BrowseCardImpl, (prev, next) =>
+  prev.color === next.color
+  && prev.suppressSubtype === next.suppressSubtype
+  && prev.action === next.action
+  && sameItem(prev.item, next.item))
+
+/* ── Product grid ─────────────────────────────────────────────────────────── */
+
+/** Cards in the first paint, and cards added each time the shopper nears the end. */
+const GRID_CHUNK = 40
+
+/**
+ * The two-column product grid, rendered a window at a time.
+ *
+ * A category spans every dispensary and routinely resolves to thousands of
+ * products. Committing all of them at once is what makes a browser hang: each
+ * card is ~15 elements with its own state, so a 4,000-product category asked
+ * React for ~60,000 nodes before it could paint anything. The window keeps the
+ * first paint at a constant cost and grows ahead of the scroll, so the shopper
+ * never waits on cards they haven't reached.
+ *
+ * The window only ever grows, and its size is remembered per history entry — see
+ * `useRevealed`.
+ */
+export function BrowseGrid<T>({ items, keyOf, render }: {
+  items: T[]
+  keyOf: (item: T) => string
+  render: (item: T) => ReactNode
+}) {
+  const [limit, setLimit] = useRevealed(GRID_CHUNK)
+  const sentinel = useRef<HTMLDivElement>(null)
+
+  const more = items.length > limit
+
+  useEffect(() => {
+    const node = sentinel.current
+    if (!node || !more) return
+
+    // Root is the viewport rather than the scroll container: an element inside a
+    // nested scroller still reports its viewport-relative position correctly, so
+    // there is no ref to thread through. The margin grows the window a screenful
+    // before the shopper arrives at the end of it.
+    const io = new IntersectionObserver(
+      entries => {
+        if (entries.some(e => e.isIntersecting)) setLimit(Math.min(limit + GRID_CHUNK, items.length))
+      },
+      { rootMargin: '800px 0px' },
+    )
+    io.observe(node)
+    return () => io.disconnect()
+  }, [limit, items.length, more, setLimit])
+
+  return (
+    <>
+      {/* Keyed fragments rather than wrapper divs: the card stays the grid item,
+          so the two-column layout is exactly what it was before the window. */}
+      <div style={{
+        display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10,
+        padding: more ? '10px 12px 0' : '10px 12px 96px',
+      }}>
+        {items.slice(0, limit).map(item => (
+          <Fragment key={keyOf(item)}>{render(item)}</Fragment>
+        ))}
+      </div>
+
+      {more && (
+        <div ref={sentinel} style={{ padding: '26px 12px 96px', textAlign: 'center' }}>
+          <span style={{ color: t.text4, fontSize: font.size.caption }}>
+            {limit.toLocaleString()} of {items.length.toLocaleString()}
+          </span>
+        </div>
+      )}
+    </>
   )
 }
 

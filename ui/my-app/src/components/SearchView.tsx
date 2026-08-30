@@ -8,7 +8,7 @@ import {
   readEnum, readRange, readSet, useFilterParams, useScrollMemory, writeOne, writeRange, writeSet,
 } from '../utils/browseState'
 import {
-  ActiveChip, BrowseCard, BrowseToolbar, Dot, FacetChip, FilterSheet, GridSkeleton,
+  ActiveChip, BrowseCard, BrowseGrid, BrowseToolbar, Dot, FacetChip, FilterSheet, GridSkeleton,
   SORTS_NO_LOCATION, SORT_KEYS, SearchField, Stat, formatDollarsShort, productKey, variantWeight,
   type BrowseCardItem, type SheetGroup, type SortKey,
 } from './browse'
@@ -388,17 +388,18 @@ export default function SearchView({ initialCategory, onOpenProduct }: Props) {
               style={{ minHeight: 260 }}
             />
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, padding: '10px 12px 96px' }}>
-              {sorted.map(p => (
+            <BrowseGrid
+              items={sorted}
+              keyOf={p => productKey(p) + '|' + (p.brand ?? '')}
+              render={p => (
                 <BrowseCard
-                  key={productKey(p) + '|' + (p.brand ?? '')}
                   item={toCard(p)}
                   color={categoryColor(p.category)}
                   suppressSubtype={p.category}
                   onOpen={() => openProduct(p)}
                 />
-              ))}
-            </div>
+              )}
+            />
           )}
         </>
       )}

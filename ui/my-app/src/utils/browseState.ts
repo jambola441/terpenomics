@@ -10,7 +10,7 @@
    that can be shared or reloaded.
    ========================================================================== */
 
-import { useEffect, useLayoutEffect, useRef, type RefObject } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react'
 import { useLocation, useSearchParams } from 'react-router-dom'
 
 /* ── Reading filters back out of the URL ──────────────────────────────────── */
@@ -162,4 +162,28 @@ export function useScrollMemory(ref: RefObject<HTMLElement | null>, ready: boole
  *  filter renders a different list, so the old position means nothing. */
 export function forgetScroll(key: string): void {
   offsets.delete(key)
+}
+
+/* ── How much of a long list was revealed ─────────────────────────────────── */
+
+// A long grid renders a window that grows as the shopper scrolls, so the offset
+// above is only half the story: restoring a deep offset into a window that was
+// never grown finds no content to scroll to and clamps to the top. Remember the
+// window size against the same history entry, for the same reason.
+const reveals = new Map<string, number>()
+
+/**
+ * A grow-only count of rendered rows, restored when a screen is returned to.
+ *
+ * Grow-only because the alternative — resetting to the first chunk whenever the
+ * list changes — collapses the container's height under a shopper who is
+ * halfway down it and filtering, throwing their scroll position to the end.
+ */
+export function useRevealed(chunk: number): [number, (next: number) => void] {
+  const { key } = useLocation()
+  const [count, setCount] = useState(() => Math.max(chunk, reveals.get(key) ?? 0))
+
+  useEffect(() => { reveals.set(key, count) }, [key, count])
+
+  return [count, setCount]
 }
