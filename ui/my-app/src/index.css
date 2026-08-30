@@ -284,3 +284,142 @@ textarea::placeholder {
     scroll-behavior: auto !important;
   }
 }
+
+/* ── Portal map — NYC theme ───────────────────────────────────────────────── */
+/* Scoped to `.nyc-map`, the DispensaryMap container. Leaflet ships a light
+   default chrome (white tooltips, white zoom buttons); everything below pulls
+   it into the dark/lime design language and layers on the MTA-derived colour
+   system used for store bullets. */
+
+.nyc-map .leaflet-container {
+  background: #0a1020;               /* deep dusk behind un-loaded tiles */
+  font-family: var(--font-sans);
+  outline: none;
+}
+
+/* The colour basemap rides in its own pane so the filter that tones it to dusk
+   doesn't also mute the label tiles stacked above it. That filter is set
+   inline from utils/mapTiles.ts — it depends on which provider is configured. */
+
+.nyc-map .leaflet-pane.nyc-labels-pane {
+  opacity: 0.88;
+}
+
+/* ── Store bullets (MTA-style discs) ──────────────────────────────────────── */
+
+.nyc-pin {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  transition: transform var(--t-base);
+}
+
+.nyc-pin__disc {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--pin);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  box-shadow:
+    0 0 0 2px rgba(9, 12, 20, 0.75),
+    0 4px 12px rgba(0, 0, 0, 0.55);
+}
+
+/* Small stem so the disc reads as a pin planted on the block, not a sticker. */
+.nyc-pin__disc::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  background: var(--pin);
+  border-radius: 1px;
+  transform: translateX(-50%) rotate(45deg);
+  z-index: -1;
+}
+
+.nyc-pin:hover { transform: translateY(-2px) scale(1.06); }
+
+.nyc-pin--active { transform: scale(1.2); }
+
+.nyc-pin--active .nyc-pin__disc {
+  box-shadow:
+    0 0 0 2px var(--accent),
+    0 0 0 5px rgba(168, 224, 99, 0.22),
+    0 6px 16px rgba(0, 0, 0, 0.6);
+}
+
+/* Halo that keeps ticking under the selected store. */
+.nyc-pin--active::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--pin);
+  animation: nyc-pin-pulse 1.9s var(--ease-spring) infinite;
+}
+
+@keyframes nyc-pin-pulse {
+  0%   { transform: scale(0.85); opacity: 0.5; }
+  70%  { transform: scale(2.1);  opacity: 0; }
+  100% { transform: scale(2.1);  opacity: 0; }
+}
+
+/* ── Leaflet chrome ───────────────────────────────────────────────────────── */
+
+.nyc-map .leaflet-tooltip.nyc-tip {
+  background: rgba(12, 14, 20, 0.92);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-pill);
+  color: var(--text-1);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 11px;
+  box-shadow: var(--e-2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  white-space: nowrap;
+}
+
+.nyc-map .leaflet-tooltip.nyc-tip::before { border: none; }
+
+.nyc-map .leaflet-bar {
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  box-shadow: var(--e-2);
+}
+
+.nyc-map .leaflet-bar a,
+.nyc-map .leaflet-bar a:hover {
+  width: 34px;
+  height: 34px;
+  line-height: 32px;
+  background: rgba(20, 20, 24, 0.86);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.nyc-map .leaflet-bar a:hover { background: var(--surface-3); color: var(--accent); }
+.nyc-map .leaflet-bar a:last-child { border-bottom: none; }
+
+.nyc-map .leaflet-control-attribution {
+  background: rgba(10, 12, 18, 0.66);
+  border-radius: var(--r-xs) 0 0 0;
+  color: var(--text-4);
+  font-size: 10px;
+  padding: 2px 7px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.nyc-map .leaflet-control-attribution a { color: var(--text-3); }
