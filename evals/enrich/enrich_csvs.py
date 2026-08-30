@@ -27,7 +27,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
-import enrich as enrich_mod  # noqa: E402
+import enrich as enrich_mod
+import enrichers  # noqa: E402
 
 FIELDS = ["subtype", "strain", "product_line", "variant", "category"]
 
@@ -92,19 +93,33 @@ def main() -> None:
         except Exception as e:  # one bad store must not sink the fleet run
             print(f"  [error] {type(e).__name__}: {e}")
             continue
+        # Restore ONLY on rows enrichment actually failed on, which enrich() marks.
+        # Restoring every empty field instead silently reverts deliberate nulls: the
+        # merch refactor sets strain to None on purpose, and this loop used to put
+        # the old colour straight back. The tell was a single row changing variant
+        # ('20pk' -> '98mm 20pk', non-empty so kept) while its strain stayed 'Purple'
+        # — the deterministic path had run and only the blanking was undone.
         restored = 0
         for row, prev in zip(rows, before):
+            if not row.pop("_enrich_failed", False):
+                continue
             for f in FIELDS:
                 if not (row.get(f) or "").strip() and (prev.get(f) or "").strip():
                     row[f] = prev[f]
                     restored += 1
         if restored:
-            print(f"  kept {restored} pre-existing value(s) the run came back empty for")
+            print(f"  kept {restored} pre-existing value(s) on rows the model did not answer")
 
-        filled = sum(1 for r in rows if (r.get("strain") or "").strip())
-        if rows and filled / len(rows) < 0.5:
-            print(f"  [warn] strain filled on only {filled}/{len(rows)} rows — "
-                  f"pass B likely failed; re-run to fill from cache")
+        # Same trap as the restore loop, one level up: categories whose owner answers
+        # them without a model have no cultivar, so counting them here makes a
+        # merch-heavy store look like a failed pass B. Measure over rows that can
+        # actually carry a strain.
+        eligible = [r for r in rows
+                    if not enrichers.skips_model(enrich_mod._hint_category(r))]
+        filled = sum(1 for r in eligible if (r.get("strain") or "").strip())
+        if eligible and filled / len(eligible) < 0.5:
+            print(f"  [warn] strain filled on only {filled}/{len(eligible)} rows that can "
+                  f"carry one — pass B likely failed; re-run to fill from cache")
 
         for f in FIELDS:
             if f not in fieldnames:

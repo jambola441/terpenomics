@@ -834,6 +834,12 @@ def _run_enrich(
               f"will retry next run", file=sys.stderr)
     for (oi, row) in pending:
         if oi in failed_rows:
+            # Tell the caller which rows carry fallbacks rather than answers. A
+            # caller writing back over an existing file needs to distinguish
+            # "empty because the batch broke" from "empty on purpose" — merch
+            # strain is deliberately null, and so is any field the model
+            # legitimately declines. Without this, both look identical.
+            row["_enrich_failed"] = True
             continue
         key = _cache_key(row)
         if key:

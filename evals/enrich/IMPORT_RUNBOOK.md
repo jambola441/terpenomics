@@ -42,11 +42,30 @@ python evals/enrich/audit.py --db
 python scripts/verify_listing.py --status
 ```
 
-**`--model` matters.** The cache is namespaced per model: `<slug>.json` for the
-default `haiku`, `<slug>.haiku-or.json` for anything else. The cache on disk is
-`haiku-or`, so running `--model haiku` re-enriches all 16,031 listings from scratch
-(~$11) instead of reading them. Either pass `--model haiku-or`, or move the files
-onto the default namespace — see "The cache namespace" below.
+**Two separate cache traps, and the second one dominates. CORRECTED 2026-08-30.**
+
+1. *Namespace.* The cache is keyed per model — `<slug>.json` for the default
+   `haiku`, `<slug>.<model>.json` for anything else. The cache on disk is
+   `haiku-or`, so `--model haiku` looks in the wrong files.
+2. *Version.* `enrich.py` accepts an entry only when `entry["v"] == _ENRICH_VERSION`,
+   which is **7**. Measured on the fleet cache: 21,315 entries, **19,432 at v5 and
+   1,883 at v6, and not one at v7.**
+
+An earlier draft of this runbook claimed `--model haiku-or` would avoid an ~$11
+re-enrich. **That was wrong.** The version check rejects every entry whatever the
+model flag says, so the sweep costs ~$11 either way. Fixing the namespace without
+fixing the version buys nothing.
+
+Run the migration first and the sweep becomes nearly free:
+
+```bash
+python scripts/migrate_enrich_cache_v7.py           # dry run
+python scripts/migrate_enrich_cache_v7.py --run     # 18,090 restamped, 1,513 merch dropped
+```
+
+Both bumps since v5 were merch-only, so a non-merch v5/v6 answer is exactly what v7
+would produce. Merch entries are dropped rather than restamped because merch is now
+answered from the name before a batch is formed and never reads the cache at all.
 
 **No `_ENRICH_VERSION` bump is needed.** Merch is now answered from the name before
 a batch is formed, so merch rows never touch the cache and their stale entries are
