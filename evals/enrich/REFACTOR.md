@@ -47,11 +47,19 @@ this repo's history rather than the schema:
 | --- | --- |
 | flower, preroll | cultivar — the real thing |
 | edible (beverages) | flavour — "Black Cherry" |
-| topical | scent — "Lavender" |
+| topical | **three things at once** — see below |
 | merch | **colour** — "Pink" (ruled 2026-08-27) |
 
 Each of those was a judgment call made under pressure because there was nowhere
 else to put the value. They are defensible individually and incoherent together.
+
+Topical is worse than "scent", which is what this document originally claimed.
+Its top `strain` values are Revive (22), Restore (15), Rescue (15), Releaf (12)
+and Relief (5) — Ayrloom and Papa & Barkley **product lines**. Lavender,
+Eucalyptus Sage and Blue Tansy Rose are scents. Balm, Pain Balm and Relief Balm
+are **form words** belonging to subtype. One column, three kinds of value, and
+moving them to attributes wholesale would only relocate the confusion: the lines
+need `product_lines.json` entries first.
 
 ### The pipeline already concedes the point
 

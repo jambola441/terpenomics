@@ -21,6 +21,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from scraper_common import normalize_variant  # noqa: E402
 from canonical import canonicalize, find_format_category  # noqa: E402
 import verification  # noqa: E402
+import attributes as attribute_registry  # noqa: E402
 
 _DATA_DIR = Path(__file__).parent.parent / "data"
 
@@ -894,11 +895,13 @@ def _run_enrich(
                     it = {}
                 strains[oi]       = it.get("strain")
                 product_lines[oi] = it.get("product_line")
-                # For merch, `strain` carries colour or flavour — the thing that
-                # separates otherwise identical accessories. Same ruling that puts
-                # topical scent names in `strain`.
+                # Merch has no cultivar. What separates two otherwise identical
+                # accessories is colour or flavour, and those now live in
+                # `attributes` rather than being smuggled through `strain` —
+                # see scripts/attributes.py. strain stays null so it can mean
+                # one thing (a cultivar) everywhere it is set.
                 if (categories[oi] or "").lower() == "merch":
-                    strains[oi] = merch_strain(row.get("name", ""))
+                    strains[oi] = None
         return on_result
 
     def extract_payload_item(i, oi, r):
@@ -976,6 +979,10 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
             row.setdefault("subtype", "other")
             row.setdefault("strain", "")
             row.setdefault("product_line", None)
+            # Attributes are read from the name, not asked of the model, so a
+            # --no-enrich scrape has no reason to go without them.
+            row.setdefault("attributes", attribute_registry.for_category(
+                row.get("category"), row.get("name", "")) or None)
         return {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0, "cost_usd": 0.0}
 
     if model not in MODELS:
@@ -1045,6 +1052,10 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
         # Pass the settled category: an edible/tincture dose must not be run through
         # the weight conversions (1000mg is a dose, not 1g).
         row["variant"]      = normalize_variant(v, row["category"]) if v else v
+        # Category-specific identity, derived from the name. Only categories with a
+        # shape in the registry get anything; the rest keep None.
+        row["attributes"]   = attribute_registry.for_category(
+            row["category"], row.get("name", "")) or None
 
     # Deterministic canonicalization last: curated product lines and strain aliases
     # override the model, so identity is consistent across dispensaries and runs.
