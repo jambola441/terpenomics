@@ -11,6 +11,10 @@ import { tileConfig } from '../utils/mapTiles'
 
 const NYC: [number, number] = [40.7128, -74.006]
 
+/** Roughly half the store sheet's height — how far below the selected store
+ *  the map centres so the bullet lands above the sheet rather than behind it. */
+const SHEET_PAN_OFFSET = 110
+
 interface Props {
   activeDispensaryId?: string | null
   onProductClick?: (productId: string) => void
@@ -194,8 +198,13 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
       marker.setZIndexOffset(active ? 1000 : 0)
     })
 
-    if (selected?.lat != null && selected.lng != null && mapInstanceRef.current) {
-      mapInstanceRef.current.panTo([selected.lat, selected.lng], { animate: true })
+    // Pan the store into the strip of map the sheet doesn't cover, rather than
+    // to dead centre — centring drops it behind the sheet on a short screen.
+    const map = mapInstanceRef.current
+    if (selected?.lat != null && selected.lng != null && map) {
+      const zoom = map.getZoom()
+      const point = map.project([selected.lat, selected.lng], zoom).add([0, SHEET_PAN_OFFSET])
+      map.panTo(map.unproject(point, zoom), { animate: true })
     }
   }, [selected, dispensaries])
 

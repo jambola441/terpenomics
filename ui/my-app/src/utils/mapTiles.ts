@@ -34,11 +34,13 @@ export type TileConfig = {
 const DARK_NATIVE_FILTER = 'saturate(1.22) contrast(1.03) brightness(1.02)'
 
 /** Thunderforest's transport-dark draws the whole road network in bright red
- *  over yellow trunk routes — at city zoom that's a mesh loud enough to bury
- *  the store bullets. Pull its colour and brightness back so the map reads as
- *  ember-toned context and the bullets stay the brightest thing on screen.
- *  Another Thunderforest style will want its own VITE_MAP_TILE_FILTER. */
-const TRANSPORT_DARK_FILTER = 'grayscale(0.55) saturate(0.95) brightness(0.7) contrast(1.06)'
+ *  over yellow trunk routes — loud enough at city zoom to bury the store
+ *  bullets, the red Manhattan ones especially. Pull its colour and brightness
+ *  back far enough that the map reads as ember-toned context and the bullets
+ *  stay the brightest thing on screen, but not so far that the transit lines
+ *  it's chosen for wash out. Tuned against live tiles at z11–z13; another
+ *  Thunderforest style will want its own VITE_MAP_TILE_FILTER. */
+const TRANSPORT_DARK_FILTER = 'grayscale(0.35) saturate(1) brightness(0.86) contrast(1.05)'
 
 /** CARTO's Voyager is a daylight style — tone it down to sit in a dark shell. */
 const CARTO_FILTER = 'saturate(1.45) contrast(0.94) brightness(0.6) hue-rotate(-8deg)'
