@@ -33,6 +33,13 @@ export type TileConfig = {
 /** Styles that are already dark only need their colour nudged up. */
 const DARK_NATIVE_FILTER = 'saturate(1.22) contrast(1.03) brightness(1.02)'
 
+/** Thunderforest's transport-dark draws the whole road network in bright red
+ *  over yellow trunk routes — at city zoom that's a mesh loud enough to bury
+ *  the store bullets. Pull its colour and brightness back so the map reads as
+ *  ember-toned context and the bullets stay the brightest thing on screen.
+ *  Another Thunderforest style will want its own VITE_MAP_TILE_FILTER. */
+const TRANSPORT_DARK_FILTER = 'grayscale(0.55) saturate(0.95) brightness(0.7) contrast(1.06)'
+
 /** CARTO's Voyager is a daylight style — tone it down to sit in a dark shell. */
 const CARTO_FILTER = 'saturate(1.45) contrast(0.94) brightness(0.6) hue-rotate(-8deg)'
 
@@ -51,7 +58,7 @@ const PRESETS: Record<string, Preset> = {
   thunderforest: {
     defaultStyle: 'transport-dark',
     attribution: '© Thunderforest © OpenStreetMap contributors',
-    filter: DARK_NATIVE_FILTER,
+    filter: TRANSPORT_DARK_FILTER,
     base: (style, key) =>
       `https://{s}.tile.thunderforest.com/${style}/{z}/{x}/{y}{r}.png?apikey=${key}`,
   },
