@@ -36,30 +36,33 @@ try:
 except ImportError:
     sys.exit("httpx required: pip install httpx")
 
-import enrich as e  # noqa: E402
-from canonical import find_product_line  # noqa: E402
+import enrichers  # noqa: E402
 
 FIELDS = ("subtype", "variant", "strain", "product_line")
 PAGE = 1000
 CHUNK = 200
 
 
+_MERCH = enrichers.for_category("merch")
+
+
 def identity(name: str, brand: str, current_subtype: str | None = None) -> dict:
-    """The four identity fields, all read from the name.
+    """The four identity fields, all read from the name by the merch enricher.
 
     subtype falls back to whatever is already stored rather than to "merch": the
     tokens do not cover everything, and the model legitimately answers subtypes
     they miss — "Doob Tube" is storage, "Glass Tips" are filter-tips, neither
     matches a pattern. Overwriting those with "merch" would be a downgrade, so a
     token only wins when it actually fires.
+
+    strain is deliberately None: colour and flavour moved to `attributes`, and
+    backfill_attributes.py owns those.
     """
-    token = e.classify_by_token("merch", name)
-    fallback = (current_subtype or "merch") if (current_subtype in e.SUBTYPES["merch"]) else "merch"
     return {
-        "subtype": token or fallback,
-        "variant": e.merch_variant(name) or None,
-        "strain": e.merch_strain(name),
-        "product_line": find_product_line(brand or "", name) or None,
+        "subtype": _MERCH.subtype(name, current_subtype),
+        "variant": _MERCH.variant(name, None),
+        "strain": _MERCH.strain(name, None),
+        "product_line": _MERCH.product_line(brand, name, None),
     }
 
 

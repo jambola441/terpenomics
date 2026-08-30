@@ -263,6 +263,91 @@ is ~$5-6. To pay only for merch, drop the `"category": "merch"` entries from
 `data/enrich_cache/*.json` and leave the rest at v5; that is ~$0.40, at the cost
 of the version stamp no longer describing what is in the cache.
 
+## Category-owned enrichers — merch off the model entirely (2026-08-30)
+
+`scripts/enrichers.py` gives each category an owner that declares whether it needs a
+model at all. `MerchEnricher.needs_model = False`, so merch rows are answered from
+the name before a batch is ever formed: **1,070 of 16,031 live listings (6.7%) never
+reach the model**, and their answers stop moving run to run.
+
+Equivalence was checked before the eval, not after: `backfill_merch_identity.py`
+repointed at the enricher reports **0 rows would change** across 1,300 live merch
+listings, and a 14-row A/B of committed HEAD against the registry agreed on 13 and
+differed on 1 (in the registry's favour).
+
+### The gold suite said −13.75 cases. It was wrong, and it was also right.
+
+The first run after the registry scored 236/268, i.e. −13.75 against the 249.75
+baseline. Three separate things were tangled in that number, and only running the
+comparison separated them:
+
+1. **13 of the 18 new failures were stale labels, not a regression.** Every one was
+   `subtype: got 'lighter'/'paper'/'battery'/... want 'merch'` — labels written when
+   merch had a single subtype, before v6 widened the rail. Running committed HEAD on
+   the same 14 rows scored **0/14 too**: those cases had been failing since v6 and the
+   baseline predates it. The labels are now updated to the current taxonomy.
+2. **The remaining failures were the known flaky set** — `holdup-017`, `holdup-034`,
+   `holdup-043`, the `x-camino` cluster — none of which is merch, so none of which the
+   registry can touch.
+3. **A real regression the suite could not see at all.** Routing on `_hint_category`
+   means a row the *scraper* called merch is never offered to the model, and the model
+   had been quietly fixing those. Joining the scrape CSVs against the DB found
+   **20 of 1,090 routed rows (1.8%)** that HEAD had reclassified away from merch —
+   19 vaporizers sold as accessories ("Covert 2.0 Blue Cartridge Vaporizer -
+   Accessories - Kind Pen", "PAX Plus | Periwinkle") plus one gift card. No gold case
+   covers this, so the suite scored it as an improvement.
+
+The fix is curated, not prompted: three `format_tokens.json` entries — `*/Vaporizer`,
+`*/Exxus`, `PAX/Plus`, `Cartisan/Pillar` — divert 19 of the 20 before the merch route
+fires. The 20th is `HURU Gift Card`, where HEAD answered `other` and the registry
+answers `merch`/`gift-card`; that one is a win.
+
+Blast radius was measured before adding them, and it is why they are tokens and not
+brand rules: `Vaporizer` matches 104 active listings and all 104 are vape hardware,
+`Exxus` matches 6 and all 6 are. **Brand-wide rules for Yocan and Wulf were rejected
+on the same measurement** — both sell genuine accessories (batteries, knife kits,
+torches) beside their vaporizers, and a blanket rule would have dragged 9 correct
+merch rows into `vaporizers`.
+
+### Subtyping merch from descriptions — measured and rejected
+
+376 of 1,300 live merch names carry no form word. Falling back to the description
+recovers a subtype for 173 of them, so it looks like a free 46% coverage gain. A
+sample of 25 was **wrong roughly 10 times**: merch descriptions are sales copy that
+names adjacent gear constantly — "Hemp Wick" reads as paper, "Puck Press" as pipe,
+"Raw - Original Tips 50ct" as paper, a Dr.Dabber vape pen as dab-tool. A confident
+wrong subtype is worse than the category default, so the gap gets closed with name
+tokens. Those 376 rows are the next piece of work; `tips`, `beaker`, `downstem`,
+`sherlock` and a bare width token ("Elements King Size Wide" is a paper) are the
+obvious candidates, each needing its own blast-radius check.
+
+### Where it landed
+
+| | runs | mean | sd | range |
+| --- | ---: | ---: | ---: | ---: |
+| baseline (pre-v6) | 4 | 249.75 | 0.50 | 249–250 |
+| registry + corrected labels | 5 | **248.80** | 1.64 | 247–251 |
+
+−0.95 cases, ~1.2 standard errors — inside the noise, and the ranges overlap. No merch
+case fails in any of the four runs. Every residual failure is a long-standing class
+already catalogued below: topical `Nmg` never reaching `variant` (5 cases), 10-pack
+preroll math (4), and the `strain` overload on edibles and topicals (6).
+
+The sd tripling (0.50 → 1.73) is worth watching but is not established: with n=4 the
+estimate is very imprecise, and pulling 14 rows out of the batches moves every batch
+boundary, which given that this suite's noise is **batch-correlated** is enough on its
+own to reshuffle which cases flip.
+
+### Two labels I am not confident in
+
+Both are recorded as a `note` on the case rather than left implicit:
+
+- `gold-097` *Human Grade - 5" Recycler 1A Dab Rig* → `bong`. A dab rig is not a bong.
+  They share a rail today because splitting them needs a `rig` subtype.
+- `spot-044` *Matte Black 3.2v Auto Start 510 Vape Cartridge Battery & Charger* →
+  `charger`. This is a battery sold *with* a charger; `charger` wins only because token
+  order puts it first (so a plain "510 USB Charger" is not read as a battery).
+
 ## Model comparison — DeepSeek v4 vs Haiku 4.5 (2026-08-25)
 
 Same gold suites, same prompts, `haiku-or` transport throughout. Haiku has 4 runs

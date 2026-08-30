@@ -1,1702 +1,1703 @@
 {
- "eval_type": "gold_dispensary",
- "description": "Hand-labeled gold set: 108 real listings from The Plug (Crown Heights), stratified across categories, incl. the 'other' bucket the scraper's CATEGORY_MAP missed (mostly vapes — tests hint override), pack-math edibles, typo strains that must be kept verbatim (Red Zprite, Marakesh), product lines (UP, Flyers, Noir, Quicks, Releaf), and null-strain merch/topicals. Ambiguous fields are omitted from expect on purpose. Rulings: beverages are dosed in mg not volume; topical scent names ARE strains; version suffixes (2.0) are kept; concentrate 'diamonds' is its own subtype.",
- "cases": [
-  {
-   "id": "gold-000-off-hours-razz-lemonade-live-resin-rope",
-   "input": {
-    "brand": "Off hours",
-    "name": "Off hours - Razz Lemonade | Live Resin Rope",
-    "category": "edible",
-    "variant": "30g",
-    "description": ""
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "gummy",
-    "strain": "Razz Lemonade"
-   }
-  },
-  {
-   "id": "gold-001-ayrloom-up-12oz-beverage-honeycrisp-5mg-1-1-",
-   "input": {
-    "brand": "Ayrloom",
-    "name": "Ayrloom UP (12oz) Beverage - Honeycrisp | 5MG 1:1 THC:CBD",
-    "category": "edible",
-    "variant": "12fl oz",
-    "description": ""
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "beverage",
-    "strain": "Honeycrisp",
-    "variant": "5mg",
-    "product_line": "UP"
-   }
-  },
-  {
-   "id": "gold-002-ayrloom-up-12oz-beverage-lemonade",
-   "input": {
-    "brand": "Ayrloom",
-    "name": "Ayrloom UP (12oz) Beverage - Lemonade",
-    "category": "edible",
-    "variant": "355",
-    "description": "your favorite summertime classic with a modern twist! perfectly sweet + never overpowering, this sublimely refreshing beverage will pair perfectly at your next outdoor gathering."
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "beverage",
-    "strain": "Lemonade",
-    "product_line": "UP"
-   }
-  },
-  {
-   "id": "gold-003-old-pal-x-babish-thc-infused-sugar-100mg",
-   "input": {
-    "brand": "Old Pal",
-    "name": "Old Pal x Babish - THC Infused Sugar | 100MG",
-    "category": "edible",
-    "variant": "",
-    "description": ""
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "other",
-    "variant": "100mg",
-    "strain": null
-   }
-  },
-  {
-   "id": "gold-004-wyld-kiwi-1-1-thc-thcv",
-   "input": {
-    "brand": "WYLD",
-    "name": "Wyld - Kiwi 1:1 THC:THCV",
-    "category": "edible",
-    "variant": "1g",
-    "description": "Our Kiwi gummies are tailor-made with real fruit and THCv to unlock your next level. With a 1 to 1 blend of THC and THCv, these uplifting gummies open up a Sativa experience that brings a boost of energy and focus to the typical THC high. Feeling Fuzzy? Time for Wyld’s Kiwi gummies."
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "gummy",
-    "strain": "Kiwi"
-   }
-  },
-  {
-   "id": "gold-005-florist-farms-peach-gummies-20mg-x-2pk-1-1-t",
-   "input": {
-    "brand": "florist farms",
-    "name": "Florist Farms - Peach Gummies | 20MG x 2PK 1:1 THC:CBD",
-    "category": "edible",
-    "variant": "",
-    "description": "These vegan gummies are made with real fruit and organic ingredients. If you’re looking for a gummy that actually tastes good, these are a top pick. They are genuinely some of the best gummies we’ve tried. Perfect for when you need to just chill out. Each gummy contains 10mg THC and 10mg CBD. CBD is"
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "gummy",
-    "strain": "Peach",
-    "variant": "40mg"
-   }
-  },
-  {
-   "id": "gold-006-camino-sleep-midnight-blueberry-5-1-cbn-20pk",
-   "input": {
-    "brand": "Caminos",
-    "name": "Camino - Sleep | Midnight Blueberry 5:1 CBN 20pk",
-    "category": "edible",
-    "variant": "72g",
-    "description": "Our top-selling product - and for a reason. When the day's demands set you up for a restless night, there's a perfect companion waiting for you: Midnight Blueberry Camino ‘Sleep’ Gummies, specially crafted to lull you into a deep and tranquil sleep that will leave you feeling truly refreshed. With a"
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "gummy",
-    "strain": "Midnight Blueberry",
-    "variant": "100mg"
-   }
-  },
-  {
-   "id": "gold-007-foy-strawberry-nighttime-1-1-1-chews",
-   "input": {
-    "brand": "foy",
-    "name": "Foy - Strawberry Nighttime | 1:1:1 Chews",
-    "category": "edible",
-    "variant": "70g",
-    "description": "Elevate your nightly routine with a healthier alternative that surpasses the standard gummy. Foy Nighttime vegan chews are consciously formulated with authentic non-GMO fruit purées, delicately coated in powder derived from natural strawberries, and enriched with a potent adaptogen blend of USDA Cer"
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "gummy"
-   }
-  },
-  {
-   "id": "gold-008-myhi-boisterous-berry-3-x-10mg-thc-stir-stik",
-   "input": {
-    "brand": "MyHi",
-    "name": "MyHi - Boisterous Berry | 3 x 10MG THC Stir Stiks",
-    "category": "edible",
-    "variant": "2.1g",
-    "description": "Boisterous Berry Fast-Acting Beverage Stir STIK: Calorie and Sugar Free Turn Water into Weed: Fast-Acting Nano-emulsified THC + Energizing Caffeine derived from Green Coffee Bean Extract, all delivered in a single serve, On-The-Go Stir STIK to quickly infuse any drink for an energizing hi. -- Our Bo"
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "beverage",
-    "strain": "Boisterous Berry",
-    "variant": "30mg"
-   }
-  },
-  {
-   "id": "gold-009-mfny-live-resin-gummies-creamsicle-x-rainbow",
-   "input": {
-    "brand": "MFNY",
-    "name": "MFNY Live Resin Gummies - Creamsicle x Rainbow Beltz 2.0 | Live Resin Gummies",
-    "category": "edible",
-    "variant": "26g",
-    "description": "Terpene-rich edibles at an even tastier price. Introducing our live resin Creamsicle x Rainbow Beltz gummies. These vegan gummies are infused with MFNY’s single-source, in-house produced Rainbow Beltz live resin. We start with fresh-frozen flower buds, then use the hydrocarbon extraction method (plu"
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "gummy",
-    "strain": "Creamsicle x Rainbow Beltz 2.0"
-   }
-  },
-  {
-   "id": "gold-010-revert-grape-100mg-scored-gummy",
-   "input": {
-    "brand": "Revert",
-    "name": "Revert - Grape | 100mg Scored Gummy",
-    "category": "edible",
-    "variant": "",
-    "description": "Revert Grape 100mg Gummy Pack Revert THC Gummies are crafted for consistency, convenience, and a clean edible experience. Each package contains 10 easily separable 10mg portions (100mg total) for simple, precise dosing. Made with cannabis distillate and a pectin-based (gelatin-free) formula, these g"
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "gummy",
-    "strain": "Grape",
-    "variant": "100mg"
-   }
-  },
-  {
-   "id": "gold-011-myhi-simply-flavorless-3-x-10mg-thc-stir-sti",
-   "input": {
-    "brand": "MyHi",
-    "name": "MyHi - Simply Flavorless | 3 x 10MG THC Stir Stiks",
-    "category": "edible",
-    "variant": "2.1g",
-    "description": "Simply Flavorless Fast-Acting Beverage Stir STIK: Calorie and Sugar Free Turn Water into Weed: Fast-Acting Nano-emulsified THC + Energizing Caffeine derived from Green Coffee Bean Extract, all delivered in a single serve, On-The-Go Stir STIK to quickly infuse any drink for an energizing hi. -- Our s"
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "beverage",
-    "strain": "Simply Flavorless",
-    "variant": "30mg"
-   }
-  },
-  {
-   "id": "gold-012-kushy-punch-blue-raspberry-gummies-100mg",
-   "input": {
-    "brand": "Kushy Punch",
-    "name": "Kushy Punch - Blue Raspberry Gummies 100mg",
-    "category": "edible",
-    "variant": "30g",
-    "description": "The new Kushy Experience is here! Fast-Acting individual gummies have arrived! – Each pack contains 200mg THC – Each pack contains 10 individual gummies – Fast-Acting 15 Minute activation – Full-Spectrum Formula"
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "gummy",
-    "strain": "Blue Raspberry"
-   }
-  },
-  {
-   "id": "gold-013-gr-n-baja-blaze-mega",
-   "input": {
-    "brand": "Grön",
-    "name": "Grön - Baja Blaze Mega",
-    "category": "edible",
-    "variant": "20g",
-    "description": "Ride a wave of flavor with a sun-kissed splash of sour and sweet. It’s the taste of paradise turned all the way up! Pair with tacos or chips & salsa for a taste sensation reminiscent of late-night munchie missions."
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "gummy",
-    "strain": "Baja Blaze Mega"
-   }
-  },
-  {
-   "id": "gold-014-wana-fast-asleep-5-1-1-1-dream-berry",
-   "input": {
-    "brand": "Wana",
-    "name": "Wana - Fast Asleep 5:1:1: 1 | Dream Berry",
-    "category": "edible",
-    "variant": "45g",
-    "description": "Feel sleepy in just 5-15 minutes... with no next-day grogginess. These revolutionary nighttime gummies deliver a sweet mixed berry flavor, along with a custom blend of CBD, THC, CBG, CBN, and melatonin. They’re also enhanced with more than 30 specialized terpenes, curated based on AI-generated data "
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "gummy",
-    "strain": "Dream Berry"
-   }
-  },
-  {
-   "id": "gold-015-eaton-botanicals-apple-a-day-apple-2-5mg-gum",
-   "input": {
-    "brand": "Eaton",
-    "name": "Eaton Botanicals - Apple-A-Day | Apple - 2.5mg gummies",
-    "category": "edible",
-    "variant": "120g",
-    "description": "Keep the doc away with Apple-A-Day, an antioxidant packed edible with immunity boosting elderberry, echinacea, zinc and astragalus along with turkey tail mushrooms to keep your body’s natural defense systems on high alert. With a microdose of THC (2.5mg) for a light lift and a healthy amount of calm"
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "gummy",
-    "strain": "Apple-A-Day"
-   }
-  },
-  {
-   "id": "gold-016-gr-n-milk-chocolate-mini-bar-daytime-sativa-",
-   "input": {
-    "brand": "Grön",
-    "name": "Grön- Milk Chocolate Mini Bar- Daytime Sativa (100mg)",
-    "category": "edible",
-    "variant": "7g",
-    "description": ""
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "chocolate",
-    "variant": "100mg"
-   }
-  },
-  {
-   "id": "gold-017-ayrloom-up-12oz-beverage-pineapple-mango",
-   "input": {
-    "brand": "Ayrloom",
-    "name": "Ayrloom UP (12oz) Beverage - Pineapple Mango",
-    "category": "edible",
-    "variant": "355",
-    "description": "juicy + perfectly sweet, naturally. no need for PTO here! capture that ooo feeling with every sip, + recharge your mind like you’re on ‘island time’."
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "beverage",
-    "strain": "Pineapple Mango",
-    "product_line": "UP"
-   }
-  },
-  {
-   "id": "gold-018-camino-balance-yuzu-lemon-100mg-20pk",
-   "input": {
-    "brand": "Camino",
-    "name": "Camino - Balance Yuzu Lemon 100mg 20pk",
-    "category": "edible",
-    "variant": "72g",
-    "description": "In the midst of life's chaos, from juggling stress at work to navigating personal relationships, it's no wonder we sometimes find ourselves feeling off-kilter and in need of grounding. When stress weighs heavy and you're yearning to reclaim your sense of equilibrium, turn to Yuzu Lemon 'Balance' Cam"
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "gummy",
-    "strain": "Yuzu Lemon",
-    "variant": "100mg"
-   }
-  },
-  {
-   "id": "gold-019-ayrloom-10-mg-thc-5mg-thcv-gummies-sol-burst",
-   "input": {
-    "brand": "Ayrloom",
-    "name": "Ayrloom (10 mg THC|5mg THCV Gummies) - Sol Burst",
-    "category": "edible",
-    "variant": "40g",
-    "description": ""
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "gummy",
-    "strain": "Sol Burst"
-   }
-  },
-  {
-   "id": "gold-020-camino-recover-freshly-squeezed-1-2-cbg-20pk",
-   "input": {
-    "brand": "Caminos",
-    "name": "Camino - Recover | Freshly Squeezed 1:2 CBG 20pk",
-    "category": "edible",
-    "variant": "72g",
-    "description": "Picture this: You've just wrapped up a hectic workday, your mind is racing with thoughts, and your body is feeling tense. This is the perfect occasion to reach for Camino Freshly Squeezed Recover gummies. Each gummy contains 5MG of THC and 10MG of CBG, along with hybrid-like terpenes that work toget"
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "gummy",
-    "strain": "Freshly Squeezed",
-    "variant": "100mg"
-   }
-  },
-  {
-   "id": "gold-021-camino-chews-pineapple-paradise-1-1-thc-cbc-",
-   "input": {
-    "brand": "Camino",
-    "name": "Camino Chews - Pineapple Paradise | 1:1 THC:CBC (100MG)",
-    "category": "edible",
-    "variant": "46g",
-    "description": "Picture yourself on a tranquil seaside trail, the gentle breeze carrying the scent of fresh pineapples and the rhythmic sound of waves lapping at the shore. This is the feeling Pineapple Paradise ‘Bliss’ Camino Chews bring- a state of pure euphoria and contentment. Each sweet, tropical fruit chew is"
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "gummy",
-    "strain": "Pineapple Paradise",
-    "variant": "100mg"
-   }
-  },
-  {
-   "id": "gold-022-gr-n-milk-chocolate-full-bar-sativa",
-   "input": {
-    "brand": "Grön",
-    "name": "Grön - Milk Chocolate | Full Bar | Sativa",
-    "category": "edible",
-    "variant": "45g",
-    "description": "Delight your senses with the classic taste of buttery smooth Fair Trade milk chocolate. Infused with THC, the sativa effects will make any day so much sweeter."
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "chocolate",
-    "strain": "Sativa"
-   }
-  },
-  {
-   "id": "gold-023-hashtag-honey-tropical-punch-live-resin-gumm",
-   "input": {
-    "brand": "Hashtag Honey",
-    "name": "Hashtag Honey - Tropical Punch (Live Resin Gummies",
-    "category": "edible",
-    "variant": "50.2g",
-    "description": "10pk, 100mg total. Nano-Infused Vegan + Gluten Free"
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "gummy",
-    "strain": "Tropical Punch",
-    "variant": "100mg"
-   }
-  },
-  {
-   "id": "gold-024-purple-punch-infused-5pk-0-5g-pre-rolls",
-   "input": {
-    "brand": "STIIIZY",
-    "name": "Purple Punch | Infused 5pk 0.5g Pre-Rolls",
-    "category": "preroll",
-    "variant": "2.5g",
-    "description": "Purple Punch is a delicious dessert strain that is best suited for after dinner. Its effects may help with managing nausea, stress, minor body aches, and sleeplessness."
-   },
-   "expect": {
-    "category": "preroll",
-    "strain": "Purple Punch",
-    "variant": "2.5g"
-   }
-  },
-  {
-   "id": "gold-025-aphrodite-vanilla-gelato-foam-tip-pre-roll-5",
-   "input": {
-    "brand": "Aphrodite",
-    "name": "Aphrodite - Vanilla Gelato | Foam Tip Pre-Roll 5PK",
-    "category": "preroll",
-    "variant": "2.5g",
-    "description": "You’ve never smoked anything like Aphrodite. Her unique star filter improves your experience without compromising the effect. We use only the freshest flowers: no shake, no trim."
-   },
-   "expect": {
-    "category": "preroll",
-    "subtype": "pack",
-    "strain": "Vanilla Gelato",
-    "variant": "2.5g"
-   }
-  },
-  {
-   "id": "gold-026-jaunty-stay-puft-x-strawberry-meltz-1g-hash-",
-   "input": {
-    "brand": "Jaunty",
-    "name": "Jaunty - Stay Puft x Strawberry Meltz | 1G Hash Hole",
-    "category": "preroll",
-    "variant": "1g",
-    "description": "Gassy/Pungent This Hash Hole combines .8 grams of Stay Puft (hybrid) premium indoor flower paired with .2 grams of Strawberry Meltz (sativa) 100% solventless live rosin for an overall profile that includes creamy marshmallow with smooth diesel gas with hints of honey and strawberry cream. Potency 35"
-   },
-   "expect": {
-    "category": "preroll",
-    "subtype": "infused",
-    "strain": "Stay Puft x Strawberry Meltz",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "gold-027-budd-lemon-cherry-gelato-1g-pre-roll",
-   "input": {
-    "brand": "Budd",
-    "name": "Budd - Lemon Cherry Gelato | 1G Pre-Roll",
-    "category": "preroll",
-    "variant": "1g",
-    "description": "Taste the hype with Lemon Cherry Gelato. This heavy-hitting hybrid serves up a mouthwatering mix of sour lemon, ripe cherry, and sweet fuel. Rolled and ready to go, it offers a blissed-out, relaxing vibe that hits hard and lingers long."
-   },
-   "expect": {
-    "category": "preroll",
-    "subtype": "single",
-    "strain": "Lemon Cherry Gelato",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "gold-028-claybourne-co-strawberry-cough-flyers-infuse",
-   "input": {
-    "brand": "Claybourne Co.",
-    "name": "Claybourne Co. - Strawberry Cough | Flyers Infused 1.5G Blunt",
-    "category": "preroll",
-    "variant": "1.5g",
-    "description": "Meet the 'Loudest on the Block': Flyers 1.5g Infused Blunt. Crafted from premium indoor, full nug flower infused with THCa & liquid diamonds, natural terpenes and wrapped in an herbal blend cone made of chamomile, cacao, & yerba maté. A badass blunt built better."
-   },
-   "expect": {
-    "category": "preroll",
-    "subtype": "infused",
-    "strain": "Strawberry Cough",
-    "product_line": "Flyers",
-    "variant": "1.5g"
-   }
-  },
-  {
-   "id": "gold-029-claybourne-co-king-louis-og-diamond-frosted-",
-   "input": {
-    "brand": "Claybourne Co.",
-    "name": "Claybourne Co. - King Louis OG| Diamond Frosted Flyers Pre-Roll 5 Pack",
-    "category": "preroll",
-    "variant": "2.5g",
-    "description": "Tried & True Cultivation, Breeding & Genetics. Home of ultra premium indoor flower and infused pre-rolls. Try our newest line of THCa coated Frosted Flyers."
-   },
-   "expect": {
-    "category": "preroll",
-    "strain": "King Louis OG",
-    "variant": "2.5g"
-   }
-  },
-  {
-   "id": "gold-030-the-plug-pack-tequila-sunrise-1g-preroll",
-   "input": {
-    "brand": "The Plug Pack",
-    "name": "The Plug Pack - Tequila Sunrise | 1G PreRoll",
-    "category": "preroll",
-    "variant": "1g",
-    "description": ""
-   },
-   "expect": {
-    "category": "preroll",
-    "subtype": "single",
-    "strain": "Tequila Sunrise",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "gold-031-nanticoke-coconut-cream-1g-infused-pre-roll",
-   "input": {
-    "brand": "Nanticoke",
-    "name": "Nanticoke - Coconut Cream | 1G Infused Pre-Roll",
-    "category": "preroll",
-    "variant": "1g",
-    "description": "Strain Type: Indica Dominant Effects: With its highly potent THC%, users can expect this buzz to come on very fast and strong, while lasting for an extended period of time. It initially produces a brief light euphoric sensation that is quickly overlaid by a powerful relaxing effect. Aromas/Flavors: "
-   },
-   "expect": {
-    "category": "preroll",
-    "subtype": "infused",
-    "strain": "Coconut Cream",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "gold-032-lowell-smokes-quicks-afternoon-delight-0-35g",
-   "input": {
-    "brand": "lowell smokes",
-    "name": "Lowell Smokes (Quicks) - Afternoon Delight | 0.35G 10PK",
-    "category": "preroll",
-    "variant": "3.5g",
-    "description": "Settle into the sweet spot of the day with Afternoon Delight, a balanced Hybrid blend crafted for easy conversation, shared laughter, and staying present in the moment. Notes of bright citrus, soft earth, and subtle floral spice come together in a smooth, uplifting experience that brings energy with"
-   },
-   "expect": {
-    "category": "preroll",
-    "subtype": "pack",
-    "strain": "Afternoon Delight",
-    "product_line": "Quicks",
-    "variant": "3.5g"
-   }
-  },
-  {
-   "id": "gold-033-claybourne-co-banana-og-flyers-infused-1-5g-",
-   "input": {
-    "brand": "Claybourne Co.",
-    "name": "Claybourne Co. - Banana OG | Flyers Infused 1.5G Blunt",
-    "category": "preroll",
-    "variant": "1.5g",
-    "description": "Meet the 'Loudest on the Block': Flyers 1.5g Infused Blunt. Crafted from premium indoor, full nug flower infused with THCa & liquid diamonds, natural terpenes and wrapped in an herbal blend cone made of chamomile, cacao, & yerba maté. A badass blunt built better."
-   },
-   "expect": {
-    "category": "preroll",
-    "subtype": "infused",
-    "strain": "Banana OG",
-    "product_line": "Flyers",
-    "variant": "1.5g"
-   }
-  },
-  {
-   "id": "gold-034-ruby-farms-classics-7pk-pre-rolls-trop-cherr",
-   "input": {
-    "brand": "Ruby Farms",
-    "name": "Ruby Farms Classics (7pk pre rolls) Trop Cherry",
-    "category": "preroll",
-    "variant": "5g",
-    "description": ""
-   },
-   "expect": {
-    "category": "preroll",
-    "subtype": "pack",
-    "strain": "Trop Cherry",
-    "variant": "5g"
-   }
-  },
-  {
-   "id": "gold-035-boutiq-snack-pack-cherry-lime-x-rz-11-5-x-05",
-   "input": {
-    "brand": "Boutiq",
-    "name": "Boutiq (Snack Pack) - Cherry Lime X RZ-11 | (5 x .05g) Diamond Infused PreRolls",
-    "category": "preroll",
-    "variant": "2.5g",
-    "description": "Tart cherry and lime sparkle with sativa energy, smoothed by creamy, candy gas for a full-spectrum flavor ride and cheerful daytime buzz."
-   },
-   "expect": {
-    "category": "preroll",
-    "strain": "Cherry Lime x RZ-11",
-    "variant": "2.5g"
-   }
-  },
-  {
-   "id": "gold-036-ruby-farms-hash-infused-blueberry-dj-cut-2pk",
-   "input": {
-    "brand": "Ruby Farms",
-    "name": "Ruby Farms Hash Infused - Blueberry DJ Cut | 2pk Pre-Rolls",
-    "category": "preroll",
-    "variant": "1g",
-    "description": "Each expertly hand-rolled joint is infused with premium hash, creating a smooth, rich smoke that enhances the natural flavors of the high-quality indica flower. Wrapped in natural, unbleached hemp, these pre-rolls bring a burst of sweet, fruity blueberry notes balanced by the earthy richness of the "
-   },
-   "expect": {
-    "category": "preroll",
-    "subtype": "infused",
-    "strain": "Blueberry DJ Cut",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "gold-037-florist-farms-mule-fuel-1g-live-resin-infuse",
-   "input": {
-    "brand": "florist farms",
-    "name": "Florist Farms - Mule Fuel | 1G Live Resin Infused Pre-Roll",
-    "category": "preroll",
-    "variant": "1g",
-    "description": "This 1 gram pre-roll is made with whole flower - never trim - and infused with live resin and pure THC-A Diamonds for an extra potent, full-bodied high. Definitely a go-to for experienced smokers or anyone wanting a more powerful hit. Effect: Hybrid Flavor: Gas forward with spicy undertones Ingredie"
-   },
-   "expect": {
-    "category": "preroll",
-    "subtype": "infused",
-    "strain": "Mule Fuel",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "gold-038-claybourne-co-fast-lane-sativa-flyers-blends",
-   "input": {
-    "brand": "Claybourne Co.",
-    "name": "Claybourne Co. - Fast Lane Sativa | Flyers Blends Pre-Rolls",
-    "category": "preroll",
-    "variant": "3.5g",
-    "description": "‘Fast Lane’ Sativa, Indica. Blue Dream x Durban Poison Introducing Flyers Blends - A full flower fusion of the most popular strains from our Flyers Variety Packs all rolled up in (7) .5g pre-rolls, 3.5g total. Each specially crafted blend delivers a robust and complimentary flavor profile suitable f"
-   },
-   "expect": {
-    "category": "preroll",
-    "variant": "3.5g"
-   }
-  },
-  {
-   "id": "gold-039-alibi-dream-star-cherry-diesel-4g-variety-pr",
-   "input": {
-    "brand": "alibi",
-    "name": "Alibi - Dream Star & Cherry Diesel | 4G Variety PreRoll Pack (4 x 1G)",
-    "category": "preroll",
-    "variant": "4g",
-    "description": "Effects: A combination of 2 Sativa prerolls and 2 Hybrid prerolls to match your mood Aromas/Flavors: Dream Star- Sweet Berries & Cherry Diesel - Notes of citrus, berries, earthy pine"
-   },
-   "expect": {
-    "category": "preroll",
-    "subtype": "pack",
-    "variant": "4g"
-   }
-  },
-  {
-   "id": "gold-040-eaton-botanicals-little-pandas-tropical-cool",
-   "input": {
-    "brand": "Eaton",
-    "name": "Eaton Botanicals Little Pandas - Tropical Cooler + Mullein Leaf | 5pk Pre-Rolls",
-    "category": "preroll",
-    "variant": "1.75g",
-    "description": ""
-   },
-   "expect": {
-    "category": "preroll",
-    "subtype": "pack",
-    "variant": "1.75g",
-    "product_line": "Little Pandas"
-   }
-  },
-  {
-   "id": "gold-041-jetpacks-fj-mini-0-6g-infused-preroll-strawb",
-   "input": {
-    "brand": "Jetpacks",
-    "name": "Jetpacks FJ-Mini (0.6g) Infused PreRoll - Strawberry Sour Diesel",
-    "category": "preroll",
-    "variant": "0.6g",
-    "description": ""
-   },
-   "expect": {
-    "category": "preroll",
-    "subtype": "infused",
-    "strain": "Strawberry Sour Diesel",
-    "variant": "0.6g"
-   }
-  },
-  {
-   "id": "gold-042-smoke-wrld-mochi-runtz-3-5g-flower",
-   "input": {
-    "brand": "Smoke",
-    "name": "Smoke WRLD - Mochi Runtz | 3.5G Flower",
-    "category": "flower",
-    "variant": "3.5g",
-    "description": ""
-   },
-   "expect": {
-    "category": "flower",
-    "subtype": "flower",
-    "strain": "Mochi Runtz",
-    "variant": "3.5g"
-   }
-  },
-  {
-   "id": "gold-043-the-plug-pack-sapphire-haze-28g-flower",
-   "input": {
-    "brand": "The Plug Pack",
-    "name": "The Plug Pack - Sapphire Haze | 28G Flower",
-    "category": "flower",
-    "variant": "28g",
-    "description": ""
-   },
-   "expect": {
-    "category": "flower",
-    "subtype": "flower",
-    "strain": "Sapphire Haze",
-    "variant": "28g"
-   }
-  },
-  {
-   "id": "gold-044-umamii-ice-cream-cake-3-5g-flower",
-   "input": {
-    "brand": "Umamii",
-    "name": "Umamii - Ice Cream Cake | 3.5g Flower",
-    "category": "flower",
-    "variant": "3.5g",
-    "description": "Ice Cream Cake is a rare indica dominant hybrid strain (75% indica/25% sativa) created through a cross of the Gelato 33 X Wedding Cake strains. With this bud, the name says it all in the flavor department. Ice Cream Cake packs a super delicious cheesy creamy flavor with a sweet nuttiness that linger"
-   },
-   "expect": {
-    "category": "flower",
-    "subtype": "flower",
-    "strain": "Ice Cream Cake",
-    "variant": "3.5g"
-   }
-  },
-  {
-   "id": "gold-045-revert-crumble-cake-3-5g-flower",
-   "input": {
-    "brand": "Revert",
-    "name": "Revert - Crumble Cake | 3.5G Flower",
-    "category": "flower",
-    "variant": "3.5g",
-    "description": ""
-   },
-   "expect": {
-    "category": "flower",
-    "subtype": "flower",
-    "strain": "Crumble Cake",
-    "variant": "3.5g"
-   }
-  },
-  {
-   "id": "gold-046-alchemy-pure-space-panda-0-7g-flower-bag",
-   "input": {
-    "brand": "Alchemy Pure",
-    "name": "Alchemy Pure - Space Panda | 0.7G Flower Bag",
-    "category": "flower",
-    "variant": "0.7g",
-    "description": "Oreoz-bred and beautifully purple, Space Panda delivers rich chocolate-diesel flavor with a fast-hitting euphoric buzz that melts into deep full-body relaxation. A heavy indica favorite for winding down, stress relief, and late-night vibes"
-   },
-   "expect": {
-    "category": "flower",
-    "subtype": "flower",
-    "strain": "Space Panda",
-    "variant": "0.7g"
-   }
-  },
-  {
-   "id": "gold-047-ttm-essentials-northern-lights-3-5g-flower-b",
-   "input": {
-    "brand": "To The Moon",
-    "name": "TTM Essentials - Northern Lights | 3.5G Flower Bag",
-    "category": "flower",
-    "variant": "3.5g",
-    "description": "TTM Space Essentials bring an 8th of indoor quality flower at an affordable price for everyone to catch a flight To The Moon. Featuring true rare genetics & made for everyday smoke. Genetics: Afghani x Thai Flavor and Taste: Pine, Earthy, Woody"
-   },
-   "expect": {
-    "category": "flower",
-    "subtype": "flower",
-    "strain": "Northern Lights",
-    "variant": "3.5g"
-   }
-  },
-  {
-   "id": "gold-048-smoke-wrld-red-zprite-3-5g",
-   "input": {
-    "brand": "Smoke",
-    "name": "Smoke WRLD - Red Zprite | 3.5G",
-    "category": "flower",
-    "variant": "3.5g",
-    "description": ""
-   },
-   "expect": {
-    "category": "flower",
-    "subtype": "flower",
-    "strain": "Red Zprite",
-    "variant": "3.5g"
-   }
-  },
-  {
-   "id": "gold-049-budd-lemon-cherry-gelato-3-5g-premium-smalls",
-   "input": {
-    "brand": "Budd",
-    "name": "Budd - Lemon Cherry Gelato | 3.5G Premium Smalls",
-    "category": "flower",
-    "variant": "3.5g",
-    "description": "Taste the hype with Budd NY Lemon Cherry Gelato. A standout in the New York market, this heavy-hitting hybrid serves up a mouthwatering mix of sour lemon, ripe cherry, and sweet fuel. Whether you’re uptown or downtown, it offers a blissed-out, relaxing vibe that hits hard and lingers long. Flavor Pr"
-   },
-   "expect": {
-    "category": "flower",
-    "subtype": "smalls",
-    "strain": "Lemon Cherry Gelato",
-    "variant": "3.5g"
-   }
-  },
-  {
-   "id": "gold-050-kickfly-s-blackscotti-14g-flower",
-   "input": {
-    "brand": "Kickfly's",
-    "name": "Kickfly's - Blackscotti | 14G Flower",
-    "category": "flower",
-    "variant": "14g",
-    "description": "Black Scotti (often referred to as Blackscotti or simply Scotti) is a popular indica-leaning hybrid strain known for its potent, calming effects and dessert-gas aroma. Key Effects of Black Scotti: Relaxation & Calm: Users frequently report a strong sense of relaxation and a calm,, mellowing high, ma"
-   },
-   "expect": {
-    "category": "flower",
-    "subtype": "flower",
-    "strain": "Blackscotti",
-    "variant": "14g"
-   }
-  },
-  {
-   "id": "gold-051-leal-chronic-tonic-3-5g",
-   "input": {
-    "brand": "LEAL",
-    "name": "LEAL - Chronic Tonic | 3.5G",
-    "category": "flower",
-    "variant": "3.5g",
-    "description": ""
-   },
-   "expect": {
-    "category": "flower",
-    "subtype": "flower",
-    "strain": "Chronic Tonic",
-    "variant": "3.5g"
-   }
-  },
-  {
-   "id": "gold-052-the-botanist-gsc-3-5g-flower",
-   "input": {
-    "brand": "The Botanist",
-    "name": "The Botanist - GSC | 3.5G Flower",
-    "category": "flower",
-    "variant": "3.5g",
-    "description": ""
-   },
-   "expect": {
-    "category": "flower",
-    "subtype": "flower",
-    "strain": "GSC",
-    "variant": "3.5g"
-   }
-  },
-  {
-   "id": "gold-053-untitled-sour-diesel-7g",
-   "input": {
-    "brand": "untitled",
-    "name": "untitled - Sour Diesel | 7G",
-    "category": "flower",
-    "variant": "7g",
-    "description": ""
-   },
-   "expect": {
-    "category": "flower",
-    "subtype": "flower",
-    "strain": "Sour Diesel",
-    "variant": "7g"
-   }
-  },
-  {
-   "id": "gold-054-revert-golden-pineapple-14g-flower",
-   "input": {
-    "brand": "Revert",
-    "name": "Revert - Golden Pineapple  14G Flower",
-    "category": "flower",
-    "variant": "14g",
-    "description": "Golden Pineapple (Hybrid) – 14 gram bag crafted from sun-grown flower. Bright tropical fruit leads the profile with notes of ripe pineapple and citrus, supported by a subtle sweetness, while a terpene-rich aroma of fresh-cut fruit, light earth, and soft herbal tones rounds it out with a clean finish"
-   },
-   "expect": {
-    "category": "flower",
-    "subtype": "flower",
-    "strain": "Golden Pineapple",
-    "variant": "14g"
-   }
-  },
-  {
-   "id": "gold-055-noizey-ny-super-glue-4g-flower",
-   "input": {
-    "brand": "Noizey",
-    "name": "Noizey - NY Super Glue | 4G Flower",
-    "category": "flower",
-    "variant": "4g",
-    "description": "New York Super Glue (often by Pollen Wizard) is a heavy-yielding, mostly indica hybrid (NYSD x Super Glue) known for dense, purple-hued, trichome-heavy flowers. It features a pungent aroma of citrus, earthy, and diesel, providing a relaxed, \"couch-lock\" high, making it ideal for treating pain, insom"
-   },
-   "expect": {
-    "category": "flower",
-    "subtype": "flower",
-    "strain": "NY Super Glue",
-    "variant": "4g"
-   }
-  },
-  {
-   "id": "gold-056-smoakland-tropical-haze-28g-flower",
-   "input": {
-    "brand": "Smoakland",
-    "name": "Smoakland - Tropical Haze | 28g Flower",
-    "category": "flower",
-    "variant": "28g",
-    "description": "The perfect fruity and energizing bud for a wake-and-bake on a lazy day, Tropical Haze brings on an amazing flavor and long-lasting effects that will leave you flying for hours on end. Like its name suggests, Tropical Haze has a deliciously fruity and tropical sour citrus flavor with a light touch o"
-   },
-   "expect": {
-    "category": "flower",
-    "subtype": "flower",
-    "strain": "Tropical Haze",
-    "variant": "28g"
-   }
-  },
-  {
-   "id": "gold-057-matter-grape-gas-3-5g-flower",
-   "input": {
-    "brand": "matter.",
-    "name": "matter - Grape Gas - | 3.5G Flower",
-    "category": "flower",
-    "variant": "3.5g",
-    "description": ""
-   },
-   "expect": {
-    "category": "flower",
-    "subtype": "flower",
-    "strain": "Grape Gas",
-    "variant": "3.5g"
-   }
-  },
-  {
-   "id": "gold-058-gypsy-weed-kombucha-oreo-28g",
-   "input": {
-    "brand": "Gypsy Weed",
-    "name": "Gypsy Weed - Kombucha Oreo 28g",
-    "category": "flower",
-    "variant": "28g",
-    "description": ""
-   },
-   "expect": {
-    "category": "flower",
-    "subtype": "flower",
-    "strain": "Kombucha Oreo",
-    "variant": "28g"
-   }
-  },
-  {
-   "id": "gold-059-munchkins-trop-cherry-3-5g-small-buds",
-   "input": {
-    "brand": "Munchkins",
-    "name": "Munchkins - Trop Cherry | 3.5g Small Buds",
-    "category": "flower",
-    "variant": "3.5g",
-    "description": ""
-   },
-   "expect": {
-    "category": "flower",
-    "subtype": "smalls",
-    "strain": "Trop Cherry",
-    "variant": "3.5g"
-   }
-  },
-  {
-   "id": "gold-060-blends-by-basin-fruity-pebbles-1g-cart",
-   "input": {
-    "brand": "Basin Mixtures",
-    "name": "Blends By Basin - Fruity Pebbles | 1G Cart",
-    "category": "other",
-    "variant": "1g",
-    "description": ""
-   },
-   "expect": {
-    "category": "vaporizers",
-    "subtype": "cart",
-    "strain": "Fruity Pebbles",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "gold-061-select-flavor-series-grape-ape-1g-briq-v2",
-   "input": {
-    "brand": "Select",
-    "name": "Select Flavor Series - Grape Ape | 1G Briq V2",
-    "category": "other",
-    "variant": "1g",
-    "description": "**Grape Ape** Concord grape sweetness defines this indica, layered with subtle berry and woody notes. The profile is rich and smooth, delivering classic grape flavor with earthy depth."
-   },
-   "expect": {
-    "category": "vaporizers",
-    "strain": "Grape Ape",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "gold-062-timeless-t2-blue-dream-chill-2g-rechargeable",
-   "input": {
-    "brand": "Timeless",
-    "name": "Timeless T2 - Blue Dream | Chill - 2G Rechargeable Vape",
-    "category": "other",
-    "variant": "2g",
-    "description": "Drift away with this legendary strain. Regarded for its high Myrcene content, this profile has a pleasant mind/body balance that encourages relaxation. Flavors of blueberry and vanilla are sharply contrasted by notes of haze and fresh herbs."
-   },
-   "expect": {
-    "category": "vaporizers",
-    "strain": "Blue Dream",
-    "variant": "2g"
-   }
-  },
-  {
-   "id": "gold-063-florist-farms-durban-poison-1g-cart",
-   "input": {
-    "brand": "florist farms",
-    "name": "Florist Farms - Durban Poison | 1G Cart",
-    "category": "other",
-    "variant": "1g",
-    "description": ""
-   },
-   "expect": {
-    "category": "vaporizers",
-    "subtype": "cart",
-    "strain": "Durban Poison",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "gold-064-select-ace-terpologist-durban-fizz-1g-cart",
-   "input": {
-    "brand": "Select",
-    "name": "Select ACE TERPOLOGIST - Durban Fizz | 1G Cart",
-    "category": "other",
-    "variant": "1g",
-    "description": "Power up your day with the bold, invigorating experience of the Select ACE – Durban Fizz Vape Cartridge, a 1g sativa cartridge crafted for clarity, energy, and flavor. Featuring Select’s revolutionary Aqueous Cannabis Extraction process and a THC potency averaging over 90%, this premium vape deliver"
-   },
-   "expect": {
-    "category": "vaporizers",
-    "subtype": "cart",
-    "strain": "Durban Fizz",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "gold-065-jetty-el-chiveoz-1g-solventless-live-rosin-a",
-   "input": {
-    "brand": "Jetty",
-    "name": "Jetty - El Chiveoz | 1G Solventless Live Rosin AIO",
-    "category": "other",
-    "variant": "1g",
-    "description": ""
-   },
-   "expect": {
-    "category": "vaporizers",
-    "subtype": "all-in-one",
-    "strain": "El Chiveoz",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "gold-066-jaunty-mango-haze-1-5g-aio",
-   "input": {
-    "brand": "Jaunty",
-    "name": "Jaunty- Mango Haze 1.5g AIO",
-    "category": "other",
-    "variant": "1.5g",
-    "description": "Mango Haze is a sativa known for its uplifting, cerebral, happy effects and a sweet mango aroma and flavor that will keep you coming back for more."
-   },
-   "expect": {
-    "category": "vaporizers",
-    "subtype": "all-in-one",
-    "strain": "Mango Haze",
-    "variant": "1.5g"
-   }
-  },
-  {
-   "id": "gold-067-timeless-t1-new-york-sour-diesel-1g-recharga",
-   "input": {
-    "brand": "Timeless",
-    "name": "Timeless T1 - New York Sour Diesel | 1G Rechargable Vaporizer",
-    "category": "other",
-    "variant": "1g",
-    "description": "Sour Diesel is a classic with its unmistakable fuel-heavy aroma, layered with herbal spice and a touch of citrus. Caryophyllene, Myrcene, and Limonene dominate the terpene profile, creating a sharp and tangy flavor that keeps it bold from start to finish."
-   },
-   "expect": {
-    "category": "vaporizers",
-    "strain": "New York Sour Diesel",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "gold-068-toast-royal-rntz-7g-infused-pre-ground-hybri",
-   "input": {
-    "brand": "Toast",
-    "name": "Toast - Royal Rntz | 7G Infused Pre-Ground Hybrid Flower",
-    "category": "other",
-    "variant": "7g",
-    "description": "Behold, the crown jewel of your stash. With a vibrant candy-like sweetness, Royal Rntz sparks your creative mind while gently relaxing your body—the perfect balance, whether you're hitting the town or just lounging around your palace. We’ve done the hard work for you - expertly infusing premium conc"
-   },
-   "expect": {
-    "category": "flower",
-    "strain": "Royal Rntz",
-    "variant": "7g"
-   }
-  },
-  {
-   "id": "gold-069-jaunty-sugar-cookie-1-5g-all-in-one-palm",
-   "input": {
-    "brand": "Jaunty",
-    "name": "JAUNTY- Sugar Cookie | 1.5G All-In-One Palm",
-    "category": "other",
-    "variant": "1.5g",
-    "description": "Sugar Cookie is a tasty hybrid with a vanilla-butter flavor and a smooth, mellow exhale. Fruity on the nose and sweet on the finish, this strain delivers a blissful lift that eases the body and relaxes the mind."
-   },
-   "expect": {
-    "category": "vaporizers",
-    "subtype": "all-in-one",
-    "strain": "Sugar Cookie",
-    "variant": "1.5g"
-   }
-  },
-  {
-   "id": "gold-070-timeless-noir-707-headband-live-resin-1g-vap",
-   "input": {
-    "brand": "Timeless",
-    "name": "Timeless Noir - 707 Headband | Live Resin 1G Vape Cartridge",
-    "category": "other",
-    "variant": "1g",
-    "description": "50% Indica, 50% Sativa Top Notes - Lime and Skunk Bottom Notes - Pine and Earth"
-   },
-   "expect": {
-    "category": "vaporizers",
-    "subtype": "cart",
-    "strain": "707 Headband",
-    "product_line": "Noir",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "gold-071-the-plug-pack-lemon-berry-kush-28g-infused-p",
-   "input": {
-    "brand": "The Plug Pack",
-    "name": "The Plug Pack - Lemon Berry Kush | 28g Infused Pre-Ground",
-    "category": "other",
-    "variant": "28g",
-    "description": "A balanced high featuring energetic, giggly, and creative effects that later settle into, deep, comfortable physical relaxation, making it popular for stress, pain, and social activity"
-   },
-   "expect": {
-    "category": "flower",
-    "strain": "Lemon Berry Kush",
-    "variant": "28g"
-   }
-  },
-  {
-   "id": "gold-072-ayrloom-0-5g-disposable-lychee-dream",
-   "input": {
-    "brand": "Ayrloom",
-    "name": "Ayrloom (0.5g Disposable) - Lychee Dream",
-    "category": "other",
-    "variant": "0.5g",
-    "description": ""
-   },
-   "expect": {
-    "category": "vaporizers",
-    "subtype": "all-in-one",
-    "strain": "Lychee Dream",
-    "variant": "0.5g"
-   }
-  },
-  {
-   "id": "gold-073-ayrloom-0-5g-disposable-blue-widow",
-   "input": {
-    "brand": "Ayrloom",
-    "name": "Ayrloom (0.5g Disposable) - Blue Widow",
-    "category": "other",
-    "variant": "0.5g",
-    "description": "Unleash a bold and balanced vaping experience with Ayrloom’s 0.5g Vape AIO Pen - Blue Widow. This premium disposable vape pen offers a smooth, potent hit wrapped in the unique flavor of Blue Widow — a striking blend of earthy, sweet berry notes and a subtle herbal undertone that creates a deeply sat"
-   },
-   "expect": {
-    "category": "vaporizers",
-    "subtype": "all-in-one",
-    "strain": "Blue Widow",
-    "variant": "0.5g"
-   }
-  },
-  {
-   "id": "gold-074-timeless-noir-panamango-live-resin-1g-vape-c",
-   "input": {
-    "brand": "Timeless",
-    "name": "Timeless Noir - Panamango | Live Resin 1G Vape Cartridge",
-    "category": "other",
-    "variant": "1g",
-    "description": "30% Indica, 70% Sativa Top Notes - Mango and Citrus Bottom Notes - Gas and Tropical Fruit"
-   },
-   "expect": {
-    "category": "vaporizers",
-    "subtype": "cart",
-    "strain": "Panamango",
-    "product_line": "Noir",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "gold-075-mfny-0-5g-live-resin-dispo-gelonade",
-   "input": {
-    "brand": "MFNY",
-    "name": "MFNY (0.5g Live Resin Dispo) - Gelonade",
-    "category": "other",
-    "variant": "0.5g",
-    "description": ""
-   },
-   "expect": {
-    "category": "vaporizers",
-    "subtype": "all-in-one",
-    "strain": "Gelonade",
-    "variant": "0.5g"
-   }
-  },
-  {
-   "id": "gold-076-kushy-punch-pineapple-jealousy-1g-510-thread",
-   "input": {
-    "brand": "Kushy Punch",
-    "name": "Kushy Punch - Pineapple Jealousy |1G 510 Thread",
-    "category": "other",
-    "variant": "1g",
-    "description": ""
-   },
-   "expect": {
-    "category": "vaporizers",
-    "subtype": "cart",
-    "strain": "Pineapple Jealousy",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "gold-077-doja-zoap-1g-aio-live-resin",
-   "input": {
-    "brand": "Doja",
-    "name": "Doja - Zoap | 1G AIO ( Live Resin)",
-    "category": "other",
-    "variant": "1g",
-    "description": "Infused with strain-specific live resin, Doja Zoap preserves the full terpene profile for an authentic cannabis experience. The hybrid formulation blends uplifting cerebral effects with relaxing body sensations, making it ideal for both recreational and wellness-focused consumers. This sleek, all-in"
-   },
-   "expect": {
-    "category": "vaporizers",
-    "subtype": "all-in-one",
-    "strain": "Zoap",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "gold-078-jaunty-strawnana-1-5g-aio",
-   "input": {
-    "brand": "Jaunty",
-    "name": "Jaunty - Strawnana | 1.5G AIO",
-    "category": "other",
-    "variant": "1.5g",
-    "description": "Strawnana is an indica-leaning hybrid that delivers a happy, mentally lifted high with a heavy body melt. Expect sweet strawberry flavors with hints of banana and bubblegum on the exhale."
-   },
-   "expect": {
-    "category": "vaporizers",
-    "subtype": "all-in-one",
-    "strain": "Strawnana",
-    "variant": "1.5g"
-   }
-  },
-  {
-   "id": "gold-079-mfny-0-5g-live-resin-dispo-honey-banana",
-   "input": {
-    "brand": "MFNY",
-    "name": "MFNY (0.5g Live Resin Dispo) - Honey Banana",
-    "category": "other",
-    "variant": "0.5g",
-    "description": ""
-   },
-   "expect": {
-    "category": "vaporizers",
-    "subtype": "all-in-one",
-    "strain": "Honey Banana",
-    "variant": "0.5g"
-   }
-  },
-  {
-   "id": "gold-080-ayrloom-rest-1g-disposable",
-   "input": {
-    "brand": "Ayrloom",
-    "name": "Ayrloom - Rest | 1G Disposable",
-    "category": "other",
-    "variant": "1g",
-    "description": ""
-   },
-   "expect": {
-    "category": "vaporizers",
-    "subtype": "all-in-one",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "gold-081-revert-galactic-jack-14g-kief-infused-ground",
-   "input": {
-    "brand": "Revert",
-    "name": "Revert - Galactic Jack | 14G Kief Infused Ground Flower",
-    "category": "other",
-    "variant": "14g",
-    "description": "Galactic Jack is a vibrant sativa known for its uplifting effects and bright, citrus-forward flavor. This preground flower is infused with kief to enhance potency and deliver a smooth, energizing smoke. Ready to roll, pack, or load straight from the bag, this 14g option is built for convenience with"
-   },
-   "expect": {
-    "category": "flower",
-    "strain": "Galactic Jack",
-    "variant": "14g"
-   }
-  },
-  {
-   "id": "gold-082-stiiizy-blue-burst-1g-disposable",
-   "input": {
-    "brand": "STIIIZY",
-    "name": "Stiiizy - Blue Burst | 1G Disposable",
-    "category": "other",
-    "variant": "1g",
-    "description": "This hybrid delivers a well-balanced mind and body high with a juicy burst of flavor. TASTE: Blue Raspberry, Citrus, Mixed Fruits"
-   },
-   "expect": {
-    "category": "vaporizers",
-    "subtype": "all-in-one",
-    "strain": "Blue Burst",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "gold-083-stiiizy-premium-jack-5g-pod",
-   "input": {
-    "brand": "",
-    "name": "Stiiizy- Premium Jack | .5g Pod",
-    "category": "other",
-    "variant": "0.5g",
-    "description": ""
-   },
-   "expect": {
-    "category": "vaporizers",
-    "subtype": "pod",
-    "strain": "Premium Jack",
-    "variant": "0.5g"
-   }
-  },
-  {
-   "id": "gold-084-jetpacks-donny-burger-1g-indica-diamonds",
-   "input": {
-    "brand": "Jetpacks",
-    "name": "Jetpacks - Donny Burger | 1G Indica Diamonds",
-    "category": "concentrate",
-    "variant": "1g",
-    "description": "The Jetpacks Donny Burger 1g Diamonds deliver heavy potency, loud funky terps, and that signature Jetpacks clarity in pure crystalline form. Donny Burger is known for its savory, diesel‑cheese funk layered with earthy kush and a hint of herbal spice, and the diamonds format amplifies both the flavor"
-   },
-   "expect": {
-    "category": "concentrate",
-    "subtype": "diamonds",
-    "strain": "Donny Burger",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "gold-085-jetty-gdp-1g-concentrate-dablicator",
-   "input": {
-    "brand": "Jetty",
-    "name": "Jetty - GDP | 1G Concentrate Dablicator",
-    "category": "concentrate",
-    "variant": "1g",
-    "description": "GDP is a classic NorCal strain. It’s a potent, pure, heavy indica that will surely have you couch-locked. Good earthy flavor with hints of citrus fruit and spice. Dose up a joint. Direct dab without any tools. Add to flower. However you use it, the Jetty Dablicator™ Oil Applicator is a better way to"
-   },
-   "expect": {
-    "category": "concentrate",
-    "strain": "GDP",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "gold-086-jetpacks-panama-punch-1g-sativa-diamonds",
-   "input": {
-    "brand": "Jetpacks",
-    "name": "Jetpacks - Panama Punch | 1G Sativa Diamonds",
-    "category": "concentrate",
-    "variant": "1g",
-    "description": "Jetpacks Panama Punch Diamonds, famous for its potent, uplifting, and creative effects, with a unique tropical fruit cocktail aroma and flavor, blending sweet mango/berry notes with spicy haze undertones, making it great for daytime focus and energy, though its powerful sativa buzz can be quite “sto"
-   },
-   "expect": {
-    "category": "concentrate",
-    "subtype": "diamonds",
-    "strain": "Panama Punch",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "gold-087-blotter-runtz-mintz-1g-live-resin-sugar",
-   "input": {
-    "brand": "Blotter",
-    "name": "Blotter - Runtz Mintz | 1G Live Resin Sugar",
-    "category": "concentrate",
-    "variant": "1g",
-    "description": ""
-   },
-   "expect": {
-    "category": "concentrate",
-    "subtype": "resin",
-    "strain": "Runtz Mintz",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "gold-088-mfny-chemdog-2g-live-resin-badder",
-   "input": {
-    "brand": "MFNY",
-    "name": "MFNY - Chemdog | 2g Live Resin Badder",
-    "category": "concentrate",
-    "variant": "2g",
-    "description": "Chemdog is one of the godfathers of modern cannabis history — the genetic backbone of Sour Diesel, OG Kush, and GMO/Garlic Cookies among others. It’s the second of the MFNY Classics that pay homage to the strains that shaped modern cannabis — and the highs they first brought us. MFNY Classics aren’t"
-   },
-   "expect": {
-    "category": "concentrate",
-    "subtype": "resin",
-    "strain": "Chemdog",
-    "variant": "2g"
-   }
-  },
-  {
-   "id": "gold-089-jetpacks-cherry-limeade-1g-sativa-badder",
-   "input": {
-    "brand": "Jetpacks",
-    "name": "Jetpacks - Cherry Limeade | 1G Sativa Badder",
-    "category": "concentrate",
-    "variant": "1g",
-    "description": "Turn up the flavor with Jetpacks – Badder – Cherry Limeade – 1g, now available at Cannabis Realm of NY. This premium 1-gram cannabis concentrate delivers bold fruit-forward terpenes, smooth badder consistency, and powerful effects designed for concentrate enthusiasts who appreciate both potency and "
-   },
-   "expect": {
-    "category": "concentrate",
-    "strain": "Cherry Limeade",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "gold-090-alchemy-pure-marakesh-1g-live-rosin",
-   "input": {
-    "brand": "Alchemy Pure",
-    "name": "Alchemy Pure - Marakesh |  1G Live Rosin",
-    "category": "concentrate",
-    "variant": "1g",
-    "description": "Marrakesh is a cross of Moroccan Peaches x Canal Street Runtz. It has a peach and citrus tart candy smell. You'll feel outgoing and creatively inspired, easily jumping in and out of any conversation happening around you with focus and gusto. A light sense of physical relaxation accompanies this brig"
-   },
-   "expect": {
-    "category": "concentrate",
-    "subtype": "rosin",
-    "strain": "Marakesh",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "gold-091-mind-melters-permanent-marker-1g-cold-cure-l",
-   "input": {
-    "brand": "Mind Melters",
-    "name": "Mind Melters - Permanent Marker | 1G Cold Cure Live Rosin",
-    "category": "concentrate",
-    "variant": "1g",
-    "description": ""
-   },
-   "expect": {
-    "category": "concentrate",
-    "subtype": "rosin",
-    "strain": "Permanent Marker",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "gold-092-hashtag-honey-chocolate-diesel-1g-live-sugar",
-   "input": {
-    "brand": "Hashtag Honey",
-    "name": "hashtag Honey - Chocolate Diesel | 1G Live Sugar",
-    "category": "concentrate",
-    "variant": "1g",
-    "description": ""
-   },
-   "expect": {
-    "category": "concentrate",
-    "strain": "Chocolate Diesel",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "gold-093-jetty-alien-og-1g-concentrate-dablicator",
-   "input": {
-    "brand": "Jetty",
-    "name": "Jetty - Alien OG | 1G Concentrate Dablicator",
-    "category": "concentrate",
-    "variant": "1g",
-    "description": ""
-   },
-   "expect": {
-    "category": "concentrate",
-    "strain": "Alien OG",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "gold-094-timeless-combo-510-battery-and-case-black-ye",
-   "input": {
-    "brand": "Timeless",
-    "name": "Timeless - Combo 510 Battery and Case | Black/Yellow",
-    "category": "merch",
-    "variant": "",
-    "description": "Compatible with 510 Thread"
-   },
-   "expect": {
-    "category": "merch",
-    "subtype": "merch",
-    "strain": null,
-    "variant": ""
-   }
-  },
-  {
-   "id": "gold-095-raw-classic-cones-1-1-4-6-pack",
-   "input": {
-    "brand": "",
-    "name": "RAW Classic Cones - 1 1/4 6 Pack",
-    "category": "merch",
-    "variant": "",
-    "description": ""
-   },
-   "expect": {
-    "category": "merch",
-    "subtype": "merch",
-    "strain": null,
-    "variant": ""
-   }
-  },
-  {
-   "id": "gold-096-stiiizy-lite-battery-promo",
-   "input": {
-    "brand": "STIIIZY",
-    "name": "STIIIZY Lite Battery PROMO",
-    "category": "merch",
-    "variant": "",
-    "description": "Free With Purchase Of Stiiizy THC PODS ALSO : Stiiizy Premium THC PODS"
-   },
-   "expect": {
-    "category": "merch",
-    "subtype": "merch",
-    "strain": null,
-    "variant": ""
-   }
-  },
-  {
-   "id": "gold-097-human-grade-5-recycler-1a-dab-rig-smoke",
-   "input": {
-    "brand": "Human Grade",
-    "name": "Human Grade - 5\" Recycler 1A Dab Rig | Smoke",
-    "category": "merch",
-    "variant": "",
-    "description": ""
-   },
-   "expect": {
-    "category": "merch",
-    "subtype": "merch",
-    "strain": null
-   }
-  },
-  {
-   "id": "gold-098-mushroom-holder-dab-tool",
-   "input": {
-    "brand": "Human Grade",
-    "name": "Mushroom Holder Dab Tool",
-    "category": "merch",
-    "variant": "",
-    "description": ""
-   },
-   "expect": {
-    "category": "merch",
-    "subtype": "merch",
-    "strain": null
-   }
-  },
-  {
-   "id": "gold-099-stiiizy-pro-xl-battery-red",
-   "input": {
-    "brand": "STIIIZY",
-    "name": "STIIIZY Pro XL Battery - Red",
-    "category": "merch",
-    "variant": "",
-    "description": ""
-   },
-   "expect": {
-    "category": "merch",
-    "subtype": "merch",
-    "strain": null
-   }
-  },
-  {
-   "id": "gold-100-papa-barkley-thc1000-releaf-tincture-30ml",
-   "input": {
-    "brand": "Papa and Barkley",
-    "name": "Papa & Barkley - THC1000 Releaf Tincture | 30ml",
-    "category": "tinctures",
-    "variant": "30",
-    "description": "Our most potent THC formula, the THC1000 tincture provides powerful relief from discomfort and helps with unwinding and relaxation. Best for highly experienced cannabis consumers. Crafted with only two ingredients, MCT Oil and cannabis oil, and can be felt within 15 minutes, making it a perfect natu"
-   },
-   "expect": {
-    "category": "tinctures",
-    "subtype": "tincture",
-    "variant": "1000mg",
-    "product_line": "Releaf"
-   }
-  },
-  {
-   "id": "gold-101-mfny-yellow-beltz-live-resin-tincture",
-   "input": {
-    "brand": "MFNY",
-    "name": "MFNY - Yellow Beltz | Live Resin Tincture",
-    "category": "tinctures",
-    "variant": "15",
-    "description": ""
-   },
-   "expect": {
-    "category": "tinctures",
-    "subtype": "tincture",
-    "strain": "Yellow Beltz"
-   }
-  },
-  {
-   "id": "gold-102-ayrloom-beverage-enhancer-tincture-300mg",
-   "input": {
-    "brand": "Ayrloom",
-    "name": "Ayrloom Beverage Enhancer Tincture (300mg)",
-    "category": "tinctures",
-    "variant": "30",
-    "description": "Elevate your drink of choice with Ayrloom’s Beverage Enhancer Tincture, a discreet, convenient, and customizable way to infuse your favorite beverages with the power of THC. With 300mg of THC in each bottle, this potent tincture allows you to control your experience with precision, whether you’re ad"
-   },
-   "expect": {
-    "category": "tinctures",
-    "subtype": "tincture",
-    "variant": "300mg"
-   }
-  },
-  {
-   "id": "gold-103-mfny-rainbow-driver",
-   "input": {
-    "brand": "MFNY",
-    "name": "MFNY - Rainbow Driver",
-    "category": "tinctures",
-    "variant": "15",
-    "description": ""
-   },
-   "expect": {
-    "category": "tinctures",
-    "subtype": "tincture",
-    "strain": "Rainbow Driver"
-   }
-  },
-  {
-   "id": "gold-104-ayrloom-tincture-1000mg-thc-high-dose",
-   "input": {
-    "brand": "Ayrloom",
-    "name": "Ayrloom Tincture (1000mg THC) - High Dose",
-    "category": "tinctures",
-    "variant": "30",
-    "description": "Experience the power of precision with Ayrloom’s High Dose 1000mg THC Tincture, a potent and fast-acting way to elevate your cannabis experience. Designed for those who are looking for a stronger, more intense effect, this tincture delivers a high dose of THC for a truly transformative experience—wh"
-   },
-   "expect": {
-    "category": "tinctures",
-    "subtype": "tincture",
-    "variant": "1000mg"
-   }
-  },
-  {
-   "id": "gold-105-papa-barkley-1-3-releaf-balm-50ml",
-   "input": {
-    "brand": "Papa and Barkley",
-    "name": "Papa & Barkley - 1:3 Releaf Balm - | 50ml",
-    "category": "topical",
-    "variant": "15",
-    "description": "The 1:3 balm is rich in THC and provides relief to deep discomfort and sore muscles. Our award-winning, all-natural balm formula is enriched with nourishing oils including eucalyptus, tea tree, peppermint and lavender. ‍ Papa & Barkley’s Releaf Balms are made with our signature solventless, chemical"
-   },
-   "expect": {
-    "category": "topical",
-    "subtype": "topical",
-    "strain": null,
-    "product_line": "Releaf"
-   }
-  },
-  {
-   "id": "gold-106-ayrloom-balm-1000mg-thc-1000mg-cbd-revive-bc",
-   "input": {
-    "brand": "Ayrloom",
-    "name": "Ayrloom Balm (1000mg THC; 1000MG CBD) - Revive (BCS)",
-    "category": "topical",
-    "variant": "65.2g",
-    "description": ""
-   },
-   "expect": {
-    "category": "topical",
-    "subtype": "topical",
-    "strain": "Revive"
-   }
-  },
-  {
-   "id": "gold-107-ayrloom-balm-1000mg-thc-1000mg-cbd-restore-l",
-   "input": {
-    "brand": "Ayrloom",
-    "name": "Ayrloom Balm (1000mg THC; 1000MG CBD) - Restore (LRE)",
-    "category": "topical",
-    "variant": "65.2g",
-    "description": "a classic combination of lavender, rosemary and eucalyptus, this scent profile was formulated with r&r in mind."
-   },
-   "expect": {
-    "category": "topical",
-    "subtype": "topical",
-    "strain": "Restore"
-   }
-  }
- ]
+  "eval_type": "gold_dispensary",
+  "description": "Hand-labeled gold set: 108 real listings from The Plug (Crown Heights), stratified across categories, incl. the 'other' bucket the scraper's CATEGORY_MAP missed (mostly vapes — tests hint override), pack-math edibles, typo strains that must be kept verbatim (Red Zprite, Marakesh), product lines (UP, Flyers, Noir, Quicks, Releaf), and null-strain merch/topicals. Ambiguous fields are omitted from expect on purpose. Rulings: beverages are dosed in mg not volume; topical scent names ARE strains; version suffixes (2.0) are kept; concentrate 'diamonds' is its own subtype.",
+  "cases": [
+    {
+      "id": "gold-000-off-hours-razz-lemonade-live-resin-rope",
+      "input": {
+        "brand": "Off hours",
+        "name": "Off hours - Razz Lemonade | Live Resin Rope",
+        "category": "edible",
+        "variant": "30g",
+        "description": ""
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "gummy",
+        "strain": "Razz Lemonade"
+      }
+    },
+    {
+      "id": "gold-001-ayrloom-up-12oz-beverage-honeycrisp-5mg-1-1-",
+      "input": {
+        "brand": "Ayrloom",
+        "name": "Ayrloom UP (12oz) Beverage - Honeycrisp | 5MG 1:1 THC:CBD",
+        "category": "edible",
+        "variant": "12fl oz",
+        "description": ""
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "beverage",
+        "strain": "Honeycrisp",
+        "variant": "5mg",
+        "product_line": "UP"
+      }
+    },
+    {
+      "id": "gold-002-ayrloom-up-12oz-beverage-lemonade",
+      "input": {
+        "brand": "Ayrloom",
+        "name": "Ayrloom UP (12oz) Beverage - Lemonade",
+        "category": "edible",
+        "variant": "355",
+        "description": "your favorite summertime classic with a modern twist! perfectly sweet + never overpowering, this sublimely refreshing beverage will pair perfectly at your next outdoor gathering."
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "beverage",
+        "strain": "Lemonade",
+        "product_line": "UP"
+      }
+    },
+    {
+      "id": "gold-003-old-pal-x-babish-thc-infused-sugar-100mg",
+      "input": {
+        "brand": "Old Pal",
+        "name": "Old Pal x Babish - THC Infused Sugar | 100MG",
+        "category": "edible",
+        "variant": "",
+        "description": ""
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "other",
+        "variant": "100mg",
+        "strain": null
+      }
+    },
+    {
+      "id": "gold-004-wyld-kiwi-1-1-thc-thcv",
+      "input": {
+        "brand": "WYLD",
+        "name": "Wyld - Kiwi 1:1 THC:THCV",
+        "category": "edible",
+        "variant": "1g",
+        "description": "Our Kiwi gummies are tailor-made with real fruit and THCv to unlock your next level. With a 1 to 1 blend of THC and THCv, these uplifting gummies open up a Sativa experience that brings a boost of energy and focus to the typical THC high. Feeling Fuzzy? Time for Wyld’s Kiwi gummies."
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "gummy",
+        "strain": "Kiwi"
+      }
+    },
+    {
+      "id": "gold-005-florist-farms-peach-gummies-20mg-x-2pk-1-1-t",
+      "input": {
+        "brand": "florist farms",
+        "name": "Florist Farms - Peach Gummies | 20MG x 2PK 1:1 THC:CBD",
+        "category": "edible",
+        "variant": "",
+        "description": "These vegan gummies are made with real fruit and organic ingredients. If you’re looking for a gummy that actually tastes good, these are a top pick. They are genuinely some of the best gummies we’ve tried. Perfect for when you need to just chill out. Each gummy contains 10mg THC and 10mg CBD. CBD is"
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "gummy",
+        "strain": "Peach",
+        "variant": "40mg"
+      }
+    },
+    {
+      "id": "gold-006-camino-sleep-midnight-blueberry-5-1-cbn-20pk",
+      "input": {
+        "brand": "Caminos",
+        "name": "Camino - Sleep | Midnight Blueberry 5:1 CBN 20pk",
+        "category": "edible",
+        "variant": "72g",
+        "description": "Our top-selling product - and for a reason. When the day's demands set you up for a restless night, there's a perfect companion waiting for you: Midnight Blueberry Camino ‘Sleep’ Gummies, specially crafted to lull you into a deep and tranquil sleep that will leave you feeling truly refreshed. With a"
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "gummy",
+        "strain": "Midnight Blueberry",
+        "variant": "100mg"
+      }
+    },
+    {
+      "id": "gold-007-foy-strawberry-nighttime-1-1-1-chews",
+      "input": {
+        "brand": "foy",
+        "name": "Foy - Strawberry Nighttime | 1:1:1 Chews",
+        "category": "edible",
+        "variant": "70g",
+        "description": "Elevate your nightly routine with a healthier alternative that surpasses the standard gummy. Foy Nighttime vegan chews are consciously formulated with authentic non-GMO fruit purées, delicately coated in powder derived from natural strawberries, and enriched with a potent adaptogen blend of USDA Cer"
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "gummy"
+      }
+    },
+    {
+      "id": "gold-008-myhi-boisterous-berry-3-x-10mg-thc-stir-stik",
+      "input": {
+        "brand": "MyHi",
+        "name": "MyHi - Boisterous Berry | 3 x 10MG THC Stir Stiks",
+        "category": "edible",
+        "variant": "2.1g",
+        "description": "Boisterous Berry Fast-Acting Beverage Stir STIK: Calorie and Sugar Free Turn Water into Weed: Fast-Acting Nano-emulsified THC + Energizing Caffeine derived from Green Coffee Bean Extract, all delivered in a single serve, On-The-Go Stir STIK to quickly infuse any drink for an energizing hi. -- Our Bo"
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "beverage",
+        "strain": "Boisterous Berry",
+        "variant": "30mg"
+      }
+    },
+    {
+      "id": "gold-009-mfny-live-resin-gummies-creamsicle-x-rainbow",
+      "input": {
+        "brand": "MFNY",
+        "name": "MFNY Live Resin Gummies - Creamsicle x Rainbow Beltz 2.0 | Live Resin Gummies",
+        "category": "edible",
+        "variant": "26g",
+        "description": "Terpene-rich edibles at an even tastier price. Introducing our live resin Creamsicle x Rainbow Beltz gummies. These vegan gummies are infused with MFNY’s single-source, in-house produced Rainbow Beltz live resin. We start with fresh-frozen flower buds, then use the hydrocarbon extraction method (plu"
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "gummy",
+        "strain": "Creamsicle x Rainbow Beltz 2.0"
+      }
+    },
+    {
+      "id": "gold-010-revert-grape-100mg-scored-gummy",
+      "input": {
+        "brand": "Revert",
+        "name": "Revert - Grape | 100mg Scored Gummy",
+        "category": "edible",
+        "variant": "",
+        "description": "Revert Grape 100mg Gummy Pack Revert THC Gummies are crafted for consistency, convenience, and a clean edible experience. Each package contains 10 easily separable 10mg portions (100mg total) for simple, precise dosing. Made with cannabis distillate and a pectin-based (gelatin-free) formula, these g"
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "gummy",
+        "strain": "Grape",
+        "variant": "100mg"
+      }
+    },
+    {
+      "id": "gold-011-myhi-simply-flavorless-3-x-10mg-thc-stir-sti",
+      "input": {
+        "brand": "MyHi",
+        "name": "MyHi - Simply Flavorless | 3 x 10MG THC Stir Stiks",
+        "category": "edible",
+        "variant": "2.1g",
+        "description": "Simply Flavorless Fast-Acting Beverage Stir STIK: Calorie and Sugar Free Turn Water into Weed: Fast-Acting Nano-emulsified THC + Energizing Caffeine derived from Green Coffee Bean Extract, all delivered in a single serve, On-The-Go Stir STIK to quickly infuse any drink for an energizing hi. -- Our s"
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "beverage",
+        "strain": "Simply Flavorless",
+        "variant": "30mg"
+      }
+    },
+    {
+      "id": "gold-012-kushy-punch-blue-raspberry-gummies-100mg",
+      "input": {
+        "brand": "Kushy Punch",
+        "name": "Kushy Punch - Blue Raspberry Gummies 100mg",
+        "category": "edible",
+        "variant": "30g",
+        "description": "The new Kushy Experience is here! Fast-Acting individual gummies have arrived! – Each pack contains 200mg THC – Each pack contains 10 individual gummies – Fast-Acting 15 Minute activation – Full-Spectrum Formula"
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "gummy",
+        "strain": "Blue Raspberry"
+      }
+    },
+    {
+      "id": "gold-013-gr-n-baja-blaze-mega",
+      "input": {
+        "brand": "Grön",
+        "name": "Grön - Baja Blaze Mega",
+        "category": "edible",
+        "variant": "20g",
+        "description": "Ride a wave of flavor with a sun-kissed splash of sour and sweet. It’s the taste of paradise turned all the way up! Pair with tacos or chips & salsa for a taste sensation reminiscent of late-night munchie missions."
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "gummy",
+        "strain": "Baja Blaze Mega"
+      }
+    },
+    {
+      "id": "gold-014-wana-fast-asleep-5-1-1-1-dream-berry",
+      "input": {
+        "brand": "Wana",
+        "name": "Wana - Fast Asleep 5:1:1: 1 | Dream Berry",
+        "category": "edible",
+        "variant": "45g",
+        "description": "Feel sleepy in just 5-15 minutes... with no next-day grogginess. These revolutionary nighttime gummies deliver a sweet mixed berry flavor, along with a custom blend of CBD, THC, CBG, CBN, and melatonin. They’re also enhanced with more than 30 specialized terpenes, curated based on AI-generated data "
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "gummy",
+        "strain": "Dream Berry"
+      }
+    },
+    {
+      "id": "gold-015-eaton-botanicals-apple-a-day-apple-2-5mg-gum",
+      "input": {
+        "brand": "Eaton",
+        "name": "Eaton Botanicals - Apple-A-Day | Apple - 2.5mg gummies",
+        "category": "edible",
+        "variant": "120g",
+        "description": "Keep the doc away with Apple-A-Day, an antioxidant packed edible with immunity boosting elderberry, echinacea, zinc and astragalus along with turkey tail mushrooms to keep your body’s natural defense systems on high alert. With a microdose of THC (2.5mg) for a light lift and a healthy amount of calm"
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "gummy",
+        "strain": "Apple-A-Day"
+      }
+    },
+    {
+      "id": "gold-016-gr-n-milk-chocolate-mini-bar-daytime-sativa-",
+      "input": {
+        "brand": "Grön",
+        "name": "Grön- Milk Chocolate Mini Bar- Daytime Sativa (100mg)",
+        "category": "edible",
+        "variant": "7g",
+        "description": ""
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "chocolate",
+        "variant": "100mg"
+      }
+    },
+    {
+      "id": "gold-017-ayrloom-up-12oz-beverage-pineapple-mango",
+      "input": {
+        "brand": "Ayrloom",
+        "name": "Ayrloom UP (12oz) Beverage - Pineapple Mango",
+        "category": "edible",
+        "variant": "355",
+        "description": "juicy + perfectly sweet, naturally. no need for PTO here! capture that ooo feeling with every sip, + recharge your mind like you’re on ‘island time’."
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "beverage",
+        "strain": "Pineapple Mango",
+        "product_line": "UP"
+      }
+    },
+    {
+      "id": "gold-018-camino-balance-yuzu-lemon-100mg-20pk",
+      "input": {
+        "brand": "Camino",
+        "name": "Camino - Balance Yuzu Lemon 100mg 20pk",
+        "category": "edible",
+        "variant": "72g",
+        "description": "In the midst of life's chaos, from juggling stress at work to navigating personal relationships, it's no wonder we sometimes find ourselves feeling off-kilter and in need of grounding. When stress weighs heavy and you're yearning to reclaim your sense of equilibrium, turn to Yuzu Lemon 'Balance' Cam"
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "gummy",
+        "strain": "Yuzu Lemon",
+        "variant": "100mg"
+      }
+    },
+    {
+      "id": "gold-019-ayrloom-10-mg-thc-5mg-thcv-gummies-sol-burst",
+      "input": {
+        "brand": "Ayrloom",
+        "name": "Ayrloom (10 mg THC|5mg THCV Gummies) - Sol Burst",
+        "category": "edible",
+        "variant": "40g",
+        "description": ""
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "gummy",
+        "strain": "Sol Burst"
+      }
+    },
+    {
+      "id": "gold-020-camino-recover-freshly-squeezed-1-2-cbg-20pk",
+      "input": {
+        "brand": "Caminos",
+        "name": "Camino - Recover | Freshly Squeezed 1:2 CBG 20pk",
+        "category": "edible",
+        "variant": "72g",
+        "description": "Picture this: You've just wrapped up a hectic workday, your mind is racing with thoughts, and your body is feeling tense. This is the perfect occasion to reach for Camino Freshly Squeezed Recover gummies. Each gummy contains 5MG of THC and 10MG of CBG, along with hybrid-like terpenes that work toget"
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "gummy",
+        "strain": "Freshly Squeezed",
+        "variant": "100mg"
+      }
+    },
+    {
+      "id": "gold-021-camino-chews-pineapple-paradise-1-1-thc-cbc-",
+      "input": {
+        "brand": "Camino",
+        "name": "Camino Chews - Pineapple Paradise | 1:1 THC:CBC (100MG)",
+        "category": "edible",
+        "variant": "46g",
+        "description": "Picture yourself on a tranquil seaside trail, the gentle breeze carrying the scent of fresh pineapples and the rhythmic sound of waves lapping at the shore. This is the feeling Pineapple Paradise ‘Bliss’ Camino Chews bring- a state of pure euphoria and contentment. Each sweet, tropical fruit chew is"
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "gummy",
+        "strain": "Pineapple Paradise",
+        "variant": "100mg"
+      }
+    },
+    {
+      "id": "gold-022-gr-n-milk-chocolate-full-bar-sativa",
+      "input": {
+        "brand": "Grön",
+        "name": "Grön - Milk Chocolate | Full Bar | Sativa",
+        "category": "edible",
+        "variant": "45g",
+        "description": "Delight your senses with the classic taste of buttery smooth Fair Trade milk chocolate. Infused with THC, the sativa effects will make any day so much sweeter."
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "chocolate",
+        "strain": "Sativa"
+      }
+    },
+    {
+      "id": "gold-023-hashtag-honey-tropical-punch-live-resin-gumm",
+      "input": {
+        "brand": "Hashtag Honey",
+        "name": "Hashtag Honey - Tropical Punch (Live Resin Gummies",
+        "category": "edible",
+        "variant": "50.2g",
+        "description": "10pk, 100mg total. Nano-Infused Vegan + Gluten Free"
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "gummy",
+        "strain": "Tropical Punch",
+        "variant": "100mg"
+      }
+    },
+    {
+      "id": "gold-024-purple-punch-infused-5pk-0-5g-pre-rolls",
+      "input": {
+        "brand": "STIIIZY",
+        "name": "Purple Punch | Infused 5pk 0.5g Pre-Rolls",
+        "category": "preroll",
+        "variant": "2.5g",
+        "description": "Purple Punch is a delicious dessert strain that is best suited for after dinner. Its effects may help with managing nausea, stress, minor body aches, and sleeplessness."
+      },
+      "expect": {
+        "category": "preroll",
+        "strain": "Purple Punch",
+        "variant": "2.5g"
+      }
+    },
+    {
+      "id": "gold-025-aphrodite-vanilla-gelato-foam-tip-pre-roll-5",
+      "input": {
+        "brand": "Aphrodite",
+        "name": "Aphrodite - Vanilla Gelato | Foam Tip Pre-Roll 5PK",
+        "category": "preroll",
+        "variant": "2.5g",
+        "description": "You’ve never smoked anything like Aphrodite. Her unique star filter improves your experience without compromising the effect. We use only the freshest flowers: no shake, no trim."
+      },
+      "expect": {
+        "category": "preroll",
+        "subtype": "pack",
+        "strain": "Vanilla Gelato",
+        "variant": "2.5g"
+      }
+    },
+    {
+      "id": "gold-026-jaunty-stay-puft-x-strawberry-meltz-1g-hash-",
+      "input": {
+        "brand": "Jaunty",
+        "name": "Jaunty - Stay Puft x Strawberry Meltz | 1G Hash Hole",
+        "category": "preroll",
+        "variant": "1g",
+        "description": "Gassy/Pungent This Hash Hole combines .8 grams of Stay Puft (hybrid) premium indoor flower paired with .2 grams of Strawberry Meltz (sativa) 100% solventless live rosin for an overall profile that includes creamy marshmallow with smooth diesel gas with hints of honey and strawberry cream. Potency 35"
+      },
+      "expect": {
+        "category": "preroll",
+        "subtype": "infused",
+        "strain": "Stay Puft x Strawberry Meltz",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "gold-027-budd-lemon-cherry-gelato-1g-pre-roll",
+      "input": {
+        "brand": "Budd",
+        "name": "Budd - Lemon Cherry Gelato | 1G Pre-Roll",
+        "category": "preroll",
+        "variant": "1g",
+        "description": "Taste the hype with Lemon Cherry Gelato. This heavy-hitting hybrid serves up a mouthwatering mix of sour lemon, ripe cherry, and sweet fuel. Rolled and ready to go, it offers a blissed-out, relaxing vibe that hits hard and lingers long."
+      },
+      "expect": {
+        "category": "preroll",
+        "subtype": "single",
+        "strain": "Lemon Cherry Gelato",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "gold-028-claybourne-co-strawberry-cough-flyers-infuse",
+      "input": {
+        "brand": "Claybourne Co.",
+        "name": "Claybourne Co. - Strawberry Cough | Flyers Infused 1.5G Blunt",
+        "category": "preroll",
+        "variant": "1.5g",
+        "description": "Meet the 'Loudest on the Block': Flyers 1.5g Infused Blunt. Crafted from premium indoor, full nug flower infused with THCa & liquid diamonds, natural terpenes and wrapped in an herbal blend cone made of chamomile, cacao, & yerba maté. A badass blunt built better."
+      },
+      "expect": {
+        "category": "preroll",
+        "subtype": "infused",
+        "strain": "Strawberry Cough",
+        "product_line": "Flyers",
+        "variant": "1.5g"
+      }
+    },
+    {
+      "id": "gold-029-claybourne-co-king-louis-og-diamond-frosted-",
+      "input": {
+        "brand": "Claybourne Co.",
+        "name": "Claybourne Co. - King Louis OG| Diamond Frosted Flyers Pre-Roll 5 Pack",
+        "category": "preroll",
+        "variant": "2.5g",
+        "description": "Tried & True Cultivation, Breeding & Genetics. Home of ultra premium indoor flower and infused pre-rolls. Try our newest line of THCa coated Frosted Flyers."
+      },
+      "expect": {
+        "category": "preroll",
+        "strain": "King Louis OG",
+        "variant": "2.5g"
+      }
+    },
+    {
+      "id": "gold-030-the-plug-pack-tequila-sunrise-1g-preroll",
+      "input": {
+        "brand": "The Plug Pack",
+        "name": "The Plug Pack - Tequila Sunrise | 1G PreRoll",
+        "category": "preroll",
+        "variant": "1g",
+        "description": ""
+      },
+      "expect": {
+        "category": "preroll",
+        "subtype": "single",
+        "strain": "Tequila Sunrise",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "gold-031-nanticoke-coconut-cream-1g-infused-pre-roll",
+      "input": {
+        "brand": "Nanticoke",
+        "name": "Nanticoke - Coconut Cream | 1G Infused Pre-Roll",
+        "category": "preroll",
+        "variant": "1g",
+        "description": "Strain Type: Indica Dominant Effects: With its highly potent THC%, users can expect this buzz to come on very fast and strong, while lasting for an extended period of time. It initially produces a brief light euphoric sensation that is quickly overlaid by a powerful relaxing effect. Aromas/Flavors: "
+      },
+      "expect": {
+        "category": "preroll",
+        "subtype": "infused",
+        "strain": "Coconut Cream",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "gold-032-lowell-smokes-quicks-afternoon-delight-0-35g",
+      "input": {
+        "brand": "lowell smokes",
+        "name": "Lowell Smokes (Quicks) - Afternoon Delight | 0.35G 10PK",
+        "category": "preroll",
+        "variant": "3.5g",
+        "description": "Settle into the sweet spot of the day with Afternoon Delight, a balanced Hybrid blend crafted for easy conversation, shared laughter, and staying present in the moment. Notes of bright citrus, soft earth, and subtle floral spice come together in a smooth, uplifting experience that brings energy with"
+      },
+      "expect": {
+        "category": "preroll",
+        "subtype": "pack",
+        "strain": "Afternoon Delight",
+        "product_line": "Quicks",
+        "variant": "3.5g"
+      }
+    },
+    {
+      "id": "gold-033-claybourne-co-banana-og-flyers-infused-1-5g-",
+      "input": {
+        "brand": "Claybourne Co.",
+        "name": "Claybourne Co. - Banana OG | Flyers Infused 1.5G Blunt",
+        "category": "preroll",
+        "variant": "1.5g",
+        "description": "Meet the 'Loudest on the Block': Flyers 1.5g Infused Blunt. Crafted from premium indoor, full nug flower infused with THCa & liquid diamonds, natural terpenes and wrapped in an herbal blend cone made of chamomile, cacao, & yerba maté. A badass blunt built better."
+      },
+      "expect": {
+        "category": "preroll",
+        "subtype": "infused",
+        "strain": "Banana OG",
+        "product_line": "Flyers",
+        "variant": "1.5g"
+      }
+    },
+    {
+      "id": "gold-034-ruby-farms-classics-7pk-pre-rolls-trop-cherr",
+      "input": {
+        "brand": "Ruby Farms",
+        "name": "Ruby Farms Classics (7pk pre rolls) Trop Cherry",
+        "category": "preroll",
+        "variant": "5g",
+        "description": ""
+      },
+      "expect": {
+        "category": "preroll",
+        "subtype": "pack",
+        "strain": "Trop Cherry",
+        "variant": "5g"
+      }
+    },
+    {
+      "id": "gold-035-boutiq-snack-pack-cherry-lime-x-rz-11-5-x-05",
+      "input": {
+        "brand": "Boutiq",
+        "name": "Boutiq (Snack Pack) - Cherry Lime X RZ-11 | (5 x .05g) Diamond Infused PreRolls",
+        "category": "preroll",
+        "variant": "2.5g",
+        "description": "Tart cherry and lime sparkle with sativa energy, smoothed by creamy, candy gas for a full-spectrum flavor ride and cheerful daytime buzz."
+      },
+      "expect": {
+        "category": "preroll",
+        "strain": "Cherry Lime x RZ-11",
+        "variant": "2.5g"
+      }
+    },
+    {
+      "id": "gold-036-ruby-farms-hash-infused-blueberry-dj-cut-2pk",
+      "input": {
+        "brand": "Ruby Farms",
+        "name": "Ruby Farms Hash Infused - Blueberry DJ Cut | 2pk Pre-Rolls",
+        "category": "preroll",
+        "variant": "1g",
+        "description": "Each expertly hand-rolled joint is infused with premium hash, creating a smooth, rich smoke that enhances the natural flavors of the high-quality indica flower. Wrapped in natural, unbleached hemp, these pre-rolls bring a burst of sweet, fruity blueberry notes balanced by the earthy richness of the "
+      },
+      "expect": {
+        "category": "preroll",
+        "subtype": "infused",
+        "strain": "Blueberry DJ Cut",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "gold-037-florist-farms-mule-fuel-1g-live-resin-infuse",
+      "input": {
+        "brand": "florist farms",
+        "name": "Florist Farms - Mule Fuel | 1G Live Resin Infused Pre-Roll",
+        "category": "preroll",
+        "variant": "1g",
+        "description": "This 1 gram pre-roll is made with whole flower - never trim - and infused with live resin and pure THC-A Diamonds for an extra potent, full-bodied high. Definitely a go-to for experienced smokers or anyone wanting a more powerful hit. Effect: Hybrid Flavor: Gas forward with spicy undertones Ingredie"
+      },
+      "expect": {
+        "category": "preroll",
+        "subtype": "infused",
+        "strain": "Mule Fuel",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "gold-038-claybourne-co-fast-lane-sativa-flyers-blends",
+      "input": {
+        "brand": "Claybourne Co.",
+        "name": "Claybourne Co. - Fast Lane Sativa | Flyers Blends Pre-Rolls",
+        "category": "preroll",
+        "variant": "3.5g",
+        "description": "‘Fast Lane’ Sativa, Indica. Blue Dream x Durban Poison Introducing Flyers Blends - A full flower fusion of the most popular strains from our Flyers Variety Packs all rolled up in (7) .5g pre-rolls, 3.5g total. Each specially crafted blend delivers a robust and complimentary flavor profile suitable f"
+      },
+      "expect": {
+        "category": "preroll",
+        "variant": "3.5g"
+      }
+    },
+    {
+      "id": "gold-039-alibi-dream-star-cherry-diesel-4g-variety-pr",
+      "input": {
+        "brand": "alibi",
+        "name": "Alibi - Dream Star & Cherry Diesel | 4G Variety PreRoll Pack (4 x 1G)",
+        "category": "preroll",
+        "variant": "4g",
+        "description": "Effects: A combination of 2 Sativa prerolls and 2 Hybrid prerolls to match your mood Aromas/Flavors: Dream Star- Sweet Berries & Cherry Diesel - Notes of citrus, berries, earthy pine"
+      },
+      "expect": {
+        "category": "preroll",
+        "subtype": "pack",
+        "variant": "4g"
+      }
+    },
+    {
+      "id": "gold-040-eaton-botanicals-little-pandas-tropical-cool",
+      "input": {
+        "brand": "Eaton",
+        "name": "Eaton Botanicals Little Pandas - Tropical Cooler + Mullein Leaf | 5pk Pre-Rolls",
+        "category": "preroll",
+        "variant": "1.75g",
+        "description": ""
+      },
+      "expect": {
+        "category": "preroll",
+        "subtype": "pack",
+        "variant": "1.75g",
+        "product_line": "Little Pandas"
+      }
+    },
+    {
+      "id": "gold-041-jetpacks-fj-mini-0-6g-infused-preroll-strawb",
+      "input": {
+        "brand": "Jetpacks",
+        "name": "Jetpacks FJ-Mini (0.6g) Infused PreRoll - Strawberry Sour Diesel",
+        "category": "preroll",
+        "variant": "0.6g",
+        "description": ""
+      },
+      "expect": {
+        "category": "preroll",
+        "subtype": "infused",
+        "strain": "Strawberry Sour Diesel",
+        "variant": "0.6g"
+      }
+    },
+    {
+      "id": "gold-042-smoke-wrld-mochi-runtz-3-5g-flower",
+      "input": {
+        "brand": "Smoke",
+        "name": "Smoke WRLD - Mochi Runtz | 3.5G Flower",
+        "category": "flower",
+        "variant": "3.5g",
+        "description": ""
+      },
+      "expect": {
+        "category": "flower",
+        "subtype": "flower",
+        "strain": "Mochi Runtz",
+        "variant": "3.5g"
+      }
+    },
+    {
+      "id": "gold-043-the-plug-pack-sapphire-haze-28g-flower",
+      "input": {
+        "brand": "The Plug Pack",
+        "name": "The Plug Pack - Sapphire Haze | 28G Flower",
+        "category": "flower",
+        "variant": "28g",
+        "description": ""
+      },
+      "expect": {
+        "category": "flower",
+        "subtype": "flower",
+        "strain": "Sapphire Haze",
+        "variant": "28g"
+      }
+    },
+    {
+      "id": "gold-044-umamii-ice-cream-cake-3-5g-flower",
+      "input": {
+        "brand": "Umamii",
+        "name": "Umamii - Ice Cream Cake | 3.5g Flower",
+        "category": "flower",
+        "variant": "3.5g",
+        "description": "Ice Cream Cake is a rare indica dominant hybrid strain (75% indica/25% sativa) created through a cross of the Gelato 33 X Wedding Cake strains. With this bud, the name says it all in the flavor department. Ice Cream Cake packs a super delicious cheesy creamy flavor with a sweet nuttiness that linger"
+      },
+      "expect": {
+        "category": "flower",
+        "subtype": "flower",
+        "strain": "Ice Cream Cake",
+        "variant": "3.5g"
+      }
+    },
+    {
+      "id": "gold-045-revert-crumble-cake-3-5g-flower",
+      "input": {
+        "brand": "Revert",
+        "name": "Revert - Crumble Cake | 3.5G Flower",
+        "category": "flower",
+        "variant": "3.5g",
+        "description": ""
+      },
+      "expect": {
+        "category": "flower",
+        "subtype": "flower",
+        "strain": "Crumble Cake",
+        "variant": "3.5g"
+      }
+    },
+    {
+      "id": "gold-046-alchemy-pure-space-panda-0-7g-flower-bag",
+      "input": {
+        "brand": "Alchemy Pure",
+        "name": "Alchemy Pure - Space Panda | 0.7G Flower Bag",
+        "category": "flower",
+        "variant": "0.7g",
+        "description": "Oreoz-bred and beautifully purple, Space Panda delivers rich chocolate-diesel flavor with a fast-hitting euphoric buzz that melts into deep full-body relaxation. A heavy indica favorite for winding down, stress relief, and late-night vibes"
+      },
+      "expect": {
+        "category": "flower",
+        "subtype": "flower",
+        "strain": "Space Panda",
+        "variant": "0.7g"
+      }
+    },
+    {
+      "id": "gold-047-ttm-essentials-northern-lights-3-5g-flower-b",
+      "input": {
+        "brand": "To The Moon",
+        "name": "TTM Essentials - Northern Lights | 3.5G Flower Bag",
+        "category": "flower",
+        "variant": "3.5g",
+        "description": "TTM Space Essentials bring an 8th of indoor quality flower at an affordable price for everyone to catch a flight To The Moon. Featuring true rare genetics & made for everyday smoke. Genetics: Afghani x Thai Flavor and Taste: Pine, Earthy, Woody"
+      },
+      "expect": {
+        "category": "flower",
+        "subtype": "flower",
+        "strain": "Northern Lights",
+        "variant": "3.5g"
+      }
+    },
+    {
+      "id": "gold-048-smoke-wrld-red-zprite-3-5g",
+      "input": {
+        "brand": "Smoke",
+        "name": "Smoke WRLD - Red Zprite | 3.5G",
+        "category": "flower",
+        "variant": "3.5g",
+        "description": ""
+      },
+      "expect": {
+        "category": "flower",
+        "subtype": "flower",
+        "strain": "Red Zprite",
+        "variant": "3.5g"
+      }
+    },
+    {
+      "id": "gold-049-budd-lemon-cherry-gelato-3-5g-premium-smalls",
+      "input": {
+        "brand": "Budd",
+        "name": "Budd - Lemon Cherry Gelato | 3.5G Premium Smalls",
+        "category": "flower",
+        "variant": "3.5g",
+        "description": "Taste the hype with Budd NY Lemon Cherry Gelato. A standout in the New York market, this heavy-hitting hybrid serves up a mouthwatering mix of sour lemon, ripe cherry, and sweet fuel. Whether you’re uptown or downtown, it offers a blissed-out, relaxing vibe that hits hard and lingers long. Flavor Pr"
+      },
+      "expect": {
+        "category": "flower",
+        "subtype": "smalls",
+        "strain": "Lemon Cherry Gelato",
+        "variant": "3.5g"
+      }
+    },
+    {
+      "id": "gold-050-kickfly-s-blackscotti-14g-flower",
+      "input": {
+        "brand": "Kickfly's",
+        "name": "Kickfly's - Blackscotti | 14G Flower",
+        "category": "flower",
+        "variant": "14g",
+        "description": "Black Scotti (often referred to as Blackscotti or simply Scotti) is a popular indica-leaning hybrid strain known for its potent, calming effects and dessert-gas aroma. Key Effects of Black Scotti: Relaxation & Calm: Users frequently report a strong sense of relaxation and a calm,, mellowing high, ma"
+      },
+      "expect": {
+        "category": "flower",
+        "subtype": "flower",
+        "strain": "Blackscotti",
+        "variant": "14g"
+      }
+    },
+    {
+      "id": "gold-051-leal-chronic-tonic-3-5g",
+      "input": {
+        "brand": "LEAL",
+        "name": "LEAL - Chronic Tonic | 3.5G",
+        "category": "flower",
+        "variant": "3.5g",
+        "description": ""
+      },
+      "expect": {
+        "category": "flower",
+        "subtype": "flower",
+        "strain": "Chronic Tonic",
+        "variant": "3.5g"
+      }
+    },
+    {
+      "id": "gold-052-the-botanist-gsc-3-5g-flower",
+      "input": {
+        "brand": "The Botanist",
+        "name": "The Botanist - GSC | 3.5G Flower",
+        "category": "flower",
+        "variant": "3.5g",
+        "description": ""
+      },
+      "expect": {
+        "category": "flower",
+        "subtype": "flower",
+        "strain": "GSC",
+        "variant": "3.5g"
+      }
+    },
+    {
+      "id": "gold-053-untitled-sour-diesel-7g",
+      "input": {
+        "brand": "untitled",
+        "name": "untitled - Sour Diesel | 7G",
+        "category": "flower",
+        "variant": "7g",
+        "description": ""
+      },
+      "expect": {
+        "category": "flower",
+        "subtype": "flower",
+        "strain": "Sour Diesel",
+        "variant": "7g"
+      }
+    },
+    {
+      "id": "gold-054-revert-golden-pineapple-14g-flower",
+      "input": {
+        "brand": "Revert",
+        "name": "Revert - Golden Pineapple  14G Flower",
+        "category": "flower",
+        "variant": "14g",
+        "description": "Golden Pineapple (Hybrid) – 14 gram bag crafted from sun-grown flower. Bright tropical fruit leads the profile with notes of ripe pineapple and citrus, supported by a subtle sweetness, while a terpene-rich aroma of fresh-cut fruit, light earth, and soft herbal tones rounds it out with a clean finish"
+      },
+      "expect": {
+        "category": "flower",
+        "subtype": "flower",
+        "strain": "Golden Pineapple",
+        "variant": "14g"
+      }
+    },
+    {
+      "id": "gold-055-noizey-ny-super-glue-4g-flower",
+      "input": {
+        "brand": "Noizey",
+        "name": "Noizey - NY Super Glue | 4G Flower",
+        "category": "flower",
+        "variant": "4g",
+        "description": "New York Super Glue (often by Pollen Wizard) is a heavy-yielding, mostly indica hybrid (NYSD x Super Glue) known for dense, purple-hued, trichome-heavy flowers. It features a pungent aroma of citrus, earthy, and diesel, providing a relaxed, \"couch-lock\" high, making it ideal for treating pain, insom"
+      },
+      "expect": {
+        "category": "flower",
+        "subtype": "flower",
+        "strain": "NY Super Glue",
+        "variant": "4g"
+      }
+    },
+    {
+      "id": "gold-056-smoakland-tropical-haze-28g-flower",
+      "input": {
+        "brand": "Smoakland",
+        "name": "Smoakland - Tropical Haze | 28g Flower",
+        "category": "flower",
+        "variant": "28g",
+        "description": "The perfect fruity and energizing bud for a wake-and-bake on a lazy day, Tropical Haze brings on an amazing flavor and long-lasting effects that will leave you flying for hours on end. Like its name suggests, Tropical Haze has a deliciously fruity and tropical sour citrus flavor with a light touch o"
+      },
+      "expect": {
+        "category": "flower",
+        "subtype": "flower",
+        "strain": "Tropical Haze",
+        "variant": "28g"
+      }
+    },
+    {
+      "id": "gold-057-matter-grape-gas-3-5g-flower",
+      "input": {
+        "brand": "matter.",
+        "name": "matter - Grape Gas - | 3.5G Flower",
+        "category": "flower",
+        "variant": "3.5g",
+        "description": ""
+      },
+      "expect": {
+        "category": "flower",
+        "subtype": "flower",
+        "strain": "Grape Gas",
+        "variant": "3.5g"
+      }
+    },
+    {
+      "id": "gold-058-gypsy-weed-kombucha-oreo-28g",
+      "input": {
+        "brand": "Gypsy Weed",
+        "name": "Gypsy Weed - Kombucha Oreo 28g",
+        "category": "flower",
+        "variant": "28g",
+        "description": ""
+      },
+      "expect": {
+        "category": "flower",
+        "subtype": "flower",
+        "strain": "Kombucha Oreo",
+        "variant": "28g"
+      }
+    },
+    {
+      "id": "gold-059-munchkins-trop-cherry-3-5g-small-buds",
+      "input": {
+        "brand": "Munchkins",
+        "name": "Munchkins - Trop Cherry | 3.5g Small Buds",
+        "category": "flower",
+        "variant": "3.5g",
+        "description": ""
+      },
+      "expect": {
+        "category": "flower",
+        "subtype": "smalls",
+        "strain": "Trop Cherry",
+        "variant": "3.5g"
+      }
+    },
+    {
+      "id": "gold-060-blends-by-basin-fruity-pebbles-1g-cart",
+      "input": {
+        "brand": "Basin Mixtures",
+        "name": "Blends By Basin - Fruity Pebbles | 1G Cart",
+        "category": "other",
+        "variant": "1g",
+        "description": ""
+      },
+      "expect": {
+        "category": "vaporizers",
+        "subtype": "cart",
+        "strain": "Fruity Pebbles",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "gold-061-select-flavor-series-grape-ape-1g-briq-v2",
+      "input": {
+        "brand": "Select",
+        "name": "Select Flavor Series - Grape Ape | 1G Briq V2",
+        "category": "other",
+        "variant": "1g",
+        "description": "**Grape Ape** Concord grape sweetness defines this indica, layered with subtle berry and woody notes. The profile is rich and smooth, delivering classic grape flavor with earthy depth."
+      },
+      "expect": {
+        "category": "vaporizers",
+        "strain": "Grape Ape",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "gold-062-timeless-t2-blue-dream-chill-2g-rechargeable",
+      "input": {
+        "brand": "Timeless",
+        "name": "Timeless T2 - Blue Dream | Chill - 2G Rechargeable Vape",
+        "category": "other",
+        "variant": "2g",
+        "description": "Drift away with this legendary strain. Regarded for its high Myrcene content, this profile has a pleasant mind/body balance that encourages relaxation. Flavors of blueberry and vanilla are sharply contrasted by notes of haze and fresh herbs."
+      },
+      "expect": {
+        "category": "vaporizers",
+        "strain": "Blue Dream",
+        "variant": "2g"
+      }
+    },
+    {
+      "id": "gold-063-florist-farms-durban-poison-1g-cart",
+      "input": {
+        "brand": "florist farms",
+        "name": "Florist Farms - Durban Poison | 1G Cart",
+        "category": "other",
+        "variant": "1g",
+        "description": ""
+      },
+      "expect": {
+        "category": "vaporizers",
+        "subtype": "cart",
+        "strain": "Durban Poison",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "gold-064-select-ace-terpologist-durban-fizz-1g-cart",
+      "input": {
+        "brand": "Select",
+        "name": "Select ACE TERPOLOGIST - Durban Fizz | 1G Cart",
+        "category": "other",
+        "variant": "1g",
+        "description": "Power up your day with the bold, invigorating experience of the Select ACE – Durban Fizz Vape Cartridge, a 1g sativa cartridge crafted for clarity, energy, and flavor. Featuring Select’s revolutionary Aqueous Cannabis Extraction process and a THC potency averaging over 90%, this premium vape deliver"
+      },
+      "expect": {
+        "category": "vaporizers",
+        "subtype": "cart",
+        "strain": "Durban Fizz",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "gold-065-jetty-el-chiveoz-1g-solventless-live-rosin-a",
+      "input": {
+        "brand": "Jetty",
+        "name": "Jetty - El Chiveoz | 1G Solventless Live Rosin AIO",
+        "category": "other",
+        "variant": "1g",
+        "description": ""
+      },
+      "expect": {
+        "category": "vaporizers",
+        "subtype": "all-in-one",
+        "strain": "El Chiveoz",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "gold-066-jaunty-mango-haze-1-5g-aio",
+      "input": {
+        "brand": "Jaunty",
+        "name": "Jaunty- Mango Haze 1.5g AIO",
+        "category": "other",
+        "variant": "1.5g",
+        "description": "Mango Haze is a sativa known for its uplifting, cerebral, happy effects and a sweet mango aroma and flavor that will keep you coming back for more."
+      },
+      "expect": {
+        "category": "vaporizers",
+        "subtype": "all-in-one",
+        "strain": "Mango Haze",
+        "variant": "1.5g"
+      }
+    },
+    {
+      "id": "gold-067-timeless-t1-new-york-sour-diesel-1g-recharga",
+      "input": {
+        "brand": "Timeless",
+        "name": "Timeless T1 - New York Sour Diesel | 1G Rechargable Vaporizer",
+        "category": "other",
+        "variant": "1g",
+        "description": "Sour Diesel is a classic with its unmistakable fuel-heavy aroma, layered with herbal spice and a touch of citrus. Caryophyllene, Myrcene, and Limonene dominate the terpene profile, creating a sharp and tangy flavor that keeps it bold from start to finish."
+      },
+      "expect": {
+        "category": "vaporizers",
+        "strain": "New York Sour Diesel",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "gold-068-toast-royal-rntz-7g-infused-pre-ground-hybri",
+      "input": {
+        "brand": "Toast",
+        "name": "Toast - Royal Rntz | 7G Infused Pre-Ground Hybrid Flower",
+        "category": "other",
+        "variant": "7g",
+        "description": "Behold, the crown jewel of your stash. With a vibrant candy-like sweetness, Royal Rntz sparks your creative mind while gently relaxing your body—the perfect balance, whether you're hitting the town or just lounging around your palace. We’ve done the hard work for you - expertly infusing premium conc"
+      },
+      "expect": {
+        "category": "flower",
+        "strain": "Royal Rntz",
+        "variant": "7g"
+      }
+    },
+    {
+      "id": "gold-069-jaunty-sugar-cookie-1-5g-all-in-one-palm",
+      "input": {
+        "brand": "Jaunty",
+        "name": "JAUNTY- Sugar Cookie | 1.5G All-In-One Palm",
+        "category": "other",
+        "variant": "1.5g",
+        "description": "Sugar Cookie is a tasty hybrid with a vanilla-butter flavor and a smooth, mellow exhale. Fruity on the nose and sweet on the finish, this strain delivers a blissful lift that eases the body and relaxes the mind."
+      },
+      "expect": {
+        "category": "vaporizers",
+        "subtype": "all-in-one",
+        "strain": "Sugar Cookie",
+        "variant": "1.5g"
+      }
+    },
+    {
+      "id": "gold-070-timeless-noir-707-headband-live-resin-1g-vap",
+      "input": {
+        "brand": "Timeless",
+        "name": "Timeless Noir - 707 Headband | Live Resin 1G Vape Cartridge",
+        "category": "other",
+        "variant": "1g",
+        "description": "50% Indica, 50% Sativa Top Notes - Lime and Skunk Bottom Notes - Pine and Earth"
+      },
+      "expect": {
+        "category": "vaporizers",
+        "subtype": "cart",
+        "strain": "707 Headband",
+        "product_line": "Noir",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "gold-071-the-plug-pack-lemon-berry-kush-28g-infused-p",
+      "input": {
+        "brand": "The Plug Pack",
+        "name": "The Plug Pack - Lemon Berry Kush | 28g Infused Pre-Ground",
+        "category": "other",
+        "variant": "28g",
+        "description": "A balanced high featuring energetic, giggly, and creative effects that later settle into, deep, comfortable physical relaxation, making it popular for stress, pain, and social activity"
+      },
+      "expect": {
+        "category": "flower",
+        "strain": "Lemon Berry Kush",
+        "variant": "28g"
+      }
+    },
+    {
+      "id": "gold-072-ayrloom-0-5g-disposable-lychee-dream",
+      "input": {
+        "brand": "Ayrloom",
+        "name": "Ayrloom (0.5g Disposable) - Lychee Dream",
+        "category": "other",
+        "variant": "0.5g",
+        "description": ""
+      },
+      "expect": {
+        "category": "vaporizers",
+        "subtype": "all-in-one",
+        "strain": "Lychee Dream",
+        "variant": "0.5g"
+      }
+    },
+    {
+      "id": "gold-073-ayrloom-0-5g-disposable-blue-widow",
+      "input": {
+        "brand": "Ayrloom",
+        "name": "Ayrloom (0.5g Disposable) - Blue Widow",
+        "category": "other",
+        "variant": "0.5g",
+        "description": "Unleash a bold and balanced vaping experience with Ayrloom’s 0.5g Vape AIO Pen - Blue Widow. This premium disposable vape pen offers a smooth, potent hit wrapped in the unique flavor of Blue Widow — a striking blend of earthy, sweet berry notes and a subtle herbal undertone that creates a deeply sat"
+      },
+      "expect": {
+        "category": "vaporizers",
+        "subtype": "all-in-one",
+        "strain": "Blue Widow",
+        "variant": "0.5g"
+      }
+    },
+    {
+      "id": "gold-074-timeless-noir-panamango-live-resin-1g-vape-c",
+      "input": {
+        "brand": "Timeless",
+        "name": "Timeless Noir - Panamango | Live Resin 1G Vape Cartridge",
+        "category": "other",
+        "variant": "1g",
+        "description": "30% Indica, 70% Sativa Top Notes - Mango and Citrus Bottom Notes - Gas and Tropical Fruit"
+      },
+      "expect": {
+        "category": "vaporizers",
+        "subtype": "cart",
+        "strain": "Panamango",
+        "product_line": "Noir",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "gold-075-mfny-0-5g-live-resin-dispo-gelonade",
+      "input": {
+        "brand": "MFNY",
+        "name": "MFNY (0.5g Live Resin Dispo) - Gelonade",
+        "category": "other",
+        "variant": "0.5g",
+        "description": ""
+      },
+      "expect": {
+        "category": "vaporizers",
+        "subtype": "all-in-one",
+        "strain": "Gelonade",
+        "variant": "0.5g"
+      }
+    },
+    {
+      "id": "gold-076-kushy-punch-pineapple-jealousy-1g-510-thread",
+      "input": {
+        "brand": "Kushy Punch",
+        "name": "Kushy Punch - Pineapple Jealousy |1G 510 Thread",
+        "category": "other",
+        "variant": "1g",
+        "description": ""
+      },
+      "expect": {
+        "category": "vaporizers",
+        "subtype": "cart",
+        "strain": "Pineapple Jealousy",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "gold-077-doja-zoap-1g-aio-live-resin",
+      "input": {
+        "brand": "Doja",
+        "name": "Doja - Zoap | 1G AIO ( Live Resin)",
+        "category": "other",
+        "variant": "1g",
+        "description": "Infused with strain-specific live resin, Doja Zoap preserves the full terpene profile for an authentic cannabis experience. The hybrid formulation blends uplifting cerebral effects with relaxing body sensations, making it ideal for both recreational and wellness-focused consumers. This sleek, all-in"
+      },
+      "expect": {
+        "category": "vaporizers",
+        "subtype": "all-in-one",
+        "strain": "Zoap",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "gold-078-jaunty-strawnana-1-5g-aio",
+      "input": {
+        "brand": "Jaunty",
+        "name": "Jaunty - Strawnana | 1.5G AIO",
+        "category": "other",
+        "variant": "1.5g",
+        "description": "Strawnana is an indica-leaning hybrid that delivers a happy, mentally lifted high with a heavy body melt. Expect sweet strawberry flavors with hints of banana and bubblegum on the exhale."
+      },
+      "expect": {
+        "category": "vaporizers",
+        "subtype": "all-in-one",
+        "strain": "Strawnana",
+        "variant": "1.5g"
+      }
+    },
+    {
+      "id": "gold-079-mfny-0-5g-live-resin-dispo-honey-banana",
+      "input": {
+        "brand": "MFNY",
+        "name": "MFNY (0.5g Live Resin Dispo) - Honey Banana",
+        "category": "other",
+        "variant": "0.5g",
+        "description": ""
+      },
+      "expect": {
+        "category": "vaporizers",
+        "subtype": "all-in-one",
+        "strain": "Honey Banana",
+        "variant": "0.5g"
+      }
+    },
+    {
+      "id": "gold-080-ayrloom-rest-1g-disposable",
+      "input": {
+        "brand": "Ayrloom",
+        "name": "Ayrloom - Rest | 1G Disposable",
+        "category": "other",
+        "variant": "1g",
+        "description": ""
+      },
+      "expect": {
+        "category": "vaporizers",
+        "subtype": "all-in-one",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "gold-081-revert-galactic-jack-14g-kief-infused-ground",
+      "input": {
+        "brand": "Revert",
+        "name": "Revert - Galactic Jack | 14G Kief Infused Ground Flower",
+        "category": "other",
+        "variant": "14g",
+        "description": "Galactic Jack is a vibrant sativa known for its uplifting effects and bright, citrus-forward flavor. This preground flower is infused with kief to enhance potency and deliver a smooth, energizing smoke. Ready to roll, pack, or load straight from the bag, this 14g option is built for convenience with"
+      },
+      "expect": {
+        "category": "flower",
+        "strain": "Galactic Jack",
+        "variant": "14g"
+      }
+    },
+    {
+      "id": "gold-082-stiiizy-blue-burst-1g-disposable",
+      "input": {
+        "brand": "STIIIZY",
+        "name": "Stiiizy - Blue Burst | 1G Disposable",
+        "category": "other",
+        "variant": "1g",
+        "description": "This hybrid delivers a well-balanced mind and body high with a juicy burst of flavor. TASTE: Blue Raspberry, Citrus, Mixed Fruits"
+      },
+      "expect": {
+        "category": "vaporizers",
+        "subtype": "all-in-one",
+        "strain": "Blue Burst",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "gold-083-stiiizy-premium-jack-5g-pod",
+      "input": {
+        "brand": "",
+        "name": "Stiiizy- Premium Jack | .5g Pod",
+        "category": "other",
+        "variant": "0.5g",
+        "description": ""
+      },
+      "expect": {
+        "category": "vaporizers",
+        "subtype": "pod",
+        "strain": "Premium Jack",
+        "variant": "0.5g"
+      }
+    },
+    {
+      "id": "gold-084-jetpacks-donny-burger-1g-indica-diamonds",
+      "input": {
+        "brand": "Jetpacks",
+        "name": "Jetpacks - Donny Burger | 1G Indica Diamonds",
+        "category": "concentrate",
+        "variant": "1g",
+        "description": "The Jetpacks Donny Burger 1g Diamonds deliver heavy potency, loud funky terps, and that signature Jetpacks clarity in pure crystalline form. Donny Burger is known for its savory, diesel‑cheese funk layered with earthy kush and a hint of herbal spice, and the diamonds format amplifies both the flavor"
+      },
+      "expect": {
+        "category": "concentrate",
+        "subtype": "diamonds",
+        "strain": "Donny Burger",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "gold-085-jetty-gdp-1g-concentrate-dablicator",
+      "input": {
+        "brand": "Jetty",
+        "name": "Jetty - GDP | 1G Concentrate Dablicator",
+        "category": "concentrate",
+        "variant": "1g",
+        "description": "GDP is a classic NorCal strain. It’s a potent, pure, heavy indica that will surely have you couch-locked. Good earthy flavor with hints of citrus fruit and spice. Dose up a joint. Direct dab without any tools. Add to flower. However you use it, the Jetty Dablicator™ Oil Applicator is a better way to"
+      },
+      "expect": {
+        "category": "concentrate",
+        "strain": "GDP",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "gold-086-jetpacks-panama-punch-1g-sativa-diamonds",
+      "input": {
+        "brand": "Jetpacks",
+        "name": "Jetpacks - Panama Punch | 1G Sativa Diamonds",
+        "category": "concentrate",
+        "variant": "1g",
+        "description": "Jetpacks Panama Punch Diamonds, famous for its potent, uplifting, and creative effects, with a unique tropical fruit cocktail aroma and flavor, blending sweet mango/berry notes with spicy haze undertones, making it great for daytime focus and energy, though its powerful sativa buzz can be quite “sto"
+      },
+      "expect": {
+        "category": "concentrate",
+        "subtype": "diamonds",
+        "strain": "Panama Punch",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "gold-087-blotter-runtz-mintz-1g-live-resin-sugar",
+      "input": {
+        "brand": "Blotter",
+        "name": "Blotter - Runtz Mintz | 1G Live Resin Sugar",
+        "category": "concentrate",
+        "variant": "1g",
+        "description": ""
+      },
+      "expect": {
+        "category": "concentrate",
+        "subtype": "resin",
+        "strain": "Runtz Mintz",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "gold-088-mfny-chemdog-2g-live-resin-badder",
+      "input": {
+        "brand": "MFNY",
+        "name": "MFNY - Chemdog | 2g Live Resin Badder",
+        "category": "concentrate",
+        "variant": "2g",
+        "description": "Chemdog is one of the godfathers of modern cannabis history — the genetic backbone of Sour Diesel, OG Kush, and GMO/Garlic Cookies among others. It’s the second of the MFNY Classics that pay homage to the strains that shaped modern cannabis — and the highs they first brought us. MFNY Classics aren’t"
+      },
+      "expect": {
+        "category": "concentrate",
+        "subtype": "resin",
+        "strain": "Chemdog",
+        "variant": "2g"
+      }
+    },
+    {
+      "id": "gold-089-jetpacks-cherry-limeade-1g-sativa-badder",
+      "input": {
+        "brand": "Jetpacks",
+        "name": "Jetpacks - Cherry Limeade | 1G Sativa Badder",
+        "category": "concentrate",
+        "variant": "1g",
+        "description": "Turn up the flavor with Jetpacks – Badder – Cherry Limeade – 1g, now available at Cannabis Realm of NY. This premium 1-gram cannabis concentrate delivers bold fruit-forward terpenes, smooth badder consistency, and powerful effects designed for concentrate enthusiasts who appreciate both potency and "
+      },
+      "expect": {
+        "category": "concentrate",
+        "strain": "Cherry Limeade",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "gold-090-alchemy-pure-marakesh-1g-live-rosin",
+      "input": {
+        "brand": "Alchemy Pure",
+        "name": "Alchemy Pure - Marakesh |  1G Live Rosin",
+        "category": "concentrate",
+        "variant": "1g",
+        "description": "Marrakesh is a cross of Moroccan Peaches x Canal Street Runtz. It has a peach and citrus tart candy smell. You'll feel outgoing and creatively inspired, easily jumping in and out of any conversation happening around you with focus and gusto. A light sense of physical relaxation accompanies this brig"
+      },
+      "expect": {
+        "category": "concentrate",
+        "subtype": "rosin",
+        "strain": "Marakesh",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "gold-091-mind-melters-permanent-marker-1g-cold-cure-l",
+      "input": {
+        "brand": "Mind Melters",
+        "name": "Mind Melters - Permanent Marker | 1G Cold Cure Live Rosin",
+        "category": "concentrate",
+        "variant": "1g",
+        "description": ""
+      },
+      "expect": {
+        "category": "concentrate",
+        "subtype": "rosin",
+        "strain": "Permanent Marker",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "gold-092-hashtag-honey-chocolate-diesel-1g-live-sugar",
+      "input": {
+        "brand": "Hashtag Honey",
+        "name": "hashtag Honey - Chocolate Diesel | 1G Live Sugar",
+        "category": "concentrate",
+        "variant": "1g",
+        "description": ""
+      },
+      "expect": {
+        "category": "concentrate",
+        "strain": "Chocolate Diesel",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "gold-093-jetty-alien-og-1g-concentrate-dablicator",
+      "input": {
+        "brand": "Jetty",
+        "name": "Jetty - Alien OG | 1G Concentrate Dablicator",
+        "category": "concentrate",
+        "variant": "1g",
+        "description": ""
+      },
+      "expect": {
+        "category": "concentrate",
+        "strain": "Alien OG",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "gold-094-timeless-combo-510-battery-and-case-black-ye",
+      "input": {
+        "brand": "Timeless",
+        "name": "Timeless - Combo 510 Battery and Case | Black/Yellow",
+        "category": "merch",
+        "variant": "",
+        "description": "Compatible with 510 Thread"
+      },
+      "expect": {
+        "category": "merch",
+        "subtype": "battery",
+        "strain": null,
+        "variant": ""
+      }
+    },
+    {
+      "id": "gold-095-raw-classic-cones-1-1-4-6-pack",
+      "input": {
+        "brand": "",
+        "name": "RAW Classic Cones - 1 1/4 6 Pack",
+        "category": "merch",
+        "variant": "",
+        "description": ""
+      },
+      "expect": {
+        "category": "merch",
+        "subtype": "cone",
+        "strain": null,
+        "variant": "1 1/4 6pk"
+      }
+    },
+    {
+      "id": "gold-096-stiiizy-lite-battery-promo",
+      "input": {
+        "brand": "STIIIZY",
+        "name": "STIIIZY Lite Battery PROMO",
+        "category": "merch",
+        "variant": "",
+        "description": "Free With Purchase Of Stiiizy THC PODS ALSO : Stiiizy Premium THC PODS"
+      },
+      "expect": {
+        "category": "merch",
+        "subtype": "battery",
+        "strain": null,
+        "variant": ""
+      }
+    },
+    {
+      "id": "gold-097-human-grade-5-recycler-1a-dab-rig-smoke",
+      "input": {
+        "brand": "Human Grade",
+        "name": "Human Grade - 5\" Recycler 1A Dab Rig | Smoke",
+        "category": "merch",
+        "variant": "",
+        "description": ""
+      },
+      "expect": {
+        "category": "merch",
+        "subtype": "bong",
+        "strain": null
+      },
+      "note": "ARGUABLE: a dab rig is not a bong. Grouped under 'bong' today because both are water pieces and splitting them would need a 'rig' subtype. Needs a ruling."
+    },
+    {
+      "id": "gold-098-mushroom-holder-dab-tool",
+      "input": {
+        "brand": "Human Grade",
+        "name": "Mushroom Holder Dab Tool",
+        "category": "merch",
+        "variant": "",
+        "description": ""
+      },
+      "expect": {
+        "category": "merch",
+        "subtype": "dab-tool",
+        "strain": null
+      }
+    },
+    {
+      "id": "gold-099-stiiizy-pro-xl-battery-red",
+      "input": {
+        "brand": "STIIIZY",
+        "name": "STIIIZY Pro XL Battery - Red",
+        "category": "merch",
+        "variant": "",
+        "description": ""
+      },
+      "expect": {
+        "category": "merch",
+        "subtype": "battery",
+        "strain": null
+      }
+    },
+    {
+      "id": "gold-100-papa-barkley-thc1000-releaf-tincture-30ml",
+      "input": {
+        "brand": "Papa and Barkley",
+        "name": "Papa & Barkley - THC1000 Releaf Tincture | 30ml",
+        "category": "tinctures",
+        "variant": "30",
+        "description": "Our most potent THC formula, the THC1000 tincture provides powerful relief from discomfort and helps with unwinding and relaxation. Best for highly experienced cannabis consumers. Crafted with only two ingredients, MCT Oil and cannabis oil, and can be felt within 15 minutes, making it a perfect natu"
+      },
+      "expect": {
+        "category": "tinctures",
+        "subtype": "tincture",
+        "variant": "1000mg",
+        "product_line": "Releaf"
+      }
+    },
+    {
+      "id": "gold-101-mfny-yellow-beltz-live-resin-tincture",
+      "input": {
+        "brand": "MFNY",
+        "name": "MFNY - Yellow Beltz | Live Resin Tincture",
+        "category": "tinctures",
+        "variant": "15",
+        "description": ""
+      },
+      "expect": {
+        "category": "tinctures",
+        "subtype": "tincture",
+        "strain": "Yellow Beltz"
+      }
+    },
+    {
+      "id": "gold-102-ayrloom-beverage-enhancer-tincture-300mg",
+      "input": {
+        "brand": "Ayrloom",
+        "name": "Ayrloom Beverage Enhancer Tincture (300mg)",
+        "category": "tinctures",
+        "variant": "30",
+        "description": "Elevate your drink of choice with Ayrloom’s Beverage Enhancer Tincture, a discreet, convenient, and customizable way to infuse your favorite beverages with the power of THC. With 300mg of THC in each bottle, this potent tincture allows you to control your experience with precision, whether you’re ad"
+      },
+      "expect": {
+        "category": "tinctures",
+        "subtype": "tincture",
+        "variant": "300mg"
+      }
+    },
+    {
+      "id": "gold-103-mfny-rainbow-driver",
+      "input": {
+        "brand": "MFNY",
+        "name": "MFNY - Rainbow Driver",
+        "category": "tinctures",
+        "variant": "15",
+        "description": ""
+      },
+      "expect": {
+        "category": "tinctures",
+        "subtype": "tincture",
+        "strain": "Rainbow Driver"
+      }
+    },
+    {
+      "id": "gold-104-ayrloom-tincture-1000mg-thc-high-dose",
+      "input": {
+        "brand": "Ayrloom",
+        "name": "Ayrloom Tincture (1000mg THC) - High Dose",
+        "category": "tinctures",
+        "variant": "30",
+        "description": "Experience the power of precision with Ayrloom’s High Dose 1000mg THC Tincture, a potent and fast-acting way to elevate your cannabis experience. Designed for those who are looking for a stronger, more intense effect, this tincture delivers a high dose of THC for a truly transformative experience—wh"
+      },
+      "expect": {
+        "category": "tinctures",
+        "subtype": "tincture",
+        "variant": "1000mg"
+      }
+    },
+    {
+      "id": "gold-105-papa-barkley-1-3-releaf-balm-50ml",
+      "input": {
+        "brand": "Papa and Barkley",
+        "name": "Papa & Barkley - 1:3 Releaf Balm - | 50ml",
+        "category": "topical",
+        "variant": "15",
+        "description": "The 1:3 balm is rich in THC and provides relief to deep discomfort and sore muscles. Our award-winning, all-natural balm formula is enriched with nourishing oils including eucalyptus, tea tree, peppermint and lavender. ‍ Papa & Barkley’s Releaf Balms are made with our signature solventless, chemical"
+      },
+      "expect": {
+        "category": "topical",
+        "subtype": "topical",
+        "strain": null,
+        "product_line": "Releaf"
+      }
+    },
+    {
+      "id": "gold-106-ayrloom-balm-1000mg-thc-1000mg-cbd-revive-bc",
+      "input": {
+        "brand": "Ayrloom",
+        "name": "Ayrloom Balm (1000mg THC; 1000MG CBD) - Revive (BCS)",
+        "category": "topical",
+        "variant": "65.2g",
+        "description": ""
+      },
+      "expect": {
+        "category": "topical",
+        "subtype": "topical",
+        "strain": "Revive"
+      }
+    },
+    {
+      "id": "gold-107-ayrloom-balm-1000mg-thc-1000mg-cbd-restore-l",
+      "input": {
+        "brand": "Ayrloom",
+        "name": "Ayrloom Balm (1000mg THC; 1000MG CBD) - Restore (LRE)",
+        "category": "topical",
+        "variant": "65.2g",
+        "description": "a classic combination of lavender, rosemary and eucalyptus, this scent profile was formulated with r&r in mind."
+      },
+      "expect": {
+        "category": "topical",
+        "subtype": "topical",
+        "strain": "Restore"
+      }
+    }
+  ]
 }

@@ -1,758 +1,758 @@
 {
- "eval_type": "gold_dispensary",
- "description": "Hand-labeled gold set: 48 real listings from Hold Up Roll Up (Tymber). The hardest naming convention of the three: the brand NEVER appears in the product name (names are bare \"Strain - Size Format\"), so brand-anchored reasoning has nothing to grip. 64% of its menu maps to 'other', holding flower, pre-rolls, vapes and pods all at once, so almost every case is a category-override test. Includes a name/variant-field conflict (\"Runtz - 28G Flower\" whose variant column says 1/8 oz), a source spelling to preserve (\"Chem Dawg\"), and null-strain merch whose name carries a flavor (\"Peaches N Cream ... Rolling Papers\").",
- "cases": [
-  {
-   "id": "holdup-000-cereal-milk-x-banana-mochi-1-5g-2pk-full",
-   "input": {
-    "brand": "Zizzle",
-    "name": "Cereal Milk X Banana Mochi - 1.5G 2PK Full Melt Infused Prerolls",
-    "category": "other",
-    "variant": "1.5 grams",
-    "description": "Each pack includes two 0.75g joints, infused with solventless, full-melt live rosin to preserve maximum terpenes and potency. Made from fresh-frozen flower and pressed with zero chemicals, this is a c"
-   },
-   "expect": {
-    "category": "preroll",
-    "strain": "Cereal Milk x Banana Mochi",
-    "variant": "1.5g"
-   }
-  },
-  {
-   "id": "holdup-001-blue-razz-lemonade-1g-botanica-blend-pod",
-   "input": {
-    "brand": "turn",
-    "name": "Blue Razz Lemonade - 1G Botanica Blend Pod",
-    "category": "other",
-    "variant": "1g",
-    "description": "A splash of blue lightning in a bottle. One sip, and you're riding shotgun in a neon dream, wind whipping through your hair as a citrus sun blazes overhead. Waves crash, bass thumps, and your pulse ra"
-   },
-   "expect": {
-    "category": "vaporizers",
-    "subtype": "pod",
-    "strain": "Blue Razz Lemonade",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "holdup-002-runtz-28g-flower",
-   "input": {
-    "brand": "Herb",
-    "name": "Runtz - 28G Flower",
-    "category": "other",
-    "variant": "1/8 oz",
-    "description": "Candy-sweet and fruity with a smooth, creamy finish. Runtz provides a perfectly balanced high—uplifting, euphoric, and deeply relaxing—making it a fan favorite for any time of day."
-   },
-   "expect": {
-    "category": "flower",
-    "subtype": "flower",
-    "strain": "Runtz",
-    "variant": "28g"
-   }
-  },
-  {
-   "id": "holdup-003-nyc-vapor-3-5g-flower",
-   "input": {
-    "brand": "Mini Mart",
-    "name": "NYC Vapor - 3.5G Flower",
-    "category": "other",
-    "variant": "1/8 oz",
-    "description": "NYC Vapor by Compound Genetics is a game-changing indica-dominant hybrid that boasts a quick flowering time, substantial yields, and a unique aroma of grapefruit, fuel, and diesel. With THC levels hit"
-   },
-   "expect": {
-    "category": "flower",
-    "subtype": "flower",
-    "strain": "NYC Vapor",
-    "variant": "3.5g"
-   }
-  },
-  {
-   "id": "holdup-004-bubba-kush-14g-infused-pre-ground-flower",
-   "input": {
-    "brand": "Revert",
-    "name": "Bubba Kush - 14G Infused Pre-Ground Flower",
-    "category": "other",
-    "variant": "14.0 grams",
-    "description": "Bubba Kush – Kief Infused Ground Flower Bubba Kush delivers rich, earthy flavors with hints of sweetness. This kief-infused ground flower offers a calming, relaxing experience and is perfect for easy "
-   },
-   "expect": {
-    "category": "flower",
-    "strain": "Bubba Kush",
-    "variant": "14g"
-   }
-  },
-  {
-   "id": "holdup-005-watermelon-og-1g-live-resin-aio-disposab",
-   "input": {
-    "brand": "Dime Industries",
-    "name": "Watermelon OG - 1G Live Resin AIO Disposable",
-    "category": "other",
-    "variant": "1g",
-    "description": "LIVE RESERVE LINE: Watermelon OG (INDICA) ﻿ Watermelon OG is an Indica Dominant Strain producing relaxing effects. Consumers report using this strain as a sleep aid and are also known to help with anx"
-   },
-   "expect": {
-    "category": "vaporizers",
-    "subtype": "all-in-one",
-    "strain": "Watermelon OG",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "holdup-006-blackberry-kush-2g-starter-kit",
-   "input": {
-    "brand": "Eureka",
-    "name": "Blackberry Kush - 2g Starter Kit",
-    "category": "other",
-    "variant": "2.0 grams",
-    "description": "Discover the EUREKA PRELOAD Blackberry Kush vape, a reusable and rechargeable 2-gram cannabis oil vape designed for eco-conscious consumers. Preloaded with solvent-free distillate and cannabis-derived"
-   },
-   "expect": {
-    "category": "vaporizers",
-    "strain": "Blackberry Kush",
-    "variant": "2g"
-   }
-  },
-  {
-   "id": "holdup-007-blue-oreos-1g-ice-water-hash-pre-roll",
-   "input": {
-    "brand": "Kiefers",
-    "name": "Blue Oreos - 1g Ice Water Hash Pre-Roll",
-    "category": "other",
-    "variant": "1g",
-    "description": "A happy, relaxed and giggly high. The flavor profile is fresh fruit, berries, citrus, hopps & pine."
-   },
-   "expect": {
-    "category": "preroll",
-    "subtype": "infused",
-    "strain": "Blue Oreos",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "holdup-008-gorilla-glue-1g-aio-vape",
-   "input": {
-    "brand": "Florist Farms",
-    "name": "Gorilla Glue - 1G AIO Vape",
-    "category": "other",
-    "variant": "1g",
-    "description": "Gorilla Glue | Indica| 1G All-In-One. If you’re looking for a vape that actually tastes like cannabis, this is it - no fake flavors, just real, pure cannabis that hits smooth every time .Effect: Indic"
-   },
-   "expect": {
-    "category": "vaporizers",
-    "subtype": "all-in-one",
-    "strain": "Gorilla Glue",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "holdup-009-heir-heads-1g-live-resin-510-vape",
-   "input": {
-    "brand": "Jaunty",
-    "name": "Heir Heads - 1G Live Resin 510 Vape",
-    "category": "other",
-    "variant": "1g",
-    "description": "WHAT IS LIVE RESIN? • Powerful cannabis extract made from the finest fresh, frozen cannabis plants • Full-Spectrum profile of terpenes, cannabinoids & other desirable compounds • A True-to-Plant exper"
-   },
-   "expect": {
-    "category": "vaporizers",
-    "subtype": "cart",
-    "strain": "Heir Heads",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "holdup-010-blue-dream-4g-aio-vape",
-   "input": {
-    "brand": "Bonanza",
-    "name": "Blue Dream - 4G AIO Vape",
-    "category": "other",
-    "variant": "4.0 grams",
-    "description": "Blue Dream is a sativa-dominant hybrid marijuana strain made by crossing Blueberry with Haze. This strain produces a balanced high, along with effects such as cerebral stimulation and full-body relaxa"
-   },
-   "expect": {
-    "category": "vaporizers",
-    "subtype": "all-in-one",
-    "strain": "Blue Dream",
-    "variant": "4g"
-   }
-  },
-  {
-   "id": "holdup-011-moonbeam-gelato-7g-flower-smalls",
-   "input": {
-    "brand": "Grassroots",
-    "name": "Moonbeam Gelato - 7G Flower Smalls",
-    "category": "other",
-    "variant": "7.0 grams",
-    "description": "Limonene, b-Caryophyllene, Farnesene, a-Humulene Don’t fake the funk, go full blast with Moonbeam Gelato. When the dark-purple buds break you're hit with a wild mix: blueberry jam, overripe grape, and"
-   },
-   "expect": {
-    "category": "flower",
-    "subtype": "smalls",
-    "strain": "Moonbeam Gelato",
-    "variant": "7g"
-   }
-  },
-  {
-   "id": "holdup-012-sour-apple-glue-1g-ice-water-hash-pre-ro",
-   "input": {
-    "brand": "Kiefers",
-    "name": "Sour Apple Glue - 1g Ice Water Hash Pre-Roll",
-    "category": "other",
-    "variant": "1g",
-    "description": "Sleepy, relaxed high. The flavor profile of fresh apples, citrus, hopps and pine."
-   },
-   "expect": {
-    "category": "preroll",
-    "subtype": "infused",
-    "strain": "Sour Apple Glue",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "holdup-013-king-louis-xiii-0-5g-pod",
-   "input": {
-    "brand": "Stiiizy",
-    "name": "King Louis XIII - 0.5g POD",
-    "category": "other",
-    "variant": ".5g",
-    "description": "KING LOUIS XIII TASTE: Mango FEELING: Relaxed, Sleepy, Happy DESCRIPTION: This popular indica dominant strain is the perfect nightcap to relax and unwind, perfectly blended with mango flavor."
-   },
-   "expect": {
-    "category": "vaporizers",
-    "subtype": "pod",
-    "strain": "King Louis XIII",
-    "variant": "0.5g"
-   }
-  },
-  {
-   "id": "holdup-014-northern-lights-10pk-live-resin-infused-",
-   "input": {
-    "brand": "KOA",
-    "name": "Northern Lights - 10PK Live Resin Infused Prerolls",
-    "category": "other",
-    "variant": "1/8 oz",
-    "description": "Meet Koa, the perfect cannabis pre-roll for those who want top-tier quality with maximum convenience. Each pre-roll delivers 35%+ THC potency using only premium indoor flower and live resin — absolute"
-   },
-   "expect": {
-    "category": "preroll",
-    "strain": "Northern Lights",
-    "variant": "3.5g"
-   }
-  },
-  {
-   "id": "holdup-015-northern-lights-2g-infused-preroll",
-   "input": {
-    "brand": "Jetpacks",
-    "name": "Northern Lights - 2G Infused Preroll",
-    "category": "other",
-    "variant": "2.0 grams",
-    "description": "Northern Lights brings a tranquil wave of relaxation, pairing sweet pine and fresh earthy tones with subtle herbal spice. Whether you’re winding down from a long day or setting into an evening of calm"
-   },
-   "expect": {
-    "category": "preroll",
-    "subtype": "infused",
-    "strain": "Northern Lights",
-    "variant": "2g"
-   }
-  },
-  {
-   "id": "holdup-016-lemon-lavender-serenity-50mg-gummies",
-   "input": {
-    "brand": "Eaton Botanicals",
-    "name": "Lemon Lavender Serenity - 50mg Gummies",
-    "category": "edible",
-    "variant": "50.0 milligrams",
-    "description": "Feel calm, clear, and grounded with Serenity Now, our microdose 2.5mg, vegan gummy crafted with a thoughtful blend of powerful botanicals. Designed by holistic health experts, our formula features mag"
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "gummy",
-    "strain": "Lemon Lavender",
-    "variant": "50mg"
-   }
-  },
-  {
-   "id": "holdup-017-blue-razzleberry-mega-100mg-gummy",
-   "input": {
-    "brand": "GRON",
-    "name": "Blue Razzleberry Mega - 100mg Gummy",
-    "category": "edible",
-    "variant": "100.0 milligrams",
-    "description": "A blast of berry in an uplifting 1:1 ratio of CBG and THC, the Blue Razzleberry Mega is perfect for kickstarting your next creative project, fueling your outdoor adventure, or boosting your next get-t"
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "gummy",
-    "strain": "Blue Razzleberry Mega",
-    "variant": "100mg"
-   }
-  },
-  {
-   "id": "holdup-018-nordic-blueberry-100mg-gummies",
-   "input": {
-    "brand": "Royal Genetics",
-    "name": "Nordic Blueberry - 100MG Gummies",
-    "category": "edible",
-    "variant": "",
-    "description": "Discover the pure, vibrant flavor of the wild with our Nordic Blueberry Gummies, inspired by the pristine forests of Scandinavia where these tiny, antioxidant-rich berries thrive. Handpicked from remo"
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "gummy",
-    "strain": "Nordic Blueberry",
-    "variant": "100mg"
-   }
-  },
-  {
-   "id": "holdup-019-cookies-n-cream-cones-100mg-ice-cream-co",
-   "input": {
-    "brand": "Cannabals",
-    "name": "Cookies N Cream Cones - 100MG Ice Cream Cone Tips",
-    "category": "edible",
-    "variant": "",
-    "description": "Cones – Cookies & Cream – 100mg THC / 10mg per cone Smooth Belgian chocolate combined with crunchy cookie pieces creates a sweet, nostalgic flavor experience"
-   },
-   "expect": {
-    "category": "edible",
-    "strain": "Cookies N Cream",
-    "variant": "100mg"
-   }
-  },
-  {
-   "id": "holdup-020-pineapple-float-100mg-20pk-gummies",
-   "input": {
-    "brand": "Chillaxers",
-    "name": "Pineapple Float - 100MG 20pk Gummies",
-    "category": "edible",
-    "variant": "",
-    "description": "ORIGINAL BLEND Drift into bliss with Chillaxers- each bite a golden wave of calm, washing over you like a warm sun on bare skin. Feel your stress dissolve as you’re carried away by a gentle breeze wit"
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "gummy",
-    "strain": "Pineapple Float",
-    "variant": "100mg"
-   }
-  },
-  {
-   "id": "holdup-021-black-cherry-sparkling-water-5mg",
-   "input": {
-    "brand": "ayrloom",
-    "name": "Black Cherry Sparkling Water - 5mg",
-    "category": "edible",
-    "variant": "5.0 milligrams",
-    "description": "Electrifyingly crisp and slightly tart, unexpectadly smooth and never too sweet, it packs a flavor punch with every sip! Ingredients: Filtered Water, Cherry Juice Concentrate, Cannabis Extract, Natura"
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "beverage",
-    "strain": "Black Cherry",
-    "variant": "5mg"
-   }
-  },
-  {
-   "id": "holdup-022-sour-blue-raspberry-lemonade-100mg-multi",
-   "input": {
-    "brand": "Mayhem",
-    "name": "Sour Blue Raspberry Lemonade - 100MG Multi-Dose 1PC Gummy",
-    "category": "edible",
-    "variant": "",
-    "description": "Serious Mayhem packed into a compact bite. Mayhem Blue Raspberry Lemonade Gummies are finished with a bold sour coating, delivering the perfect collision of sweet and sour in every square. Each 1-inch"
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "gummy",
-    "strain": "Sour Blue Raspberry Lemonade",
-    "variant": "100mg"
-   }
-  },
-  {
-   "id": "holdup-023-wake-and-bake-yaupon-and-mint-10mg-tea-s",
-   "input": {
-    "brand": "Harney Brothers",
-    "name": "Wake And Bake Yaupon And Mint - 10MG Tea Sachets",
-    "category": "edible",
-    "variant": "50.0 milligrams",
-    "description": "Wake up and smell the Yaupon. This blend will provide a balanced start to your day. Made with Yaupon, a unique Texan caffeinated holly, earthy Guayusa holly, shade-grown Yerba Mate and a bright zing o"
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "beverage",
-    "variant": "50mg"
-   }
-  },
-  {
-   "id": "holdup-024-mega-dose-cherry-rings-100mg-gummy",
-   "input": {
-    "brand": "Flav",
-    "name": "Mega Dose Cherry Rings  - 100mg Gummy",
-    "category": "edible",
-    "variant": "",
-    "description": "A little goes a long way with our latest Megadose Sour Gummy Rings. Available in our top selling flavors Peach, Cherry, and Watermelon Flav megadose gummy rings pack a punch in both flavor and potency"
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "gummy",
-    "variant": "100mg"
-   }
-  },
-  {
-   "id": "holdup-025-midnight-mango-1-1-1-thc-cbd-cbn-20pk-sl",
-   "input": {
-    "brand": "REMZzz",
-    "name": "Midnight Mango - 1:1:1 THC:CBD:CBN 20pk Sleep Gummies",
-    "category": "edible",
-    "variant": "",
-    "description": "Smooth, Midnight Mango that unwinds tension and quiets the noise. This is the taste of letting go, when the lights dim and your shoulders finally drop. Midnight Mango brings warmth without stimulation"
-   },
-   "expect": {
-    "category": "edible",
-    "subtype": "gummy",
-    "strain": "Midnight Mango"
-   }
-  },
-  {
-   "id": "holdup-026-donny-burger-1g-preroll",
-   "input": {
-    "brand": "ADK",
-    "name": "Donny Burger - 1G Preroll",
-    "category": "preroll",
-    "variant": "1g",
-    "description": "Donny Burger is a potent, indica-dominant cannabis hybrid, a cross of GMO (Garlic Cookies) and Han-Solo Burger, known for its relaxing, giggle-inducing, and sleep-inducing effects, featuring a pungent"
-   },
-   "expect": {
-    "category": "preroll",
-    "subtype": "single",
-    "strain": "Donny Burger",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "holdup-027-platinum-life-breath-1g-preroll",
-   "input": {
-    "brand": "ADK",
-    "name": "Platinum Life Breath - 1g Preroll",
-    "category": "preroll",
-    "variant": "1g",
-    "description": "Platinum Life Breath -Platinum Kush Breath Remix x Lifehack -Dominant Terpenes - Caryophyllene, Limonene, Terpinene Platinum Life Breath is a cannabis strain known for its fuely, chem-like taste and p"
-   },
-   "expect": {
-    "category": "preroll",
-    "subtype": "single",
-    "strain": "Platinum Life Breath",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "holdup-028-shock-bloom-x-pinnacle-3-3-5g-7pk-prerol",
-   "input": {
-    "brand": "Mini Mart",
-    "name": "Shock Bloom X Pinnacle 3 - 3.5G 7PK Prerolls",
-    "category": "preroll",
-    "variant": "1/8 oz",
-    "description": "Hybrid This hybrid cross delivers an energizing yet balanced high that combines cerebral stimulation with gentle body relaxation, perfect for creative activities and social situations. Complex flavors"
-   },
-   "expect": {
-    "category": "preroll",
-    "subtype": "pack",
-    "strain": "Shock Bloom x Pinnacle 3",
-    "variant": "3.5g"
-   }
-  },
-  {
-   "id": "holdup-029-lilac-diesel-8pk-preroll",
-   "input": {
-    "brand": "Slack Hollow",
-    "name": "Lilac Diesel - 8pk Preroll",
-    "category": "preroll",
-    "variant": "4.0 grams",
-    "description": ""
-   },
-   "expect": {
-    "category": "preroll",
-    "subtype": "pack",
-    "strain": "Lilac Diesel",
-    "variant": "4g"
-   }
-  },
-  {
-   "id": "holdup-030-blue-lobster-1g-pre-roll",
-   "input": {
-    "brand": "ADK",
-    "name": "Blue Lobster - 1g Pre-Roll",
-    "category": "preroll",
-    "variant": "1g",
-    "description": "Blue Lobster is a slightly indica dominant hybrid strain (60% indica/40% sativa) created through crossing the delicious Apples N Bananas X Eye Candy strains. If you love a super mouthwatering flavor a"
-   },
-   "expect": {
-    "category": "preroll",
-    "subtype": "single",
-    "strain": "Blue Lobster",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "holdup-031-animal-face-5pk-pre-rolls",
-   "input": {
-    "brand": "Dogwalkers",
-    "name": "Animal Face - 5pk Pre-Rolls",
-    "category": "preroll",
-    "variant": "1.75 grams",
-    "description": "Animal Face 5 pack pre-rolls 1.75g - This is a cross of Face Off OG and Animal Mints. - These dense, orange buds have purple calyxes with a classic musk mixed with gas and sweet after taste. Dogwalker"
-   },
-   "expect": {
-    "category": "preroll",
-    "subtype": "pack",
-    "strain": "Animal Face",
-    "variant": "1.75g"
-   }
-  },
-  {
-   "id": "holdup-032-citronella-1g-preroll",
-   "input": {
-    "brand": "Dragonfly",
-    "name": "Citronella - 1G Preroll",
-    "category": "preroll",
-    "variant": "1g",
-    "description": "Citronella 1g preroll-even burn and clean flavor from quality Dragonfly flower, ready when you are. Always crafted for consistent Dragonfly quality."
-   },
-   "expect": {
-    "category": "preroll",
-    "subtype": "single",
-    "strain": "Citronella",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "holdup-033-empire-state-cake-0-5g-6pk-perolls",
-   "input": {
-    "brand": "JUNIPER JILL",
-    "name": "Empire State Cake - 0.5G 6PK Perolls",
-    "category": "preroll",
-    "variant": "3.0 grams",
-    "description": "Our pre-roll pack contains six 1/2g, single-strain pre-rolls, expertly packaged for on-the-go cannabis connoisseurs."
-   },
-   "expect": {
-    "category": "preroll",
-    "subtype": "pack",
-    "strain": "Empire State Cake",
-    "variant": "3g"
-   }
-  },
-  {
-   "id": "holdup-034-silly-nice-bubble-hash-1g",
-   "input": {
-    "brand": "Silly Nice",
-    "name": "Silly Nice | Bubble Hash | 1G",
-    "category": "concentrate",
-    "variant": "1g",
-    "description": "Elevate your cannabis experience with Silly Nice 1G Bubble Hash, a premium solventless concentrate renowned for its exceptional potency and purity. This full-spectrum hash delivers a robust, smooth, a"
-   },
-   "expect": {
-    "category": "concentrate",
-    "subtype": "hash",
-    "strain": null,
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "holdup-035-chem-dawg-1g-cured-resin-crumble",
-   "input": {
-    "brand": "Blotter",
-    "name": "Chem Dawg - 1G Cured Resin Crumble",
-    "category": "concentrate",
-    "variant": "1g",
-    "description": "Chemdog (or Chemdawg) is a legendary, potent hybrid cannabis strain famous for its pungent diesel-gasoline aroma and strong, euphoric, and cerebral effects. Originating in the early 1990s, it is known"
-   },
-   "expect": {
-    "category": "concentrate",
-    "subtype": "resin",
-    "strain": "Chem Dawg",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "holdup-036-burnout-cookies-1g-crumble",
-   "input": {
-    "brand": "#HASH",
-    "name": "Burnout Cookies - 1G Crumble",
-    "category": "concentrate",
-    "variant": "1g",
-    "description": "#HASH Burnout Cookies (often labeled Burnout Cookies #1) is a high-THC sativa-dominant hybrid concentrate known for diesel, earthy, and pine flavors. Produced by #HASH in small batches, this solvent-r"
-   },
-   "expect": {
-    "category": "concentrate",
-    "strain": "Burnout Cookies",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "holdup-037-biscotti-1g-cured-resin-budder",
-   "input": {
-    "brand": "Blotter",
-    "name": "Biscotti - 1G Cured Resin Budder",
-    "category": "concentrate",
-    "variant": "1g",
-    "description": "Biscotti is a potent, indica-dominant hybrid (roughly 80% indica/20% sativa) known for its intense sweet, nutty, and diesel cookie flavor. A cross of Gelato 25 and Sour Florida OG, delivering deep rel"
-   },
-   "expect": {
-    "category": "concentrate",
-    "subtype": "resin",
-    "strain": "Biscotti",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "holdup-038-blue-cookies-1g-badder",
-   "input": {
-    "brand": "Jetpacks",
-    "name": "Blue Cookies - 1G Badder",
-    "category": "concentrate",
-    "variant": "1g",
-    "description": "Blue Cookies is a rich, full-spectrum Live Resin Badder produced by Jetpacks, crafted from freshly frozen Blue Cookies flower. This concentrate delivers a creamy, flavorful profile with sweet blueberr"
-   },
-   "expect": {
-    "category": "concentrate",
-    "strain": "Blue Cookies",
-    "variant": "1g"
-   }
-  },
-  {
-   "id": "holdup-039-mk-lighter-cultivate-series-jet-pocket-l",
-   "input": {
-    "brand": "MK Lighter",
-    "name": "MK Lighter Cultivate Series Jet Pocket Lighter",
-    "category": "merch",
-    "variant": "",
-    "description": "The MK Lighter Cultivate Series Jet Pocket Lighter is a click-button style refillable torch lighter, available with various mid-century modern hemp-themed art patterns and designs. These lighters have"
-   },
-   "expect": {
-    "category": "merch",
-    "subtype": "merch",
-    "strain": null
-   }
-  },
-  {
-   "id": "holdup-040-peaches-n-cream-juicy-jay-s-flavored-rol",
-   "input": {
-    "brand": "Juicy Jay's",
-    "name": "Peaches N Cream Juicy Jay's Flavored Rolling Papers | 1 1/4",
-    "category": "merch",
-    "variant": "",
-    "description": "Juicy Jay's Rolling Papers have long been a staple in the RYO industry with great tasting and smelling flavors. Each point-of-purchase display box contains 24 booklets each with 32 leaves. Papers are "
-   },
-   "expect": {
-    "category": "merch",
-    "subtype": "merch",
-    "strain": null
-   }
-  },
-  {
-   "id": "holdup-041-black-510-thread-stick-battery",
-   "input": {
-    "brand": "Bonanza",
-    "name": "Black - 510 Thread Stick Battery",
-    "category": "merch",
-    "variant": "",
-    "description": ""
-   },
-   "expect": {
-    "category": "merch",
-    "subtype": "merch",
-    "strain": null
-   }
-  },
-  {
-   "id": "holdup-042-dab-tool",
-   "input": {
-    "brand": "Mozeat Lens",
-    "name": "Dab Tool",
-    "category": "merch",
-    "variant": "",
-    "description": ""
-   },
-   "expect": {
-    "category": "merch",
-    "subtype": "merch",
-    "strain": null
-   }
-  },
-  {
-   "id": "holdup-043-organic-medium-dog-cbd-oil-600mg-tinctur",
-   "input": {
-    "brand": "Head & Heal",
-    "name": "Organic Medium Dog CBD Oil - 600mg Tincture",
-    "category": "tinctures",
-    "variant": "600.0 milligrams",
-    "description": "With Head & Heal, you're going straight to the source - we grow, process, and bottle all of our products right on our farm. Our philosophy is rooted in supporting the health of both people and the pla"
-   },
-   "expect": {
-    "category": "tinctures",
-    "subtype": "tincture",
-    "strain": null,
-    "variant": "600mg"
-   }
-  },
-  {
-   "id": "holdup-044-pillow-talk-sleep-drops-300mg-thc-1500mg",
-   "input": {
-    "brand": "ayrloom",
-    "name": "Pillow Talk Sleep Drops - 300MG THC:1500MG CBN",
-    "category": "tinctures",
-    "variant": "",
-    "description": "1:5 THC:CBN. 1800mg per package/300mg THC per serving/1500mg CBN per serving. INGREDIENTS: ORGANIC COCONUT MCT OIL, CANNABIS EXTRACT."
-   },
-   "expect": {
-    "category": "tinctures",
-    "subtype": "tincture",
-    "strain": "Pillow Talk",
-    "variant": "300mg"
-   }
-  },
-  {
-   "id": "holdup-045-unflavored-beverage-enhancer-300mg-thc-t",
-   "input": {
-    "brand": "ayrloom",
-    "name": "Unflavored Beverage Enhancer - 300MG THC Tincture",
-    "category": "tinctures",
-    "variant": "",
-    "description": "Unflavored Water Soluble Beverage Enhancer. Fast acting, nano emulsion technology."
-   },
-   "expect": {
-    "category": "tinctures",
-    "subtype": "tincture",
-    "variant": "300mg"
-   }
-  },
-  {
-   "id": "holdup-046-unscented-cbd-lotion-300mg",
-   "input": {
-    "brand": "Head & Heal",
-    "name": "Unscented CBD lotion - 300mg",
-    "category": "topical",
-    "variant": "",
-    "description": "Ingredients: Distilled Water, Vegetable Glycerin, Ecomulse, Shea Butter, Castor Oil, Sunflower Oil, Witch Hazel, Stearic Acid, Full Spectrum Hemp Extract, Arrow Root, Grape Seed, Olive Oil, MSM, Optip"
-   },
-   "expect": {
-    "category": "topical",
-    "subtype": "topical",
-    "strain": null,
-    "variant": "300mg"
-   }
-  },
-  {
-   "id": "holdup-047-on-heat-relief-muscle-spray-300mg",
-   "input": {
-    "brand": "Head & Heal",
-    "name": "On Heat Relief Muscle Spray - 300mg",
-    "category": "topical",
-    "variant": "",
-    "description": "Back by popular demand, our CBD Heat Relief Spray-On is one of the most effective products for muscle and joint relief! With a new leak-proof application spray top, this rapid heat relief formula is r"
-   },
-   "expect": {
-    "category": "topical",
-    "subtype": "topical",
-    "variant": "300mg"
-   }
-  }
- ]
+  "eval_type": "gold_dispensary",
+  "description": "Hand-labeled gold set: 48 real listings from Hold Up Roll Up (Tymber). The hardest naming convention of the three: the brand NEVER appears in the product name (names are bare \"Strain - Size Format\"), so brand-anchored reasoning has nothing to grip. 64% of its menu maps to 'other', holding flower, pre-rolls, vapes and pods all at once, so almost every case is a category-override test. Includes a name/variant-field conflict (\"Runtz - 28G Flower\" whose variant column says 1/8 oz), a source spelling to preserve (\"Chem Dawg\"), and null-strain merch whose name carries a flavor (\"Peaches N Cream ... Rolling Papers\").",
+  "cases": [
+    {
+      "id": "holdup-000-cereal-milk-x-banana-mochi-1-5g-2pk-full",
+      "input": {
+        "brand": "Zizzle",
+        "name": "Cereal Milk X Banana Mochi - 1.5G 2PK Full Melt Infused Prerolls",
+        "category": "other",
+        "variant": "1.5 grams",
+        "description": "Each pack includes two 0.75g joints, infused with solventless, full-melt live rosin to preserve maximum terpenes and potency. Made from fresh-frozen flower and pressed with zero chemicals, this is a c"
+      },
+      "expect": {
+        "category": "preroll",
+        "strain": "Cereal Milk x Banana Mochi",
+        "variant": "1.5g"
+      }
+    },
+    {
+      "id": "holdup-001-blue-razz-lemonade-1g-botanica-blend-pod",
+      "input": {
+        "brand": "turn",
+        "name": "Blue Razz Lemonade - 1G Botanica Blend Pod",
+        "category": "other",
+        "variant": "1g",
+        "description": "A splash of blue lightning in a bottle. One sip, and you're riding shotgun in a neon dream, wind whipping through your hair as a citrus sun blazes overhead. Waves crash, bass thumps, and your pulse ra"
+      },
+      "expect": {
+        "category": "vaporizers",
+        "subtype": "pod",
+        "strain": "Blue Razz Lemonade",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "holdup-002-runtz-28g-flower",
+      "input": {
+        "brand": "Herb",
+        "name": "Runtz - 28G Flower",
+        "category": "other",
+        "variant": "1/8 oz",
+        "description": "Candy-sweet and fruity with a smooth, creamy finish. Runtz provides a perfectly balanced high—uplifting, euphoric, and deeply relaxing—making it a fan favorite for any time of day."
+      },
+      "expect": {
+        "category": "flower",
+        "subtype": "flower",
+        "strain": "Runtz",
+        "variant": "28g"
+      }
+    },
+    {
+      "id": "holdup-003-nyc-vapor-3-5g-flower",
+      "input": {
+        "brand": "Mini Mart",
+        "name": "NYC Vapor - 3.5G Flower",
+        "category": "other",
+        "variant": "1/8 oz",
+        "description": "NYC Vapor by Compound Genetics is a game-changing indica-dominant hybrid that boasts a quick flowering time, substantial yields, and a unique aroma of grapefruit, fuel, and diesel. With THC levels hit"
+      },
+      "expect": {
+        "category": "flower",
+        "subtype": "flower",
+        "strain": "NYC Vapor",
+        "variant": "3.5g"
+      }
+    },
+    {
+      "id": "holdup-004-bubba-kush-14g-infused-pre-ground-flower",
+      "input": {
+        "brand": "Revert",
+        "name": "Bubba Kush - 14G Infused Pre-Ground Flower",
+        "category": "other",
+        "variant": "14.0 grams",
+        "description": "Bubba Kush – Kief Infused Ground Flower Bubba Kush delivers rich, earthy flavors with hints of sweetness. This kief-infused ground flower offers a calming, relaxing experience and is perfect for easy "
+      },
+      "expect": {
+        "category": "flower",
+        "strain": "Bubba Kush",
+        "variant": "14g"
+      }
+    },
+    {
+      "id": "holdup-005-watermelon-og-1g-live-resin-aio-disposab",
+      "input": {
+        "brand": "Dime Industries",
+        "name": "Watermelon OG - 1G Live Resin AIO Disposable",
+        "category": "other",
+        "variant": "1g",
+        "description": "LIVE RESERVE LINE: Watermelon OG (INDICA) ﻿ Watermelon OG is an Indica Dominant Strain producing relaxing effects. Consumers report using this strain as a sleep aid and are also known to help with anx"
+      },
+      "expect": {
+        "category": "vaporizers",
+        "subtype": "all-in-one",
+        "strain": "Watermelon OG",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "holdup-006-blackberry-kush-2g-starter-kit",
+      "input": {
+        "brand": "Eureka",
+        "name": "Blackberry Kush - 2g Starter Kit",
+        "category": "other",
+        "variant": "2.0 grams",
+        "description": "Discover the EUREKA PRELOAD Blackberry Kush vape, a reusable and rechargeable 2-gram cannabis oil vape designed for eco-conscious consumers. Preloaded with solvent-free distillate and cannabis-derived"
+      },
+      "expect": {
+        "category": "vaporizers",
+        "strain": "Blackberry Kush",
+        "variant": "2g"
+      }
+    },
+    {
+      "id": "holdup-007-blue-oreos-1g-ice-water-hash-pre-roll",
+      "input": {
+        "brand": "Kiefers",
+        "name": "Blue Oreos - 1g Ice Water Hash Pre-Roll",
+        "category": "other",
+        "variant": "1g",
+        "description": "A happy, relaxed and giggly high. The flavor profile is fresh fruit, berries, citrus, hopps & pine."
+      },
+      "expect": {
+        "category": "preroll",
+        "subtype": "infused",
+        "strain": "Blue Oreos",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "holdup-008-gorilla-glue-1g-aio-vape",
+      "input": {
+        "brand": "Florist Farms",
+        "name": "Gorilla Glue - 1G AIO Vape",
+        "category": "other",
+        "variant": "1g",
+        "description": "Gorilla Glue | Indica| 1G All-In-One. If you’re looking for a vape that actually tastes like cannabis, this is it - no fake flavors, just real, pure cannabis that hits smooth every time .Effect: Indic"
+      },
+      "expect": {
+        "category": "vaporizers",
+        "subtype": "all-in-one",
+        "strain": "Gorilla Glue",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "holdup-009-heir-heads-1g-live-resin-510-vape",
+      "input": {
+        "brand": "Jaunty",
+        "name": "Heir Heads - 1G Live Resin 510 Vape",
+        "category": "other",
+        "variant": "1g",
+        "description": "WHAT IS LIVE RESIN? • Powerful cannabis extract made from the finest fresh, frozen cannabis plants • Full-Spectrum profile of terpenes, cannabinoids & other desirable compounds • A True-to-Plant exper"
+      },
+      "expect": {
+        "category": "vaporizers",
+        "subtype": "cart",
+        "strain": "Heir Heads",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "holdup-010-blue-dream-4g-aio-vape",
+      "input": {
+        "brand": "Bonanza",
+        "name": "Blue Dream - 4G AIO Vape",
+        "category": "other",
+        "variant": "4.0 grams",
+        "description": "Blue Dream is a sativa-dominant hybrid marijuana strain made by crossing Blueberry with Haze. This strain produces a balanced high, along with effects such as cerebral stimulation and full-body relaxa"
+      },
+      "expect": {
+        "category": "vaporizers",
+        "subtype": "all-in-one",
+        "strain": "Blue Dream",
+        "variant": "4g"
+      }
+    },
+    {
+      "id": "holdup-011-moonbeam-gelato-7g-flower-smalls",
+      "input": {
+        "brand": "Grassroots",
+        "name": "Moonbeam Gelato - 7G Flower Smalls",
+        "category": "other",
+        "variant": "7.0 grams",
+        "description": "Limonene, b-Caryophyllene, Farnesene, a-Humulene Don’t fake the funk, go full blast with Moonbeam Gelato. When the dark-purple buds break you're hit with a wild mix: blueberry jam, overripe grape, and"
+      },
+      "expect": {
+        "category": "flower",
+        "subtype": "smalls",
+        "strain": "Moonbeam Gelato",
+        "variant": "7g"
+      }
+    },
+    {
+      "id": "holdup-012-sour-apple-glue-1g-ice-water-hash-pre-ro",
+      "input": {
+        "brand": "Kiefers",
+        "name": "Sour Apple Glue - 1g Ice Water Hash Pre-Roll",
+        "category": "other",
+        "variant": "1g",
+        "description": "Sleepy, relaxed high. The flavor profile of fresh apples, citrus, hopps and pine."
+      },
+      "expect": {
+        "category": "preroll",
+        "subtype": "infused",
+        "strain": "Sour Apple Glue",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "holdup-013-king-louis-xiii-0-5g-pod",
+      "input": {
+        "brand": "Stiiizy",
+        "name": "King Louis XIII - 0.5g POD",
+        "category": "other",
+        "variant": ".5g",
+        "description": "KING LOUIS XIII TASTE: Mango FEELING: Relaxed, Sleepy, Happy DESCRIPTION: This popular indica dominant strain is the perfect nightcap to relax and unwind, perfectly blended with mango flavor."
+      },
+      "expect": {
+        "category": "vaporizers",
+        "subtype": "pod",
+        "strain": "King Louis XIII",
+        "variant": "0.5g"
+      }
+    },
+    {
+      "id": "holdup-014-northern-lights-10pk-live-resin-infused-",
+      "input": {
+        "brand": "KOA",
+        "name": "Northern Lights - 10PK Live Resin Infused Prerolls",
+        "category": "other",
+        "variant": "1/8 oz",
+        "description": "Meet Koa, the perfect cannabis pre-roll for those who want top-tier quality with maximum convenience. Each pre-roll delivers 35%+ THC potency using only premium indoor flower and live resin — absolute"
+      },
+      "expect": {
+        "category": "preroll",
+        "strain": "Northern Lights",
+        "variant": "3.5g"
+      }
+    },
+    {
+      "id": "holdup-015-northern-lights-2g-infused-preroll",
+      "input": {
+        "brand": "Jetpacks",
+        "name": "Northern Lights - 2G Infused Preroll",
+        "category": "other",
+        "variant": "2.0 grams",
+        "description": "Northern Lights brings a tranquil wave of relaxation, pairing sweet pine and fresh earthy tones with subtle herbal spice. Whether you’re winding down from a long day or setting into an evening of calm"
+      },
+      "expect": {
+        "category": "preroll",
+        "subtype": "infused",
+        "strain": "Northern Lights",
+        "variant": "2g"
+      }
+    },
+    {
+      "id": "holdup-016-lemon-lavender-serenity-50mg-gummies",
+      "input": {
+        "brand": "Eaton Botanicals",
+        "name": "Lemon Lavender Serenity - 50mg Gummies",
+        "category": "edible",
+        "variant": "50.0 milligrams",
+        "description": "Feel calm, clear, and grounded with Serenity Now, our microdose 2.5mg, vegan gummy crafted with a thoughtful blend of powerful botanicals. Designed by holistic health experts, our formula features mag"
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "gummy",
+        "strain": "Lemon Lavender",
+        "variant": "50mg"
+      }
+    },
+    {
+      "id": "holdup-017-blue-razzleberry-mega-100mg-gummy",
+      "input": {
+        "brand": "GRON",
+        "name": "Blue Razzleberry Mega - 100mg Gummy",
+        "category": "edible",
+        "variant": "100.0 milligrams",
+        "description": "A blast of berry in an uplifting 1:1 ratio of CBG and THC, the Blue Razzleberry Mega is perfect for kickstarting your next creative project, fueling your outdoor adventure, or boosting your next get-t"
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "gummy",
+        "strain": "Blue Razzleberry Mega",
+        "variant": "100mg"
+      }
+    },
+    {
+      "id": "holdup-018-nordic-blueberry-100mg-gummies",
+      "input": {
+        "brand": "Royal Genetics",
+        "name": "Nordic Blueberry - 100MG Gummies",
+        "category": "edible",
+        "variant": "",
+        "description": "Discover the pure, vibrant flavor of the wild with our Nordic Blueberry Gummies, inspired by the pristine forests of Scandinavia where these tiny, antioxidant-rich berries thrive. Handpicked from remo"
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "gummy",
+        "strain": "Nordic Blueberry",
+        "variant": "100mg"
+      }
+    },
+    {
+      "id": "holdup-019-cookies-n-cream-cones-100mg-ice-cream-co",
+      "input": {
+        "brand": "Cannabals",
+        "name": "Cookies N Cream Cones - 100MG Ice Cream Cone Tips",
+        "category": "edible",
+        "variant": "",
+        "description": "Cones – Cookies & Cream – 100mg THC / 10mg per cone Smooth Belgian chocolate combined with crunchy cookie pieces creates a sweet, nostalgic flavor experience"
+      },
+      "expect": {
+        "category": "edible",
+        "strain": "Cookies N Cream",
+        "variant": "100mg"
+      }
+    },
+    {
+      "id": "holdup-020-pineapple-float-100mg-20pk-gummies",
+      "input": {
+        "brand": "Chillaxers",
+        "name": "Pineapple Float - 100MG 20pk Gummies",
+        "category": "edible",
+        "variant": "",
+        "description": "ORIGINAL BLEND Drift into bliss with Chillaxers- each bite a golden wave of calm, washing over you like a warm sun on bare skin. Feel your stress dissolve as you’re carried away by a gentle breeze wit"
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "gummy",
+        "strain": "Pineapple Float",
+        "variant": "100mg"
+      }
+    },
+    {
+      "id": "holdup-021-black-cherry-sparkling-water-5mg",
+      "input": {
+        "brand": "ayrloom",
+        "name": "Black Cherry Sparkling Water - 5mg",
+        "category": "edible",
+        "variant": "5.0 milligrams",
+        "description": "Electrifyingly crisp and slightly tart, unexpectadly smooth and never too sweet, it packs a flavor punch with every sip! Ingredients: Filtered Water, Cherry Juice Concentrate, Cannabis Extract, Natura"
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "beverage",
+        "strain": "Black Cherry",
+        "variant": "5mg"
+      }
+    },
+    {
+      "id": "holdup-022-sour-blue-raspberry-lemonade-100mg-multi",
+      "input": {
+        "brand": "Mayhem",
+        "name": "Sour Blue Raspberry Lemonade - 100MG Multi-Dose 1PC Gummy",
+        "category": "edible",
+        "variant": "",
+        "description": "Serious Mayhem packed into a compact bite. Mayhem Blue Raspberry Lemonade Gummies are finished with a bold sour coating, delivering the perfect collision of sweet and sour in every square. Each 1-inch"
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "gummy",
+        "strain": "Sour Blue Raspberry Lemonade",
+        "variant": "100mg"
+      }
+    },
+    {
+      "id": "holdup-023-wake-and-bake-yaupon-and-mint-10mg-tea-s",
+      "input": {
+        "brand": "Harney Brothers",
+        "name": "Wake And Bake Yaupon And Mint - 10MG Tea Sachets",
+        "category": "edible",
+        "variant": "50.0 milligrams",
+        "description": "Wake up and smell the Yaupon. This blend will provide a balanced start to your day. Made with Yaupon, a unique Texan caffeinated holly, earthy Guayusa holly, shade-grown Yerba Mate and a bright zing o"
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "beverage",
+        "variant": "50mg"
+      }
+    },
+    {
+      "id": "holdup-024-mega-dose-cherry-rings-100mg-gummy",
+      "input": {
+        "brand": "Flav",
+        "name": "Mega Dose Cherry Rings  - 100mg Gummy",
+        "category": "edible",
+        "variant": "",
+        "description": "A little goes a long way with our latest Megadose Sour Gummy Rings. Available in our top selling flavors Peach, Cherry, and Watermelon Flav megadose gummy rings pack a punch in both flavor and potency"
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "gummy",
+        "variant": "100mg"
+      }
+    },
+    {
+      "id": "holdup-025-midnight-mango-1-1-1-thc-cbd-cbn-20pk-sl",
+      "input": {
+        "brand": "REMZzz",
+        "name": "Midnight Mango - 1:1:1 THC:CBD:CBN 20pk Sleep Gummies",
+        "category": "edible",
+        "variant": "",
+        "description": "Smooth, Midnight Mango that unwinds tension and quiets the noise. This is the taste of letting go, when the lights dim and your shoulders finally drop. Midnight Mango brings warmth without stimulation"
+      },
+      "expect": {
+        "category": "edible",
+        "subtype": "gummy",
+        "strain": "Midnight Mango"
+      }
+    },
+    {
+      "id": "holdup-026-donny-burger-1g-preroll",
+      "input": {
+        "brand": "ADK",
+        "name": "Donny Burger - 1G Preroll",
+        "category": "preroll",
+        "variant": "1g",
+        "description": "Donny Burger is a potent, indica-dominant cannabis hybrid, a cross of GMO (Garlic Cookies) and Han-Solo Burger, known for its relaxing, giggle-inducing, and sleep-inducing effects, featuring a pungent"
+      },
+      "expect": {
+        "category": "preroll",
+        "subtype": "single",
+        "strain": "Donny Burger",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "holdup-027-platinum-life-breath-1g-preroll",
+      "input": {
+        "brand": "ADK",
+        "name": "Platinum Life Breath - 1g Preroll",
+        "category": "preroll",
+        "variant": "1g",
+        "description": "Platinum Life Breath -Platinum Kush Breath Remix x Lifehack -Dominant Terpenes - Caryophyllene, Limonene, Terpinene Platinum Life Breath is a cannabis strain known for its fuely, chem-like taste and p"
+      },
+      "expect": {
+        "category": "preroll",
+        "subtype": "single",
+        "strain": "Platinum Life Breath",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "holdup-028-shock-bloom-x-pinnacle-3-3-5g-7pk-prerol",
+      "input": {
+        "brand": "Mini Mart",
+        "name": "Shock Bloom X Pinnacle 3 - 3.5G 7PK Prerolls",
+        "category": "preroll",
+        "variant": "1/8 oz",
+        "description": "Hybrid This hybrid cross delivers an energizing yet balanced high that combines cerebral stimulation with gentle body relaxation, perfect for creative activities and social situations. Complex flavors"
+      },
+      "expect": {
+        "category": "preroll",
+        "subtype": "pack",
+        "strain": "Shock Bloom x Pinnacle 3",
+        "variant": "3.5g"
+      }
+    },
+    {
+      "id": "holdup-029-lilac-diesel-8pk-preroll",
+      "input": {
+        "brand": "Slack Hollow",
+        "name": "Lilac Diesel - 8pk Preroll",
+        "category": "preroll",
+        "variant": "4.0 grams",
+        "description": ""
+      },
+      "expect": {
+        "category": "preroll",
+        "subtype": "pack",
+        "strain": "Lilac Diesel",
+        "variant": "4g"
+      }
+    },
+    {
+      "id": "holdup-030-blue-lobster-1g-pre-roll",
+      "input": {
+        "brand": "ADK",
+        "name": "Blue Lobster - 1g Pre-Roll",
+        "category": "preroll",
+        "variant": "1g",
+        "description": "Blue Lobster is a slightly indica dominant hybrid strain (60% indica/40% sativa) created through crossing the delicious Apples N Bananas X Eye Candy strains. If you love a super mouthwatering flavor a"
+      },
+      "expect": {
+        "category": "preroll",
+        "subtype": "single",
+        "strain": "Blue Lobster",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "holdup-031-animal-face-5pk-pre-rolls",
+      "input": {
+        "brand": "Dogwalkers",
+        "name": "Animal Face - 5pk Pre-Rolls",
+        "category": "preroll",
+        "variant": "1.75 grams",
+        "description": "Animal Face 5 pack pre-rolls 1.75g - This is a cross of Face Off OG and Animal Mints. - These dense, orange buds have purple calyxes with a classic musk mixed with gas and sweet after taste. Dogwalker"
+      },
+      "expect": {
+        "category": "preroll",
+        "subtype": "pack",
+        "strain": "Animal Face",
+        "variant": "1.75g"
+      }
+    },
+    {
+      "id": "holdup-032-citronella-1g-preroll",
+      "input": {
+        "brand": "Dragonfly",
+        "name": "Citronella - 1G Preroll",
+        "category": "preroll",
+        "variant": "1g",
+        "description": "Citronella 1g preroll-even burn and clean flavor from quality Dragonfly flower, ready when you are. Always crafted for consistent Dragonfly quality."
+      },
+      "expect": {
+        "category": "preroll",
+        "subtype": "single",
+        "strain": "Citronella",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "holdup-033-empire-state-cake-0-5g-6pk-perolls",
+      "input": {
+        "brand": "JUNIPER JILL",
+        "name": "Empire State Cake - 0.5G 6PK Perolls",
+        "category": "preroll",
+        "variant": "3.0 grams",
+        "description": "Our pre-roll pack contains six 1/2g, single-strain pre-rolls, expertly packaged for on-the-go cannabis connoisseurs."
+      },
+      "expect": {
+        "category": "preroll",
+        "subtype": "pack",
+        "strain": "Empire State Cake",
+        "variant": "3g"
+      }
+    },
+    {
+      "id": "holdup-034-silly-nice-bubble-hash-1g",
+      "input": {
+        "brand": "Silly Nice",
+        "name": "Silly Nice | Bubble Hash | 1G",
+        "category": "concentrate",
+        "variant": "1g",
+        "description": "Elevate your cannabis experience with Silly Nice 1G Bubble Hash, a premium solventless concentrate renowned for its exceptional potency and purity. This full-spectrum hash delivers a robust, smooth, a"
+      },
+      "expect": {
+        "category": "concentrate",
+        "subtype": "hash",
+        "strain": null,
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "holdup-035-chem-dawg-1g-cured-resin-crumble",
+      "input": {
+        "brand": "Blotter",
+        "name": "Chem Dawg - 1G Cured Resin Crumble",
+        "category": "concentrate",
+        "variant": "1g",
+        "description": "Chemdog (or Chemdawg) is a legendary, potent hybrid cannabis strain famous for its pungent diesel-gasoline aroma and strong, euphoric, and cerebral effects. Originating in the early 1990s, it is known"
+      },
+      "expect": {
+        "category": "concentrate",
+        "subtype": "resin",
+        "strain": "Chem Dawg",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "holdup-036-burnout-cookies-1g-crumble",
+      "input": {
+        "brand": "#HASH",
+        "name": "Burnout Cookies - 1G Crumble",
+        "category": "concentrate",
+        "variant": "1g",
+        "description": "#HASH Burnout Cookies (often labeled Burnout Cookies #1) is a high-THC sativa-dominant hybrid concentrate known for diesel, earthy, and pine flavors. Produced by #HASH in small batches, this solvent-r"
+      },
+      "expect": {
+        "category": "concentrate",
+        "strain": "Burnout Cookies",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "holdup-037-biscotti-1g-cured-resin-budder",
+      "input": {
+        "brand": "Blotter",
+        "name": "Biscotti - 1G Cured Resin Budder",
+        "category": "concentrate",
+        "variant": "1g",
+        "description": "Biscotti is a potent, indica-dominant hybrid (roughly 80% indica/20% sativa) known for its intense sweet, nutty, and diesel cookie flavor. A cross of Gelato 25 and Sour Florida OG, delivering deep rel"
+      },
+      "expect": {
+        "category": "concentrate",
+        "subtype": "resin",
+        "strain": "Biscotti",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "holdup-038-blue-cookies-1g-badder",
+      "input": {
+        "brand": "Jetpacks",
+        "name": "Blue Cookies - 1G Badder",
+        "category": "concentrate",
+        "variant": "1g",
+        "description": "Blue Cookies is a rich, full-spectrum Live Resin Badder produced by Jetpacks, crafted from freshly frozen Blue Cookies flower. This concentrate delivers a creamy, flavorful profile with sweet blueberr"
+      },
+      "expect": {
+        "category": "concentrate",
+        "strain": "Blue Cookies",
+        "variant": "1g"
+      }
+    },
+    {
+      "id": "holdup-039-mk-lighter-cultivate-series-jet-pocket-l",
+      "input": {
+        "brand": "MK Lighter",
+        "name": "MK Lighter Cultivate Series Jet Pocket Lighter",
+        "category": "merch",
+        "variant": "",
+        "description": "The MK Lighter Cultivate Series Jet Pocket Lighter is a click-button style refillable torch lighter, available with various mid-century modern hemp-themed art patterns and designs. These lighters have"
+      },
+      "expect": {
+        "category": "merch",
+        "subtype": "lighter",
+        "strain": null
+      }
+    },
+    {
+      "id": "holdup-040-peaches-n-cream-juicy-jay-s-flavored-rol",
+      "input": {
+        "brand": "Juicy Jay's",
+        "name": "Peaches N Cream Juicy Jay's Flavored Rolling Papers | 1 1/4",
+        "category": "merch",
+        "variant": "",
+        "description": "Juicy Jay's Rolling Papers have long been a staple in the RYO industry with great tasting and smelling flavors. Each point-of-purchase display box contains 24 booklets each with 32 leaves. Papers are "
+      },
+      "expect": {
+        "category": "merch",
+        "subtype": "paper",
+        "strain": null
+      }
+    },
+    {
+      "id": "holdup-041-black-510-thread-stick-battery",
+      "input": {
+        "brand": "Bonanza",
+        "name": "Black - 510 Thread Stick Battery",
+        "category": "merch",
+        "variant": "",
+        "description": ""
+      },
+      "expect": {
+        "category": "merch",
+        "subtype": "battery",
+        "strain": null
+      }
+    },
+    {
+      "id": "holdup-042-dab-tool",
+      "input": {
+        "brand": "Mozeat Lens",
+        "name": "Dab Tool",
+        "category": "merch",
+        "variant": "",
+        "description": ""
+      },
+      "expect": {
+        "category": "merch",
+        "subtype": "dab-tool",
+        "strain": null
+      }
+    },
+    {
+      "id": "holdup-043-organic-medium-dog-cbd-oil-600mg-tinctur",
+      "input": {
+        "brand": "Head & Heal",
+        "name": "Organic Medium Dog CBD Oil - 600mg Tincture",
+        "category": "tinctures",
+        "variant": "600.0 milligrams",
+        "description": "With Head & Heal, you're going straight to the source - we grow, process, and bottle all of our products right on our farm. Our philosophy is rooted in supporting the health of both people and the pla"
+      },
+      "expect": {
+        "category": "tinctures",
+        "subtype": "tincture",
+        "strain": null,
+        "variant": "600mg"
+      }
+    },
+    {
+      "id": "holdup-044-pillow-talk-sleep-drops-300mg-thc-1500mg",
+      "input": {
+        "brand": "ayrloom",
+        "name": "Pillow Talk Sleep Drops - 300MG THC:1500MG CBN",
+        "category": "tinctures",
+        "variant": "",
+        "description": "1:5 THC:CBN. 1800mg per package/300mg THC per serving/1500mg CBN per serving. INGREDIENTS: ORGANIC COCONUT MCT OIL, CANNABIS EXTRACT."
+      },
+      "expect": {
+        "category": "tinctures",
+        "subtype": "tincture",
+        "strain": "Pillow Talk",
+        "variant": "300mg"
+      }
+    },
+    {
+      "id": "holdup-045-unflavored-beverage-enhancer-300mg-thc-t",
+      "input": {
+        "brand": "ayrloom",
+        "name": "Unflavored Beverage Enhancer - 300MG THC Tincture",
+        "category": "tinctures",
+        "variant": "",
+        "description": "Unflavored Water Soluble Beverage Enhancer. Fast acting, nano emulsion technology."
+      },
+      "expect": {
+        "category": "tinctures",
+        "subtype": "tincture",
+        "variant": "300mg"
+      }
+    },
+    {
+      "id": "holdup-046-unscented-cbd-lotion-300mg",
+      "input": {
+        "brand": "Head & Heal",
+        "name": "Unscented CBD lotion - 300mg",
+        "category": "topical",
+        "variant": "",
+        "description": "Ingredients: Distilled Water, Vegetable Glycerin, Ecomulse, Shea Butter, Castor Oil, Sunflower Oil, Witch Hazel, Stearic Acid, Full Spectrum Hemp Extract, Arrow Root, Grape Seed, Olive Oil, MSM, Optip"
+      },
+      "expect": {
+        "category": "topical",
+        "subtype": "topical",
+        "strain": null,
+        "variant": "300mg"
+      }
+    },
+    {
+      "id": "holdup-047-on-heat-relief-muscle-spray-300mg",
+      "input": {
+        "brand": "Head & Heal",
+        "name": "On Heat Relief Muscle Spray - 300mg",
+        "category": "topical",
+        "variant": "",
+        "description": "Back by popular demand, our CBD Heat Relief Spray-On is one of the most effective products for muscle and joint relief! With a new leak-proof application spray top, this rapid heat relief formula is r"
+      },
+      "expect": {
+        "category": "topical",
+        "subtype": "topical",
+        "variant": "300mg"
+      }
+    }
+  ]
 }

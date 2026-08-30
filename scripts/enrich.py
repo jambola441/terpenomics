@@ -22,6 +22,7 @@ from scraper_common import normalize_variant  # noqa: E402
 from canonical import canonicalize, find_format_category  # noqa: E402
 import verification  # noqa: E402
 import attributes as attribute_registry  # noqa: E402
+import enrichers  # noqa: E402
 
 _DATA_DIR = Path(__file__).parent.parent / "data"
 
@@ -1016,6 +1017,23 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
             variants.append(v.get("variant"))
             continue
 
+        # A category whose owner declares needs_model = False is answered from the
+        # name alone. Skipping here rather than filtering later means those rows
+        # never enter a batch, so they cost nothing and cannot be perturbed by a
+        # model's run-to-run variance.
+        hint_cat = _hint_category(row)
+        if enrichers.skips_model(hint_cat):
+            owner = enrichers.for_category(hint_cat)
+            name = row.get("name", "")
+            categories.append(hint_cat)
+            # row["subtype"] is normally absent on a fresh scrape; when a caller does
+            # supply the stored value, a model answer the tokens do not cover survives.
+            subtypes.append(owner.subtype(name, row.get("subtype")))
+            strains.append(owner.strain(name, None))
+            product_lines.append(owner.product_line(row.get("brand", ""), name, None))
+            variants.append(owner.variant(name, row.get("variant")))
+            continue
+
         key = _cache_key(row)
         entry = cache.get(key) if key else None
         # Re-enrich if not cached, if the cache pre-dates the variant/category
@@ -1035,7 +1053,10 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
             variants.append(None)
             pending.append((i, row))
 
-    cached_count = len(rows) - len(pending)
+    no_model = sum(1 for r in rows if enrichers.skips_model(_hint_category(r)))
+    cached_count = len(rows) - len(pending) - no_model
+    if no_model:
+        print(f"  deterministic: {no_model} row(s) answered from the name, no model call")
     if pending:
         print(f"  enrich: {cached_count} cached, {len(pending)} → {model}")
         usage = _run_enrich(pending, cache, slug, categories, subtypes, strains, product_lines, variants, model_cfg, batch_size, brand_examples)

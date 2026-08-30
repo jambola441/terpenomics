@@ -1,13 +1,13 @@
 {
   "model": "haiku-or",
   "api_model": "anthropic/claude-haiku-4.5",
-  "secs": 14.975128889083862,
+  "secs": 15.336207151412964,
   "usage": {
-    "input_tokens": 70443,
-    "output_tokens": 15845,
+    "input_tokens": 67609,
+    "output_tokens": 15282,
     "cache_write_tokens": 0,
     "cache_read_tokens": 0,
-    "cost_usd": 0.1497
+    "cost_usd": 0.144
   },
   "error": null,
   "scores": {
@@ -538,7 +538,7 @@
           "category": "vaporizers",
           "subtype": "cart",
           "strain": "Sour Appleicious",
-          "product_line": "Fusion",
+          "product_line": null,
           "variant": "1g"
         },
         "expect": {
@@ -1077,9 +1077,14 @@
       },
       {
         "id": "x-camino-watermelon-lemonade-bliss",
-        "converged": true,
-        "split": {},
-        "canonical_match": true,
+        "converged": false,
+        "split": {
+          "variant": [
+            "100mg",
+            "72mg"
+          ]
+        },
+        "canonical_match": false,
         "canon_fails": [],
         "members": [
           {
@@ -1108,7 +1113,7 @@
             "subtype": "gummy",
             "strain": "Watermelon Lemonade",
             "product_line": null,
-            "variant": "100mg"
+            "variant": "72mg"
           }
         ]
       },
@@ -1218,21 +1223,21 @@
           {
             "category": "topical",
             "subtype": "topical",
-            "strain": "Balm",
+            "strain": "",
             "product_line": "Releaf",
             "variant": ""
           },
           {
             "category": "topical",
             "subtype": "topical",
-            "strain": "Relief Balm",
+            "strain": "",
             "product_line": "Releaf",
             "variant": ""
           },
           {
             "category": "topical",
             "subtype": "topical",
-            "strain": "Balm",
+            "strain": "",
             "product_line": "Releaf",
             "variant": ""
           }
@@ -1367,7 +1372,7 @@
         "id": "holdup-007-blue-oreos-1g-ice-water-hash-pre-roll",
         "got": {
           "category": "preroll",
-          "subtype": "single",
+          "subtype": "infused",
           "strain": "Blue Oreos",
           "product_line": null,
           "variant": "1g"
@@ -1378,10 +1383,8 @@
           "strain": "Blue Oreos",
           "variant": "1g"
         },
-        "passed": false,
-        "fails": [
-          "subtype"
-        ]
+        "passed": true,
+        "fails": []
       },
       {
         "id": "holdup-008-gorilla-glue-1g-aio-vape",
@@ -1459,7 +1462,7 @@
         "id": "holdup-012-sour-apple-glue-1g-ice-water-hash-pre-ro",
         "got": {
           "category": "preroll",
-          "subtype": "single",
+          "subtype": "infused",
           "strain": "Sour Apple Glue",
           "product_line": null,
           "variant": "1g"
@@ -1470,10 +1473,8 @@
           "strain": "Sour Apple Glue",
           "variant": "1g"
         },
-        "passed": false,
-        "fails": [
-          "subtype"
-        ]
+        "passed": true,
+        "fails": []
       },
       {
         "id": "holdup-013-king-louis-xiii-0-5g-pod",
@@ -1497,18 +1498,20 @@
         "id": "holdup-014-northern-lights-10pk-live-resin-infused-",
         "got": {
           "category": "preroll",
-          "subtype": "pack",
+          "subtype": "infused",
           "strain": "Northern Lights",
           "product_line": null,
-          "variant": "3.5g"
+          "variant": "2.8g"
         },
         "expect": {
           "category": "preroll",
           "strain": "Northern Lights",
           "variant": "3.5g"
         },
-        "passed": true,
-        "fails": []
+        "passed": false,
+        "fails": [
+          "variant"
+        ]
       },
       {
         "id": "holdup-015-northern-lights-2g-infused-preroll",
@@ -1751,7 +1754,7 @@
         "got": {
           "category": "preroll",
           "subtype": "pack",
-          "strain": "Shock Bloom x Pinnacle 3",
+          "strain": "Shock Bloom X Pinnacle 3",
           "product_line": null,
           "variant": "3.5g"
         },
@@ -1859,7 +1862,7 @@
         "got": {
           "category": "concentrate",
           "subtype": "hash",
-          "strain": "",
+          "strain": "Bubble Hash",
           "product_line": null,
           "variant": "1g"
         },
@@ -1869,8 +1872,10 @@
           "strain": null,
           "variant": "1g"
         },
-        "passed": true,
-        "fails": []
+        "passed": false,
+        "fails": [
+          "strain"
+        ]
       },
       {
         "id": "holdup-035-chem-dawg-1g-cured-resin-crumble",
@@ -1894,7 +1899,7 @@
         "id": "holdup-036-burnout-cookies-1g-crumble",
         "got": {
           "category": "concentrate",
-          "subtype": "other",
+          "subtype": "resin",
           "strain": "Burnout Cookies",
           "product_line": null,
           "variant": "1g"
@@ -1946,14 +1951,14 @@
         "id": "holdup-039-mk-lighter-cultivate-series-jet-pocket-l",
         "got": {
           "category": "merch",
-          "subtype": "merch",
+          "subtype": "lighter",
           "strain": "",
           "product_line": null,
           "variant": ""
         },
         "expect": {
           "category": "merch",
-          "subtype": "merch",
+          "subtype": "lighter",
           "strain": null
         },
         "passed": true,
@@ -1963,14 +1968,14 @@
         "id": "holdup-040-peaches-n-cream-juicy-jay-s-flavored-rol",
         "got": {
           "category": "merch",
-          "subtype": "merch",
+          "subtype": "paper",
           "strain": "",
           "product_line": null,
-          "variant": ""
+          "variant": "1 1/4"
         },
         "expect": {
           "category": "merch",
-          "subtype": "merch",
+          "subtype": "paper",
           "strain": null
         },
         "passed": true,
@@ -1980,14 +1985,14 @@
         "id": "holdup-041-black-510-thread-stick-battery",
         "got": {
           "category": "merch",
-          "subtype": "merch",
+          "subtype": "battery",
           "strain": "",
           "product_line": null,
           "variant": ""
         },
         "expect": {
           "category": "merch",
-          "subtype": "merch",
+          "subtype": "battery",
           "strain": null
         },
         "passed": true,
@@ -1997,14 +2002,14 @@
         "id": "holdup-042-dab-tool",
         "got": {
           "category": "merch",
-          "subtype": "merch",
+          "subtype": "dab-tool",
           "strain": "",
           "product_line": null,
           "variant": ""
         },
         "expect": {
           "category": "merch",
-          "subtype": "merch",
+          "subtype": "dab-tool",
           "strain": null
         },
         "passed": true,
@@ -2015,7 +2020,7 @@
         "got": {
           "category": "tinctures",
           "subtype": "tincture",
-          "strain": "",
+          "strain": "CBD Oil",
           "product_line": null,
           "variant": "600mg"
         },
@@ -2025,15 +2030,17 @@
           "strain": null,
           "variant": "600mg"
         },
-        "passed": true,
-        "fails": []
+        "passed": false,
+        "fails": [
+          "strain"
+        ]
       },
       {
         "id": "holdup-044-pillow-talk-sleep-drops-300mg-thc-1500mg",
         "got": {
           "category": "tinctures",
           "subtype": "tincture",
-          "strain": "Pillow Talk",
+          "strain": "Pillow Talk Sleep Drops",
           "product_line": null,
           "variant": "300mg"
         },
@@ -2043,15 +2050,17 @@
           "strain": "Pillow Talk",
           "variant": "300mg"
         },
-        "passed": true,
-        "fails": []
+        "passed": false,
+        "fails": [
+          "strain"
+        ]
       },
       {
         "id": "holdup-045-unflavored-beverage-enhancer-300mg-thc-t",
         "got": {
           "category": "tinctures",
           "subtype": "tincture",
-          "strain": "Unflavored",
+          "strain": "Unflavored Beverage Enhancer",
           "product_line": null,
           "variant": "300mg"
         },
@@ -2112,7 +2121,7 @@
           "subtype": "gummy",
           "strain": "Razz Lemonade",
           "product_line": null,
-          "variant": "30mg"
+          "variant": "30g"
         },
         "expect": {
           "category": "edible",
@@ -2148,7 +2157,7 @@
           "subtype": "beverage",
           "strain": "Lemonade",
           "product_line": "UP",
-          "variant": "5mg"
+          "variant": ""
         },
         "expect": {
           "category": "edible",
@@ -2184,7 +2193,7 @@
           "subtype": "gummy",
           "strain": "Kiwi",
           "product_line": null,
-          "variant": ""
+          "variant": "100mg"
         },
         "expect": {
           "category": "edible",
@@ -2218,7 +2227,7 @@
           "category": "edible",
           "subtype": "gummy",
           "strain": "Midnight Blueberry",
-          "product_line": null,
+          "product_line": "Sleep",
           "variant": "100mg"
         },
         "expect": {
@@ -2235,9 +2244,9 @@
         "got": {
           "category": "edible",
           "subtype": "gummy",
-          "strain": "Strawberry",
+          "strain": "Strawberry Nighttime",
           "product_line": null,
-          "variant": "70mg"
+          "variant": "70g"
         },
         "expect": {
           "category": "edible",
@@ -2271,7 +2280,7 @@
           "subtype": "gummy",
           "strain": "Creamsicle x Rainbow Beltz 2.0",
           "product_line": null,
-          "variant": "26mg"
+          "variant": "26g"
         },
         "expect": {
           "category": "edible",
@@ -2359,8 +2368,8 @@
           "category": "edible",
           "subtype": "gummy",
           "strain": "Dream Berry",
-          "product_line": null,
-          "variant": ""
+          "product_line": "Fast Asleep",
+          "variant": "100mg"
         },
         "expect": {
           "category": "edible",
@@ -2377,7 +2386,7 @@
           "subtype": "gummy",
           "strain": "Apple-A-Day",
           "product_line": null,
-          "variant": "120mg"
+          "variant": "120g"
         },
         "expect": {
           "category": "edible",
@@ -2392,7 +2401,7 @@
         "got": {
           "category": "edible",
           "subtype": "chocolate",
-          "strain": "Milk Chocolate",
+          "strain": "Daytime Sativa",
           "product_line": null,
           "variant": "100mg"
         },
@@ -2411,7 +2420,7 @@
           "subtype": "beverage",
           "strain": "Pineapple Mango",
           "product_line": "UP",
-          "variant": "5mg"
+          "variant": ""
         },
         "expect": {
           "category": "edible",
@@ -2428,7 +2437,7 @@
           "category": "edible",
           "subtype": "gummy",
           "strain": "Yuzu Lemon",
-          "product_line": null,
+          "product_line": "Balance",
           "variant": "100mg"
         },
         "expect": {
@@ -2447,7 +2456,7 @@
           "subtype": "gummy",
           "strain": "Sol Burst",
           "product_line": null,
-          "variant": "40mg"
+          "variant": "40g"
         },
         "expect": {
           "category": "edible",
@@ -2463,7 +2472,7 @@
           "category": "edible",
           "subtype": "gummy",
           "strain": "Freshly Squeezed",
-          "product_line": null,
+          "product_line": "Recover",
           "variant": "100mg"
         },
         "expect": {
@@ -2498,19 +2507,17 @@
         "got": {
           "category": "edible",
           "subtype": "chocolate",
-          "strain": "Milk Chocolate",
+          "strain": "Sativa",
           "product_line": null,
-          "variant": "100mg"
+          "variant": "45g"
         },
         "expect": {
           "category": "edible",
           "subtype": "chocolate",
           "strain": "Sativa"
         },
-        "passed": false,
-        "fails": [
-          "strain"
-        ]
+        "passed": true,
+        "fails": []
       },
       {
         "id": "gold-023-hashtag-honey-tropical-punch-live-resin-gumm",
@@ -2737,7 +2744,7 @@
           "category": "preroll",
           "subtype": "infused",
           "strain": "Cherry Lime x RZ-11",
-          "product_line": null,
+          "product_line": "Snack Pack",
           "variant": "2.5g"
         },
         "expect": {
@@ -2788,7 +2795,7 @@
         "id": "gold-038-claybourne-co-fast-lane-sativa-flyers-blends",
         "got": {
           "category": "preroll",
-          "subtype": "single",
+          "subtype": "pack",
           "strain": "Fast Lane Sativa",
           "product_line": "Flyers",
           "variant": "3.5g"
@@ -2841,7 +2848,7 @@
           "category": "preroll",
           "subtype": "infused",
           "strain": "Strawberry Sour Diesel",
-          "product_line": null,
+          "product_line": "FJ-Mini",
           "variant": "0.6g"
         },
         "expect": {
@@ -2859,7 +2866,7 @@
           "category": "flower",
           "subtype": "flower",
           "strain": "Mochi Runtz",
-          "product_line": null,
+          "product_line": "WRLD",
           "variant": "3.5g"
         },
         "expect": {
@@ -2967,7 +2974,7 @@
           "category": "flower",
           "subtype": "flower",
           "strain": "Red Zprite",
-          "product_line": null,
+          "product_line": "WRLD",
           "variant": "3.5g"
         },
         "expect": {
@@ -3626,7 +3633,7 @@
         "id": "gold-085-jetty-gdp-1g-concentrate-dablicator",
         "got": {
           "category": "concentrate",
-          "subtype": "other",
+          "subtype": "rso",
           "strain": "GDP",
           "product_line": null,
           "variant": "1g"
@@ -3681,7 +3688,7 @@
           "category": "concentrate",
           "subtype": "resin",
           "strain": "Chemdog",
-          "product_line": null,
+          "product_line": "Classics",
           "variant": "2g"
         },
         "expect": {
@@ -3750,7 +3757,7 @@
         "id": "gold-092-hashtag-honey-chocolate-diesel-1g-live-sugar",
         "got": {
           "category": "concentrate",
-          "subtype": "other",
+          "subtype": "resin",
           "strain": "Chocolate Diesel",
           "product_line": null,
           "variant": "1g"
@@ -3767,7 +3774,7 @@
         "id": "gold-093-jetty-alien-og-1g-concentrate-dablicator",
         "got": {
           "category": "concentrate",
-          "subtype": "other",
+          "subtype": "rso",
           "strain": "Alien OG",
           "product_line": null,
           "variant": "1g"
@@ -3784,14 +3791,14 @@
         "id": "gold-094-timeless-combo-510-battery-and-case-black-ye",
         "got": {
           "category": "merch",
-          "subtype": "merch",
+          "subtype": "battery",
           "strain": "",
           "product_line": null,
           "variant": ""
         },
         "expect": {
           "category": "merch",
-          "subtype": "merch",
+          "subtype": "battery",
           "strain": null,
           "variant": ""
         },
@@ -3802,16 +3809,16 @@
         "id": "gold-095-raw-classic-cones-1-1-4-6-pack",
         "got": {
           "category": "merch",
-          "subtype": "merch",
+          "subtype": "cone",
           "strain": "",
           "product_line": null,
-          "variant": ""
+          "variant": "1 1/4 6pk"
         },
         "expect": {
           "category": "merch",
-          "subtype": "merch",
+          "subtype": "cone",
           "strain": null,
-          "variant": ""
+          "variant": "1 1/4 6pk"
         },
         "passed": true,
         "fails": []
@@ -3820,14 +3827,14 @@
         "id": "gold-096-stiiizy-lite-battery-promo",
         "got": {
           "category": "merch",
-          "subtype": "merch",
+          "subtype": "battery",
           "strain": "",
           "product_line": null,
           "variant": ""
         },
         "expect": {
           "category": "merch",
-          "subtype": "merch",
+          "subtype": "battery",
           "strain": null,
           "variant": ""
         },
@@ -3838,14 +3845,14 @@
         "id": "gold-097-human-grade-5-recycler-1a-dab-rig-smoke",
         "got": {
           "category": "merch",
-          "subtype": "merch",
+          "subtype": "bong",
           "strain": "",
           "product_line": null,
-          "variant": ""
+          "variant": "5\""
         },
         "expect": {
           "category": "merch",
-          "subtype": "merch",
+          "subtype": "bong",
           "strain": null
         },
         "passed": true,
@@ -3855,14 +3862,14 @@
         "id": "gold-098-mushroom-holder-dab-tool",
         "got": {
           "category": "merch",
-          "subtype": "merch",
+          "subtype": "dab-tool",
           "strain": "",
           "product_line": null,
           "variant": ""
         },
         "expect": {
           "category": "merch",
-          "subtype": "merch",
+          "subtype": "dab-tool",
           "strain": null
         },
         "passed": true,
@@ -3872,14 +3879,14 @@
         "id": "gold-099-stiiizy-pro-xl-battery-red",
         "got": {
           "category": "merch",
-          "subtype": "merch",
+          "subtype": "battery",
           "strain": "",
           "product_line": null,
           "variant": ""
         },
         "expect": {
           "category": "merch",
-          "subtype": "merch",
+          "subtype": "battery",
           "strain": null
         },
         "passed": true,
@@ -3890,7 +3897,7 @@
         "got": {
           "category": "tinctures",
           "subtype": "tincture",
-          "strain": "Releaf",
+          "strain": "THC1000",
           "product_line": "Releaf",
           "variant": "1000mg"
         },
@@ -3910,7 +3917,7 @@
           "subtype": "tincture",
           "strain": "Yellow Beltz",
           "product_line": null,
-          "variant": "15mg"
+          "variant": ""
         },
         "expect": {
           "category": "tinctures",
@@ -3944,7 +3951,7 @@
           "subtype": "tincture",
           "strain": "Rainbow Driver",
           "product_line": null,
-          "variant": "15mg"
+          "variant": ""
         },
         "expect": {
           "category": "tinctures",
@@ -3976,9 +3983,9 @@
         "got": {
           "category": "topical",
           "subtype": "topical",
-          "strain": "Releaf",
+          "strain": "1:3 Balm",
           "product_line": "Releaf",
-          "variant": "50ml"
+          "variant": ""
         },
         "expect": {
           "category": "topical",
@@ -3998,7 +4005,7 @@
           "subtype": "topical",
           "strain": "Revive",
           "product_line": null,
-          "variant": "1g"
+          "variant": ""
         },
         "expect": {
           "category": "topical",
@@ -4015,7 +4022,7 @@
           "subtype": "topical",
           "strain": "Restore",
           "product_line": null,
-          "variant": "1g"
+          "variant": ""
         },
         "expect": {
           "category": "topical",
@@ -4049,7 +4056,7 @@
         "got": {
           "category": "preroll",
           "subtype": "pack",
-          "strain": "Dream Star / Cherry Diesel",
+          "strain": "Dream Star x Cherry Diesel",
           "product_line": null,
           "variant": "4g"
         },
@@ -4499,7 +4506,7 @@
         "got": {
           "category": "flower",
           "subtype": "infused",
-          "strain": "Reserve",
+          "strain": "Hybrid",
           "product_line": null,
           "variant": "7g"
         },
@@ -4570,7 +4577,7 @@
           "category": "edible",
           "subtype": "gummy",
           "strain": "Sour Orchard Peach",
-          "product_line": null,
+          "product_line": "Balance",
           "variant": "100mg"
         },
         "expect": {
@@ -4580,10 +4587,8 @@
           "product_line": "Balance",
           "variant": "100mg"
         },
-        "passed": false,
-        "fails": [
-          "product_line"
-        ]
+        "passed": true,
+        "fails": []
       },
       {
         "id": "spot-031-cali-melon-sativa-100mg-thc-10pcs-live-r",
@@ -4626,7 +4631,7 @@
           "category": "edible",
           "subtype": "gummy",
           "strain": "Watermelon Lemonade",
-          "product_line": null,
+          "product_line": "Bliss",
           "variant": "100mg"
         },
         "expect": {
@@ -4636,10 +4641,8 @@
           "product_line": "Bliss",
           "variant": "100mg"
         },
-        "passed": false,
-        "fails": [
-          "product_line"
-        ]
+        "passed": true,
+        "fails": []
       },
       {
         "id": "spot-034-grape-honey-indica-10-20-thc-cbn-100mg-1",
@@ -4664,7 +4667,7 @@
           "category": "edible",
           "subtype": "gummy",
           "strain": "Tropical Burst",
-          "product_line": null,
+          "product_line": "Energy",
           "variant": "100mg"
         },
         "expect": {
@@ -4674,10 +4677,8 @@
           "product_line": "Energy",
           "variant": "100mg"
         },
-        "passed": false,
-        "fails": [
-          "product_line"
-        ]
+        "passed": true,
+        "fails": []
       },
       {
         "id": "spot-036-mendo-breath-indica-65-56-thc-all-in-one",
@@ -4789,14 +4790,14 @@
         "id": "spot-042-watermelon-drip-x-2pk-hemp-wraps-billion",
         "got": {
           "category": "merch",
-          "subtype": "merch",
+          "subtype": "wrap",
           "strain": "",
           "product_line": null,
-          "variant": ""
+          "variant": "2pk"
         },
         "expect": {
           "category": "merch",
-          "subtype": "merch",
+          "subtype": "wrap",
           "strain": null
         },
         "passed": true,
@@ -4808,7 +4809,7 @@
           "category": "merch",
           "subtype": "merch",
           "strain": "",
-          "product_line": null,
+          "product_line": "Classic",
           "variant": ""
         },
         "expect": {
@@ -4823,14 +4824,14 @@
         "id": "spot-044-matte-black-3-2v-auto-start-510-vape-car",
         "got": {
           "category": "merch",
-          "subtype": "merch",
+          "subtype": "charger",
           "strain": "",
           "product_line": null,
           "variant": ""
         },
         "expect": {
           "category": "merch",
-          "subtype": "merch",
+          "subtype": "charger",
           "strain": null
         },
         "passed": true,
@@ -4840,14 +4841,14 @@
         "id": "spot-045-zzz-s-rolling-tray-with-magnetic-cover-d",
         "got": {
           "category": "merch",
-          "subtype": "merch",
+          "subtype": "tray",
           "strain": "",
           "product_line": null,
           "variant": ""
         },
         "expect": {
           "category": "merch",
-          "subtype": "merch",
+          "subtype": "tray",
           "strain": null
         },
         "passed": true,
@@ -4911,8 +4912,8 @@
         "got": {
           "category": "topical",
           "subtype": "topical",
-          "strain": "Relief Balm",
-          "product_line": null,
+          "strain": "Relief",
+          "product_line": "Releaf",
           "variant": ""
         },
         "expect": {
