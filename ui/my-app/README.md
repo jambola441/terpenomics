@@ -28,12 +28,17 @@ VITE_MAP_PROVIDER=thunderforest   # thunderforest | maptiler | stadia | carto
 VITE_MAP_TILE_KEY=...
 ```
 
-| Provider        | Default style         | Character                                     |
-| --------------- | --------------------- | --------------------------------------------- |
-| `thunderforest` | `transport-dark`      | Dark base, transit lines picked out in colour  |
-| `maptiler`      | `streets-v2-dark`     | Clean dark streets, strong labels              |
-| `stadia`        | `alidade_smooth_dark` | Minimal, low-clutter dark                      |
-| `carto`         | Voyager + dark labels | Warm daylight colour toned down under labels   |
+| Provider        | Default style         | Character                                          |
+| --------------- | --------------------- | -------------------------------------------------- |
+| `thunderforest` | `atlas`               | Light and low-clutter — cream land, blue water, green parks, barely any street detail |
+| `maptiler`      | `streets-v2-dark`     | Clean dark streets, strong labels                  |
+| `stadia`        | `alidade_smooth_dark` | Minimal, low-clutter dark                          |
+| `carto`         | Voyager + dark labels | Warm daylight colour toned down under labels       |
+
+Thunderforest also serves `transport-dark` (dark base with transit lines in
+colour) and `transport` (the same content, light). `mapTiles.ts` reports
+whether the resolved style is light, and the map's own chrome — container
+backdrop, pin rings, the scrim behind the legend — follows it.
 
 `VITE_MAP_STYLE` swaps a provider's style, `VITE_MAP_TILE_FILTER` overrides the
 CSS filter used to tone it, and `VITE_MAP_TILE_URL` bypasses the presets for a

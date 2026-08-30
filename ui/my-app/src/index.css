@@ -423,3 +423,28 @@ textarea::placeholder {
 }
 
 .nyc-map .leaflet-control-attribution a { color: var(--text-3); }
+
+/* ── Light basemap ────────────────────────────────────────────────────────── */
+/* The rest of the portal stays dark; only the map surface goes light, so the
+   glass chrome keeps its dark fill (dark-on-light already contrasts) and just
+   the pieces tuned for a dark ground get swapped. */
+
+.nyc-map--light .leaflet-container {
+  background: #e9eef1;  /* the tone light tiles fade in from */
+}
+
+/* Subway bullets sit on white on the real map — a white ring reads lighter
+   than the dark one a night basemap needs, and separates the disc from parks
+   and water it lands on. */
+.nyc-map--light .nyc-pin__disc {
+  box-shadow:
+    0 0 0 2.5px rgba(255, 255, 255, 0.95),
+    0 3px 10px rgba(20, 30, 50, 0.3);
+}
+
+.nyc-map--light .nyc-pin--active .nyc-pin__disc {
+  box-shadow:
+    0 0 0 2.5px #fff,
+    0 0 0 5.5px var(--accent-dim),
+    0 6px 16px rgba(20, 30, 50, 0.38);
+}

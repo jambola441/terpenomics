@@ -70,6 +70,7 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
   const mapInstanceRef = useRef<any>(null)
   const LRef = useRef<any>(null)
   const markersRef = useRef<Record<string, any>>({})
+  const tiles = useMemo(() => tileConfig(), [])
   const [dispensaries, setDispensaries] = useState<PortalDispensary[]>([])
   const [loadingDispensaries, setLoadingDispensaries] = useState(true)
   const [mapReady, setMapReady] = useState(false)
@@ -116,7 +117,6 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
       labelsPane.style.zIndex = '250'
       labelsPane.classList.add('nyc-labels-pane')
 
-      const tiles = tileConfig()
       basePane.style.filter = tiles.filter
 
       L.tileLayer(tiles.baseUrl, {
@@ -148,7 +148,7 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
         markersRef.current = {}
       }
     }
-  }, [])
+  }, [tiles])
 
   // Add markers once both map and dispensaries are ready
   useEffect(() => {
@@ -250,15 +250,18 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
   const selectedBorough = selected ? boroughOf(selected.address) : null
 
   return (
-    <div className="nyc-map" style={containerStyle}>
+    <div className={tiles.light ? 'nyc-map nyc-map--light' : 'nyc-map'} style={containerStyle}>
       <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
 
-      {/* Scrim so the legend keeps contrast over bright blocks */}
-      <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0, height: 96, zIndex: 500,
-        background: `linear-gradient(${alpha('#07090f', 0.62)}, transparent)`,
-        pointerEvents: 'none',
-      }} />
+      {/* Scrim so the legend keeps contrast over bright blocks. A light basemap
+          already contrasts with the dark chips, so it only runs on dark ones. */}
+      {!tiles.light && (
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0, height: 96, zIndex: 500,
+          background: `linear-gradient(${alpha('#07090f', 0.62)}, transparent)`,
+          pointerEvents: 'none',
+        }} />
+      )}
 
       {/* Borough legend */}
       {!loadingDispensaries && boroughCounts.length > 0 && !activeDispensary && (

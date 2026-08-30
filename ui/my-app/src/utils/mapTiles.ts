@@ -6,15 +6,20 @@
    had been showing. Pick a provider, put its key in VITE_MAP_TILE_KEY, and set
    VITE_MAP_PROVIDER to one of the presets below.
 
-     thunderforest  transport-dark      — dark base with transit lines picked
-                                          out in colour; the most subway-ish
+     thunderforest  atlas               — light, low-clutter: cream land, blue
+                                          water, green parks, barely any street
+                                          detail. The subway-map palette, and
+                                          the default.
      maptiler       streets-v2-dark     — clean dark streets, strong labels
      stadia         alidade_smooth_dark — minimal, low-clutter dark
      carto          voyager + dark labels — warm colour under light labels
 
-   VITE_MAP_STYLE overrides a preset's style slug. With no key configured the
-   map falls back to OpenStreetMap's own tiles, inverted into a night palette,
-   so a missing key degrades instead of rendering a stamped or blank map.
+   VITE_MAP_STYLE overrides a preset's style slug — thunderforest's
+   `transport-dark` and `spinal-map` are dark, everything else it serves is
+   light, and the config reports which so the map chrome can follow. With no
+   key configured the map falls back to OpenStreetMap's own tiles, inverted
+   into a night palette, so a missing key degrades instead of rendering a
+   stamped or blank map.
    ========================================================================== */
 
 export type TileConfig = {
@@ -28,18 +33,23 @@ export type TileConfig = {
   /** Whether the provider serves `@2x` tiles — worth it on the phones this
    *  portal is built for, and what `{r}` in the templates expands to. */
   retina: boolean
+  /** True when the basemap is a light one, so the map's own chrome (container
+   *  backdrop, pin rings, the scrim behind the legend) can follow it. */
+  light: boolean
 }
 
 /** Styles that are already dark only need their colour nudged up. */
 const DARK_NATIVE_FILTER = 'saturate(1.22) contrast(1.03) brightness(1.02)'
 
-/** Thunderforest's transport-dark draws the whole road network in bright red
- *  over yellow trunk routes — loud enough at city zoom to bury the store
- *  bullets, the red Manhattan ones especially. Pull its colour and brightness
- *  back far enough that the map reads as ember-toned context and the bullets
- *  stay the brightest thing on screen, but not so far that the transit lines
- *  it's chosen for wash out. Tuned against live tiles at z11–z13; another
- *  Thunderforest style will want its own VITE_MAP_TILE_FILTER. */
+/** Thunderforest's light styles are already close to the subway map's palette;
+ *  a touch of desaturation and lift keeps them airy behind the bullets. */
+const LIGHT_FILTER = 'saturate(0.94) brightness(1.03) contrast(0.98)'
+
+/** transport-dark draws the whole road network in bright red over yellow trunk
+ *  routes — loud enough at city zoom to bury the store bullets, the red
+ *  Manhattan ones especially. Pull its colour and brightness back far enough
+ *  that the map reads as ember-toned context, but not so far that the transit
+ *  lines it's chosen for wash out. Tuned against live tiles at z11–z13. */
 const TRANSPORT_DARK_FILTER = 'grayscale(0.35) saturate(1) brightness(0.86) contrast(1.05)'
 
 /** CARTO's Voyager is a daylight style — tone it down to sit in a dark shell. */
@@ -48,39 +58,48 @@ const CARTO_FILTER = 'saturate(1.45) contrast(0.94) brightness(0.6) hue-rotate(-
 /** OSM ships a daylight map with no dark variant; invert it into a night one. */
 const OSM_FILTER = 'invert(0.93) hue-rotate(180deg) saturate(1.15) brightness(0.86) contrast(0.9)'
 
+type Tone = { filter: string; light: boolean }
+
 type Preset = {
   defaultStyle: string
   attribution: string
-  filter: string
+  /** How a given style slug is toned — a provider can serve both light and
+   *  dark styles, so this is resolved per style rather than per provider. */
+  tone: (style: string) => Tone
   base: (style: string, key: string) => string
   labels?: (style: string, key: string) => string
 }
 
+/** The only dark styles Thunderforest serves. */
+const THUNDERFOREST_DARK = /-dark$|^spinal-map$/
+
 const PRESETS: Record<string, Preset> = {
   thunderforest: {
-    defaultStyle: 'transport-dark',
+    defaultStyle: 'atlas',
     attribution: '© Thunderforest © OpenStreetMap contributors',
-    filter: TRANSPORT_DARK_FILTER,
+    tone: style => THUNDERFOREST_DARK.test(style)
+      ? { filter: TRANSPORT_DARK_FILTER, light: false }
+      : { filter: LIGHT_FILTER, light: true },
     base: (style, key) =>
       `https://{s}.tile.thunderforest.com/${style}/{z}/{x}/{y}{r}.png?apikey=${key}`,
   },
   maptiler: {
     defaultStyle: 'streets-v2-dark',
     attribution: '© MapTiler © OpenStreetMap contributors',
-    filter: DARK_NATIVE_FILTER,
+    tone: () => ({ filter: DARK_NATIVE_FILTER, light: false }),
     base: (style, key) => `https://api.maptiler.com/maps/${style}/{z}/{x}/{y}{r}.png?key=${key}`,
   },
   stadia: {
     defaultStyle: 'alidade_smooth_dark',
     attribution: '© Stadia Maps © OpenMapTiles © OpenStreetMap contributors',
-    filter: DARK_NATIVE_FILTER,
+    tone: () => ({ filter: DARK_NATIVE_FILTER, light: false }),
     base: (style, key) =>
       `https://tiles.stadiamaps.com/tiles/${style}/{z}/{x}/{y}{r}.png?api_key=${key}`,
   },
   carto: {
     defaultStyle: 'rastertiles/voyager_nolabels',
     attribution: '© OpenStreetMap © CARTO',
-    filter: CARTO_FILTER,
+    tone: () => ({ filter: CARTO_FILTER, light: false }),
     base: (style, key) => `https://{s}.basemaps.cartocdn.com/${style}/{z}/{x}/{y}{r}.png?api_key=${key}`,
     labels: (_style, key) =>
       `https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png?api_key=${key}`,
@@ -93,6 +112,7 @@ const OSM_FALLBACK: TileConfig = {
   attribution: '© OpenStreetMap contributors',
   filter: OSM_FILTER,
   retina: false,  // OSM serves no @2x tiles
+  light: false,   // the invert leaves it dark
 }
 
 const env = import.meta.env
@@ -107,6 +127,7 @@ export function tileConfig(): TileConfig {
       attribution: (env.VITE_MAP_TILE_ATTRIBUTION as string | undefined) ?? '',
       filter: (env.VITE_MAP_TILE_FILTER as string | undefined) ?? 'none',
       retina: env.VITE_MAP_TILE_RETINA === 'true',
+      light: env.VITE_MAP_TILE_LIGHT === 'true',
     }
   }
 
@@ -122,12 +143,14 @@ export function tileConfig(): TileConfig {
 
   const style = (env.VITE_MAP_STYLE as string | undefined) ?? preset.defaultStyle
   const encoded = encodeURIComponent(key)
+  const tone = preset.tone(style)
 
   return {
     baseUrl: preset.base(style, encoded),
     labelsUrl: preset.labels ? preset.labels(style, encoded) : null,
     attribution: preset.attribution,
-    filter: (env.VITE_MAP_TILE_FILTER as string | undefined) ?? preset.filter,
+    filter: (env.VITE_MAP_TILE_FILTER as string | undefined) ?? tone.filter,
     retina: true,  // every preset provider serves @2x
+    light: tone.light,
   }
 }
