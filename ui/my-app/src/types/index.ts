@@ -451,12 +451,31 @@ export type PortalDispensary = {
   banner_url: string | null
 }
 
+/** The rails a feed is built from, in the order they are shown. */
+export const FEED_RAILS = ['featured', 'new', 'recommended', 'deals'] as const
+export type FeedRail = typeof FEED_RAILS[number]
+
+export type FeedRails = Record<FeedRail, FeedListing[]>
+
 /** One followed store's slice of the home feed. */
 export type FeedSection = {
   dispensary: PortalDispensary
-  /** Everything in stock at that store, of which `listings` is the first page. */
+  /** Everything in stock at that store, across all rails. */
   total: number
-  listings: FeedListing[]
+  rails: FeedRails
+}
+
+/** `store` keeps the followed stores separate; `combined` pools them. */
+export type FeedView = 'store' | 'combined'
+
+export type Feed = {
+  view: FeedView
+  /** Populated for the store view. */
+  sections: FeedSection[]
+  /** Populated for the combined view. */
+  combined: FeedRails | null
+  /** Every store the feed drew from, so combined cards can name theirs. */
+  dispensaries: PortalDispensary[]
 }
 
 /** A feed card. Lighter than `DispensaryListing`: the feed shows no lab data,
@@ -477,6 +496,15 @@ export type FeedListing = {
   url: string | null
   image_url: string | null
   in_stock: boolean
+
+  /** What the rail's ranking knew. Other stores carrying the same product, and
+   *  what they charge — the deals rail ranks on it and the card shows it. */
+  other_store_count: number
+  other_avg_cents: number | null
+  saving_cents: number | null
+
+  /** Only in the combined view, where a rail mixes stores. */
+  dispensary_id?: string
 }
 
 /** The signed-in customer as `/me` returns them. */
