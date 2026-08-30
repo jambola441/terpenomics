@@ -32,7 +32,8 @@ import type {
   DispensaryListing,
   ListingDetail,
   PortalDispensary,
-  FeedSection,
+  Feed,
+  FeedView,
   CustomerProfile,
 } from '../types'
 
@@ -413,9 +414,11 @@ export const api = {
         method: 'DELETE',
       }),
 
-    /** The home feed: one section per followed store, fanned out server-side. */
-    getFeed: (params?: { per_dispensary?: number; category?: string }) =>
-      authenticatedFetch<{ sections: FeedSection[] }>(`/me/feed${buildQueryString(params)}`),
+    /** The home feed. `store` keeps the followed stores separate, `combined`
+     *  pools and dedupes them; both are ranked server-side because two of the
+     *  four rails compare against every store we track. */
+    getFeed: (params?: { view?: FeedView; per_rail?: number; category?: string }) =>
+      authenticatedFetch<Feed>(`/me/feed${buildQueryString(params)}`),
   },
 
   /**
