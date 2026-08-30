@@ -10,7 +10,7 @@
    that can be shared or reloaded.
    ========================================================================== */
 
-import { useEffect, useLayoutEffect, useRef, type RefObject } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react'
 import { useLocation, useSearchParams } from 'react-router-dom'
 
 /* ── Reading filters back out of the URL ──────────────────────────────────── */
@@ -156,6 +156,61 @@ export function useScrollMemory(ref: RefObject<HTMLElement | null>, ready: boole
 
     return finish
   }, [key, ready, ref])
+}
+
+/* ── How much of the list is rendered ────────────────────────────────────── */
+
+// Rendered length, kept per history entry beside the offsets above and for the
+// same reason. A browse grid mounts a window of a long list and grows it as the
+// shopper scrolls, so an offset only means something against the length it was
+// measured at.
+//
+// Restoring one into a list cut back to its first page does eventually work
+// without this — the offset clamps to the bottom of the page, which leaves the
+// sentinel in view, which grows the window, which lets `useScrollMemory`'s next
+// retry clamp a little lower, and so on. But that is a climb of many frames,
+// and the retry loop deliberately gives up the moment the shopper touches the
+// screen. Coming back to a screen with a thumb already on the glass is the
+// normal case on a phone, and it stranded a shopper 48,000px above where they
+// left. Remembering the length makes the first render after Back long enough
+// for the offset to land in one assignment, with nothing to interrupt.
+const lengths = new Map<string, number>()
+
+/**
+ * How many items of a long list to render, remembered per history entry.
+ *
+ * Grows monotonically within a visit, and is never trimmed when the list
+ * shrinks under it: a shopper who has scrolled past three hundred products and
+ * then drops a filter should stay where they are, not be yanked up the page by
+ * the grid collapsing back to one page beneath them.
+ */
+export function useRenderWindow(page: number, resetKey?: string): { count: number; grow: () => void } {
+  const { key } = useLocation()
+  const [count, setCount] = useState(() => lengths.get(key) ?? page)
+
+  // Two things start the window over. A new history entry is a different
+  // screen, and takes its own remembered length or a fresh first page — that is
+  // also what resets the window when the shopper moves between two categories
+  // without the component unmounting, since that move is a navigation. A
+  // changed `resetKey` is the screen saying its list is now a different list
+  // (a new search), which only ever means one page. When both change at once,
+  // arriving back on a screen wins: the remembered length is what its offset
+  // was measured against.
+  //
+  // Adjusting during render rather than in an effect keeps the old, possibly
+  // much longer, window from painting a frame first.
+  const previous = useRef({ key, resetKey })
+  if (previous.current.key !== key || previous.current.resetKey !== resetKey) {
+    const remembered = previous.current.key !== key ? lengths.get(key) : undefined
+    previous.current = { key, resetKey }
+    setCount(remembered ?? page)
+  }
+
+  useEffect(() => { lengths.set(key, count) }, [key, count])
+
+  const grow = useCallback(() => setCount(n => n + page), [page])
+
+  return { count, grow }
 }
 
 /** Forget where a screen was, for a change that invalidates the offset — a new

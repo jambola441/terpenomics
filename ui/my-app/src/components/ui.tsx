@@ -278,12 +278,19 @@ export function ProductImage({
           src={showSrc}
           alt={alt}
           onError={() => setErrored(true)}
+          // A grid of these can run to hundreds of cards. The frame above already
+          // reserves the space, so deferring the ones below the fold costs no
+          // layout shift and saves the request, the decode and the memory until
+          // the shopper actually scrolls that far.
+          loading="lazy"
+          decoding="async"
           style={{ width: '100%', height: '100%', objectFit: 'contain', padding: pad, boxSizing: 'border-box' }}
         />
       ) : fallbackImg ? (
         <img
           src={fallbackImg}
           alt={alt}
+          decoding="async"
           style={{ width: '100%', height: '100%', objectFit: 'contain', padding: pad, boxSizing: 'border-box', opacity: 0.92 }}
         />
       ) : (
