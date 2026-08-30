@@ -16,6 +16,7 @@ from database import engine
 from models import (
     Customer,
     Dispensary,
+    FeaturedListing,
     Listing,
     PosType,
     PreferredDispensary,
@@ -30,7 +31,7 @@ OTHER_UID = uuid4()
 def fresh_db():
     SQLModel.metadata.create_all(engine)
     with Session(engine) as session:
-        for model in (PreferredDispensary, Listing, Dispensary, Customer):
+        for model in (FeaturedListing, PreferredDispensary, Listing, Dispensary, Customer):
             for row in session.exec(select(model)).all():
                 session.delete(row)
         session.commit()
@@ -160,70 +161,113 @@ def test_preferences_are_per_customer(world):
     _client().post(f"/me/preferred-dispensaries/{world['bergen_id']}")
     # Grace follows nothing, and Ada's choice must not leak into her feed.
     assert _client(OTHER_UID).get("/me/preferred-dispensaries").json() == []
-    assert _client(OTHER_UID).get("/me/feed").json() == {"sections": []}
+    assert _client(OTHER_UID).get("/me/feed").json()["sections"] == []
 
 
 # ---------------------------
 # The feed
 # ---------------------------
+#
+# What each rail *contains* is covered in test_feed_rails.py; these are about
+# the endpoint's contract -- the two views, and the fact that it only ever shows
+# the caller their own stores.
 
 def test_feed_is_empty_before_following_anything(world):
-    assert _client().get("/me/feed").json() == {"sections": []}
+    body = _client().get("/me/feed").json()
+    assert body["sections"] == []
+    assert body["combined"] is None
 
 
-def test_feed_has_one_section_per_followed_store(world):
+def test_the_store_view_has_one_section_per_followed_store(world):
     client = _client()
     client.post(f"/me/preferred-dispensaries/{world['bergen_id']}")
     client.post(f"/me/preferred-dispensaries/{world['atlantic_id']}")
 
-    sections = client.get("/me/feed").json()["sections"]
-    assert [s["dispensary"]["name"] for s in sections] == ["Bergen Botanics", "Atlantic Leaf"]
+    body = client.get("/me/feed").json()
+    assert body["view"] == "store"
+    assert [s["dispensary"]["name"] for s in body["sections"]] == ["Bergen Botanics", "Atlantic Leaf"]
+    assert set(body["sections"][0]["rails"]) == {"featured", "new", "recommended", "deals"}
 
 
-def test_feed_shows_only_stock_you_can_buy(world):
-    client = _client()
-    client.post(f"/me/preferred-dispensaries/{world['bergen_id']}")
-
-    section = client.get("/me/feed").json()["sections"][0]
-    names = {listing["display_name"] for listing in section["listings"]}
-    assert names == {"Sunset Sherbet", "Blue Dream Cart"}
-    assert section["total"] == 2
-
-
-def test_feed_filters_by_category(world):
+def test_the_combined_view_pools_the_stores_instead(world):
     client = _client()
     client.post(f"/me/preferred-dispensaries/{world['bergen_id']}")
     client.post(f"/me/preferred-dispensaries/{world['atlantic_id']}")
 
-    sections = client.get("/me/feed", params={"category": "cart"}).json()["sections"]
-    assert [listing["display_name"] for listing in sections[0]["listings"]] == ["Blue Dream Cart"]
-    # Atlantic stocks no carts, but the shopper still follows it, so the empty
-    # section stays rather than the store vanishing from their feed.
-    assert sections[1]["listings"] == []
-    assert sections[1]["total"] == 0
+    body = client.get("/me/feed", params={"view": "combined"}).json()
+    assert body["view"] == "combined"
+    assert body["sections"] == []
+    assert set(body["combined"]) == {"featured", "new", "recommended", "deals"}
+    # Every card says which store it is at, because the rail mixes them.
+    for items in body["combined"].values():
+        assert all("dispensary_id" in item for item in items)
+    # And the stores themselves come along, so the client can name them.
+    assert {d["name"] for d in body["dispensaries"]} == {"Bergen Botanics", "Atlantic Leaf"}
 
 
-def test_feed_names_listings_for_a_shopper_not_a_catalogue(world):
+def test_the_combined_view_shows_a_product_once(world):
+    client = _client()
+    client.post(f"/me/preferred-dispensaries/{world['bergen_id']}")
+    client.post(f"/me/preferred-dispensaries/{world['atlantic_id']}")
+
+    # Both stores carry Northern Lights -- same product identity, and Atlantic
+    # (from the fixture) is dearer at 5000.
+    with Session(engine) as session:
+        session.add(Listing(
+            dispensary_id=world["bergen_id"], scraped_name="Northern Lights",
+            scraped_category="flower", price_cents=3000, in_stock=True, is_active=True,
+        ))
+        session.commit()
+
+    rail = client.get("/me/feed", params={"view": "combined"}).json()["combined"]["new"]
+    northern = [item for item in rail if item["display_name"] == "Northern Lights"]
+    assert len(northern) == 1
+    assert northern[0]["price_cents"] == 3000
+    assert northern[0]["other_store_count"] == 2
+
+
+def test_the_feed_shows_only_stock_you_can_buy(world):
     client = _client()
     client.post(f"/me/preferred-dispensaries/{world['bergen_id']}")
 
-    listings = client.get("/me/feed").json()["sections"][0]["listings"]
-    dirty = next(l for l in listings if l["scraped_name"].startswith("Sunset Sherbet -Indica-"))
+    rails = client.get("/me/feed").json()["sections"][0]["rails"]
+    names = {item["display_name"] for items in rails.values() for item in items}
+    assert "Sold Out Gummies" not in names
 
+
+def test_the_feed_names_listings_for_a_shopper_not_a_catalogue(world):
+    client = _client()
+    client.post(f"/me/preferred-dispensaries/{world['bergen_id']}")
+
+    rail = client.get("/me/feed").json()["sections"][0]["rails"]["new"]
+    dirty = next(i for i in rail if i["scraped_name"].startswith("Sunset Sherbet -Indica-"))
     assert dirty["display_name"] == "Sunset Sherbet"
     # The raw string stays on the payload: it is what search matches against and
     # the only provenance for what the store actually published.
     assert dirty["scraped_name"] == "Sunset Sherbet -Indica- 88.5% THC | 3.5g Flower | Aeris  -ii3 front"
 
 
-def test_feed_caps_each_section(world):
+def test_the_feed_filters_by_category(world):
+    client = _client()
+    client.post(f"/me/preferred-dispensaries/{world['bergen_id']}")
+    client.post(f"/me/preferred-dispensaries/{world['atlantic_id']}")
+
+    sections = client.get("/me/feed", params={"category": "cart"}).json()["sections"]
+    assert [i["display_name"] for i in sections[0]["rails"]["new"]] == ["Blue Dream Cart"]
+    # Atlantic stocks no carts, but the shopper still follows it, so the empty
+    # section stays rather than the store vanishing from their feed.
+    assert sections[1]["rails"]["new"] == []
+    assert sections[1]["total"] == 0
+
+
+def test_each_rail_is_capped(world):
     client = _client()
     client.post(f"/me/preferred-dispensaries/{world['bergen_id']}")
 
-    section = client.get("/me/feed", params={"per_dispensary": 1}).json()["sections"][0]
-    assert len(section["listings"]) == 1
+    rails = client.get("/me/feed", params={"per_rail": 1}).json()["sections"][0]["rails"]
+    assert all(len(items) <= 1 for items in rails.values())
     # The cap trims what is shown, not what the count reports.
-    assert section["total"] == 2
+    assert client.get("/me/feed", params={"per_rail": 1}).json()["sections"][0]["total"] == 2
 
 
 # ---------------------------
