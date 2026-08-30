@@ -348,6 +348,102 @@ Both are recorded as a `note` on the case rather than left implicit:
   `charger`. This is a battery sold *with* a charger; `charger` wins only because token
   order puts it first (so a plain "510 USB Charger" is not read as a battery).
 
+## Closing the merch token gap — and a prompt regression I caused doing it (2026-08-30)
+
+376 of 1,300 merch names carried no subtype token. Widening the token table closed
+most of that gap, and cost 3 cases on the way for a reason worth writing down.
+
+### The tokens
+
+Every candidate was measured against all 16,031 live listings before adoption —
+how many rows it newly covers, what those rows' stored subtype already is, and
+whether it outranks a token that should win instead.
+
+| added | joins | newly covered | stored subtype already agreed |
+| --- | --- | ---: | --- |
+| `beaker`, `hookah` | bong | 16 | 16/16 |
+| `sherlock`, `steamroller`, `gandalf*`, `taster`, `hammer` | pipe | 16 | 16/16 |
+| `hot knife`, `knife kit`, `nectar collector`, `terp pearls`, `dab station`, `poker` | dab-tool | 24 | 24/24 |
+| `grynder` | grinder | 4 | 4/4 |
+| `jersey`, `beanie`, `jacket`, `shorts`, `sweater`, `sweat pants/shirt`, bare `shirt` | apparel | 16 | 16/16 |
+| `bowl` | **new subtype** | 15 | — |
+| `downstem` | **new subtype** | 14 | — |
+| `cotton buds`, `resin blaster`, `air sanitizer`, `odor` | cleaning | 15 | 6/15 |
+| `butane`, `matches`, `hemp wick` | lighter | 11 | 2/11 |
+| `case`, `bag`, `dugout`, `caddy`, `doob tube` | storage | 20 | 12/20 |
+| bare `tip(s)` | filter-tip | 41 | 32/41 |
+
+Token coverage went **71.1% → 84.9%** (924 → 1,104 of 1,300). With the
+model-answer fallback on top, only **106 rows (8.2%) are still the generic
+`merch`**. The backfill changed 55 stored subtypes, and merch product rows went
+**892 → 889** — a small *merge*, not a split, because several of these unified
+groups that were already split across two subtypes (Ozium's air sanitiser sat in
+`cleaning` at 8oz and `merch` at 0.8oz).
+
+Two rules needed care:
+
+- **Bare `tip(s)` cannot sit beside the strong tip rule.** Papers, cones and wraps
+  are all sold "with tips", and at the front of the order the modifier outranked the
+  head noun — it dragged 7 papers and 3 cones into `filter-tip`. Fixed two ways: a
+  `for_tokens()` hook strips the "w/ tips" phrase before any rule runs, and the bare
+  rule is placed near the end so anything earlier wins. `hose` and `tube` are excluded
+  outright — a "Glass Hose Tip" is a bong part, a "Pre-Roll Tube with a Glass Tip" is
+  a tube.
+- **`bowl` and `downstem` must come after bong, pipe and dab-tool.** A piece that
+  merely *has* a bowl is not a bowl. That keeps "Bong Bowl", "Beaker Ufo Bong With
+  Flower Bowl" and "Quartz Banger Bowl" where they were.
+
+**Rejected:** `screens` → filter-tip. It gains 2 rows and costs 7 — pipe and grinder
+sets that include a screen would flip — and a bowl screen is not a filter tip anyway.
+
+**One known miss:** `10" 9mm Indigo Double Downstem USA Color Mouthpiece …` is a 10"
+bong described by its parts, and now reads as a `downstem`. One row against 53 correct
+changes; a rule for it would be fitted to that row, so it stands.
+
+### The regression: a subtype rail is part of the prompt
+
+Adding `bowl` and `downstem` scored **245.75** over 4 runs against 248.80 — −3.05
+cases, t ≈ −3.2, outside the noise. Every one of the 14 merch gold cases passed in
+every run, so the damage was entirely in categories the tokens never touch.
+
+The mechanism: `_SUBTYPE_LINES` interpolates **`SUBTYPES` into the classify prompt**.
+Widening the merch rail rewrote the prompt for all 268 cases. This is the same failure
+this repo keeps hitting — *every regression this cycle came from a prompt edit* — and
+this time the edit was invisible, a side effect of a data change two files away.
+
+The fix makes it structurally impossible rather than merely fixed: `_SUBTYPE_LINES`
+now skips any category whose owner declares `needs_model = False`. Merch is settled
+from the name before a batch is formed, so the model never needs its rail, and merch
+taxonomy changes can no longer perturb anything else.
+
+| arm | runs | mean | sd |
+| --- | ---: | ---: | ---: |
+| registry only (previous commit) | 5 | 248.80 | 1.64 |
+| \+ tokens, merch rail still in the prompt | 4 | **245.75** | 1.26 |
+| \+ tokens, merch rail out of the prompt | 4 | **248.50** | 3.00 |
+
+Back inside the noise (−0.30 vs the previous commit), with all 14 merch cases passing
+in all four runs.
+
+**No `_ENRICH_VERSION` bump.** The stamp exists to invalidate cached answers, and
+merch rows now bypass the cache entirely. Exactly one live row reaches the merch path
+with a cached answer — one the scraper called something else and the model moves into
+merch — and the new `*/Vaporizer` format token settles that one first. A bump would
+re-enrich all 16,031 listings (~$5-6) to fix nothing.
+
+### What this bought in enrich.py
+
+`scripts/enrich.py` went **1,117 → 1,007 lines**, and its 44 merch mentions are down to
+two. `_merch_size`, `_merch_pack`, `merch_variant`, `_MERCH_COLOR`, `_MERCH_FLAVOR`,
+`merch_strain` and `_TOKENS["merch"]` are gone — `merch_strain` was not just dead but
+wrong, still returning a colour after colour moved to `attributes`. `SUBTYPES["merch"]`
+is now read from the enricher, so a new merch subtype cannot be added to the tokens and
+forgotten in the rail.
+
+The two model-answer appliers were **not** dead and were not deleted: a row hinted as
+another category can still come back `merch` from the model. They now ask the owning
+enricher for the subtype, variant and strain, so the registry governs both paths.
+
 ## Model comparison — DeepSeek v4 vs Haiku 4.5 (2026-08-25)
 
 Same gold suites, same prompts, `haiku-or` transport throughout. Haiku has 4 runs

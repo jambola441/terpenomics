@@ -53,140 +53,13 @@ _TOKENS: dict[str, OrderedDict] = {
         ("preground", re.compile(r"\bpre-?ground\b|\bground\s+flower\b|\bready\s*-?\s*to\s*-?\s*roll\b", re.I)),
         ("infused",   re.compile(r"\bdiamond\s+infused\b|\binfused\b", re.I)),
     ]),
-    # Merch had no entry until 2026-08-27, so classify_by_token returned None and
-    # every accessory fell through to _CATEGORY_DEFAULTS["merch"] == "merch". With
-    # strain/variant also blank, the products VIEW grouped merch on brand alone:
-    # 1,514 listings collapsed to 223 product rows, so all 108 Blazy Susan SKUs —
-    # pink and purple, cones and papers, 20pk and 50pk — became one product.
-    # Order matters: the first match wins, so narrower patterns come first.
-    "merch": OrderedDict([
-        ("gift-card",  re.compile(r"\bgift\s*cards?\b", re.I)),
-        ("filter-tip", re.compile(r"\bfilter\s*tips?\b|\btips?\s*tin\b|\bcrutch", re.I)),
-        ("roller",     re.compile(r"\broller\b|\brolling\s*machine\b", re.I)),
-        ("ashtray",    re.compile(r"\bash\s*trays?\b", re.I)),
-        ("cone",       re.compile(r"\bcones?\b", re.I)),
-        ("paper",      re.compile(r"\b(rolling\s+)?papers?\b|\bbooklet\b", re.I)),
-        ("wrap",       re.compile(r"\bwraps?\b", re.I)),
-        ("grinder",    re.compile(r"\bgrinders?\b", re.I)),
-        ("tray",       re.compile(r"\btrays?\b", re.I)),
-        # bong before pipe: "water pipe" is a bong, and \bpipes?\b would claim it
-        ("bong",       re.compile(r"\bbongs?\b|\bwater\s*pipe\b|\brigs?\b|\bbubbler\b", re.I)),
-        ("pipe",       re.compile(r"\bpipes?\b|\bspoon\b|\bchillum\b|\bone.?hitter\b", re.I)),
-        ("dab-tool",   re.compile(r"\bdabber\b|\bdab\s+tool\b|\bbanger\b|\bcarb\s*cap\b|\bnails?\b", re.I)),
-        # charger before battery — "510 Thread USB Charger" is not a battery
-        ("charger",    re.compile(r"\bchargers?\b", re.I)),
-        ("battery",    re.compile(r"\bbatter(?:y|ies)\b|\b510\s*thread\b", re.I)),
-        ("lighter",    re.compile(r"\blighters?\b|\btorch\b", re.I)),
-        ("storage",    re.compile(r"\b(jars?|stash|containers?|pouch|tins?)\b", re.I)),
-        ("apparel",    re.compile(r"\b(t-?shirts?|hoodie|hats?|caps?|socks|tee)\b", re.I)),
-        ("cleaning",   re.compile(r"\bclean(?:er|ing)\b|\bisopropyl\b|\bwipes?\b", re.I)),
-        ("scale",      re.compile(r"\bscales?\b", re.I)),
-    ]),
-    "concentrate": OrderedDict([
-        ("diamonds", re.compile(r"\bdiamonds?\b", re.I)),
-        ("rosin", re.compile(r"\brosin\b", re.I)),
-        ("resin", re.compile(r"\bresin\b", re.I)),
-        ("hash",  re.compile(r"\bhash\b", re.I)),
-        ("rso",   re.compile(r"\brso\b", re.I)),
-    ]),
 }
 
+# Merch identity — size, pack, colour, flavour — used to live here as a block of
+# module-level helpers. It moved to MerchEnricher (scripts/enrichers.py) and
+# scripts/attributes.py, which is why merch is no longer named in this file
+# outside the rails below.
 # ---------------------------------------------------------------------------
-# Merch identity — deterministic, because none of it is a judgment call
-#
-# Accessories have no strain and no dose, so the two fields that normally
-# separate products are empty and the products VIEW groups them on brand alone.
-# What actually distinguishes one from another is form factor (the subtype tokens
-# above), pack/size, and colour or flavour. All three are string facts about the
-# name, so they are read here rather than asked of the model.
-#
-# Colour/flavour lands in `strain` by the same ruling that puts topical scent
-# names there: it is the field that separates otherwise identical products. For
-# merch, `strain` means "the variant of this thing" rather than a cultivar.
-# ---------------------------------------------------------------------------
-
-# Merch variant is a composite of size and pack, because for accessories neither
-# alone is enough. Cones differ by pack ("Pink 98mm Cones 20pk" vs "... 50pk");
-# papers differ by width, since a brand ships its whole range at one count
-# ("Raw ... 1 1/4 - 33ct" vs "... KS - 33ct"). Emitting both separates each case
-# without needing a per-subtype rule.
-
-# Width is normalised because one brand writes it several ways in the same menu —
-# RAW has "KS Slim", "King Size Slim" and "Slim KS" for the same paper, and left
-# raw those split one product three ways. "Slim" alone is a thinness, not a width,
-# so it is deliberately not a key; "KS Wide" is a genuinely different width.
-_MERCH_WIDTH_ALIASES = [
-    (re.compile(r"\bks\s*wide\b|\bking\s*size\s*wide\b", re.I), "ks wide"),
-    (re.compile(r"\bking\s*size\b|\bkingsize\b|\bks\b", re.I),   "king size"),
-    (re.compile(r"\b1\s*1/4\b|\b1\.25\b", re.I),                  "1 1/4"),
-    (re.compile(r"\b1\s*1/2\b|\b1\.5\b", re.I),                   "1 1/2"),
-    (re.compile(r"\bsingle\s*wide\b", re.I),                       "single wide"),
-    (re.compile(r"\b100s\b", re.I),                                 "100s"),
-]
-
-# Free-form dimensions kept verbatim — 98mm, 110mm, 4".
-_MERCH_DIM = re.compile(
-    r'\b(\d+\s*mm)\b|\b(\d+(?:\.\d+)?\s*(?:inch|in))\b|(\d+(?:\.\d+)?\s*(?:"|\u201d))',
-    re.I)
-
-_MERCH_PACK = re.compile(r"\b(\d+)\s*(pk|pack|ct|count|leaves)\b", re.I)
-
-
-def _merch_size(name: str) -> str:
-    """Normalised width, else a verbatim dimension. '' when neither is present."""
-    for pat, canon in _MERCH_WIDTH_ALIASES:
-        if pat.search(name or ""):
-            return canon
-    m = _MERCH_DIM.search(name or "")
-    if not m:
-        return ""
-    hit = next(g for g in m.groups() if g)
-    # collapse runs of whitespace but keep the separator — "2 inch", not "2inch",
-    # so a recomputed value matches one already stored
-    return re.sub(r"\s+", " ", hit).strip().lower()
-
-
-def _merch_pack(name: str) -> str:
-    """Pack count as '<n>ct' — 'leaves', 'count' and 'ct' all mean the same thing,
-    so they collapse rather than splitting one product across three spellings."""
-    m = _MERCH_PACK.search(name or "")
-    if not m:
-        return ""
-    n, unit = m.group(1), m.group(2).lower()
-    return f"{n}pk" if unit in ("pk", "pack") else f"{n}ct"
-
-
-# A booklet sold with filter tips is a different SKU at a different price, and it
-# is otherwise identical in name to the plain one — so without this, every "w/Tips"
-# paper merges into its own base product.
-_MERCH_TIPS = re.compile(
-    r"w/\s*(?:pre[\s-]*rolled\s+)?tips?\b|\+\s*tips?\b|\bwith\s+tips?\b", re.I)
-
-
-def merch_variant(name: str) -> str:
-    """Size, pack and whether tips are included — '1 1/4 33ct', '98mm 20pk',
-    'king size 24ct w/tips'. '' when the name carries none of them."""
-    parts = [_merch_size(name), _merch_pack(name)]
-    if _MERCH_TIPS.search(name or ""):
-        parts.append("w/tips")
-    return " ".join(p for p in parts if p)
-
-
-_MERCH_COLOR = re.compile(
-    r"\b(pink|purple|green|blue|red|black|white|gold|silver|onyx|orange|yellow"
-    r"|rose|clear|assorted|rainbow|teal|natural|unbleached)\b", re.I)
-
-# Flavour words on wraps and papers — the differentiator when there is no colour.
-_MERCH_FLAVOR = re.compile(
-    r"\b(russian\s+cream|honey\s+lemon|black\s+tea|peach|mango|grape|cherry"
-    r"|vanilla|mint|banana|strawberry|blueberry|watermelon)\b", re.I)
-
-
-def merch_strain(name: str) -> str | None:
-    """Colour or flavour, whichever the name carries. None when neither."""
-    m = _MERCH_COLOR.search(name or "") or _MERCH_FLAVOR.search(name or "")
-    return re.sub(r"\s+", " ", m.group(1)).strip().title() if m else None
-
 
 _CATEGORY_DEFAULTS: dict[str, str | None] = {
     "vaporizers":  None,
@@ -289,6 +162,13 @@ _CACHE_DIR = _DATA_DIR / "enrich_cache"
 #       normalised (KS / King Size / Slim KS were splitting one paper three ways).
 #       Papers differ by width at a constant count, cones by count at one size, so
 #       neither field alone separates both.
+#   (no 8) — merch subtypes were widened again (bowl, downstem, and ~180 more rows
+#       settled by name tokens) and the merch helpers moved to MerchEnricher, but
+#       merch rows now bypass the cache entirely, so their entries are never read.
+#       Exactly ONE live row reaches the merch path with a cached answer — a row the
+#       scraper called something else that the model moves into merch — and the new
+#       `*/Vaporizer` format token settles that one before it gets there. Bumping
+#       would re-enrich all 16,031 listings (~$5-6) to fix nothing.
 _ENRICH_VERSION = 7
 
 
@@ -453,15 +333,23 @@ SUBTYPES: dict[str, list[str]] = {
     "flower":      ["flower", "smalls", "preground", "infused"],
     "tinctures":   ["tincture"],
     "topical":     ["topical"],
-    "merch":       ["gift-card", "filter-tip", "roller", "ashtray", "cone", "paper",
-                    "wrap", "grinder", "tray", "bong", "pipe", "dab-tool", "charger",
-                    "battery", "lighter", "storage", "apparel", "cleaning", "scale",
-                    "merch"],
+    # Owned by MerchEnricher — see scripts/enrichers.py. Kept in one place so a
+    # new merch subtype cannot be added to the tokens and forgotten in the rail.
+    "merch":       list(enrichers.for_category("merch").subtypes),
     "other":       ["other"],
 }
 
 _CATEGORY_LIST = ", ".join(CATEGORIES)
-_SUBTYPE_LINES = "\n".join(f"  {c}: {', '.join(s)}" for c, s in SUBTYPES.items())
+# Only the categories the model actually answers. A category whose owner declares
+# needs_model = False is settled from the name before a batch is formed, so listing
+# its rail here would pay for tokens on every call to describe a decision the model
+# never makes — and, worse, couple it to every other answer: adding "bowl" and
+# "downstem" to the merch rail edited this prompt for all 268 gold cases and cost
+# 3.05 cases (t = -3.2 over 4 runs), none of them merch. Measured, then fixed here.
+_SUBTYPE_LINES = "\n".join(
+    f"  {c}: {', '.join(s)}" for c, s in SUBTYPES.items()
+    if not enrichers.skips_model(c)
+)
 
 # ---------------------------------------------------------------------------
 # Prompts — one targeted prompt per pass. The classification pass has two
@@ -851,16 +739,20 @@ def _run_enrich(
                 forced = find_format_category(row.get("brand", ""), row.get("name", ""))
                 cat = forced or _valid_category(it.get("category"), row.get("category"))
                 categories[oi] = cat
-                subtypes[oi]   = _valid_subtype(it.get("subtype"), cat, _hint_subtype(row))
+                # A row hinted as something else can still come back as a category
+                # that has an owner, so the owner gets the last word here too — not
+                # only on the rows routed past the model entirely.
+                owner = enrichers.for_category(cat)
+                name = row.get("name", "")
+                subtypes[oi]   = _valid_subtype(it.get("subtype"), cat,
+                                                owner.token_subtype(name) or _hint_subtype(row))
                 v = it.get("variant")
                 variants[oi]   = v if v is not None else row.get("variant", "")
-                # Merch identity is read from the name, not asked of the model —
-                # a pack count is a string fact and the model has no better view
-                # of it. Overrides whatever came back so it stays consistent.
-                if cat == "merch":
-                    mv = merch_variant(row.get("name", ""))
-                    if mv:
-                        variants[oi] = mv
+                # A size or pack count is a string fact about the name; where the
+                # owner writes one, it wins over whatever the model returned.
+                ov = owner.variant(name, variants[oi])
+                if ov:
+                    variants[oi] = ov
         return on_result
 
     classify_tasks = []
@@ -894,15 +786,13 @@ def _run_enrich(
                 if it is None:
                     failed_rows.add(oi)
                     it = {}
-                strains[oi]       = it.get("strain")
                 product_lines[oi] = it.get("product_line")
-                # Merch has no cultivar. What separates two otherwise identical
-                # accessories is colour or flavour, and those now live in
-                # `attributes` rather than being smuggled through `strain` —
-                # see scripts/attributes.py. strain stays null so it can mean
-                # one thing (a cultivar) everywhere it is set.
-                if (categories[oi] or "").lower() == "merch":
-                    strains[oi] = None
+                # The owner decides what `strain` means for its category — merch
+                # returns None, because a cultivar is not what separates two
+                # accessories; colour and flavour live in `attributes` instead.
+                # That keeps `strain` meaning one thing everywhere it is set.
+                strains[oi] = enrichers.for_category(categories[oi]).strain(
+                    row.get("name", ""), it.get("strain"))
         return on_result
 
     def extract_payload_item(i, oi, r):

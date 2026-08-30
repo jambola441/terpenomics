@@ -52,9 +52,9 @@ _Hand-labeled gold set: all 56 unique listings from Coney Island Cannabis (Dutch
 | coney-040-vacation-blue-raspberry-aio | category=vaporizers, subtype=all-in-one, strain=Blue Raspberry, variant=1g | ✓ |
 | coney-041-vacation-blue-raspberry-hash-rosin-gummi | category=edible, subtype=gummy, strain=Blue Raspberry, variant=100mg | ✓ |
 | coney-042-vacation-gorilla-glue-4-flower | category=flower, subtype=flower, strain=Gorilla Glue #4, variant=3.5g | ✓ |
-| coney-043-vacation-gorilla-glue-4-pre-roll-10pk | category=preroll, subtype=pack, strain=Gorilla Glue #4, variant=3.5g | ✓ |
+| coney-043-vacation-gorilla-glue-4-pre-roll-10pk | category=preroll, subtype=pack, strain=Gorilla Glue #4, variant=3.5g | ✗ variant: '1g'→want '3.5g' |
 | coney-044-vacation-memory-loss-og-flower | category=flower, subtype=flower, strain=Memory Loss OG, variant=3.5g | ✓ |
-| coney-045-vacation-memory-loss-og-pre-roll-10pk | category=preroll, subtype=pack, strain=Memory Loss OG, variant=3.5g | ✓ |
+| coney-045-vacation-memory-loss-og-pre-roll-10pk | category=preroll, subtype=pack, strain=Memory Loss OG, variant=3.5g | ✗ variant: '1g'→want '3.5g' |
 | coney-046-vacation-peach-rings-hash-rosin-gummies- | category=edible, subtype=gummy, strain=Peach Rings, variant=100mg | ✓ |
 | coney-047-vacation-pineapple-coconut-aio | category=vaporizers, subtype=all-in-one, strain=Pineapple Coconut, variant=1g | ✓ |
 | coney-048-vacation-pineapple-coconut-hash-rosin-gu | category=edible, subtype=gummy, strain=Pineapple Coconut, variant=100mg | ✓ |
@@ -63,8 +63,8 @@ _Hand-labeled gold set: all 56 unique listings from Coney Island Cannabis (Dutch
 | coney-051-vacation-tiki-fruit-punch-aio | category=vaporizers, subtype=all-in-one, strain=Tiki Fruit Punch, variant=1g | ✓ |
 | coney-052-vacation-tiki-fruit-punch-hash-rosin-gum | category=edible, subtype=gummy, strain=Tiki Fruit Punch, variant=100mg | ✓ |
 | coney-053-ayrloom-low-dose-everyday-drops-150mg-th | category=tinctures, subtype=tincture, variant=150mg | ✓ |
-| coney-054-ayrloom-rescue-1-1-topical-1000mg-thc-10 | category=topical, subtype=topical, strain=Rescue, variant=1000mg | ✗ variant: ''→want '1000mg' |
-| coney-055-ayrloom-revive-1-1-topical-1000mg-thc-10 | category=topical, subtype=topical, strain=Revive, variant=1000mg | ✗ variant: ''→want '1000mg' |
+| coney-054-ayrloom-rescue-1-1-topical-1000mg-thc-10 | category=topical, subtype=topical, strain=Rescue, variant=1000mg | ✗ variant: '1g'→want '1000mg' |
+| coney-055-ayrloom-revive-1-1-topical-1000mg-thc-10 | category=topical, subtype=topical, strain=Revive, variant=1000mg | ✗ variant: '1g'→want '1000mg' |
 
 ## identity_cluster — gold_cross_dispensary.json
 
@@ -75,7 +75,7 @@ _CROSS-DISPENSARY identity clusters built from real rows in six store snapshots.
 | x-ayrloom-revive-balm | category=topical, subtype=topical, strain=Revive | ✓ converged + canonical |
 | x-camino-watermelon-lemonade-bliss | category=edible, subtype=gummy, strain=Watermelon Lemonade, variant=100mg | ✗ split: variant=[100mg|72mg] |
 | x-jaunty-mango-haze-aio | category=vaporizers, subtype=all-in-one, strain=Mango Haze, variant=1.5g | ✓ converged + canonical |
-| x-ayrloom-honeycrisp-beverage | category=edible, subtype=beverage | ✗ split: strain=[Honeycrisp|Honeycrisp Apple Cider|Honeycrisp Cider] |
+| x-ayrloom-honeycrisp-beverage | category=edible, subtype=beverage | ✗ split: strain=[Honeycrisp|Honeycrisp Cider] |
 | x-ayrloom-honeycrisp-vape | category=vaporizers, subtype=all-in-one, strain=Honeycrisp, variant=1g | ✓ converged + canonical |
 | x-papa-barkley-releaf-balm | category=topical, subtype=topical | ✓ converged + canonical |
 
@@ -87,7 +87,7 @@ _Hand-labeled gold set: 48 real listings from Hold Up Roll Up (Tymber). The hard
 |---|---|---|
 | holdup-000-cereal-milk-x-banana-mochi-1-5g-2pk-full | category=preroll, strain=Cereal Milk x Banana Mochi, variant=1.5g | ✓ |
 | holdup-001-blue-razz-lemonade-1g-botanica-blend-pod | category=vaporizers, subtype=pod, strain=Blue Razz Lemonade, variant=1g | ✓ |
-| holdup-002-runtz-28g-flower | category=flower, subtype=flower, strain=Runtz, variant=28g | ✓ |
+| holdup-002-runtz-28g-flower | category=flower, subtype=flower, strain=Runtz, variant=28g | ✗ variant: '3.5g'→want '28g' |
 | holdup-003-nyc-vapor-3-5g-flower | category=flower, subtype=flower, strain=NYC Vapor, variant=3.5g | ✓ |
 | holdup-004-bubba-kush-14g-infused-pre-ground-flower | category=flower, strain=Bubba Kush, variant=14g | ✓ |
 | holdup-005-watermelon-og-1g-live-resin-aio-disposab | category=vaporizers, subtype=all-in-one, strain=Watermelon OG, variant=1g | ✓ |
@@ -119,7 +119,7 @@ _Hand-labeled gold set: 48 real listings from Hold Up Roll Up (Tymber). The hard
 | holdup-031-animal-face-5pk-pre-rolls | category=preroll, subtype=pack, strain=Animal Face, variant=1.75g | ✓ |
 | holdup-032-citronella-1g-preroll | category=preroll, subtype=single, strain=Citronella, variant=1g | ✓ |
 | holdup-033-empire-state-cake-0-5g-6pk-perolls | category=preroll, subtype=pack, strain=Empire State Cake, variant=3g | ✓ |
-| holdup-034-silly-nice-bubble-hash-1g | category=concentrate, subtype=hash, strain=None, variant=1g | ✗ strain: 'Bubble Hash'→want None |
+| holdup-034-silly-nice-bubble-hash-1g | category=concentrate, subtype=hash, strain=None, variant=1g | ✓ |
 | holdup-035-chem-dawg-1g-cured-resin-crumble | category=concentrate, subtype=resin, strain=Chem Dawg, variant=1g | ✓ |
 | holdup-036-burnout-cookies-1g-crumble | category=concentrate, strain=Burnout Cookies, variant=1g | ✓ |
 | holdup-037-biscotti-1g-cured-resin-budder | category=concentrate, subtype=resin, strain=Biscotti, variant=1g | ✓ |
@@ -128,10 +128,10 @@ _Hand-labeled gold set: 48 real listings from Hold Up Roll Up (Tymber). The hard
 | holdup-040-peaches-n-cream-juicy-jay-s-flavored-rol | category=merch, subtype=paper, strain=None | ✓ |
 | holdup-041-black-510-thread-stick-battery | category=merch, subtype=battery, strain=None | ✓ |
 | holdup-042-dab-tool | category=merch, subtype=dab-tool, strain=None | ✓ |
-| holdup-043-organic-medium-dog-cbd-oil-600mg-tinctur | category=tinctures, subtype=tincture, strain=None, variant=600mg | ✗ strain: 'CBD Oil'→want None |
-| holdup-044-pillow-talk-sleep-drops-300mg-thc-1500mg | category=tinctures, subtype=tincture, strain=Pillow Talk, variant=300mg | ✗ strain: 'Pillow Talk Sleep Drops'→want 'Pillow Talk' |
+| holdup-043-organic-medium-dog-cbd-oil-600mg-tinctur | category=tinctures, subtype=tincture, strain=None, variant=600mg | ✓ |
+| holdup-044-pillow-talk-sleep-drops-300mg-thc-1500mg | category=tinctures, subtype=tincture, strain=Pillow Talk, variant=300mg | ✓ |
 | holdup-045-unflavored-beverage-enhancer-300mg-thc-t | category=tinctures, subtype=tincture, variant=300mg | ✓ |
-| holdup-046-unscented-cbd-lotion-300mg | category=topical, subtype=topical, strain=None, variant=300mg | ✗ strain: 'Unscented'→want None; variant: ''→want '300mg' |
+| holdup-046-unscented-cbd-lotion-300mg | category=topical, subtype=topical, strain=None, variant=300mg | ✗ variant: ''→want '300mg' |
 | holdup-047-on-heat-relief-muscle-spray-300mg | category=topical, subtype=topical, variant=300mg | ✗ variant: ''→want '300mg' |
 
 ## gold_dispensary — gold_the_plug.json
@@ -148,21 +148,21 @@ _Hand-labeled gold set: 108 real listings from The Plug (Crown Heights), stratif
 | gold-005-florist-farms-peach-gummies-20mg-x-2pk-1-1-t | category=edible, subtype=gummy, strain=Peach, variant=40mg | ✓ |
 | gold-006-camino-sleep-midnight-blueberry-5-1-cbn-20pk | category=edible, subtype=gummy, strain=Midnight Blueberry, variant=100mg | ✓ |
 | gold-007-foy-strawberry-nighttime-1-1-1-chews | category=edible, subtype=gummy | ✓ |
-| gold-008-myhi-boisterous-berry-3-x-10mg-thc-stir-stik | category=edible, subtype=beverage, strain=Boisterous Berry, variant=30mg | ✓ |
+| gold-008-myhi-boisterous-berry-3-x-10mg-thc-stir-stik | category=edible, subtype=beverage, strain=Boisterous Berry, variant=30mg | ✗ subtype: 'other'→want 'beverage' |
 | gold-009-mfny-live-resin-gummies-creamsicle-x-rainbow | category=edible, subtype=gummy, strain=Creamsicle x Rainbow Beltz 2.0 | ✓ |
 | gold-010-revert-grape-100mg-scored-gummy | category=edible, subtype=gummy, strain=Grape, variant=100mg | ✓ |
-| gold-011-myhi-simply-flavorless-3-x-10mg-thc-stir-sti | category=edible, subtype=beverage, strain=Simply Flavorless, variant=30mg | ✓ |
+| gold-011-myhi-simply-flavorless-3-x-10mg-thc-stir-sti | category=edible, subtype=beverage, strain=Simply Flavorless, variant=30mg | ✗ subtype: 'other'→want 'beverage' |
 | gold-012-kushy-punch-blue-raspberry-gummies-100mg | category=edible, subtype=gummy, strain=Blue Raspberry | ✓ |
-| gold-013-gr-n-baja-blaze-mega | category=edible, subtype=gummy, strain=Baja Blaze Mega | ✗ subtype: 'other'→want 'gummy' |
+| gold-013-gr-n-baja-blaze-mega | category=edible, subtype=gummy, strain=Baja Blaze Mega | ✗ subtype: 'beverage'→want 'gummy'; strain: 'Baja Blaze'→want 'Baja Blaze Mega' |
 | gold-014-wana-fast-asleep-5-1-1-1-dream-berry | category=edible, subtype=gummy, strain=Dream Berry | ✓ |
-| gold-015-eaton-botanicals-apple-a-day-apple-2-5mg-gum | category=edible, subtype=gummy, strain=Apple-A-Day | ✓ |
+| gold-015-eaton-botanicals-apple-a-day-apple-2-5mg-gum | category=edible, subtype=gummy, strain=Apple-A-Day | ✗ strain: 'Apple'→want 'Apple-A-Day' |
 | gold-016-gr-n-milk-chocolate-mini-bar-daytime-sativa- | category=edible, subtype=chocolate, variant=100mg | ✓ |
 | gold-017-ayrloom-up-12oz-beverage-pineapple-mango | category=edible, subtype=beverage, strain=Pineapple Mango, product_line=UP | ✓ |
 | gold-018-camino-balance-yuzu-lemon-100mg-20pk | category=edible, subtype=gummy, strain=Yuzu Lemon, variant=100mg | ✓ |
 | gold-019-ayrloom-10-mg-thc-5mg-thcv-gummies-sol-burst | category=edible, subtype=gummy, strain=Sol Burst | ✓ |
 | gold-020-camino-recover-freshly-squeezed-1-2-cbg-20pk | category=edible, subtype=gummy, strain=Freshly Squeezed, variant=100mg | ✓ |
 | gold-021-camino-chews-pineapple-paradise-1-1-thc-cbc- | category=edible, subtype=gummy, strain=Pineapple Paradise, variant=100mg | ✓ |
-| gold-022-gr-n-milk-chocolate-full-bar-sativa | category=edible, subtype=chocolate, strain=Sativa | ✓ |
+| gold-022-gr-n-milk-chocolate-full-bar-sativa | category=edible, subtype=chocolate, strain=Sativa | ✗ strain: 'Milk Chocolate'→want 'Sativa' |
 | gold-023-hashtag-honey-tropical-punch-live-resin-gumm | category=edible, subtype=gummy, strain=Tropical Punch, variant=100mg | ✓ |
 | gold-024-purple-punch-infused-5pk-0-5g-pre-rolls | category=preroll, strain=Purple Punch, variant=2.5g | ✓ |
 | gold-025-aphrodite-vanilla-gelato-foam-tip-pre-roll-5 | category=preroll, subtype=pack, strain=Vanilla Gelato, variant=2.5g | ✓ |
@@ -245,7 +245,7 @@ _Hand-labeled gold set: 108 real listings from The Plug (Crown Heights), stratif
 | gold-102-ayrloom-beverage-enhancer-tincture-300mg | category=tinctures, subtype=tincture, variant=300mg | ✓ |
 | gold-103-mfny-rainbow-driver | category=tinctures, subtype=tincture, strain=Rainbow Driver | ✓ |
 | gold-104-ayrloom-tincture-1000mg-thc-high-dose | category=tinctures, subtype=tincture, variant=1000mg | ✓ |
-| gold-105-papa-barkley-1-3-releaf-balm-50ml | category=topical, subtype=topical, strain=None, product_line=Releaf | ✗ strain: '1:3 Balm'→want None |
+| gold-105-papa-barkley-1-3-releaf-balm-50ml | category=topical, subtype=topical, strain=None, product_line=Releaf | ✓ |
 | gold-106-ayrloom-balm-1000mg-thc-1000mg-cbd-revive-bc | category=topical, subtype=topical, strain=Revive | ✓ |
 | gold-107-ayrloom-balm-1000mg-thc-1000mg-cbd-restore-l | category=topical, subtype=topical, strain=Restore | ✓ |
 
@@ -303,5 +303,5 @@ _Hand-labeled gold set: 50 real listings from The Spot BK (Tymber). A deliberate
 | spot-045-zzz-s-rolling-tray-with-magnetic-cover-d | category=merch, subtype=tray, strain=None | ✓ |
 | spot-046-turbo-blueberry-indica-73-38-thc-15ml-ti | category=tinctures, subtype=tincture, strain=Turbo Blueberry | ✓ |
 | spot-047-focus-tincture-13-40-thc-864mg-tac-thc-c | category=tinctures, subtype=tincture | ✓ |
-| spot-048-restore-1000-00mg-thc-balm-2-3oz-tin-a11 | category=topical, subtype=topical, strain=Restore, variant=1000mg | ✗ variant: ''→want '1000mg' |
+| spot-048-restore-1000-00mg-thc-balm-2-3oz-tin-a11 | category=topical, subtype=topical, strain=Restore, variant=1000mg | ✗ variant: '1g'→want '1000mg' |
 | spot-049-relief-balm-130mg-cbd-40mg-thc-3-1-15ml- | category=topical, subtype=topical | ✓ |
