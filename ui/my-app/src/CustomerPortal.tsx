@@ -90,8 +90,10 @@ export default function CustomerPortal() {
   const matchAisle = useMatch('/portal/map/:dispensaryId/aisle/:category')
   const matchDispensary = useMatch('/portal/map/:dispensaryId')
   // Products were addressed under their brand before they could exist without
-  // one; kept so older links still resolve.
+  // one, and a listing was addressed under the store before sections could hold
+  // one; both are kept so older links still resolve.
   const matchLegacyBrandProduct = useMatch('/portal/brands/:brandName/products/:productKey')
+  const matchLegacyMapListing = useMatch('/portal/map/:dispensaryId/listings/:listingId')
 
   const productKey = matchProduct?.params.productKey
     ? decodeURIComponent(matchProduct.params.productKey) : null
@@ -220,6 +222,10 @@ export default function CustomerPortal() {
     const { brandName, productKey: legacyKey } = matchLegacyBrandProduct.params
     return <Navigate replace to={`/portal/brands/products/${legacyKey}?brand=${encodeURIComponent(decodeURIComponent(brandName))}`} />
   }
+  if (matchLegacyMapListing?.params.dispensaryId && matchLegacyMapListing.params.listingId) {
+    const { dispensaryId: legacyStore, listingId: legacyListing } = matchLegacyMapListing.params
+    return <Navigate replace to={`/portal/map/listings/${legacyStore}/${legacyListing}`} />
+  }
 
   const cartCount = cart.reduce((sum, i) => sum + i.quantity, 0)
 
@@ -233,6 +239,9 @@ export default function CustomerPortal() {
           listingId={selectedListingId}
           onAddToCart={handleAddToCart}
           cartQuantity={cart.filter(i => i.listingId === selectedListingId).reduce((s, i) => s + i.quantity, 0)}
+          onOpenListing={openListing}
+          onOpenDispensary={id => navigate(`/portal/map/${id}`)}
+          onOpenProduct={openProduct}
         />
       ) : productKey ? (
         <ProductView

@@ -232,14 +232,57 @@ export type DispensaryListing = {
   cannabinoids: Cannabinoid[]
 }
 
+/** The same product on another store's shelf. */
+export type ListingAlternative = {
+  listing_id: string
+  price_cents: number | null
+  url: string | null
+  dispensary: PortalDispensary
+}
+
+/** How this store's price sits against everyone else carrying the product. */
+export type ListingPriceContext = {
+  other_store_count: number
+  min_cents: number | null
+  avg_cents: number | null
+  max_cents: number | null
+  is_cheapest: boolean
+}
+
+/** A neighbour on the same shelf — same category, ideally same brand and form. */
+export type SimilarListing = {
+  id: string
+  display_name: string
+  scraped_brand: string | null
+  scraped_category: string | null
+  subtype: string | null
+  strain: string | null
+  product_line: string | null
+  variant: string | null
+  price_cents: number | null
+  image_url: string | null
+}
+
 export type ListingDetail = DispensaryListing & {
   dispensary_id: string
   dispensary_name: string
   dispensary_slug: string
   dispensary_accepts_pickup: boolean
+  /** The whole store record, for the card that describes where this is sold. */
+  dispensary: PortalDispensary
   in_stock: boolean
   classification: string | null
   description: string | null
+
+  /** The key the product page is addressed by, so this screen can link to the
+   *  cross-store view without rebuilding it. */
+  product_key: string
+  /** When a scrape last confirmed this row; null until one has. */
+  last_seen_at: string | null
+
+  also_available_at: ListingAlternative[]
+  price_context: ListingPriceContext
+  similar_at_dispensary: SimilarListing[]
 }
 
 export type CartItem = {
