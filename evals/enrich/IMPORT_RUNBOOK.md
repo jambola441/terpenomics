@@ -1,3 +1,95 @@
+# Re-running the pipeline — current as of 2026-08-30
+
+Everything below the next heading is the 2026-08-25 first-load writeup and is kept
+for its gotchas. **Start here.**
+
+## Where the database stands
+
+| | |
+| --- | --- |
+| active listings | 16,031 across 25 stores |
+| product rows | 10,418 (merch 889) |
+| `_ENRICH_VERSION` | 7 — unchanged by the enricher-registry work, see below |
+| merch `attributes` | populated, 548 rows carry colour/flavour |
+| verified fields | 1 row signed (a test claim) — `verify_listing.py --status` |
+
+The merch refactor is **already applied to the live data** — `backfill_merch_identity`
+and `backfill_attributes` both report 0 rows would change. Nothing needs re-running
+to pick it up.
+
+Two stores have an enriched CSV on disk but **nothing in the DB**:
+`kaya-bliss-bay-ridge` (1,933 rows) and `the-plug-crown-heights` (842). They cost
+nothing to load — the enrichment is already paid for.
+
+## The commands
+
+Direct Postgres (5432) is blocked from the agent sandbox but works from a normal
+shell, so run these where you have a real `DATABASE_URL`.
+
+```bash
+git pull
+
+# 1. the two stores that were never imported — enrichment already on disk, $0
+python scripts/scrape.py --slug kaya-bliss-bay-ridge  --import-only --dry-run
+python scripts/scrape.py --slug kaya-bliss-bay-ridge  --import-only
+python scripts/scrape.py --slug the-plug-crown-heights --import-only
+
+# 2. a fresh sweep: scrape + enrich + import, every store
+python scripts/scrape.py --all --parallel --model haiku-or   # or --model haiku
+
+# 3. check it
+python evals/enrich/audit.py --db
+python scripts/verify_listing.py --status
+```
+
+**`--model` matters.** The cache is namespaced per model: `<slug>.json` for the
+default `haiku`, `<slug>.haiku-or.json` for anything else. The cache on disk is
+`haiku-or`, so running `--model haiku` re-enriches all 16,031 listings from scratch
+(~$11) instead of reading them. Either pass `--model haiku-or`, or move the files
+onto the default namespace — see "The cache namespace" below.
+
+**No `_ENRICH_VERSION` bump is needed.** Merch is now answered from the name before
+a batch is formed, so merch rows never touch the cache and their stale entries are
+never read. Bumping would invalidate every non-merch answer too and cost $5-6 to
+re-derive identical results.
+
+## What re-importing does and does not overwrite
+
+`import_listings.py` upserts on `(dispensary_id, sku, COALESCE(variant,''))`:
+
+- **Overwritten** from the scrape: `subtype`, `strain`, `product_line`, `variant`,
+  `attributes`, price, stock, name, brand, category, description, url, image.
+- **Protected**: any field with a live verification claim. The importer overlays
+  `verified_fields` onto the incoming record before the upsert, so a human-signed
+  value survives. A claim is bound to a `(listing, scraped_name)` pair, so if the
+  dispensary renames the product the claim lapses and the scrape wins — nobody has
+  read the new name.
+- **Never touched**: `verified_fields`, `verified_at`, `created_at`.
+
+`attributes` is written by the importer as of 2026-08-30. Before that it was only
+set by `backfill_attributes.py`, so a newly-inserted row landed with a NULL and
+grouped wrongly in the products view until the backfill caught up. If you are
+running an older checkout, follow the import with:
+
+```bash
+python scripts/backfill_attributes.py --run
+```
+
+## If you only want the deterministic layer re-applied
+
+Both of these are free — no model calls — and safe to run repeatedly:
+
+```bash
+python scripts/backfill_merch_identity.py        # dry run; --run to apply
+python scripts/backfill_attributes.py            # dry run; --run to apply
+```
+
+Run them after editing `MerchEnricher.tokens`, `data/format_tokens.json`,
+`data/product_lines.json` or `scripts/attributes.py`. They rewrite the affected
+columns in place without re-scraping or re-enriching anything.
+
+---
+
 # Importing the 2026-08-25 fleet scrape
 
 **Nothing from this session is in the database.** The sandbox this ran in cannot

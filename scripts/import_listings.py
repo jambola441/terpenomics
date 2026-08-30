@@ -23,11 +23,13 @@ import uuid
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import verification  # noqa: E402
+import attributes  # noqa: E402
 from datetime import datetime, timezone
 
 try:
     import psycopg2
     import psycopg2.extras
+    from psycopg2.extras import Json
 except ImportError:
     print("psycopg2-binary required: pip install psycopg2-binary", file=sys.stderr)
     sys.exit(1)
@@ -170,9 +172,16 @@ def main():
                 classification,     # 16: classification
                 description,        # 17: description
                 product_line,       # 18: product_line
-                now,                # 19: created_at
-                now,                # 20: updated_at
-                now,                # 21: last_seen_at
+                # Per-category identity that does not fit the shared columns —
+                # merch colour and flavour today. Derived from the name, so it is
+                # computed here rather than carried through the CSV: a row that
+                # reaches the DB without it would need backfill_attributes.py to
+                # catch up, and until then would group wrongly in the products view.
+                Json(attrs) if (attrs := attributes.for_category(
+                    scraped_category, scraped_name)) else None,   # 19: attributes
+                now,                # 20: created_at
+                now,                # 21: updated_at
+                now,                # 22: last_seen_at
             )
 
             if sku:
@@ -289,7 +298,7 @@ def main():
                          in_stock, is_active, scraped_at,
                          scraped_name, scraped_brand, scraped_category,
                          subtype, strain, classification, description, product_line,
-                         created_at, updated_at, last_seen_at)
+                         attributes, created_at, updated_at, last_seen_at)
                     VALUES %s
                     ON CONFLICT (dispensary_id, sku, COALESCE(variant, ''))
                     WHERE sku IS NOT NULL
@@ -307,6 +316,7 @@ def main():
                         classification   = EXCLUDED.classification,
                         description      = EXCLUDED.description,
                         product_line     = EXCLUDED.product_line,
+                        attributes       = EXCLUDED.attributes,
                         url              = EXCLUDED.url,
                         scraped_at       = EXCLUDED.scraped_at,
                         last_seen_at     = EXCLUDED.last_seen_at,
@@ -324,7 +334,7 @@ def main():
                          in_stock, is_active, scraped_at,
                          scraped_name, scraped_brand, scraped_category,
                          subtype, strain, classification, description, product_line,
-                         created_at, updated_at, last_seen_at)
+                         attributes, created_at, updated_at, last_seen_at)
                     VALUES %s
                     """,
                     no_sku_insert,
