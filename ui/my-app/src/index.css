@@ -399,9 +399,9 @@ textarea::placeholder {
 
 .nyc-map .leaflet-bar a,
 .nyc-map .leaflet-bar a:hover {
-  width: 34px;
-  height: 34px;
-  line-height: 32px;
+  width: 40px;
+  height: 40px;
+  line-height: 38px;
   background: rgba(20, 20, 24, 0.86);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -423,6 +423,83 @@ textarea::placeholder {
 }
 
 .nyc-map .leaflet-control-attribution a { color: var(--text-3); }
+
+/* ── Current location ─────────────────────────────────────────────────────── */
+/* The iOS convention: a system-blue dot in a white collar, a soft pulse, and a
+   translucent disc showing the accuracy radius. Blue is deliberately outside
+   the palette — it means "you", not "a store", and every phone user already
+   reads it that way. */
+
+.nyc-me {
+  position: relative;
+  width: 22px;
+  height: 22px;
+}
+
+/* ::before rather than ::after so the pulse paints behind the dot. */
+.nyc-me::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: #007aff;
+  opacity: 0.4;
+  animation: nyc-me-pulse 2.4s ease-out infinite;
+}
+
+.nyc-me__dot {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: #007aff;
+  border: 3px solid #fff;
+  box-shadow:
+    0 0 0 0.5px rgba(0, 0, 0, 0.16),
+    0 2px 7px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes nyc-me-pulse {
+  0%   { transform: scale(1);   opacity: 0.4; }
+  70%  { transform: scale(2.6); opacity: 0; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+
+.nyc-map path.nyc-accuracy {
+  fill: #007aff;
+  fill-opacity: 0.14;
+  stroke: #007aff;
+  stroke-opacity: 0.3;
+  stroke-width: 1;
+}
+
+/* ── Locate control ───────────────────────────────────────────────────────── */
+/* Leaflet stacks this bar under the zoom bar; the button matches the zoom
+   buttons so the whole column reads as one control stack. */
+
+.nyc-map .leaflet-bar.nyc-locate { margin-top: 8px; }
+
+.nyc-map .nyc-locate__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  background: rgba(20, 20, 24, 0.86);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text-2);
+  cursor: pointer;
+  transition: color var(--t-fast), background var(--t-fast);
+}
+
+.nyc-map .nyc-locate__btn:hover { background: var(--surface-3); color: var(--accent); }
+.nyc-map .nyc-locate__btn:focus-visible { outline: none; box-shadow: var(--ring); }
+
+/* Filled and blue while the map is following, matching the dot on the map. */
+.nyc-map .nyc-locate__btn.is-following { color: #3395ff; }
+.nyc-map .nyc-locate__btn.is-denied { color: var(--danger); }
 
 /* ── Light basemap ────────────────────────────────────────────────────────── */
 /* The rest of the portal stays dark; only the map surface goes light, so the

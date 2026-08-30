@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useMatch, useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import DispensaryListings from './DispensaryListings'
@@ -14,6 +15,40 @@ const NYC: [number, number] = [40.7128, -74.006]
 /** Roughly half the store sheet's height — how far below the selected store
  *  the map centres so the bullet lands above the sheet rather than behind it. */
 const SHEET_PAN_OFFSET = 110
+
+/** Zoom to settle on when recentring on the user — street level, but never
+ *  pulling them back out if they're already closer in. */
+const LOCATE_ZOOM = 15
+
+type LocateState =
+  | 'idle'        // never asked, or the last error has aged out
+  | 'locating'    // waiting on the first fix
+  | 'tracking'    // we have a fix and the watch is live
+  | 'denied'      // the user said no
+  | 'insecure'    // geolocation needs https and this isn't
+  | 'failed'      // timeout, no signal, or the API is missing
+
+/** iOS's navigation arrow: outlined when we have a fix but the user has panned
+ *  away, filled while the map is following them. */
+function LocateGlyph({ filled }: { filled: boolean }) {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M21 3 3 10.5l7.8 2.7L13.5 21 21 3z"
+        fill={filled ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+const LOCATE_MESSAGES: Partial<Record<LocateState, string>> = {
+  denied: 'Location permission denied',
+  insecure: 'Location needs an https connection',
+  failed: "Couldn't get your location",
+}
 
 interface Props {
   activeDispensaryId?: string | null
@@ -77,6 +112,18 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
   const [selected, setSelected] = useState<PortalDispensary | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  // Current location. `following` is whether the map recentres on each fix —
+  // the user panning away turns it off, the way iOS hollows out the arrow.
+  const [userPosition, setUserPosition] = useState<{ lat: number; lng: number; accuracy: number } | null>(null)
+  const [locateState, setLocateState] = useState<LocateState>('idle')
+  const [following, setFollowing] = useState(false)
+  const [locateHost, setLocateHost] = useState<HTMLElement | null>(null)
+  const watchIdRef = useRef<number | null>(null)
+  const meRef = useRef<{ dot: any; halo: any } | null>(null)
+  // The geolocation callback outlives the render it was created in, so it reads
+  // the ref rather than a captured `following`.
+  const followingRef = useRef(false)
+
   const aisleDispensaryId = matchAisle?.params.dispensaryId ?? null
   const aisleCategory = matchAisle?.params.category ?? null
   const aisleDispensary = aisleDispensaryId
@@ -137,6 +184,27 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
       // Bottom-right would sit under the store sheet, so the zoom rides top-right.
       L.control.zoom({ position: 'topright' }).addTo(map)
 
+      // An empty Leaflet control so the locate button stacks under the zoom bar
+      // on Leaflet's terms; React renders the button itself into it, which keeps
+      // the button's state in React rather than in imperative DOM updates.
+      const LocateHost = L.Control.extend({
+        onAdd() {
+          const el = L.DomUtil.create('div', 'leaflet-bar nyc-locate')
+          L.DomEvent.disableClickPropagation(el)
+          L.DomEvent.disableScrollPropagation(el)
+          return el
+        },
+      })
+      const locateControl = new LocateHost({ position: 'topright' })
+      locateControl.addTo(map)
+      setLocateHost(locateControl.getContainer() ?? null)
+
+      // A drag is the user taking the wheel — stop yanking the map back.
+      map.on('dragstart', () => {
+        followingRef.current = false
+        setFollowing(false)
+      })
+
       setMapReady(true)
     })
 
@@ -146,9 +214,19 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
         mapInstanceRef.current = null
         LRef.current = null
         markersRef.current = {}
+        meRef.current = null
+        setLocateHost(null)
       }
     }
   }, [tiles])
+
+  // Release the geolocation watch when the map goes away.
+  useEffect(() => () => {
+    if (watchIdRef.current != null) {
+      navigator.geolocation.clearWatch(watchIdRef.current)
+      watchIdRef.current = null
+    }
+  }, [])
 
   // Add markers once both map and dispensaries are ready
   useEffect(() => {
@@ -200,13 +278,115 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
 
     // Pan the store into the strip of map the sheet doesn't cover, rather than
     // to dead centre — centring drops it behind the sheet on a short screen.
+    // Opening a store is a deliberate move away from the user, so stop
+    // following them too, or the next fix would drag the map straight back.
     const map = mapInstanceRef.current
+    if (selected) {
+      followingRef.current = false
+      setFollowing(false)
+    }
     if (selected?.lat != null && selected.lng != null && map) {
       const zoom = map.getZoom()
       const point = map.project([selected.lat, selected.lng], zoom).add([0, SHEET_PAN_OFFSET])
       map.panTo(map.unproject(point, zoom), { animate: true })
     }
   }, [selected, dispensaries])
+
+  // Draw (and then move) the blue dot and its accuracy halo. Updating the two
+  // layers in place rather than rebuilding them keeps a high-accuracy watch,
+  // which can fire every second or so, from churning the map.
+  useEffect(() => {
+    const L = LRef.current
+    const map = mapInstanceRef.current
+    if (!L || !map || !mapReady) return
+
+    if (!userPosition) {
+      meRef.current?.halo.remove()
+      meRef.current?.dot.remove()
+      meRef.current = null
+      return
+    }
+
+    const { lat, lng, accuracy } = userPosition
+    if (meRef.current) {
+      meRef.current.halo.setLatLng([lat, lng]).setRadius(accuracy)
+      meRef.current.dot.setLatLng([lat, lng])
+      return
+    }
+
+    meRef.current = {
+      halo: L.circle([lat, lng], {
+        radius: accuracy,
+        className: 'nyc-accuracy',
+        interactive: false,
+      }).addTo(map),
+      dot: L.marker([lat, lng], {
+        icon: L.divIcon({
+          html: '<div class="nyc-me"><span class="nyc-me__dot"></span></div>',
+          className: '',
+          iconSize: [22, 22],
+          iconAnchor: [11, 11],
+        }),
+        interactive: false,
+        keyboard: false,
+        zIndexOffset: 900,
+      }).addTo(map),
+    }
+  }, [userPosition, mapReady])
+
+  const centreOnUser = useCallback((lat: number, lng: number) => {
+    const map = mapInstanceRef.current
+    if (!map) return
+    map.setView([lat, lng], Math.max(map.getZoom(), LOCATE_ZOOM), { animate: true })
+  }, [])
+
+  const handleLocate = useCallback(() => {
+    if (!mapInstanceRef.current) return
+
+    // Browsers expose the API off a secure origin but every call fails, so say
+    // what's actually wrong instead of reporting a generic failure.
+    if (!('geolocation' in navigator)) return setLocateState('failed')
+    if (!window.isSecureContext) return setLocateState('insecure')
+
+    followingRef.current = true
+    setFollowing(true)
+
+    // Already have a fix — recentre now; the live watch keeps it honest.
+    if (userPosition) centreOnUser(userPosition.lat, userPosition.lng)
+    else setLocateState('locating')
+
+    if (watchIdRef.current != null) return
+
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      pos => {
+        const next = {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          accuracy: pos.coords.accuracy,
+        }
+        setUserPosition(next)
+        setLocateState('tracking')
+        if (followingRef.current) centreOnUser(next.lat, next.lng)
+      },
+      err => {
+        setLocateState(err.code === err.PERMISSION_DENIED ? 'denied' : 'failed')
+        followingRef.current = false
+        setFollowing(false)
+        if (watchIdRef.current != null) {
+          navigator.geolocation.clearWatch(watchIdRef.current)
+          watchIdRef.current = null
+        }
+      },
+      { enableHighAccuracy: true, maximumAge: 10_000, timeout: 15_000 },
+    )
+  }, [centreOnUser, userPosition])
+
+  // Let a failure notice age out so the button reads as retryable again.
+  useEffect(() => {
+    if (!LOCATE_MESSAGES[locateState]) return
+    const id = setTimeout(() => setLocateState(userPosition ? 'tracking' : 'idle'), 5000)
+    return () => clearTimeout(id)
+  }, [locateState, userPosition])
 
   const activeDispensary = activeDispensaryId
     ? dispensaries.find(d => d.id === activeDispensaryId) ?? null
@@ -263,12 +443,38 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
         }} />
       )}
 
-      {/* Borough legend */}
-      {!loadingDispensaries && boroughCounts.length > 0 && !activeDispensary && (
+      {/* Locate button — rendered into the Leaflet control Leaflet stacked
+          under the zoom bar, so it inherits the control chrome and spacing. */}
+      {locateHost && createPortal(
+        <button
+          type="button"
+          onClick={handleLocate}
+          aria-label="Show my location"
+          aria-pressed={following}
+          title={locateState === 'denied' ? 'Location permission is blocked' : 'Show my location'}
+          className={[
+            'nyc-locate__btn',
+            following ? 'is-following' : '',
+            locateState === 'denied' || locateState === 'insecure' ? 'is-denied' : '',
+          ].filter(Boolean).join(' ')}
+        >
+          {locateState === 'locating'
+            ? <Spinner size={15} />
+            : <LocateGlyph filled={following} />}
+        </button>,
+        locateHost,
+      )}
+
+      {/* Legend and the locate notice share one column so a wrapped legend can
+          never end up underneath the notice. */}
+      {!activeDispensary && (
         <div style={{
           position: 'absolute', top: 14, left: 14, zIndex: 600,
-          display: 'flex', flexWrap: 'wrap', gap: 6, maxWidth: 'calc(100% - 76px)',
+          display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8,
+          maxWidth: 'calc(100% - 76px)',
         }}>
+        {!loadingDispensaries && boroughCounts.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {boroughCounts.map(([borough, count]) => {
             const color = colorForBorough(borough)
             return (
@@ -289,6 +495,20 @@ export default function DispensaryMap({ activeDispensaryId, onProductClick, onAd
               </span>
             )
           })}
+        </div>
+        )}
+
+        {/* Why locating didn't work — brief, then it ages out */}
+        {LOCATE_MESSAGES[locateState] && (
+          <div style={{
+            background: alpha('#0b0d14', 0.86), border: `1px solid ${t.border}`,
+            backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+            borderRadius: radius.pill, padding: '7px 14px',
+            color: t.text2, fontSize: font.size.small + 1, boxShadow: 'var(--e-1)',
+          }}>
+            {LOCATE_MESSAGES[locateState]}
+          </div>
+        )}
         </div>
       )}
 
