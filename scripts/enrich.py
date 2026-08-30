@@ -20,6 +20,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 from scraper_common import normalize_variant  # noqa: E402
 from canonical import canonicalize, find_format_category  # noqa: E402
+import verification  # noqa: E402
 
 _DATA_DIR = Path(__file__).parent.parent / "data"
 
@@ -995,6 +996,19 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
     pending:       list[tuple[int, dict]] = []
 
     for i, row in enumerate(rows):
+        # A row a human has signed off on entirely never reaches the model — the
+        # answer is already known and better than anything the pipeline would
+        # produce, so re-deriving it would only risk overwriting it. This also
+        # makes verified rows free.
+        if verification.is_fully_verified(row):
+            v = verification.verified_fields(row)
+            categories.append(v.get("category"))
+            subtypes.append(v.get("subtype"))
+            strains.append(v.get("strain"))
+            product_lines.append(v.get("product_line"))
+            variants.append(v.get("variant"))
+            continue
+
         key = _cache_key(row)
         entry = cache.get(key) if key else None
         # Re-enrich if not cached, if the cache pre-dates the variant/category
@@ -1038,6 +1052,21 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
     canon_stats = canonicalize(rows)
     if any(canon_stats.values()):
         print("  canonical: " + ", ".join(f"{k}={v}" for k, v in canon_stats.items() if v))
+
+    # Human answers win over both the model and the curated maps, so they are
+    # applied last. Partially verified rows land here: they still went through
+    # enrichment for their unverified fields, and this restores the signed ones.
+    verified_n = lapsed_n = 0
+    for row in rows:
+        if verification.verified_fields(row):
+            verification.apply(row)
+            verified_n += 1
+        lapsed_n += bool(verification.lapsed_fields(row))
+    if verified_n or lapsed_n:
+        msg = f"  verified: {verified_n} row(s) protected"
+        if lapsed_n:
+            msg += f", {lapsed_n} lapsed (renamed since review — needs re-check)"
+        print(msg)
 
     c = model_cfg["cost"]
     cost = (

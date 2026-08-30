@@ -20,6 +20,9 @@ import csv
 import os
 import sys
 import uuid
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import verification  # noqa: E402
 from datetime import datetime, timezone
 
 try:
@@ -184,13 +187,44 @@ def main():
                 """
                 SELECT sku, in_stock, price_cents, image_url,
                        scraped_name, scraped_brand, scraped_category,
-                       subtype, strain, url, product_line, COALESCE(variant, '')
+                       subtype, strain, url, product_line, COALESCE(variant, ''),
+                       verified_fields
                 FROM listings
                 WHERE dispensary_id = %s AND sku = ANY(%s)
                 """,
                 (dispensary_id, skus),
             )
             existing: dict[tuple, tuple] = {(row[0], row[11]): row for row in cur.fetchall()}
+
+            # Overlay human-verified fields onto the records about to be written.
+            # Doing it here rather than in the upsert's DO UPDATE keeps one
+            # implementation of the name hash — a CASE expression would need the
+            # same normalisation in SQL, and the two drifting apart would silently
+            # either drop protection or freeze stale values.
+            #
+            # A claim is about a (listing, scraped_name) pair. verified_fields()
+            # compares the stored hash against the INCOMING name, so a renamed
+            # product lapses and the scraped value takes over, which is the
+            # behaviour we want: nobody has read the new name.
+            VERIFIED_IDX = {"subtype": 14, "strain": 15, "product_line": 18, "variant": 5}
+            protected = 0
+            for pos, rec in enumerate(to_upsert):
+                db_row = existing.get((rec[2], rec[5] or ""))
+                if not db_row or not db_row[12]:
+                    continue
+                held = verification.verified_fields(
+                    {"verified_fields": db_row[12], "scraped_name": rec[11]})
+                if not held:
+                    continue
+                as_list = list(rec)
+                for field, value in held.items():
+                    idx = VERIFIED_IDX.get(field)
+                    if idx is not None:
+                        as_list[idx] = value
+                to_upsert[pos] = tuple(as_list)
+                protected += 1
+            if protected:
+                print(f"  verified: kept {protected} human-signed row(s) from being overwritten")
 
             TRACKED = [
                 # (label, record_idx, existing_col_idx)
