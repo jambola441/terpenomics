@@ -4,7 +4,7 @@ import api from '../api/client'
 import type { CartItem, DispensaryListing } from '../types'
 import { t, radius, font, categoryColor, alpha } from '../theme'
 import { useScrollMemory } from '../utils/browseState'
-import { Pressable, Pill, FeedState, Skeleton } from './ui'
+import { Pressable, Pill, FeedState, Skeleton, ProductImage } from './ui'
 
 const CATEGORY_EMOJI: Record<string, string> = {
   flower: '🌸',
@@ -132,17 +132,11 @@ export default function DispensaryListings({
           overflow: 'hidden', display: 'flex', flexDirection: 'column',
         }}
       >
-        <div style={{ position: 'relative', height: 110, background: t.tile, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.06)' }}>
-          {l.image_url ? (
-            <img
-              src={l.image_url}
-              alt={l.display_name}
-              style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 10, boxSizing: 'border-box' }}
-              onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-            />
-          ) : (
-            <span style={{ fontSize: 30, opacity: 0.5 }}>{CATEGORY_EMOJI[cat] ?? '📦'}</span>
-          )}
+        <div style={{ position: 'relative' }}>
+          {/* Square, and the width of the card. This frame used to be a fixed
+              110px band with its own copy of the fallback logic; ProductImage
+              is the same frame every other product shot on the portal uses. */}
+          <ProductImage src={l.image_url} alt={l.display_name} category={cat} radius="0" />
           {acceptsPickup && onAddToCart && (
             <button
               aria-label="Add to cart"
@@ -352,7 +346,7 @@ function AisleSkeleton() {
           <div style={{ display: 'flex', gap: 10, padding: '0 16px', overflow: 'hidden' }}>
             {[0, 1, 2].map(i => (
               <div key={i} style={{ width: 132, flexShrink: 0, background: 'var(--surface-1)', borderRadius: radius.lg, border: `1px solid ${t.border}`, overflow: 'hidden' }}>
-                <Skeleton height={110} radius="0" />
+                <Skeleton height={0} radius="0" style={{ aspectRatio: '1 / 1', height: 'auto' }} />
                 <div style={{ padding: '9px 9px 11px' }}>
                   <Skeleton width="45%" height={12} style={{ marginBottom: 7 }} />
                   <Skeleton width="90%" height={11} />

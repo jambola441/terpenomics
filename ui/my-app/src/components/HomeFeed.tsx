@@ -401,11 +401,12 @@ function FeedCard({ listing, rail, store, onOpen, onOpenBrand }: {
       }}
     >
       <div style={{ position: 'relative' }}>
+        {/* Square, and as wide as the card: a product shot is the whole
+            reason to look at a rail, and a 96px band cropped it to a strip. */}
         <ProductImage
           src={listing.image_url}
           alt={listing.display_name}
           category={listing.scraped_category}
-          height={96}
         />
         {/* Only the deals rail earns a badge: elsewhere the saving is a fact
             about the product, not the reason it is on screen. */}
@@ -510,7 +511,7 @@ function HomeSkeleton() {
           }}>
             {[0, 1, 2, 3].map(i => (
               <div key={i}>
-                <Skeleton height={96} radius={radius.lg} />
+                <Skeleton height={0} radius={radius.lg} style={{ aspectRatio: '1 / 1', height: 'auto' }} />
                 <div style={{ padding: '8px 2px' }}>
                   <Skeleton width="70%" height={10} style={{ marginBottom: 6 }} />
                   <Skeleton width="90%" height={12} />
