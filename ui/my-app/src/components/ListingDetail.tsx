@@ -145,7 +145,7 @@ export default function ListingDetailView({
       </button>
 
       {listing.image_url ? (
-        <div style={{ position: 'relative', width: '100%', paddingTop: '72%', background: t.tile }}>
+        <div style={{ position: 'relative', width: '100%', paddingTop: '100%', background: t.tile }}>
           <img
             src={listing.image_url}
             alt={listing.display_name}
@@ -546,7 +546,6 @@ function SimilarRail({ items, storeName, onOpen }: {
                 src={row.image_url}
                 alt={row.display_name}
                 category={row.scraped_category}
-                height={92}
               />
               <div style={{ padding: '8px 10px 10px' }}>
                 {row.scraped_brand && (
