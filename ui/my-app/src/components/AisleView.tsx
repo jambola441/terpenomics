@@ -6,7 +6,7 @@ import type { CartItem, DispensaryListing } from '../types'
 import { t, font, categoryColor, alpha } from '../theme'
 import { FeedState } from './ui'
 import {
-  ActiveChip, BrowseCard, BrowseToolbar, CATEGORY_EMOJI, Dot, FacetChip, FilterSheet,
+  ActiveChip, BrowseCard, BrowseToolbar, CATEGORY_EMOJI, Dot, FacetChip, FilterSheet, MarketNote,
   GridSkeleton, SORTS_NO_LOCATION, SORT_KEYS, SearchField, Stat, formatDollarsShort, variantWeight,
   type BrowseCardItem, type SheetGroup, type SortKey,
 } from './browse'
@@ -428,6 +428,10 @@ export default function AisleView({
                   color={c}
                   suppressSubtype={category}
                   action={cartAction(l)}
+                  // One store, so there is nothing to say about where else to
+                  // buy -- but plenty to say about whether this is the price to
+                  // pay. Same line as the store page this aisle opened from.
+                  footer={<MarketNote market={l.market} priceCents={l.price_cents} />}
                   onOpen={() => navigate(`/portal/map/${dispensaryId}/listings/${l.id}`)}
                 />
               ))}

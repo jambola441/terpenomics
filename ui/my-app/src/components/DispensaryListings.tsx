@@ -5,6 +5,7 @@ import type { CartItem, DispensaryListing } from '../types'
 import { t, radius, font, categoryColor, alpha } from '../theme'
 import { useScrollMemory } from '../utils/browseState'
 import { Pressable, Pill, FeedState, Skeleton, ProductImage } from './ui'
+import { MarketNote } from './browse'
 
 const CATEGORY_EMOJI: Record<string, string> = {
   flower: '🌸',
@@ -25,6 +26,7 @@ function formatPrice(cents: number | null) {
 }
 
 const CATEGORIES = ['flower', 'preroll', 'vaporizers', 'edible', 'concentrate', 'tinctures', 'topical', 'merch', 'other']
+
 
 interface Props {
   dispensaryId: string
@@ -137,6 +139,7 @@ export default function DispensaryListings({
               110px band with its own copy of the fallback logic; ProductImage
               is the same frame every other product shot on the portal uses. */}
           <ProductImage src={l.image_url} alt={l.display_name} category={cat} radius="0" />
+
           {acceptsPickup && onAddToCart && (
             <button
               aria-label="Add to cart"
@@ -180,6 +183,9 @@ export default function DispensaryListings({
           {catColor && l.variant && (
             <div style={{ color: t.text3, fontSize: font.size.caption, marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.variant}</div>
           )}
+
+          {/* The half a store's own menu cannot answer: is this a good price? */}
+          <MarketNote market={l.market} priceCents={l.price_cents} style={{ marginTop: 5 }} />
         </div>
       </Pressable>
     )

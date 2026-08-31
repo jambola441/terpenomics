@@ -33,9 +33,7 @@ from models import (
     Purchase,
     PurchaseItem,
 )
-
-# The identity of a product, as the portal keys it everywhere else.
-_KEY_COLUMNS = ("scraped_category", "subtype", "product_line", "strain", "variant")
+from services.market import same_product
 
 # How much of a store's shelf a ranking may scan. A rail shows a handful; this
 # bounds what it costs to find them when a store carries thousands of rows.
@@ -153,27 +151,19 @@ def _market_comparison(
 ):
     """The stores' listings that other stores also carry, with those stores' prices.
 
-    A self-join on the product's identity. The key columns are nullable and SQL
-    will not match NULL to NULL, so each side is coalesced -- the same trick the
-    listings uniqueness index uses.
+    A self-join on the product's identity, which `services.market` defines for
+    every screen that makes this comparison -- a deal here has to mean the same
+    thing as "3 other stores" on the menu.
     """
     mine = aliased(Listing)
     other = aliased(Listing)
-
-    same_product = [
-        func.coalesce(getattr(mine, column), "") == func.coalesce(getattr(other, column), "")
-        for column in _KEY_COLUMNS
-    ]
-    same_product.append(
-        func.coalesce(mine.scraped_brand, "") == func.coalesce(other.scraped_brand, "")
-    )
 
     avg_other = func.avg(other.price_cents)
     store_count = func.count(func.distinct(other.dispensary_id))
 
     stmt = (
         select(mine, avg_other.label("avg_other"), store_count.label("store_count"))
-        .join(other, and_(other.dispensary_id != mine.dispensary_id, *same_product))
+        .join(other, and_(other.dispensary_id != mine.dispensary_id, *same_product(mine, other)))
         .where(mine.dispensary_id.in_(list(dispensary_ids)))
         .where(mine.is_active == True)  # noqa: E712
         .where(mine.in_stock == True)  # noqa: E712

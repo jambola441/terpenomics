@@ -230,6 +230,12 @@ export type DispensaryListing = {
   in_stock: boolean
   terpenes: Terpene[]
   cannabinoids: Cannabinoid[]
+  /** How this store's price stands against the others carrying the same
+   *  product. Every row of a store's menu carries one -- a product nobody else
+   *  has reads as a zero count rather than being absent. Optional because the
+   *  listing detail response spells the same facts out as `price_context`
+   *  alongside the stores themselves. */
+  market?: ListingPriceContext
 }
 
 /** The same product on another store's shelf. */
