@@ -7,8 +7,9 @@
    Only the data source and which facets apply differ per screen.
    ========================================================================== */
 
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react'
 import { t, radius, font, alpha } from '../theme'
+import type { ListingPriceContext } from '../types'
 import { useRenderWindow } from '../utils/browseState'
 import { Pressable, Skeleton, Label, ProductImage } from './ui'
 import { formatDist, formatDollars, formatDollarsShort, haversineMi } from '../utils/format'
@@ -245,13 +246,59 @@ export type BrowseCardItem = {
   storeName: string | null
 }
 
-export function BrowseCard({ item, color, suppressSubtype, action, onOpen }: {
+/**
+ * How this store's price stands against the others carrying the same product.
+ *
+ * The one thing a dispensary's own menu cannot tell a shopper, so it earns a
+ * line on every card of that menu. Three states, and the losing one gets the
+ * colour, because a cheaper price down the road is the version worth reading.
+ *
+ * Both the store page and its "See all" aisle draw it from here: a card and the
+ * card it turns into after a tap should not describe the market differently.
+ */
+export function MarketNote({ market, priceCents, style }: {
+  market?: ListingPriceContext | null
+  priceCents: number | null
+  style?: CSSProperties
+}) {
+  const m = market ?? NO_COMPARISON
+  const others = `${m.other_store_count} other ${m.other_store_count === 1 ? 'store' : 'stores'}`
+  const min = m.min_cents
+
+  const [text, color] =
+    m.other_store_count === 0 ? ['Only at this store', t.text4]
+    : min != null && priceCents != null && min < priceCents ? [`${formatDollars(min)} at ${others}`, t.warning]
+    : m.is_cheapest ? [`Best price of ${m.other_store_count + 1}`, t.accent]
+    : [`Also at ${others}`, t.text4]
+
+  return (
+    <div style={{
+      fontSize: font.size.micro, fontWeight: font.weight.medium, color,
+      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+      ...style,
+    }}>
+      {text}
+    </div>
+  )
+}
+
+/** What a row looks like when nothing came back to compare it against. A
+ *  response without the comparison degrades to "nobody else has it" rather
+ *  than blanking the card. */
+const NO_COMPARISON: ListingPriceContext = {
+  other_store_count: 0, min_cents: null, avg_cents: null, max_cents: null, is_cheapest: false,
+}
+
+export function BrowseCard({ item, color, suppressSubtype, action, footer, onOpen }: {
   item: BrowseCardItem
   color: string
   /** Hide the subtype tag when it just restates the page (e.g. "flower" on /flower). */
   suppressSubtype?: string | null
   /** Overlaid bottom-right on the image — e.g. an add-to-cart button. */
   action?: ReactNode
+  /** Replaces the availability line. A single-store surface has nothing to say
+   *  about where else to buy, but plenty to say about the price. */
+  footer?: ReactNode
   onOpen: () => void
 }) {
   const showSubtype = !!item.subtype
@@ -347,7 +394,9 @@ export function BrowseCard({ item, color, suppressSubtype, action, onOpen }: {
         )}
 
         {/* Availability footer, pinned to the bottom so cards align in the grid */}
-        {availability && (
+        {footer ? (
+          <div style={{ marginTop: 'auto', paddingTop: 8 }}>{footer}</div>
+        ) : availability && (
           <div style={{
             marginTop: 'auto', paddingTop: 8, color: t.text3, fontSize: font.size.micro,
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',

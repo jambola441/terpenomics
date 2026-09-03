@@ -14,6 +14,7 @@ from models import (
 )
 from routes.admin.serializers import serialize_purchase_item
 from services.display_name import compose as compose_display_name
+from services.market import context_for, context_or_empty
 
 router = APIRouter()
 
@@ -559,6 +560,12 @@ def get_dispensary_listings(
         lid = str(link.listing_id)
         cannabinoid_map.setdefault(lid, []).append({"name": c.name, "family": c.family, "percent": link.percent})
 
+    # What each of these costs at the other stores carrying it. One query for
+    # the page: the whole point of a card saying "cheaper at 2 others" is that
+    # the shopper sees it without opening anything, and paying a round trip per
+    # row to say so would cost more than the answer is worth.
+    market = context_or_empty(context_for(session, listing_ids), listing_ids)
+
     result = []
     for listing in listings:
         lid = str(listing.id)
@@ -585,6 +592,7 @@ def get_dispensary_listings(
             "in_stock": listing.in_stock,
             "terpenes": terpene_map.get(lid, []),
             "cannabinoids": cannabinoid_map.get(lid, []),
+            "market": market[lid],
         })
 
     return result
@@ -754,6 +762,9 @@ def get_dispensary_listing(
 
     elsewhere = _same_product_elsewhere(session, listing)
     prices = [row["price_cents"] for row in elsewhere if row["price_cents"] is not None]
+    # Stores, not rows: a store listing the same product twice is still one
+    # place to go, and the menu card that opened this page counts it that way.
+    other_stores = {row["dispensary"]["id"] for row in elsewhere}
 
     return {
         "id": str(listing.id),
@@ -804,7 +815,7 @@ def get_dispensary_listing(
 
         "also_available_at": elsewhere,
         "price_context": {
-            "other_store_count": len(elsewhere),
+            "other_store_count": len(other_stores),
             "min_cents": min(prices) if prices else None,
             "avg_cents": round(sum(prices) / len(prices)) if prices else None,
             "max_cents": max(prices) if prices else None,
