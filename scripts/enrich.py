@@ -23,6 +23,7 @@ from canonical import canonicalize, find_format_category  # noqa: E402
 import verification  # noqa: E402
 import attributes as attribute_registry  # noqa: E402
 import enrichers  # noqa: E402
+import catalog_enricher  # noqa: E402
 
 _DATA_DIR = Path(__file__).parent.parent / "data"
 
@@ -657,6 +658,7 @@ def _run_enrich(
     model_cfg: dict,
     batch_size: int = 50,
     brand_examples: dict[str, dict] | None = None,
+    catalog_hints: bool = False,
 ) -> dict:
     """Field-decomposed enrichment in two dependent passes:
       A) classify category+subtype+variant (hinted rows and fresh rows get different prompts)
@@ -816,6 +818,14 @@ def _run_enrich(
                 item["known_strains"] = known_s
             if known_pl:
                 item["known_product_lines"] = known_pl
+
+        # Where we hold a catalog for this brand, its own product list is a better
+        # source for the same slots than `listings` is: the DB hints above are our
+        # previous model output, so they nudge toward consistency rather than toward
+        # correctness. Catalog values win the overlap and add `catalog_products`, the
+        # nearest real titles. Still only a hint — the model decides.
+        if catalog_hints:
+            item.update(catalog_enricher.hints(r.get("brand"), r.get("name", "")))
         return item
 
     extract_tasks = []
@@ -858,11 +868,25 @@ def _run_enrich(
 # ---------------------------------------------------------------------------
 
 def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
-           model: str = DEFAULT_MODEL, brand_examples: dict[str, dict] | None = None) -> dict:
+           model: str = DEFAULT_MODEL, brand_examples: dict[str, dict] | None = None,
+           catalog_hints: bool = False) -> dict:
     """Enrich every row in place: corrects category, adds subtype/strain/product_line/variant.
 
     `model` selects an entry from MODELS (default "haiku"). Each non-default model
     gets its own cache file so a comparison run never reads another model's answers.
+
+    `catalog_hints` adds the brand's real product list (data/catalogs/) to the pass-B
+    prompt as context. A hint only — the model still decides, and nothing is written
+    from the catalog directly.
+
+    DEFAULT OFF, because measured it costs more than it returns. Over two eval runs
+    each way: baseline 279/278, hint 277/275. The two standing Ayrloom failures it was
+    built to fix (x-ayrloom-honeycrisp, holdup-044) do flip to passing — but they also
+    flip on a second baseline run with no hint at all, so that is run-to-run variance,
+    not evidence. Against it, three Camino cases lose product_line in both hinted runs
+    and neither unhinted one, and Camino has no catalog: adding hint keys to some items
+    in a 50-item batch moves the model's answers on its neighbours. Until that
+    cross-item effect is understood, this stays opt-in.
 
     `brand_examples` injects a brand→{strains, product_lines} index to nudge strain/line
     consistency. The nudge is OFF by default; when brand_examples is None it auto-loads from
@@ -955,7 +979,7 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
         print(f"  deterministic: {no_model} row(s) answered from the name, no model call")
     if pending:
         print(f"  enrich: {cached_count} cached, {len(pending)} → {model}")
-        usage = _run_enrich(pending, cache, slug, categories, subtypes, strains, product_lines, variants, model_cfg, batch_size, brand_examples)
+        usage = _run_enrich(pending, cache, slug, categories, subtypes, strains, product_lines, variants, model_cfg, batch_size, brand_examples, catalog_hints)
     else:
         print(f"  enrich: {cached_count} cached, 0 → {model}")
         usage = {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0}

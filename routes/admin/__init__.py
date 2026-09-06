@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from .brand_catalogs import router as brand_catalogs_router
 from .customers import router as customers_router
 from .dispensaries import router as dispensaries_router
 from .lab_reports import router as lab_reports_router
@@ -8,6 +9,7 @@ from .products import router as products_router
 from .purchases import router as purchases_router
 
 router = APIRouter(prefix="/admin", tags=["admin"])
+router.include_router(brand_catalogs_router)
 router.include_router(customers_router)
 router.include_router(dispensaries_router)
 router.include_router(lab_reports_router)

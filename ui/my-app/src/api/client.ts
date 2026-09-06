@@ -30,6 +30,11 @@ import type {
   Dispensary,
   DispensaryListing,
   ListingDetail,
+  BrandCatalogRow,
+  BrandCatalogDetail,
+  BrandCatalogEntry,
+  BrandCatalogEntryPage,
+  CatalogExportStatus,
 } from '../types'
 
 // Get API base URL from environment variable or use default
@@ -144,6 +149,15 @@ async function authFetch<T>(path: string, body: unknown): Promise<T> {
 }
 
 // Centralized API client
+/** Entry search/filter/paging. `category: '__null__'` selects uncategorised. */
+export type CatalogEntryParams = {
+  q?: string
+  category?: string
+  is_active?: boolean
+  limit?: number
+  offset?: number
+}
+
 export type AdminOrderRow = {
   id: string
   status: OrderStatus
@@ -327,6 +341,78 @@ export const api = {
         method: 'POST',
         body: JSON.stringify(data),
       }),
+  },
+
+  /**
+   * Brand catalogs. Note the split system of record: Postgres holds the catalog,
+   * but enrichment reads the generated `data/catalogs/<slug>.json` export, so
+   * every response carries an `export` block and nothing is really live until
+   * `regenerateExport` has run.
+   */
+  brandCatalogs: {
+    list: (params?: { q?: string; limit?: number; offset?: number }) =>
+      authenticatedFetch<BrandCatalogRow[]>(`/admin/brand-catalogs${buildQueryString(params)}`),
+
+    get: (id: string, params?: CatalogEntryParams) =>
+      authenticatedFetch<BrandCatalogDetail>(`/admin/brand-catalogs/${id}${buildQueryString(params)}`),
+
+    create: (data: { brand_name: string; brand_slug?: string; source_url?: string | null; source_method?: string }) =>
+      authenticatedFetch<BrandCatalogRow>(`/admin/brand-catalogs`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    update: (id: string, data: { brand_name?: string; brand_slug?: string; source_url?: string | null; source_method?: string }) =>
+      authenticatedFetch<BrandCatalogRow>(`/admin/brand-catalogs/${id}`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    listEntries: (id: string, params?: CatalogEntryParams) =>
+      authenticatedFetch<BrandCatalogEntryPage>(`/admin/brand-catalogs/${id}/entries${buildQueryString(params)}`),
+
+    createEntry: (id: string, data: Partial<BrandCatalogEntry>) =>
+      authenticatedFetch<BrandCatalogEntry>(`/admin/brand-catalogs/${id}/entries`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    /**
+     * Field edits only. An omitted key is left alone and an explicit null clears
+     * the column, so send exactly what changed. The endpoint rejects any attempt
+     * to write first_seen_at, last_seen_at or the verified_* columns.
+     */
+    updateEntry: (id: string, entryId: string, data: Record<string, unknown>) =>
+      authenticatedFetch<BrandCatalogEntry>(`/admin/brand-catalogs/${id}/entries/${entryId}`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    /**
+     * "Remove" is a flag, never a delete: listings carry a foreign key to these
+     * rows. Pass is_active true to put an entry back.
+     */
+    setEntryActive: (id: string, entryId: string, isActive: boolean) =>
+      authenticatedFetch<BrandCatalogEntry>(`/admin/brand-catalogs/${id}/entries/${entryId}/deactivate`, {
+        method: 'POST',
+        body: JSON.stringify({ is_active: isActive }),
+      }),
+
+    verifyEntry: (id: string, entryId: string, data: { fields: Record<string, unknown>; verified_by: string; clear?: string[] }) =>
+      authenticatedFetch<BrandCatalogEntry>(`/admin/brand-catalogs/${id}/entries/${entryId}/verify`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    exportStatus: (id: string) =>
+      authenticatedFetch<CatalogExportStatus>(`/admin/brand-catalogs/${id}/export`),
+
+    /** Rewrite data/catalogs/<slug>.json from the database. */
+    regenerateExport: (id: string) =>
+      authenticatedFetch<{ written: string; entry_count: number; product_count: number; export: CatalogExportStatus }>(
+        `/admin/brand-catalogs/${id}/export`,
+        { method: 'POST' },
+      ),
   },
 
   adminOrders: {

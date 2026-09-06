@@ -421,3 +421,82 @@ export type PortalCategoryDetail = {
   dispensaries: PortalCategoryDispensary[]
   products: PortalCategoryProduct[]
 }
+
+/* ── Brand catalogs ─────────────────────────────────────────────────────────
+   A brand catalog is the products a brand says it makes, scraped from its own
+   storefront. Postgres holds it; `data/catalogs/<slug>.json` is a generated
+   export, and that file — not the table — is what enrichment reads. So an edit
+   made in this UI does not reach enrichment until the export is regenerated,
+   which is what `CatalogExportStatus` exists to make visible.
+   ────────────────────────────────────────────────────────────────────────── */
+
+export type CatalogExportStatus = {
+  path: string
+  file_exists: boolean
+  file_readable: boolean
+  file_generated_at: string | null
+  db_entry_count: number
+  file_entry_count: number | null
+  added: number
+  removed: number
+  changed: number
+  metadata_changed: boolean
+  /** False means enrichment is still being shown the old catalog. */
+  in_sync: boolean
+  sample: { kind: 'added' | 'removed' | 'changed'; name: string; variant: string | null }[]
+}
+
+export type BrandCatalog = {
+  id: string
+  brand_slug: string
+  brand_name: string
+  source_url: string | null
+  source_method: string
+  fetched_at: string | null
+  created_at: string
+  updated_at: string
+  entry_count: number
+  active_entry_count: number
+  /** Listings currently resolved to one of this catalog's entries. */
+  listing_count: number
+}
+
+export type BrandCatalogRow = BrandCatalog & { export: CatalogExportStatus }
+
+export type BrandCatalogEntry = {
+  id: string
+  catalog_id: string
+  /** The source's own variant id. Null on hand-added entries. */
+  external_id: string | null
+  name: string
+  product_line: string | null
+  category: string | null
+  subtype: string | null
+  strain: string | null
+  variant: string | null
+  attributes: Record<string, unknown> | null
+  match_terms: string[]
+  is_active: boolean
+  first_seen_at: string
+  last_seen_at: string
+  verified_by: string | null
+  verified_at: string | null
+  /** Claims that still hold, {field: value}. */
+  verified_fields: Record<string, unknown>
+  /** Claims made against a name this entry no longer has — not to be trusted. */
+  lapsed_fields: string[]
+  listing_count: number | null
+}
+
+export type BrandCatalogDetail = {
+  catalog: BrandCatalog
+  categories: string[]
+  export: CatalogExportStatus
+  total: number
+  entries: BrandCatalogEntry[]
+}
+
+export type BrandCatalogEntryPage = {
+  total: number
+  entries: BrandCatalogEntry[]
+}

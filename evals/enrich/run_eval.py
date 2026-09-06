@@ -79,7 +79,8 @@ def clear_eval_cache(model: str) -> None:
             p.unlink()
 
 
-def enrich_with_model(model: str, suites: list[dict], brand_nudge: bool = False) -> tuple[dict, dict, float, str | None]:
+def enrich_with_model(model: str, suites: list[dict], brand_nudge: bool = False,
+                      catalog_hint: bool = False) -> tuple[dict, dict, float, str | None]:
     """Enrich every row across all suites with one model. Returns (key->enriched, usage, secs, error)."""
     rows, keys = [], []
     for suite in suites:
@@ -102,7 +103,8 @@ def enrich_with_model(model: str, suites: list[dict], brand_nudge: bool = False)
     err = None
     t = time.time()
     try:
-        usage = enrich.enrich(rows, model=model, brand_examples=brand_examples)
+        usage = enrich.enrich(rows, model=model, brand_examples=brand_examples,
+                              catalog_hints=catalog_hint)
     except Exception as e:  # registry guard, client build, etc.
         usage, err = {}, f"{type(e).__name__}: {e}"
     secs = time.time() - t
@@ -212,10 +214,15 @@ def write_comparison(results: list[dict], suites: list[dict], out_dir: Path) -> 
     (out_dir / "comparison.md").write_text("\n".join(lines) + "\n")
 
 
-def write_summary(results: list[dict], suites: list[dict], out_dir: Path, brand_nudge: bool = False) -> None:
+def write_summary(results: list[dict], suites: list[dict], out_dir: Path,
+                  brand_nudge: bool = False, catalog_hint: bool = False) -> None:
     lines = ["# Enrich model eval — summary\n",
              f"brand-examples nudge: **{'on' if brand_nudge else 'off'}** "
              "(off = model only; on = DB brand index in play)\n",
+             # Recorded because a hinted run and a baseline run are otherwise
+             # indistinguishable in this file, and the two do not score the same.
+             f"catalog hint: **{'on' if catalog_hint else 'off'}** "
+             "(on = the brand's catalog is in the pass-B prompt)\n",
              "Score = passing cases / total (clusters: groups converged + canonical-matched).\n",
              "| model | api_model | time s | in tok | out tok | cost $ | "
              + " | ".join(s["eval_type"] for s in suites) + " | note |",
@@ -246,6 +253,10 @@ def main() -> None:
     ap.add_argument("--cases", default="cases/*.json", help="glob(s) of case files, comma-separated")
     ap.add_argument("--brand-nudge", action="store_true",
                     help="enable the DB brand-examples nudge (default off, model-only)")
+    ap.add_argument("--catalog-hint", action="store_true",
+                    help="put the brand's real product list (data/catalogs/) in the "
+                         "pass-B prompt (default off, so a model comparison measures "
+                         "the model rather than the catalog)")
     args = ap.parse_args()
 
     suites = load_suites([c.strip() for c in args.cases.split(",")])
@@ -258,14 +269,16 @@ def main() -> None:
 
     total_cases = sum(len(s["cases"]) for s in suites)
     print(f"Suites: {', '.join(s['_file'] for s in suites)}  ({total_cases} cases)"
-          f"  brand_nudge={'on' if args.brand_nudge else 'off'}")
+          f"  brand_nudge={'on' if args.brand_nudge else 'off'}"
+          f"  catalog_hint={'on' if args.catalog_hint else 'off'}")
     results = []
     for m in models:
         if m not in enrich.MODELS:
             print(f"  [skip] unknown model {m!r}")
             continue
         print(f"\n== {m} ({enrich.MODELS[m]['api_model']}) ==")
-        enriched, usage, secs, err = enrich_with_model(m, suites, brand_nudge=args.brand_nudge)
+        enriched, usage, secs, err = enrich_with_model(
+            m, suites, brand_nudge=args.brand_nudge, catalog_hint=args.catalog_hint)
         scores = {s["_file"]: score(s, enriched) for s in suites}
         results.append({"model": m, "usage": usage, "secs": secs, "error": err,
                         "enriched": enriched, "scores": scores})
@@ -276,7 +289,8 @@ def main() -> None:
 
     if results:
         write_comparison(results, suites, out_dir)
-        write_summary(results, suites, out_dir, brand_nudge=args.brand_nudge)
+        write_summary(results, suites, out_dir, brand_nudge=args.brand_nudge,
+                      catalog_hint=args.catalog_hint)
         print(f"\nWrote {out_dir}/comparison.md and summary.md")
 
 

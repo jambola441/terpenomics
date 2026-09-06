@@ -8,6 +8,8 @@ import Customers from './Customers'
 import CustomerEdit from './CustomerEdit'
 import Purchases from './Purchases'
 import Orders from './Orders'
+import BrandCatalogs from './BrandCatalogs'
+import BrandCatalogEdit from './BrandCatalogEdit'
 import Dispensaries from './Dispensaries'
 import DispensaryEdit from './DispensaryEdit'
 import DispensaryListingsAdmin from './DispensaryListingsAdmin'
@@ -39,6 +41,8 @@ function App() {
         <Route path="/admin/orders" element={<Orders />} />
         <Route path="/admin/lab-reports" element={<LabReportUpload />} />
         <Route path="/admin/lab-reports/:reportId" element={<LabReportDetail />} />
+        <Route path="/admin/brand-catalogs" element={<BrandCatalogs />} />
+        <Route path="/admin/brand-catalogs/:catalogId" element={<BrandCatalogEdit />} />
         <Route path="/admin/dispensaries" element={<Dispensaries />} />
         <Route path="/admin/dispensaries/:dispensaryId" element={<DispensaryEdit />} />
         <Route path="/admin/dispensaries/:dispensaryId/listings" element={<DispensaryListingsAdmin />} />

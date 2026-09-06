@@ -1,10 +1,11 @@
 # models.py
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional
 from uuid import UUID, uuid4
 
-from sqlalchemy import Column, Index, LargeBinary, text
+from sqlalchemy import Column, DateTime, Index, LargeBinary, Text, UniqueConstraint, text
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB, REAL
 from sqlmodel import SQLModel, Field, Relationship
 
 
@@ -110,6 +111,142 @@ class LabReport(SQLModel, TimestampMixin, table=True):
 
 
 # ---------------------------
+# Brand catalogs
+# ---------------------------
+
+def utcnow_tz() -> datetime:
+    """Timezone-aware UTC.
+
+    The brand-catalog tables are `timestamptz`, unlike the older tables here, which
+    are naive `timestamp`. A naive default would be read in the session timezone
+    rather than as UTC, so these three tables get their own clock.
+    """
+    return datetime.now(timezone.utc)
+
+
+class BrandCatalog(SQLModel, table=True):
+    """A brand's real product list, as published by the brand itself.
+
+    Enrichment extracts fields from a listing name with a model, so every quality
+    number in this repo is computed from the same output it judges. A catalog is the
+    first external referent: the products a brand says it makes, scraped from its own
+    storefront (see evals/enrich/CATALOG.md).
+
+    Postgres is the system of record. `data/catalogs/<brand_slug>.json` is a
+    *generated export* of this table, and it — not this table — is what
+    scripts/catalog_enricher.py and scripts/brand_prompt.py read. An edit made here
+    is therefore invisible to enrichment until the export is regenerated;
+    routes/admin/brand_catalogs.py owns that. (The export is a convenience for runs
+    with no database to hand, not a boundary — enrich.py opens its own connection
+    for the brand-examples nudge, best-effort. The catalog read path simply is not
+    wired that way today.)
+
+    These tables were created by scripts/migrate_add_brand_catalogs.py. This class is
+    a mapping onto live tables, not a definition of them: change the migration first.
+    """
+
+    __tablename__ = "brand_catalogs"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    brand_slug:    str           = Field(nullable=False, sa_type=Text, sa_column_kwargs={"unique": True})
+    brand_name:    str           = Field(nullable=False, sa_type=Text)
+    source_url:    Optional[str] = Field(default=None, sa_type=Text)
+    # Which acquisition tier answered: shopify_products_json | ld_json |
+    # rendered_page | manual. Recorded per catalog so coverage can be reported by
+    # provenance rather than as one undifferentiated number.
+    source_method: str           = Field(nullable=False, sa_type=Text)
+
+    fetched_at: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column("fetched_at", DateTime(timezone=True), nullable=True),
+    )
+    created_at: datetime = Field(
+        default_factory=utcnow_tz,
+        sa_column=Column("created_at", DateTime(timezone=True), nullable=False),
+    )
+    updated_at: datetime = Field(
+        default_factory=utcnow_tz,
+        sa_column=Column("updated_at", DateTime(timezone=True), nullable=False),
+    )
+
+    entries: list["BrandCatalogEntry"] = Relationship(back_populates="catalog")
+
+
+class BrandCatalogEntry(SQLModel, table=True):
+    """One (product, variant) pair the brand ships.
+
+    The grain is the variant, not the product family, because that is the grain our
+    listings are at — a listing is for a specific size, not for a product.
+
+    **Never deleted.** `listings.catalog_entry_id` is a foreign key to this row, so a
+    delete would dangle it and destroy the record of what was on the menu. A product
+    that drops off the source gets `is_active = False` and keeps its `last_seen_at`:
+    staleness is a state, not a deletion — the same rule the verification lapse model
+    uses.
+
+    `first_seen_at` and the `verified_*` columns are never rewritten by an update,
+    whether that update comes from a re-fetch (scripts/brand_catalog.py `push`) or
+    from the admin UI. A human sign-off, and the record of when we first saw a
+    product, have to survive an edit.
+    """
+
+    __tablename__ = "brand_catalog_entries"
+    __table_args__ = (
+        # The source's own variant id is the upsert key, so a re-fetch updates in
+        # place instead of duplicating.
+        UniqueConstraint(
+            "catalog_id", "external_id",
+            name="brand_catalog_entries_catalog_id_external_id_key",
+        ),
+    )
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    catalog_id: UUID = Field(foreign_key="brand_catalogs.id", nullable=False)
+
+    external_id:  Optional[str] = Field(default=None, sa_type=Text)
+    name:         str           = Field(nullable=False, sa_type=Text)
+    product_line: Optional[str] = Field(default=None, sa_type=Text)
+    category:     Optional[str] = Field(default=None, sa_type=Text)
+    subtype:      Optional[str] = Field(default=None, sa_type=Text)
+    strain:       Optional[str] = Field(default=None, sa_type=Text)
+    variant:      Optional[str] = Field(default=None, sa_type=Text)
+
+    attributes: Optional[dict] = Field(
+        default=None, sa_column=Column("attributes", JSONB, nullable=True)
+    )
+    # Normalised strings a listing name is matched against, in addition to `name`.
+    match_terms: Optional[list[str]] = Field(
+        default=None, sa_column=Column("match_terms", ARRAY(Text), nullable=True)
+    )
+
+    is_active: bool = Field(default=True, nullable=False)
+
+    first_seen_at: datetime = Field(
+        default_factory=utcnow_tz,
+        sa_column=Column("first_seen_at", DateTime(timezone=True), nullable=False),
+    )
+    last_seen_at: datetime = Field(
+        default_factory=utcnow_tz,
+        sa_column=Column("last_seen_at", DateTime(timezone=True), nullable=False),
+    )
+
+    # Per-field human claims, same shape as listings.verified_fields — see
+    # scripts/verification.py.
+    verified_fields: Optional[dict] = Field(
+        default=None, sa_column=Column("verified_fields", JSONB, nullable=True)
+    )
+    verified_by: Optional[str] = Field(default=None, sa_type=Text)
+    verified_at: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column("verified_at", DateTime(timezone=True), nullable=True),
+    )
+
+    catalog: "BrandCatalog" = Relationship(back_populates="entries")
+
+
+# ---------------------------
 # Dispensaries + Listings
 # ---------------------------
 
@@ -184,6 +321,20 @@ class Listing(ListingBase, TimestampMixin, table=True):
     )
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    # Resolution to the brand's own catalog, written by scripts/catalog_match.py.
+    # `method` records which tier fired (exact | substring | token | model) so a
+    # match can be judged by how it was made rather than taken on trust. All three
+    # are NULL when the listing did not resolve — "no match" is a first-class
+    # outcome, and the listing falls through to extraction.
+    catalog_entry_id: Optional[UUID] = Field(
+        default=None, foreign_key="brand_catalog_entries.id"
+    )
+    catalog_match_confidence: Optional[float] = Field(
+        default=None,
+        sa_column=Column("catalog_match_confidence", REAL, nullable=True),
+    )
+    catalog_match_method: Optional[str] = Field(default=None, sa_type=Text)
 
     dispensary:     Dispensary              = Relationship(back_populates="listings")
     purchase_items: list["PurchaseItem"]    = Relationship(back_populates="listing")

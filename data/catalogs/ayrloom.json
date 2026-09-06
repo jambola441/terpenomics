@@ -1,0 +1,2917 @@
+{
+  "brand_slug": "ayrloom",
+  "brand_name": "Ayrloom",
+  "source_url": "https://ayrloom.com/products.json?limit=250",
+  "source_method": "shopify_products_json",
+  "fetched_at": "2026-09-06T14:22:09.855425+00:00",
+  "product_count": 65,
+  "entries": [
+    {
+      "external_id": "42275834953783",
+      "product_external_id": "7469658079287",
+      "name": "sour raspberry lemonade",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Sour Raspberry Lemonade",
+      "variant": "10mg / 10 pack",
+      "attributes": null,
+      "match_terms": [
+        "sour raspberry lemonade"
+      ],
+      "source_tags": [
+        "gummy"
+      ]
+    },
+    {
+      "external_id": "42275834986551",
+      "product_external_id": "7469658079287",
+      "name": "sour raspberry lemonade",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Sour Raspberry Lemonade",
+      "variant": "10mg / 2 pack",
+      "attributes": null,
+      "match_terms": [
+        "sour raspberry lemonade"
+      ],
+      "source_tags": [
+        "gummy"
+      ]
+    },
+    {
+      "external_id": "42254789607479",
+      "product_external_id": "7462888013879",
+      "name": "bomb popz",
+      "product_line": null,
+      "category": "preroll",
+      "subtype": null,
+      "strain": "Bomb Popz",
+      "variant": "5 Pack | 0.6g each",
+      "attributes": null,
+      "match_terms": [
+        "bomb popz"
+      ],
+      "source_tags": [
+        "pre-roll"
+      ]
+    },
+    {
+      "external_id": "41155315793975",
+      "product_external_id": "7113353101367",
+      "name": "pillow talk",
+      "product_line": null,
+      "category": "tinctures",
+      "subtype": "tincture",
+      "strain": "Pillow Talk",
+      "variant": "300mg THC",
+      "attributes": null,
+      "match_terms": [
+        "pillow talk"
+      ],
+      "source_tags": [
+        "tincture"
+      ]
+    },
+    {
+      "external_id": "42105611223095",
+      "product_external_id": "7415659921463",
+      "name": "alaskan thunder fu*k",
+      "product_line": null,
+      "category": "preroll",
+      "subtype": null,
+      "strain": "Alaskan Thunder Fu*K",
+      "variant": "5 Pack | 0.6g each",
+      "attributes": null,
+      "match_terms": [
+        "alaskan thunder fu k"
+      ],
+      "source_tags": [
+        "pre-roll"
+      ]
+    },
+    {
+      "external_id": "41914382811191",
+      "product_external_id": "7350489284663",
+      "name": "honeycrisp",
+      "product_line": null,
+      "category": null,
+      "subtype": null,
+      "strain": null,
+      "variant": "1mg / Case",
+      "attributes": null,
+      "match_terms": [
+        "honeycrisp"
+      ],
+      "source_tags": []
+    },
+    {
+      "external_id": "41876941111351",
+      "product_external_id": "7341567737911",
+      "name": "mood: recover",
+      "product_line": "Mood",
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Recover",
+      "variant": "1g",
+      "attributes": null,
+      "match_terms": [
+        "mood recover"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "42050445738039",
+      "product_external_id": "7396090052663",
+      "name": "orchard park",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Orchard Park",
+      "variant": "10mg / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "orchard park"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "42050445770807",
+      "product_external_id": "7396090052663",
+      "name": "orchard park",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Orchard Park",
+      "variant": "10mg / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "orchard park"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41876941242423",
+      "product_external_id": "7341567836215",
+      "name": "cran haze",
+      "product_line": null,
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Cran Haze",
+      "variant": "1g",
+      "attributes": null,
+      "match_terms": [
+        "cran haze"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "42377503375415",
+      "product_external_id": "7341567836215",
+      "name": "cran haze",
+      "product_line": null,
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Cran Haze",
+      "variant": "2g",
+      "attributes": null,
+      "match_terms": [
+        "cran haze"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41914383204407",
+      "product_external_id": "7350489481271",
+      "name": "Black Cherry",
+      "product_line": null,
+      "category": null,
+      "subtype": null,
+      "strain": null,
+      "variant": "1mg / Case",
+      "attributes": null,
+      "match_terms": [
+        "black cherry"
+      ],
+      "source_tags": []
+    },
+    {
+      "external_id": "41849218924599",
+      "product_external_id": "7330955591735",
+      "name": "PrideBites honeycrisp plush can dog toy",
+      "product_line": null,
+      "category": "merch",
+      "subtype": null,
+      "strain": null,
+      "variant": null,
+      "attributes": null,
+      "match_terms": [
+        "pridebites honeycrisp plush can dog toy"
+      ],
+      "source_tags": [
+        "swag"
+      ]
+    },
+    {
+      "external_id": "41659983167543",
+      "product_external_id": "7280882450487",
+      "name": "lime haze",
+      "product_line": null,
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Lime Haze",
+      "variant": "1g",
+      "attributes": null,
+      "match_terms": [
+        "lime haze"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41990602358839",
+      "product_external_id": "7280882450487",
+      "name": "lime haze",
+      "product_line": null,
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Lime Haze",
+      "variant": "2g",
+      "attributes": null,
+      "match_terms": [
+        "lime haze"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41659990933559",
+      "product_external_id": "7280885465143",
+      "name": "sol burst",
+      "product_line": "UP",
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Sol Burst",
+      "variant": "10mg / 10 pack",
+      "attributes": null,
+      "match_terms": [
+        "sol burst"
+      ],
+      "source_tags": [
+        "gummy",
+        "UP"
+      ]
+    },
+    {
+      "external_id": "41659992080439",
+      "product_external_id": "7280885465143",
+      "name": "sol burst",
+      "product_line": "UP",
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Sol Burst",
+      "variant": "10mg d9 / 10 pack",
+      "attributes": null,
+      "match_terms": [
+        "sol burst"
+      ],
+      "source_tags": [
+        "gummy",
+        "UP"
+      ]
+    },
+    {
+      "external_id": "41722367213623",
+      "product_external_id": "7293606953015",
+      "name": "rescue balm",
+      "product_line": "Rescue",
+      "category": null,
+      "subtype": null,
+      "strain": null,
+      "variant": "cbd",
+      "attributes": null,
+      "match_terms": [
+        "rescue balm"
+      ],
+      "source_tags": []
+    },
+    {
+      "external_id": "41722348175415",
+      "product_external_id": "7293600858167",
+      "name": "revive balm",
+      "product_line": "Revive",
+      "category": null,
+      "subtype": null,
+      "strain": null,
+      "variant": "cbd",
+      "attributes": null,
+      "match_terms": [
+        "revive balm"
+      ],
+      "source_tags": []
+    },
+    {
+      "external_id": "41722342670391",
+      "product_external_id": "7293600268343",
+      "name": "restore balm",
+      "product_line": "Restore",
+      "category": null,
+      "subtype": null,
+      "strain": null,
+      "variant": "cbd",
+      "attributes": null,
+      "match_terms": [
+        "restore balm"
+      ],
+      "source_tags": []
+    },
+    {
+      "external_id": "41722335494199",
+      "product_external_id": "7293599678519",
+      "name": "orchard sunrise",
+      "product_line": null,
+      "category": null,
+      "subtype": null,
+      "strain": null,
+      "variant": "5mg d9 / 10 pack",
+      "attributes": null,
+      "match_terms": [
+        "orchard sunrise"
+      ],
+      "source_tags": []
+    },
+    {
+      "external_id": "41722335526967",
+      "product_external_id": "7293599678519",
+      "name": "orchard sunrise",
+      "product_line": null,
+      "category": null,
+      "subtype": null,
+      "strain": null,
+      "variant": "10mg d9 / 10 pack",
+      "attributes": null,
+      "match_terms": [
+        "orchard sunrise"
+      ],
+      "source_tags": []
+    },
+    {
+      "external_id": "41722331103287",
+      "product_external_id": "7293599285303",
+      "name": "island time",
+      "product_line": null,
+      "category": null,
+      "subtype": null,
+      "strain": null,
+      "variant": "5mg D9 / 10 pack",
+      "attributes": null,
+      "match_terms": [
+        "island time"
+      ],
+      "source_tags": []
+    },
+    {
+      "external_id": "41722331136055",
+      "product_external_id": "7293599285303",
+      "name": "island time",
+      "product_line": null,
+      "category": null,
+      "subtype": null,
+      "strain": null,
+      "variant": "10mg D9 / 10 pack",
+      "attributes": null,
+      "match_terms": [
+        "island time"
+      ],
+      "source_tags": []
+    },
+    {
+      "external_id": "41721639632951",
+      "product_external_id": "7293484793911",
+      "name": "pillow talk",
+      "product_line": null,
+      "category": null,
+      "subtype": null,
+      "strain": null,
+      "variant": "5mg D9 / 10 pack",
+      "attributes": null,
+      "match_terms": [
+        "pillow talk"
+      ],
+      "source_tags": []
+    },
+    {
+      "external_id": "41721639731255",
+      "product_external_id": "7293484793911",
+      "name": "pillow talk",
+      "product_line": null,
+      "category": null,
+      "subtype": null,
+      "strain": null,
+      "variant": "10mg D9 / 10 pack",
+      "attributes": null,
+      "match_terms": [
+        "pillow talk"
+      ],
+      "source_tags": []
+    },
+    {
+      "external_id": "41612862390327",
+      "product_external_id": "7270302515255",
+      "name": "rosé",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Rosé",
+      "variant": "10mg / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "rosé"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41612862423095",
+      "product_external_id": "7270302515255",
+      "name": "rosé",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Rosé",
+      "variant": "10mg / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "rosé"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41612863012919",
+      "product_external_id": "7270302515255",
+      "name": "rosé",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Rosé",
+      "variant": "10mg D9 / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "rosé"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41612863045687",
+      "product_external_id": "7270302515255",
+      "name": "rosé",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Rosé",
+      "variant": "10mg D9 / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "rosé"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41659979661367",
+      "product_external_id": "7280880910391",
+      "name": "bomb popz",
+      "product_line": null,
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Bomb Popz",
+      "variant": "1g",
+      "attributes": null,
+      "match_terms": [
+        "bomb popz"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "42173324754999",
+      "product_external_id": "7280880910391",
+      "name": "bomb popz",
+      "product_line": null,
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Bomb Popz",
+      "variant": "2g",
+      "attributes": null,
+      "match_terms": [
+        "bomb popz"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41612859047991",
+      "product_external_id": "7270301368375",
+      "name": "Root beer",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Root Beer",
+      "variant": "10mg / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "root beer"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41612859080759",
+      "product_external_id": "7270301368375",
+      "name": "Root beer",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Root Beer",
+      "variant": "10mg / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "root beer"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41612863176759",
+      "product_external_id": "7270301368375",
+      "name": "Root beer",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Root Beer",
+      "variant": "10mg D9 / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "root beer"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41612863209527",
+      "product_external_id": "7270301368375",
+      "name": "Root beer",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Root Beer",
+      "variant": "10mg D9 / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "root beer"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41612811730999",
+      "product_external_id": "7270289637431",
+      "name": "dreamweaver",
+      "product_line": "UP",
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Dreamweaver",
+      "variant": "10mg / 10 pack",
+      "attributes": null,
+      "match_terms": [
+        "dreamweaver"
+      ],
+      "source_tags": [
+        "gummy",
+        "UP"
+      ]
+    },
+    {
+      "external_id": "41628783149111",
+      "product_external_id": "7273630302263",
+      "name": "D9 Beverage can",
+      "product_line": null,
+      "category": null,
+      "subtype": null,
+      "strain": null,
+      "variant": null,
+      "attributes": null,
+      "match_terms": [
+        "d9 beverage can"
+      ],
+      "source_tags": []
+    },
+    {
+      "external_id": "41484159615031",
+      "product_external_id": "7228614148151",
+      "name": "lychee dream",
+      "product_line": null,
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Lychee Dream",
+      "variant": "1g",
+      "attributes": null,
+      "match_terms": [
+        "lychee dream"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41484159647799",
+      "product_external_id": "7228614148151",
+      "name": "lychee dream",
+      "product_line": null,
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Lychee Dream",
+      "variant": "0.5g",
+      "attributes": null,
+      "match_terms": [
+        "lychee dream"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41990602391607",
+      "product_external_id": "7228614148151",
+      "name": "lychee dream",
+      "product_line": null,
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Lychee Dream",
+      "variant": "2g",
+      "attributes": null,
+      "match_terms": [
+        "lychee dream"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41402337755191",
+      "product_external_id": "7205687754807",
+      "name": "beverages bundle",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Beverages Bundle",
+      "variant": "5mg - 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "beverages bundle"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41402337787959",
+      "product_external_id": "7205687754807",
+      "name": "beverages bundle",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Beverages Bundle",
+      "variant": "5mg - 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "beverages bundle"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41402337820727",
+      "product_external_id": "7205687754807",
+      "name": "beverages bundle",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Beverages Bundle",
+      "variant": "micros - 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "beverages bundle"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41402337853495",
+      "product_external_id": "7205687754807",
+      "name": "beverages bundle",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Beverages Bundle",
+      "variant": "micros - 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "beverages bundle"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41216364970039",
+      "product_external_id": "7154334400567",
+      "name": "yuzu citrus",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Yuzu Citrus",
+      "variant": "10mg / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "yuzu citrus"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41216365002807",
+      "product_external_id": "7154334400567",
+      "name": "yuzu citrus",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Yuzu Citrus",
+      "variant": "10mg / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "yuzu citrus"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41216365035575",
+      "product_external_id": "7154334400567",
+      "name": "yuzu citrus",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Yuzu Citrus",
+      "variant": "10mg D9 / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "yuzu citrus"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41216365068343",
+      "product_external_id": "7154334400567",
+      "name": "yuzu citrus",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Yuzu Citrus",
+      "variant": "10mg D9 / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "yuzu citrus"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41216339771447",
+      "product_external_id": "7154322767927",
+      "name": "blue widow",
+      "product_line": null,
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Blue Widow",
+      "variant": "1g",
+      "attributes": null,
+      "match_terms": [
+        "blue widow"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41216339738679",
+      "product_external_id": "7154322767927",
+      "name": "blue widow",
+      "product_line": null,
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Blue Widow",
+      "variant": "0.5g",
+      "attributes": null,
+      "match_terms": [
+        "blue widow"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41990594461751",
+      "product_external_id": "7154322767927",
+      "name": "blue widow",
+      "product_line": null,
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Blue Widow",
+      "variant": "2g",
+      "attributes": null,
+      "match_terms": [
+        "blue widow"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41216342753335",
+      "product_external_id": "7154324930615",
+      "name": "cran apple",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Cran Apple",
+      "variant": "10mg D9 / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "cran apple"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41216342786103",
+      "product_external_id": "7154324930615",
+      "name": "cran apple",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Cran Apple",
+      "variant": "10mg D9 / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "cran apple"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41216342622263",
+      "product_external_id": "7154324930615",
+      "name": "cran apple",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Cran Apple",
+      "variant": "10mg / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "cran apple"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41216342655031",
+      "product_external_id": "7154324930615",
+      "name": "cran apple",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Cran Apple",
+      "variant": "10mg / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "cran apple"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41216334463031",
+      "product_external_id": "7154319491127",
+      "name": "watermelon",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Watermelon",
+      "variant": "10mg / 10 pack",
+      "attributes": null,
+      "match_terms": [
+        "watermelon"
+      ],
+      "source_tags": [
+        "gummy"
+      ]
+    },
+    {
+      "external_id": "41216334495799",
+      "product_external_id": "7154319491127",
+      "name": "watermelon",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Watermelon",
+      "variant": "10mg / 2 pack",
+      "attributes": null,
+      "match_terms": [
+        "watermelon"
+      ],
+      "source_tags": [
+        "gummy"
+      ]
+    },
+    {
+      "external_id": "41216294846519",
+      "product_external_id": "7154307694647",
+      "name": "strawberry kiwi",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Strawberry Kiwi",
+      "variant": "10mg / 10 pack",
+      "attributes": null,
+      "match_terms": [
+        "strawberry kiwi"
+      ],
+      "source_tags": [
+        "gummy"
+      ]
+    },
+    {
+      "external_id": "41216294879287",
+      "product_external_id": "7154307694647",
+      "name": "strawberry kiwi",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Strawberry Kiwi",
+      "variant": "10mg / 2 pack",
+      "attributes": null,
+      "match_terms": [
+        "strawberry kiwi"
+      ],
+      "source_tags": [
+        "gummy"
+      ]
+    },
+    {
+      "external_id": "41215534399543",
+      "product_external_id": "7153968087095",
+      "name": "key lime",
+      "product_line": null,
+      "category": "preroll",
+      "subtype": null,
+      "strain": "Key Lime",
+      "variant": "5 Pack | 0.6g each",
+      "attributes": null,
+      "match_terms": [
+        "key lime"
+      ],
+      "source_tags": [
+        "pre-roll"
+      ]
+    },
+    {
+      "external_id": "41216285966391",
+      "product_external_id": "7154303729719",
+      "name": "lychee dream",
+      "product_line": null,
+      "category": "preroll",
+      "subtype": null,
+      "strain": "Lychee Dream",
+      "variant": "5 Pack | 0.6g each",
+      "attributes": null,
+      "match_terms": [
+        "lychee dream"
+      ],
+      "source_tags": [
+        "pre-roll"
+      ]
+    },
+    {
+      "external_id": "41216288587831",
+      "product_external_id": "7154305335351",
+      "name": "cereal milk",
+      "product_line": null,
+      "category": "preroll",
+      "subtype": null,
+      "strain": "Cereal Milk",
+      "variant": "5 Pack | 0.6g each",
+      "attributes": null,
+      "match_terms": [
+        "cereal milk"
+      ],
+      "source_tags": [
+        "pre-roll"
+      ]
+    },
+    {
+      "external_id": "41216291438647",
+      "product_external_id": "7154306383927",
+      "name": "pink rozay",
+      "product_line": null,
+      "category": "preroll",
+      "subtype": null,
+      "strain": "Pink Rozay",
+      "variant": "5 Pack | 0.6g each",
+      "attributes": null,
+      "match_terms": [
+        "pink rozay"
+      ],
+      "source_tags": [
+        "pre-roll"
+      ]
+    },
+    {
+      "external_id": "41240994054199",
+      "product_external_id": "7162232143927",
+      "name": "honeycrisp",
+      "product_line": null,
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Honeycrisp",
+      "variant": "1g",
+      "attributes": null,
+      "match_terms": [
+        "honeycrisp"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41240994086967",
+      "product_external_id": "7162232143927",
+      "name": "honeycrisp",
+      "product_line": null,
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Honeycrisp",
+      "variant": "0.5g",
+      "attributes": null,
+      "match_terms": [
+        "honeycrisp"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41990602293303",
+      "product_external_id": "7162232143927",
+      "name": "honeycrisp",
+      "product_line": null,
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Honeycrisp",
+      "variant": "2g",
+      "attributes": null,
+      "match_terms": [
+        "honeycrisp"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41240867471415",
+      "product_external_id": "7162213728311",
+      "name": "organic unflavored cbd 2,400mg",
+      "product_line": null,
+      "category": "tinctures",
+      "subtype": "tincture",
+      "strain": "Organic Unflavored Cbd 2,400Mg",
+      "variant": "2400mg CBD",
+      "attributes": null,
+      "match_terms": [
+        "organic unflavored cbd 2 400mg"
+      ],
+      "source_tags": [
+        "tincture"
+      ]
+    },
+    {
+      "external_id": "41241759088695",
+      "product_external_id": "7162473316407",
+      "name": "organic unflavored cbd 1,200mg",
+      "product_line": null,
+      "category": "tinctures",
+      "subtype": "tincture",
+      "strain": "Organic Unflavored Cbd 1,200Mg",
+      "variant": "1200mg CBD",
+      "attributes": null,
+      "match_terms": [
+        "organic unflavored cbd 1 200mg"
+      ],
+      "source_tags": [
+        "tincture"
+      ]
+    },
+    {
+      "external_id": "41240869240887",
+      "product_external_id": "7162213859383",
+      "name": "organic cbd & cbn pillow talk",
+      "product_line": null,
+      "category": "tinctures",
+      "subtype": "tincture",
+      "strain": "Organic Cbd & Cbn Pillow Talk",
+      "variant": "600mg CBD",
+      "attributes": null,
+      "match_terms": [
+        "organic cbd and cbn pillow talk"
+      ],
+      "source_tags": [
+        "tincture"
+      ]
+    },
+    {
+      "external_id": "41240868487223",
+      "product_external_id": "7162213826615",
+      "name": "organic mint",
+      "product_line": null,
+      "category": "tinctures",
+      "subtype": "tincture",
+      "strain": "Organic Mint",
+      "variant": "1200mg CBD",
+      "attributes": null,
+      "match_terms": [
+        "organic mint"
+      ],
+      "source_tags": [
+        "tincture"
+      ]
+    },
+    {
+      "external_id": "41216441876535",
+      "product_external_id": "7154359500855",
+      "name": "orange creamsicle",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Orange Creamsicle",
+      "variant": "10mg / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "orange creamsicle"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41216441909303",
+      "product_external_id": "7154359500855",
+      "name": "orange creamsicle",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Orange Creamsicle",
+      "variant": "10mg / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "orange creamsicle"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41216441942071",
+      "product_external_id": "7154359500855",
+      "name": "orange creamsicle",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Orange Creamsicle",
+      "variant": "5mg / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "orange creamsicle"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41216441974839",
+      "product_external_id": "7154359500855",
+      "name": "orange creamsicle",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Orange Creamsicle",
+      "variant": "5mg / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "orange creamsicle"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41216442007607",
+      "product_external_id": "7154359500855",
+      "name": "orange creamsicle",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Orange Creamsicle",
+      "variant": "5mg D9 / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "orange creamsicle"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41216442040375",
+      "product_external_id": "7154359500855",
+      "name": "orange creamsicle",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Orange Creamsicle",
+      "variant": "5mg D9 / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "orange creamsicle"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41153340342327",
+      "product_external_id": "7098407354423",
+      "name": "alaskan thunder fu*k",
+      "product_line": null,
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Alaskan Thunder Fu*K",
+      "variant": "1g",
+      "attributes": null,
+      "match_terms": [
+        "alaskan thunder fu k"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41153340309559",
+      "product_external_id": "7098407354423",
+      "name": "alaskan thunder fu*k",
+      "product_line": null,
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Alaskan Thunder Fu*K",
+      "variant": "0.5g",
+      "attributes": null,
+      "match_terms": [
+        "alaskan thunder fu k"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41990602227767",
+      "product_external_id": "7098407354423",
+      "name": "alaskan thunder fu*k",
+      "product_line": null,
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Alaskan Thunder Fu*K",
+      "variant": "2g",
+      "attributes": null,
+      "match_terms": [
+        "alaskan thunder fu k"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41155269230647",
+      "product_external_id": "7113352937527",
+      "name": "high dose",
+      "product_line": null,
+      "category": "tinctures",
+      "subtype": "tincture",
+      "strain": "High Dose",
+      "variant": "1000mg THC",
+      "attributes": null,
+      "match_terms": [
+        "high dose"
+      ],
+      "source_tags": [
+        "tincture"
+      ]
+    },
+    {
+      "external_id": "41155339452471",
+      "product_external_id": "7113352806455",
+      "name": "everyday",
+      "product_line": null,
+      "category": "tinctures",
+      "subtype": "tincture",
+      "strain": "Everyday",
+      "variant": "150mg THC",
+      "attributes": null,
+      "match_terms": [
+        "everyday"
+      ],
+      "source_tags": [
+        "tincture"
+      ]
+    },
+    {
+      "external_id": "41214136975415",
+      "product_external_id": "7113352609847",
+      "name": "restore balm",
+      "product_line": "Restore",
+      "category": "topical",
+      "subtype": "topical",
+      "strain": null,
+      "variant": "cbd",
+      "attributes": null,
+      "match_terms": [
+        "restore balm"
+      ],
+      "source_tags": [
+        "balm"
+      ]
+    },
+    {
+      "external_id": "41153761738807",
+      "product_external_id": "7113352609847",
+      "name": "restore balm",
+      "product_line": "Restore",
+      "category": "topical",
+      "subtype": "topical",
+      "strain": null,
+      "variant": "thc",
+      "attributes": null,
+      "match_terms": [
+        "restore balm"
+      ],
+      "source_tags": [
+        "balm"
+      ]
+    },
+    {
+      "external_id": "41214143299639",
+      "product_external_id": "7113352577079",
+      "name": "revive balm",
+      "product_line": "Revive",
+      "category": "topical",
+      "subtype": "topical",
+      "strain": null,
+      "variant": "cbd",
+      "attributes": null,
+      "match_terms": [
+        "revive balm"
+      ],
+      "source_tags": [
+        "balm"
+      ]
+    },
+    {
+      "external_id": "41153654718519",
+      "product_external_id": "7113352577079",
+      "name": "revive balm",
+      "product_line": "Revive",
+      "category": "topical",
+      "subtype": "topical",
+      "strain": null,
+      "variant": "thc",
+      "attributes": null,
+      "match_terms": [
+        "revive balm"
+      ],
+      "source_tags": [
+        "balm"
+      ]
+    },
+    {
+      "external_id": "41214131404855",
+      "product_external_id": "7113352478775",
+      "name": "rescue balm",
+      "product_line": "Rescue",
+      "category": "topical",
+      "subtype": "topical",
+      "strain": null,
+      "variant": "cbd",
+      "attributes": null,
+      "match_terms": [
+        "rescue balm"
+      ],
+      "source_tags": [
+        "balm"
+      ]
+    },
+    {
+      "external_id": "41153790214199",
+      "product_external_id": "7113352478775",
+      "name": "rescue balm",
+      "product_line": "Rescue",
+      "category": "topical",
+      "subtype": "topical",
+      "strain": null,
+      "variant": "thc",
+      "attributes": null,
+      "match_terms": [
+        "rescue balm"
+      ],
+      "source_tags": [
+        "balm"
+      ]
+    },
+    {
+      "external_id": "41147326791735",
+      "product_external_id": "7113352282167",
+      "name": "sunny days",
+      "product_line": "UP",
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Sunny Days",
+      "variant": "10mg / 10 pack",
+      "attributes": null,
+      "match_terms": [
+        "sunny days"
+      ],
+      "source_tags": [
+        "gummy",
+        "UP"
+      ]
+    },
+    {
+      "external_id": "41147326758967",
+      "product_external_id": "7113352282167",
+      "name": "sunny days",
+      "product_line": "UP",
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Sunny Days",
+      "variant": "10mg / 2 pack",
+      "attributes": null,
+      "match_terms": [
+        "sunny days"
+      ],
+      "source_tags": [
+        "gummy",
+        "UP"
+      ]
+    },
+    {
+      "external_id": "41757220503607",
+      "product_external_id": "7113352282167",
+      "name": "sunny days",
+      "product_line": "UP",
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Sunny Days",
+      "variant": "10mg D9 / 10 pack",
+      "attributes": null,
+      "match_terms": [
+        "sunny days"
+      ],
+      "source_tags": [
+        "gummy",
+        "UP"
+      ]
+    },
+    {
+      "external_id": "41757220536375",
+      "product_external_id": "7113352282167",
+      "name": "sunny days",
+      "product_line": "UP",
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Sunny Days",
+      "variant": "10mg D9 / 2 pack",
+      "attributes": null,
+      "match_terms": [
+        "sunny days"
+      ],
+      "source_tags": [
+        "gummy",
+        "UP"
+      ]
+    },
+    {
+      "external_id": "41148228075575",
+      "product_external_id": "7113351528503",
+      "name": "pillow talk",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Pillow Talk",
+      "variant": "5mg D9 / 10 pack",
+      "attributes": null,
+      "match_terms": [
+        "pillow talk"
+      ],
+      "source_tags": [
+        "gummy"
+      ]
+    },
+    {
+      "external_id": "41148227944503",
+      "product_external_id": "7113351528503",
+      "name": "pillow talk",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Pillow Talk",
+      "variant": "5mg / 10 pack",
+      "attributes": null,
+      "match_terms": [
+        "pillow talk"
+      ],
+      "source_tags": [
+        "gummy"
+      ]
+    },
+    {
+      "external_id": "41148227911735",
+      "product_external_id": "7113351528503",
+      "name": "pillow talk",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Pillow Talk",
+      "variant": "5mg / 2 pack",
+      "attributes": null,
+      "match_terms": [
+        "pillow talk"
+      ],
+      "source_tags": [
+        "gummy"
+      ]
+    },
+    {
+      "external_id": "41612844105783",
+      "product_external_id": "7113351528503",
+      "name": "pillow talk",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Pillow Talk",
+      "variant": "10mg D9 / 10 pack",
+      "attributes": null,
+      "match_terms": [
+        "pillow talk"
+      ],
+      "source_tags": [
+        "gummy"
+      ]
+    },
+    {
+      "external_id": "41148228010039",
+      "product_external_id": "7113351528503",
+      "name": "pillow talk",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Pillow Talk",
+      "variant": "10mg / 10 pack",
+      "attributes": null,
+      "match_terms": [
+        "pillow talk"
+      ],
+      "source_tags": [
+        "gummy"
+      ]
+    },
+    {
+      "external_id": "41239161864247",
+      "product_external_id": "7113351528503",
+      "name": "pillow talk",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Pillow Talk",
+      "variant": "CBD Only / 20 pack",
+      "attributes": null,
+      "match_terms": [
+        "pillow talk"
+      ],
+      "source_tags": [
+        "gummy"
+      ]
+    },
+    {
+      "external_id": "41152145293367",
+      "product_external_id": "7113350938679",
+      "name": "orchard sunrise",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Orchard Sunrise",
+      "variant": "5mg D9 / 10 pack",
+      "attributes": null,
+      "match_terms": [
+        "orchard sunrise"
+      ],
+      "source_tags": [
+        "gummy"
+      ]
+    },
+    {
+      "external_id": "41612858753079",
+      "product_external_id": "7113350938679",
+      "name": "orchard sunrise",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Orchard Sunrise",
+      "variant": "10mg D9 / 10 pack",
+      "attributes": null,
+      "match_terms": [
+        "orchard sunrise"
+      ],
+      "source_tags": [
+        "gummy"
+      ]
+    },
+    {
+      "external_id": "41152145162295",
+      "product_external_id": "7113350938679",
+      "name": "orchard sunrise",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Orchard Sunrise",
+      "variant": "5mg / 10 pack",
+      "attributes": null,
+      "match_terms": [
+        "orchard sunrise"
+      ],
+      "source_tags": [
+        "gummy"
+      ]
+    },
+    {
+      "external_id": "41152145129527",
+      "product_external_id": "7113350938679",
+      "name": "orchard sunrise",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Orchard Sunrise",
+      "variant": "5mg / 2 pack",
+      "attributes": null,
+      "match_terms": [
+        "orchard sunrise"
+      ],
+      "source_tags": [
+        "gummy"
+      ]
+    },
+    {
+      "external_id": "41152145227831",
+      "product_external_id": "7113350938679",
+      "name": "orchard sunrise",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Orchard Sunrise",
+      "variant": "10mg / 10 pack",
+      "attributes": null,
+      "match_terms": [
+        "orchard sunrise"
+      ],
+      "source_tags": [
+        "gummy"
+      ]
+    },
+    {
+      "external_id": "41239157866551",
+      "product_external_id": "7113350938679",
+      "name": "orchard sunrise",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Orchard Sunrise",
+      "variant": "CBD Only / 20 pack",
+      "attributes": null,
+      "match_terms": [
+        "orchard sunrise"
+      ],
+      "source_tags": [
+        "gummy"
+      ]
+    },
+    {
+      "external_id": "41147347533879",
+      "product_external_id": "7113350053943",
+      "name": "island time",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Island Time",
+      "variant": "5mg D9 / 10 pack",
+      "attributes": null,
+      "match_terms": [
+        "island time"
+      ],
+      "source_tags": [
+        "gummy"
+      ]
+    },
+    {
+      "external_id": "41612852166711",
+      "product_external_id": "7113350053943",
+      "name": "island time",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Island Time",
+      "variant": "10mg D9 / 10 pack",
+      "attributes": null,
+      "match_terms": [
+        "island time"
+      ],
+      "source_tags": [
+        "gummy"
+      ]
+    },
+    {
+      "external_id": "41147347402807",
+      "product_external_id": "7113350053943",
+      "name": "island time",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Island Time",
+      "variant": "5mg / 10 pack",
+      "attributes": null,
+      "match_terms": [
+        "island time"
+      ],
+      "source_tags": [
+        "gummy"
+      ]
+    },
+    {
+      "external_id": "41147347370039",
+      "product_external_id": "7113350053943",
+      "name": "island time",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Island Time",
+      "variant": "5mg / 2 pack",
+      "attributes": null,
+      "match_terms": [
+        "island time"
+      ],
+      "source_tags": [
+        "gummy"
+      ]
+    },
+    {
+      "external_id": "41147347468343",
+      "product_external_id": "7113350053943",
+      "name": "island time",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Island Time",
+      "variant": "10mg / 10 pack",
+      "attributes": null,
+      "match_terms": [
+        "island time"
+      ],
+      "source_tags": [
+        "gummy"
+      ]
+    },
+    {
+      "external_id": "41239349985335",
+      "product_external_id": "7113350053943",
+      "name": "island time",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "gummy",
+      "strain": "Island Time",
+      "variant": "cbd only / 20 pack",
+      "attributes": null,
+      "match_terms": [
+        "island time"
+      ],
+      "source_tags": [
+        "gummy"
+      ]
+    },
+    {
+      "external_id": "41463349772343",
+      "product_external_id": "7113349693495",
+      "name": "mood: energy",
+      "product_line": "Mood",
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Energy",
+      "variant": "1g",
+      "attributes": null,
+      "match_terms": [
+        "mood energy"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41618587648055",
+      "product_external_id": "7113349693495",
+      "name": "mood: energy",
+      "product_line": "Mood",
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Energy",
+      "variant": "0.5g",
+      "attributes": null,
+      "match_terms": [
+        "mood energy"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41463343710263",
+      "product_external_id": "7113348710455",
+      "name": "mood: bliss",
+      "product_line": "Mood",
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Bliss",
+      "variant": "1g",
+      "attributes": null,
+      "match_terms": [
+        "mood bliss"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41463349477431",
+      "product_external_id": "7113348317239",
+      "name": "mood: calm",
+      "product_line": "Mood",
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Calm",
+      "variant": "1g",
+      "attributes": null,
+      "match_terms": [
+        "mood calm"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41153559986231",
+      "product_external_id": "7113347989559",
+      "name": "cereal milk",
+      "product_line": null,
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Cereal Milk",
+      "variant": "1g",
+      "attributes": null,
+      "match_terms": [
+        "cereal milk"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41153559953463",
+      "product_external_id": "7113347989559",
+      "name": "cereal milk",
+      "product_line": null,
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Cereal Milk",
+      "variant": "0.5g",
+      "attributes": null,
+      "match_terms": [
+        "cereal milk"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41990602260535",
+      "product_external_id": "7113347989559",
+      "name": "cereal milk",
+      "product_line": null,
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Cereal Milk",
+      "variant": "2g",
+      "attributes": null,
+      "match_terms": [
+        "cereal milk"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41153465221175",
+      "product_external_id": "7113347760183",
+      "name": "pineapple express",
+      "product_line": null,
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Pineapple Express",
+      "variant": "1g",
+      "attributes": null,
+      "match_terms": [
+        "pineapple express"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41153465188407",
+      "product_external_id": "7113347760183",
+      "name": "pineapple express",
+      "product_line": null,
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Pineapple Express",
+      "variant": "0.5g",
+      "attributes": null,
+      "match_terms": [
+        "pineapple express"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41990602424375",
+      "product_external_id": "7113347760183",
+      "name": "pineapple express",
+      "product_line": null,
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Pineapple Express",
+      "variant": "2g",
+      "attributes": null,
+      "match_terms": [
+        "pineapple express"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41153136197687",
+      "product_external_id": "7113346940983",
+      "name": "pink rozay",
+      "product_line": null,
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Pink Rozay",
+      "variant": "1g",
+      "attributes": null,
+      "match_terms": [
+        "pink rozay"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41153136132151",
+      "product_external_id": "7113346940983",
+      "name": "pink rozay",
+      "product_line": null,
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Pink Rozay",
+      "variant": "0.5g",
+      "attributes": null,
+      "match_terms": [
+        "pink rozay"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41990602457143",
+      "product_external_id": "7113346940983",
+      "name": "pink rozay",
+      "product_line": null,
+      "category": "vaporizers",
+      "subtype": null,
+      "strain": "Pink Rozay",
+      "variant": "2g",
+      "attributes": null,
+      "match_terms": [
+        "pink rozay"
+      ],
+      "source_tags": [
+        "vape"
+      ]
+    },
+    {
+      "external_id": "41147263615031",
+      "product_external_id": "7113345204279",
+      "name": "vanilla cola",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Vanilla Cola",
+      "variant": "10mg / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "vanilla cola"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41147263647799",
+      "product_external_id": "7113345204279",
+      "name": "vanilla cola",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Vanilla Cola",
+      "variant": "10mg / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "vanilla cola"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41147263549495",
+      "product_external_id": "7113345204279",
+      "name": "vanilla cola",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Vanilla Cola",
+      "variant": "5mg / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "vanilla cola"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41147263582263",
+      "product_external_id": "7113345204279",
+      "name": "vanilla cola",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Vanilla Cola",
+      "variant": "5mg / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "vanilla cola"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41147263746103",
+      "product_external_id": "7113345204279",
+      "name": "vanilla cola",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Vanilla Cola",
+      "variant": "5mg D9 / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "vanilla cola"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41147263778871",
+      "product_external_id": "7113345204279",
+      "name": "vanilla cola",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Vanilla Cola",
+      "variant": "5mg D9 / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "vanilla cola"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41416818491447",
+      "product_external_id": "7113345204279",
+      "name": "vanilla cola",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Vanilla Cola",
+      "variant": "1 mg / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "vanilla cola"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41416828354615",
+      "product_external_id": "7113345204279",
+      "name": "vanilla cola",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Vanilla Cola",
+      "variant": "1 mg / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "vanilla cola"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41147307425847",
+      "product_external_id": "7113344942135",
+      "name": "half + half",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Half + Half",
+      "variant": "10mg / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "half and half"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41147307458615",
+      "product_external_id": "7113344942135",
+      "name": "half + half",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Half + Half",
+      "variant": "10mg / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "half and half"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41147307556919",
+      "product_external_id": "7113344942135",
+      "name": "half + half",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Half + Half",
+      "variant": "5mg D9 / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "half and half"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41147307589687",
+      "product_external_id": "7113344942135",
+      "name": "half + half",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Half + Half",
+      "variant": "5mg D9 / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "half and half"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41663662981175",
+      "product_external_id": "7113344942135",
+      "name": "half + half",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Half + Half",
+      "variant": "3mg D9 / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "half and half"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41663663013943",
+      "product_external_id": "7113344942135",
+      "name": "half + half",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Half + Half",
+      "variant": "3mg D9 / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "half and half"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41140873756727",
+      "product_external_id": "7113344516151",
+      "name": "lemonade",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Lemonade",
+      "variant": "1mg / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "lemonade"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41140873789495",
+      "product_external_id": "7113344516151",
+      "name": "lemonade",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Lemonade",
+      "variant": "1mg / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "lemonade"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41140873691191",
+      "product_external_id": "7113344516151",
+      "name": "lemonade",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Lemonade",
+      "variant": "10mg / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "lemonade"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41140873723959",
+      "product_external_id": "7113344516151",
+      "name": "lemonade",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Lemonade",
+      "variant": "10mg / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "lemonade"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41140873625655",
+      "product_external_id": "7113344516151",
+      "name": "lemonade",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Lemonade",
+      "variant": "5mg D9 / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "lemonade"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41140873658423",
+      "product_external_id": "7113344516151",
+      "name": "lemonade",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Lemonade",
+      "variant": "5mg D9 / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "lemonade"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41663668715575",
+      "product_external_id": "7113344516151",
+      "name": "lemonade",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Lemonade",
+      "variant": "3mg D9 / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "lemonade"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41663668748343",
+      "product_external_id": "7113344516151",
+      "name": "lemonade",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Lemonade",
+      "variant": "3mg D9 / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "lemonade"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41147096825911",
+      "product_external_id": "7109636882487",
+      "name": "honeycrisp",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Honeycrisp",
+      "variant": "10mg / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "honeycrisp"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41147096858679",
+      "product_external_id": "7109636882487",
+      "name": "honeycrisp",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Honeycrisp",
+      "variant": "10mg / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "honeycrisp"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41147096760375",
+      "product_external_id": "7109636882487",
+      "name": "honeycrisp",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Honeycrisp",
+      "variant": "5mg / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "honeycrisp"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41147096793143",
+      "product_external_id": "7109636882487",
+      "name": "honeycrisp",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Honeycrisp",
+      "variant": "5mg / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "honeycrisp"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41147096956983",
+      "product_external_id": "7109636882487",
+      "name": "honeycrisp",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Honeycrisp",
+      "variant": "5mg D9 / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "honeycrisp"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41147096989751",
+      "product_external_id": "7109636882487",
+      "name": "honeycrisp",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Honeycrisp",
+      "variant": "5mg D9 / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "honeycrisp"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41416853815351",
+      "product_external_id": "7109636882487",
+      "name": "honeycrisp",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Honeycrisp",
+      "variant": "1mg / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "honeycrisp"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41416853848119",
+      "product_external_id": "7109636882487",
+      "name": "honeycrisp",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Honeycrisp",
+      "variant": "1mg / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "honeycrisp"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41612864847927",
+      "product_external_id": "7109636882487",
+      "name": "honeycrisp",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Honeycrisp",
+      "variant": "10mg D9 / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "honeycrisp"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41612864880695",
+      "product_external_id": "7109636882487",
+      "name": "honeycrisp",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Honeycrisp",
+      "variant": "10mg D9 / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "honeycrisp"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41663664291895",
+      "product_external_id": "7109636882487",
+      "name": "honeycrisp",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Honeycrisp",
+      "variant": "3mg D9 / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "honeycrisp"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41663664324663",
+      "product_external_id": "7109636882487",
+      "name": "honeycrisp",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Honeycrisp",
+      "variant": "3mg D9 / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "honeycrisp"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41146848247863",
+      "product_external_id": "7109620891703",
+      "name": "pineapple mango",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Pineapple Mango",
+      "variant": "10mg / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "pineapple mango"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41146848280631",
+      "product_external_id": "7109620891703",
+      "name": "pineapple mango",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Pineapple Mango",
+      "variant": "10mg / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "pineapple mango"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41146848378935",
+      "product_external_id": "7109620891703",
+      "name": "pineapple mango",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Pineapple Mango",
+      "variant": "5mg D9 / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "pineapple mango"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41146848411703",
+      "product_external_id": "7109620891703",
+      "name": "pineapple mango",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Pineapple Mango",
+      "variant": "5mg D9 / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "pineapple mango"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41135689793591",
+      "product_external_id": "7108688150583",
+      "name": "Black Cherry",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Black Cherry",
+      "variant": "1mg / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "black cherry"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41135689826359",
+      "product_external_id": "7108688150583",
+      "name": "Black Cherry",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Black Cherry",
+      "variant": "1mg / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "black cherry"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41135689695287",
+      "product_external_id": "7108688150583",
+      "name": "Black Cherry",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Black Cherry",
+      "variant": "10mg / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "black cherry"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41135689728055",
+      "product_external_id": "7108688150583",
+      "name": "Black Cherry",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Black Cherry",
+      "variant": "10mg / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "black cherry"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41087990038583",
+      "product_external_id": "7108688150583",
+      "name": "Black Cherry",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Black Cherry",
+      "variant": "5mg / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "black cherry"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41087990071351",
+      "product_external_id": "7108688150583",
+      "name": "Black Cherry",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Black Cherry",
+      "variant": "5mg / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "black cherry"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41135689859127",
+      "product_external_id": "7108688150583",
+      "name": "Black Cherry",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Black Cherry",
+      "variant": "5mg D9 / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "black cherry"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41135689891895",
+      "product_external_id": "7108688150583",
+      "name": "Black Cherry",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Black Cherry",
+      "variant": "5mg D9 / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "black cherry"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41663659409463",
+      "product_external_id": "7108688150583",
+      "name": "Black Cherry",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Black Cherry",
+      "variant": "3mg d9 / 12 pack",
+      "attributes": null,
+      "match_terms": [
+        "black cherry"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41663659442231",
+      "product_external_id": "7108688150583",
+      "name": "Black Cherry",
+      "product_line": null,
+      "category": "edible",
+      "subtype": "beverage",
+      "strain": "Black Cherry",
+      "variant": "3mg d9 / 24 pack",
+      "attributes": null,
+      "match_terms": [
+        "black cherry"
+      ],
+      "source_tags": [
+        "beverage"
+      ]
+    },
+    {
+      "external_id": "41078287630391",
+      "product_external_id": "7097633046583",
+      "name": "unflavored beverage enhancer",
+      "product_line": null,
+      "category": "tinctures",
+      "subtype": "tincture",
+      "strain": "Unflavored Beverage Enhancer",
+      "variant": "300mg THC",
+      "attributes": null,
+      "match_terms": [
+        "unflavored beverage enhancer"
+      ],
+      "source_tags": [
+        "tincture"
+      ]
+    }
+  ]
+}
