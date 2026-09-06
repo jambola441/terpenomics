@@ -143,6 +143,10 @@ class MetrcClient:
         lic = license_number
         if lic is None:
             lic = self.active_license or self.config.license_number
+        # Some endpoints take no licenseNumber (transfers addressed by id), but
+        # the workbook still wants to know which facility the step was performed
+        # at, so the record keeps the context even when the URL omits it.
+        context_license = lic or self.active_license or self.config.license_number
         if lic and "licenseNumber" not in params and not path.startswith("/sandbox/v2/integrator"):
             params["licenseNumber"] = lic
 
@@ -163,7 +167,7 @@ class MetrcClient:
             method=method.upper(),
             path=path,
             url=url,
-            license_number=lic or "",
+            license_number=context_license or "",
             request_body=body,
         )
 

@@ -25,10 +25,12 @@ COLUMN_ALIASES = [
     ("license facility", "license_number"),
     ("id number", "object_ids"),
     ("last modified", "last_modified"),
+    # Checked before the plain "tag number" alias: the PlantBatches tabs label
+    # one column "Plant Batch Name/Tag Number", which takes either.
+    ("plant batch name", "tags_or_names"),
     ("tag number", "tags"),
     ("harvest name", "harvest_name"),
     ("name created", "names"),
-    ("plant batch name", "names"),
     ("request sent", "url"),
     ("json body", "evidence"),
 ]
@@ -109,6 +111,10 @@ def _render(field: str, record: CallRecord) -> str:
         return ", ".join(str(i) for i in record.object_ids)
     if field == "tags":
         return ", ".join(str(t) for t in record.tags)
+    if field == "tags_or_names":
+        # One column serving both: a tag identifies the batch where the state
+        # issues one, otherwise its name does.
+        return ", ".join(str(v) for v in (record.tags or record.names))
     if field == "names":
         return ", ".join(str(n) for n in record.names)
     if field == "harvest_name":

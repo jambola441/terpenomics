@@ -6,6 +6,7 @@ row without any manual mapping.
 """
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 
@@ -66,8 +67,14 @@ def annotate(
     tags: list | None = None,
     names: list | None = None,
     last_modified: str = "",
+    license_number: str = "",
 ) -> CallRecord:
     """Attach the verification values a step produced to its record."""
+    if license_number:
+        # Endpoints addressed purely by id carry no licenseNumber, and the
+        # facility the record belongs to is the one holding the object, not
+        # whichever facility the run happens to be configured for.
+        record.license_number = license_number
     if ids:
         record.object_ids = list(ids)
     if tags:
@@ -94,6 +101,22 @@ def window(hours: float = 24, *, end: datetime | None = None) -> dict:
     end = end or utc_now()
     span = min(timedelta(hours=hours), MAX_WINDOW)
     return {"lastModifiedStart": stamp(end - span), "lastModifiedEnd": stamp(end)}
+
+
+def wait_for(read, predicate, *, attempts: int = 6, delay: float = 2.0):
+    """Re-read until the result satisfies `predicate`.
+
+    Metrc is not read-after-write consistent for plants: a growth-phase change
+    returns 200 and the plants appear under the new phase moments later, so a
+    read issued immediately afterwards sees nothing.
+    """
+    result = read()
+    for _ in range(attempts - 1):
+        if predicate(result):
+            return result
+        time.sleep(delay)
+        result = read()
+    return result
 
 
 def walk_back(client: MetrcClient, path: str, *, days: int = 30, **call_kw) -> list:
@@ -186,7 +209,7 @@ def get_transfers_and_wholesale(client: MetrcClient, ctx: Context, *, window_day
     annotate(
         deliveries, ids=[transfer_id],
         names=[str(transfer.get("ManifestNumber") or "")],
-        last_modified=_lm(transfer),
+        last_modified=_lm(transfer), license_number=transfer_lic,
     )
     if not del_rows:
         raise RuntimeError(f"transfer {transfer_id} has no deliveries to inspect")
@@ -200,7 +223,7 @@ def get_transfers_and_wholesale(client: MetrcClient, ctx: Context, *, window_day
     )
     pkg_rows = rows(packages.response_body)
     annotate(
-        packages, ids=[delivery_id],
+        packages, ids=[delivery_id], license_number=transfer_lic,
         tags=[r.get("PackageLabel") for r in pkg_rows[:5] if r.get("PackageLabel")],
     )
 
@@ -210,7 +233,7 @@ def get_transfers_and_wholesale(client: MetrcClient, ctx: Context, *, window_day
     )
     ws_rows = rows(wholesale.response_body)
     annotate(
-        wholesale, ids=[delivery_id],
+        wholesale, ids=[delivery_id], license_number=transfer_lic,
         tags=[r.get("PackageLabel") for r in ws_rows[:5] if r.get("PackageLabel")],
     )
 
@@ -758,7 +781,7 @@ def _flowering_plants(client: MetrcClient, ctx: Context, needed: int = 3) -> lis
         )
         return [p for p in rows(record.response_body) if p.get("Label")]
 
-    plants = current()
+    plants = wait_for(current, lambda p: len(p) >= needed, attempts=2)
     if len(plants) >= needed:
         return plants
 
@@ -790,7 +813,7 @@ def _flowering_plants(client: MetrcClient, ctx: Context, needed: int = 3) -> lis
         step="phase to flowering", sheet="_reference",
     )
 
-    plants = current()
+    plants = wait_for(current, lambda p: len(p) >= needed)
     if len(plants) < needed:
         raise RuntimeError(
             f"needed {needed} flowering plants, have {len(plants)} after growing "
@@ -901,12 +924,14 @@ def harvest_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
     harvest_name = ctx.created["harvest_name"]
     location = ctx.created.get("location_name")
 
-    active = client.get(
-        "/harvests/v2/active",
-        params=None,
-        step="discover harvest", sheet="_reference",
-    )
-    harvest = first(active.response_body, Name=harvest_name) or (rows(active.response_body) or [None])[0]
+    def read_harvests():
+        return client.get(
+            "/harvests/v2/active", params=None,
+            step="discover harvest", sheet="_reference",
+        ).response_body
+
+    payload = wait_for(read_harvests, lambda p: first(p, Name=harvest_name) is not None)
+    harvest = first(payload, Name=harvest_name) or (rows(payload) or [None])[0]
     if not harvest:
         raise RuntimeError(f"harvest {harvest_name!r} not found among active harvests")
     harvest_id = harvest["Id"]
@@ -1012,7 +1037,7 @@ def packages_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
         body=[{"Label": new_tag, "Item": alt_name}],
         step="Step 2", sheet=sheet,
     )
-    annotate(reitemed, tags=[new_tag], names=[alt_name])
+    annotate(reitemed, ids=created.object_ids, tags=[new_tag], names=[alt_name])
 
     # Step 3: adjust down to zero. The quantity is a delta, so it must be the
     # exact negative of what the package currently holds — changing the item in
@@ -1039,21 +1064,21 @@ def packages_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
         }],
         step="Step 3", sheet=sheet,
     )
-    annotate(adjusted, tags=[new_tag])
+    annotate(adjusted, ids=created.object_ids, tags=[new_tag])
 
     finished = client.put(
         "/packages/v2/finish",
         body=[{"Label": new_tag, "ActualDate": today()}],
         step="Step 4", sheet=sheet,
     )
-    annotate(finished, tags=[new_tag])
+    annotate(finished, ids=created.object_ids, tags=[new_tag])
 
     unfinished = client.put(
         "/packages/v2/unfinish",
         body=[{"Label": new_tag}],
         step="Step 5", sheet=sheet,
     )
-    annotate(unfinished, tags=[new_tag])
+    annotate(unfinished, ids=created.object_ids, tags=[new_tag])
     ctx.created["package_tag"] = new_tag
 
 
