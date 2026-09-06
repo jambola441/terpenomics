@@ -7,9 +7,16 @@
    Only the data source and which facets apply differ per screen.
    ========================================================================== */
 
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react'
 import { t, radius, font, alpha } from '../theme'
+import type { ListingPriceContext } from '../types'
+import { useRenderWindow } from '../utils/browseState'
 import { Pressable, Skeleton, Label, ProductImage } from './ui'
+import { formatDist, formatDollars, formatDollarsShort, haversineMi } from '../utils/format'
+
+// Re-exported so the browse surfaces can keep pulling their whole toolkit from
+// one place; `utils/format` is where these are defined.
+export { formatDist, formatDollars, formatDollarsShort, haversineMi }
 
 /* ── Constants ────────────────────────────────────────────────────────────── */
 
@@ -18,7 +25,8 @@ export const CATEGORY_EMOJI: Record<string, string> = {
   preroll: '🌿', tincture: '🧪', tinctures: '🧪', topical: '🧴', merch: '🛍️', other: '📦',
 }
 
-export type SortKey = 'featured' | 'nearest' | 'price-asc' | 'price-desc' | 'name'
+export const SORT_KEYS = ['featured', 'nearest', 'price-asc', 'price-desc', 'name'] as const
+export type SortKey = typeof SORT_KEYS[number]
 
 export type SortOption = { key: SortKey; label: string; needsLocation?: boolean }
 
@@ -45,28 +53,6 @@ export const RADII: { value: number | null; label: string }[] = [
 export type Facet = { value: string; count: number }
 
 /* ── Helpers ──────────────────────────────────────────────────────────────── */
-
-export function haversineMi(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 3958.8
-  const dLat = (lat2 - lat1) * Math.PI / 180
-  const dLng = (lng2 - lng1) * Math.PI / 180
-  const a = Math.sin(dLat / 2) ** 2
-    + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-}
-
-export function formatDist(mi: number) {
-  return mi < 0.1 ? '< 0.1 mi' : `${mi.toFixed(1)} mi`
-}
-
-export function formatDollars(cents: number) {
-  return `$${(cents / 100).toFixed(2)}`
-}
-
-/** Whole dollars, for the price slider readout where cents are noise. */
-export function formatDollarsShort(cents: number) {
-  return `$${Math.round(cents / 100)}`
-}
 
 /** Parse a variant like "3.5g" / "100mg" / "1 oz" into grams for natural ordering. */
 export function variantWeight(v: string): number {
@@ -260,13 +246,59 @@ export type BrowseCardItem = {
   storeName: string | null
 }
 
-export function BrowseCard({ item, color, suppressSubtype, action, onOpen }: {
+/**
+ * How this store's price stands against the others carrying the same product.
+ *
+ * The one thing a dispensary's own menu cannot tell a shopper, so it earns a
+ * line on every card of that menu. Three states, and the losing one gets the
+ * colour, because a cheaper price down the road is the version worth reading.
+ *
+ * Both the store page and its "See all" aisle draw it from here: a card and the
+ * card it turns into after a tap should not describe the market differently.
+ */
+export function MarketNote({ market, priceCents, style }: {
+  market?: ListingPriceContext | null
+  priceCents: number | null
+  style?: CSSProperties
+}) {
+  const m = market ?? NO_COMPARISON
+  const others = `${m.other_store_count} other ${m.other_store_count === 1 ? 'store' : 'stores'}`
+  const min = m.min_cents
+
+  const [text, color] =
+    m.other_store_count === 0 ? ['Only at this store', t.text4]
+    : min != null && priceCents != null && min < priceCents ? [`${formatDollars(min)} at ${others}`, t.warning]
+    : m.is_cheapest ? [`Best price of ${m.other_store_count + 1}`, t.accent]
+    : [`Also at ${others}`, t.text4]
+
+  return (
+    <div style={{
+      fontSize: font.size.micro, fontWeight: font.weight.medium, color,
+      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+      ...style,
+    }}>
+      {text}
+    </div>
+  )
+}
+
+/** What a row looks like when nothing came back to compare it against. A
+ *  response without the comparison degrades to "nobody else has it" rather
+ *  than blanking the card. */
+const NO_COMPARISON: ListingPriceContext = {
+  other_store_count: 0, min_cents: null, avg_cents: null, max_cents: null, is_cheapest: false,
+}
+
+export function BrowseCard({ item, color, suppressSubtype, action, footer, onOpen }: {
   item: BrowseCardItem
   color: string
   /** Hide the subtype tag when it just restates the page (e.g. "flower" on /flower). */
   suppressSubtype?: string | null
   /** Overlaid bottom-right on the image — e.g. an add-to-cart button. */
   action?: ReactNode
+  /** Replaces the availability line. A single-store surface has nothing to say
+   *  about where else to buy, but plenty to say about the price. */
+  footer?: ReactNode
   onOpen: () => void
 }) {
   const showSubtype = !!item.subtype
@@ -362,7 +394,9 @@ export function BrowseCard({ item, color, suppressSubtype, action, onOpen }: {
         )}
 
         {/* Availability footer, pinned to the bottom so cards align in the grid */}
-        {availability && (
+        {footer ? (
+          <div style={{ marginTop: 'auto', paddingTop: 8 }}>{footer}</div>
+        ) : availability && (
           <div style={{
             marginTop: 'auto', paddingTop: 8, color: t.text3, fontSize: font.size.micro,
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
@@ -372,6 +406,76 @@ export function BrowseCard({ item, color, suppressSubtype, action, onOpen }: {
         )}
       </div>
     </Pressable>
+  )
+}
+
+/* ── Product grid ─────────────────────────────────────────────────────────── */
+
+/** Cards mounted per window. Two columns, so this is twenty rows — several
+ *  screens of runway ahead of the shopper at any moment. */
+export const GRID_PAGE = 40
+
+/**
+ * The two-column product grid, rendered a window at a time.
+ *
+ * `items` is the whole filtered list and stays whole: the toolbar count, the
+ * facet counts and the filter sheet all describe every match, not the part
+ * currently on screen. What is windowed is the *mounting*. A category runs to a
+ * few thousand products, and each card is a couple of dozen nodes and an image,
+ * so handing the browser all of them up front cost seconds of layout and
+ * thousands of image requests before the first card was legible — on the phones
+ * this is built for, it read as a hang.
+ *
+ * The window grows by a page whenever the sentinel below the grid comes within
+ * a screen or so of the viewport, which keeps the next cards mounted before the
+ * shopper reaches them.
+ */
+export function BrowseGrid<T>({ items, page = GRID_PAGE, resetKey, children }: {
+  items: T[]
+  page?: number
+  /** Change this when the list becomes a different list rather than a narrowed
+   *  one — a new search — and the window starts over at one page. Filters do
+   *  not qualify: they leave the shopper where they were on the page, and
+   *  collapsing the grid under them would jump the view. */
+  resetKey?: string
+  /** Renders one card. Must set a `key` — this is a list. */
+  children: (item: T) => ReactNode
+}) {
+  const { count, grow } = useRenderWindow(page, resetKey)
+  const hasMore = count < items.length
+  const shown = hasMore ? items.slice(0, count) : items
+
+  // Re-armed on every growth rather than built once: observing an element
+  // delivers an immediate callback with its current state, so a page that lands
+  // with the sentinel still in view grows again instead of stalling until the
+  // shopper scrolls. Growth is synchronous, so this settles in a frame or two —
+  // once the sentinel is pushed below the margin, or once the list runs out and
+  // the sentinel stops rendering at all.
+  const sentinel = useRef<HTMLDivElement>(null)
+  const growRef = useRef(grow)
+  growRef.current = grow
+  useEffect(() => {
+    const node = sentinel.current
+    if (!node) return
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0]?.isIntersecting) growRef.current()
+    }, { rootMargin: '600px' })
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [count, items.length])
+
+  return (
+    <>
+      <div style={{
+        display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10,
+        padding: hasMore ? '10px 12px 0' : '10px 12px 96px',
+      }}>
+        {shown.map(children)}
+      </div>
+      {hasMore && (
+        <div ref={sentinel} style={{ height: 96 }} aria-hidden />
+      )}
+    </>
   )
 }
 

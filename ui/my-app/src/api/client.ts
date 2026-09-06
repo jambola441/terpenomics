@@ -18,6 +18,7 @@ import type {
   PortalProduct,
   PortalBrand,
   PortalBrandDetail,
+  PortalProductDetail,
   PortalCategory,
   PortalCategoryDetail,
   FeedbackResponse,
@@ -35,6 +36,10 @@ import type {
   BrandCatalogEntry,
   BrandCatalogEntryPage,
   CatalogExportStatus,
+  PortalDispensary,
+  Feed,
+  FeedView,
+  CustomerProfile,
 } from '../types'
 
 // Get API base URL from environment variable or use default
@@ -465,13 +470,41 @@ export const api = {
 
   me: {
     getProfile: () =>
-      authenticatedFetch<{ id: string; name: string | null; phone: string | null; email: string | null; marketing_opt_in: boolean }>(`/me`),
+      authenticatedFetch<CustomerProfile>(`/me`),
+
+    /** Name and marketing opt-in only — phone and email are identity, not profile. */
+    updateProfile: (payload: { name?: string; marketing_opt_in?: boolean }) =>
+      authenticatedFetch<CustomerProfile>(`/me`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }),
 
     linkCustomer: (payload?: { phone?: string; email?: string; name?: string }) =>
       authenticatedFetch<{ customer_id: string; linked: boolean; created?: boolean }>(`/me/link-customer`, {
         method: 'POST',
         body: JSON.stringify(payload ?? {}),
       }),
+
+    /** The stores the home feed is built from. Every mutation returns the whole
+     *  updated set, so the caller replaces its state rather than refetching. */
+    listPreferredDispensaries: () =>
+      authenticatedFetch<PortalDispensary[]>(`/me/preferred-dispensaries`),
+
+    addPreferredDispensary: (dispensaryId: string) =>
+      authenticatedFetch<PortalDispensary[]>(`/me/preferred-dispensaries/${dispensaryId}`, {
+        method: 'POST',
+      }),
+
+    removePreferredDispensary: (dispensaryId: string) =>
+      authenticatedFetch<PortalDispensary[]>(`/me/preferred-dispensaries/${dispensaryId}`, {
+        method: 'DELETE',
+      }),
+
+    /** The home feed. `store` keeps the followed stores separate, `combined`
+     *  pools and dedupes them; both are ranked server-side because two of the
+     *  four rails compare against every store we track. */
+    getFeed: (params?: { view?: FeedView; per_rail?: number; category?: string }) =>
+      authenticatedFetch<Feed>(`/me/feed${buildQueryString(params)}`),
   },
 
   /**
@@ -516,7 +549,7 @@ export const api = {
       portalFetch<PortalProduct>(`/customer/products/${productId}`),
 
     getDispensaries: () =>
-      portalFetch<{ id: string; name: string; slug: string; address: string | null; lat: number; lng: number; website_url: string | null; accepts_pickup: boolean; logo_url: string | null; banner_url: string | null }[]>(`/customer/dispensaries`),
+      portalFetch<PortalDispensary[]>(`/customer/dispensaries`),
 
     getDispensaryFilterOptions: (dispensaryId: string) =>
       portalFetch<{ brands: string[]; variants: string[] }>(`/customer/dispensaries/${dispensaryId}/filter-options`),
@@ -527,11 +560,18 @@ export const api = {
     getListing: (dispensaryId: string, listingId: string) =>
       portalFetch<ListingDetail>(`/customer/dispensaries/${dispensaryId}/listings/${listingId}`),
 
-    getBrands: (limit = 24) =>
-      portalFetch<PortalBrand[]>(`/customer/brands?limit=${limit}`),
+    getBrands: (params?: { q?: string; limit?: number; offset?: number; sort?: 'listings' | 'name' }) =>
+      portalFetch<PortalBrand[]>(`/customer/brands${buildQueryString(params)}`),
 
     getBrand: (name: string) =>
       portalFetch<PortalBrandDetail>(`/customer/brands/${encodeURIComponent(name)}`),
+
+    /** One product with its offerings. Brand is a filter, not a prerequisite:
+     *  omitting it asks for the unbranded product with that key. */
+    getProductDetail: (key: string, brand?: string | null) =>
+      portalFetch<PortalProductDetail>(
+        `/customer/products/detail${buildQueryString({ key, brand: brand ?? undefined })}`,
+      ),
 
     getCategories: () =>
       portalFetch<PortalCategory[]>(`/customer/categories`),

@@ -150,6 +150,9 @@ export type FeedbackResponse = {
 }
 
 export type PortalProduct = {
+  /** What the shopper reads. Derived server-side from the enriched fields,
+   *  falling back to a cleaned `scraped_name` -- see services/display_name.py. */
+  display_name: string
   brand: string | null
   category: string
   subtype: string | null
@@ -209,6 +212,11 @@ export type LabReportDetail = LabReport & {
 
 export type DispensaryListing = {
   id: string
+  /** What the shopper reads. Derived server-side from the enriched fields,
+   *  falling back to a cleaned `scraped_name` -- see services/display_name.py. */
+  display_name: string
+  /** The store's own catalogue string. Kept for search and provenance; show
+   *  `display_name` instead. */
   scraped_name: string | null
   scraped_brand: string | null
   scraped_category: string | null
@@ -222,6 +230,43 @@ export type DispensaryListing = {
   in_stock: boolean
   terpenes: Terpene[]
   cannabinoids: Cannabinoid[]
+  /** How this store's price stands against the others carrying the same
+   *  product. Every row of a store's menu carries one -- a product nobody else
+   *  has reads as a zero count rather than being absent. Optional because the
+   *  listing detail response spells the same facts out as `price_context`
+   *  alongside the stores themselves. */
+  market?: ListingPriceContext
+}
+
+/** The same product on another store's shelf. */
+export type ListingAlternative = {
+  listing_id: string
+  price_cents: number | null
+  url: string | null
+  dispensary: PortalDispensary
+}
+
+/** How this store's price sits against everyone else carrying the product. */
+export type ListingPriceContext = {
+  other_store_count: number
+  min_cents: number | null
+  avg_cents: number | null
+  max_cents: number | null
+  is_cheapest: boolean
+}
+
+/** A neighbour on the same shelf — same category, ideally same brand and form. */
+export type SimilarListing = {
+  id: string
+  display_name: string
+  scraped_brand: string | null
+  scraped_category: string | null
+  subtype: string | null
+  strain: string | null
+  product_line: string | null
+  variant: string | null
+  price_cents: number | null
+  image_url: string | null
 }
 
 export type ListingDetail = DispensaryListing & {
@@ -229,9 +274,21 @@ export type ListingDetail = DispensaryListing & {
   dispensary_name: string
   dispensary_slug: string
   dispensary_accepts_pickup: boolean
+  /** The whole store record, for the card that describes where this is sold. */
+  dispensary: PortalDispensary
   in_stock: boolean
   classification: string | null
   description: string | null
+
+  /** The key the product page is addressed by, so this screen can link to the
+   *  cross-store view without rebuilding it. */
+  product_key: string
+  /** When a scrape last confirmed this row; null until one has. */
+  last_seen_at: string | null
+
+  also_available_at: ListingAlternative[]
+  price_context: ListingPriceContext
+  similar_at_dispensary: SimilarListing[]
 }
 
 export type CartItem = {
@@ -359,6 +416,12 @@ export type PortalBrandProduct = {
   min_price_cents: number | null
   dispensary_count: number
   offerings: PortalBrandOffering[]
+}
+
+/** A product and every store carrying it, independent of brand.
+ *  `brand` is null for products the stores publish unbranded. */
+export type PortalProductDetail = PortalBrandProduct & {
+  brand: string | null
 }
 
 export type PortalBrandDetail = {
@@ -499,4 +562,91 @@ export type BrandCatalogDetail = {
 export type BrandCatalogEntryPage = {
   total: number
   entries: BrandCatalogEntry[]
+}
+
+/** A store as the portal sees it — the shape both `/customer/dispensaries` and
+ *  `/me/preferred-dispensaries` return. */
+export type PortalDispensary = {
+  id: string
+  name: string
+  slug: string
+  address: string | null
+  lat: number | null
+  lng: number | null
+  website_url: string | null
+  accepts_pickup: boolean
+  logo_url: string | null
+  banner_url: string | null
+}
+
+/** The rails a feed is built from, in the order they are shown. */
+export const FEED_RAILS = ['featured', 'new', 'recommended', 'deals'] as const
+export type FeedRail = typeof FEED_RAILS[number]
+
+export type FeedRails = Record<FeedRail, FeedListing[]>
+
+/** One followed store's slice of the home feed. */
+export type FeedSection = {
+  dispensary: PortalDispensary
+  /** Everything in stock at that store, across all rails. */
+  total: number
+  rails: FeedRails
+}
+
+/** `store` keeps the followed stores separate; `combined` pools them. */
+export type FeedView = 'store' | 'combined'
+
+export type Feed = {
+  view: FeedView
+  /** Populated for the store view. */
+  sections: FeedSection[]
+  /** Populated for the combined view. */
+  combined: FeedRails | null
+  /** Every store the feed drew from, so combined cards can name theirs. */
+  dispensaries: PortalDispensary[]
+}
+
+/** A feed card. Lighter than `DispensaryListing`: the feed shows no lab data,
+ *  so the endpoint does not carry terpenes or cannabinoids. */
+export type FeedListing = {
+  id: string
+  /** What the shopper reads. Derived server-side from the enriched fields,
+   *  falling back to a cleaned `scraped_name` -- see services/display_name.py. */
+  display_name: string
+  scraped_name: string | null
+  scraped_brand: string | null
+  scraped_category: string | null
+  subtype: string | null
+  strain: string | null
+  product_line: string | null
+  price_cents: number | null
+  variant: string | null
+  url: string | null
+  image_url: string | null
+  in_stock: boolean
+
+  /** What the deals rail's ranking knew: this price against the average
+   *  elsewhere. Positive means cheaper here. */
+  saving_cents: number | null
+
+  /** How many of the shopper's *own* stores carry this — a different question
+   *  from `market.other_store_count`, which counts every store we track. Only
+   *  the combined view knows it, and only after deduping. */
+  preferred_store_count: number
+
+  /** How the price stands against the whole market, in the shape every other
+   *  surface uses. Optional so an older response degrades rather than blanks. */
+  market?: ListingPriceContext
+
+  /** Only in the combined view, where a rail mixes stores. */
+  dispensary_id?: string
+}
+
+/** The signed-in customer as `/me` returns them. */
+export type CustomerProfile = {
+  id: string
+  name: string | null
+  phone: string | null
+  email: string | null
+  marketing_opt_in: boolean
 }

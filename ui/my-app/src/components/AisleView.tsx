@@ -1,14 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import type { CartItem, DispensaryListing } from '../types'
 import { t, font, categoryColor, alpha } from '../theme'
 import { FeedState } from './ui'
 import {
-  ActiveChip, BrowseCard, BrowseToolbar, CATEGORY_EMOJI, Dot, FacetChip, FilterSheet,
-  GridSkeleton, SORTS_NO_LOCATION, SearchField, Stat, formatDollarsShort, variantWeight,
+  ActiveChip, BrowseCard, BrowseToolbar, CATEGORY_EMOJI, Dot, FacetChip, FilterSheet, MarketNote,
+  GridSkeleton, SORTS_NO_LOCATION, SORT_KEYS, SearchField, Stat, formatDollarsShort, variantWeight,
   type BrowseCardItem, type SheetGroup, type SortKey,
 } from './browse'
+import {
+  readEnum, readRange, readSet, useFilterParams, useScrollMemory, writeOne, writeRange, writeSet,
+} from '../utils/browseState'
 
 /** Aisles a shopper can switch to from within one dispensary. */
 const CATEGORIES = ['flower', 'preroll', 'vaporizers', 'edible', 'concentrate', 'tinctures', 'topical', 'merch', 'other']
@@ -34,7 +38,7 @@ const FACET_FIELD: Record<FacetKey, 'scraped_brand' | 'subtype' | 'variant'> = {
 /** Does a listing survive the filter set? `except` skips one facet, for counting. */
 function matches(l: DispensaryListing, f: Filters, except?: FacetKey | 'price'): boolean {
   if (f.search) {
-    const hay = [l.scraped_name, l.scraped_brand, l.strain, l.subtype]
+    const hay = [l.display_name, l.scraped_name, l.scraped_brand, l.strain, l.subtype]
       .filter(Boolean).join(' ').toLowerCase()
     if (!hay.includes(f.search)) return false
   }
@@ -51,7 +55,7 @@ function matches(l: DispensaryListing, f: Filters, except?: FacetKey | 'price'):
 
 function toCard(l: DispensaryListing): BrowseCardItem {
   return {
-    name: l.scraped_name ?? l.strain ?? '—',
+    name: l.display_name,
     brand: l.scraped_brand,
     category: l.scraped_category,
     subtype: l.subtype,
@@ -87,27 +91,46 @@ export default function AisleView({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const [search, setSearch] = useState('')
+  // Seeded from the URL: a Back from a listing must land on the aisle the
+  // shopper had narrowed, not a fresh one.
+  const [initialParams] = useSearchParams()
+  const [search, setSearch] = useState(() => initialParams.get('q') ?? '')
   const [searchFocus, setSearchFocus] = useState(false)
-  const [brand, setBrand] = useState<Set<string>>(new Set())
-  const [subtype, setSubtype] = useState<Set<string>>(new Set())
-  const [variant, setVariant] = useState<Set<string>>(new Set())
-  const [price, setPrice] = useState<[number, number] | null>(null)
-  const [sort, setSort] = useState<SortKey>('featured')
+  const [brand, setBrand] = useState<Set<string>>(() => readSet(initialParams, 'brand'))
+  const [subtype, setSubtype] = useState<Set<string>>(() => readSet(initialParams, 'subtype'))
+  const [variant, setVariant] = useState<Set<string>>(() => readSet(initialParams, 'variant'))
+  const [price, setPrice] = useState<[number, number] | null>(() => readRange(initialParams, 'price'))
+  const [sort, setSort] = useState<SortKey>(() => readEnum(initialParams, 'sort', SORT_KEYS, 'featured'))
   const [sheet, setSheet] = useState(false)
 
   const c = categoryColor(category)
   const emoji = CATEGORY_EMOJI[category] ?? '📦'
   const scrollRef = useRef<HTMLDivElement>(null)
 
+  useFilterParams({
+    q: writeOne(search),
+    brand: writeSet(brand),
+    subtype: writeSet(subtype),
+    variant: writeSet(variant),
+    price: writeRange(price),
+    sort: sort === 'featured' ? [] : [sort],
+  })
+  useScrollMemory(scrollRef, all.length > 0)
+  const previousAisle = useRef(dispensaryId + '/' + category)
+
   // Load the whole aisle once (paginated; API caps limit at 100), then
   // filter/sort/facet entirely on the client for instant UX.
   useEffect(() => {
     let cancelled = false
     setLoading(true); setError(null); setAll([])
-    setSearch(''); setBrand(new Set()); setSubtype(new Set()); setVariant(new Set())
-    setPrice(null); setSort('featured')
-    scrollRef.current?.scrollTo({ top: 0 })
+    // Only a move to a different aisle clears the controls; on the mount that
+    // follows a Back they came from the URL and must stand.
+    if (previousAisle.current !== dispensaryId + '/' + category) {
+      previousAisle.current = dispensaryId + '/' + category
+      setSearch(''); setBrand(new Set()); setSubtype(new Set()); setVariant(new Set())
+      setPrice(null); setSort('featured')
+      scrollRef.current?.scrollTo({ top: 0 })
+    }
 
     ;(async () => {
       const PAGE = 100
@@ -183,7 +206,7 @@ export default function AisleView({
         return (a.price_cents - b.price_cents) * dir
       })
     } else if (sort === 'name') {
-      arr.sort((a, b) => (a.scraped_name ?? '').localeCompare(b.scraped_name ?? ''))
+      arr.sort((a, b) => a.display_name.localeCompare(b.display_name))
     } else {
       // Featured: listings that make a good card first — a photo, then a price.
       arr.sort((a, b) => {
@@ -233,7 +256,7 @@ export default function AisleView({
           e.stopPropagation()
           onAddToCart({
             listingId: l.id, dispensaryId, dispensarySlug, dispensaryName,
-            name: l.scraped_name ?? '—', brand: l.scraped_brand ?? null,
+            name: l.display_name, brand: l.scraped_brand ?? null,
             variant: l.variant ?? null, price_cents: l.price_cents ?? null,
             url: l.url ?? null, image_url: l.image_url ?? null, quantity: 1,
           })
@@ -405,6 +428,10 @@ export default function AisleView({
                   color={c}
                   suppressSubtype={category}
                   action={cartAction(l)}
+                  // One store, so there is nothing to say about where else to
+                  // buy -- but plenty to say about whether this is the price to
+                  // pay. Same line as the store page this aisle opened from.
+                  footer={<MarketNote market={l.market} priceCents={l.price_cents} />}
                   onOpen={() => navigate(`/portal/map/${dispensaryId}/listings/${l.id}`)}
                 />
               ))}

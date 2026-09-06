@@ -2,16 +2,21 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional, List
+from typing import List, Literal, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, EmailStr
+from sqlalchemy import func
 from sqlmodel import Session, select
 
 from auth import SupabaseAuthUser, get_current_user
 from database import get_session
-from models import Customer, Purchase
+from models import Customer, Dispensary, Listing, PreferredDispensary, Purchase
+from services import feed as feed_rails
+from services.display_name import compose as compose_display_name
+from services.feed import RailItem
+from services.market import context_for, context_or_empty
 
 router = APIRouter(prefix="/me", tags=["me"])
 
@@ -120,8 +125,7 @@ def link_customer(
 # GET /me — customer profile
 # ---------------------------
 
-@router.get("")
-def get_me(customer: Customer = Depends(get_current_customer)):
+def _serialize_customer(customer: Customer) -> dict:
     return {
         "id": str(customer.id),
         "name": customer.name,
@@ -129,6 +133,41 @@ def get_me(customer: Customer = Depends(get_current_customer)):
         "email": customer.email,
         "marketing_opt_in": customer.marketing_opt_in,
     }
+
+
+@router.get("")
+def get_me(customer: Customer = Depends(get_current_customer)):
+    return _serialize_customer(customer)
+
+
+class UpdateMeRequest(BaseModel):
+    name: Optional[str] = None
+    marketing_opt_in: Optional[bool] = None
+
+
+@router.post("")
+def update_me(
+    payload: UpdateMeRequest,
+    customer: Customer = Depends(get_current_customer),
+    session: Session = Depends(get_session),
+):
+    """What the customer may change about themselves.
+
+    Phone and email are deliberately not here: they are how the account is
+    identified at sign-in and how a walk-in purchase is matched back to a
+    person, so changing either is an identity change rather than a profile edit.
+    """
+    if payload.name is not None:
+        name = payload.name.strip()
+        customer.name = name or None
+    if payload.marketing_opt_in is not None:
+        customer.marketing_opt_in = payload.marketing_opt_in
+
+    customer.updated_at = datetime.utcnow()
+    session.add(customer)
+    session.commit()
+    session.refresh(customer)
+    return _serialize_customer(customer)
 
 
 # ---------------------------
@@ -167,4 +206,293 @@ def get_preferences(customer: Customer = Depends(get_current_customer)):
     return {
         "top_terpenes": [],
         "message": "Preference scoring not implemented yet"
+    }
+
+
+# ---------------------------
+# Preferred dispensaries
+# ---------------------------
+
+def _serialize_dispensary(d: Dispensary) -> dict:
+    return {
+        "id": str(d.id),
+        "name": d.name,
+        "slug": d.slug,
+        "address": d.address,
+        "lat": d.lat,
+        "lng": d.lng,
+        "website_url": d.website_url,
+        "accepts_pickup": d.accepts_pickup,
+        "logo_url": d.logo_url,
+        "banner_url": d.banner_url,
+    }
+
+
+def _preferred_dispensaries(session: Session, customer_id: UUID) -> List[Dispensary]:
+    """The customer's followed stores, in the order they followed them."""
+    rows = session.exec(
+        select(Dispensary)
+        .join(PreferredDispensary, PreferredDispensary.dispensary_id == Dispensary.id)
+        .where(PreferredDispensary.customer_id == customer_id)
+        .where(Dispensary.is_active == True)  # noqa: E712
+        .order_by(PreferredDispensary.created_at)
+    ).all()
+    return list(rows)
+
+
+@router.get("/preferred-dispensaries")
+def list_preferred_dispensaries(
+    customer: Customer = Depends(get_current_customer),
+    session: Session = Depends(get_session),
+):
+    return [_serialize_dispensary(d) for d in _preferred_dispensaries(session, customer.id)]
+
+
+@router.post("/preferred-dispensaries/{dispensary_id}")
+def add_preferred_dispensary(
+    dispensary_id: UUID,
+    customer: Customer = Depends(get_current_customer),
+    session: Session = Depends(get_session),
+):
+    dispensary = session.get(Dispensary, dispensary_id)
+    if not dispensary or not dispensary.is_active:
+        raise HTTPException(status_code=404, detail="dispensary not found")
+
+    existing = session.get(PreferredDispensary, (customer.id, dispensary_id))
+    if not existing:
+        session.add(PreferredDispensary(customer_id=customer.id, dispensary_id=dispensary_id))
+        session.commit()
+
+    return [_serialize_dispensary(d) for d in _preferred_dispensaries(session, customer.id)]
+
+
+@router.delete("/preferred-dispensaries/{dispensary_id}")
+def remove_preferred_dispensary(
+    dispensary_id: UUID,
+    customer: Customer = Depends(get_current_customer),
+    session: Session = Depends(get_session),
+):
+    existing = session.get(PreferredDispensary, (customer.id, dispensary_id))
+    if existing:
+        session.delete(existing)
+        session.commit()
+
+    return [_serialize_dispensary(d) for d in _preferred_dispensaries(session, customer.id)]
+
+
+# ---------------------------
+# GET /me/feed — the multi-dispensary home feed
+# ---------------------------
+
+RAILS = ("featured", "new", "recommended", "deals")
+
+
+def _serialize_rail_item(item: RailItem, *, with_store: bool, market: dict) -> dict:
+    listing = item.listing
+    payload = {
+        "id": str(listing.id),
+        "display_name": compose_display_name(
+            scraped_name=listing.scraped_name,
+            brand=listing.scraped_brand,
+            product_line=listing.product_line,
+            strain=listing.strain,
+            subtype=listing.subtype,
+            category=listing.scraped_category,
+        ),
+        "scraped_name": listing.scraped_name,
+        "scraped_brand": listing.scraped_brand,
+        "scraped_category": listing.scraped_category,
+        "subtype": listing.subtype,
+        "strain": listing.strain,
+        "product_line": listing.product_line,
+        "price_cents": listing.price_cents,
+        "variant": listing.variant,
+        "url": listing.url,
+        "image_url": listing.image_url,
+        "in_stock": listing.in_stock,
+        # What the ranking knew. Absent facts are zero/None rather than missing
+        # keys, so the card renders the same shape in every rail.
+        "saving_cents": item.saving_cents,
+        # How many of the shopper's own stores have it -- a different question
+        # from `market` below, which counts every store we track. They used to
+        # share a field name and a card could not tell which it was showing.
+        "preferred_store_count": item.preferred_store_count,
+        # How the price stands against the whole market, in the same shape the
+        # store menu and the listing page use.
+        "market": market,
+    }
+    if with_store:
+        # The combined view mixes stores, so each card has to say where it is.
+        payload["dispensary_id"] = str(listing.dispensary_id)
+    return payload
+
+
+def _product_key(listing: Listing) -> tuple:
+    return (
+        listing.scraped_brand,
+        listing.scraped_category,
+        listing.subtype,
+        listing.product_line,
+        listing.strain,
+        listing.variant,
+    )
+
+
+def _dedupe_to_cheapest(items: List[RailItem]) -> List[RailItem]:
+    """One card per product, at whichever followed store sells it cheapest.
+
+    Without this the combined view is mostly the same few products repeated:
+    anything stocked at all of a shopper's stores would crowd out everything
+    that is only at one. The survivor carries `preferred_store_count`, which is
+    what the card shows -- how many of *their* stores have it, as distinct from
+    how many stores exist.
+    """
+    best: dict[tuple, RailItem] = {}
+    for item in items:
+        key = _product_key(item.listing)
+        seen = best.get(key)
+        if seen is None:
+            best[key] = item
+            continue
+        seen.preferred_store_count = max(seen.preferred_store_count, 1) + 1
+        cheaper = (
+            item.listing.price_cents is not None
+            and (seen.listing.price_cents is None or item.listing.price_cents < seen.listing.price_cents)
+        )
+        if cheaper:
+            item.preferred_store_count = seen.preferred_store_count
+            best[key] = item
+    return list(best.values())
+
+
+def _market_for(session: Session, rail_groups) -> dict[str, dict]:
+    """The market comparison for every listing in a feed, in one query.
+
+    Takes any nesting of rail item collections and flattens it, so the store
+    view (rails per section) and the combined view (rails) can both hand it
+    whatever shape they built.
+    """
+    def listings(node):
+        if isinstance(node, RailItem):
+            yield node.listing.id
+            return
+        for child in node:
+            yield from listings(child)
+
+    ids = list(dict.fromkeys(listings(rail_groups)))
+    return context_or_empty(context_for(session, ids), ids)
+
+
+def _build_rails(
+    session: Session,
+    dispensary_ids: List[UUID],
+    customer_id: UUID,
+    per_rail: int,
+    category: Optional[str],
+) -> dict:
+    rails = {
+        "featured": feed_rails.featured(session, dispensary_ids, per_rail),
+        "new": feed_rails.new_arrivals(session, dispensary_ids, per_rail),
+        "recommended": feed_rails.recommended(session, dispensary_ids, customer_id, per_rail),
+        "deals": feed_rails.deals(session, dispensary_ids, per_rail),
+    }
+    if category:
+        # Filtering after ranking keeps each rail's meaning: the newest edibles,
+        # not the edibles among the newest of everything.
+        rails = {
+            name: [i for i in items if i.listing.scraped_category == category]
+            for name, items in rails.items()
+        }
+    return rails
+
+
+@router.get("/feed")
+def get_feed(
+    customer: Customer = Depends(get_current_customer),
+    session: Session = Depends(get_session),
+    view: Literal["store", "combined"] = Query(default="store"),
+    per_rail: int = Query(default=8, ge=1, le=24),
+    category: Optional[str] = Query(default=None),
+):
+    """What a shopper should look at across the stores they follow.
+
+    Two shapes of the same four rails. `store` keeps each store separate, which
+    is how someone shops when they are picking a place to go to. `combined`
+    pools them and dedupes, which is how someone shops when they are looking for
+    a product and do not mind which of their stores has it.
+
+    Both are built here rather than on the client because two of the four rails
+    -- deals, and the recommendation fallback -- rank against every store we
+    track, not just the shopper's.
+    """
+    dispensaries = _preferred_dispensaries(session, customer.id)
+    if not dispensaries:
+        return {"view": view, "sections": [], "combined": None, "dispensaries": []}
+
+    dispensary_ids = [d.id for d in dispensaries]
+    serialized_stores = [_serialize_dispensary(d) for d in dispensaries]
+
+    if view == "combined":
+        # Ranked across the whole followed set, then deduped, so a rail is the
+        # best of everything rather than the best of each store in turn.
+        rails = _build_rails(session, dispensary_ids, customer.id, per_rail * 2, category)
+        shown = {
+            name: _dedupe_to_cheapest(items)[:per_rail]
+            for name, items in rails.items()
+        }
+        market = _market_for(session, shown.values())
+        return {
+            "view": "combined",
+            "sections": [],
+            "combined": {
+                name: [
+                    _serialize_rail_item(item, with_store=True, market=market[str(item.listing.id)])
+                    for item in items
+                ]
+                for name, items in shown.items()
+            },
+            "dispensaries": serialized_stores,
+        }
+
+    built = []
+    for dispensary in dispensaries:
+        rails = _build_rails(session, [dispensary.id], customer.id, per_rail, category)
+
+        total_stmt = (
+            select(func.count())
+            .select_from(Listing)
+            .where(Listing.dispensary_id == dispensary.id)
+            .where(Listing.is_active == True)  # noqa: E712
+            .where(Listing.in_stock == True)  # noqa: E712
+        )
+        if category:
+            total_stmt = total_stmt.where(Listing.scraped_category == category)
+
+        built.append((dispensary, session.exec(total_stmt).one(), rails))
+
+    # Every rail on the page priced against the market, in one query -- a feed
+    # is many rails of a handful each, and a round trip per card would cost far
+    # more than the line it draws.
+    market = _market_for(session, (rails.values() for _, _, rails in built))
+
+    sections = [
+        {
+            "dispensary": _serialize_dispensary(dispensary),
+            "total": total,
+            "rails": {
+                name: [
+                    _serialize_rail_item(item, with_store=False, market=market[str(item.listing.id)])
+                    for item in items
+                ]
+                for name, items in rails.items()
+            },
+        }
+        for dispensary, total, rails in built
+    ]
+
+    return {
+        "view": "store",
+        "sections": sections,
+        "combined": None,
+        "dispensaries": serialized_stores,
     }

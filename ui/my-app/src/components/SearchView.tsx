@@ -1,11 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import api from '../api/client'
 import type { PortalProduct } from '../types'
 import { t, font, categoryColor, alpha } from '../theme'
 import { FeedState } from './ui'
 import {
-  ActiveChip, BrowseCard, BrowseToolbar, Dot, FacetChip, FilterSheet, GridSkeleton,
-  SORTS_NO_LOCATION, SearchField, Stat, formatDollarsShort, productKey, variantWeight,
+  readEnum, readRange, readSet, useFilterParams, useScrollMemory, writeOne, writeRange, writeSet,
+} from '../utils/browseState'
+import {
+  ActiveChip, BrowseCard, BrowseGrid, BrowseToolbar, Dot, FacetChip, FilterSheet, GridSkeleton,
+  SORTS_NO_LOCATION, SORT_KEYS, SearchField, Stat, formatDollarsShort, productKey, variantWeight,
   type BrowseCardItem, type SheetGroup, type SortKey,
 } from './browse'
 
@@ -13,9 +17,10 @@ import {
 const PAGE = 200
 const MAX_ROWS = 1000
 
-/** The `products` view has no display name — build one from what identifies it. */
+/** Named server-side like every other listing surface, so search results and
+ *  the pages they open agree on what a product is called. */
 function displayName(p: PortalProduct): string {
-  return p.strain || p.product_line || p.subtype || p.category || '—'
+  return p.display_name
 }
 
 type Filters = {
@@ -64,36 +69,53 @@ function toCard(p: PortalProduct): BrowseCardItem {
 interface Props {
   /** Pre-filter to one category, from `/portal/search?category=…`. */
   initialCategory?: string | null
-  /** Open the shared brand-product view for a product that has a brand. */
-  onOpenBrandProduct: (brand: string, key: string) => void
-  /** Unbranded rows have no product page — send the shopper to the category. */
-  onOpenCategory: (category: string) => void
+  /** Open the product page. `brand` is null for unbranded rows, which reach the
+   *  same page as any other -- the key identifies them. */
+  onOpenProduct: (brand: string | null, key: string) => void
 }
 
-export default function SearchView({ initialCategory, onOpenBrandProduct, onOpenCategory }: Props) {
+export default function SearchView({ initialCategory, onOpenProduct }: Props) {
   const [rows, setRows] = useState<PortalProduct[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [truncated, setTruncated] = useState(false)
 
-  const [input, setInput] = useState('')
-  const [query, setQuery] = useState('')
+  // Seeded from the URL so returning from a product restores the search the
+  // shopper left, rather than an empty one.
+  const [initialParams] = useSearchParams()
+  const [input, setInput] = useState(() => initialParams.get('q') ?? '')
+  const [query, setQuery] = useState(() => initialParams.get('q') ?? '')
   const [searchFocus, setSearchFocus] = useState(false)
 
   const [category, setCategory] = useState<Set<string>>(
-    () => new Set(initialCategory ? [initialCategory] : []),
+    () => readSet(initialParams, 'category'),
   )
-  const [subtype, setSubtype] = useState<Set<string>>(new Set())
-  const [brand, setBrand] = useState<Set<string>>(new Set())
-  const [variant, setVariant] = useState<Set<string>>(new Set())
-  const [price, setPrice] = useState<[number, number] | null>(null)
-  const [sort, setSort] = useState<SortKey>('featured')
+  const [subtype, setSubtype] = useState<Set<string>>(() => readSet(initialParams, 'subtype'))
+  const [brand, setBrand] = useState<Set<string>>(() => readSet(initialParams, 'brand'))
+  const [variant, setVariant] = useState<Set<string>>(() => readSet(initialParams, 'variant'))
+  const [price, setPrice] = useState<[number, number] | null>(() => readRange(initialParams, 'price'))
+  const [sort, setSort] = useState<SortKey>(() => readEnum(initialParams, 'sort', SORT_KEYS, 'featured'))
   const [sheet, setSheet] = useState(false)
 
   const scrollRef = useRef<HTMLDivElement>(null)
+  const previousQuery = useRef(query)
 
-  // Adopt a category arriving from a deep link after mount (tapping a tile).
+  useFilterParams({
+    q: writeOne(input),
+    category: writeSet(category),
+    subtype: writeSet(subtype),
+    brand: writeSet(brand),
+    variant: writeSet(variant),
+    price: writeRange(price),
+    sort: sort === 'featured' ? [] : [sort],
+  })
+  useScrollMemory(scrollRef, !loading && rows.length > 0)
+
+  // A category arriving from a deep link after mount (tapping a category tile).
+  const previousInitial = useRef(initialCategory)
   useEffect(() => {
+    if (previousInitial.current === initialCategory) return
+    previousInitial.current = initialCategory
     setCategory(new Set(initialCategory ? [initialCategory] : []))
   }, [initialCategory])
 
@@ -108,7 +130,10 @@ export default function SearchView({ initialCategory, onOpenBrandProduct, onOpen
   useEffect(() => {
     let cancelled = false
     setLoading(true); setError(null); setTruncated(false)
-    scrollRef.current?.scrollTo({ top: 0 })
+    if (previousQuery.current !== query) {
+      previousQuery.current = query
+      scrollRef.current?.scrollTo({ top: 0 })
+    }
 
     ;(async () => {
       const acc: PortalProduct[] = []
@@ -221,10 +246,10 @@ export default function SearchView({ initialCategory, onOpenBrandProduct, onOpen
   }
 
   function openProduct(p: PortalProduct) {
-    // A row's identity matches the key built by GET /customer/brands/{name},
-    // so a branded result opens the real product page.
-    if (p.brand) onOpenBrandProduct(p.brand, productKey(p))
-    else if (p.category) onOpenCategory(p.category)
+    // A row's identity is the same five-part key the product endpoint takes, so
+    // every result opens a product page. Unbranded rows used to be bounced back
+    // to a category listing instead, which read as the tap doing nothing.
+    onOpenProduct(p.brand ?? null, productKey(p))
   }
 
   const groups: SheetGroup[] = [
@@ -363,8 +388,8 @@ export default function SearchView({ initialCategory, onOpenBrandProduct, onOpen
               style={{ minHeight: 260 }}
             />
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, padding: '10px 12px 96px' }}>
-              {sorted.map(p => (
+            <BrowseGrid items={sorted} resetKey={query}>
+              {p => (
                 <BrowseCard
                   key={productKey(p) + '|' + (p.brand ?? '')}
                   item={toCard(p)}
@@ -372,8 +397,8 @@ export default function SearchView({ initialCategory, onOpenBrandProduct, onOpen
                   suppressSubtype={p.category}
                   onOpen={() => openProduct(p)}
                 />
-              ))}
-            </div>
+              )}
+            </BrowseGrid>
           )}
         </>
       )}

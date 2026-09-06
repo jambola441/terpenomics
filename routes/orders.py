@@ -31,6 +31,24 @@ from models import (
     utcnow,
 )
 from routes_me import get_current_customer
+from services.display_name import compose as compose_display_name
+
+
+def _display_name(listing: Listing) -> str:
+    """What this listing is called on screen, for the order snapshot.
+
+    The snapshot is what the customer reads back and what the counter hands
+    over, so it carries the name they ordered under rather than the store's
+    catalogue string. `listing_id` keeps the lineage either way.
+    """
+    return compose_display_name(
+        scraped_name=listing.scraped_name,
+        brand=listing.scraped_brand,
+        product_line=listing.product_line,
+        strain=listing.strain,
+        subtype=listing.subtype,
+        category=listing.scraped_category,
+    )
 
 router = APIRouter(prefix="/me/orders", tags=["orders"])
 
@@ -183,7 +201,7 @@ def create_order(
         if not listing.is_active or not listing.in_stock:
             raise HTTPException(
                 status_code=409,
-                detail=f"{listing.scraped_name or 'An item'} is no longer available",
+                detail=f"{_display_name(listing)} is no longer available",
             )
 
         unit = listing.price_cents
@@ -194,7 +212,7 @@ def create_order(
             quantity=qty,
             unit_price_cents=unit,
             line_amount_cents=line_total,
-            name=listing.scraped_name or "Item",
+            name=_display_name(listing),
             brand=listing.scraped_brand,
             variant=listing.variant,
             image_url=listing.image_url,

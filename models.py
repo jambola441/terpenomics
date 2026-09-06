@@ -506,6 +506,60 @@ class OrderItem(SQLModel, table=True):
 
 
 # ---------------------------
+# Curation
+# ---------------------------
+
+class FeaturedListing(SQLModel, table=True):
+    """A listing a store (or an admin) wants shown first.
+
+    Curated rather than derived: "featured" is an editorial choice about what a
+    store wants to push this week, which no amount of scraped data can infer.
+    The other feed rails are computed -- new arrivals from `created_at`, deals
+    from prices elsewhere, recommendations from the shopper -- and this is the
+    one a person fills in.
+
+    Keyed on the listing rather than the product because a store features a
+    specific thing on its own shelf at a specific size. `dispensary_id` is
+    denormalized from the listing so the feed can read a store's picks without
+    joining, and so a removed listing cannot silently orphan the row.
+    """
+
+    __tablename__ = "featured_listings"
+
+    dispensary_id: UUID = Field(foreign_key="dispensaries.id", primary_key=True)
+    listing_id:    UUID = Field(foreign_key="listings.id", primary_key=True)
+
+    # Ascending: 0 shows first. Gaps are fine -- nothing renumbers on removal.
+    position: int = Field(default=0, nullable=False)
+
+    # Who put it there, for the admin surface that will edit these.
+    note:       Optional[str] = Field(default=None, max_length=200)
+    created_at: datetime      = Field(default_factory=utcnow, nullable=False)
+
+
+# ---------------------------
+# Preferred dispensaries
+# ---------------------------
+
+class PreferredDispensary(SQLModel, table=True):
+    """A dispensary the customer wants their home feed built from.
+
+    A link table rather than a column on `customers` because the home feed is a
+    multi-store view: a shopper follows the two or three stores they actually
+    drive to, and the feed reads that set directly. `created_at` is the feed's
+    section order -- first followed, first shown -- so the order is stable
+    without a separate rank column to keep contiguous on removal.
+    """
+
+    __tablename__ = "customer_preferred_dispensaries"
+
+    customer_id:   UUID = Field(foreign_key="customers.id", primary_key=True)
+    dispensary_id: UUID = Field(foreign_key="dispensaries.id", primary_key=True)
+
+    created_at: datetime = Field(default_factory=utcnow, nullable=False)
+
+
+# ---------------------------
 # Phone (SMS) login
 # ---------------------------
 

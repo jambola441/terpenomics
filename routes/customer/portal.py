@@ -13,6 +13,8 @@ from models import (
     Terpene, Cannabinoid, Purchase, PurchaseItem,
 )
 from routes.admin.serializers import serialize_purchase_item
+from services.display_name import compose as compose_display_name
+from services.market import context_for, context_or_empty
 
 router = APIRouter()
 
@@ -50,8 +52,20 @@ def list_portal_dispensaries(session: Session = Depends(get_session)):
 # ---------------------------
 
 @router.get("/brands")
-def list_portal_brands(limit: int = 24, session: Session = Depends(get_session)):
-    rows = session.exec(
+def list_portal_brands(
+    session: Session = Depends(get_session),
+    q: Optional[str] = Query(default=None),
+    limit: int = Query(default=24, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    sort: Literal["listings", "name"] = Query(default="listings"),
+):
+    """Brands with a listing count, biggest first by default.
+
+    The home rail wants the top handful; the brands section pages through all of
+    them and needs a name sort and a search box, so both live behind the same
+    aggregate rather than a second endpoint that could drift from it.
+    """
+    stmt = (
         select(
             Listing.scraped_brand,
             func.count(Listing.id).label("cnt"),
@@ -59,9 +73,17 @@ def list_portal_brands(limit: int = 24, session: Session = Depends(get_session))
         )
         .where(Listing.scraped_brand.isnot(None))
         .where(Listing.scraped_brand != "")
-        .group_by(Listing.scraped_brand)
-        .order_by(func.count(Listing.id).desc())
-        .limit(limit)
+    )
+    if q and q.strip():
+        stmt = stmt.where(Listing.scraped_brand.ilike(f"%{q.strip()}%"))
+
+    order = (
+        Listing.scraped_brand
+        if sort == "name"
+        else func.count(Listing.id).desc()
+    )
+    rows = session.exec(
+        stmt.group_by(Listing.scraped_brand).order_by(order).offset(offset).limit(limit)
     ).all()
     return [{"name": r.scraped_brand, "listing_count": r.cnt, "image_url": r.image_url} for r in rows]
 
@@ -112,12 +134,13 @@ def get_portal_brand(
         )
         product = products.get(key)
         if product is None:
-            name = (
-                listing.strain
-                or listing.product_line
-                or listing.scraped_name
-                or listing.scraped_category
-                or "—"
+            name = compose_display_name(
+                scraped_name=listing.scraped_name,
+                brand=listing.scraped_brand,
+                product_line=listing.product_line,
+                strain=listing.strain,
+                subtype=listing.subtype,
+                category=listing.scraped_category,
             )
             product = {
                 "key": "|".join("" if k is None else str(k) for k in key),
@@ -162,6 +185,107 @@ def get_portal_brand(
         "product_count": len(product_list),
         "dispensary_count": len(dispensary_ids),
         "products": product_list,
+    }
+
+
+# ---------------------------
+# GET /products/detail
+# ---------------------------
+
+# A product's identity, in the order `key` serializes them. Brand is not part of
+# it: the same key under two brands is two products, so brand is passed
+# alongside rather than inside.
+_PRODUCT_KEY_COLUMNS = (
+    Listing.scraped_category,
+    Listing.subtype,
+    Listing.product_line,
+    Listing.strain,
+    Listing.variant,
+)
+
+
+@router.get("/products/detail")
+def get_portal_product(
+    key: str = Query(..., description="category|subtype|product_line|strain|variant"),
+    brand: Optional[str] = Query(default=None),
+    session: Session = Depends(get_session),
+    in_stock: bool = Query(default=True),
+):
+    """One product and every store carrying it.
+
+    Products used to be reachable only through their brand, which meant a
+    shopper tapping an unbranded product got sent somewhere else entirely --
+    into one store's shelf, or back to a category listing. Brand is a filter
+    here, not a prerequisite, so every product has the same page.
+
+    Passing no brand means *unbranded*, not *any brand*: the key alone does not
+    identify a product across brands.
+    """
+    parts = key.split("|")
+    if len(parts) != len(_PRODUCT_KEY_COLUMNS):
+        raise HTTPException(status_code=400, detail="malformed product key")
+
+    stmt = (
+        select(Listing, Dispensary)
+        .join(Dispensary, Dispensary.id == Listing.dispensary_id)
+        .where(Listing.is_active == True)  # noqa: E712
+        .where(Dispensary.is_active == True)  # noqa: E712
+    )
+    if in_stock:
+        stmt = stmt.where(Listing.in_stock == True)  # noqa: E712
+
+    for column, value in zip(_PRODUCT_KEY_COLUMNS, parts):
+        stmt = stmt.where(column.is_(None) if value == "" else column == value)
+
+    if brand:
+        stmt = stmt.where(Listing.scraped_brand == brand)
+    else:
+        stmt = stmt.where(or_(Listing.scraped_brand.is_(None), Listing.scraped_brand == ""))
+
+    rows = session.exec(stmt).all()
+    if not rows:
+        raise HTTPException(status_code=404, detail="product not found")
+
+    first_listing = rows[0][0]
+    offerings = []
+    image_url = None
+    for listing, dispensary in rows:
+        if image_url is None and listing.image_url:
+            image_url = listing.image_url
+        offerings.append({
+            "listing_id": str(listing.id),
+            "dispensary_id": str(dispensary.id),
+            "dispensary_name": dispensary.name,
+            "dispensary_slug": dispensary.slug,
+            "lat": dispensary.lat,
+            "lng": dispensary.lng,
+            "price_cents": listing.price_cents,
+            "in_stock": listing.in_stock,
+            "url": listing.url,
+        })
+
+    prices = [o["price_cents"] for o in offerings if o["price_cents"] is not None]
+
+    return {
+        "key": key,
+        "brand": first_listing.scraped_brand or None,
+        "name": compose_display_name(
+            scraped_name=first_listing.scraped_name,
+            brand=first_listing.scraped_brand,
+            product_line=first_listing.product_line,
+            strain=first_listing.strain,
+            subtype=first_listing.subtype,
+            category=first_listing.scraped_category,
+        ),
+        "category": first_listing.scraped_category,
+        "subtype": first_listing.subtype,
+        "product_line": first_listing.product_line,
+        "strain": first_listing.strain,
+        "variant": first_listing.variant,
+        "image_url": image_url,
+        "min_price_cents": min(prices) if prices else None,
+        "dispensary_count": len({o["dispensary_id"] for o in offerings}),
+        "offerings": offerings,
     }
 
 
@@ -275,13 +399,13 @@ def get_portal_category(
         )
         product = products.get(key)
         if product is None:
-            name = (
-                listing.strain
-                or listing.product_line
-                or listing.scraped_name
-                or listing.scraped_brand
-                or category_name
-                or "\u2014"
+            name = compose_display_name(
+                scraped_name=listing.scraped_name,
+                brand=listing.scraped_brand,
+                product_line=listing.product_line,
+                strain=listing.strain,
+                subtype=listing.subtype,
+                category=listing.scraped_category or category_name,
             )
             product = {
                 "key": "|".join("" if k is None else str(k) for k in key),
@@ -436,11 +560,25 @@ def get_dispensary_listings(
         lid = str(link.listing_id)
         cannabinoid_map.setdefault(lid, []).append({"name": c.name, "family": c.family, "percent": link.percent})
 
+    # What each of these costs at the other stores carrying it. One query for
+    # the page: the whole point of a card saying "cheaper at 2 others" is that
+    # the shopper sees it without opening anything, and paying a round trip per
+    # row to say so would cost more than the answer is worth.
+    market = context_or_empty(context_for(session, listing_ids), listing_ids)
+
     result = []
     for listing in listings:
         lid = str(listing.id)
         result.append({
             "id": lid,
+            "display_name": compose_display_name(
+                scraped_name=listing.scraped_name,
+                brand=listing.scraped_brand,
+                product_line=listing.product_line,
+                strain=listing.strain,
+                subtype=listing.subtype,
+                category=listing.scraped_category,
+            ),
             "scraped_name": listing.scraped_name,
             "scraped_brand": listing.scraped_brand,
             "scraped_category": listing.scraped_category,
@@ -454,6 +592,7 @@ def get_dispensary_listings(
             "in_stock": listing.in_stock,
             "terpenes": terpene_map.get(lid, []),
             "cannabinoids": cannabinoid_map.get(lid, []),
+            "market": market[lid],
         })
 
     return result
@@ -462,6 +601,129 @@ def get_dispensary_listings(
 # ---------------------------
 # GET /dispensaries/{id}/listings/{listing_id}
 # ---------------------------
+
+def _serialize_portal_dispensary(dispensary: Dispensary) -> dict:
+    return {
+        "id": str(dispensary.id),
+        "name": dispensary.name,
+        "slug": dispensary.slug,
+        "address": dispensary.address,
+        "lat": dispensary.lat,
+        "lng": dispensary.lng,
+        "website_url": dispensary.website_url,
+        "accepts_pickup": dispensary.accepts_pickup,
+        "logo_url": dispensary.logo_url,
+        "banner_url": dispensary.banner_url,
+    }
+
+
+def _same_product_elsewhere(session: Session, listing: Listing) -> list[dict]:
+    """The same product on other stores' shelves, cheapest first.
+
+    Identity is the five-part product key plus the brand, matched exactly --
+    the same definition the product page and the deals rail use, so a shopper
+    comparing prices is comparing like with like rather than "things with
+    similar names".
+    """
+    stmt = (
+        select(Listing, Dispensary)
+        .join(Dispensary, Dispensary.id == Listing.dispensary_id)
+        .where(Listing.dispensary_id != listing.dispensary_id)
+        .where(Listing.is_active == True)  # noqa: E712
+        .where(Listing.in_stock == True)  # noqa: E712
+        .where(Dispensary.is_active == True)  # noqa: E712
+    )
+    for column, value in (
+        (Listing.scraped_brand, listing.scraped_brand),
+        (Listing.scraped_category, listing.scraped_category),
+        (Listing.subtype, listing.subtype),
+        (Listing.product_line, listing.product_line),
+        (Listing.strain, listing.strain),
+        (Listing.variant, listing.variant),
+    ):
+        stmt = stmt.where(column.is_(None) if value is None else column == value)
+
+    rows = session.exec(stmt.limit(20)).all()
+    elsewhere = [
+        {
+            "listing_id": str(other.id),
+            "price_cents": other.price_cents,
+            "url": other.url,
+            "dispensary": _serialize_portal_dispensary(store),
+        }
+        for other, store in rows
+    ]
+    # Unpriced rows cannot be compared, so they sit at the end rather than
+    # sorting as free.
+    elsewhere.sort(key=lambda row: (row["price_cents"] is None, row["price_cents"] or 0))
+    return elsewhere
+
+
+def _similar_at_dispensary(session: Session, listing: Listing, limit: int = 10) -> list[dict]:
+    """More of the same kind, on this shelf.
+
+    Widening rings: the same brand and subtype first, then the same subtype from
+    anyone, then the rest of the category. A shopper who opened a 3.5g of flower
+    is usually deciding between it and the next 3.5g of flower, not browsing the
+    store from scratch.
+    """
+    if not listing.scraped_category:
+        return []
+
+    def ring(*conditions):
+        stmt = (
+            select(Listing)
+            .where(Listing.dispensary_id == listing.dispensary_id)
+            .where(Listing.id != listing.id)
+            .where(Listing.is_active == True)  # noqa: E712
+            .where(Listing.in_stock == True)  # noqa: E712
+            .where(Listing.scraped_category == listing.scraped_category)
+        )
+        for condition in conditions:
+            stmt = stmt.where(condition)
+        return session.exec(stmt.order_by(Listing.price_cents).limit(limit)).all()
+
+    found: dict[UUID, Listing] = {}
+    rings = []
+    if listing.scraped_brand and listing.subtype:
+        rings.append((Listing.scraped_brand == listing.scraped_brand,
+                      Listing.subtype == listing.subtype))
+    if listing.subtype:
+        rings.append((Listing.subtype == listing.subtype,))
+    if listing.scraped_brand:
+        rings.append((Listing.scraped_brand == listing.scraped_brand,))
+    rings.append(())
+
+    for conditions in rings:
+        for row in ring(*conditions):
+            found.setdefault(row.id, row)
+        if len(found) >= limit:
+            break
+
+    return [
+        {
+            "id": str(row.id),
+            "display_name": compose_display_name(
+                scraped_name=row.scraped_name,
+                brand=row.scraped_brand,
+                product_line=row.product_line,
+                strain=row.strain,
+                subtype=row.subtype,
+                category=row.scraped_category,
+            ),
+            "scraped_brand": row.scraped_brand,
+            "scraped_category": row.scraped_category,
+            "subtype": row.subtype,
+            "strain": row.strain,
+            "product_line": row.product_line,
+            "variant": row.variant,
+            "price_cents": row.price_cents,
+            "image_url": row.image_url,
+        }
+        for row in list(found.values())[:limit]
+    ]
+
+
 
 @router.get("/dispensaries/{dispensary_id}/listings/{listing_id}")
 def get_dispensary_listing(
@@ -498,12 +760,29 @@ def get_dispensary_listing(
     ).all():
         cannabinoids.append({"name": c.name, "family": c.family, "percent": link.percent})
 
+    elsewhere = _same_product_elsewhere(session, listing)
+    prices = [row["price_cents"] for row in elsewhere if row["price_cents"] is not None]
+    # Stores, not rows: a store listing the same product twice is still one
+    # place to go, and the menu card that opened this page counts it that way.
+    other_stores = {row["dispensary"]["id"] for row in elsewhere}
+
     return {
         "id": str(listing.id),
+        # Kept flat for the callers that only ever needed a name; `dispensary`
+        # below is the whole record, for the screen that shows the store.
         "dispensary_id": str(dispensary.id),
         "dispensary_name": dispensary.name,
         "dispensary_slug": dispensary.slug,
         "dispensary_accepts_pickup": dispensary.accepts_pickup,
+        "dispensary": _serialize_portal_dispensary(dispensary),
+        "display_name": compose_display_name(
+            scraped_name=listing.scraped_name,
+            brand=listing.scraped_brand,
+            product_line=listing.product_line,
+            strain=listing.strain,
+            subtype=listing.subtype,
+            category=listing.scraped_category,
+        ),
         "scraped_name": listing.scraped_name,
         "scraped_brand": listing.scraped_brand,
         "scraped_category": listing.scraped_category,
@@ -519,6 +798,34 @@ def get_dispensary_listing(
         "description": listing.description,
         "terpenes": terpenes,
         "cannabinoids": cannabinoids,
+
+        # The key the product page is addressed by, so this screen can offer the
+        # cross-store view without the client rebuilding the key itself.
+        "product_key": "|".join(
+            "" if part is None else str(part)
+            for part in (
+                listing.scraped_category, listing.subtype,
+                listing.product_line, listing.strain, listing.variant,
+            )
+        ),
+
+        # A scraped price is only as good as its last check, and saying so is
+        # cheaper than being wrong about it.
+        "last_seen_at": listing.last_seen_at or listing.scraped_at,
+
+        "also_available_at": elsewhere,
+        "price_context": {
+            "other_store_count": len(other_stores),
+            "min_cents": min(prices) if prices else None,
+            "avg_cents": round(sum(prices) / len(prices)) if prices else None,
+            "max_cents": max(prices) if prices else None,
+            "is_cheapest": (
+                listing.price_cents is not None
+                and bool(prices)
+                and listing.price_cents <= min(prices)
+            ),
+        },
+        "similar_at_dispensary": _similar_at_dispensary(session, listing),
     }
 
 
@@ -567,7 +874,19 @@ def list_portal_products(
     with engine.connect() as conn:
         rows = conn.execute(sql, params).mappings().all()
 
-    return [dict(r) for r in rows]
+    return [
+        {
+            **dict(r),
+            "display_name": compose_display_name(
+                brand=r["brand"],
+                product_line=r["product_line"],
+                strain=r["strain"],
+                subtype=r["subtype"],
+                category=r["category"],
+            ),
+        }
+        for r in rows
+    ]
 
 
 # ---------------------------
