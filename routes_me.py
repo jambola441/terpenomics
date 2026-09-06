@@ -16,6 +16,7 @@ from models import Customer, Dispensary, Listing, PreferredDispensary, Purchase
 from services import feed as feed_rails
 from services.display_name import compose as compose_display_name
 from services.feed import RailItem
+from services.market import context_for, context_or_empty
 
 router = APIRouter(prefix="/me", tags=["me"])
 
@@ -286,7 +287,7 @@ def remove_preferred_dispensary(
 RAILS = ("featured", "new", "recommended", "deals")
 
 
-def _serialize_rail_item(item: RailItem, *, with_store: bool) -> dict:
+def _serialize_rail_item(item: RailItem, *, with_store: bool, market: dict) -> dict:
     listing = item.listing
     payload = {
         "id": str(listing.id),
@@ -311,9 +312,14 @@ def _serialize_rail_item(item: RailItem, *, with_store: bool) -> dict:
         "in_stock": listing.in_stock,
         # What the ranking knew. Absent facts are zero/None rather than missing
         # keys, so the card renders the same shape in every rail.
-        "other_store_count": item.other_store_count,
-        "other_avg_cents": item.other_avg_cents,
         "saving_cents": item.saving_cents,
+        # How many of the shopper's own stores have it -- a different question
+        # from `market` below, which counts every store we track. They used to
+        # share a field name and a card could not tell which it was showing.
+        "preferred_store_count": item.preferred_store_count,
+        # How the price stands against the whole market, in the same shape the
+        # store menu and the listing page use.
+        "market": market,
     }
     if with_store:
         # The combined view mixes stores, so each card has to say where it is.
@@ -337,8 +343,9 @@ def _dedupe_to_cheapest(items: List[RailItem]) -> List[RailItem]:
 
     Without this the combined view is mostly the same few products repeated:
     anything stocked at all of a shopper's stores would crowd out everything
-    that is only at one. `other_store_count` is reused to say how many of *their*
-    stores have it, which is what the card shows.
+    that is only at one. The survivor carries `preferred_store_count`, which is
+    what the card shows -- how many of *their* stores have it, as distinct from
+    how many stores exist.
     """
     best: dict[tuple, RailItem] = {}
     for item in items:
@@ -347,15 +354,33 @@ def _dedupe_to_cheapest(items: List[RailItem]) -> List[RailItem]:
         if seen is None:
             best[key] = item
             continue
-        seen.other_store_count = max(seen.other_store_count, 1) + 1
+        seen.preferred_store_count = max(seen.preferred_store_count, 1) + 1
         cheaper = (
             item.listing.price_cents is not None
             and (seen.listing.price_cents is None or item.listing.price_cents < seen.listing.price_cents)
         )
         if cheaper:
-            item.other_store_count = seen.other_store_count
+            item.preferred_store_count = seen.preferred_store_count
             best[key] = item
     return list(best.values())
+
+
+def _market_for(session: Session, rail_groups) -> dict[str, dict]:
+    """The market comparison for every listing in a feed, in one query.
+
+    Takes any nesting of rail item collections and flattens it, so the store
+    view (rails per section) and the combined view (rails) can both hand it
+    whatever shape they built.
+    """
+    def listings(node):
+        if isinstance(node, RailItem):
+            yield node.listing.id
+            return
+        for child in node:
+            yield from listings(child)
+
+    ids = list(dict.fromkeys(listings(rail_groups)))
+    return context_or_empty(context_for(session, ids), ids)
 
 
 def _build_rails(
@@ -411,20 +436,25 @@ def get_feed(
         # Ranked across the whole followed set, then deduped, so a rail is the
         # best of everything rather than the best of each store in turn.
         rails = _build_rails(session, dispensary_ids, customer.id, per_rail * 2, category)
+        shown = {
+            name: _dedupe_to_cheapest(items)[:per_rail]
+            for name, items in rails.items()
+        }
+        market = _market_for(session, shown.values())
         return {
             "view": "combined",
             "sections": [],
             "combined": {
                 name: [
-                    _serialize_rail_item(item, with_store=True)
-                    for item in _dedupe_to_cheapest(items)[:per_rail]
+                    _serialize_rail_item(item, with_store=True, market=market[str(item.listing.id)])
+                    for item in items
                 ]
-                for name, items in rails.items()
+                for name, items in shown.items()
             },
             "dispensaries": serialized_stores,
         }
 
-    sections = []
+    built = []
     for dispensary in dispensaries:
         rails = _build_rails(session, [dispensary.id], customer.id, per_rail, category)
 
@@ -438,14 +468,27 @@ def get_feed(
         if category:
             total_stmt = total_stmt.where(Listing.scraped_category == category)
 
-        sections.append({
+        built.append((dispensary, session.exec(total_stmt).one(), rails))
+
+    # Every rail on the page priced against the market, in one query -- a feed
+    # is many rails of a handful each, and a round trip per card would cost far
+    # more than the line it draws.
+    market = _market_for(session, (rails.values() for _, _, rails in built))
+
+    sections = [
+        {
             "dispensary": _serialize_dispensary(dispensary),
-            "total": session.exec(total_stmt).one(),
+            "total": total,
             "rails": {
-                name: [_serialize_rail_item(item, with_store=False) for item in items]
+                name: [
+                    _serialize_rail_item(item, with_store=False, market=market[str(item.listing.id)])
+                    for item in items
+                ]
                 for name, items in rails.items()
             },
-        })
+        }
+        for dispensary, total, rails in built
+    ]
 
     return {
         "view": "store",

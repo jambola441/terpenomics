@@ -33,7 +33,7 @@ import type {
 import { FEED_RAILS } from '../types'
 import { t, radius, font, categoryColor, alpha } from '../theme'
 import { FeedState, Pressable, Skeleton, Pill, ProductImage } from './ui'
-import { CATEGORY_EMOJI, productKey } from './browse'
+import { CATEGORY_EMOJI, MarketNote, productKey } from './browse'
 import { formatDist, formatDollars, haversineMi } from '../utils/format'
 import { readEnum, readOne, useFilterParams, useScrollMemory, writeOne } from '../utils/browseState'
 
@@ -408,67 +408,99 @@ function FeedCard({ listing, rail, store, onOpen, onOpenBrand }: {
           alt={listing.display_name}
           category={listing.scraped_category}
         />
+
+        {/* Same corners as a browse card: the size top-left, where a shopper
+            already looks for it, and the rail's own badge opposite. */}
+        {listing.variant && <CornerTag label={listing.variant} side="left" />}
+
         {/* Only the deals rail earns a badge: elsewhere the saving is a fact
             about the product, not the reason it is on screen. */}
         {rail === 'deals' && saving != null && saving > 0 && (
           <span style={{
-            position: 'absolute', top: 7, left: 7,
+            position: 'absolute', top: 8, right: 8,
             background: t.accent, color: t.accentInk,
-            fontSize: font.size.caption, fontWeight: font.weight.bold,
-            borderRadius: radius.pill, padding: '2px 7px',
+            fontSize: font.size.micro, fontWeight: font.weight.bold,
+            borderRadius: radius.pill, padding: '3px 8px',
           }}>
             Save {formatDollars(saving)}
           </span>
         )}
       </div>
 
-      <div style={{ padding: '8px 10px 10px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+      <div style={{ padding: '10px 11px 12px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+        {/* Price first, then name, then brand -- a browse card's order. */}
+        <div style={{
+          color: t.accent, fontWeight: font.weight.heavy, fontSize: font.size.callout,
+          marginBottom: 4,
+        }}>
+          {listing.price_cents != null ? formatDollars(listing.price_cents) : 'Price not listed'}
+        </div>
+
+        <div style={{
+          color: t.text1, fontWeight: font.weight.semibold, fontSize: font.size.small + 1,
+          lineHeight: 1.3, height: '2.6em', overflow: 'hidden',
+        }}>
+          {listing.display_name}
+        </div>
+
         {listing.scraped_brand && (
           <div
             onClick={e => { e.stopPropagation(); onOpenBrand() }}
             style={{
-              color: t.accent, fontSize: font.size.caption, fontWeight: font.weight.semibold,
-              marginBottom: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+              color: t.text3, fontSize: font.size.caption, marginTop: 3,
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
               cursor: 'pointer',
             }}
           >
             {listing.scraped_brand}
           </div>
         )}
-        <div style={{
-          color: t.text1, fontWeight: font.weight.semibold, fontSize: font.size.small,
-          lineHeight: 1.3, height: '2.6em', overflow: 'hidden',
-        }}>
-          {listing.display_name}
-        </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginTop: 7 }}>
-          <span style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.small + 1 }}>
-            {listing.price_cents != null ? formatDollars(listing.price_cents) : '—'}
-          </span>
-          {listing.variant && (
+        {listing.subtype && (
+          <div style={{ marginTop: 8 }}>
             <span style={{
-              color, fontSize: font.size.caption, fontWeight: font.weight.semibold,
-              background: alpha(color, 0.12), borderRadius: radius.pill, padding: '2px 7px',
+              background: alpha(color, 0.13), color, border: `1px solid ${alpha(color, 0.3)}`,
+              fontSize: font.size.micro, fontWeight: font.weight.bold,
+              padding: '2px 8px', borderRadius: radius.pill,
+              textTransform: 'capitalize', letterSpacing: '0.03em',
             }}>
-              {listing.variant}
+              {listing.subtype}
             </span>
-          )}
-        </div>
-
-        {/* In the combined view a card has to say whose shelf it is on, and how
-            many of the shopper's other stores also have it. */}
-        {store && (
-          <div style={{
-            color: t.text3, fontSize: font.size.caption, marginTop: 6,
-            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-          }}>
-            {store.name}
-            {listing.other_store_count > 1 && ` · at ${listing.other_store_count} of yours`}
           </div>
         )}
+
+        {/* Pinned to the bottom so cards in a rail line up. */}
+        <div style={{ marginTop: 'auto', paddingTop: 8 }}>
+          {/* In the combined view a card has to say whose shelf it is on, and
+              how many of the shopper's other stores also have it. */}
+          {store && (
+            <div style={{
+              color: t.text3, fontSize: font.size.micro, marginBottom: 2,
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            }}>
+              {store.name}
+              {listing.preferred_store_count > 1 && ` · at ${listing.preferred_store_count} of yours`}
+            </div>
+          )}
+          <MarketNote market={listing.market} priceCents={listing.price_cents} />
+        </div>
       </div>
     </Pressable>
+  )
+}
+
+/** The size chip a browse card wears in the top-left of its image. */
+function CornerTag({ label, side }: { label: string; side: 'left' | 'right' }) {
+  return (
+    <span style={{
+      position: 'absolute', top: 8, [side]: 8,
+      background: alpha('#000', 0.62), color: '#fff',
+      backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
+      fontSize: font.size.micro, fontWeight: font.weight.bold,
+      padding: '3px 8px', borderRadius: radius.pill,
+    }}>
+      {label}
+    </span>
   )
 }
 
