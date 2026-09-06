@@ -546,11 +546,18 @@ export type FeedListing = {
   image_url: string | null
   in_stock: boolean
 
-  /** What the rail's ranking knew. Other stores carrying the same product, and
-   *  what they charge — the deals rail ranks on it and the card shows it. */
-  other_store_count: number
-  other_avg_cents: number | null
+  /** What the deals rail's ranking knew: this price against the average
+   *  elsewhere. Positive means cheaper here. */
   saving_cents: number | null
+
+  /** How many of the shopper's *own* stores carry this — a different question
+   *  from `market.other_store_count`, which counts every store we track. Only
+   *  the combined view knows it, and only after deduping. */
+  preferred_store_count: number
+
+  /** How the price stands against the whole market, in the shape every other
+   *  surface uses. Optional so an older response degrades rather than blanks. */
+  market?: ListingPriceContext
 
   /** Only in the combined view, where a rail mixes stores. */
   dispensary_id?: string

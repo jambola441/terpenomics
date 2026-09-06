@@ -169,7 +169,7 @@ def test_a_deal_is_cheaper_than_the_average_elsewhere(world):
 
         deal = next(item for item in rail if item.listing.strain == "Blue Dream")
         # 5000, 5500 and 5200 elsewhere average 5233; Bergen sells it for 3000.
-        assert deal.other_store_count == 3
+        assert deal.market_store_count == 3
         assert deal.other_avg_cents == 5233
         assert deal.saving_cents == 2233
 
@@ -220,7 +220,7 @@ def test_a_shopper_we_know_nothing_about_gets_what_the_market_carries_most(world
         rail = feed.recommended(session, [world["mine"]], world["customer_id"], limit=8)
         # Blue Dream is at three other stores; nothing else is at more than one.
         assert rail[0].listing.strain == "Blue Dream"
-        assert rail[0].other_store_count == 3
+        assert rail[0].market_store_count == 3
 
 
 def test_a_liked_brand_pulls_its_other_products_up(world):

@@ -45,9 +45,13 @@ class RailItem:
     """A listing plus whatever the rail that found it knows about it."""
 
     listing: Listing
-    #: Stores other than this one carrying the same product, and their average price.
-    other_store_count: int = 0
+    #: Stores other than this one carrying the same product, and their average
+    #: price -- the whole market, not the shopper's own stores.
+    market_store_count: int = 0
     other_avg_cents: Optional[int] = None
+    #: How many of the shopper's followed stores have this product. Only the
+    #: combined view knows it, and only after deduping.
+    preferred_store_count: int = 0
 
     @property
     def saving_cents(self) -> Optional[int]:
@@ -195,7 +199,7 @@ def deals(session: Session, dispensary_ids: Sequence[UUID], limit: int) -> list[
         return []
 
     return [
-        RailItem(listing=listing, other_avg_cents=round(avg_other), other_store_count=count)
+        RailItem(listing=listing, other_avg_cents=round(avg_other), market_store_count=count)
         for listing, avg_other, count in _market_comparison(
             session, dispensary_ids, limit, cheaper_only=True
         )
@@ -261,7 +265,7 @@ def recommended(
     profile = taste_profile(session, customer_id)
     if profile.is_empty():
         return [
-            RailItem(listing=listing, other_avg_cents=round(avg_other), other_store_count=count)
+            RailItem(listing=listing, other_avg_cents=round(avg_other), market_store_count=count)
             for listing, avg_other, count in _market_comparison(
                 session, dispensary_ids, limit, cheaper_only=False
             )

@@ -21,6 +21,7 @@ from models import (
     PosType,
     PreferredDispensary,
 )
+from routes.customer import router as customer_router
 from routes_me import router as me_router
 
 AUTH_UID = uuid4()
@@ -223,7 +224,84 @@ def test_the_combined_view_shows_a_product_once(world):
     northern = [item for item in rail if item["display_name"] == "Northern Lights"]
     assert len(northern) == 1
     assert northern[0]["price_cents"] == 3000
-    assert northern[0]["other_store_count"] == 2
+    assert northern[0]["preferred_store_count"] == 2
+
+
+def test_every_feed_card_is_priced_against_the_market(world):
+    client = _client()
+    client.post(f"/me/preferred-dispensaries/{world['bergen_id']}")
+
+    rails = client.get("/me/feed").json()["sections"][0]["rails"]
+    cards = [item for items in rails.values() for item in items]
+    assert cards, "expected something on the feed"
+    for card in cards:
+        assert set(card["market"]) == {
+            "other_store_count", "min_cents", "avg_cents", "max_cents", "is_cheapest",
+        }
+
+
+def _twin_of(world, scraped_name: str) -> str:
+    """Put the same product on a store the shopper does not follow.
+
+    Returns the followed store's listing id, so a test can find its card.
+    """
+    with Session(engine) as session:
+        mine = session.exec(
+            select(Listing)
+            .where(Listing.dispensary_id == world["bergen_id"])
+            .where(Listing.scraped_name == scraped_name)
+        ).one()
+        session.add(Listing(
+            dispensary_id=world["atlantic_id"],
+            scraped_name=mine.scraped_name, scraped_brand=mine.scraped_brand,
+            scraped_category=mine.scraped_category, subtype=mine.subtype,
+            product_line=mine.product_line, strain=mine.strain, variant=mine.variant,
+            price_cents=(mine.price_cents or 0) - 500, in_stock=True, is_active=True,
+        ))
+        session.commit()
+        return str(mine.id)
+
+
+def _card_for(client, listing_id: str) -> dict:
+    rails = client.get("/me/feed").json()["sections"][0]["rails"]
+    cards = [item for items in rails.values() for item in items]
+    return next(card for card in cards if card["id"] == listing_id)
+
+
+def test_the_two_store_counts_mean_different_things(world):
+    """`preferred_store_count` counts the shopper's stores; `market` counts all.
+
+    They used to be one field, mutated in place, so a card could not tell which
+    question it was answering.
+    """
+    client = _client()
+    client.post(f"/me/preferred-dispensaries/{world['bergen_id']}")
+    listing_id = _twin_of(world, "Blue Dream Cart")
+
+    card = _card_for(client, listing_id)
+    # One followed store has it, so there is no "at N of yours" to show...
+    assert card["preferred_store_count"] == 0
+    # ...but a store the shopper does not follow carries it, and undercuts them.
+    assert card["market"]["other_store_count"] == 1
+    assert card["market"]["is_cheapest"] is False
+
+
+def test_the_feed_and_the_menu_agree_about_the_market(world):
+    client = _client()
+    client.post(f"/me/preferred-dispensaries/{world['bergen_id']}")
+    listing_id = _twin_of(world, "Blue Dream Cart")
+
+    card = _card_for(client, listing_id)
+    # The menu lives on the customer router, so this one test mounts both.
+    menu_app = FastAPI()
+    menu_app.include_router(customer_router)
+    menu = TestClient(menu_app).get(
+        f"/customer/dispensaries/{world['bergen_id']}/listings"
+    ).json()
+    row = next(r for r in menu if r["id"] == listing_id)
+
+    # The same product on two screens must not disagree about the market.
+    assert card["market"] == row["market"]
 
 
 def test_the_feed_shows_only_stock_you_can_buy(world):
