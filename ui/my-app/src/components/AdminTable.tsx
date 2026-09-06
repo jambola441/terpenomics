@@ -8,6 +8,11 @@
    page computes its own `rows` (via URL params, hooks, cascade facets, …) and
    passes them in. Sorting is *controlled*: pass `sorting={{ sort, order, onSort }}`
    and the page keeps its existing handleSort/URL logic untouched.
+
+   Row selection is controlled the same way: pass `selection={{ selected, onToggle,
+   onToggleAll }}` and a leading checkbox column appears. The table owns the checkbox
+   chrome (header state, shift-click reporting, not letting a checkbox click count as
+   a row click); the page owns the selected set and whatever it does with it.
    ========================================================================== */
 
 import type { CSSProperties, ReactNode, Key } from 'react'
@@ -51,6 +56,20 @@ export type SortState = {
   onSort: (col: string) => void
 }
 
+export type SelectionState<T> = {
+  /** keys (as returned by `rowKey`) of the currently selected rows */
+  selected: Set<Key>
+  /**
+   * A row's checkbox was clicked. `shift` is true when the click was made with
+   * shift held, which pages conventionally treat as "extend from the last click" —
+   * the table reports it rather than interpreting it, because the anchor belongs to
+   * the page's own list of rows.
+   */
+  onToggle: (row: T, index: number, shift: boolean) => void
+  /** Header checkbox: select every row currently rendered, or clear the selection. */
+  onToggleAll: (checked: boolean) => void
+}
+
 export type Column<T> = {
   /** stable key; also the value passed to onSort when this column is sortable */
   key: string
@@ -76,17 +95,37 @@ export function AdminTable<T>({
   rowKey,
   onRowClick,
   sorting,
+  selection,
 }: {
   columns: Column<T>[]
   rows: T[]
   rowKey: (row: T, index: number) => Key
   onRowClick?: (row: T) => void
   sorting?: SortState
+  selection?: SelectionState<T>
 }) {
+  const selectedHere = selection ? rows.filter((r, i) => selection.selected.has(rowKey(r, i))).length : 0
+  const allSelected = selectedHere > 0 && selectedHere === rows.length
+
   return (
     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
       <thead>
         <tr style={{ color: '#475569', textAlign: 'left', borderBottom: '1px solid #1e293b' }}>
+          {selection && (
+            <th style={{ ...thStyle, width: 30, paddingRight: 0 }}>
+              <input
+                type="checkbox"
+                checked={allSelected}
+                // Some-but-not-all is a third state, and it is the one that matters
+                // here: "select all" after a partial selection must add the rest
+                // rather than look like it is already done.
+                ref={el => { if (el) el.indeterminate = selectedHere > 0 && !allSelected }}
+                onChange={e => selection.onToggleAll(e.target.checked)}
+                title={allSelected ? 'Clear selection' : 'Select every row shown'}
+                style={{ cursor: 'pointer' }}
+              />
+            </th>
+          )}
           {columns.map(col => {
             if (col.sortable && sorting) {
               const active = sorting.sort === col.key
@@ -110,14 +149,36 @@ export function AdminTable<T>({
         </tr>
       </thead>
       <tbody>
-        {rows.map((row, i) => (
+        {rows.map((row, i) => {
+          const key = rowKey(row, i)
+          const isSelected = selection?.selected.has(key) ?? false
+          const restingBg = isSelected ? '#111c33' : 'transparent'
+          return (
           <tr
-            key={rowKey(row, i)}
-            style={{ borderBottom: '1px solid #0f172a', cursor: onRowClick ? 'pointer' : 'default' }}
+            key={key}
+            style={{ borderBottom: '1px solid #0f172a', cursor: onRowClick ? 'pointer' : 'default', background: restingBg }}
             onClick={onRowClick ? () => onRowClick(row) : undefined}
             onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#0f172a'}
-            onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}
+            onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = restingBg}
           >
+            {selection && (
+              <td
+                style={{ ...tdStyle, width: 30, paddingRight: 0 }}
+                // A checkbox click selects; it must never also open the row.
+                onClick={e => e.stopPropagation()}
+              >
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  // Toggled from onClick rather than onChange: the change event does
+                  // not carry modifier keys, and shift-click is how a range is
+                  // selected. onChange still has to exist for a controlled checkbox.
+                  onClick={e => selection.onToggle(row, i, e.shiftKey)}
+                  onChange={() => {}}
+                  style={{ cursor: 'pointer' }}
+                />
+              </td>
+            )}
             {columns.map(col => (
               <td
                 key={col.key}
@@ -128,7 +189,8 @@ export function AdminTable<T>({
               </td>
             ))}
           </tr>
-        ))}
+          )
+        })}
       </tbody>
     </table>
   )
