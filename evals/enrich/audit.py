@@ -268,12 +268,12 @@ def load_db() -> list[dict]:
     cur = conn.cursor()
     cur.execute("""
         SELECT d.slug, l.sku, l.scraped_name, l.scraped_brand, l.scraped_category,
-               l.subtype, l.strain, l.product_line, l.variant
+               l.subtype, l.strain, l.product_line, l.variant, l.verified_fields
         FROM listings l JOIN dispensaries d ON d.id = l.dispensary_id
         WHERE l.is_active = TRUE
     """)
     cols = ["dispensary_slug", "sku", "name", "brand", "category",
-            "subtype", "strain", "product_line", "variant"]
+            "subtype", "strain", "product_line", "variant", "verified_fields"]
     rows = [dict(zip(cols, r)) for r in cur.fetchall()]
     conn.close()
     return rows
@@ -283,8 +283,38 @@ def load_db() -> list[dict]:
 # Report
 # ---------------------------------------------------------------------------
 
-def to_markdown(results: dict, n_rows: int) -> str:
+def verification_summary(rows: list[dict]) -> str:
+    """Verified coverage, so a suspect rate reads as 'per 100 unverified'.
+
+    A suspect count over the whole table gets less meaningful as review lands:
+    the rows a human has signed are not candidates for review, so leaving them in
+    the denominator understates how much of the remaining surface is dirty.
+    """
+    try:
+        sys.path.insert(0, str(Path(__file__).parent.parent.parent / "scripts"))
+        import verification
+    except ImportError:
+        return ""
+    live = sum(1 for r in rows if verification.verified_fields(r))
+    lapsed = sum(1 for r in rows if verification.lapsed_fields(r))
+    if not live and not lapsed:
+        return ""
+    out = [f"\n## Verification\n",
+           f"- verified: **{live:,}** of {len(rows):,} listings "
+           f"({live / len(rows) * 100:.2f}%)"]
+    if lapsed:
+        out.append(f"- lapsed: **{lapsed:,}** — renamed since review, needs re-checking")
+    out.append(f"- suspect rates below are over all {len(rows):,} rows; the "
+               f"{live:,} verified ones are not review candidates")
+    return "\n".join(out) + "\n"
+
+
+def to_markdown(results: dict, n_rows: int, rows: list[dict] | None = None) -> str:
     lines = [f"# Enrichment audit — {n_rows} listings\n"]
+    if rows:
+        summary = verification_summary(rows)
+        if summary:
+            lines.append(summary)
     lines.append("| check | findings |")
     lines.append("|---|---|")
     for name, findings in results.items():
@@ -314,7 +344,7 @@ def main() -> None:
     rows = load_db() if args.db else load_csvs(args.csv)
     results = {name: fn(rows) for name, fn in CHECKS}
 
-    md = to_markdown(results, len(rows))
+    md = to_markdown(results, len(rows), rows)
     print(md)
     if args.md:
         Path(args.md).write_text(md, encoding="utf-8")

@@ -4,7 +4,7 @@
     "slug": "coney-island-cannabis",
     "platform": "dutchie_plus",
     "scraper": "prototypes/dutchie-scraper/scrape.py",
-    "status": "active",
+    "status": "inactive",
     "dutchie_id": null,
     "blaze_id": null,
     "alleaves_tenant": null,
@@ -18,19 +18,20 @@
       "zip": "11224"
     },
     "latitude": 40.5795335,
-    "longitude": -73.9780311
+    "longitude": -73.9780311,
+    "_note": "Storefront gone: shop.coneyislandcannabis.nyc 404s at the domain root (checked 2026-08-25)"
   },
   {
     "name": "The Plug",
     "slug": "the-plug-crown-heights",
-    "platform": "flowhub",
-    "scraper": "prototypes/dutchie-scraper/scrape.py",
+    "platform": "dutchie_graphql",
+    "scraper": "prototypes/dutchie-scraper/scrape_graphql.py",
     "status": "active",
-    "dutchie_id": null,
+    "dutchie_id": "68dc46d938899896d40a1beb",
     "blaze_id": null,
     "alleaves_tenant": null,
-    "menu_url": "https://theplug-brooklyn.dispensary.shop/rec/search",
-    "store_url": "https://theplug-brooklyn.dispensary.shop",
+    "menu_url": "https://dutchie.com/dispensary/the-plug-brooklyn",
+    "store_url": "https://theplugny.online",
     "neighborhood": "Crown Heights",
     "address": {
       "street": "428 Rogers Ave",

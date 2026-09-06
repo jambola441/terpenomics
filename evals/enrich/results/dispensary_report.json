@@ -1,0 +1,6238 @@
+[
+ {
+  "slug": "bedford-club-bk",
+  "listings": 774,
+  "enriched": true,
+  "coverage": {
+   "with_description": 88.6,
+   "other_share": 0.0,
+   "categories": {
+    "vaporizers": 207,
+    "edible": 174,
+    "preroll": 165,
+    "flower": 157,
+    "merch": 33,
+    "tinctures": 17,
+    "concentrate": 13,
+    "topical": 8
+   }
+  },
+  "fill": {
+   "strain": 99.0,
+   "strain_n": 716,
+   "subtype": 100.0,
+   "subtype_n": 741,
+   "variant": 98.0,
+   "variant_n": 733,
+   "product_line": 20.5
+  },
+  "suspects": {
+   "total": 28,
+   "per_100": 3.6,
+   "by_check": {
+    "category_token_conflict": 4,
+    "unmapped_category_bucket": 0,
+    "unmapped_raw_category": 1,
+    "strain_split": 3,
+    "line_leaked_into_strain": 6,
+    "lineage_as_strain": 7,
+    "variant_anomaly": 0,
+    "brand_split": 0,
+    "missing_enrichment": 7
+   }
+  },
+  "findings": {
+   "category_token_conflict": [
+    {
+     "slug": "bedford-club-bk",
+     "sku": "ZZZ-JH-BOOKTIP",
+     "name": "ZZZ's King Size Slim Papers + Tips - \"Joint Hands\" by Joaquin Carreño (32 leaves + 32 filters / booklet)",
+     "brand": "ZZZ's Rolling Papers",
+     "category": "merch",
+     "token": "Joint",
+     "suggests": "preroll"
+    },
+    {
+     "slug": "bedford-club-bk",
+     "sku": "ZZZ-JOAQ-TRAY",
+     "name": "Rolling Tray with Magnetic Cover - Joint Hands by Joaquin Carreno",
+     "brand": "ZZZ's Rolling Papers",
+     "category": "merch",
+     "token": "Joint",
+     "suggests": "preroll"
+    },
+    {
+     "slug": "bedford-club-bk",
+     "sku": "75C19ELKMYLZ6P",
+     "name": "X| Ayrloom | Beverage Enhancer | Tincture (300THC)",
+     "brand": "Ayrloom",
+     "category": "tinctures",
+     "token": "Beverage",
+     "suggests": "edible"
+    },
+    {
+     "slug": "bedford-club-bk",
+     "sku": "B963PRO1",
+     "name": "X| Dank | Chocolate Thai | Preroll | 1g",
+     "brand": "Dank By Definition",
+     "category": "preroll",
+     "token": "Chocolate",
+     "suggests": "edible"
+    }
+   ],
+   "unmapped_category_bucket": [],
+   "unmapped_raw_category": [
+    {
+     "raw_category": "Infused Pre-Rolled Flower",
+     "count": 2,
+     "sample_name": "Hudson Cannabis | Joint - 7pk | Hash-Infused Cider Spice | 3.5g"
+    }
+   ],
+   "strain_split": [
+    {
+     "brand": "florist farms",
+     "strains": [
+      "Tropical Cookies",
+      "Tropicana Cookies"
+     ]
+    },
+    {
+     "brand": "weekenders",
+     "strains": [
+      "Tropicana Cookie",
+      "Tropicana Cookies"
+     ]
+    },
+    {
+     "brand": "runtz",
+     "strains": [
+      "L'Orange",
+      "L'orange"
+     ]
+    }
+   ],
+   "line_leaked_into_strain": [
+    {
+     "slug": "bedford-club-bk",
+     "sku": "82D84CB7SSP6VE",
+     "name": "X| Ayrloom | Pillow Talk | Tincture (300THC:1500CBN)",
+     "brand": "Ayrloom",
+     "strain": "Pillow Talk",
+     "product_line": "Pillow Talk"
+    },
+    {
+     "slug": "bedford-club-bk",
+     "sku": "26A9A9K8ZFEM9S",
+     "name": "X| Camino | Sour Deep Sleep Blackberry Dream | 10ct",
+     "brand": "Camino",
+     "strain": "Sour Deep Sleep Blackberry Dream",
+     "product_line": "Sleep"
+    },
+    {
+     "slug": "bedford-club-bk",
+     "sku": "B6BEPRO1",
+     "name": "X| Weekender | Lift | Blue Dream | 7pk | 3.5g",
+     "brand": "Weekenders",
+     "strain": "Blue Dream",
+     "product_line": "Dream"
+    },
+    {
+     "slug": "bedford-club-bk",
+     "sku": "B0D3PRO1",
+     "name": "X| Weekenders | Lift |  Blue Dream | Preroll | 1g",
+     "brand": "Weekenders",
+     "strain": "Blue Dream",
+     "product_line": "Dream"
+    },
+    {
+     "slug": "bedford-club-bk",
+     "sku": "BD00PRO1",
+     "name": "X| Papa & Barkley | Relief Balm | 3:1 | 50ml",
+     "brand": "Papa & Barkley",
+     "strain": "Relief Balm",
+     "product_line": "Relief"
+    },
+    {
+     "slug": "bedford-club-bk",
+     "sku": "BCC9PRO1",
+     "name": "X| Papa & Barkley | Relief Balm | 1:3 | 50ml",
+     "brand": "Papa & Barkley",
+     "strain": "Relief Balm",
+     "product_line": "Relief"
+    }
+   ],
+   "lineage_as_strain": [
+    {
+     "slug": "bedford-club-bk",
+     "sku": "0B8CCA84X1TUAO",
+     "name": "X| Ithaca | Just the Plant | SATIVA | Tincture",
+     "brand": "Ithaca Organics Cannabis Co.",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "bedford-club-bk",
+     "sku": "517C0DB18GDFER",
+     "name": "X| Ithaca | Just the Plant HYBRID | Tincture",
+     "brand": "Ithaca Organics Cannabis Co.",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "bedford-club-bk",
+     "sku": "BB9BPRO1",
+     "name": "X| Anthem | Sativa | Preroll | 10pk | 3.5g",
+     "brand": "Anthem",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "bedford-club-bk",
+     "sku": "B6F5PRO1",
+     "name": "X| Anthem | Indica | Preroll | 10pk | 3.5g",
+     "brand": "Anthem",
+     "strain": "Indica"
+    },
+    {
+     "slug": "bedford-club-bk",
+     "sku": "B01DPRO1",
+     "name": "X| Pure Beauty | Sativa | Preroll | 10pk | 3.5g",
+     "brand": "Blaze",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "bedford-club-bk",
+     "sku": "B0CEPRO1",
+     "name": "X| Pure Beauty | Indica | Preroll | 10pk | 3.5g",
+     "brand": "Blaze",
+     "strain": "Indica"
+    },
+    {
+     "slug": "bedford-club-bk",
+     "sku": "BD39PRO1",
+     "name": "X| Pure Beauty | Hybrid | Preroll | 10pk | 3.5g",
+     "brand": "Blaze",
+     "strain": "Hybrid"
+    }
+   ],
+   "variant_anomaly": [],
+   "brand_split": [],
+   "missing_enrichment": [
+    {
+     "slug": "bedford-club-bk",
+     "sku": "BATT-PAX-LAV",
+     "name": "Era Go | Pax | Battery | Lavender",
+     "brand": "PAX",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "bedford-club-bk",
+     "sku": "BATT-PAX-GOLD",
+     "name": "Gold | Pax | Era Go | Battery",
+     "brand": "PAX",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "bedford-club-bk",
+     "sku": "30",
+     "name": "Battery - STIIIZY BAR - BLACK",
+     "brand": "STIIIZY",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "bedford-club-bk",
+     "sku": "BAT-STIIIZY-PROXL-CAMO",
+     "name": "Battery - Pro XL - Camo",
+     "brand": "STIIIZY",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "bedford-club-bk",
+     "sku": "BAT-STIIIZY-PRO-WHITE",
+     "name": "Battery - Pro - Pearl White",
+     "brand": "STIIIZY",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "bedford-club-bk",
+     "sku": "BBBAPRO1",
+     "name": "X| Canopi | THC Elexir | 60ml | 12mg",
+     "brand": "Blaze",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "bedford-club-bk",
+     "sku": "B07APRO1",
+     "name": "X| Canopi | THC Elexir | 500ml | 100mg",
+     "brand": "Blaze",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "slug": "by-any-other-name-bk",
+  "listings": 226,
+  "enriched": true,
+  "coverage": {
+   "with_description": 87.2,
+   "other_share": 0.0,
+   "categories": {
+    "preroll": 50,
+    "flower": 45,
+    "edible": 43,
+    "vaporizers": 39,
+    "merch": 25,
+    "tinctures": 12,
+    "concentrate": 7,
+    "topical": 5
+   }
+  },
+  "fill": {
+   "strain": 99.5,
+   "strain_n": 184,
+   "subtype": 100.0,
+   "subtype_n": 201,
+   "variant": 99.0,
+   "variant_n": 196,
+   "product_line": 10.6
+  },
+  "suspects": {
+   "total": 2,
+   "per_100": 0.9,
+   "by_check": {
+    "category_token_conflict": 1,
+    "unmapped_category_bucket": 0,
+    "unmapped_raw_category": 0,
+    "strain_split": 0,
+    "line_leaked_into_strain": 0,
+    "lineage_as_strain": 0,
+    "variant_anomaly": 0,
+    "brand_split": 0,
+    "missing_enrichment": 1
+   }
+  },
+  "findings": {
+   "category_token_conflict": [
+    {
+     "slug": "by-any-other-name-bk",
+     "sku": "67ba4702f04c0bd5ffe45d5b",
+     "name": "Tonic | Tonic Flight | 5 ML of Chill, Grounded, O.G and Flex Tonics plus Chronic Tonic Topical",
+     "brand": "TONIC",
+     "category": "tinctures",
+     "token": "Topical",
+     "suggests": "topical"
+    }
+   ],
+   "unmapped_category_bucket": [],
+   "unmapped_raw_category": [],
+   "strain_split": [],
+   "line_leaked_into_strain": [],
+   "lineage_as_strain": [],
+   "variant_anomaly": [],
+   "brand_split": [],
+   "missing_enrichment": [
+    {
+     "slug": "by-any-other-name-bk",
+     "sku": "6a7531c934af876e7f0182cb",
+     "name": "Octo Dual | 510 Cart | 650 MAH Batt",
+     "brand": "",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "slug": "dagmar-cannabis-wburg",
+  "listings": 263,
+  "enriched": true,
+  "coverage": {
+   "with_description": 82.9,
+   "other_share": 0.0,
+   "categories": {
+    "preroll": 90,
+    "merch": 54,
+    "edible": 52,
+    "vaporizers": 40,
+    "flower": 15,
+    "concentrate": 8,
+    "tinctures": 3,
+    "topical": 1
+   }
+  },
+  "fill": {
+   "strain": 99.0,
+   "strain_n": 205,
+   "subtype": 100.0,
+   "subtype_n": 209,
+   "variant": 100.0,
+   "variant_n": 208,
+   "product_line": 12.5
+  },
+  "suspects": {
+   "total": 6,
+   "per_100": 2.3,
+   "by_check": {
+    "category_token_conflict": 0,
+    "unmapped_category_bucket": 0,
+    "unmapped_raw_category": 0,
+    "strain_split": 2,
+    "line_leaked_into_strain": 2,
+    "lineage_as_strain": 0,
+    "variant_anomaly": 0,
+    "brand_split": 0,
+    "missing_enrichment": 2
+   }
+  },
+  "findings": {
+   "category_token_conflict": [],
+   "unmapped_category_bucket": [],
+   "unmapped_raw_category": [],
+   "strain_split": [
+    {
+     "brand": "ruby farms",
+     "strains": [
+      "Grand Daddy Purple",
+      "Granddaddy Purple"
+     ]
+    },
+    {
+     "brand": "1906",
+     "strains": [
+      "Relief AM",
+      "Relief PM"
+     ]
+    }
+   ],
+   "line_leaked_into_strain": [
+    {
+     "slug": "dagmar-cannabis-wburg",
+     "sku": "6a2689e9c8c27367ee68201d",
+     "name": "RELIEF PM for Pain Multi Pack",
+     "brand": "1906",
+     "strain": "Relief PM",
+     "product_line": "Relief"
+    },
+    {
+     "slug": "dagmar-cannabis-wburg",
+     "sku": "6a2689e9c8c27367ee68201e",
+     "name": "RELIEF AM for Pain Multi Pack",
+     "brand": "1906",
+     "strain": "Relief AM",
+     "product_line": "Relief"
+    }
+   ],
+   "lineage_as_strain": [],
+   "variant_anomaly": [],
+   "brand_split": [],
+   "missing_enrichment": [
+    {
+     "slug": "dagmar-cannabis-wburg",
+     "sku": "6a6cb6e45823778fd7a4eccd",
+     "name": "1906 Boost Pouch 3pk",
+     "brand": "1906",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "dagmar-cannabis-wburg",
+     "sku": "6a6cb6e45823778fd7a4ecca",
+     "name": "Lowell Smokes Closing Time Prerolls 10pk",
+     "brand": "Lowell Herb Co.",
+     "category": "preroll",
+     "missing": [
+      "strain"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "slug": "emerald-dispensary-bk",
+  "listings": 434,
+  "enriched": true,
+  "coverage": {
+   "with_description": 100.0,
+   "other_share": 0.0,
+   "categories": {
+    "edible": 127,
+    "preroll": 121,
+    "vaporizers": 107,
+    "flower": 60,
+    "concentrate": 12,
+    "topical": 4,
+    "tinctures": 3
+   }
+  },
+  "fill": {
+   "strain": 100.0,
+   "strain_n": 427,
+   "subtype": 100.0,
+   "subtype_n": 434,
+   "variant": 100.0,
+   "variant_n": 430,
+   "product_line": 12.9
+  },
+  "suspects": {
+   "total": 1,
+   "per_100": 0.2,
+   "by_check": {
+    "category_token_conflict": 1,
+    "unmapped_category_bucket": 0,
+    "unmapped_raw_category": 0,
+    "strain_split": 0,
+    "line_leaked_into_strain": 0,
+    "lineage_as_strain": 0,
+    "variant_anomaly": 0,
+    "brand_split": 0,
+    "missing_enrichment": 0
+   }
+  },
+  "findings": {
+   "category_token_conflict": [
+    {
+     "slug": "emerald-dispensary-bk",
+     "sku": "69824544901d60afa1c6076a",
+     "name": "ayrloom | Beverage Enhancer | 300mg THC",
+     "brand": "Ayrloom",
+     "category": "tinctures",
+     "token": "Beverage",
+     "suggests": "edible"
+    }
+   ],
+   "unmapped_category_bucket": [],
+   "unmapped_raw_category": [],
+   "strain_split": [],
+   "line_leaked_into_strain": [],
+   "lineage_as_strain": [],
+   "variant_anomaly": [],
+   "brand_split": [],
+   "missing_enrichment": []
+  }
+ },
+ {
+  "slug": "emerald-dispensary-carroll-gardens",
+  "listings": 200,
+  "enriched": true,
+  "coverage": {
+   "with_description": 100.0,
+   "other_share": 0.0,
+   "categories": {
+    "edible": 67,
+    "preroll": 58,
+    "vaporizers": 41,
+    "flower": 27,
+    "topical": 5,
+    "tinctures": 2
+   }
+  },
+  "fill": {
+   "strain": 100.0,
+   "strain_n": 193,
+   "subtype": 100.0,
+   "subtype_n": 200,
+   "variant": 100.0,
+   "variant_n": 195,
+   "product_line": 19.5
+  },
+  "suspects": {
+   "total": 2,
+   "per_100": 1.0,
+   "by_check": {
+    "category_token_conflict": 0,
+    "unmapped_category_bucket": 0,
+    "unmapped_raw_category": 0,
+    "strain_split": 0,
+    "line_leaked_into_strain": 2,
+    "lineage_as_strain": 0,
+    "variant_anomaly": 0,
+    "brand_split": 0,
+    "missing_enrichment": 0
+   }
+  },
+  "findings": {
+   "category_token_conflict": [],
+   "unmapped_category_bucket": [],
+   "unmapped_raw_category": [],
+   "strain_split": [],
+   "line_leaked_into_strain": [
+    {
+     "slug": "emerald-dispensary-carroll-gardens",
+     "sku": "6a267fdeee8df948ca7a220c",
+     "name": "Releaf Balm 1:3 THC:CBD | 15ml",
+     "brand": "Papa & Barkley",
+     "strain": "Releaf",
+     "product_line": "Releaf"
+    },
+    {
+     "slug": "emerald-dispensary-carroll-gardens",
+     "sku": "6a267fdeee8df948ca7a220d",
+     "name": "Releaf Balm 3:1 THC:CBD | 15ml",
+     "brand": "Papa & Barkley",
+     "strain": "Releaf",
+     "product_line": "Releaf"
+    }
+   ],
+   "lineage_as_strain": [],
+   "variant_anomaly": [],
+   "brand_split": [],
+   "missing_enrichment": []
+  }
+ },
+ {
+  "slug": "fireleaf-canarsie",
+  "listings": 423,
+  "enriched": true,
+  "coverage": {
+   "with_description": 100.0,
+   "other_share": 0.0,
+   "categories": {
+    "preroll": 132,
+    "flower": 106,
+    "edible": 96,
+    "vaporizers": 84,
+    "tinctures": 3,
+    "topical": 2
+   }
+  },
+  "fill": {
+   "strain": 99.8,
+   "strain_n": 418,
+   "subtype": 100.0,
+   "subtype_n": 423,
+   "variant": 100.0,
+   "variant_n": 421,
+   "product_line": 18.0
+  },
+  "suspects": {
+   "total": 4,
+   "per_100": 0.9,
+   "by_check": {
+    "category_token_conflict": 1,
+    "unmapped_category_bucket": 0,
+    "unmapped_raw_category": 0,
+    "strain_split": 1,
+    "line_leaked_into_strain": 0,
+    "lineage_as_strain": 1,
+    "variant_anomaly": 0,
+    "brand_split": 0,
+    "missing_enrichment": 1
+   }
+  },
+  "findings": {
+   "category_token_conflict": [
+    {
+     "slug": "fireleaf-canarsie",
+     "sku": "67084e7d03879bb1f39e82cb",
+     "name": "Ayrloom | Beverage Enhancer | Tincture | 300mg",
+     "brand": "Ayrloom",
+     "category": "tinctures",
+     "token": "Beverage",
+     "suggests": "edible"
+    }
+   ],
+   "unmapped_category_bucket": [],
+   "unmapped_raw_category": [],
+   "strain_split": [
+    {
+     "brand": "ayrloom",
+     "strains": [
+      "Alaskan Thunder F*ck",
+      "Alaskan Thunder Fuck"
+     ]
+    }
+   ],
+   "line_leaked_into_strain": [],
+   "lineage_as_strain": [
+    {
+     "slug": "fireleaf-canarsie",
+     "sku": "6711511feb20c58a5ad0ce75",
+     "name": "LEVEL | Hybrid Protab | Tablets | 5pk | 100mg",
+     "brand": "Level",
+     "strain": "Hybrid"
+    }
+   ],
+   "variant_anomaly": [],
+   "brand_split": [],
+   "missing_enrichment": [
+    {
+     "slug": "fireleaf-canarsie",
+     "sku": "67a77d907448f15028efe006",
+     "name": "Honey Pot THC | Infused Honey | 100mg",
+     "brand": "HoneyPot THC",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "slug": "garden-club-carroll-gardens",
+  "listings": 404,
+  "enriched": true,
+  "coverage": {
+   "with_description": 97.3,
+   "other_share": 0.0,
+   "categories": {
+    "edible": 104,
+    "merch": 91,
+    "preroll": 83,
+    "flower": 58,
+    "vaporizers": 46,
+    "concentrate": 15,
+    "tinctures": 5,
+    "topical": 2
+   }
+  },
+  "fill": {
+   "strain": 96.7,
+   "strain_n": 306,
+   "subtype": 100.0,
+   "subtype_n": 313,
+   "variant": 97.7,
+   "variant_n": 311,
+   "product_line": 11.4
+  },
+  "suspects": {
+   "total": 27,
+   "per_100": 6.7,
+   "by_check": {
+    "category_token_conflict": 10,
+    "unmapped_category_bucket": 0,
+    "unmapped_raw_category": 0,
+    "strain_split": 0,
+    "line_leaked_into_strain": 1,
+    "lineage_as_strain": 6,
+    "variant_anomaly": 0,
+    "brand_split": 0,
+    "missing_enrichment": 10
+   }
+  },
+  "findings": {
+   "category_token_conflict": [
+    {
+     "slug": "garden-club-carroll-gardens",
+     "sku": "69ed696a9b7f73428f3cd776",
+     "name": "Dopest Mom | Joint Holder",
+     "brand": "KushKards",
+     "category": "merch",
+     "token": "Joint",
+     "suggests": "preroll"
+    },
+    {
+     "slug": "garden-club-carroll-gardens",
+     "sku": "69ed696a9b7f73428f3cd772",
+     "name": "High As A Mother | Joint Holder",
+     "brand": "",
+     "category": "merch",
+     "token": "Joint",
+     "suggests": "preroll"
+    },
+    {
+     "slug": "garden-club-carroll-gardens",
+     "sku": "69ed696a9b7f73428f3cd773",
+     "name": "It's 420 Somewhere | Joint Holder",
+     "brand": "KushKards",
+     "category": "merch",
+     "token": "Joint",
+     "suggests": "preroll"
+    },
+    {
+     "slug": "garden-club-carroll-gardens",
+     "sku": "69ed696a9b7f73428f3cd777",
+     "name": "Bud Bouquet Birthday Card Joint Holder",
+     "brand": "KushKards",
+     "category": "merch",
+     "token": "Joint",
+     "suggests": "preroll"
+    },
+    {
+     "slug": "garden-club-carroll-gardens",
+     "sku": "69ed696a9b7f73428f3cd76e",
+     "name": "Candles Birthday | Joint Holder",
+     "brand": "KushKards",
+     "category": "merch",
+     "token": "Joint",
+     "suggests": "preroll"
+    },
+    {
+     "slug": "garden-club-carroll-gardens",
+     "sku": "69ed696a9b7f73428f3cd76a",
+     "name": "Congrats Champagne Buds | Joint Holder",
+     "brand": "KushKards",
+     "category": "merch",
+     "token": "Joint",
+     "suggests": "preroll"
+    },
+    {
+     "slug": "garden-club-carroll-gardens",
+     "sku": "69ed696a9b7f73428f3cd774",
+     "name": "For The Record | Joint Holder",
+     "brand": "KushKards",
+     "category": "merch",
+     "token": "Joint",
+     "suggests": "preroll"
+    },
+    {
+     "slug": "garden-club-carroll-gardens",
+     "sku": "69ed696a9b7f73428f3cd778",
+     "name": "Kush Kard | Flowers | Joint Holder",
+     "brand": "KushKards",
+     "category": "merch",
+     "token": "Joint",
+     "suggests": "preroll"
+    },
+    {
+     "slug": "garden-club-carroll-gardens",
+     "sku": "6a8a0a7a9629160482ceadd5",
+     "name": "Happy Hounds | Smokey Bacon Chews | Calm + Joint | 30pk | 5mgCBD/serving",
+     "brand": "Happy Hounds",
+     "category": "edible",
+     "token": "Joint",
+     "suggests": "preroll"
+    },
+    {
+     "slug": "garden-club-carroll-gardens",
+     "sku": "69d959afd55b57366c622f38",
+     "name": "Beverage Enhancer | 300mg THC | 5mg/Serving",
+     "brand": "Ayrloom",
+     "category": "tinctures",
+     "token": "Beverage",
+     "suggests": "edible"
+    }
+   ],
+   "unmapped_category_bucket": [],
+   "unmapped_raw_category": [],
+   "strain_split": [],
+   "line_leaked_into_strain": [
+    {
+     "slug": "garden-club-carroll-gardens",
+     "sku": "69dff8074818c2a543999413",
+     "name": "Apple-A-Day | Gummies | 1:4 THC:CBD | 20pk | 2.5mgTHC/Serving",
+     "brand": "Eaton Botanicals",
+     "strain": "Apple-A-Day",
+     "product_line": "Apple-A-Day"
+    }
+   ],
+   "lineage_as_strain": [
+    {
+     "slug": "garden-club-carroll-gardens",
+     "sku": "69da8e9b6bede78c83c63a36",
+     "name": "Milk Chocolate | 3:1 CBG:THC | Daytime Sativa | 10pk | 10mgTHC/serving",
+     "brand": "Grön",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "garden-club-carroll-gardens",
+     "sku": "6a20a2999f00a35887154944",
+     "name": "Indica Variety Pack | Prerolls | 5 x .6g | 5pk",
+     "brand": "Ravens View Genetics",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "garden-club-carroll-gardens",
+     "sku": "6a20a2999f00a35887154949",
+     "name": "Sativa Variety Pack | Prerolls | 5 x .6g | 5pk",
+     "brand": "Ravens View Genetics",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "garden-club-carroll-gardens",
+     "sku": "6a45b96848e2eda54214beb1",
+     "name": "Indica Babies | Pre-Roll | 10x.35 | 10pk",
+     "brand": "Pure Beauty",
+     "strain": "Indica"
+    },
+    {
+     "slug": "garden-club-carroll-gardens",
+     "sku": "6a45b96848e2eda54214beb2",
+     "name": "Sativa Babies | Pre-Roll | 10x.35 | 10pk",
+     "brand": "Pure Beauty",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "garden-club-carroll-gardens",
+     "sku": "69e2ab923029b436033b421a",
+     "name": "Sativa | Full Spectrum Rosin Tincture | 1000mg",
+     "brand": "Ithaca Organics Cannabis Co.",
+     "strain": "Sativa"
+    }
+   ],
+   "variant_anomaly": [],
+   "brand_split": [],
+   "missing_enrichment": [
+    {
+     "slug": "garden-club-carroll-gardens",
+     "sku": "69e2c0b9d8f3ae52505d63a7",
+     "name": "Veazy | Dry Herb Vaporizer | Alluring Black",
+     "brand": "Storz & Bickel",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "garden-club-carroll-gardens",
+     "sku": "69e2c0b9d8f3ae52505d63a8",
+     "name": "Veazy | Dry Herb Vaporizer | Charming Pink",
+     "brand": "Storz & Bickel",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "garden-club-carroll-gardens",
+     "sku": "6a513b9c4701da4f90e65b9e",
+     "name": "Puffco | Pivot | Sapphire",
+     "brand": "Puffco",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "garden-club-carroll-gardens",
+     "sku": "6a752078b1123198b176a2db",
+     "name": "Dry Herb Vaporizer | Dynamic Blue",
+     "brand": "Storz & Bickel",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "garden-club-carroll-gardens",
+     "sku": "6a752078b1123198b176a2d4",
+     "name": "Proxy Core Kit | Haze",
+     "brand": "Puffco",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "garden-club-carroll-gardens",
+     "sku": "6a752078b1123198b176a2d5",
+     "name": "Peak | Sapphire",
+     "brand": "Puffco",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "garden-club-carroll-gardens",
+     "sku": "6a752078b1123198b176a2dc",
+     "name": "Veazy | Dry Herb Vaporizer | Inspiring Orange",
+     "brand": "Storz & Bickel",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "garden-club-carroll-gardens",
+     "sku": "6a20ac098cb1c80a54e57a49",
+     "name": "Sleep Drops | Plant-Based Pills | 20pk | 5mgTHC/Serving",
+     "brand": "1906",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "garden-club-carroll-gardens",
+     "sku": "6a20ac098cb1c80a54e57a46",
+     "name": "Bliss Drops | Plant-Based Pills | 20pk | 5mgTHC/Serving",
+     "brand": "1906",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "garden-club-carroll-gardens",
+     "sku": "6a20ac098cb1c80a54e57a4a",
+     "name": "Chill Drops | Plant-Based Pills | 20pk | 5mgTHC/Serving",
+     "brand": "1906",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "slug": "greene-street-sheepshead-bay",
+  "listings": 319,
+  "enriched": true,
+  "coverage": {
+   "with_description": 100.0,
+   "other_share": 0.0,
+   "categories": {
+    "preroll": 103,
+    "vaporizers": 85,
+    "flower": 81,
+    "edible": 46,
+    "tinctures": 3,
+    "topical": 1
+   }
+  },
+  "fill": {
+   "strain": 100.0,
+   "strain_n": 315,
+   "subtype": 100.0,
+   "subtype_n": 319,
+   "variant": 100.0,
+   "variant_n": 318,
+   "product_line": 21.9
+  },
+  "suspects": {
+   "total": 7,
+   "per_100": 2.2,
+   "by_check": {
+    "category_token_conflict": 1,
+    "unmapped_category_bucket": 0,
+    "unmapped_raw_category": 0,
+    "strain_split": 0,
+    "line_leaked_into_strain": 0,
+    "lineage_as_strain": 6,
+    "variant_anomaly": 0,
+    "brand_split": 0,
+    "missing_enrichment": 0
+   }
+  },
+  "findings": {
+   "category_token_conflict": [
+    {
+     "slug": "greene-street-sheepshead-bay",
+     "sku": "6a0ce5050aa5e68312c6f8df",
+     "name": "ADK | Chocolate Dipped Bananas",
+     "brand": "ADK Hemp Co.",
+     "category": "flower",
+     "token": "Chocolate",
+     "suggests": "edible"
+    }
+   ],
+   "unmapped_category_bucket": [],
+   "unmapped_raw_category": [],
+   "strain_split": [],
+   "line_leaked_into_strain": [],
+   "lineage_as_strain": [
+    {
+     "slug": "greene-street-sheepshead-bay",
+     "sku": "6a74d38ea7c99197baa98d48",
+     "name": "Classic Sativa 5 Pack [3.5g]",
+     "brand": "Birdies",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "greene-street-sheepshead-bay",
+     "sku": "6a74d38ea7c99197baa98d47",
+     "name": "Classic Hybrid 5 Pack [3.5g]",
+     "brand": "Birdies",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "greene-street-sheepshead-bay",
+     "sku": "6a74d38ea7c99197baa98d49",
+     "name": "Classic Indica 5 Pack [3.5g]",
+     "brand": "Birdies",
+     "strain": "Indica"
+    },
+    {
+     "slug": "greene-street-sheepshead-bay",
+     "sku": "689f7a7e21d1b7c649b730c4",
+     "name": "Anthem | Sativa 10PK",
+     "brand": "Anthem",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "greene-street-sheepshead-bay",
+     "sku": "689f7a7e21d1b7c649b730c6",
+     "name": "Anthem | Hybrid 10PK",
+     "brand": "Anthem",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "greene-street-sheepshead-bay",
+     "sku": "689f7a7e21d1b7c649b730c5",
+     "name": "Anthem | Indica 10PK",
+     "brand": "Anthem",
+     "strain": "Indica"
+    }
+   ],
+   "variant_anomaly": [],
+   "brand_split": [],
+   "missing_enrichment": []
+  }
+ },
+ {
+  "slug": "grow-together-bk",
+  "listings": 845,
+  "enriched": true,
+  "coverage": {
+   "with_description": 6.7,
+   "other_share": 0.0,
+   "categories": {
+    "vaporizers": 239,
+    "preroll": 230,
+    "flower": 223,
+    "edible": 119,
+    "concentrate": 19,
+    "tinctures": 10,
+    "merch": 4,
+    "topical": 1
+   }
+  },
+  "fill": {
+   "strain": 99.0,
+   "strain_n": 830,
+   "subtype": 100.0,
+   "subtype_n": 841,
+   "variant": 98.5,
+   "variant_n": 840,
+   "product_line": 9.2
+  },
+  "suspects": {
+   "total": 24,
+   "per_100": 2.8,
+   "by_check": {
+    "category_token_conflict": 2,
+    "unmapped_category_bucket": 0,
+    "unmapped_raw_category": 0,
+    "strain_split": 6,
+    "line_leaked_into_strain": 0,
+    "lineage_as_strain": 6,
+    "variant_anomaly": 2,
+    "brand_split": 0,
+    "missing_enrichment": 8
+   }
+  },
+  "findings": {
+   "category_token_conflict": [
+    {
+     "slug": "grow-together-bk",
+     "sku": "0090-01-006",
+     "name": "OMO Sun-Grown Oral Drops Standardized Tincture  RSO - 1 oz. Bottle",
+     "brand": "OMO Labs",
+     "category": "concentrate",
+     "token": "Tincture",
+     "suggests": "tinctures"
+    },
+    {
+     "slug": "grow-together-bk",
+     "sku": "100325-WST0010",
+     "name": "Ayrloom AU - Canna Cocktail Gift Set - Beverage Enhancer 300mg THC",
+     "brand": "Ayrloom",
+     "category": "tinctures",
+     "token": "Beverage",
+     "suggests": "edible"
+    }
+   ],
+   "unmapped_category_bucket": [],
+   "unmapped_raw_category": [],
+   "strain_split": [
+    {
+     "brand": "ayrloom",
+     "strains": [
+      "HoneyCrisp",
+      "Honeycrisp"
+     ]
+    },
+    {
+     "brand": "",
+     "strains": [
+      "Cherry Kush",
+      "Cherry Rush"
+     ]
+    },
+    {
+     "brand": "new york honey",
+     "strains": [
+      "Ice Cream Cake",
+      "Ice Cream Cake v2"
+     ]
+    },
+    {
+     "brand": "ruby farms",
+     "strains": [
+      "Ghost Train Haze",
+      "Ghost Train Haze 2"
+     ]
+    },
+    {
+     "brand": "ruby farms",
+     "strains": [
+      "Grand Daddy Purple",
+      "Grandaddy Purple"
+     ]
+    },
+    {
+     "brand": "sluggers",
+     "strains": [
+      "Watermelon Skittles",
+      "Watermelon Zkittles"
+     ]
+    }
+   ],
+   "line_leaked_into_strain": [],
+   "lineage_as_strain": [
+    {
+     "slug": "grow-together-bk",
+     "sku": "202506040709",
+     "name": "Level - Protab THC Infused Pills - 5pk - Indica",
+     "brand": "Level",
+     "strain": "Indica"
+    },
+    {
+     "slug": "grow-together-bk",
+     "sku": "nPII3YHu9r",
+     "name": "40 Tons - 7pk Prerolls - Hybrid",
+     "brand": "40 Tons",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "grow-together-bk",
+     "sku": "WWaLLU1M1k",
+     "name": "Level - Protab + THC Infused Pills - 2pk - Sativa",
+     "brand": "Level",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "grow-together-bk",
+     "sku": "DawnkZj8P7",
+     "name": "Level - Protab + THC Infused Pills - 2pk - Indica",
+     "brand": "Level",
+     "strain": "Indica"
+    },
+    {
+     "slug": "grow-together-bk",
+     "sku": "x7NEB7PIaD",
+     "name": "40 Tons - 7pk Prerolls - Sativa",
+     "brand": "40 Tons",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "grow-together-bk",
+     "sku": "202506030707",
+     "name": "Level - Protab THC Infused Pills - 5pk - Sativa",
+     "brand": "Level",
+     "strain": "Sativa"
+    }
+   ],
+   "variant_anomaly": [
+    {
+     "slug": "grow-together-bk",
+     "sku": "vWcdq3sJZB",
+     "name": "OFF HOURS - Live Resin Gummy Rope - Gelonade(Sativa-Dom)",
+     "brand": "Off Hours",
+     "category": "edible",
+     "variant": "30g",
+     "reason": "edible in grams (should be total mg, or fl oz for drinks)"
+    },
+    {
+     "slug": "grow-together-bk",
+     "sku": "Auxoom9glk",
+     "name": "OFF HOURS - Live Resin Gummy Rope - Berry Pie (Indica-Dom)",
+     "brand": "Off Hours",
+     "category": "edible",
+     "variant": "30g",
+     "reason": "edible in grams (should be total mg, or fl oz for drinks)"
+    }
+   ],
+   "brand_split": [],
+   "missing_enrichment": [
+    {
+     "slug": "grow-together-bk",
+     "sku": "dWydnIFUVO",
+     "name": "1A4120300001931000000051",
+     "brand": "Jetpacks",
+     "category": "preroll",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "grow-together-bk",
+     "sku": "0524-020-3.5",
+     "name": "Aeterna Cannabis - Hard Cider -3.5g (Hybrid)",
+     "brand": "Aeterna",
+     "category": "flower",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "grow-together-bk",
+     "sku": "24061015FOH",
+     "name": "ROVE - Half Gram - 0.5g Vape Cart -",
+     "brand": "Rove",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "grow-together-bk",
+     "sku": "Q2R5GFFLNV",
+     "name": "Infsd Edib Ea-MAT-Dissolvable Powder-CBD 1:1-10mg-10ct-100mg",
+     "brand": "matter.",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "grow-together-bk",
+     "sku": "3R4VzbjmqX",
+     "name": "Revert - Infused Prerolls 5 pk - (Mixed Strains)",
+     "brand": "Revert",
+     "category": "preroll",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "grow-together-bk",
+     "sku": "0090-01-006",
+     "name": "OMO Sun-Grown Oral Drops Standardized Tincture  RSO - 1 oz. Bottle",
+     "brand": "OMO Labs",
+     "category": "concentrate",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "grow-together-bk",
+     "sku": "202506110796",
+     "name": "Hysteria - Milk Chocolate Bar - 10pc",
+     "brand": "Hysteria",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "grow-together-bk",
+     "sku": "AOUqQsJlBH",
+     "name": "Revert - 6pk Prerolls - (Mixed Strains)",
+     "brand": "Revert",
+     "category": "preroll",
+     "missing": [
+      "strain"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "slug": "herbology-bed-stuy",
+  "listings": 291,
+  "enriched": true,
+  "coverage": {
+   "with_description": 100.0,
+   "other_share": 0.0,
+   "categories": {
+    "preroll": 91,
+    "flower": 90,
+    "vaporizers": 70,
+    "edible": 30,
+    "tinctures": 8,
+    "topical": 2
+   }
+  },
+  "fill": {
+   "strain": 100.0,
+   "strain_n": 281,
+   "subtype": 100.0,
+   "subtype_n": 291,
+   "variant": 100.0,
+   "variant_n": 289,
+   "product_line": 6.9
+  },
+  "suspects": {
+   "total": 4,
+   "per_100": 1.4,
+   "by_check": {
+    "category_token_conflict": 0,
+    "unmapped_category_bucket": 0,
+    "unmapped_raw_category": 0,
+    "strain_split": 0,
+    "line_leaked_into_strain": 2,
+    "lineage_as_strain": 2,
+    "variant_anomaly": 0,
+    "brand_split": 0,
+    "missing_enrichment": 0
+   }
+  },
+  "findings": {
+   "category_token_conflict": [],
+   "unmapped_category_bucket": [],
+   "unmapped_raw_category": [],
+   "strain_split": [],
+   "line_leaked_into_strain": [
+    {
+     "slug": "herbology-bed-stuy",
+     "sku": "6a3f2cd2b4a20f6c515fbff0",
+     "name": "Bouket | Bouket Noir Flower",
+     "brand": "Bouket",
+     "strain": "Bouket Noir",
+     "product_line": "Bouket"
+    },
+    {
+     "slug": "herbology-bed-stuy",
+     "sku": "6a3f2cd2b4a20f6c515fbff2",
+     "name": "Bouket | Bouket Noir 5pk | Preroll",
+     "brand": "Bouket",
+     "strain": "Bouket Noir",
+     "product_line": "Bouket"
+    }
+   ],
+   "lineage_as_strain": [
+    {
+     "slug": "herbology-bed-stuy",
+     "sku": "69fe74c76d93fb3036962afa",
+     "name": "Kings & Queens | Indica 3pk | Preroll",
+     "brand": "Kings & Queens",
+     "strain": "Indica"
+    },
+    {
+     "slug": "herbology-bed-stuy",
+     "sku": "69fe74c76d93fb3036962af8",
+     "name": "Kings & Queens | Sativa 3pk Preroll",
+     "brand": "Kings & Queens",
+     "strain": "Sativa"
+    }
+   ],
+   "variant_anomaly": [],
+   "brand_split": [],
+   "missing_enrichment": []
+  }
+ },
+ {
+  "slug": "hii-nyc-bay-ridge",
+  "listings": 733,
+  "enriched": true,
+  "coverage": {
+   "with_description": 100.0,
+   "other_share": 0.0,
+   "categories": {
+    "flower": 221,
+    "edible": 178,
+    "preroll": 165,
+    "vaporizers": 154,
+    "tinctures": 10,
+    "topical": 5
+   }
+  },
+  "fill": {
+   "strain": 99.7,
+   "strain_n": 718,
+   "subtype": 100.0,
+   "subtype_n": 733,
+   "variant": 100.0,
+   "variant_n": 728,
+   "product_line": 13.4
+  },
+  "suspects": {
+   "total": 22,
+   "per_100": 3.0,
+   "by_check": {
+    "category_token_conflict": 2,
+    "unmapped_category_bucket": 0,
+    "unmapped_raw_category": 0,
+    "strain_split": 5,
+    "line_leaked_into_strain": 5,
+    "lineage_as_strain": 8,
+    "variant_anomaly": 0,
+    "brand_split": 0,
+    "missing_enrichment": 2
+   }
+  },
+  "findings": {
+   "category_token_conflict": [
+    {
+     "slug": "hii-nyc-bay-ridge",
+     "sku": "69d5a352614ee01d5eb1bf9e",
+     "name": "ayrloom | Beverage Enhancer | 300mg THC",
+     "brand": "Ayrloom",
+     "category": "tinctures",
+     "token": "Beverage",
+     "suggests": "edible"
+    },
+    {
+     "slug": "hii-nyc-bay-ridge",
+     "sku": "69d0719a24103f6bdce42084",
+     "name": "Chocolate Diesel | AIO Palm | Sativa | 1.5g",
+     "brand": "Jaunty",
+     "category": "vaporizers",
+     "token": "Chocolate",
+     "suggests": "edible"
+    }
+   ],
+   "unmapped_category_bucket": [],
+   "unmapped_raw_category": [],
+   "strain_split": [
+    {
+     "brand": "1906",
+     "strains": [
+      "Relief AM",
+      "Relief PM"
+     ]
+    },
+    {
+     "brand": "rolling hills wellness",
+     "strains": [
+      "YAAD",
+      "Yaad"
+     ]
+    },
+    {
+     "brand": "sp farms",
+     "strains": [
+      "Rainbow Gelato",
+      "Rainbow Gelato V2"
+     ]
+    },
+    {
+     "brand": "bodega boyz",
+     "strains": [
+      "Candie Funk x Peach Sherbert",
+      "Candy Funk x Peach Sherbert"
+     ]
+    },
+    {
+     "brand": "bodega boyz",
+     "strains": [
+      "Pink Guava Runtz x Blueberry Certz",
+      "Pink Guava x Blueberry Certz"
+     ]
+    }
+   ],
+   "line_leaked_into_strain": [
+    {
+     "slug": "hii-nyc-bay-ridge",
+     "sku": "69d8507e5c42f43ce450bd60",
+     "name": "Sleep/Nighttime Chews with Organic Adaptogens 1:1:1 THC/CBD/CBN - 100mg, 20 pck",
+     "brand": "Foy",
+     "strain": "Sleep/Nighttime",
+     "product_line": "Nighttime"
+    },
+    {
+     "slug": "hii-nyc-bay-ridge",
+     "sku": "69d8507e5c42f43ce450bd61",
+     "name": "Daytime Chews with Organic Adaptogens 1:1:1 THC/CBD/CBG - 100mg, 20 pck",
+     "brand": "Foy",
+     "strain": "Daytime",
+     "product_line": "Daytime"
+    },
+    {
+     "slug": "hii-nyc-bay-ridge",
+     "sku": "6a57f66232539460c51d8120",
+     "name": "Daytime 4-pck Chews with Organic Adaptogens 1:1:1 THC/CBD/CBG",
+     "brand": "Foy",
+     "strain": "Daytime",
+     "product_line": "Daytime"
+    },
+    {
+     "slug": "hii-nyc-bay-ridge",
+     "sku": "6a57f66232539460c51d811f",
+     "name": "Sleep/Nighttime 4-pck Chews with Organic Adaptogens 1:1:1 THC/CBD/CBN",
+     "brand": "Foy",
+     "strain": "Sleep/Nighttime",
+     "product_line": "Nighttime"
+    },
+    {
+     "slug": "hii-nyc-bay-ridge",
+     "sku": "69ce843ccf4feaee226359ce",
+     "name": "Supernaturals | 5pk .7g Preroll Interspecies Erotica (IH)",
+     "brand": "Supernaturals",
+     "strain": "Interspecies Erotica",
+     "product_line": "Erotica"
+    }
+   ],
+   "lineage_as_strain": [
+    {
+     "slug": "hii-nyc-bay-ridge",
+     "sku": "69d99c30f582d20dd4871606",
+     "name": "Nanticoke | Ground Flower Hybrid",
+     "brand": "Nanticoke",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "hii-nyc-bay-ridge",
+     "sku": "69d99c30f582d20dd4871621",
+     "name": "Nanticoke | Ground Flower Indica",
+     "brand": "Nanticoke",
+     "strain": "Indica"
+    },
+    {
+     "slug": "hii-nyc-bay-ridge",
+     "sku": "69d99c30f582d20dd4871622",
+     "name": "Nanticoke | Ground Flower Sativa",
+     "brand": "Nanticoke",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "hii-nyc-bay-ridge",
+     "sku": "69fa3f98fdf87856a369da2a",
+     "name": "Birdies | Classic Prerolls | Indica 5 Pack",
+     "brand": "Birdies",
+     "strain": "Indica"
+    },
+    {
+     "slug": "hii-nyc-bay-ridge",
+     "sku": "69fa3f98fdf87856a369da2b",
+     "name": "Birdies | Classic Prerolls | Indica 2 Pack",
+     "brand": "Birdies",
+     "strain": "Indica"
+    },
+    {
+     "slug": "hii-nyc-bay-ridge",
+     "sku": "6a70f0183e63ae1b814d9387",
+     "name": "Pure Beauty | Mini Prerolls | 10-pack | .35g's total | Hybrid",
+     "brand": "Pure Beauty",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "hii-nyc-bay-ridge",
+     "sku": "6a70f0183e63ae1b814d9388",
+     "name": "Pure Beauty | Mini Prerolls | 10-pack | .35g's total | Indica",
+     "brand": "Pure Beauty",
+     "strain": "Indica"
+    },
+    {
+     "slug": "hii-nyc-bay-ridge",
+     "sku": "6a70f0183e63ae1b814d9386",
+     "name": "Pure Beauty | Mini Prerolls | 10-pack | .35g's total | Sativa",
+     "brand": "Pure Beauty",
+     "strain": "Sativa"
+    }
+   ],
+   "variant_anomaly": [],
+   "brand_split": [],
+   "missing_enrichment": [
+    {
+     "slug": "hii-nyc-bay-ridge",
+     "sku": "6a68b06e6bdcb9c2426be7f1",
+     "name": "Honeypot 100mg Infused Organic Honey",
+     "brand": "HoneyPot THC",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "hii-nyc-bay-ridge",
+     "sku": "6a68b06e6bdcb9c2426be7f0",
+     "name": "Honeypot | Premium Cannabis Oil Infused Honey (Day) | 100mg",
+     "brand": "HoneyPot THC",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "slug": "hii-nyc-williamsburg",
+  "listings": 730,
+  "enriched": true,
+  "coverage": {
+   "with_description": 100.0,
+   "other_share": 0.0,
+   "categories": {
+    "flower": 278,
+    "preroll": 155,
+    "edible": 135,
+    "vaporizers": 112,
+    "concentrate": 28,
+    "tinctures": 14,
+    "topical": 8
+   }
+  },
+  "fill": {
+   "strain": 99.4,
+   "strain_n": 708,
+   "subtype": 100.0,
+   "subtype_n": 730,
+   "variant": 100.0,
+   "variant_n": 722,
+   "product_line": 7.9
+  },
+  "suspects": {
+   "total": 20,
+   "per_100": 2.7,
+   "by_check": {
+    "category_token_conflict": 1,
+    "unmapped_category_bucket": 0,
+    "unmapped_raw_category": 0,
+    "strain_split": 3,
+    "line_leaked_into_strain": 3,
+    "lineage_as_strain": 9,
+    "variant_anomaly": 0,
+    "brand_split": 0,
+    "missing_enrichment": 4
+   }
+  },
+  "findings": {
+   "category_token_conflict": [
+    {
+     "slug": "hii-nyc-williamsburg",
+     "sku": "663d217e6d31710001739609",
+     "name": "Ayrloom Unflavored Beverage Enhancer | Tincture | 300mg",
+     "brand": "Ayrloom",
+     "category": "tinctures",
+     "token": "Beverage",
+     "suggests": "edible"
+    }
+   ],
+   "unmapped_category_bucket": [],
+   "unmapped_raw_category": [],
+   "strain_split": [
+    {
+     "brand": "mfny",
+     "strains": [
+      "Hash Burger x Hash Burger",
+      "Hashburger x Hashburger"
+     ]
+    },
+    {
+     "brand": "1906",
+     "strains": [
+      "Boost",
+      "Boost+"
+     ]
+    },
+    {
+     "brand": "rolling hills wellness",
+     "strains": [
+      "YAAD",
+      "Yaad"
+     ]
+    }
+   ],
+   "line_leaked_into_strain": [
+    {
+     "slug": "hii-nyc-williamsburg",
+     "sku": "69b47241365939d061771bd1",
+     "name": "Papa & Barkley | RELEAF Balm 50mL | 3:1 CBD:THC",
+     "brand": "Papa & Barkley",
+     "strain": "Releaf",
+     "product_line": "Releaf"
+    },
+    {
+     "slug": "hii-nyc-williamsburg",
+     "sku": "69b47241365939d061771bd0",
+     "name": "Papa & Barkley | RELEAF Balm 50mL | 1:3 CBD:THC",
+     "brand": "Papa & Barkley",
+     "strain": "Releaf",
+     "product_line": "Releaf"
+    },
+    {
+     "slug": "hii-nyc-williamsburg",
+     "sku": "69b47241365939d061771bcf",
+     "name": "Papa & Barkley | RELEAF Balm 15mL | 1:3 CBD:THC",
+     "brand": "Papa & Barkley",
+     "strain": "Releaf",
+     "product_line": "Releaf"
+    }
+   ],
+   "lineage_as_strain": [
+    {
+     "slug": "hii-nyc-williamsburg",
+     "sku": "6a19b4b459ccf963fde56fcb",
+     "name": "Umami | Microdot Gummies | 3mg each | 33 piece | Indica",
+     "brand": "Umamii",
+     "strain": "Indica"
+    },
+    {
+     "slug": "hii-nyc-williamsburg",
+     "sku": "673d30d768c3ea648fb7b94f",
+     "name": "Nanticoke | Ground Flower Sativa",
+     "brand": "Nanticoke",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "hii-nyc-williamsburg",
+     "sku": "673d30d768c3ea648fb7b950",
+     "name": "Nanticoke | Ground Flower Hybrid | 7g",
+     "brand": "Nanticoke",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "hii-nyc-williamsburg",
+     "sku": "673d30d768c3ea648fb7b951",
+     "name": "Nanticoke | Ground Flower Indica",
+     "brand": "Nanticoke",
+     "strain": "Indica"
+    },
+    {
+     "slug": "hii-nyc-williamsburg",
+     "sku": "666a2f06427ed50001955832",
+     "name": "5 Pack of 10mg Protab (100mg)- Indica",
+     "brand": "Level",
+     "strain": "Indica"
+    },
+    {
+     "slug": "hii-nyc-williamsburg",
+     "sku": "69fa36e70cb877cbf1d60299",
+     "name": "Birdies | Classic Prerolls | Indica 5 Pack",
+     "brand": "Birdies",
+     "strain": "Indica"
+    },
+    {
+     "slug": "hii-nyc-williamsburg",
+     "sku": "6a341d7edb55b2b639562eec",
+     "name": "Pure Beauty | Mini Prerolls | 10-pack | .35g's total | Indica",
+     "brand": "Pure Beauty",
+     "strain": "Indica"
+    },
+    {
+     "slug": "hii-nyc-williamsburg",
+     "sku": "6a341d7edb55b2b639562eeb",
+     "name": "Pure Beauty | Mini Prerolls | 10-pack | .35g's total | Sativa",
+     "brand": "Pure Beauty",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "hii-nyc-williamsburg",
+     "sku": "6a341d7edb55b2b639562eed",
+     "name": "Pure Beauty | Mini Prerolls | 10-pack | .35g's total | Hybrid",
+     "brand": "Pure Beauty",
+     "strain": "Hybrid"
+    }
+   ],
+   "variant_anomaly": [],
+   "brand_split": [],
+   "missing_enrichment": [
+    {
+     "slug": "hii-nyc-williamsburg",
+     "sku": "661f043e54200b000109deeb",
+     "name": "BOOST DROPS - 2PK",
+     "brand": "1906",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "hii-nyc-williamsburg",
+     "sku": "68d5ab8b0e263f8d6b833263",
+     "name": "Canopi | 60mL THC Botanical Elixir 12mg",
+     "brand": "Canopi",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "hii-nyc-williamsburg",
+     "sku": "68d5ab8b0e263f8d6b833264",
+     "name": "Canopi | 500mL THC Botanical Elixir 100mg",
+     "brand": "Canopi",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "hii-nyc-williamsburg",
+     "sku": "6a0f62c5f00aa5d826086aba",
+     "name": "Variety Pack | Cyber Diesel x Peanut Butter N Jealousy x Skywalker | Hybrid",
+     "brand": "To The Moon",
+     "category": "flower",
+     "missing": [
+      "strain"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "slug": "hold-up-roll-up",
+  "listings": 1129,
+  "enriched": true,
+  "coverage": {
+   "with_description": 97.4,
+   "other_share": 0.0,
+   "categories": {
+    "vaporizers": 326,
+    "preroll": 289,
+    "edible": 197,
+    "flower": 196,
+    "merch": 63,
+    "concentrate": 32,
+    "tinctures": 13,
+    "topical": 13
+   }
+  },
+  "fill": {
+   "strain": 98.8,
+   "strain_n": 1040,
+   "subtype": 100.0,
+   "subtype_n": 1066,
+   "variant": 99.0,
+   "variant_n": 1053,
+   "product_line": 9.8
+  },
+  "suspects": {
+   "total": 37,
+   "per_100": 3.3,
+   "by_check": {
+    "category_token_conflict": 8,
+    "unmapped_category_bucket": 0,
+    "unmapped_raw_category": 1,
+    "strain_split": 3,
+    "line_leaked_into_strain": 6,
+    "lineage_as_strain": 6,
+    "variant_anomaly": 0,
+    "brand_split": 0,
+    "missing_enrichment": 13
+   }
+  },
+  "findings": {
+   "category_token_conflict": [
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "H413PRO1",
+     "name": "Chocolate Dipped Bananas - 3.5g Flower",
+     "brand": "ADK Hemp Co.",
+     "category": "flower",
+     "token": "Chocolate",
+     "suggests": "edible"
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "H8E6PRO2",
+     "name": "Strawberry Shortcake - 1g Liquid Diamonds Disposable",
+     "brand": "STIIIZY",
+     "category": "preroll",
+     "token": "Disposable",
+     "suggests": "vaporizers"
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "HA53PRO2",
+     "name": "Strawberry Drip - 1g 510 Vape",
+     "brand": "Revert",
+     "category": "flower",
+     "token": "510",
+     "suggests": "vaporizers"
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "H9F5PRO1",
+     "name": "Frosted Kush - 1g 510 Vape",
+     "brand": "Revert",
+     "category": "flower",
+     "token": "510",
+     "suggests": "vaporizers"
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "H29DPRO1",
+     "name": "Unflavored Beverage Enhancer - 300MG THC Tincture",
+     "brand": "Ayrloom",
+     "category": "tinctures",
+     "token": "Beverage",
+     "suggests": "edible"
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "H481PRO2",
+     "name": "DaySavers 109mm Pre-Roll Tubes with a Glass Tip",
+     "brand": "Day Savers",
+     "category": "merch",
+     "token": "Pre-Roll",
+     "suggests": "preroll"
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "H268PRO1",
+     "name": "DaySavers - Fill-a Blunts 109mm/11mm Pre-Rolled Blunt Tubes - Spiral Tips",
+     "brand": "Day Savers",
+     "category": "merch",
+     "token": "Blunt",
+     "suggests": "preroll"
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "HBF5PRO2",
+     "name": "White Gummy - 1G 510 Vape",
+     "brand": "Untitled",
+     "category": "vaporizers",
+     "token": "Gummy",
+     "suggests": "edible"
+    }
+   ],
+   "unmapped_category_bucket": [],
+   "unmapped_raw_category": [
+    {
+     "raw_category": "Gift Cards",
+     "count": 4,
+     "sample_name": "HURU Gift Card"
+    }
+   ],
+   "strain_split": [
+    {
+     "brand": "ayrloom",
+     "strains": [
+      "Alaskan Thunder F**k",
+      "Alaskan Thunder Fuck"
+     ]
+    },
+    {
+     "brand": "spacebuds",
+     "strains": [
+      "Blueberry Muffin",
+      "Blueberry Muffins"
+     ]
+    },
+    {
+     "brand": "florist farms",
+     "strains": [
+      "Grand Daddy Purple",
+      "Granddaddy Purple"
+     ]
+    }
+   ],
+   "line_leaked_into_strain": [
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "H0A5PRO1",
+     "name": "Blackberry Mega - 100mg Gummy",
+     "brand": "Grön",
+     "strain": "Blackberry Mega",
+     "product_line": "Mega"
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "H05BPRO1",
+     "name": "Birthday Cake - 3.5g Powdered Donuts Diamonds Infused Flower",
+     "brand": "Jetpacks",
+     "strain": "Birthday Cake x Powdered Donuts",
+     "product_line": "Powdered Donuts"
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "HA41PRO1",
+     "name": "Raspberry Lemonade Pearls - 100mg Gummies",
+     "brand": "Grön",
+     "strain": "Raspberry Lemonade Pearls",
+     "product_line": "Pearls"
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "H94APRO1",
+     "name": "Wildberry Pearls - 100mg Gummies",
+     "brand": "Grön",
+     "strain": "Wildberry Pearls",
+     "product_line": "Pearls"
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "HE1DPRO1",
+     "name": "Sour Apple Mega - 100MG Gummy",
+     "brand": "Grön",
+     "strain": "Sour Apple Mega",
+     "product_line": "Mega"
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "HDD7PRO2",
+     "name": "Skywalker OG - 3.5G Powdered Donuts Diamond Infused Flower",
+     "brand": "Jetpacks",
+     "strain": "Skywalker OG x Powdered Donuts",
+     "product_line": "Powdered Donuts"
+    }
+   ],
+   "lineage_as_strain": [
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "NYMCF4B1225",
+     "name": "Sativa - 100MG Milk Chocolate Bar",
+     "brand": "Grön",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "H89FPRO2",
+     "name": "BOOST For Everything - 5mg 2Pk Pills",
+     "brand": "1906",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "H5E8PRO1",
+     "name": "Boost 5MG - 100MG 20pk Tablets",
+     "brand": "1906",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "H808PRO1",
+     "name": "Hybrid Babies - 10PK Prerolls",
+     "brand": "Pure Beauty",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "H3C8PRO1",
+     "name": "Sativa Pips - 100MG Milk Chocolate Pieces",
+     "brand": "Grön",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "H615PRO1",
+     "name": "Indica Pips - 100MG Dark Chocolate Pieces",
+     "brand": "Grön",
+     "strain": "Indica"
+    }
+   ],
+   "variant_anomaly": [],
+   "brand_split": [],
+   "missing_enrichment": [
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "HABFPRO1",
+     "name": "F.E.C.O. - 1G Full Extract Cannabis Oil Applicator",
+     "brand": "Veteran's Choice Creations",
+     "category": "concentrate",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "HEF1PRO1",
+     "name": "Pro XL - Silver Battery",
+     "brand": "STIIIZY",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "HED7PRO2",
+     "name": "Pro XL - Rose Gold Battery",
+     "brand": "STIIIZY",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "HECAPRO2",
+     "name": "Pro XL - Gold Battery",
+     "brand": "STIIIZY",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "HD53PRO1",
+     "name": "Pro - Silver Battery",
+     "brand": "STIIIZY",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "H365PRO1",
+     "name": "Pro - Rose Gold Battery",
+     "brand": "STIIIZY",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "H34CPRO1",
+     "name": "Pro - Gold Battery",
+     "brand": "STIIIZY",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "H318PRO1",
+     "name": "Pro - Cheetah Battery",
+     "brand": "STIIIZY",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "H250PRO3",
+     "name": "Pro - Camouflage Battery",
+     "brand": "STIIIZY",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "H51BPRO2",
+     "name": "Dark Chocolate - 100MG Multi-Dose 1PC Chocolate Bar",
+     "brand": "MAYHEM",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "H53DPRO2",
+     "name": "Milk Chocolate - 100MG Multi-Dose 1PC Chocolate Bar",
+     "brand": "MAYHEM",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "H73EPRO3",
+     "name": "Full Spectrum RSO Capsules - 100Mg 10Pk Unflavored",
+     "brand": "Grassroots",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "hold-up-roll-up",
+     "sku": "HA13PRO3",
+     "name": "Sugar Cookie - 1.25G Infused Preroll",
+     "brand": "Dragonfly",
+     "category": "preroll",
+     "missing": [
+      "strain"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "slug": "ignyte-red-hook",
+  "listings": 666,
+  "enriched": true,
+  "coverage": {
+   "with_description": 0.6,
+   "other_share": 0.0,
+   "categories": {
+    "merch": 269,
+    "preroll": 158,
+    "vaporizers": 96,
+    "edible": 59,
+    "flower": 45,
+    "concentrate": 25,
+    "tinctures": 9,
+    "topical": 5
+   }
+  },
+  "fill": {
+   "strain": 95.8,
+   "strain_n": 383,
+   "subtype": 100.0,
+   "subtype_n": 397,
+   "variant": 95.2,
+   "variant_n": 392,
+   "product_line": 18.3
+  },
+  "suspects": {
+   "total": 19,
+   "per_100": 2.9,
+   "by_check": {
+    "category_token_conflict": 1,
+    "unmapped_category_bucket": 0,
+    "unmapped_raw_category": 0,
+    "strain_split": 2,
+    "line_leaked_into_strain": 0,
+    "lineage_as_strain": 0,
+    "variant_anomaly": 0,
+    "brand_split": 0,
+    "missing_enrichment": 16
+   }
+  },
+  "findings": {
+   "category_token_conflict": [
+    {
+     "slug": "ignyte-red-hook",
+     "sku": "I826PRO2",
+     "name": "24pk Perforated Gummed Tips - Accessories - Raw",
+     "brand": "RAW",
+     "category": "merch",
+     "token": "Gummed",
+     "suggests": "edible"
+    }
+   ],
+   "unmapped_category_bucket": [],
+   "unmapped_raw_category": [],
+   "strain_split": [
+    {
+     "brand": "hepworth",
+     "strains": [
+      "Do-Si-Do",
+      "Do-Si-Dos"
+     ]
+    },
+    {
+     "brand": "sushi hash",
+     "strains": [
+      "MAC Diesel x Laundry List",
+      "Red Diesel x Laundry List"
+     ]
+    }
+   ],
+   "line_leaked_into_strain": [],
+   "lineage_as_strain": [],
+   "variant_anomaly": [],
+   "brand_split": [],
+   "missing_enrichment": [
+    {
+     "slug": "ignyte-red-hook",
+     "sku": "6F1A573EAHDGZL",
+     "name": "Panther Black Verge Dry Herb Vaporizer - Accessories - Ooze",
+     "brand": "Ooze",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "ignyte-red-hook",
+     "sku": "F5E61BTCC9BJVF",
+     "name": "Staller Silver Vault Extract Battery - Accessories - Ooze",
+     "brand": "Ooze",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "ignyte-red-hook",
+     "sku": "F5FC65NWKQUP0P",
+     "name": "Sapphire Blue Electro Barrel E-Rig - Accessories - Ooze",
+     "brand": "Ooze",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "ignyte-red-hook",
+     "sku": "57E605YAAKP5ZG",
+     "name": "Panther Black Electro Barrel E-Rig - Accessories - Ooze",
+     "brand": "Ooze",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "ignyte-red-hook",
+     "sku": "596F0EK1MLCXJO",
+     "name": "Gold Drought Dry Vaporizer Kit - Accessories - Ooze",
+     "brand": "Ooze",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "ignyte-red-hook",
+     "sku": "EBD248R2RGA5RZ",
+     "name": "Black Drought Dry Vaporizer Kit - Accessories - Ooze",
+     "brand": "Ooze",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "ignyte-red-hook",
+     "sku": "68376FJECLQUS8",
+     "name": "Duplex Dual Extract Pro Vaporizer - Accessories - Ooze",
+     "brand": "Ooze",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "ignyte-red-hook",
+     "sku": "EDE2782AISAF6D",
+     "name": "Proxy Black Vaporizer - Accessories - Puffco",
+     "brand": "Puffco",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "ignyte-red-hook",
+     "sku": "I7D3PRO3",
+     "name": "Proxy Flourish Vaporizer - Accessories - Puffco",
+     "brand": "Puffco",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "ignyte-red-hook",
+     "sku": "I5D7PRO1",
+     "name": "Silo Auto Draw Silver Cartridge Vaporizer - Accessories - Sutra",
+     "brand": "Empire Smoke",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "ignyte-red-hook",
+     "sku": "I3D8PRO1",
+     "name": "Proxy Storm Vaporizer - Accessories - Puffco",
+     "brand": "Empire Smoke",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "ignyte-red-hook",
+     "sku": "IB22PRO1",
+     "name": "Nestor Concentrate Vaporizer Sunset Purple - Accessories - Yocan",
+     "brand": "Yocan",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "ignyte-red-hook",
+     "sku": "IA78PRO2",
+     "name": "Hit 2 Kit Dry Herb Vaporizer Black - Accessories - Yocan",
+     "brand": "Yocan",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "ignyte-red-hook",
+     "sku": "I8A0PRO1",
+     "name": "2g Recon Pro Digital Dual Cartridge Vaporizer - Accessories - Wulf",
+     "brand": "Wulf",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "ignyte-red-hook",
+     "sku": "IE25PRO2",
+     "name": "Ziva Pro 510 Vape Cart Battery - Accessories - Yocan",
+     "brand": "Yocan",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "ignyte-red-hook",
+     "sku": "IE1APRO1",
+     "name": "Ziva 2.0 Smart Incognito 510 Vape Battery - Accessories - Yocan",
+     "brand": "Yocan",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "slug": "kaya-bliss-bay-ridge",
+  "listings": 1933,
+  "enriched": true,
+  "coverage": {
+   "with_description": 100.0,
+   "other_share": 0.0,
+   "categories": {
+    "vaporizers": 470,
+    "preroll": 408,
+    "flower": 405,
+    "edible": 302,
+    "merch": 215,
+    "concentrate": 79,
+    "tinctures": 42,
+    "topical": 12
+   }
+  },
+  "fill": {
+   "strain": 99.2,
+   "strain_n": 1664,
+   "subtype": 100.0,
+   "subtype_n": 1718,
+   "variant": 99.4,
+   "variant_n": 1706,
+   "product_line": 12.1
+  },
+  "suspects": {
+   "total": 73,
+   "per_100": 3.8,
+   "by_check": {
+    "category_token_conflict": 15,
+    "unmapped_category_bucket": 0,
+    "unmapped_raw_category": 0,
+    "strain_split": 8,
+    "line_leaked_into_strain": 24,
+    "lineage_as_strain": 13,
+    "variant_anomaly": 0,
+    "brand_split": 0,
+    "missing_enrichment": 13
+   }
+  },
+  "findings": {
+   "category_token_conflict": [
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "69a1d1397dea6fec41fb50e0",
+     "name": "MJ Arsenal - Commander Blunt Bubbler",
+     "brand": "MJ Arsenal",
+     "category": "merch",
+     "token": "Blunt",
+     "suggests": "preroll"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "69fb72c539bdfb111b1823d1",
+     "name": "Blazy Susan - Pink Cross Joint Cone",
+     "brand": "Blazy Susan",
+     "category": "merch",
+     "token": "Joint",
+     "suggests": "preroll"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a65341254da388223e937ee",
+     "name": "Hemper - Puffco Peak Top - Gummy Bear",
+     "brand": "Hemper",
+     "category": "merch",
+     "token": "Gummy",
+     "suggests": "edible"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a861ba3337667dbc187fd59",
+     "name": "2x Baked - Infused Coffee Pods 2pk - 15mg",
+     "brand": "2X Baked",
+     "category": "edible",
+     "token": "Pods",
+     "suggests": "vaporizers"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a861ba3337667dbc187fd58",
+     "name": "2x Baked - Decaf Infused Coffee Pods 2pk - 14mg",
+     "brand": "2X Baked",
+     "category": "edible",
+     "token": "Pods",
+     "suggests": "vaporizers"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a6a6d900a32836288348cb7",
+     "name": "7 SEAZ - Jungle Juice x Triple Chocolate Chip - 14g",
+     "brand": "7 SEAZ",
+     "category": "flower",
+     "token": "Chocolate",
+     "suggests": "edible"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a691f399f752c73f257362b",
+     "name": "Herb - Gummiez - 3.5g",
+     "brand": "Herb",
+     "category": "flower",
+     "token": "Gummiez",
+     "suggests": "edible"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "69c434974bc79bd135d0c8cd",
+     "name": "LEVEL - PROTAB Max Strength Indica Tablets 2pk - 100mg",
+     "brand": "Level",
+     "category": "tinctures",
+     "token": "Tablets",
+     "suggests": "edible"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "67d4cae1ff9a319439c4262a",
+     "name": "LEVEL - PROTAB Lights Out THC+CBN+CBG Tablets 5pk - 100mg",
+     "brand": "Level",
+     "category": "tinctures",
+     "token": "Tablets",
+     "suggests": "edible"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a70f39e048f66148bfb0630",
+     "name": "Dank - Chocolate Diesel Preroll - 1g",
+     "brand": "Dank By Definition",
+     "category": "preroll",
+     "token": "Chocolate",
+     "suggests": "edible"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a0e3f0b070ce6f8522af943",
+     "name": "Harney Brothers - Peppermint Liquid Gummies 1:1:1 THC:CBD:CBG Tincture - 50mg",
+     "brand": "Harney Brothers",
+     "category": "tinctures",
+     "token": "Gummies",
+     "suggests": "edible"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a0e3f0b070ce6f8522af944",
+     "name": "Harney Brothers - Peach Liquid Gummies 1:1:1 THC:CBD:CBG Tincture - 50mg",
+     "brand": "Harney Brothers",
+     "category": "tinctures",
+     "token": "Gummies",
+     "suggests": "edible"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6877b189ece6efbc87fc7bd7",
+     "name": "Ayrloom - Beverage Enhancer Tincture - 300mg",
+     "brand": "Ayrloom",
+     "category": "tinctures",
+     "token": "Beverage",
+     "suggests": "edible"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "698ce626a7d6434e8af82ff6",
+     "name": "Jaunty - Chocolate Diesel Disposable Vape - 1.5g",
+     "brand": "Jaunty",
+     "category": "vaporizers",
+     "token": "Chocolate",
+     "suggests": "edible"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a86064ba3f5d955d78b6fed",
+     "name": "Edie Parker - Peppermint Hot Chocolate Cartridge - 1g",
+     "brand": "Edie Parker",
+     "category": "vaporizers",
+     "token": "Chocolate",
+     "suggests": "edible"
+    }
+   ],
+   "unmapped_category_bucket": [],
+   "unmapped_raw_category": [],
+   "strain_split": [
+    {
+     "brand": "spacebuds",
+     "strains": [
+      "Pineapple Upside Down",
+      "Pineapple Upside Down Cake"
+     ]
+    },
+    {
+     "brand": "nyce",
+     "strains": [
+      "Jealosy x Soap",
+      "Jealousy x Soap"
+     ]
+    },
+    {
+     "brand": "grön",
+     "strains": [
+      "Blue Razzberry",
+      "Blue Razzleberry"
+     ]
+    },
+    {
+     "brand": "ruby farms",
+     "strains": [
+      "Grand Daddy Purple",
+      "Granddaddy Purple"
+     ]
+    },
+    {
+     "brand": "golden garden",
+     "strains": [
+      "Dante's Inferno",
+      "Dantes Inferno"
+     ]
+    },
+    {
+     "brand": "bodega boyz",
+     "strains": [
+      "Hi-C x Vanilla Creme Brulee",
+      "OJ HI-C x Vanilla Creme Brulee"
+     ]
+    },
+    {
+     "brand": "jeeter",
+     "strains": [
+      "Apples & Bananas",
+      "Apples and Bananas"
+     ]
+    },
+    {
+     "brand": "presidential",
+     "strains": [
+      "King Louie",
+      "King Louis"
+     ]
+    }
+   ],
+   "line_leaked_into_strain": [
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "67fd84a30bd886c3bb34d3d5",
+     "name": "Ayrloom - Pillow Talk Blueberry Lavender Up 1:1 THC:CBN + Melatonin Gummies 10pk - 50mg",
+     "brand": "Ayrloom",
+     "strain": "Pillow Talk Blueberry Lavender",
+     "product_line": "Pillow Talk"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "67b7be61a5df68b9529d63da",
+     "name": "Camino - Strawberry Sunset Chill Sour Gummies 10pk - 100mg",
+     "brand": "Camino",
+     "strain": "Strawberry Sunset Chill Sour",
+     "product_line": "Chill"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "67fd1ca6f9e2e6f96a183f63",
+     "name": "Ayrloom - Pillow Talk Blueberry Lavender Up 2:1 THC:CBN + Melatonin Gummies 10pk - 100mg",
+     "brand": "Ayrloom",
+     "strain": "Pillow Talk Blueberry Lavender",
+     "product_line": "Pillow Talk"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a1f47547523e5b9b071e368",
+     "name": "Nama - Euphoria Fresh Watermelon RSO Gummies 2pk - 100mg",
+     "brand": "nama",
+     "strain": "Euphoria Fresh Watermelon",
+     "product_line": "Euphoria"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a1f47547523e5b9b071e367",
+     "name": "Nama - Euphoria: Sour Watermelon RSO Gummies 2pk - 100mg",
+     "brand": "nama",
+     "strain": "Euphoria Sour Watermelon",
+     "product_line": "Euphoria"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a7353f696b40d425ed00e11",
+     "name": "Gron - Mega Sour Grape Gummy - 100mg",
+     "brand": "Grön",
+     "strain": "Mega Sour Grape",
+     "product_line": "Mega"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6943378e724068d17c82c66b",
+     "name": "Grassroots - Dark Heart Delphi Diesel Smalls - 7g",
+     "brand": "Grassroots",
+     "strain": "Dark Heart Delphi Diesel",
+     "product_line": "Dark Heart"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "69125a5929f851c48ab19d7c",
+     "name": "Tyson 2.0 - Uppercut Reserve Indoor Flower - 3.5g",
+     "brand": "Tyson 2.0",
+     "strain": "Uppercut Reserve",
+     "product_line": "Reserve"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "68a0c5b395a45368d55f5b35",
+     "name": "Grassroots - Dark Heart Delphi Diesel - 3.5g",
+     "brand": "Grassroots",
+     "strain": "Dark Heart Delphi Diesel",
+     "product_line": "Dark Heart"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "68d6ab986c61b7bb2d14629e",
+     "name": "Grassroots - Dark Heart Triple Stack - 3.5g",
+     "brand": "Grassroots",
+     "strain": "Dark Heart Triple Stack",
+     "product_line": "Dark Heart"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "68d6adf24943802163a37bee",
+     "name": "Grassroots - Dark Heart Foreign Kush Mints - 3.5g",
+     "brand": "Grassroots",
+     "strain": "Dark Heart Foreign Kush Mints",
+     "product_line": "Dark Heart"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "68d6a92082a9dde55efb7bde",
+     "name": "Grassroots - Dark Heart Triple Stack Diamond Infused Flower - 3.5g",
+     "brand": "Grassroots",
+     "strain": "Dark Heart Triple Stack",
+     "product_line": "Dark Heart"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a5aa4f0285b8cb2c5066be2",
+     "name": "Jetpacks - Blue Dream Jetfuel Diamond Infused Ground Flower - 3.5g",
+     "brand": "Jetpacks",
+     "strain": "Blue Dream Jetfuel",
+     "product_line": "Jetfuel"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a5aa269d036532e4ceecb17",
+     "name": "Jetpacks - Mimosa Jetfuel Diamond Infused Ground Flower - 3.5g",
+     "brand": "Jetpacks",
+     "strain": "Mimosa Jetfuel",
+     "product_line": "Jetfuel"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a499fabd42c922de672f8b3",
+     "name": "Grassroots - Dark Heart Triple Stack Prerolls 5pk - 2g",
+     "brand": "Grassroots",
+     "strain": "Dark Heart Triple Stack",
+     "product_line": "Dark Heart"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "682c8e13e322c34b1f879ece",
+     "name": "7 SEAZ - Tsunami White Widow Triple Infused Indoor Preroll - 1.2g",
+     "brand": "7 SEAZ",
+     "strain": "Tsunami White Widow",
+     "product_line": "Tsunami"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "69697c43248cc38406c0d4e7",
+     "name": "7 SEAZ - Tsunami Cheese Quake Triple Infused Indoor Preroll - 1.2g",
+     "brand": "7 SEAZ",
+     "strain": "Tsunami Cheese Quake",
+     "product_line": "Tsunami"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "69697ec36cbbed2ce4237686",
+     "name": "7 SEAZ - Tsunami Hawaiian God Bud Triple Infused Indoor Preroll - 1.2g",
+     "brand": "7 SEAZ",
+     "strain": "Tsunami Hawaiian God Bud",
+     "product_line": "Tsunami"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "69ab72ecff9ab56e4c44018b",
+     "name": "Jetpacks - FJ2 Afghani Infused Preroll - 2g",
+     "brand": "Jetpacks",
+     "strain": "FJ2 Afghani",
+     "product_line": "FJ2"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "697d42cd79b9b29325697e7a",
+     "name": "Grassroots - Dark Heart Triple Stack Diamond Infused Prerolls 5pk - 2g",
+     "brand": "Grassroots",
+     "strain": "Dark Heart Triple Stack",
+     "product_line": "Dark Heart"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "69179d7b9a078f3b0369c7e8",
+     "name": "Grassroots - Dark Heart Titan Express Diamond Infused Prerolls 5pk - 2g",
+     "brand": "Grassroots",
+     "strain": "Dark Heart Titan Express",
+     "product_line": "Dark Heart"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a88ad7b42da474e7fa8a1c3",
+     "name": "MyHi - Tranquili Tea 5:1 THC:CBN Stir Sticks 3pk - 30mg",
+     "brand": "MyHi",
+     "strain": "Tranquili Tea",
+     "product_line": "Tranquili Tea"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "68f032595d31bda87aa92b68",
+     "name": "7 SEAZ - Clark Griswold Wave Rider Disposable Vape - 1g",
+     "brand": "7 SEAZ",
+     "strain": "Clark Griswold Wave Rider",
+     "product_line": "Wave Rider"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a6a6d900a32836288348cb8",
+     "name": "7 SEAZ - Juicy Fruit Wave Rider Disposable Vape - 1g",
+     "brand": "7 SEAZ",
+     "strain": "Juicy Fruit Wave Rider",
+     "product_line": "Wave Rider"
+    }
+   ],
+   "lineage_as_strain": [
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a482612e02a8330a5ab2894",
+     "name": "LEVEL - PROTAB Extra Strength Indica THC Tablets 5pk - 100mg",
+     "brand": "Level",
+     "strain": "Indica"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a48284bfa00f798bcda4227",
+     "name": "LEVEL - PROTAB Extra Strength Sativa THC Tablets 5pk - 100mg",
+     "brand": "Level",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "69c434974bc79bd135d0c8cd",
+     "name": "LEVEL - PROTAB Max Strength Indica Tablets 2pk - 100mg",
+     "brand": "Level",
+     "strain": "Indica"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a3ad058f8dc7aece2005a8a",
+     "name": "Birdies - Classic Hybrid Prerolls 5pk - 3.5g",
+     "brand": "Birdies",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a3acdfaf47aca2f66d78150",
+     "name": "Birdies - Classic Sativa Prerolls 5pk - 3.5g",
+     "brand": "Birdies",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a3acafc6c8811f893cb0298",
+     "name": "Birdies - Classic Indica Prerolls 5pk - 3.5g",
+     "brand": "Birdies",
+     "strain": "Indica"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a174a5d3db36aa4223844ca",
+     "name": "Pure Beauty - Indica Babies Prerolls 10pk - 3.5g",
+     "brand": "Pure Beauty",
+     "strain": "Indica"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "68a0ccc29f6a4379d1cd6d67",
+     "name": "Anthem - Sativa Prerolls 10pk - 3.5g",
+     "brand": "Anthem",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a174a5d3db36aa4223844cb",
+     "name": "Pure Beauty - Sativa Babies Prerolls 10pk - 3.5g",
+     "brand": "Pure Beauty",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6827d9ea87c441c3d326a526",
+     "name": "Anthem - Hybrid Prerolls 10pk - 3.5g",
+     "brand": "Anthem",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "684bcd7056692845df1209cb",
+     "name": "Anthem - Indica Prerolls 10pk - 3.5g",
+     "brand": "Anthem",
+     "strain": "Indica"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6842251709f4bd4980d03536",
+     "name": "Presidential - Classic Presidential Moon Rock Infused Blunt - 1.5g",
+     "brand": "Presidential",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "69c41bfe9f76d9a9e9f825c0",
+     "name": "Hudson Cannabis - Homogenized Rosin Infused Disposable Vape - 1g",
+     "brand": "Hudson Cannabis",
+     "strain": "Sativa"
+    }
+   ],
+   "variant_anomaly": [],
+   "brand_split": [],
+   "missing_enrichment": [
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6956ae92ed27eb1e3e0e5e4b",
+     "name": "PUFFCO - New Peak Vaporizer - Onyx",
+     "brand": "Puffco",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6993e71ac51ae67ae5f7b057",
+     "name": "Pax - Era Go Battery - Greenstone",
+     "brand": "PAX",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "69a1d1397dea6fec41fb50e2",
+     "name": "Bigfun! - High-Lighter 510 Battery - Pink",
+     "brand": "BIGFUN!",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "69a1d1397dea6fec41fb50ef",
+     "name": "Bigfun! - High-Lighter 510 Battery - Yellow",
+     "brand": "BIGFUN!",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a1e0917146c29fac2423d0e",
+     "name": "Stiiizy - Pro Battery - Purple",
+     "brand": "STIIIZY",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a1e0917146c29fac2423d0f",
+     "name": "Stiiizy - Pro Battery - Red",
+     "brand": "STIIIZY",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a1e0917146c29fac2423d10",
+     "name": "Stiiizy - Pro Battery - Blue",
+     "brand": "STIIIZY",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a65341254da388223e937f9",
+     "name": "Bigfun! - Blinksy Spray Can 510 Battery - Black",
+     "brand": "BIGFUN!",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "697da94a4142e5320b18635a",
+     "name": "Grassroots - RSO Capsules 10pk - 100mg",
+     "brand": "Grassroots",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a04f79c35015d357487aedc",
+     "name": "FECO - Full Extract Cannabis RSO Oil - 1g",
+     "brand": "Veteran's Choice Creations",
+     "category": "concentrate",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "690c0bedc77436cb69422970",
+     "name": "Head & Heal - Full Spectrum RSO - 642mg",
+     "brand": "Head & Heal",
+     "category": "concentrate",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "6a136c00f74f0cfc5f553ce4",
+     "name": "1906 - Love Drops 30pk - 75mg",
+     "brand": "1906",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-bay-ridge",
+     "sku": "67aa87b0b39ecf4b75bb7ec8",
+     "name": "Off Hours - Serenity Calm 10:2 THC:CBD Gummies 10pk - 100mg",
+     "brand": "Off Hours",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "slug": "kaya-bliss-brooklyn-heights",
+  "listings": 1421,
+  "enriched": true,
+  "coverage": {
+   "with_description": 99.7,
+   "other_share": 0.0,
+   "categories": {
+    "vaporizers": 342,
+    "preroll": 324,
+    "flower": 267,
+    "edible": 262,
+    "merch": 155,
+    "concentrate": 34,
+    "tinctures": 30,
+    "topical": 7
+   }
+  },
+  "fill": {
+   "strain": 97.8,
+   "strain_n": 1229,
+   "subtype": 100.0,
+   "subtype_n": 1266,
+   "variant": 98.3,
+   "variant_n": 1259,
+   "product_line": 17.2
+  },
+  "suspects": {
+   "total": 64,
+   "per_100": 4.5,
+   "by_check": {
+    "category_token_conflict": 9,
+    "unmapped_category_bucket": 0,
+    "unmapped_raw_category": 0,
+    "strain_split": 7,
+    "line_leaked_into_strain": 12,
+    "lineage_as_strain": 9,
+    "variant_anomaly": 0,
+    "brand_split": 0,
+    "missing_enrichment": 27
+   }
+  },
+  "findings": {
+   "category_token_conflict": [
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140fa1",
+     "name": "Happy Hounds - Calm + Joint Smokey Bacon CBD Soft Chews - 150mg",
+     "brand": "Happy Hounds",
+     "category": "edible",
+     "token": "Joint",
+     "suggests": "preroll"
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a8618a1451caaed66c1ec9f",
+     "name": "2x Baked - Infused Coffee Pods 2pk - 15mg",
+     "brand": "2X Baked",
+     "category": "edible",
+     "token": "Pods",
+     "suggests": "vaporizers"
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a8620b9535e0fbca88727af",
+     "name": "2x Baked - Decaf Infused Coffee Pods 2pk - 14mg",
+     "brand": "2X Baked",
+     "category": "edible",
+     "token": "Pods",
+     "suggests": "vaporizers"
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a6a07ff327ea2fe3ebde3e4",
+     "name": "Herb - Gummiez - 3.5g",
+     "brand": "Herb",
+     "category": "flower",
+     "token": "Gummiez",
+     "suggests": "edible"
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140b96",
+     "name": "Grassroots - RSO Capsules - 100mg",
+     "brand": "Grassroots",
+     "category": "tinctures",
+     "token": "Capsules",
+     "suggests": "edible"
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140c82",
+     "name": "LEVEL - PROTAB Maximum Strength Lights Out THC+CBN+CBG Tablets 2pk - 37mg",
+     "brand": "Level",
+     "category": "tinctures",
+     "token": "Tablets",
+     "suggests": "edible"
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140c7a",
+     "name": "LEVEL - PROTAB Hybrid THC Tablets 5pk - 100mg",
+     "brand": "Level",
+     "category": "tinctures",
+     "token": "Tablets",
+     "suggests": "edible"
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140c7e",
+     "name": "LEVEL - PROTAB Indica THC Tablets 5pk - 100mg",
+     "brand": "Level",
+     "category": "tinctures",
+     "token": "Tablets",
+     "suggests": "edible"
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140c80",
+     "name": "LEVEL - PROTAB  Sativa THC Tablets 5pk - 100mg",
+     "brand": "Level",
+     "category": "tinctures",
+     "token": "Tablets",
+     "suggests": "edible"
+    }
+   ],
+   "unmapped_category_bucket": [],
+   "unmapped_raw_category": [],
+   "strain_split": [
+    {
+     "brand": "grön",
+     "strains": [
+      "Blue Razzberry",
+      "Blue Razzleberry"
+     ]
+    },
+    {
+     "brand": "golden garden",
+     "strains": [
+      "Dante's Inferno",
+      "Dantes Inferno"
+     ]
+    },
+    {
+     "brand": "bodega boyz",
+     "strains": [
+      "Banana & Honey",
+      "Bananas & Honey"
+     ]
+    },
+    {
+     "brand": "jeeter",
+     "strains": [
+      "Apple Crisp",
+      "Apples Crisp"
+     ]
+    },
+    {
+     "brand": "jeeter",
+     "strains": [
+      "Apples & Bananas",
+      "Apples and Bananas"
+     ]
+    },
+    {
+     "brand": "stiiizy",
+     "strains": [
+      "Do-Si-Dos",
+      "Do-si-dos"
+     ]
+    },
+    {
+     "brand": "moonlit hash co",
+     "strains": [
+      "MAC 1",
+      "Mac 1"
+     ]
+    }
+   ],
+   "line_leaked_into_strain": [
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140bb5",
+     "name": "Nyce - Blueberry Night Live Hash Rosin Gummies 10pk - 100mg",
+     "brand": "NYCE",
+     "strain": "Blueberry Night",
+     "product_line": "Night"
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a5fd156c4aae119cb4033df",
+     "name": "Off Hours - Offline (Sleep) Cherry Berry 5:5:2 THC:CBD:CBN Gummies 10pk - 100mg",
+     "brand": "Off Hours",
+     "strain": "Offline Cherry Berry",
+     "product_line": "Offline"
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a6f53e5700b5ee6f4f6f9c5",
+     "name": "Alien Labs - BK Satellite Misfits - 14g",
+     "brand": "Alien Labs",
+     "strain": "BK Satellite Misfits",
+     "product_line": "Misfits"
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140b83",
+     "name": "Super Dope - Plum Popperz - 3.5g",
+     "brand": "Super Dope",
+     "strain": "Plum Popperz",
+     "product_line": "Popperz"
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140e54",
+     "name": "Super Dope - Cherry Popperz - 3.5g",
+     "brand": "Super Dope",
+     "strain": "Cherry Popperz",
+     "product_line": "Popperz"
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140b82",
+     "name": "Super Dope - Lemon Popperz - 3.5g",
+     "brand": "Super Dope",
+     "strain": "Lemon Popperz",
+     "product_line": "Popperz"
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140e19",
+     "name": "Grassroots - Dark Heart Foreign Kush Mints - 14g",
+     "brand": "Grassroots",
+     "strain": "Dark Heart Foreign Kush Mints",
+     "product_line": "Dark Heart"
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a5e868346c3b321939f2755",
+     "name": "Miss Grass - All Times Infused Preroll - 1g",
+     "brand": "Miss Grass",
+     "strain": "All Times",
+     "product_line": "All Times"
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140f59",
+     "name": "Papa & Barkley - Releaf Balm CBD Rich 3:1 CBD:THC - 50 mL",
+     "brand": "Papa & Barkley",
+     "strain": "Releaf",
+     "product_line": "Releaf"
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140f34",
+     "name": "Papa & Barkley - Releaf Balm THC Rich 1:3 CBD:THC - 50 mL",
+     "brand": "Papa & Barkley",
+     "strain": "Releaf",
+     "product_line": "Releaf"
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a6aa7e63df78c15252f3c01",
+     "name": "7 SEAZ - Clark Griswold Wave Rider Disposable Vape - 1g",
+     "brand": "7 SEAZ",
+     "strain": "Clark Griswold Wave Rider",
+     "product_line": "Wave Rider"
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a6260f4e9352525435b63ef",
+     "name": "Nyce - Donny Burger Night Live Hash Rosin Disposable Vape - .5g",
+     "brand": "NYCE",
+     "strain": "Donny Burger Night",
+     "product_line": "Night"
+    }
+   ],
+   "lineage_as_strain": [
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140c7a",
+     "name": "LEVEL - PROTAB Hybrid THC Tablets 5pk - 100mg",
+     "brand": "Level",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140c7e",
+     "name": "LEVEL - PROTAB Indica THC Tablets 5pk - 100mg",
+     "brand": "Level",
+     "strain": "Indica"
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140c80",
+     "name": "LEVEL - PROTAB  Sativa THC Tablets 5pk - 100mg",
+     "brand": "Level",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140da6",
+     "name": "Birdies - Classic Indica Prerolls 2pk - 1.4g",
+     "brand": "Birdies",
+     "strain": "Indica"
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140dc3",
+     "name": "Birdies - Classic Indica Prerolls 5pk - 3.5g",
+     "brand": "Birdies",
+     "strain": "Indica"
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a74de05184aa36c4b13c5bc",
+     "name": "Birdies - Classic Hybrid Prerolls 2pk - 1.4g",
+     "brand": "Birdies",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140dba",
+     "name": "Birdies - Classic Sativa Prerolls 2pk - 1.4g",
+     "brand": "Birdies",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140dc4",
+     "name": "Birdies - Classic Sativa Prerolls 5pk - 3.5g",
+     "brand": "Birdies",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140c96",
+     "name": "Anthem - Indica Prerolls 10pk - 3.5g",
+     "brand": "Anthem",
+     "strain": "Indica"
+    }
+   ],
+   "variant_anomaly": [],
+   "brand_split": [],
+   "missing_enrichment": [
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140fbf",
+     "name": "Randy's - Inspo Concetrate 510 Vaporizer Battery - Crimson Red",
+     "brand": "Randy's",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140fc1",
+     "name": "Randy's - Inspo Concetrate 510 Vaporizer Battery - Noir Black",
+     "brand": "Randy's",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140fed",
+     "name": "Pax - Era Go Battery - Black",
+     "brand": "PAX",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140fec",
+     "name": "HYBRIDpen - 3 Click Adjustable 510 Thread Battery - 350MAH",
+     "brand": "HYBRIDpen",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563141024",
+     "name": "Stiiizy - Pro Battery - Blue",
+     "brand": "STIIIZY",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563141010",
+     "name": "Ooze - Slim Twist 510 Thread Battery - Slime Green",
+     "brand": "Ooze",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563141025",
+     "name": "Stiiizy - Pro Battery - Black",
+     "brand": "STIIIZY",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140fee",
+     "name": "Pax - Era Go Battery - Gold",
+     "brand": "PAX",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140fff",
+     "name": "Ooze - Slim Twist 510 Thread Battery - Ghost White",
+     "brand": "Ooze",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140ffd",
+     "name": "Dr. Dabber - Lite Concentrate Vaporizer - Light Kit",
+     "brand": "Dr. Dabber",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140ffc",
+     "name": "Dr. Dabber - Lite Concentrate Vaporizer - Ghost Kit",
+     "brand": "Dr. Dabber",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563141036",
+     "name": "Terp Pen - V2 - Stainless Steel",
+     "brand": "Dip Devices",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563141032",
+     "name": "Terp Pen - V2 - Lemon Yellow",
+     "brand": "Dip Devices",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563141048",
+     "name": "PUFFCO - Proxy Pipe Kit - Haze",
+     "brand": "Puffco",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563141033",
+     "name": "Terp Pen - V2 - Black",
+     "brand": "Dip Devices",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a6ba6abcbe1a41adefc3ec1",
+     "name": "Neo - Stick 510 Vape Battery - Black Chrome",
+     "brand": "Neo",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a6ba6abcbe1a41adefc3ec0",
+     "name": "Neo - Stick 510 Vape Battery - Black",
+     "brand": "Neo",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a6ba6abcbe1a41adefc3ec7",
+     "name": "Ooze - Slim Twist 510 Thread Battery - Juicy Orange",
+     "brand": "Ooze",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a6ba6abcbe1a41adefc3ebf",
+     "name": "Neo - Stick 510 Vape Battery - Army Green",
+     "brand": "Neo",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a6ba6abcbe1a41adefc3ec2",
+     "name": "Neo - Stick 510 Vape Battery - Brushed Silver",
+     "brand": "Neo",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a75dd3b0343c22d67376dda",
+     "name": "Pax - Mini II Classic Dry Herb Vaporizer - Onyx",
+     "brand": "PAX",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a75dd3b0343c22d67376dd9",
+     "name": "Pax - Mini II Classic Dry Herb Vaporizer - Greenstone",
+     "brand": "PAX",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140ff6",
+     "name": "Head & Heal - RSO Full Spectrum Cannabis Extract - 1g",
+     "brand": "Head & Heal",
+     "category": "concentrate",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a8618a1451caaed66c1ec9f",
+     "name": "2x Baked - Infused Coffee Pods 2pk - 15mg",
+     "brand": "2X Baked",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a8620b9535e0fbca88727af",
+     "name": "2x Baked - Decaf Infused Coffee Pods 2pk - 14mg",
+     "brand": "2X Baked",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140b88",
+     "name": "MyHi - THC Stir Sticks Simply Flavorless - 30mg",
+     "brand": "MyHi",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "kaya-bliss-brooklyn-heights",
+     "sku": "6a549fc7b64da5b563140b8e",
+     "name": "MyHi - THC Stir Sticks Simply Flavorless - 100mg",
+     "brand": "MyHi",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "slug": "milligrams-greenpoint",
+  "listings": 535,
+  "enriched": true,
+  "coverage": {
+   "with_description": 100.0,
+   "other_share": 0.0,
+   "categories": {
+    "preroll": 137,
+    "edible": 132,
+    "vaporizers": 132,
+    "flower": 122,
+    "tinctures": 6,
+    "topical": 6
+   }
+  },
+  "fill": {
+   "strain": 99.4,
+   "strain_n": 523,
+   "subtype": 100.0,
+   "subtype_n": 535,
+   "variant": 100.0,
+   "variant_n": 529,
+   "product_line": 11.0
+  },
+  "suspects": {
+   "total": 14,
+   "per_100": 2.6,
+   "by_check": {
+    "category_token_conflict": 0,
+    "unmapped_category_bucket": 0,
+    "unmapped_raw_category": 0,
+    "strain_split": 1,
+    "line_leaked_into_strain": 0,
+    "lineage_as_strain": 10,
+    "variant_anomaly": 0,
+    "brand_split": 0,
+    "missing_enrichment": 3
+   }
+  },
+  "findings": {
+   "category_token_conflict": [],
+   "unmapped_category_bucket": [],
+   "unmapped_raw_category": [],
+   "strain_split": [
+    {
+     "brand": "kickflys",
+     "strains": [
+      "Mule Fuel",
+      "Mulefuel"
+     ]
+    }
+   ],
+   "line_leaked_into_strain": [],
+   "lineage_as_strain": [
+    {
+     "slug": "milligrams-greenpoint",
+     "sku": "6a46d932fbdca7496dad0321",
+     "name": "Nanticoke | Sativa Ready 2 Roll Ground Flower",
+     "brand": "Nanticoke",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "milligrams-greenpoint",
+     "sku": "6a46d932fbdca7496dad0332",
+     "name": "Nanticoke | Hybrid Ready 2 Roll Ground Flower",
+     "brand": "Nanticoke",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "milligrams-greenpoint",
+     "sku": "6a46d932fbdca7496dad0331",
+     "name": "Nanticoke | Indica Ready 2 Roll Ground Flower",
+     "brand": "Nanticoke",
+     "strain": "Indica"
+    },
+    {
+     "slug": "milligrams-greenpoint",
+     "sku": "6a78c58e4239f5bd8d21fc10",
+     "name": "Higgs | 55's Pre-Roll 10pk",
+     "brand": "Higgs",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "milligrams-greenpoint",
+     "sku": "6a78c58e4239f5bd8d21fc0e",
+     "name": "Higgs | 19's Pre-Roll 10pk",
+     "brand": "Higgs",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "milligrams-greenpoint",
+     "sku": "6a78c58e4239f5bd8d21fc0f",
+     "name": "Higgs | 22's Pre-Roll 10pk",
+     "brand": "Higgs",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "milligrams-greenpoint",
+     "sku": "6a7ce3b5d84da5b52f82fecd",
+     "name": "Pure Beauty | Indica Babies Pre-Rolls 10pk",
+     "brand": "Pure Beauty",
+     "strain": "Indica"
+    },
+    {
+     "slug": "milligrams-greenpoint",
+     "sku": "6a122e02843116eb1a441476",
+     "name": "Kings & Queens | Mixed Sativa Pre-Roll 3pk",
+     "brand": "Kings & Queens",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "milligrams-greenpoint",
+     "sku": "6a629f2f4c813ca1272d02fe",
+     "name": "Just the Plant HYBRID Tincture",
+     "brand": "Ithaca Organics Cannabis Co.",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "milligrams-greenpoint",
+     "sku": "6a629f2f4c813ca1272d02fd",
+     "name": "Just the Plant SATIVA Tincture",
+     "brand": "Ithaca Organics Cannabis Co.",
+     "strain": "Sativa"
+    }
+   ],
+   "variant_anomaly": [],
+   "brand_split": [],
+   "missing_enrichment": [
+    {
+     "slug": "milligrams-greenpoint",
+     "sku": "6998c782d6ed35598da76d70",
+     "name": "Dark Chocolate Mini Bar - THC - Hybrid",
+     "brand": "Grön",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "milligrams-greenpoint",
+     "sku": "6998c782d6ed35598da76d6c",
+     "name": "Milk Chocolate Mini Bar - THC - Hybrid",
+     "brand": "Grön",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "milligrams-greenpoint",
+     "sku": "69a20b659c7e8e213de0c7a7",
+     "name": "CannaDots | THC Dissolvable Dots | 100mg",
+     "brand": "CannaDots",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "slug": "oc-dispensary-bk",
+  "listings": 1950,
+  "enriched": true,
+  "coverage": {
+   "with_description": 98.2,
+   "other_share": 0.0,
+   "categories": {
+    "preroll": 714,
+    "flower": 454,
+    "vaporizers": 388,
+    "edible": 272,
+    "concentrate": 53,
+    "merch": 42,
+    "tinctures": 17,
+    "topical": 10
+   }
+  },
+  "fill": {
+   "strain": 99.3,
+   "strain_n": 1881,
+   "subtype": 100.0,
+   "subtype_n": 1908,
+   "variant": 99.4,
+   "variant_n": 1898,
+   "product_line": 17.2
+  },
+  "suspects": {
+   "total": 54,
+   "per_100": 2.8,
+   "by_check": {
+    "category_token_conflict": 2,
+    "unmapped_category_bucket": 0,
+    "unmapped_raw_category": 0,
+    "strain_split": 21,
+    "line_leaked_into_strain": 11,
+    "lineage_as_strain": 5,
+    "variant_anomaly": 1,
+    "brand_split": 0,
+    "missing_enrichment": 14
+   }
+  },
+  "findings": {
+   "category_token_conflict": [
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "6a6a78d60e8ad9788b816833",
+     "name": "Flower | NY Ounce Club | White Gummy",
+     "brand": "NY Ounce Club",
+     "category": "flower",
+     "token": "Gummy",
+     "suggests": "edible"
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "6a8d1bf66ccdcd30ce45696f",
+     "name": "Infused Flower | Ripped | Chocolate Thai - Ready to Roll",
+     "brand": "RIPPED",
+     "category": "flower",
+     "token": "Chocolate",
+     "suggests": "edible"
+    }
+   ],
+   "unmapped_category_bucket": [],
+   "unmapped_raw_category": [],
+   "strain_split": [
+    {
+     "brand": "hudson cannabis",
+     "strains": [
+      "Farmer's Blend",
+      "Farmers Blend"
+     ]
+    },
+    {
+     "brand": "mfny",
+     "strains": [
+      "Hash Burger x Hash Burger",
+      "Hashburger x Hashburger"
+     ]
+    },
+    {
+     "brand": "jetpacks",
+     "strains": [
+      "Passion Fruit",
+      "Passionfruit"
+     ]
+    },
+    {
+     "brand": "rythm",
+     "strains": [
+      "L Orange",
+      "L'Orange"
+     ]
+    },
+    {
+     "brand": "dogwalkers",
+     "strains": [
+      "L Orange",
+      "L'Orange"
+     ]
+    },
+    {
+     "brand": "nanticoke",
+     "strains": [
+      "Memory Loss",
+      "Memory Loss OG"
+     ]
+    },
+    {
+     "brand": "ruby farms",
+     "strains": [
+      "Grand Daddy Purple",
+      "Grandaddy Purple"
+     ]
+    },
+    {
+     "brand": "ruby farms",
+     "strains": [
+      "Platinum Girl Scout Cookies",
+      "Platinumm Girl Scout Cookies"
+     ]
+    },
+    {
+     "brand": "priscillas garden",
+     "strains": [
+      "Hotti Fuel",
+      "Hottie Fuel"
+     ]
+    },
+    {
+     "brand": "find",
+     "strains": [
+      "Mint Snacks",
+      "Mint Snackz"
+     ]
+    },
+    {
+     "brand": "dolla treez",
+     "strains": [
+      "Cookies & Dream",
+      "Cookies N' Dream"
+     ]
+    },
+    {
+     "brand": "dolla treez",
+     "strains": [
+      "Lemon Poppers",
+      "Lemon Popperz"
+     ]
+    },
+    {
+     "brand": "rolling green",
+     "strains": [
+      "Oreoz",
+      "Woreoz"
+     ]
+    },
+    {
+     "brand": "julia",
+     "strains": [
+      "Lemon Sherbert",
+      "Lemon Sherbet"
+     ]
+    },
+    {
+     "brand": "doobie labs",
+     "strains": [
+      "Candy Fumes",
+      "Candy Fumez"
+     ]
+    },
+    {
+     "brand": "runtz",
+     "strains": [
+      "Amaretto Di Lemon",
+      "Amaretto Di Limon"
+     ]
+    },
+    {
+     "brand": "platinum reserve",
+     "strains": [
+      "Blue Zlushie",
+      "Blue Zushi"
+     ]
+    },
+    {
+     "brand": "jeeter",
+     "strains": [
+      "Milk Man",
+      "Milkman"
+     ]
+    },
+    {
+     "brand": "mac pharms",
+     "strains": [
+      "Strawberry Sherbert",
+      "Strawberry Sherbet"
+     ]
+    },
+    {
+     "brand": "presidential",
+     "strains": [
+      "King Louie",
+      "King Louis"
+     ]
+    },
+    {
+     "brand": "fernway",
+     "strains": [
+      "Mandarin Orange",
+      "Mandrin Orange"
+     ]
+    }
+   ],
+   "line_leaked_into_strain": [
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "687d75795a40976e89392536",
+     "name": "EDIBLES | SIVAN | CBD SLEEP | 5PK",
+     "brand": "Accessories",
+     "strain": "CBD Sleep",
+     "product_line": "Sleep"
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "687d75795a40976e89392538",
+     "name": "EDIBLES | SIVAN | CBD CALM | 5PACK",
+     "brand": "Accessories",
+     "strain": "CBD Calm",
+     "product_line": "Calm"
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "687d75795a40976e89392537",
+     "name": "EDIBLES | SIVAN | CBD PAIN RELIEF | 5PK",
+     "brand": "Accessories",
+     "strain": "CBD Pain Relief",
+     "product_line": "Relief"
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "6a5563def71ed96293ee0e48",
+     "name": "Blueberry Belts - Live Resin - 100mg - Indica",
+     "brand": "Flav",
+     "strain": "Blueberry Belts",
+     "product_line": "Belts"
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "6a5563def71ed96293ee0e48",
+     "name": "Blueberry Belts - Live Resin - 100mg - Indica",
+     "brand": "Flav",
+     "strain": "Blueberry Belts",
+     "product_line": "Belts"
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "68a60ee80e92846aba1dd15d",
+     "name": "Apple Belts - Live Resin  - 100mg - Hybrid",
+     "brand": "Flav",
+     "strain": "Apple Belts",
+     "product_line": "Belts"
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "6a4c7d01fb6fd2a2e104148f",
+     "name": "Pre-Rolls | Grassroots | Triple Stack - Dark Heart - 5pk",
+     "brand": "Grassroots",
+     "strain": "Triple Stack - Dark Heart",
+     "product_line": "Dark Heart"
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "69b8838487ee58daf37ede8e",
+     "name": "Pre-Rolls | Grassroots | Delphi Diesel - Dark Heart - 2pk",
+     "brand": "Grassroots",
+     "strain": "Delphi Diesel - Dark Heart",
+     "product_line": "Dark Heart"
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "67c61f1f3b205b1cb3aac62a",
+     "name": "Ayrloom | Pillow Talk Drops | 1:5 | 300MG THC : 1500MG CBN",
+     "brand": "Ayrloom",
+     "strain": "Pillow Talk",
+     "product_line": "Pillow Talk"
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "68e05d5b98245cfba3006727",
+     "name": "Vape AIO | Off Hours | Effect Based - Offline (Sleep)",
+     "brand": "Off Hours",
+     "strain": "Offline",
+     "product_line": "Offline"
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "6a7660cbeed64b51a9b7e7f9",
+     "name": "Vape AIO | Hashtag Honey | Permanent Marker",
+     "brand": "Hashtag Honey",
+     "strain": "Permanent Marker",
+     "product_line": "Permanent Marker"
+    }
+   ],
+   "lineage_as_strain": [
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "695563caf14544dbc8cba05f",
+     "name": "Concentrate | House of Sacci | Blonde Hash Sativa",
+     "brand": "House of Sacci",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "695563caf14544dbc8cba061",
+     "name": "Concentrate | House of Sacci | Brown Hash Bar Sativa",
+     "brand": "House of Sacci",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "67db0e00fca59b8608f96ae1",
+     "name": "Flower | Nanticoke | Ready 2 Roll Pre-Ground Flower - Hybrid",
+     "brand": "Ready 2 Roll",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "696ae6f2c89cc71cd6a1b2e4",
+     "name": "Indica Blend Pre-Roll pack (10-pack | 0.35g each)",
+     "brand": "Anthem",
+     "strain": "Indica"
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "68e05d5b98245cfba3006724",
+     "name": "Vape AIO | Off Hours | Effect Based - On (Energy)",
+     "brand": "Off Hours",
+     "strain": "Sativa"
+    }
+   ],
+   "variant_anomaly": [
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "6a4d4b2167d18434def8fcca",
+     "name": "1:1:1 Lychee Limeade Pearls - THC/THCV/CBC - Sativa",
+     "brand": "Grön",
+     "category": "edible",
+     "variant": "35g",
+     "reason": "edible in grams (should be total mg, or fl oz for drinks)"
+    }
+   ],
+   "brand_split": [],
+   "missing_enrichment": [
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "694428a1e97773f2f85ca5bd",
+     "name": "Concentrate | Blotter | THCA Diamond Powder",
+     "brand": "Blotter",
+     "category": "concentrate",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "69977d51f8813974a8715774",
+     "name": "Edible Chocolate | All That Chocolate | Milk Chocolate - Full Size | 100mg",
+     "brand": "All That Chocolate",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "69977d51f8813974a8715776",
+     "name": "Edible Chocolate | All That Chocolate | Dark Chocolate - Full Size | 100mg",
+     "brand": "All That Chocolate",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "67cdd758075b3ba03a426cd9",
+     "name": "Ooze Beacon Battery",
+     "brand": "Accessories",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "684b4eb85fd48cd26732a871",
+     "name": "Tombstone V2 Battery",
+     "brand": "Accessories",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "688901817ab649d5892eadd1",
+     "name": "Vape Batteries | Stiiizy | Pro XL Battery - Pearl White",
+     "brand": "STIIIZY",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "688901817ab649d5892eadd2",
+     "name": "Vape Batteries | Stiiizy | Pro XL Battery - Red",
+     "brand": "STIIIZY",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "688901817ab649d5892eadcc",
+     "name": "Vape Batteries | Stiiizy | Pro XL Battery - Blue",
+     "brand": "STIIIZY",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "688901817ab649d5892eadd0",
+     "name": "Vape Batteries | Stiiizy | Pro XL Battery - Neon Pink",
+     "brand": "STIIIZY",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "688901817ab649d5892eadd3",
+     "name": "Vape Batteries | Stiiizy | Pro XL Battery - Puprle",
+     "brand": "STIIIZY",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "688901817ab649d5892eadd4",
+     "name": "Vape Batteries | Stiiizy | Pro XL Battery - Camoflauge",
+     "brand": "STIIIZY",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "68c8bf2b3d441bc2599656c5",
+     "name": "Ooze | Twist - Slim Pen 2.0 Battery",
+     "brand": "Accessories",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "6973a5e792df4fcc5d6283d7",
+     "name": "Vape Battery | PAX | ERA GO - Gold | Pax Pod Compatible",
+     "brand": "PAX",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "oc-dispensary-bk",
+     "sku": "6973a5e792df4fcc5d6283dd",
+     "name": "Vape Battery | PAX | ERA GO - Black | Pax Pod Compatible",
+     "brand": "PAX",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "slug": "quality-control-brighton-beach",
+  "listings": 1069,
+  "enriched": true,
+  "coverage": {
+   "with_description": 99.8,
+   "other_share": 0.0,
+   "categories": {
+    "vaporizers": 365,
+    "preroll": 273,
+    "flower": 173,
+    "edible": 165,
+    "concentrate": 48,
+    "merch": 34,
+    "tinctures": 10,
+    "topical": 1
+   }
+  },
+  "fill": {
+   "strain": 98.4,
+   "strain_n": 1024,
+   "subtype": 100.0,
+   "subtype_n": 1035,
+   "variant": 98.8,
+   "variant_n": 1034,
+   "product_line": 13.2
+  },
+  "suspects": {
+   "total": 36,
+   "per_100": 3.4,
+   "by_check": {
+    "category_token_conflict": 3,
+    "unmapped_category_bucket": 0,
+    "unmapped_raw_category": 0,
+    "strain_split": 7,
+    "line_leaked_into_strain": 2,
+    "lineage_as_strain": 8,
+    "variant_anomaly": 0,
+    "brand_split": 0,
+    "missing_enrichment": 16
+   }
+  },
+  "findings": {
+   "category_token_conflict": [
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "6a6a3a73a672066373f7cfc4",
+     "name": "Herb | Flower | Gummiez | 3.5g | Hybrid | THC 30.74%",
+     "brand": "Herb",
+     "category": "flower",
+     "token": "Gummiez",
+     "suggests": "edible"
+    },
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "699e19c807386a9f83fcdbf3",
+     "name": "Herb | Flower | Chocolate Haze | 3.5g | Sativa | THC 33.7%",
+     "brand": "Herb",
+     "category": "flower",
+     "token": "Chocolate",
+     "suggests": "edible"
+    },
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "67f92fe7d9cf27dbbcec0d32",
+     "name": "Ayrloom | Tincture | Beverage Enhancer | 300mg | Hybrid",
+     "brand": "Ayrloom",
+     "category": "tinctures",
+     "token": "Beverage",
+     "suggests": "edible"
+    }
+   ],
+   "unmapped_category_bucket": [],
+   "unmapped_raw_category": [],
+   "strain_split": [
+    {
+     "brand": "mfny",
+     "strains": [
+      "Blueberry 2.0 x Turbo Blueberry",
+      "Blueberry x Turbo Blueberry"
+     ]
+    },
+    {
+     "brand": "ayrloom",
+     "strains": [
+      "Bomb Popz",
+      "Bombz Popz"
+     ]
+    },
+    {
+     "brand": "grön",
+     "strains": [
+      "Blue Razzberry",
+      "Blue Razzleberry"
+     ]
+    },
+    {
+     "brand": "botanist",
+     "strains": [
+      "Billionaire",
+      "Millionaire"
+     ]
+    },
+    {
+     "brand": "stiiizy",
+     "strains": [
+      "GrandDaddy Purp",
+      "Grandaddy Purp"
+     ]
+    },
+    {
+     "brand": "stiiizy",
+     "strains": [
+      "GrandDaddy Purp",
+      "Granddaddy Purp"
+     ]
+    },
+    {
+     "brand": "stiiizy",
+     "strains": [
+      "Grandaddy Purp",
+      "Granddaddy Purp"
+     ]
+    }
+   ],
+   "line_leaked_into_strain": [
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "69e91cf30dcb72b71dd0aeb8",
+     "name": "Tropical Twist MEGA - THC - Indica",
+     "brand": "Grön",
+     "strain": "Tropical Twist Mega",
+     "product_line": "Mega"
+    },
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "6a2a1f5022a5c01e8d583778",
+     "name": "House Of Sacci | Preroll | Permanent Marker | Dog Walkers | .5g | 7 Pack | 3.5g | Indica | 24.23% THC",
+     "brand": "House of Sacci",
+     "strain": "Dog Walkers",
+     "product_line": "Dog Walkers"
+    }
+   ],
+   "lineage_as_strain": [
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "69e405d26c13e2d94bc268c5",
+     "name": "House Of Sacci | Hash | Brown Hash | 1g | Indica | 53.25% THC",
+     "brand": "House of Sacci",
+     "strain": "Indica"
+    },
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "69e405d26c13e2d94bc268c6",
+     "name": "House Of Sacci | Hash | Brown Hash | 1g | Sativa | 53.25% THC",
+     "brand": "House of Sacci",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "6830927df822a6e1607e25e8",
+     "name": "House Of Sacci | Hash | Blond Hash | 1g | Indica | 53.94% THC",
+     "brand": "House of Sacci",
+     "strain": "Indica"
+    },
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "69728c5cee1e01164860d2a5",
+     "name": "Finca | Gummies | Despacito | Intimacy | 10mg | 10 Pack | 100mg | Hybrid",
+     "brand": "Finca",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "6a04c48ec027ac13b72cb35b",
+     "name": "Level | Protab Max | Tablet | Hybrid | 50mg | 2 Pack | 100mg",
+     "brand": "Level",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "698fa00c122b60cd9cacff33",
+     "name": "Level | Protab Max | Tablet | Indica | 50mg | 2 Pack | 100mg",
+     "brand": "Level",
+     "strain": "Indica"
+    },
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "682630c5786bd4a332d1121d",
+     "name": "Level | Protab | Tablet | Hybrid | 20mg | 5 Pack | 100mg",
+     "brand": "Level",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "682630c5786bd4a332d1121c",
+     "name": "Level | Protab | Tablet | Indica | 20mg | 5 Pack | 100mg",
+     "brand": "Level",
+     "strain": "Indica"
+    }
+   ],
+   "variant_anomaly": [],
+   "brand_split": [],
+   "missing_enrichment": [
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "6977c8a516f254d92ef90ab0",
+     "name": "XIAOLIN | Chalise | Vaporizer | 510 Vaporizer",
+     "brand": "XIAOLIN",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "69c5df3758e082ced88f943a",
+     "name": "Puffco | Proxy Core | Black | Vaporizer",
+     "brand": "Puffco",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "6a3184dbbe10c5ada1afe37d",
+     "name": "Puffco | Pivot | Vaporizer | Sapphire",
+     "brand": "Puffco",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "6a45958ce6c196ad583e753e",
+     "name": "Stiiizy | Pro Battery | Silver",
+     "brand": "STIIIZY",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "6a45958ce6c196ad583e753f",
+     "name": "Stiiizy | Pro Battery | Camo",
+     "brand": "",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "6a45958ce6c196ad583e7540",
+     "name": "Stiiizy | Pro Battery | Gold",
+     "brand": "",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "6a45958ce6c196ad583e7542",
+     "name": "Stiiizy | Pro Battery | Neon Pink",
+     "brand": "",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "6a45958ce6c196ad583e7541",
+     "name": "Stiiizy | Pro Battery | Cheetah",
+     "brand": "",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "6a4597fbefbdf7c4759c8f8e",
+     "name": "Stiiizy | Pro Battery | Red",
+     "brand": "",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "6a84a126b025d79a079cf754",
+     "name": "Stiiizy | Pro Battery | Rose Gold",
+     "brand": "",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "6a89de4c69cb310a23e8975d",
+     "name": "Stiiizy | Pro XL Battery | Pearl White",
+     "brand": "STIIIZY",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "6a89de4c69cb310a23e8975c",
+     "name": "Stiiizy | Pro XL Battery | Silver",
+     "brand": "STIIIZY",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "6a8ca8f33f6941a3465649f1",
+     "name": "Dr.Dabber | Ghost 2 | Vaporizer Kit",
+     "brand": "",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "6a46db8334c75e944e6e5347",
+     "name": "Silly nice | Hash | Sifted Bubble Hash | 1g | THC 49.49%",
+     "brand": "Silly Nice",
+     "category": "concentrate",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "6a064db7c7f3c2f7c899b0e7",
+     "name": "Silly nice | Diamond powder | 1g | THC 86.24%",
+     "brand": "Silly Nice",
+     "category": "concentrate",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "quality-control-brighton-beach",
+     "sku": "6871a8600908c3c3be96af1d",
+     "name": "Cannabals | Vape | LCG | All In One | 1g | Indica | 88% THC",
+     "brand": "Cannabals",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "slug": "rnr-dispensary-bk",
+  "listings": 693,
+  "enriched": true,
+  "coverage": {
+   "with_description": 98.0,
+   "other_share": 0.0,
+   "categories": {
+    "preroll": 203,
+    "vaporizers": 154,
+    "edible": 94,
+    "flower": 90,
+    "merch": 87,
+    "concentrate": 56,
+    "tinctures": 5,
+    "topical": 4
+   }
+  },
+  "fill": {
+   "strain": 98.5,
+   "strain_n": 597,
+   "subtype": 100.0,
+   "subtype_n": 606,
+   "variant": 98.0,
+   "variant_n": 602,
+   "product_line": 13.9
+  },
+  "suspects": {
+   "total": 17,
+   "per_100": 2.5,
+   "by_check": {
+    "category_token_conflict": 5,
+    "unmapped_category_bucket": 0,
+    "unmapped_raw_category": 0,
+    "strain_split": 2,
+    "line_leaked_into_strain": 0,
+    "lineage_as_strain": 1,
+    "variant_anomaly": 0,
+    "brand_split": 0,
+    "missing_enrichment": 9
+   }
+  },
+  "findings": {
+   "category_token_conflict": [
+    {
+     "slug": "rnr-dispensary-bk",
+     "sku": "6a8bae1ef6cf38920a29284f",
+     "name": "Percolator Style Glass Bubbler 18mm Sandblasted Joint",
+     "brand": "",
+     "category": "merch",
+     "token": "Joint",
+     "suggests": "preroll"
+    },
+    {
+     "slug": "rnr-dispensary-bk",
+     "sku": "69dd62212120debd8c4120cb",
+     "name": "Happy Hounds | Calm + Joint Bacon Strips 150mg",
+     "brand": "Happy Hounds",
+     "category": "edible",
+     "token": "Joint",
+     "suggests": "preroll"
+    },
+    {
+     "slug": "rnr-dispensary-bk",
+     "sku": "6a87a0483560601a419b851c",
+     "name": "Vitabudz | FUN - Mint Chocolate Chip Pre Roll",
+     "brand": "VitaBudz",
+     "category": "preroll",
+     "token": "Chocolate",
+     "suggests": "edible"
+    },
+    {
+     "slug": "rnr-dispensary-bk",
+     "sku": "68710d5d53accc3e8cae6ade",
+     "name": "ayrloom | Beverage Enhancer | 300mg THC",
+     "brand": "Ayrloom",
+     "category": "tinctures",
+     "token": "Beverage",
+     "suggests": "edible"
+    },
+    {
+     "slug": "rnr-dispensary-bk",
+     "sku": "6a5152c928ceda57efce16e8",
+     "name": "Untitled | White Gummy - Vape Cart",
+     "brand": "Untitled",
+     "category": "vaporizers",
+     "token": "Gummy",
+     "suggests": "edible"
+    }
+   ],
+   "unmapped_category_bucket": [],
+   "unmapped_raw_category": [],
+   "strain_split": [
+    {
+     "brand": "chime  chill",
+     "strains": [
+      "AM Spa Soak",
+      "PM Spa Soak"
+     ]
+    },
+    {
+     "brand": "j cannabis",
+     "strains": [
+      "Big Daddy Blue Creme",
+      "Big Daddy Blue Crème"
+     ]
+    }
+   ],
+   "line_leaked_into_strain": [],
+   "lineage_as_strain": [
+    {
+     "slug": "rnr-dispensary-bk",
+     "sku": "69ceb6ec684d96846a98c32c",
+     "name": "Level | ProTab - Indica Extra Strength THC Tablets | 100mg 5pk",
+     "brand": "Level",
+     "strain": "Indica"
+    }
+   ],
+   "variant_anomaly": [],
+   "brand_split": [],
+   "missing_enrichment": [
+    {
+     "slug": "rnr-dispensary-bk",
+     "sku": "69504444b7c1d80f3d414c61",
+     "name": "STIIIZY | STIIIZY Bar Vape Battery",
+     "brand": "STIIIZY",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "rnr-dispensary-bk",
+     "sku": "696953bd00f9d353341f208d",
+     "name": "STIIIZY | Pro Black Battery",
+     "brand": "STIIIZY",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "rnr-dispensary-bk",
+     "sku": "69c86e44eea499e541fcd89c",
+     "name": "510 Auto Draw Dual Battery | Holds 2 Cartridges",
+     "brand": "",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "rnr-dispensary-bk",
+     "sku": "69c86e44eea499e541fcd89e",
+     "name": "510 Ccell Palm Pro Battery",
+     "brand": "",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "rnr-dispensary-bk",
+     "sku": "69c86e44eea499e541fcd8a2",
+     "name": "510 Dubcharge Battery",
+     "brand": "Accessories",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "rnr-dispensary-bk",
+     "sku": "69c86e44eea499e541fcd8a3",
+     "name": "510 Dubcharge Flick Hidden Battery",
+     "brand": "",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "rnr-dispensary-bk",
+     "sku": "69c86e44eea499e541fcd8a5",
+     "name": "510 Cookies Battery",
+     "brand": "Accessories",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "rnr-dispensary-bk",
+     "sku": "69c88f87eea499e5410a7c31",
+     "name": "510 Select Dual Chamber",
+     "brand": "Accessories",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "rnr-dispensary-bk",
+     "sku": "69052f90c1678af44d4ef288",
+     "name": "Canna Dots Dissolvables | Unflavored | 100mg 40pk 2.5mg",
+     "brand": "Canna Dots",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "slug": "soulmate-fort-greene",
+  "listings": 254,
+  "enriched": true,
+  "coverage": {
+   "with_description": 100.0,
+   "other_share": 0.0,
+   "categories": {
+    "preroll": 90,
+    "edible": 67,
+    "vaporizers": 45,
+    "flower": 42,
+    "tinctures": 6,
+    "topical": 4
+   }
+  },
+  "fill": {
+   "strain": 99.2,
+   "strain_n": 244,
+   "subtype": 100.0,
+   "subtype_n": 254,
+   "variant": 100.0,
+   "variant_n": 250,
+   "product_line": 14.2
+  },
+  "suspects": {
+   "total": 12,
+   "per_100": 4.7,
+   "by_check": {
+    "category_token_conflict": 0,
+    "unmapped_category_bucket": 0,
+    "unmapped_raw_category": 0,
+    "strain_split": 1,
+    "line_leaked_into_strain": 0,
+    "lineage_as_strain": 9,
+    "variant_anomaly": 0,
+    "brand_split": 0,
+    "missing_enrichment": 2
+   }
+  },
+  "findings": {
+   "category_token_conflict": [],
+   "unmapped_category_bucket": [],
+   "unmapped_raw_category": [],
+   "strain_split": [
+    {
+     "brand": "electraleaf",
+     "strains": [
+      "Sour Lemon Diesel",
+      "Super Lemon Diesel"
+     ]
+    }
+   ],
+   "line_leaked_into_strain": [],
+   "lineage_as_strain": [
+    {
+     "slug": "soulmate-fort-greene",
+     "sku": "69dd23cc674b752f65b940c0",
+     "name": "Milk Chocolate Pips - THC - Sativa",
+     "brand": "Grön",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "soulmate-fort-greene",
+     "sku": "67e1a6b0cf2701e50501014f",
+     "name": "Ready 2 Roll Ground Flower 1/4 oz. Pouch (Sativa)",
+     "brand": "Nanticoke",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "soulmate-fort-greene",
+     "sku": "67e1a6b0cf2701e505010149",
+     "name": "Nanticoke: Ready 2 Roll Ground Flower 1/4 oz. Pouch (Indica)",
+     "brand": "Nanticoke",
+     "strain": "Indica"
+    },
+    {
+     "slug": "soulmate-fort-greene",
+     "sku": "67e1a6b0cf2701e50501014e",
+     "name": "Ready 2 Roll Ground Flower 1/4 oz. Pouch (Hybrd)",
+     "brand": "Nanticoke",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "soulmate-fort-greene",
+     "sku": "68f6852c190d221c127ead26",
+     "name": "PYNNS | Hybrid 10 Pack Box",
+     "brand": "PYNNS",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "soulmate-fort-greene",
+     "sku": "68f6852c190d221c127ead27",
+     "name": "PYNNS | Sativa 10 Pack Box",
+     "brand": "PYNNS",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "soulmate-fort-greene",
+     "sku": "68f6852c190d221c127ead25",
+     "name": "PYNNS | Indica 10 Pack Box",
+     "brand": "PYNNS",
+     "strain": "Indica"
+    },
+    {
+     "slug": "soulmate-fort-greene",
+     "sku": "697282532638ad45a078b1e1",
+     "name": "Ithaca Organics Cannabis Co Hybrid Solventless Tincture",
+     "brand": "Ithaca Organics Cannabis Co.",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "soulmate-fort-greene",
+     "sku": "697282532638ad45a078b1e5",
+     "name": "Ithaca Organics Cannabis Co Sativa Solventless Tincture",
+     "brand": "Ithaca Organics Cannabis Co.",
+     "strain": "Sativa"
+    }
+   ],
+   "variant_anomaly": [],
+   "brand_split": [],
+   "missing_enrichment": [
+    {
+     "slug": "soulmate-fort-greene",
+     "sku": "67e5a1d14561eb9b1b7908b6",
+     "name": "Sleep Drops 20-pack",
+     "brand": "1906",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "soulmate-fort-greene",
+     "sku": "67e5a1d14561eb9b1b7908b2",
+     "name": "Genius Drops 30-pack",
+     "brand": "1906",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "slug": "stashmaster-nyc",
+  "listings": 1591,
+  "enriched": true,
+  "coverage": {
+   "with_description": 100.0,
+   "other_share": 0.0,
+   "categories": {
+    "flower": 381,
+    "merch": 347,
+    "preroll": 304,
+    "vaporizers": 264,
+    "edible": 216,
+    "concentrate": 53,
+    "tinctures": 18,
+    "topical": 8
+   }
+  },
+  "fill": {
+   "strain": 99.2,
+   "strain_n": 1218,
+   "subtype": 100.0,
+   "subtype_n": 1244,
+   "variant": 98.6,
+   "variant_n": 1236,
+   "product_line": 10.2
+  },
+  "suspects": {
+   "total": 37,
+   "per_100": 2.3,
+   "by_check": {
+    "category_token_conflict": 6,
+    "unmapped_category_bucket": 0,
+    "unmapped_raw_category": 0,
+    "strain_split": 5,
+    "line_leaked_into_strain": 7,
+    "lineage_as_strain": 9,
+    "variant_anomaly": 0,
+    "brand_split": 0,
+    "missing_enrichment": 10
+   }
+  },
+  "findings": {
+   "category_token_conflict": [
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "69837f3a6200b21fab54b13c",
+     "name": "Tyson - Ranch x Futurola Terpene Infused Blunt Wraps - 1ct",
+     "brand": "Tyson 2.0",
+     "category": "merch",
+     "token": "Blunt",
+     "suggests": "preroll"
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "69a9e073966fbc343134d30d",
+     "name": "Lookah - CAT Battery - Chocolate Brown",
+     "brand": "Lookah",
+     "category": "merch",
+     "token": "Chocolate",
+     "suggests": "edible"
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "69a9e073966fbc343134d2ec",
+     "name": "Unrefined Perforated Gummed Tips",
+     "brand": "RAW",
+     "category": "merch",
+     "token": "Gummed",
+     "suggests": "edible"
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "685f35dd361bf2582f62e4c7",
+     "name": "ADK Hemp Co. - Chocolate Dipped Bananas - 3.5g",
+     "brand": "ADK Hemp Co.",
+     "category": "flower",
+     "token": "Chocolate",
+     "suggests": "edible"
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "6a6a68c020e17d404ed06242",
+     "name": "Herb - Gummiez - 3.5g",
+     "brand": "Herb",
+     "category": "flower",
+     "token": "Gummiez",
+     "suggests": "edible"
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "676efdc36ff96b70ee021f14",
+     "name": "Ayrloom - Beverage Enhancer - 300mg",
+     "brand": "Ayrloom",
+     "category": "tinctures",
+     "token": "Beverage",
+     "suggests": "edible"
+    }
+   ],
+   "unmapped_category_bucket": [],
+   "unmapped_raw_category": [],
+   "strain_split": [
+    {
+     "brand": "house of sacci",
+     "strains": [
+      "White Diamond",
+      "White Diamonds"
+     ]
+    },
+    {
+     "brand": "olio",
+     "strains": [
+      "Dulce De Fresa",
+      "Dulce de Fresa"
+     ]
+    },
+    {
+     "brand": "ayrloom",
+     "strains": [
+      "Alaskan Thunder Fuck",
+      "Alaskan Thunderfuck"
+     ]
+    },
+    {
+     "brand": "heavy hitters",
+     "strains": [
+      "God's Gift",
+      "Gods Gift"
+     ]
+    },
+    {
+     "brand": "aeterna",
+     "strains": [
+      "Anytime Blend",
+      "Daytime Blend"
+     ]
+    }
+   ],
+   "line_leaked_into_strain": [
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "6a7cb8796051708089ed9285",
+     "name": "Edie Parker - Night Cap Preroll 2pk - 1g",
+     "brand": "Edie Parker",
+     "strain": "Night Cap",
+     "product_line": "Nightcap"
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "6a6cda6acbe1a41ade47f8c5",
+     "name": "Jeeter - The Nectar 'Summer Essential' Infused Preroll - 1g",
+     "brand": "Jeeter",
+     "strain": "Summer Essential",
+     "product_line": "Summer Essential"
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "676efdc36ff96b70ee021f13",
+     "name": "Ayrloom - Pillow Talk 1:1 Drops THC:CBN - 300mg",
+     "brand": "Ayrloom",
+     "strain": "Pillow Talk",
+     "product_line": "Pillow Talk"
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "68fbfaa915a7618d1f16bb80",
+     "name": "Papa & Barkley - Releaf Balm 3:1 CBD:THC .5oz - 38mg",
+     "brand": "Papa & Barkley",
+     "strain": "Releaf",
+     "product_line": "Releaf"
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "68fbfaa915a7618d1f16bb81",
+     "name": "Releaf Balm 3:1 THC:CBD | 15ml",
+     "brand": "Papa & Barkley",
+     "strain": "Releaf",
+     "product_line": "Releaf"
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "68fbfaa915a7618d1f16bb7f",
+     "name": "Papa & Barkley - Releaf Balm 1:3 CBD:THC 1.7oz - 341mg",
+     "brand": "Papa & Barkley",
+     "strain": "Releaf",
+     "product_line": "Releaf"
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "68fbfaa915a7618d1f16bb7e",
+     "name": "Papa & Barkley - Releaf Balm 3:1 CBD:THC 1.7oz - 168mg",
+     "brand": "Papa & Barkley",
+     "strain": "Releaf",
+     "product_line": "Releaf"
+    }
+   ],
+   "lineage_as_strain": [
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "68c44781e0fb57fff075e6bb",
+     "name": "House of Sacci - Blonde Hash Sativa - 1g",
+     "brand": "House of Sacci",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "69c3f3106875c53f45c01b45",
+     "name": "House of Sacci - Brown Hash Indica - 1g",
+     "brand": "House of Sacci",
+     "strain": "Indica"
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "69c3f3106875c53f45c01b44",
+     "name": "House of Sacci - Blonde Hash Indica - 1g",
+     "brand": "House of Sacci",
+     "strain": "Indica"
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "69c3f3106875c53f45c01b46",
+     "name": "House of Sacci - Brown Hash Sativa - 1g",
+     "brand": "House of Sacci",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "67897857d5061576eac57904",
+     "name": "Ready 2 Roll - Sativa Ground Flower - 7g",
+     "brand": "Ready 2 Roll",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "67a3ac294ba4ef388e338521",
+     "name": "Ready 2 Roll - Hybrid Ground Flower - 7g",
+     "brand": "Ready 2 Roll",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "67897857d5061576eac57903",
+     "name": "Ready 2 Roll - Indica Ground Flower - 7g",
+     "brand": "Ready 2 Roll",
+     "strain": "Indica"
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "69c2dd565dc1ae04553f9c8d",
+     "name": "1000mg RSO Tincture - 30ml Bottle",
+     "brand": "OMO Labs",
+     "strain": "Indica"
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "69c2dd565dc1ae04553f9c8b",
+     "name": "100mg RSO Tincture - Oil Slick",
+     "brand": "OMO Labs",
+     "strain": "Indica"
+    }
+   ],
+   "variant_anomaly": [],
+   "brand_split": [],
+   "missing_enrichment": [
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "693afa1b7b2d375cbb8786e4",
+     "name": "PAX - Mini 2 Dry Herb Vaporizer - Greenstone",
+     "brand": "PAX",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "693afa1b7b2d375cbb8786e1",
+     "name": "PAX Flow | Onyx",
+     "brand": "PAX",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "693afa1b7b2d375cbb8786d9",
+     "name": "Puffco - Pivot Kit - Pine",
+     "brand": "Puffco",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "693afa1b7b2d375cbb8786da",
+     "name": "Puffco - Peak Vaporizer Pine",
+     "brand": "Puffco",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "693afa1b7b2d375cbb8786e2",
+     "name": "PAX | PAX Flow | Blue Haze",
+     "brand": "PAX",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "693afa1b7b2d375cbb8786dc",
+     "name": "Puffco - Proxy Kit - Haze",
+     "brand": "Puffco",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "69a9e073966fbc343134d2ee",
+     "name": "Lookah - Load Battery - Blue",
+     "brand": "Lookah",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "69e91a2b6ffe4bfb9ce17cf3",
+     "name": "Puffco - Peak Vaporizer Canyon",
+     "brand": "Puffco",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "69e91a2b6ffe4bfb9ce17d1c",
+     "name": "Neo - Variable Battery Stick - Black Chrome",
+     "brand": "Neo",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "stashmaster-nyc",
+     "sku": "69e91a2b6ffe4bfb9ce17cf7",
+     "name": "Neo - Variable Battery Stick - Brushed Silver",
+     "brand": "Neo",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "slug": "the-plug-crown-heights",
+  "listings": 842,
+  "enriched": true,
+  "coverage": {
+   "with_description": 100.0,
+   "other_share": 0.0,
+   "categories": {
+    "preroll": 235,
+    "edible": 205,
+    "vaporizers": 193,
+    "flower": 170,
+    "concentrate": 26,
+    "tinctures": 7,
+    "topical": 5,
+    "merch": 1
+   }
+  },
+  "fill": {
+   "strain": 99.5,
+   "strain_n": 829,
+   "subtype": 100.0,
+   "subtype_n": 841,
+   "variant": 100.0,
+   "variant_n": 836,
+   "product_line": 17.2
+  },
+  "suspects": {
+   "total": 24,
+   "per_100": 2.9,
+   "by_check": {
+    "category_token_conflict": 4,
+    "unmapped_category_bucket": 0,
+    "unmapped_raw_category": 0,
+    "strain_split": 3,
+    "line_leaked_into_strain": 10,
+    "lineage_as_strain": 3,
+    "variant_anomaly": 0,
+    "brand_split": 0,
+    "missing_enrichment": 4
+   }
+  },
+  "findings": {
+   "category_token_conflict": [
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54dc9d1e18e930668a08f4",
+     "name": "Fill-a-Blunt - Wood Tip Blunt Tubes | 4pk",
+     "brand": "Fill-a-blunt",
+     "category": "merch",
+     "token": "Blunt",
+     "suggests": "preroll"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54dc9d1e18e930668a08a9",
+     "name": "CHOCOLATE DIESEL 1G PRE-ROLL JOINT",
+     "brand": "Dank By Definition",
+     "category": "preroll",
+     "token": "CHOCOLATE",
+     "suggests": "edible"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54dc9d1e18e930668a0812",
+     "name": "ayrloom | Beverage Enhancer | 300mg THC",
+     "brand": "Ayrloom",
+     "category": "tinctures",
+     "token": "Beverage",
+     "suggests": "edible"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54df42196a70673879ce6b",
+     "name": "Chocolate Diesel | AIO Palm | Sativa | 1.5g",
+     "brand": "Jaunty",
+     "category": "vaporizers",
+     "token": "Chocolate",
+     "suggests": "edible"
+    }
+   ],
+   "unmapped_category_bucket": [],
+   "unmapped_raw_category": [],
+   "strain_split": [
+    {
+     "brand": "runtz",
+     "strains": [
+      "Amaretto Di Lemon",
+      "Amaretto di Lemon"
+     ]
+    },
+    {
+     "brand": "ruby farms",
+     "strains": [
+      "Biscotti Jealousy",
+      "Biscotti x Jealousy"
+     ]
+    },
+    {
+     "brand": "ruby farms",
+     "strains": [
+      "Ghost Train Haze",
+      "Ghost Train Haze #2"
+     ]
+    }
+   ],
+   "line_leaked_into_strain": [
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54df42196a70673879cffc",
+     "name": "Runtz - Lemon Tree Runtz | 3.5G",
+     "brand": "Runtz",
+     "strain": "Lemon Tree Runtz",
+     "product_line": "Runtz"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a7fb42d569d633fb46d3a06",
+     "name": "Runtz - White Cherry Runtz | 3.5g Flower",
+     "brand": "Runtz",
+     "strain": "White Cherry Runtz",
+     "product_line": "Runtz"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54df42196a70673879d001",
+     "name": "Runtz - Trump Runtz | 3.5G",
+     "brand": "Runtz",
+     "strain": "Trump Runtz",
+     "product_line": "Runtz"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a7fb42d569d633fb46d3a0a",
+     "name": "Runtz - Bubblegum Runtz | 3.5g Flower",
+     "brand": "Runtz",
+     "strain": "Bubblegum Runtz",
+     "product_line": "Runtz"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54df42196a70673879cffb",
+     "name": "Runtz - Lemon Candy Runtz | 3.5G",
+     "brand": "Runtz",
+     "strain": "Lemon Candy Runtz",
+     "product_line": "Runtz"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54df42196a70673879d002",
+     "name": "Runtz - Trump Runtz | 5 x 0.75G PreRolls",
+     "brand": "Runtz",
+     "strain": "Trump Runtz",
+     "product_line": "Runtz"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a6a78fc5a036073adcfe868",
+     "name": "Runtz - Lemon Candy Runtz | .75g Pre-Roll 2 - Pack",
+     "brand": "Runtz",
+     "strain": "Lemon Candy Runtz",
+     "product_line": "Runtz"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a6a78fc5a036073adcfe867",
+     "name": "Runtz - Obama Runtz | 1.5G PreRoll",
+     "brand": "Runtz",
+     "strain": "Obama Runtz",
+     "product_line": "Runtz"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54df42196a70673879cf82",
+     "name": "Papa & Barkley - 1:3 Releaf Balm",
+     "brand": "Papa & Barkley",
+     "strain": "Releaf",
+     "product_line": "Releaf"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54df42196a70673879cd66",
+     "name": "Cactus Chiller Chill Cartridge | 1g",
+     "brand": "Timeless",
+     "strain": "Cactus Chiller",
+     "product_line": "Chill"
+    }
+   ],
+   "lineage_as_strain": [
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54dc9d1e18e930668a0960",
+     "name": "Gron- 5mg Milk Chocolate Pips | Sativa",
+     "brand": "Grön",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54dc9d1e18e930668a095d",
+     "name": "Gron- 5mg Dark Chocolate Pips | Indica",
+     "brand": "Grön",
+     "strain": "Indica"
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54df42196a70673879cd92",
+     "name": "Umamii - Indica Micro Dots | Variety Pack (33pk)",
+     "brand": "Umamii",
+     "strain": "Indica"
+    }
+   ],
+   "variant_anomaly": [],
+   "brand_split": [],
+   "missing_enrichment": [
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54df42196a70673879ce09",
+     "name": "Head & Heal - Full Spectrum RSO | 1G Dablicator",
+     "brand": "Head & Heal",
+     "category": "concentrate",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54df42196a70673879ceba",
+     "name": "Kiva Bars- Milk Chocolate 100mg 20ct",
+     "brand": "Kiva",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54df42196a70673879ceb9",
+     "name": "Kiva Bars- Dark Chocolate 100mg 20ct",
+     "brand": "Kiva",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "the-plug-crown-heights",
+     "sku": "6a54df42196a70673879cd8e",
+     "name": "TTM Flight Pack - Cyber Diesel + PB&Jealousy + Skywalker | 3x1GVariety Pack",
+     "brand": "To The Moon",
+     "category": "flower",
+     "missing": [
+      "strain"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "slug": "the-spot-bk",
+  "listings": 1255,
+  "enriched": true,
+  "coverage": {
+   "with_description": 97.3,
+   "other_share": 0.5,
+   "categories": {
+    "preroll": 320,
+    "vaporizers": 306,
+    "flower": 258,
+    "edible": 195,
+    "merch": 82,
+    "concentrate": 55,
+    "topical": 19,
+    "tinctures": 14,
+    "other": 6
+   }
+  },
+  "fill": {
+   "strain": 99.6,
+   "strain_n": 1134,
+   "subtype": 100.0,
+   "subtype_n": 1173,
+   "variant": 99.9,
+   "variant_n": 1148,
+   "product_line": 7.8
+  },
+  "suspects": {
+   "total": 39,
+   "per_100": 3.1,
+   "by_check": {
+    "category_token_conflict": 10,
+    "unmapped_category_bucket": 5,
+    "unmapped_raw_category": 2,
+    "strain_split": 8,
+    "line_leaked_into_strain": 2,
+    "lineage_as_strain": 8,
+    "variant_anomaly": 0,
+    "brand_split": 0,
+    "missing_enrichment": 4
+   }
+  },
+  "findings": {
+   "category_token_conflict": [
+    {
+     "slug": "the-spot-bk",
+     "sku": "A317PRO1   - G7 BACK",
+     "name": "Unflavored Beverage Enhancer-Hybrid- 30.00% THC | 300mg THC (Tincture) Original | Ayrloom   -G7 Back",
+     "brand": "Ayrloom",
+     "category": "tinctures",
+     "token": "Beverage",
+     "suggests": "edible"
+    },
+    {
+     "slug": "the-spot-bk",
+     "sku": "195893353071   -QQ1 MIDDLE",
+     "name": "Calm Peanut Butter Chews (WS) 5mg 30 pieces CBD | Happy Hounds   -QQ1 Middle",
+     "brand": "HAPPY HOUNDS",
+     "category": "other",
+     "token": "Chews",
+     "suggests": "edible"
+    },
+    {
+     "slug": "the-spot-bk",
+     "sku": "AD5EPRO1- TF3",
+     "name": "#11 Chocolate Diesel -Hybrid- 64.6% THC | 1g Live Sugar (Concentrate) | Hashtag Honey- TF3",
+     "brand": "Hashtag Honey",
+     "category": "concentrate",
+     "token": "Chocolate",
+     "suggests": "edible"
+    },
+    {
+     "slug": "the-spot-bk",
+     "sku": "1A4120300001CF7000006431   -G4 FRONT",
+     "name": "Chocolate Diesel -Sativa- 90% THC | 1.5g AIO (Vape Pen) | Jaunty   -G4 front",
+     "brand": "Jaunty",
+     "category": "vaporizers",
+     "token": "Chocolate",
+     "suggests": "edible"
+    },
+    {
+     "slug": "the-spot-bk",
+     "sku": "ADAAPRO2",
+     "name": "DaySavers Perfect Pack - Pre-Roll Tube & Cone Filling Machine",
+     "brand": "",
+     "category": "merch",
+     "token": "Pre-Roll",
+     "suggests": "preroll"
+    },
+    {
+     "slug": "the-spot-bk",
+     "sku": "A337PRO1",
+     "name": "RAW x Black Classic Pre-Roll Cones (20ct)",
+     "brand": "RAW",
+     "category": "merch",
+     "token": "Pre-Roll",
+     "suggests": "preroll"
+    },
+    {
+     "slug": "the-spot-bk",
+     "sku": "A9E5PRO2 - FILE CABNET 4",
+     "name": "-Salmon Flavor- 5mg Dog Chew | 30 count (CBD Treats) | Vlasic - File Cabnet 4",
+     "brand": "Vlasic",
+     "category": "other",
+     "token": "Chew",
+     "suggests": "edible"
+    },
+    {
+     "slug": "the-spot-bk",
+     "sku": "AB10PRO2 - FILE CABNET 4",
+     "name": "-Salmon Flavor- 40mg | 4 count (CBD Dog Chews) | Vlasic - File Cabnet 4",
+     "brand": "Vlasic",
+     "category": "other",
+     "token": "Chews",
+     "suggests": "edible"
+    },
+    {
+     "slug": "the-spot-bk",
+     "sku": "AAFDPRO2 -FILE CABNET 4",
+     "name": "-Relaxing Bacon- 5mg | 30 count (CBD Dog Chews) | Vlasic - File Cabnet 4",
+     "brand": "Vlasic",
+     "category": "other",
+     "token": "Chews",
+     "suggests": "edible"
+    },
+    {
+     "slug": "the-spot-bk",
+     "sku": "A9D2PRO3 - FILE CABNET 4",
+     "name": "-Calming Beef- Flavored Dog Chews | 30 Count (CBD Dog Treats) - File Cabnet 4",
+     "brand": "Vlasic",
+     "category": "other",
+     "token": "Chews",
+     "suggests": "edible"
+    }
+   ],
+   "unmapped_category_bucket": [
+    {
+     "suggests": "edible",
+     "count": 5,
+     "other_total": 6,
+     "samples": [
+      "Calm Peanut Butter Chews (WS) 5mg 30 pieces CBD | Happy Hounds   -QQ1 Middle",
+      "-Salmon Flavor- 5mg Dog Chew | 30 count (CBD Treats) | Vlasic - File Cabnet 4",
+      "-Salmon Flavor- 40mg | 4 count (CBD Dog Chews) | Vlasic - File Cabnet 4",
+      "-Relaxing Bacon- 5mg | 30 count (CBD Dog Chews) | Vlasic - File Cabnet 4",
+      "-Calming Beef- Flavored Dog Chews | 30 Count (CBD Dog Treats) - File Cabnet 4"
+     ]
+    }
+   ],
+   "unmapped_raw_category": [
+    {
+     "raw_category": "CBD (Non-Cannabis)",
+     "count": 21,
+     "sample_name": "-Vanilla & Sandalwood- Relief 200mg | (CBD Bath Bomb) | Vlasic - File Cabnet 4"
+    },
+    {
+     "raw_category": "Pet CBD (Non-Cannabis)",
+     "count": 8,
+     "sample_name": "Calm Peanut Butter Chews (WS) 5mg 30 pieces CBD | Happy Hounds   -QQ1 Middle"
+    }
+   ],
+   "strain_split": [
+    {
+     "brand": "jaunty",
+     "strains": [
+      "Dream Berry",
+      "Dreamberry"
+     ]
+    },
+    {
+     "brand": "flav",
+     "strains": [
+      "Sour Rainbow Belt",
+      "Sour Rainbow Belts"
+     ]
+    },
+    {
+     "brand": "left coast",
+     "strains": [
+      "Grape Cookie",
+      "Grape Cookies"
+     ]
+    },
+    {
+     "brand": "nanticoke",
+     "strains": [
+      "Memory Loss",
+      "Memory Loss OG"
+     ]
+    },
+    {
+     "brand": "find",
+     "strains": [
+      "Mint Snackz",
+      "Mintz Snackz"
+     ]
+    },
+    {
+     "brand": "grassroots",
+     "strains": [
+      "Moon Beam Gelato",
+      "Moonbeam Gelato"
+     ]
+    },
+    {
+     "brand": "cam",
+     "strains": [
+      "Bubba's Girl",
+      "Bubbas Girl"
+     ]
+    },
+    {
+     "brand": "lowell smokes",
+     "strains": [
+      "Trail Blazer",
+      "Trailblazer"
+     ]
+    }
+   ],
+   "line_leaked_into_strain": [
+    {
+     "slug": "the-spot-bk",
+     "sku": "A4C8PRO1   - F8 FRONT",
+     "name": "Pillow Talk -Indica- 1860mg (Tincture) Cannabis Oil Drops | Ayrloom   - F8 FRONT",
+     "brand": "Ayrloom",
+     "strain": "Pillow Talk",
+     "product_line": "Pillow Talk"
+    },
+    {
+     "slug": "the-spot-bk",
+     "sku": "A6BEPRO2 - D8 FRONT",
+     "name": "Party Animal 'Party' -Hybrid- 10:2:3:2 THC:CBD:CBG: 100mg 10 Pack Gummies (Edibles) | Off Hours - D8 Front",
+     "brand": "Off Hours",
+     "strain": "Party Animal",
+     "product_line": "Party"
+    }
+   ],
+   "lineage_as_strain": [
+    {
+     "slug": "the-spot-bk",
+     "sku": "093090524DSIR2R    -K4 MIDDLE",
+     "name": "-Indica- 24% THC |  7g Pre-Ground (Flower) in Mylar | Ready 2 Roll   -K4 MIDDLE",
+     "brand": "Ready 2 Roll",
+     "strain": "Indica"
+    },
+    {
+     "slug": "the-spot-bk",
+     "sku": "1127WFSTVR2R    -K4 FRONT",
+     "name": "-Sativa- 29% THC | 7g Pre-Ground (Flower) in Mylar | Ready 2 Roll   - K4 FRONT",
+     "brand": "Ready 2 Roll",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "the-spot-bk",
+     "sku": "AB28PRO1  -K4 BACK",
+     "name": "-Hybrid- 28% THC | 7g Pre-Ground Flower in Mylar | Ready 2 Roll (Flower)  -K4 Back",
+     "brand": "Ready 2 Roll",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "the-spot-bk",
+     "sku": "A856PRO1  -N/A BIN",
+     "name": "Mixed Hybrid- 24.3% THC | 3 of A Kind (3g Pre-Roll Pack) | Kings & Queen  -N/A BIN",
+     "brand": "Kings & Queens",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "the-spot-bk",
+     "sku": "A643PRO1  -AC6 FRONT",
+     "name": "Mixed  Sativa- 31% THC | 3 of a Kind (3g Pre-Roll Pack) | Kings & Queens  -AC6 FRONT",
+     "brand": "Kings & Queens",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "the-spot-bk",
+     "sku": "AC4FPRO1- K11 FRONT",
+     "name": "Higgs 55's- Hybrid -24.20% THC | 10pk x 0.3g ( Pre-roll) | Higgs - K11 Front",
+     "brand": "Higgs",
+     "strain": "Hybrid"
+    },
+    {
+     "slug": "the-spot-bk",
+     "sku": "AAE5PRO2 - L12 FRONT",
+     "name": "Higgs 22's- Sativa-23.27% THC | 10pk x 0.3g ( Pre-roll) | Higgs - L12 Front",
+     "brand": "Higgs",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "the-spot-bk",
+     "sku": "AA82PRO1- K12",
+     "name": "Higgs 19's- Sativa-23.20% THC | 10pk x 0.3g ( Pre-roll) | Higgs- K12",
+     "brand": "Higgs",
+     "strain": "Sativa"
+    }
+   ],
+   "variant_anomaly": [],
+   "brand_split": [],
+   "missing_enrichment": [
+    {
+     "slug": "the-spot-bk",
+     "sku": "A64APRO1    - PP5",
+     "name": "Dark Chocolate -Hybrid- 100mg Chocolate Bar (Edible) | Kiva - PP5",
+     "brand": "Kiva",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "the-spot-bk",
+     "sku": "A6E8PRO1     -OO7  BACK",
+     "name": "Milk Chocolate -Hybrid- 100mg Chocolate Bar (Edibles) | Kiva     - OO7 Back",
+     "brand": "Kiva",
+     "category": "edible",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "the-spot-bk",
+     "sku": "A5C0PRO2    -NN11 FRONT",
+     "name": "Dream Star - 22.71% THC / Nilla Wafer - 26.83% THC - Sativa (2) /Indica (2) - 1g (Pre-Roll  Variety Pack) 4pk | Alibi    -NN11 FRONT",
+     "brand": "Alibi",
+     "category": "preroll",
+     "missing": [
+      "strain"
+     ]
+    },
+    {
+     "slug": "the-spot-bk",
+     "sku": "A308PRO1      -U5",
+     "name": "Flav Duos -14g Bundle | Butterscotch Biscotti (Hybrid 27.20% THC) + Sunset Sherbert (Indica 28.08% THC) | Flav      -u5",
+     "brand": "Flav",
+     "category": "flower",
+     "missing": [
+      "strain"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "slug": "twisted-vibration-wburg",
+  "listings": 126,
+  "enriched": true,
+  "coverage": {
+   "with_description": 100.0,
+   "other_share": 1.6,
+   "categories": {
+    "preroll": 32,
+    "vaporizers": 31,
+    "flower": 30,
+    "edible": 25,
+    "tinctures": 3,
+    "topical": 3,
+    "other": 2
+   }
+  },
+  "fill": {
+   "strain": 99.2,
+   "strain_n": 118,
+   "subtype": 100.0,
+   "subtype_n": 126,
+   "variant": 100.0,
+   "variant_n": 121,
+   "product_line": 17.5
+  },
+  "suspects": {
+   "total": 6,
+   "per_100": 4.8,
+   "by_check": {
+    "category_token_conflict": 3,
+    "unmapped_category_bucket": 0,
+    "unmapped_raw_category": 0,
+    "strain_split": 0,
+    "line_leaked_into_strain": 0,
+    "lineage_as_strain": 2,
+    "variant_anomaly": 0,
+    "brand_split": 0,
+    "missing_enrichment": 1
+   }
+  },
+  "findings": {
+   "category_token_conflict": [
+    {
+     "slug": "twisted-vibration-wburg",
+     "sku": "688821fc247bc5d2329de13c",
+     "name": "Happy Hounds | Calm + Coat Salmon Oil Drops CBD Tincture",
+     "brand": "Happy Hounds",
+     "category": "other",
+     "token": "Tincture",
+     "suggests": "tinctures"
+    },
+    {
+     "slug": "twisted-vibration-wburg",
+     "sku": "688821fc247bc5d2329de13d",
+     "name": "Happy Hounds | The Calm Drops CBD Tincture",
+     "brand": "Happy Hounds",
+     "category": "other",
+     "token": "Tincture",
+     "suggests": "tinctures"
+    },
+    {
+     "slug": "twisted-vibration-wburg",
+     "sku": "691e2cbe8157ebb5507382ba",
+     "name": "White Gummy | Vape Cartridge | 1g",
+     "brand": "Untitled",
+     "category": "vaporizers",
+     "token": "Gummy",
+     "suggests": "edible"
+    }
+   ],
+   "unmapped_category_bucket": [],
+   "unmapped_raw_category": [],
+   "strain_split": [],
+   "line_leaked_into_strain": [],
+   "lineage_as_strain": [
+    {
+     "slug": "twisted-vibration-wburg",
+     "sku": "68af6fc68a34d83edcefc1e7",
+     "name": "Ready 2 Roll: Sativa | 7g Pre-ground Flower",
+     "brand": "Ready 2 Roll",
+     "strain": "Sativa"
+    },
+    {
+     "slug": "twisted-vibration-wburg",
+     "sku": "68afa5ad604bacf1fa30d83f",
+     "name": "Ready 2 Roll: Indica | 7g Pre-ground Flower",
+     "brand": "Ready 2 Roll",
+     "strain": "Indica"
+    }
+   ],
+   "variant_anomaly": [],
+   "brand_split": [],
+   "missing_enrichment": [
+    {
+     "slug": "twisted-vibration-wburg",
+     "sku": "6824861bb915ca69875a0cfe",
+     "name": "Live Diamonds Pure Pen | 1g AIO",
+     "brand": "Clear Natural",
+     "category": "vaporizers",
+     "missing": [
+      "strain"
+     ]
+    }
+   ]
+  }
+ }
+]

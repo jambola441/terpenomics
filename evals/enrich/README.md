@@ -33,6 +33,17 @@ python evals/enrich/run_eval.py --models haiku --cases cases/categorization.json
 Models are the ids in `MODELS` in `scripts/enrich.py`. Needs `OPENROUTER_API_KEY` (OpenRouter
 models) / `ANTHROPIC_API_KEY` (haiku) in `.env`.
 
+**No `ANTHROPIC_API_KEY`?** Use `--models haiku-or` — same model
+(`anthropic/claude-haiku-4.5`) over OpenRouter. Accuracy is comparable; **cost is not**
+(OpenRouter bills $1.00/$5.00 per M vs Anthropic's $0.80/$4.00, ~25% higher), so don't
+compare its cost column against a native `haiku` run.
+
+**Gotcha — `ANTHROPIC_BASE_URL`.** The Anthropic SDK reads that variable from the
+environment, and some agent runtimes (Claude Code among them) set it to a local proxy.
+`_make_client` passes only `api_key`, so in such a shell the native `haiku` path will
+silently route to the proxy rather than the API even with a valid key. Unset it for the
+eval, or use `haiku-or`.
+
 ## Outputs (`results/`)
 
 - `comparison.md` — per case, every model's answer side by side (✓/✗ vs expected, or split-detail for clusters).
@@ -95,9 +106,586 @@ are addressed in v4 (beverage variant rule scoped so it stops pulling subtype to
 weight hint). Cost is flat — the accuracy came from curated data, not more tokens.
 
 **A model that scores ~10% is almost always a broken config, not a bad model.** The
-first deepseek run reported 11/108 having burned 0 tokens: the api_model slug was
-never verified and no call was made, so the rule-based hints scored on their own.
-run_eval now fails loudly on a zero-token run.
+first deepseek run reported 11/108 having burned 0 tokens: no call was made, so the
+rule-based hints scored on their own. run_eval now fails loudly on a zero-token run.
+
+Since checked against the live OpenRouter catalogue: **`deepseek/deepseek-v4-flash` is
+a valid slug** — the cause was the missing call, not a bad name, so the "verify slug"
+TODO is resolved. Its listed price is $0.0826/$0.1652 per M, slightly under the
+$0.09/$0.18 in `MODELS`. Still unrun end to end here (no accuracy number for it yet).
+
+## Full gold-suite run — v5, all five suites (2026-08-25)
+
+First run of `_ENRICH_VERSION` 4 and 5, and the first run of the four newer suites.
+All 268 cases / 284 listings, `anthropic/claude-haiku-4.5`.
+
+**Transport caveat:** run via OpenRouter (`haiku-or`), not the native Anthropic
+path — this environment has `OPENROUTER_API_KEY` but no `ANTHROPIC_API_KEY`. Same
+model, same prompts; the OpenAI-compatible transport differs and OpenRouter bills
+$1.00/$5.00 per M vs Anthropic's $0.80/$4.00, so **cost here runs ~25% high** and
+absolute comparison to the recorded 97.2% is confounded. Accuracy comparisons
+*within* this report are all same-transport and unaffected.
+
+| suite | mean pass | range over 4 runs | n |
+| --- | --- | --- | --- |
+| `gold_the_plug` | 104.5 (96.8%) | 104–106 | 108 |
+| `gold_coney_island` | 53.0 (94.6%) | 53–53 | 56 |
+| `gold_the_spot_bk` | 46.75 (93.5%) | 46–49 | 50 |
+| `gold_hold_up_roll_up` | 40.75 (84.9%) | 40–42 | 48 |
+| `gold_cross_dispensary` | 4.75 (79.2%) | 4–5 | 6 |
+| **total** | **249.75 (93.2%)** | **249–250** | **268** |
+
+Per field, across the four item suites: **category 262/262 (100%)**, subtype 97.9%,
+strain 97.9%, variant 97.3%, product_line 17/20 (85%). 98.1% of individual fields.
+
+Two things this establishes:
+
+- **`category` generalizes.** 100% across three stores with three different meanings
+  of `other` (vapes / flower / pre-rolls) and one store with brand absent from the
+  name. Hint override plus `format_tokens.json` is the most load-bearing and most
+  portable part of the pipeline.
+- **`product_line` does not, exactly as predicted.** The Plug 11/11 and Coney Island
+  5/5, but The Spot BK **1/4** — the maps are seeded from The Plug's brands, and
+  CAMINO is absent from `product_lines.json` entirely. This is a data gap, not a
+  model failure: all three misses spell the line in quotes in the name
+  (`Sour Orchard Peach 'Balance'`), so a curated entry converts them to string facts.
+
+The Plug scored 104–106 against the recorded 105/108, i.e. **v4 and v5 changed
+nothing measurable there** — the delta is inside the noise floor below.
+
+## Noise floor — the same commit, run four times
+
+Every prior conclusion attributed single-case deltas to prompt edits without knowing
+run-to-run variance. Measured, it is large enough to invalidate that reasoning at the
+suite level.
+
+| level | spread over 4 identical runs |
+| --- | --- |
+| full-suite total | 249–250, sd **0.50 cases** (0.19pp) — stable |
+| per suite | up to **±3 cases** (The Spot BK 46→49, ±6pp on 50 cases) |
+| per case | **13/268 (4.9%) are non-deterministic** |
+
+Only 244/268 cases (91%) pass on all four runs; 11 (4.1%) fail on all four; the
+remaining 13 flip. So:
+
+- **The full-suite total is a usable metric. A single suite's score is not.** A
+  2-case per-suite improvement is indistinguishable from noise in a single run.
+- **Noise is batch-correlated, not per-case independent.** The three Spot BK
+  `product_line` misses flip in lockstep (all wrong, all wrong, all wrong, all
+  right) because they share one Pass B batch — verified: rows 264/267/269, all in
+  batch 6 at `batch_size=50`. The Spot BK's ±3 swing is really *one* batch event.
+  Effective independent sample size for batch-correlated failure modes is ~6, not 284.
+- Treat a per-suite delta as real only with replicates, or when it moves the
+  full-suite total by more than ~1.5 cases.
+
+## Description cap on Pass A — tested, not worth it
+
+Pass A gets category/subtype mostly from the name's format words, so capping its
+description while Pass B keeps the full text was projected to cut ~25% of cost.
+Measured over 3 runs per condition, it cuts **3–5%**, and destabilizes the pipeline:
+
+| cap | mean pass (sd) | input tokens | cost | vs base |
+| --- | --- | --- | --- | --- |
+| off | 249.75 (0.50) | 70,443 | $0.1497 | — |
+| 120 chars | 248.33 (1.15) | 66,043 (−6.2%) | $0.1454 | −2.9% |
+| 60 chars | 247.00 (**4.36**) | 63,319 (−10.1%) | $0.1426 | −4.7% |
+
+The projection assumed cost tracks the description payload. It does not:
+
+- **Output tokens are 52.9% of cost and are invariant to the cap** (15,851 → 15,867,
+  +0.1%). Output bills at 5× input. The cap can only reach the input side, and only
+  Pass A's half of it, so ~25% was never available.
+- Accuracy falls monotonically, and **variance grows 8.7×** at cap=60 (sd 0.50 →
+  4.36; The Plug swings 97–105). Truncation removes the disambiguating text
+  unevenly, so which cases break changes per run.
+
+Trading a stable pipeline for 3% is a bad deal at $0.21/dispensary. **Left off.**
+
+The instrument is kept: `ENRICH_PASS_A_DESC_CAP` (chars, 0 = off, word-boundary
+truncation) in `enrich.py`. One reason to revisit — gold-set descriptions are
+pre-truncated at 300 chars (median 220), so this measures a *floor*. Production
+descriptions are ~4× longer, where the input side is a bigger share and the cap
+would save more. Re-test against real scrape CSVs before adopting.
+
+## Merch had no identity at all (2026-08-27)
+
+`_TOKENS` carried entries for vaporizers, edible, preroll, flower and concentrate
+but **not merch**, so `classify_by_token` returned `None` for every accessory and
+they fell through to `_CATEGORY_DEFAULTS["merch"] == "merch"`. `SUBTYPES["merch"]`
+was `["merch"]` — a single allowed value — so `_valid_subtype` could not return
+anything else even when the model tried. With strain and variant also blank, the
+products VIEW was grouping merch on **brand alone**.
+
+Measured across the fleet's 1,514 merch listings (7.7% of everything):
+
+| | |
+| --- | --- |
+| product rows they collapsed into | **223** |
+| distinct (brand, name) pairs | 1,496 |
+| products merged away | **1,273** |
+
+RAW: 183 listings → 1 product row. Blazy Susan: 108 → 1, so pink and purple,
+cones and papers, 20pk and 50pk were all one product.
+
+### The fix, and what each layer recovers
+
+Three deterministic layers, all string facts about the name, none asked of the
+model. Modeled over the same 1,514 rows:
+
+| grouping key | product rows | % of ceiling |
+| --- | ---: | ---: |
+| brand only (the bug) | 223 | 15% |
+| + subtype — 19 form-factor tokens | 309 | 21% |
+| + variant — pack count, else size | 468 | 31% |
+| + strain — colour or flavour | 765 | 51% |
+
+Verified end to end on kaya-bliss-bay-ridge: its 215 merch listings went from
+**57 to 143 product rows** against a 215 ceiling — 27% → 66%. Blazy Susan there
+went 18 listings → 15 product rows.
+
+Two rulings encoded:
+
+- **Pack count beats a dimension.** "Pink 98mm Cones 20pk" and "... 50pk" differ
+  by pack; 98mm is a spec they share. So `_MERCH_PACK` is tried before
+  `_MERCH_DIM`.
+- **Colour and flavour live in `strain`.** For merch, `strain` means "the variant
+  of this thing" rather than a cultivar — the same reasoning that already puts
+  topical scent names there. It is the only field that separates otherwise
+  identical accessories without a schema change.
+
+Token order matters and is load-bearing: `bong` before `pipe` (a "water pipe" is
+a bong), `charger` before `battery` ("510 Thread USB Charger" is not a battery),
+`ashtray` before `tray`, `filter-tip` before the generic patterns.
+
+**This bumps `_ENRICH_VERSION` to 6, which invalidates every cached answer**, not
+just merch — the stamp is per-entry but not per-category. A full fleet re-enrich
+is ~$5-6. To pay only for merch, drop the `"category": "merch"` entries from
+`data/enrich_cache/*.json` and leave the rest at v5; that is ~$0.40, at the cost
+of the version stamp no longer describing what is in the cache.
+
+## Category-owned enrichers — merch off the model entirely (2026-08-30)
+
+`scripts/enrichers.py` gives each category an owner that declares whether it needs a
+model at all. `MerchEnricher.needs_model = False`, so merch rows are answered from
+the name before a batch is ever formed: **1,070 of 16,031 live listings (6.7%) never
+reach the model**, and their answers stop moving run to run.
+
+Equivalence was checked before the eval, not after: `backfill_merch_identity.py`
+repointed at the enricher reports **0 rows would change** across 1,300 live merch
+listings, and a 14-row A/B of committed HEAD against the registry agreed on 13 and
+differed on 1 (in the registry's favour).
+
+### The gold suite said −13.75 cases. It was wrong, and it was also right.
+
+The first run after the registry scored 236/268, i.e. −13.75 against the 249.75
+baseline. Three separate things were tangled in that number, and only running the
+comparison separated them:
+
+1. **13 of the 18 new failures were stale labels, not a regression.** Every one was
+   `subtype: got 'lighter'/'paper'/'battery'/... want 'merch'` — labels written when
+   merch had a single subtype, before v6 widened the rail. Running committed HEAD on
+   the same 14 rows scored **0/14 too**: those cases had been failing since v6 and the
+   baseline predates it. The labels are now updated to the current taxonomy.
+2. **The remaining failures were the known flaky set** — `holdup-017`, `holdup-034`,
+   `holdup-043`, the `x-camino` cluster — none of which is merch, so none of which the
+   registry can touch.
+3. **A real regression the suite could not see at all.** Routing on `_hint_category`
+   means a row the *scraper* called merch is never offered to the model, and the model
+   had been quietly fixing those. Joining the scrape CSVs against the DB found
+   **20 of 1,090 routed rows (1.8%)** that HEAD had reclassified away from merch —
+   19 vaporizers sold as accessories ("Covert 2.0 Blue Cartridge Vaporizer -
+   Accessories - Kind Pen", "PAX Plus | Periwinkle") plus one gift card. No gold case
+   covers this, so the suite scored it as an improvement.
+
+The fix is curated, not prompted: three `format_tokens.json` entries — `*/Vaporizer`,
+`*/Exxus`, `PAX/Plus`, `Cartisan/Pillar` — divert 19 of the 20 before the merch route
+fires. The 20th is `HURU Gift Card`, where HEAD answered `other` and the registry
+answers `merch`/`gift-card`; that one is a win.
+
+Blast radius was measured before adding them, and it is why they are tokens and not
+brand rules: `Vaporizer` matches 104 active listings and all 104 are vape hardware,
+`Exxus` matches 6 and all 6 are. **Brand-wide rules for Yocan and Wulf were rejected
+on the same measurement** — both sell genuine accessories (batteries, knife kits,
+torches) beside their vaporizers, and a blanket rule would have dragged 9 correct
+merch rows into `vaporizers`.
+
+### Subtyping merch from descriptions — measured and rejected
+
+376 of 1,300 live merch names carry no form word. Falling back to the description
+recovers a subtype for 173 of them, so it looks like a free 46% coverage gain. A
+sample of 25 was **wrong roughly 10 times**: merch descriptions are sales copy that
+names adjacent gear constantly — "Hemp Wick" reads as paper, "Puck Press" as pipe,
+"Raw - Original Tips 50ct" as paper, a Dr.Dabber vape pen as dab-tool. A confident
+wrong subtype is worse than the category default, so the gap gets closed with name
+tokens. Those 376 rows are the next piece of work; `tips`, `beaker`, `downstem`,
+`sherlock` and a bare width token ("Elements King Size Wide" is a paper) are the
+obvious candidates, each needing its own blast-radius check.
+
+### Where it landed
+
+| | runs | mean | sd | range |
+| --- | ---: | ---: | ---: | ---: |
+| baseline (pre-v6) | 4 | 249.75 | 0.50 | 249–250 |
+| registry + corrected labels | 5 | **248.80** | 1.64 | 247–251 |
+
+−0.95 cases, ~1.2 standard errors — inside the noise, and the ranges overlap. No merch
+case fails in any of the four runs. Every residual failure is a long-standing class
+already catalogued below: topical `Nmg` never reaching `variant` (5 cases), 10-pack
+preroll math (4), and the `strain` overload on edibles and topicals (6).
+
+The sd tripling (0.50 → 1.73) is worth watching but is not established: with n=4 the
+estimate is very imprecise, and pulling 14 rows out of the batches moves every batch
+boundary, which given that this suite's noise is **batch-correlated** is enough on its
+own to reshuffle which cases flip.
+
+### Two labels I am not confident in
+
+Both are recorded as a `note` on the case rather than left implicit:
+
+- `gold-097` *Human Grade - 5" Recycler 1A Dab Rig* → `bong`. A dab rig is not a bong.
+  They share a rail today because splitting them needs a `rig` subtype.
+- `spot-044` *Matte Black 3.2v Auto Start 510 Vape Cartridge Battery & Charger* →
+  `charger`. This is a battery sold *with* a charger; `charger` wins only because token
+  order puts it first (so a plain "510 USB Charger" is not read as a battery).
+
+## Closing the merch token gap — and a prompt regression I caused doing it (2026-08-30)
+
+376 of 1,300 merch names carried no subtype token. Widening the token table closed
+most of that gap, and cost 3 cases on the way for a reason worth writing down.
+
+### The tokens
+
+Every candidate was measured against all 16,031 live listings before adoption —
+how many rows it newly covers, what those rows' stored subtype already is, and
+whether it outranks a token that should win instead.
+
+| added | joins | newly covered | stored subtype already agreed |
+| --- | --- | ---: | --- |
+| `beaker`, `hookah` | bong | 16 | 16/16 |
+| `sherlock`, `steamroller`, `gandalf*`, `taster`, `hammer` | pipe | 16 | 16/16 |
+| `hot knife`, `knife kit`, `nectar collector`, `terp pearls`, `dab station`, `poker` | dab-tool | 24 | 24/24 |
+| `grynder` | grinder | 4 | 4/4 |
+| `jersey`, `beanie`, `jacket`, `shorts`, `sweater`, `sweat pants/shirt`, bare `shirt` | apparel | 16 | 16/16 |
+| `bowl` | **new subtype** | 15 | — |
+| `downstem` | **new subtype** | 14 | — |
+| `cotton buds`, `resin blaster`, `air sanitizer`, `odor` | cleaning | 15 | 6/15 |
+| `butane`, `matches`, `hemp wick` | lighter | 11 | 2/11 |
+| `case`, `bag`, `dugout`, `caddy`, `doob tube` | storage | 20 | 12/20 |
+| bare `tip(s)` | filter-tip | 41 | 32/41 |
+
+Token coverage went **71.1% → 84.9%** (924 → 1,104 of 1,300). With the
+model-answer fallback on top, only **106 rows (8.2%) are still the generic
+`merch`**. The backfill changed 55 stored subtypes, and merch product rows went
+**892 → 889** — a small *merge*, not a split, because several of these unified
+groups that were already split across two subtypes (Ozium's air sanitiser sat in
+`cleaning` at 8oz and `merch` at 0.8oz).
+
+Two rules needed care:
+
+- **Bare `tip(s)` cannot sit beside the strong tip rule.** Papers, cones and wraps
+  are all sold "with tips", and at the front of the order the modifier outranked the
+  head noun — it dragged 7 papers and 3 cones into `filter-tip`. Fixed two ways: a
+  `for_tokens()` hook strips the "w/ tips" phrase before any rule runs, and the bare
+  rule is placed near the end so anything earlier wins. `hose` and `tube` are excluded
+  outright — a "Glass Hose Tip" is a bong part, a "Pre-Roll Tube with a Glass Tip" is
+  a tube.
+- **`bowl` and `downstem` must come after bong, pipe and dab-tool.** A piece that
+  merely *has* a bowl is not a bowl. That keeps "Bong Bowl", "Beaker Ufo Bong With
+  Flower Bowl" and "Quartz Banger Bowl" where they were.
+
+**Rejected:** `screens` → filter-tip. It gains 2 rows and costs 7 — pipe and grinder
+sets that include a screen would flip — and a bowl screen is not a filter tip anyway.
+
+**One known miss:** `10" 9mm Indigo Double Downstem USA Color Mouthpiece …` is a 10"
+bong described by its parts, and now reads as a `downstem`. One row against 53 correct
+changes; a rule for it would be fitted to that row, so it stands.
+
+### The regression: a subtype rail is part of the prompt
+
+Adding `bowl` and `downstem` scored **245.75** over 4 runs against 248.80 — −3.05
+cases, t ≈ −3.2, outside the noise. Every one of the 14 merch gold cases passed in
+every run, so the damage was entirely in categories the tokens never touch.
+
+The mechanism: `_SUBTYPE_LINES` interpolates **`SUBTYPES` into the classify prompt**.
+Widening the merch rail rewrote the prompt for all 268 cases. This is the same failure
+this repo keeps hitting — *every regression this cycle came from a prompt edit* — and
+this time the edit was invisible, a side effect of a data change two files away.
+
+The fix makes it structurally impossible rather than merely fixed: `_SUBTYPE_LINES`
+now skips any category whose owner declares `needs_model = False`. Merch is settled
+from the name before a batch is formed, so the model never needs its rail, and merch
+taxonomy changes can no longer perturb anything else.
+
+| arm | runs | mean | sd |
+| --- | ---: | ---: | ---: |
+| registry only (previous commit) | 5 | 248.80 | 1.64 |
+| \+ tokens, merch rail still in the prompt | 4 | **245.75** | 1.26 |
+| \+ tokens, merch rail out of the prompt | 4 | **248.50** | 3.00 |
+
+Back inside the noise (−0.30 vs the previous commit), with all 14 merch cases passing
+in all four runs.
+
+**No `_ENRICH_VERSION` bump.** The stamp exists to invalidate cached answers, and
+merch rows now bypass the cache entirely. Exactly one live row reaches the merch path
+with a cached answer — one the scraper called something else and the model moves into
+merch — and the new `*/Vaporizer` format token settles that one first. A bump would
+re-enrich all 16,031 listings (~$5-6) to fix nothing.
+
+### What this bought in enrich.py
+
+`scripts/enrich.py` went **1,117 → 1,007 lines**, and its 44 merch mentions are down to
+two. `_merch_size`, `_merch_pack`, `merch_variant`, `_MERCH_COLOR`, `_MERCH_FLAVOR`,
+`merch_strain` and `_TOKENS["merch"]` are gone — `merch_strain` was not just dead but
+wrong, still returning a colour after colour moved to `attributes`. `SUBTYPES["merch"]`
+is now read from the enricher, so a new merch subtype cannot be added to the tokens and
+forgotten in the rail.
+
+The two model-answer appliers were **not** dead and were not deleted: a row hinted as
+another category can still come back `merch` from the model. They now ask the owning
+enricher for the subtype, variant and strain, so the registry governs both paths.
+
+## Model comparison — DeepSeek v4 vs Haiku 4.5 (2026-08-25)
+
+Same gold suites, same prompts, `haiku-or` transport throughout. Haiku has 4 runs
+(the noise-floor set); DeepSeek 2 each, except `-0813` which was cut after one.
+
+| model | n | acc | sd | secs | out tok | $/run | $/fleet¹ |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| **claude-haiku-4.5** | 4 | **93.2%** | **0.50** | **15** | 15,851 | $0.1497 | $10.07 |
+| deepseek-v4-flash | 2 | 89.0% | 4.95 | 332 | 58,647 | **$0.0152** | **$1.03** |
+| deepseek-v4-pro | 2 | 85.3% | 2.12 | 538 | 81,436 | $0.1346 | $9.05 |
+| deepseek-v4-pro-0813 | 1 | 51.1% | — | 821 | 100,453 | $0.4054 | $27.27 |
+
+¹ scaled from $/run to the 19,106-listing fleet.
+
+**Haiku wins on every axis except price.** Three findings worth keeping:
+
+- **"Pro" is worse than "flash", at 9× the cost.** deepseek-v4-pro scores 85.3% vs
+  its cheaper sibling's 89.0%. Its per-token rate is roughly half Haiku's, but it
+  emits **5× the output tokens**, so a run costs the same. Per-token price is not
+  cost; verbosity is. The dated `-0813` pin is worse again — 51.1% and $0.41/run,
+  mostly truncated JSON — and was cut after one run, a 42-point gap being 84× the
+  noise floor.
+- **The sd column decides it for this system.** deepseek-v4-flash's run-to-run
+  variance is **10× Haiku's** (4.95 vs 0.50 cases). Since `products` is a VIEW keyed
+  on the model's own strings, unstable output means product groups churn between
+  runs. Consistency matters more than raw accuracy here, and that is the axis
+  DeepSeek loses worst on — the 4.2pp accuracy gap is the smaller problem.
+- **Wall clock is a real constraint at fleet scale.** 15s vs 332–821s on 284
+  listings. Extrapolated to a fleet refresh, Haiku's ~11 minutes becomes ~6.5 hours.
+  Part of this is that the DeepSeek entries run `batch_size=15` (vs 50) because they
+  truncate JSON at larger batches — which is itself a robustness signal.
+
+deepseek-v4-flash remains the one genuinely interesting option: **10× cheaper**
+($1.03 vs $10.07 per fleet refresh). It is a reasonable fallback if cost ever
+becomes the binding constraint. It is not one today — the README's own baseline
+note stands: accuracy is binding, not cost.
+
+### claude-haiku-4.5:batch — half price, but not reachable from here
+
+Worth knowing since it is the same weights and therefore cannot differ on accuracy:
+`anthropic/claude-haiku-4.5:batch` bills **$0.50/$2.50 per M, exactly half** the
+sync rate. OpenRouter rejects it on `/chat/completions`:
+
+```
+404 — This model is only available through the Batch API.
+      Use the /api/beta/batches endpoint instead.
+```
+
+So it is not a `MODELS` entry, it is a submit → poll → retrieve rewrite against an
+async endpoint with a 24h SLA. For a nightly scrape → enrich → import run that
+latency is free, and it would halve a fleet refresh from **$6.65 to $3.32**
+(~$100/month at nightly cadence). Worth doing as plumbing; there is nothing to
+eval, because the weights are identical.
+
+A related trap found while checking slugs: `~deepseek/deepseek-v4-flash-latest`
+(the tilde is part of the slug) currently **resolves to** `deepseek-v4-flash-0731`,
+but bills $0.035/$0.280 against that pin's $0.040/$0.080 — cheaper input, 3.5× the
+output rate. For output-light work the pin is cheaper. More importantly, a floating
+alias changes weights without notice, which silently invalidates a frozen gold
+suite. Pin models in the eval path.
+
+## Fleet report — all 24 live stores (2026-08-25)
+
+`dispensary_report.py` runs the audit checks **per store** and normalizes to
+findings per 100 listings, so every menu can be ranked. Full output in
+`results/dispensary_report.md` / `.json`.
+
+```bash
+python evals/enrich/enrich_csvs.py     --csv 'data/scrapes/*.csv' --model haiku-or
+python evals/enrich/dispensary_report.py --csv 'data/scrapes/*.csv' \
+    --md results/dispensary_report.md --json results/dispensary_report.json
+```
+
+25 stores, 19,106 listings, **579 suspects = 3.03 per 100**. Spread runs from
+`emerald-dispensary-bk` at 0.2 to `garden-club-carroll-gardens` at 6.7 — a 30×
+range, but every store lands in single digits.
+
+| metric | fleet |
+| --- | --- |
+| rows landing in `other` | **8 of 19,106 (0.04%)** |
+| strain fill | min 95.8%, median 99.2% |
+| variant fill | min 95.2%, median 99.9% |
+
+**The category result generalizes.** `category` held 100% on the gold suites;
+across the fleet only 8 rows out of 19,106 fall through to `other`. CATEGORY_MAP
+plus `format_tokens.json` now covers 25 stores, not just the one they were seeded
+from. That is the strongest evidence so far for moving work out of the model and
+into curated data.
+
+**Suspect rate is not accuracy, and does not track it.** `hold-up-roll-up` is the
+*worst* gold store (84.9% of cases) yet scores 3.3 suspects/100 — mid-pack. The
+audit catches fill gaps, strain splits and line leaks; it is structurally blind to
+the subtype and variant judgment errors that dominate the gold failures. Use the
+rate to target curation, not to rank quality.
+
+### Where the 579 findings sit
+
+| check | n | what it implies |
+| --- | ---: | --- |
+| missing enrichment | 163 | rows with no strain/subtype in an enrichable category |
+| lineage as strain | 125 | strain is just Indica/Sativa/Hybrid |
+| category token conflict | 85 | 22 tinctures look like edibles, 18 merch look like prerolls |
+| strain split | 85 | near-duplicate spellings within a brand (ruby farms 6, ayrloom 5) |
+| line leaked into strain | 85 | see below |
+| unmapped raw category | 4 | ready-to-add CATEGORY_MAP entries |
+
+Four raw categories are unmapped and each is a one-line fix: `CBD (Non-Cannabis)`
+(21 rows), `Pet CBD (Non-Cannabis)` (8), `Gift Cards` (4), `Infused Pre-Rolled
+Flower` (2).
+
+### The Plug moved platforms — its gold suite no longer mirrors production
+
+The Plug left Flowhub for Dutchie (`theplug-brooklyn.dispensary.shop` → the store
+now sits at `dutchie.com/dispensary/the-plug-brooklyn`, dispensaryId
+`68dc46d938899896d40a1beb`; `dispensaries.json` updated). It scrapes cleanly again:
+842 listings, 2.9 suspects/100, 99.5% strain fill, full descriptions.
+
+But the migration invalidated the suite's premise. `gold_the_plug.json` is built
+around "a whole raw category the scraper's CATEGORY_MAP missed — vapes landing in
+`other`, testing hint override at scale". On the new Dutchie feed the raw
+categories are clean:
+
+```
+Pre-Rolls 233 · Edible 204 · Vaporizers 190 · Flower 174 · Concentrate 29 · ...
+```
+
+**0% of the live store now lands in `other`.** The 108 frozen cases stay valid as a
+regression test — that is what freezing is for, and the naming convention
+(`Brand - Strain | Size Format`) is unchanged — but the store no longer exercises
+the failure mode the suite was built to measure. Coney Island, the other
+`other`-heavy suite, is gone entirely (marked `inactive`; its domain 404s at the
+root). Of the three stores that gave `other` three different meanings, only
+`hold_up_roll_up` is still live and still `other`-heavy.
+
+If hint override at scale matters going forward, it needs a new gold set from a
+store that still has the problem.
+
+### The de-lining bug, measured at fleet scale
+
+`gold-105` traced `_strip_line_from_strain` returning `stripped or strain`, so a
+strain that is *nothing but* the product line keeps the line as its strain. Across
+the fleet that is **24 of the 85 line leaks** — `Ayrloom` "Pillow Talk",
+`Papa & Barkley` "Releaf", `Eaton Botanicals` "Apple-A-Day", `Off Hours` "Offline".
+Returning `None` on a total match is a safe one-line fix worth 24 rows.
+
+**The other 61 are not the same bug and must not be fixed the same way.** 72 of 85
+leaks are on brands with no curated entry, where de-lining never runs at all — but
+blindly de-lining with the *model's* product_line would corrupt real strains:
+
+```
+Weekenders     strain='Blue Dream'  line='Dream'    ->  de-lining gives 'Blue'
+Camino         strain='Sour Deep Sleep Blackberry Dream'  line='Sleep'
+Supernaturals  strain='Interspecies Erotica'  line='Erotica'
+```
+
+These are the model over-extracting a product line out of a genuine strain name,
+not a strain that swallowed a line. De-line only against **curated** vocabularies,
+never against the model's own guess — which is the whole argument for
+`product_lines.json` over prompt instructions.
+
+### Papa & Barkley Releaf / Relief, now with counts
+
+The open spelling question has numbers: **`Releaf` 11 rows, `Relief` 2**, plus
+`1906` using `Relief` as its own line and `Papa & Barkley` "Relief Balm" appearing
+as a strain. `Releaf` as canonical is the majority spelling as well as the brand's
+trademark. Still not encoded — your ruling.
+
+## What is actually broken — the 11 always-fail cases
+
+Failing on all four runs, so these are real defects rather than noise. Grouped by
+root cause, with the deterministic fix each one implies. Together they are 11 of the
+18.25 mean failures; the other ~7 are the flaky cases above.
+
+| # | root cause | cases | fix |
+| --- | --- | --- | --- |
+| 5 | **mg dose in the name never reaches `variant` for topicals/balms/sprays** — `variant` comes back empty | `coney-054`, `coney-055`, `holdup-046`, `holdup-047`, `spot-048` | rule: when category is `topical`/`tincture` and variant is empty, take `\d+(\.\d+)?\s*mg` from the name (note `spot-048` writes it `1000.00mg`) |
+| 3 | **CAMINO absent from `product_lines.json`** | `spot-030` Balance, `spot-033` Bliss, `spot-035` Energy | add the brand's lines; all three are quoted in the name |
+| 2 | **descriptor read as strain** | `holdup-016` `Lemon Lavender Serenity`, `gold-022` `Milk Chocolate` | see below — `gold-022` is the v5 regression fix that **did not work** |
+| 1 | **10-pack preroll weight** — 10 × 0.28g instead of 10 × 0.35g | `coney-050` (`holdup-014` flaky, same shape) | pack math rail, or a curated pack-weight default |
+| 1 | **`Releaf` lands in `strain`** rather than being dropped | `gold-105` | see open question below |
+| 1 | **Honeycrisp cluster splits 3 ways** — `Honeycrisp` / `Honeycrisp Apple Cider` / `Honeycrisp Cider` | `x-ayrloom-honeycrisp-beverage` | `strain_aliases.json` entry for Ayrloom |
+| 1 | **tea sachet → `other`, want `beverage`** | `holdup-023` | `_TOKENS['edible']` already has `tea\s+sachet`; the row isn't reaching the edible branch — needs tracing |
+
+The single highest-value item is the first: one regex fixes 5 of 11, and it is a
+string fact about the name, not a model judgment.
+
+### v5 did not do what it was meant to
+
+`_ENRICH_VERSION` 5 was the ruling that "a format word alone is not a strain" —
+written specifically for `gold-022`, `GR N Milk Chocolate Full Bar Sativa`, which
+should answer `strain: Sativa`. It still answers `Milk Chocolate`, **0/4 runs**.
+That is a fourth data point for the pattern already in this file: every regression
+so far came from a prompt edit, and prompt edits have done the least work. This one
+should move to `format_tokens.json`-style curated data or a post-model rule.
+
+### Flagged for a human ruling — not encoded
+
+Three gold labels look arguable; leaving them as-is rather than silently deciding:
+
+- `holdup-016` — expects `strain: Lemon Lavender`, dropping `Serenity`. But
+  `Serenity` reads like a **product line** (cf. CAMINO's `Balance`/`Bliss`/`Energy`,
+  which the labels *do* treat as lines). If it is a line, the label wants
+  `product_line: Serenity` too, and the case is mislabeled rather than failing.
+- `holdup-046` — expects `strain: None` for `Unscented CBD Lotion`. Consistent with
+  merch/topical null-strain, but the file's own taxonomy note says "topical scent
+  names ARE strains", and `Unscented` is a scent name. `spot-048` cuts the other way:
+  it expects `strain: Restore`, a topical scent/benefit name. One of these two is wrong.
+- `holdup-043` — `Organic Medium Dog CBD Oil`: expects `strain: None`, model answers
+  `Medium Dog` on 2/4 runs. `Medium Dog` is a size descriptor, not a strain, so the
+  label looks right — but this is the same "descriptor as strain" failure as
+  `gold-022`, and fixing one should fix both.
+
+### Papa & Barkley `Releaf` / `Relief` — the open question
+
+`Papa & Barkley -> ["Releaf"]` is **already** in `product_lines.json`, and `gold-105`
+still fails: `product_line: Releaf` is set correctly but `strain: Releaf` stays.
+Traced to `canonical._strip_line_from_strain`, last line:
+
+```python
+return stripped or strain   # "Releaf" minus "Releaf" -> "" -> falls back to "Releaf"
+```
+
+The fallback is deliberate ("returns strain unchanged if removing the line would
+leave nothing") and right for a partial match, but wrong when the strain is
+*nothing but* the product line — there is no strain then, and it should go to `None`.
+Confirmed directly:
+
+```
+_strip_line_from_strain("Releaf Balm", "Releaf") -> 'Balm'     # correct
+_strip_line_from_strain("Releaf",      "Releaf") -> 'Releaf'   # should be None
+```
+
+Two notes: `strain_delined` counts this as a de-line that did not happen, so that
+stat over-reports; and this is a de-lining bug **independent of the spelling
+question**, worth fixing first since it is what actually breaks the cluster.
+
+On the spelling itself (`Releaf` at two stores, `Relief` at The Spot BK, a genuine
+source typo): this is exactly the `strain_aliases.json` shape — one canonical
+spelling, variants mapped onto it — except it needs the same mechanism for
+`product_lines`. Recommend `Releaf` as canonical (it is the brand's actual trademark,
+and two of three stores spell it that way), with `Relief` as the mapped variant.
+Still your call; not encoded.
 
 ## Baseline detail (haiku, gold_the_plug)
 

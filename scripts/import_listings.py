@@ -20,11 +20,16 @@ import csv
 import os
 import sys
 import uuid
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import verification  # noqa: E402
+import attributes  # noqa: E402
 from datetime import datetime, timezone
 
 try:
     import psycopg2
     import psycopg2.extras
+    from psycopg2.extras import Json
 except ImportError:
     print("psycopg2-binary required: pip install psycopg2-binary", file=sys.stderr)
     sys.exit(1)
@@ -167,9 +172,16 @@ def main():
                 classification,     # 16: classification
                 description,        # 17: description
                 product_line,       # 18: product_line
-                now,                # 19: created_at
-                now,                # 20: updated_at
-                now,                # 21: last_seen_at
+                # Per-category identity that does not fit the shared columns —
+                # merch colour and flavour today. Derived from the name, so it is
+                # computed here rather than carried through the CSV: a row that
+                # reaches the DB without it would need backfill_attributes.py to
+                # catch up, and until then would group wrongly in the products view.
+                Json(attrs) if (attrs := attributes.for_category(
+                    scraped_category, scraped_name)) else None,   # 19: attributes
+                now,                # 20: created_at
+                now,                # 21: updated_at
+                now,                # 22: last_seen_at
             )
 
             if sku:
@@ -184,13 +196,44 @@ def main():
                 """
                 SELECT sku, in_stock, price_cents, image_url,
                        scraped_name, scraped_brand, scraped_category,
-                       subtype, strain, url, product_line, COALESCE(variant, '')
+                       subtype, strain, url, product_line, COALESCE(variant, ''),
+                       verified_fields
                 FROM listings
                 WHERE dispensary_id = %s AND sku = ANY(%s)
                 """,
                 (dispensary_id, skus),
             )
             existing: dict[tuple, tuple] = {(row[0], row[11]): row for row in cur.fetchall()}
+
+            # Overlay human-verified fields onto the records about to be written.
+            # Doing it here rather than in the upsert's DO UPDATE keeps one
+            # implementation of the name hash — a CASE expression would need the
+            # same normalisation in SQL, and the two drifting apart would silently
+            # either drop protection or freeze stale values.
+            #
+            # A claim is about a (listing, scraped_name) pair. verified_fields()
+            # compares the stored hash against the INCOMING name, so a renamed
+            # product lapses and the scraped value takes over, which is the
+            # behaviour we want: nobody has read the new name.
+            VERIFIED_IDX = {"subtype": 14, "strain": 15, "product_line": 18, "variant": 5}
+            protected = 0
+            for pos, rec in enumerate(to_upsert):
+                db_row = existing.get((rec[2], rec[5] or ""))
+                if not db_row or not db_row[12]:
+                    continue
+                held = verification.verified_fields(
+                    {"verified_fields": db_row[12], "scraped_name": rec[11]})
+                if not held:
+                    continue
+                as_list = list(rec)
+                for field, value in held.items():
+                    idx = VERIFIED_IDX.get(field)
+                    if idx is not None:
+                        as_list[idx] = value
+                to_upsert[pos] = tuple(as_list)
+                protected += 1
+            if protected:
+                print(f"  verified: kept {protected} human-signed row(s) from being overwritten")
 
             TRACKED = [
                 # (label, record_idx, existing_col_idx)
@@ -255,7 +298,7 @@ def main():
                          in_stock, is_active, scraped_at,
                          scraped_name, scraped_brand, scraped_category,
                          subtype, strain, classification, description, product_line,
-                         created_at, updated_at, last_seen_at)
+                         attributes, created_at, updated_at, last_seen_at)
                     VALUES %s
                     ON CONFLICT (dispensary_id, sku, COALESCE(variant, ''))
                     WHERE sku IS NOT NULL
@@ -273,6 +316,7 @@ def main():
                         classification   = EXCLUDED.classification,
                         description      = EXCLUDED.description,
                         product_line     = EXCLUDED.product_line,
+                        attributes       = EXCLUDED.attributes,
                         url              = EXCLUDED.url,
                         scraped_at       = EXCLUDED.scraped_at,
                         last_seen_at     = EXCLUDED.last_seen_at,
@@ -290,7 +334,7 @@ def main():
                          in_stock, is_active, scraped_at,
                          scraped_name, scraped_brand, scraped_category,
                          subtype, strain, classification, description, product_line,
-                         created_at, updated_at, last_seen_at)
+                         attributes, created_at, updated_at, last_seen_at)
                     VALUES %s
                     """,
                     no_sku_insert,

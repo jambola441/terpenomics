@@ -13,12 +13,17 @@ import json
 import os
 import re
 import sys
+import time
 from collections import OrderedDict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from scraper_common import normalize_variant  # noqa: E402
 from canonical import canonicalize, find_format_category  # noqa: E402
+import verification  # noqa: E402
+import attributes as attribute_registry  # noqa: E402
+import enrichers  # noqa: E402
+import catalog_enricher  # noqa: E402
 
 _DATA_DIR = Path(__file__).parent.parent / "data"
 
@@ -49,14 +54,13 @@ _TOKENS: dict[str, OrderedDict] = {
         ("preground", re.compile(r"\bpre-?ground\b|\bground\s+flower\b|\bready\s*-?\s*to\s*-?\s*roll\b", re.I)),
         ("infused",   re.compile(r"\bdiamond\s+infused\b|\binfused\b", re.I)),
     ]),
-    "concentrate": OrderedDict([
-        ("diamonds", re.compile(r"\bdiamonds?\b", re.I)),
-        ("rosin", re.compile(r"\brosin\b", re.I)),
-        ("resin", re.compile(r"\bresin\b", re.I)),
-        ("hash",  re.compile(r"\bhash\b", re.I)),
-        ("rso",   re.compile(r"\brso\b", re.I)),
-    ]),
 }
+
+# Merch identity — size, pack, colour, flavour — used to live here as a block of
+# module-level helpers. It moved to MerchEnricher (scripts/enrichers.py) and
+# scripts/attributes.py, which is why merch is no longer named in this file
+# outside the rails below.
+# ---------------------------------------------------------------------------
 
 _CATEGORY_DEFAULTS: dict[str, str | None] = {
     "vaporizers":  None,
@@ -100,6 +104,39 @@ def _hint_subtype(row: dict) -> str | None:
 
 
 # ---------------------------------------------------------------------------
+# Pass A description cap  —  MEASURED, LEFT OFF (0)
+#
+# Pass A (category/subtype) decides mostly from the name's format words, while
+# Pass B (strain/product_line) needs the full text for edible pack math, so
+# capping Pass A alone looked like a ~25% cost saving. Measured on the gold
+# suites it is worth 3-5%, because output tokens are 53% of cost, bill at 5x
+# input, and do not shrink when the input does. Accuracy also drops and its
+# run-to-run variance grows ~9x at cap=60. Not a good trade — keep it at 0.
+#
+# Retained as an instrument: gold-set descriptions are pre-truncated at 300
+# chars, so that measurement is a floor. Production descriptions are ~4x longer
+# and the arithmetic may differ; re-test against real scrape CSVs before
+# adopting. Set ENRICH_PASS_A_DESC_CAP=<chars> to A/B it. See evals/enrich/README.md.
+# ---------------------------------------------------------------------------
+
+def _pass_a_desc_cap() -> int:
+    try:
+        return max(0, int(os.environ.get("ENRICH_PASS_A_DESC_CAP", "0")))
+    except ValueError:
+        return 0
+
+
+def _cap_desc(text: str, cap: int) -> str:
+    """Truncate on a word boundary so a cut never invents a token ('choc' from
+    'chocolate') that the classifier could read as a format word."""
+    if not cap or len(text) <= cap:
+        return text
+    cut = text[:cap]
+    sp = cut.rfind(" ")
+    return (cut[:sp] if sp > cap // 2 else cut).rstrip() + "\u2026"
+
+
+# ---------------------------------------------------------------------------
 # Cache — one file per dispensary: data/enrich_cache/{slug}.json
 # ---------------------------------------------------------------------------
 
@@ -117,7 +154,23 @@ _CACHE_DIR = _DATA_DIR / "enrich_cache"
 #       pack multiply-out scoped to mg doses so it stops overriding weight hints
 #   5 — a format word alone is not a strain ("Milk Chocolate" on a chocolate bar),
 #       so lineage is reached when nothing else differentiates
-_ENRICH_VERSION = 5
+#   6 — merch gets a real identity: form-factor subtypes (cone, paper, grinder,
+#       ...), pack/size in variant, and colour or flavour in strain. Before this,
+#       every accessory was subtype "merch" with strain and variant blank, so the
+#       products VIEW grouped merch on brand alone — 1,514 listings collapsed into
+#       223 product rows.
+#   7 — merch variant is a composite of size and pack ("1 1/4 33ct"), with width
+#       normalised (KS / King Size / Slim KS were splitting one paper three ways).
+#       Papers differ by width at a constant count, cones by count at one size, so
+#       neither field alone separates both.
+#   (no 8) — merch subtypes were widened again (bowl, downstem, and ~180 more rows
+#       settled by name tokens) and the merch helpers moved to MerchEnricher, but
+#       merch rows now bypass the cache entirely, so their entries are never read.
+#       Exactly ONE live row reaches the merch path with a cached answer — a row the
+#       scraper called something else that the model moves into merch — and the new
+#       `*/Vaporizer` format token settles that one before it gets there. Bumping
+#       would re-enrich all 16,031 listings (~$5-6) to fix nothing.
+_ENRICH_VERSION = 7
 
 
 def _cache_key(row: dict) -> str | None:
@@ -192,6 +245,24 @@ MODELS: dict[str, dict] = {
         "cost": {"input": 0.80 / 1e6, "output": 4.00 / 1e6,
                  "cache_write": 1.00 / 1e6, "cache_read": 0.08 / 1e6},
     },
+    # Same model, OpenRouter transport. For environments that have
+    # OPENROUTER_API_KEY but no ANTHROPIC_API_KEY. Scores from this entry are
+    # comparable to "haiku" on accuracy but NOT on cost: OpenRouter's rate is
+    # $1.00/$5.00 per M vs Anthropic's $0.80/$4.00, ~25% higher. There is also
+    # no prompt-cache accounting on this path (a no-op today either way, since
+    # the system prompts sit under the minimum cacheable length).
+    "haiku-or": {
+        "provider":  "openrouter",
+        "api_model": "anthropic/claude-haiku-4.5",
+        "cost": {"input": 1.00 / 1e6, "output": 5.00 / 1e6},
+    },
+    # NOTE: anthropic/claude-haiku-4.5:batch is half price ($0.50/$2.50 per M) and
+    # is the SAME weights, so it cannot differ on accuracy — but it is not reachable
+    # from here. OpenRouter rejects it on /chat/completions with
+    #   "This model is only available through the Batch API. Use /api/beta/batches"
+    # so adopting it means submit-poll-retrieve against an async endpoint (24h SLA),
+    # not a MODELS entry. Worth doing for a nightly scrape->enrich->import run,
+    # where latency is free; it is a plumbing change, not a model choice.
     # ---- comparison models (via OpenRouter) ----
     # TODO: confirm the exact slug + pricing from openrouter.ai/models.
     "mimo": {
@@ -206,10 +277,20 @@ MODELS: dict[str, dict] = {
         # Firm timeout so a stalled batch fails fast instead of hanging the run.
         "batch_size": 15, "timeout": 120, "max_tokens": 8192,
     },
+    # DeepSeek v4 Pro. MEASURED 2026-08-25 on the gold suites: 85.3% vs haiku's
+    # 93.2%, i.e. WORSE than its own cheaper sibling deepseek-v4-flash (89.0%), at
+    # 9x the cost and 36x the wall clock. Kept only so the result stays reproducible.
+    # The dated -0813 pin is worse still (51.1%, $0.41/run) and is not worth an entry.
+    "deepseek-pro": {
+        "provider":  "openrouter",
+        "api_model": "deepseek/deepseek-v4-pro",
+        "cost": {"input": 0.556 / 1e6, "output": 1.112 / 1e6},
+        "batch_size": 15, "max_tokens": 8192,
+    },
     "deepseek": {
         "provider":  "openrouter",
-        "api_model": "deepseek/deepseek-v4-flash",   # <-- verify slug on OpenRouter
-        "cost": {"input": 0.09 / 1e6, "output": 0.18 / 1e6},
+        "api_model": "deepseek/deepseek-v4-flash",   # verified live on OpenRouter 2026-08-25
+        "cost": {"input": 0.077 / 1e6, "output": 0.154 / 1e6},   # live catalogue price
         # Truncated/nulled the extract pass at the default 50-item batch. Small
         # batch + generous max_tokens keeps each batch's JSON complete (same fix
         # that stabilized mimo).
@@ -253,12 +334,23 @@ SUBTYPES: dict[str, list[str]] = {
     "flower":      ["flower", "smalls", "preground", "infused"],
     "tinctures":   ["tincture"],
     "topical":     ["topical"],
-    "merch":       ["merch"],
+    # Owned by MerchEnricher — see scripts/enrichers.py. Kept in one place so a
+    # new merch subtype cannot be added to the tokens and forgotten in the rail.
+    "merch":       list(enrichers.for_category("merch").subtypes),
     "other":       ["other"],
 }
 
 _CATEGORY_LIST = ", ".join(CATEGORIES)
-_SUBTYPE_LINES = "\n".join(f"  {c}: {', '.join(s)}" for c, s in SUBTYPES.items())
+# Only the categories the model actually answers. A category whose owner declares
+# needs_model = False is settled from the name before a batch is formed, so listing
+# its rail here would pay for tokens on every call to describe a decision the model
+# never makes — and, worse, couple it to every other answer: adding "bowl" and
+# "downstem" to the merch rail edited this prompt for all 268 gold cases and cost
+# 3.05 cases (t = -3.2 over 4 runs), none of them merch. Measured, then fixed here.
+_SUBTYPE_LINES = "\n".join(
+    f"  {c}: {', '.join(s)}" for c, s in SUBTYPES.items()
+    if not enrichers.skips_model(c)
+)
 
 # ---------------------------------------------------------------------------
 # Prompts — one targeted prompt per pass. The classification pass has two
@@ -395,6 +487,60 @@ def _call_llm(
 ) -> tuple[dict | None, dict]:
     """Returns (items_by_local_id, usage_dict). items is None on any failure —
     callers must treat those rows as unanswered (fall back to hints, do NOT cache)."""
+    for attempt in range(_MAX_ATTEMPTS):
+        items, usage, retry_after = _call_llm_once(
+            client, provider, api_model, system_prompt, payload,
+            timeout, max_tokens, label, print_lock)
+        if items is not None or retry_after is None:
+            return items, usage
+        # Transient: the gateway told us to wait (rate limit / in-flight budget).
+        # Sleeping here holds this worker's slot, which is exactly the throttle we
+        # want — it stops the pool from re-flooding the gateway.
+        if attempt < _MAX_ATTEMPTS - 1:
+            with print_lock:
+                print(f"    {label} retrying in {retry_after:.0f}s "
+                      f"(attempt {attempt + 2}/{_MAX_ATTEMPTS})", file=sys.stderr)
+            time.sleep(retry_after)
+    return None, dict(_ZERO_USAGE)
+
+
+# Transient gateway failures worth waiting out rather than dropping the batch.
+_MAX_ATTEMPTS = 3
+_RETRY_STATUS = {402, 408, 429, 500, 502, 503, 504}
+_DEFAULT_RETRY_AFTER = 30.0
+_MAX_RETRY_AFTER = 180.0
+
+
+def _retry_delay(exc: Exception) -> float | None:
+    """Seconds to wait before retrying, or None if the error is not transient.
+    Prefers the gateway's own Retry-After when it sends one."""
+    status = getattr(exc, "status_code", None)
+    if status is None:
+        resp = getattr(exc, "response", None)
+        status = getattr(resp, "status_code", None)
+    if status not in _RETRY_STATUS:
+        return None
+    hinted = None
+    resp = getattr(exc, "response", None)
+    headers = getattr(resp, "headers", None)
+    if headers:
+        try:
+            hinted = float(headers.get("Retry-After") or headers.get("retry-after"))
+        except (TypeError, ValueError):
+            hinted = None
+    if hinted is None:
+        # OpenRouter nests it in the error body rather than the HTTP headers.
+        m = re.search(r"'Retry-After':\s*'(\d+)'", str(exc))
+        hinted = float(m.group(1)) if m else _DEFAULT_RETRY_AFTER
+    return min(hinted, _MAX_RETRY_AFTER)
+
+
+def _call_llm_once(
+    client, provider: str, api_model: str, system_prompt: str,
+    payload: list[dict], timeout: float, max_tokens: int,
+    label: str, print_lock,
+) -> tuple[dict | None, dict, float | None]:
+    """One attempt. Third element is the retry delay when the failure is transient."""
     try:
         if provider == "anthropic":
             resp = client.messages.create(
@@ -430,13 +576,14 @@ def _call_llm(
             text = text.split("\n", 1)[1].rsplit("```", 1)[0].strip()
         items = {item["id"]: item for item in json.loads(text)}
     except Exception as exc:
+        delay = _retry_delay(exc)
         with print_lock:
-            print(f"  [model error] {label}: {exc}", file=sys.stderr)
-        items, usage = None, dict(_ZERO_USAGE)
+            print(f"  [model error] {label}: {str(exc)[:200]}", file=sys.stderr)
+        return None, dict(_ZERO_USAGE), delay
 
     with print_lock:
         print(f"    {label} done")
-    return items, usage
+    return items, usage, None
 
 
 def _chunks(items: list, n: int) -> list[list]:
@@ -511,6 +658,7 @@ def _run_enrich(
     model_cfg: dict,
     batch_size: int = 50,
     brand_examples: dict[str, dict] | None = None,
+    catalog_hints: bool = False,
 ) -> dict:
     """Field-decomposed enrichment in two dependent passes:
       A) classify category+subtype+variant (hinted rows and fresh rows get different prompts)
@@ -541,7 +689,15 @@ def _run_enrich(
         """tasks = [(label, system_prompt, payload, on_result), ...]; runs them concurrently."""
         if not tasks:
             return
-        with ThreadPoolExecutor(max_workers=min(len(tasks), 8)) as ex:
+        # Concurrency is capped by ENRICH_MAX_WORKERS (default 8). Gateways that
+        # meter *in-flight* tokens rather than requests — OpenRouter's in-flight
+        # budget among them — reject whole batches with 402 when 8 full-description
+        # batches are open at once. Lower it to 2-3 for a large fleet run.
+        try:
+            _workers = max(1, int(os.environ.get("ENRICH_MAX_WORKERS", "8")))
+        except ValueError:
+            _workers = 8
+        with ThreadPoolExecutor(max_workers=min(len(tasks), _workers)) as ex:
             futs = {
                 ex.submit(_call_llm, client, provider, api_model, sp, pl, timeout, max_tokens, label, print_lock): onr
                 for (label, sp, pl, onr) in tasks
@@ -556,6 +712,8 @@ def _run_enrich(
     hinted   = [(oi, r) for (oi, r) in pending if _hint_subtype(r) is not None]
     fresh    = [(oi, r) for (oi, r) in pending if _hint_subtype(r) is None]
 
+    _cap_a = _pass_a_desc_cap()
+
     def classify_payload(chunk):
         return [
             {
@@ -563,7 +721,7 @@ def _run_enrich(
                 "hint_category": _hint_category(r),
                 "brand":         r.get("brand", ""),
                 "name":          r.get("name", ""),
-                "description":   r.get("description", ""),
+                "description":   _cap_desc(r.get("description", ""), _cap_a),
                 "hint_subtype":  _hint_subtype(r),
                 "hint_variant":  r.get("variant", ""),
             }
@@ -583,9 +741,20 @@ def _run_enrich(
                 forced = find_format_category(row.get("brand", ""), row.get("name", ""))
                 cat = forced or _valid_category(it.get("category"), row.get("category"))
                 categories[oi] = cat
-                subtypes[oi]   = _valid_subtype(it.get("subtype"), cat, _hint_subtype(row))
+                # A row hinted as something else can still come back as a category
+                # that has an owner, so the owner gets the last word here too — not
+                # only on the rows routed past the model entirely.
+                owner = enrichers.for_category(cat)
+                name = row.get("name", "")
+                subtypes[oi]   = _valid_subtype(it.get("subtype"), cat,
+                                                owner.token_subtype(name) or _hint_subtype(row))
                 v = it.get("variant")
                 variants[oi]   = v if v is not None else row.get("variant", "")
+                # A size or pack count is a string fact about the name; where the
+                # owner writes one, it wins over whatever the model returned.
+                ov = owner.variant(name, variants[oi])
+                if ov:
+                    variants[oi] = ov
         return on_result
 
     classify_tasks = []
@@ -619,8 +788,13 @@ def _run_enrich(
                 if it is None:
                     failed_rows.add(oi)
                     it = {}
-                strains[oi]       = it.get("strain")
                 product_lines[oi] = it.get("product_line")
+                # The owner decides what `strain` means for its category — merch
+                # returns None, because a cultivar is not what separates two
+                # accessories; colour and flavour live in `attributes` instead.
+                # That keeps `strain` meaning one thing everywhere it is set.
+                strains[oi] = enrichers.for_category(categories[oi]).strain(
+                    row.get("name", ""), it.get("strain"))
         return on_result
 
     def extract_payload_item(i, oi, r):
@@ -644,6 +818,14 @@ def _run_enrich(
                 item["known_strains"] = known_s
             if known_pl:
                 item["known_product_lines"] = known_pl
+
+        # Where we hold a catalog for this brand, its own product list is a better
+        # source for the same slots than `listings` is: the DB hints above are our
+        # previous model output, so they nudge toward consistency rather than toward
+        # correctness. Catalog values win the overlap and add `catalog_products`, the
+        # nearest real titles. Still only a hint — the model decides.
+        if catalog_hints:
+            item.update(catalog_enricher.hints(r.get("brand"), r.get("name", "")))
         return item
 
     extract_tasks = []
@@ -662,6 +844,12 @@ def _run_enrich(
               f"will retry next run", file=sys.stderr)
     for (oi, row) in pending:
         if oi in failed_rows:
+            # Tell the caller which rows carry fallbacks rather than answers. A
+            # caller writing back over an existing file needs to distinguish
+            # "empty because the batch broke" from "empty on purpose" — merch
+            # strain is deliberately null, and so is any field the model
+            # legitimately declines. Without this, both look identical.
+            row["_enrich_failed"] = True
             continue
         key = _cache_key(row)
         if key:
@@ -680,11 +868,25 @@ def _run_enrich(
 # ---------------------------------------------------------------------------
 
 def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
-           model: str = DEFAULT_MODEL, brand_examples: dict[str, dict] | None = None) -> dict:
+           model: str = DEFAULT_MODEL, brand_examples: dict[str, dict] | None = None,
+           catalog_hints: bool = False) -> dict:
     """Enrich every row in place: corrects category, adds subtype/strain/product_line/variant.
 
     `model` selects an entry from MODELS (default "haiku"). Each non-default model
     gets its own cache file so a comparison run never reads another model's answers.
+
+    `catalog_hints` adds the brand's real product list (data/catalogs/) to the pass-B
+    prompt as context. A hint only — the model still decides, and nothing is written
+    from the catalog directly.
+
+    DEFAULT OFF, because measured it costs more than it returns. Over two eval runs
+    each way: baseline 279/278, hint 277/275. The two standing Ayrloom failures it was
+    built to fix (x-ayrloom-honeycrisp, holdup-044) do flip to passing — but they also
+    flip on a second baseline run with no hint at all, so that is run-to-run variance,
+    not evidence. Against it, three Camino cases lose product_line in both hinted runs
+    and neither unhinted one, and Camino has no catalog: adding hint keys to some items
+    in a 50-item batch moves the model's answers on its neighbours. Until that
+    cross-item effect is understood, this stays opt-in.
 
     `brand_examples` injects a brand→{strains, product_lines} index to nudge strain/line
     consistency. The nudge is OFF by default; when brand_examples is None it auto-loads from
@@ -698,6 +900,10 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
             row.setdefault("subtype", "other")
             row.setdefault("strain", "")
             row.setdefault("product_line", None)
+            # Attributes are read from the name, not asked of the model, so a
+            # --no-enrich scrape has no reason to go without them.
+            row.setdefault("attributes", attribute_registry.for_category(
+                row.get("category"), row.get("name", "")) or None)
         return {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0, "cost_usd": 0.0}
 
     if model not in MODELS:
@@ -718,6 +924,36 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
     pending:       list[tuple[int, dict]] = []
 
     for i, row in enumerate(rows):
+        # A row a human has signed off on entirely never reaches the model — the
+        # answer is already known and better than anything the pipeline would
+        # produce, so re-deriving it would only risk overwriting it. This also
+        # makes verified rows free.
+        if verification.is_fully_verified(row):
+            v = verification.verified_fields(row)
+            categories.append(v.get("category"))
+            subtypes.append(v.get("subtype"))
+            strains.append(v.get("strain"))
+            product_lines.append(v.get("product_line"))
+            variants.append(v.get("variant"))
+            continue
+
+        # A category whose owner declares needs_model = False is answered from the
+        # name alone. Skipping here rather than filtering later means those rows
+        # never enter a batch, so they cost nothing and cannot be perturbed by a
+        # model's run-to-run variance.
+        hint_cat = _hint_category(row)
+        if enrichers.skips_model(hint_cat):
+            owner = enrichers.for_category(hint_cat)
+            name = row.get("name", "")
+            categories.append(hint_cat)
+            # row["subtype"] is normally absent on a fresh scrape; when a caller does
+            # supply the stored value, a model answer the tokens do not cover survives.
+            subtypes.append(owner.subtype(name, row.get("subtype")))
+            strains.append(owner.strain(name, None))
+            product_lines.append(owner.product_line(row.get("brand", ""), name, None))
+            variants.append(owner.variant(name, row.get("variant")))
+            continue
+
         key = _cache_key(row)
         entry = cache.get(key) if key else None
         # Re-enrich if not cached, if the cache pre-dates the variant/category
@@ -737,10 +973,13 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
             variants.append(None)
             pending.append((i, row))
 
-    cached_count = len(rows) - len(pending)
+    no_model = sum(1 for r in rows if enrichers.skips_model(_hint_category(r)))
+    cached_count = len(rows) - len(pending) - no_model
+    if no_model:
+        print(f"  deterministic: {no_model} row(s) answered from the name, no model call")
     if pending:
         print(f"  enrich: {cached_count} cached, {len(pending)} → {model}")
-        usage = _run_enrich(pending, cache, slug, categories, subtypes, strains, product_lines, variants, model_cfg, batch_size, brand_examples)
+        usage = _run_enrich(pending, cache, slug, categories, subtypes, strains, product_lines, variants, model_cfg, batch_size, brand_examples, catalog_hints)
     else:
         print(f"  enrich: {cached_count} cached, 0 → {model}")
         usage = {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0}
@@ -754,6 +993,10 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
         # Pass the settled category: an edible/tincture dose must not be run through
         # the weight conversions (1000mg is a dose, not 1g).
         row["variant"]      = normalize_variant(v, row["category"]) if v else v
+        # Category-specific identity, derived from the name. Only categories with a
+        # shape in the registry get anything; the rest keep None.
+        row["attributes"]   = attribute_registry.for_category(
+            row["category"], row.get("name", "")) or None
 
     # Deterministic canonicalization last: curated product lines and strain aliases
     # override the model, so identity is consistent across dispensaries and runs.
@@ -761,6 +1004,21 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
     canon_stats = canonicalize(rows)
     if any(canon_stats.values()):
         print("  canonical: " + ", ".join(f"{k}={v}" for k, v in canon_stats.items() if v))
+
+    # Human answers win over both the model and the curated maps, so they are
+    # applied last. Partially verified rows land here: they still went through
+    # enrichment for their unverified fields, and this restores the signed ones.
+    verified_n = lapsed_n = 0
+    for row in rows:
+        if verification.verified_fields(row):
+            verification.apply(row)
+            verified_n += 1
+        lapsed_n += bool(verification.lapsed_fields(row))
+    if verified_n or lapsed_n:
+        msg = f"  verified: {verified_n} row(s) protected"
+        if lapsed_n:
+            msg += f", {lapsed_n} lapsed (renamed since review — needs re-check)"
+        print(msg)
 
     c = model_cfg["cost"]
     cost = (
