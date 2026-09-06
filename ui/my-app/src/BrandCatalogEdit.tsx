@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { AdminTable, badge, categoryColor, navBtnStyle, selectStyle, Dash, type Column } from './components/AdminTable'
 import { ExportBadge } from './BrandCatalogs'
@@ -49,6 +49,15 @@ function toDraft(e: BrandCatalogEntry | null): Draft {
  *   `data/catalogs/<slug>.json`, so nothing edited on this page reaches the model
  *   until the export is regenerated. The banner says so on every visit, and it is
  *   re-checked after every write rather than assumed.
+ *
+ * Variant is editable in the table itself, and rows are multi-selectable so one
+ * variant can be applied to many at once. Variant earns that over the other columns
+ * because it is the field a fetch most often gets wrong in a consistent way — a
+ * whole product line landing with the size in the name and nothing in `variant` —
+ * and fixing fifty of those one modal at a time is what stops it getting fixed.
+ * Bulk actions are ordinary per-row requests in a loop, not a new endpoint: the
+ * write path stays the single-entry one whose rules about `verified_*` are already
+ * settled.
  */
 export default function BrandCatalogEdit() {
   const { catalogId } = useParams<{ catalogId: string }>()
@@ -84,6 +93,13 @@ export default function BrandCatalogEdit() {
 
   // The entry open in the editor: a row, or 'new', or nothing.
   const [editing, setEditing] = useState<BrandCatalogEntry | 'new' | null>(null)
+
+  // Inline + bulk editing
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [inlineSavingId, setInlineSavingId] = useState<string | null>(null)
+  const [bulkBusy, setBulkBusy] = useState<string | null>(null)
+  /** Index of the last checkbox clicked, so shift-click can extend from it. */
+  const anchorRef = useRef<number | null>(null)
 
   useEffect(() => {
     if (isNew) return
@@ -137,6 +153,9 @@ export default function BrandCatalogEdit() {
         offset: nextOffset,
       })
       setEntries(prev => (nextOffset === 0 ? page.entries : [...prev, ...page.entries]))
+      // A new filter is a new set of rows; carrying a selection across it would let a
+      // bulk action hit entries that are no longer on screen.
+      if (nextOffset === 0) { setSelected(new Set()); anchorRef.current = null }
       setTotal(page.total)
       setOffset(nextOffset)
     } catch (err: any) {
@@ -205,23 +224,122 @@ export default function BrandCatalogEdit() {
     if (editing && editing !== 'new' && editing.id === updated.id) setEditing(updated)
   }
 
+  /**
+   * Fold a saved row back into the table, dropping it if the current filter no longer
+   * holds it. Removing a row while the filter says "active" should take it off screen
+   * — it is no longer part of the answer to the question being asked.
+   */
+  function applyEntryUpdate(updated: BrandCatalogEntry) {
+    if (status !== 'all' && updated.is_active !== (status === 'active')) {
+      setEntries(prev => prev.filter(e => e.id !== updated.id))
+      setTotal(t => Math.max(0, t - 1))
+      setSelected(prev => {
+        if (!prev.has(updated.id)) return prev
+        const next = new Set(prev)
+        next.delete(updated.id)
+        return next
+      })
+      if (editing !== 'new' && editing?.id === updated.id) setEditing(null)
+    } else {
+      replaceEntry(updated)
+    }
+  }
+
   async function handleSetActive(entry: BrandCatalogEntry, isActive: boolean) {
     setError(null); setMsg(null)
     try {
       const updated = await api.brandCatalogs.setEntryActive(catalogId!, entry.id, isActive)
-      // Removing a row while the filter says "active" should take it off screen —
-      // it is no longer part of the answer to the question being asked.
-      if (status !== 'all' && updated.is_active !== (status === 'active')) {
-        setEntries(prev => prev.filter(e => e.id !== updated.id))
-        setTotal(t => Math.max(0, t - 1))
-        if (editing !== 'new' && editing?.id === updated.id) setEditing(null)
-      } else {
-        replaceEntry(updated)
-      }
+      applyEntryUpdate(updated)
       setMsg(isActive ? `Restored “${updated.name}”` : `Removed “${updated.name}” (deactivated, not deleted)`)
       refreshExport()
     } catch (err: any) {
       setError(err.message ?? 'Failed')
+    }
+  }
+
+  /**
+   * Save one field of one row from the table, without opening the editor.
+   *
+   * Same endpoint and same diff discipline as the editor: one key, so nothing the
+   * user did not touch is rewritten. A no-op edit is dropped rather than sent — the
+   * endpoint would accept it, but it would make the export stale for nothing.
+   */
+  async function handleInlineSave(entry: BrandCatalogEntry, field: 'variant', value: string) {
+    const next = value.trim() || null
+    if ((entry[field] ?? null) === next) return
+    setError(null); setMsg(null)
+    setInlineSavingId(entry.id)
+    try {
+      const updated = await api.brandCatalogs.updateEntry(catalogId!, entry.id, { [field]: next })
+      replaceEntry(updated)
+      setMsg(next
+        ? `${field} = “${next}” on “${updated.name}” — regenerate the export to put it in front of enrichment`
+        : `${field} cleared on “${updated.name}” — regenerate the export to put it in front of enrichment`)
+      refreshExport()
+    } catch (err: any) {
+      setError(err.message ?? 'Save failed')
+    } finally {
+      setInlineSavingId(null)
+    }
+  }
+
+  /** Checkbox click. Shift extends from the last one clicked, as in a file list. */
+  function toggleRow(entry: BrandCatalogEntry, index: number, shift: boolean) {
+    // Read the anchor and move it here, not inside the updater: React runs an
+    // updater lazily at re-render, by which point `anchorRef.current` would already
+    // be this click's index and every shift-click would cover a range of one.
+    const anchor = anchorRef.current
+    anchorRef.current = index
+    const range = shift && anchor != null
+      ? entries.slice(Math.min(anchor, index), Math.max(anchor, index) + 1)
+      : [entry]
+    setSelected(prev => {
+      const next = new Set(prev)
+      const turningOn = !prev.has(entry.id)
+      for (const row of range) {
+        if (turningOn) next.add(row.id)
+        else next.delete(row.id)
+      }
+      return next
+    })
+  }
+
+  /**
+   * Apply a single-entry write across the selection.
+   *
+   * One request per row against the endpoints a single edit already uses. There is no
+   * bulk endpoint and this does not add one: a second write path onto these columns
+   * would have to re-derive the rules the single-entry handler owns (what an absent
+   * key means, what a rename does to a sign-off), and a fifty-row admin edit is not
+   * worth that. Sequential, so a failure part-way leaves a legible half-done state
+   * with the rows that did save already visible, rather than an unordered scatter.
+   */
+  async function runBulk(
+    progress: string,
+    summary: (n: number) => string,
+    fn: (entry: BrandCatalogEntry) => Promise<BrandCatalogEntry>,
+  ) {
+    const targets = entries.filter(e => selected.has(e.id))
+    if (!targets.length) return
+    setError(null); setMsg(null)
+    const failures: string[] = []
+    let done = 0
+    for (const [i, entry] of targets.entries()) {
+      setBulkBusy(`${progress} ${i + 1}/${targets.length}…`)
+      try {
+        applyEntryUpdate(await fn(entry))
+        done++
+      } catch (err: any) {
+        failures.push(`${entry.name}: ${err.message ?? 'failed'}`)
+      }
+    }
+    setBulkBusy(null)
+    if (done) {
+      setMsg(`${summary(done)} — regenerate the export to put ${done === 1 ? 'it' : 'them'} in front of enrichment`)
+      refreshExport()
+    }
+    if (failures.length) {
+      setError(`${failures.length} of ${targets.length} failed — ${failures.slice(0, 3).join('; ')}${failures.length > 3 ? ' …' : ''}`)
     }
   }
 
@@ -247,7 +365,16 @@ export default function BrandCatalogEdit() {
     },
     { key: 'subtype', header: 'Subtype', render: e => e.subtype ?? <Dash /> },
     { key: 'strain', header: 'Strain', render: e => e.strain ?? <Dash /> },
-    { key: 'variant', header: 'Variant', td: { fontSize: 12 }, render: e => e.variant ?? <Dash /> },
+    {
+      key: 'variant', header: 'Variant', td: { fontSize: 12 }, stopPropagation: true,
+      render: e => (
+        <InlineVariant
+          entry={e}
+          saving={inlineSavingId === e.id}
+          onSave={value => handleInlineSave(e, 'variant', value)}
+        />
+      ),
+    },
     {
       key: 'listings', header: 'Listings', align: 'right',
       render: e => (e.listing_count ? e.listing_count : <Dash />),
@@ -423,6 +550,32 @@ export default function BrandCatalogEdit() {
               />
             )}
 
+            {selected.size > 0 && (
+              <BulkBar
+                count={selected.size}
+                busy={bulkBusy}
+                anyInactive={entries.some(e => selected.has(e.id) && !e.is_active)}
+                onClear={() => { setSelected(new Set()); anchorRef.current = null }}
+                onSetVariant={value => runBulk(
+                  'Setting variant',
+                  n => `Set variant to “${value}” on ${n} ${n === 1 ? 'entry' : 'entries'}`,
+                  e => api.brandCatalogs.updateEntry(catalogId!, e.id, { variant: value }),
+                )}
+                onClearVariant={() => runBulk(
+                  'Clearing variant',
+                  n => `Cleared variant on ${n} ${n === 1 ? 'entry' : 'entries'}`,
+                  e => api.brandCatalogs.updateEntry(catalogId!, e.id, { variant: null }),
+                )}
+                onSetActive={isActive => runBulk(
+                  isActive ? 'Restoring' : 'Removing',
+                  n => isActive
+                    ? `Restored ${n} ${n === 1 ? 'entry' : 'entries'}`
+                    : `Removed ${n} ${n === 1 ? 'entry' : 'entries'} (deactivated, not deleted)`,
+                  e => api.brandCatalogs.setEntryActive(catalogId!, e.id, isActive),
+                )}
+              />
+            )}
+
             {entries.length === 0 ? (
               <div style={{ color: '#475569', padding: 16 }}>
                 {entriesLoading ? 'Loading…' : 'No entries match these filters.'}
@@ -433,6 +586,14 @@ export default function BrandCatalogEdit() {
                 rows={entries}
                 rowKey={e => e.id}
                 onRowClick={e => setEditing(e)}
+                selection={{
+                  selected,
+                  onToggle: toggleRow,
+                  onToggleAll: checked => {
+                    setSelected(checked ? new Set(entries.map(e => e.id)) : new Set())
+                    anchorRef.current = null
+                  },
+                }}
               />
             )}
 
@@ -510,6 +671,176 @@ function ExportPanel({ status, busy, onRegenerate }: {
       <button onClick={onRegenerate} disabled={busy} style={primaryBtn(busy)}>
         {busy ? 'Writing…' : 'Regenerate export'}
       </button>
+    </div>
+  )
+}
+
+/* ── Inline variant cell ────────────────────────────────────────────────────── */
+
+/**
+ * The variant column, editable where it is read.
+ *
+ * Click to edit, Enter or blur to save, Escape to abandon. Blur saves rather than
+ * cancels because the common motion is to fix a cell and click straight into the
+ * next one — cancelling there would silently drop the edit the user just typed.
+ * Escape is the way out, and it has to beat the blur it causes, hence `abandoned`.
+ *
+ * The draft is local to the cell: the row itself is only rewritten by the response
+ * to the save, so a failed request leaves the table showing what is actually stored.
+ */
+function InlineVariant({ entry, saving, onSave }: {
+  entry: BrandCatalogEntry
+  saving: boolean
+  onSave: (value: string) => void
+}) {
+  const [editing, setEditing] = useState(false)
+  const [value, setValue] = useState(entry.variant ?? '')
+  const abandoned = useRef(false)
+
+  // A save, a bulk edit or a reload can change the stored value under an idle cell.
+  useEffect(() => {
+    if (!editing) setValue(entry.variant ?? '')
+  }, [entry.variant, editing])
+
+  const signedOff = 'variant' in (entry.verified_fields ?? {})
+
+  function commit() {
+    setEditing(false)
+    if (abandoned.current) { abandoned.current = false; setValue(entry.variant ?? ''); return }
+    onSave(value)
+  }
+
+  if (saving) {
+    return <span style={{ color: '#64748b' }}>saving…</span>
+  }
+
+  if (!editing) {
+    return (
+      <span
+        onClick={() => { abandoned.current = false; setEditing(true) }}
+        title={signedOff
+          ? 'Signed off. Editing overwrites the value a person vouched for — click to edit.'
+          : 'Click to edit'}
+        style={{
+          cursor: 'text', display: 'inline-block', minWidth: 60, padding: '2px 4px',
+          borderRadius: 4, borderBottom: '1px dashed #1e293b',
+          opacity: entry.is_active ? 1 : 0.45,
+        }}
+      >
+        {entry.variant ?? <Dash />}
+        {signedOff && <span style={{ color: '#86efac', marginLeft: 5 }} title="signed off">✓</span>}
+      </span>
+    )
+  }
+
+  return (
+    <input
+      autoFocus
+      value={value}
+      onChange={e => setValue(e.target.value)}
+      onFocus={e => e.currentTarget.select()}
+      onBlur={commit}
+      onKeyDown={e => {
+        if (e.key === 'Enter') { e.currentTarget.blur() }
+        else if (e.key === 'Escape') { abandoned.current = true; e.currentTarget.blur() }
+      }}
+      placeholder="(empty)"
+      style={{
+        width: '100%', minWidth: 90, background: '#080d18', border: '1px solid #3730a3',
+        borderRadius: 6, color: '#f1f5f9', fontSize: 12, padding: '4px 7px',
+        outline: 'none', boxSizing: 'border-box',
+      }}
+    />
+  )
+}
+
+/* ── Bulk actions ───────────────────────────────────────────────────────────── */
+
+/**
+ * What can be done to the current selection.
+ *
+ * Only the actions that are already safe one row at a time: a variant edit, and the
+ * deactivate/restore flag. Nothing here deletes, for the same reason nothing else on
+ * this page does — listings carry a foreign key to these rows.
+ *
+ * Clearing a variant and removing rows both ask first. They are the two that destroy
+ * something the user cannot see all of at once: with fifty rows selected, "clear" is
+ * fifty edits from one click.
+ */
+function BulkBar({ count, busy, anyInactive, onClear, onSetVariant, onClearVariant, onSetActive }: {
+  count: number
+  busy: string | null
+  anyInactive: boolean
+  onClear: () => void
+  onSetVariant: (value: string) => void
+  onClearVariant: () => void
+  onSetActive: (isActive: boolean) => void
+}) {
+  const [variant, setVariant] = useState('')
+  const disabled = busy !== null
+  const noun = `${count} ${count === 1 ? 'entry' : 'entries'}`
+
+  return (
+    <div style={{
+      background: '#0f172a', border: '1px solid #3730a3', borderRadius: 10,
+      padding: '12px 16px', marginBottom: 12,
+      display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
+    }}>
+      <span style={{ fontSize: 13, color: '#a5b4fc', fontWeight: 600 }}>{noun} selected</span>
+
+      <form
+        onSubmit={e => { e.preventDefault(); if (variant.trim()) { onSetVariant(variant.trim()); setVariant('') } }}
+        style={{ display: 'flex', gap: 8, alignItems: 'center' }}
+      >
+        <input
+          value={variant}
+          onChange={e => setVariant(e.target.value)}
+          disabled={disabled}
+          placeholder="variant to apply"
+          style={{ ...inputStyle, width: 190, padding: '6px 10px', fontSize: 13 }}
+        />
+        <button
+          type="submit"
+          disabled={disabled || !variant.trim()}
+          style={{ ...navBtnStyle, color: '#a5b4fc', borderColor: '#3730a3', opacity: disabled || !variant.trim() ? 0.5 : 1 }}
+        >
+          Set variant on {count}
+        </button>
+      </form>
+
+      <button
+        disabled={disabled}
+        onClick={() => { if (confirm(`Clear the variant on ${noun}?`)) onClearVariant() }}
+        style={{ ...navBtnStyle, opacity: disabled ? 0.5 : 1 }}
+      >
+        Clear variant
+      </button>
+
+      <button
+        disabled={disabled}
+        onClick={() => { if (confirm(`Remove ${noun} from the catalog? They are deactivated, not deleted.`)) onSetActive(false) }}
+        style={{ ...navBtnStyle, color: '#fca5a5', borderColor: '#7f1d1d', opacity: disabled ? 0.5 : 1 }}
+      >
+        Remove
+      </button>
+
+      {anyInactive && (
+        <button
+          disabled={disabled}
+          onClick={() => onSetActive(true)}
+          style={{ ...navBtnStyle, color: '#86efac', borderColor: '#14532d', opacity: disabled ? 0.5 : 1 }}
+        >
+          Restore
+        </button>
+      )}
+
+      <button disabled={disabled} onClick={onClear} style={{ ...navBtnStyle, marginLeft: 'auto' }}>
+        Clear selection
+      </button>
+
+      <div style={{ flexBasis: '100%', fontSize: 11, color: '#475569' }}>
+        {busy ?? 'Shift-click a checkbox to select a range. Each action is one save per row against the same endpoint a single edit uses, so a partial failure still leaves the rows that saved.'}
+      </div>
     </div>
   )
 }
