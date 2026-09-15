@@ -177,7 +177,14 @@ class TestPermissions(unittest.TestCase):
         })
         ws = self.wb["Permissions"]
         rows = _permission_rows(ws)
-        self.assertEqual(ws.cell(rows["Packages"], 3).value, "X")
-        self.assertEqual(ws.cell(rows["Packages"], 4).value, "X")
-        self.assertEqual(ws.cell(rows["Strains"], 3).value, "X")
-        self.assertIsNone(ws.cell(rows["Strains"], 4).value)
+
+        def marked(row, col):
+            # The template pre-fills these cells with whitespace, so "not
+            # marked" means no X rather than an empty cell.
+            return str(ws.cell(row, col).value or "").strip() == "X"
+
+        self.assertTrue(marked(rows["Packages"], 3))
+        self.assertTrue(marked(rows["Packages"], 4))
+        self.assertTrue(marked(rows["Strains"], 3))
+        self.assertFalse(marked(rows["Strains"], 4), "write column marked when not requested")
+        self.assertFalse(marked(rows["Locations"], 3), "unrequested area was marked")
