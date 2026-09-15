@@ -1,68 +1,99 @@
 **To:** api-info@metrc.com
-**Subject:** NY sandbox — two endpoints returning 401 across two tenants, and a docs correction
+**Subject:** NY API evaluation — two facility capabilities disabled in the sandbox
 
 Hi,
 
-We're completing the Generic Evaluation for NY (integrator: Terpenomics). 48 of
-53 steps return 200. Two endpoints return 401 for us, and we'd like to confirm
-whether that's expected before we submit.
+Attached is our completed Generic Evaluation for New York (integrator:
+Terpenomics, vendor key HDqkP7…). 48 of the 53 steps return HTTP 200.
 
-**1. `GET /patients/v2/...` returns 401**
+Five steps do not, and in both cases we believe the cause is a facility
+capability that is switched off across the NY sandbox rather than anything
+about our key. We would like your guidance on how to evidence those steps
+before we treat the evaluation as complete.
 
-Affects "Sales with Patient Look Up" step 4, which asks us to verify a patient's
-`FlowerOuncesAvailable` via `GET /patients/v2/statuses/{patientLicenseNumber}`.
+---
 
-`GET /patients/v2/active` also returns 401, so we can't retrieve a valid patient
-number to query. We see this at all three dispensary types — AU, MED and DUAL —
-and on two independent sandbox tenants (`-30301` and `-13402`).
+**1. Member patients — "Sales with Patient Look Up", step 4**
 
-**2. `POST /transfers/v2/external/incoming` returns 401**
+`GET /patients/v2/statuses/{patientLicenseNumber}` returns 401. So do
+`GET /patients/v2/active` and `POST /patients/v2/`, which means there is no
+route to obtain a valid patient number to query in the first place.
 
-Affects "Transfer External Incoming" steps 1a/1b, and 3/4 which depend on the
-ids those create. Step 2 (`GET /transfers/v2/incoming`) succeeds at 200.
+`GET /facilities/v2` reports `CanHaveMemberPatients: false` and
+`TotalMemberPatientsAllowed: null` on every dispensary available to us — AU,
+MED and DUAL — across two independent sandbox tenants (`…-30301` and
+`…-13402`). That reads to us as the facilities having no member patient
+registry at all, which would explain the 401 on all three routes.
 
-An empty request body returns 400 ("The request body must not be an empty
-array"), while a fully populated body returns 401 — so the route is reachable
-and the authorization check happens after validation. Tried with
-`TransferTypeName` values of both "Beginning Inventory" and "External Hemp
-Transfer" (the two flagged `ForExternalIncomingShipments` by
-`GET /transfers/v2/types`), and with shipper licenses both inside and outside
-our own tenant. Same result on both tenants.
+The same facilities report `CanSellToExternalPatients: true`, and step 5 of
+that tab succeeds: we posted a receipt with `SalesCustomerType` of
+`ExternalPatient` and received a 200. So the external-patient half of the tab
+is demonstrated; only the member-patient lookup in step 4 is not.
 
-Our questions:
+Is the member patient registry intentionally disabled in the NY sandbox? If
+so, how would you like step 4 evidenced?
 
-- Are these two disabled in the NY sandbox generally, or is it a permission we
-  should request on our sandbox user?
-- If they are disabled, how should the evaluation cover those steps? We're happy
-  to submit them documented as 401 with the request/response evidence if that's
-  acceptable.
+**2. External incoming transfers — "Transfer External Incoming", steps 1a/1b**
 
-**3. A documentation correction, offered in case it's useful**
+`POST /transfers/v2/external/incoming` returns 401. Steps 3 and 4 depend on
+the ids those steps create, so they are blank. Step 2 of that tab,
+`GET /transfers/v2/incoming`, returns 200.
 
-`PUT /packages/v2/adjust` treats `Quantity` as the package's **new total**, not
-a delta. The example in the docs passes `-2.0`, which reads as a delta. Sending
-the negative of a package's current quantity leaves it at that negative value,
-and `PUT /packages/v2/finish` then rejects it with "cannot be Finished because
-it's not empty". Sending `0` empties the package and finish returns 200. We
-verified this by reading the package between each call:
+`GET /facilities/v2` reports `CanTransferFromExternalFacilities: false` on all
+26 facilities across both tenants.
+
+We ruled out the request itself: an empty array returns
+`400 "The request body must not be an empty array"`, while a fully populated
+body returns 401, so authorization is being refused after validation is
+reached. We tried both transfer types flagged `ForExternalIncomingShipments`
+by `GET /transfers/v2/types` ("Beginning Inventory" and "External Hemp
+Transfer"), shipper licenses inside and outside our own tenant, populated
+`Transporters` and `Packages` arrays, and item names valid at the receiving
+facility. Same result each time, on both tenants.
+
+Is this capability disabled for NY sandbox facilities? If it is, we would
+appreciate confirmation that those steps can be submitted documented as 401s.
+
+---
+
+**Documentation notes**
+
+Offered in case they are useful to your team or to other NY integrators. Happy
+to provide full request/response transcripts for any of them.
+
+*`PUT /packages/v2/adjust` treats `Quantity` as the new total, not a delta.*
+The documented example passes `-2.0`, which reads as an adjustment amount.
+Sending the negative of a package's current quantity sets the package to that
+negative value, and `PUT /packages/v2/finish` then rejects it with "cannot be
+Finished because it's not empty". Sending `0` empties the package and finish
+returns 200. Reading the package between calls:
 
     read 10.0 -> adjust -10.0 -> read -10.0 -> adjust +10.0 -> read 10.0
-    read 10.0 -> adjust 0     -> read 0.0   -> finish 200
+    read 10.0 -> adjust  0    -> read   0.0 -> finish 200
 
-A few smaller things we hit that aren't in the docs, in case they're worth a
-note for other NY integrators:
+*The `/sandbox/v2/` endpoints use a different authentication scheme.* All four
+authenticate with the vendor key in an `x-metrc-key` header rather than basic
+auth. The documentation mentions this only for `integrator/setup`; basic auth
+returns 401 on `tagtypes`, `facility/tags` and `packages/create`.
 
-- All `/sandbox/v2/*` endpoints authenticate with the vendor key in an
-  `x-metrc-key` header rather than basic auth. The docs mention this only for
-  `integrator/setup`; basic auth returns 401 on the other three.
-- A `lastModified` range wider than 24 hours returns 400 ("Last Modified range
-  cannot exceed 24 hours"). Omitting the range entirely is accepted.
-- `GET /sales/v2/customertypes` returns a plain array of strings, where
-  neighbouring vocabulary endpoints return objects with a `Name`.
-- `POST /sales/v2/deliveries` requires `DriverEmployeeId`, which the example
-  shows but the field list doesn't mark as required.
+*A `lastModified` range wider than 24 hours returns 400* ("Last Modified range
+cannot exceed 24 hours") on plant batches, plants, harvests, packages and
+transfers. Omitting the range entirely is accepted and returns everything. The
+"Requesting Large Amounts of Data" section describes chronological paging but
+does not state the cap.
 
-Happy to send full request/response transcripts for any of the above.
+*Plants are not read-after-write consistent.* `POST
+/plantbatches/v2/growthphase` returns 200, but `GET /plants/v2/flowering`
+issued immediately afterwards returns no rows; the plants appear a few seconds
+later. Worth a note for integrators who read back after a write.
 
-Thanks,
+*Smaller items.* `GET /sales/v2/customertypes` returns a plain array of
+strings where neighbouring vocabulary endpoints return objects with a `Name`.
+`POST /sales/v2/deliveries` requires `DriverEmployeeId` and rejects duplicate
+package labels across a delivery's transactions. NY publishes no plant waste
+methods, so `WasteMethodName` is necessarily null, and the only delivery
+return reason is "Unable to Deliver" rather than the documented "Spoilage".
+
+Thanks very much,
+
 Terpenomics
