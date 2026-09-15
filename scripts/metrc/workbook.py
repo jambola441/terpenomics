@@ -183,3 +183,68 @@ def _fill_company(wb, company: dict) -> None:
             if key.strip().lower() == label:
                 ws.cell(r, 3).value = value
                 break
+
+
+# Which tab covers each capability the States matrix tracks. A state is either
+# open or closed loop, medical or adult-use, CA or not, and the workbook ships
+# a different tab for each side. Reading the matrix beats hardcoding a state.
+STATE_COLUMN_SHEETS = {
+    "labs": ("LabResults", "CA ONLY Labs"),
+    "sales deliveries": ("Sales Deliveries (NOT CA)", None),
+    "retailer deliveries": ("CA- SalesRetailDeliveries", None),
+    "get wholesale": ("GET Transfers and Wholesale", None),
+    "external incoming": ("Transfer External Incoming", None),
+    "transfer templates": ("Transfer Templates", None),
+}
+
+ALWAYS_APPLICABLE = ["Locations", "Strains", "Items", "Plants", "Harvest", "Packages"]
+
+
+def state_row(path_or_wb, state: str) -> dict:
+    """The States tab as {column header: YES/NO} for one state."""
+    wb = path_or_wb if hasattr(path_or_wb, "sheetnames") else openpyxl.load_workbook(path_or_wb)
+    ws = wb["States"]
+    headers = [str(ws.cell(1, c).value or "").strip() for c in range(1, ws.max_column + 1)]
+    for r in range(2, ws.max_row + 1):
+        code = str(ws.cell(r, 1).value or "").strip()
+        if code.upper() == state.strip().upper():
+            return {
+                headers[c - 1]: str(ws.cell(r, c).value or "").strip().upper()
+                for c in range(2, ws.max_column + 1)
+                if headers[c - 1]
+            }
+    raise KeyError(f"state {state!r} not listed on the States tab")
+
+
+def applicable_sheets(path_or_wb, state: str) -> list:
+    """The tabs a given state must complete, per the States matrix."""
+    row = state_row(path_or_wb, state)
+
+    def yes(needle: str) -> bool:
+        for header, value in row.items():
+            if needle.lower() in header.lower():
+                return value == "YES"
+        return False
+
+    sheets = []
+    # Open loop states create plant batches from nothing; closed loop states
+    # have their own tab describing how to bootstrap inventory instead.
+    sheets.append("PlantBatches" if yes("open loop") else "Closed Loop States PlantBatches")
+    sheets += ALWAYS_APPLICABLE
+    sheets.append("CA ONLY Labs" if state.upper() == "CA" else "LabResults")
+    if yes("sales"):
+        # The patient-lookup variant adds the two steps a medical state needs.
+        sheets.append("Sales with Patient Look Up" if yes("patients tab") else "Sales")
+    if yes("sales deliveries"):
+        sheets.append("Sales Deliveries (NOT CA)")
+    if yes("retailer deliveries"):
+        sheets.append("CA- SalesRetailDeliveries")
+    if yes("get wholesale"):
+        sheets.append("GET Transfers and Wholesale")
+    if yes("transfer templates"):
+        sheets.append("Transfer Templates")
+    if yes("external incoming"):
+        sheets.append("Transfer External Incoming")
+
+    wb = path_or_wb if hasattr(path_or_wb, "sheetnames") else openpyxl.load_workbook(path_or_wb)
+    return [s for s in sheets if s in wb.sheetnames]

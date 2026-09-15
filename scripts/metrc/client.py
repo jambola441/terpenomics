@@ -26,6 +26,22 @@ from .config import MetrcConfig
 # Metrc rejects request bodies carrying more than this many objects with a 413.
 MAX_OBJECTS_PER_REQUEST = 10
 
+# Server faults Metrc surfaces as a 400 rather than a 5xx. These are not
+# caused by the request, so they are worth retrying and worth reporting as
+# infrastructure rather than as a failed evaluation step.
+SERVER_FAULT_MARKERS = (
+    "could not load file or assembly",
+    "object reference not set",
+    "a task was canceled",
+    "timeout expired",
+)
+
+
+def is_server_fault(payload) -> bool:
+    text = payload if isinstance(payload, str) else minify(payload)
+    low = text.lower()
+    return any(marker in low for marker in SERVER_FAULT_MARKERS)
+
 
 def minify(value: Any) -> str:
     """Render JSON the way the workbook demands: one line, no padding."""
@@ -64,6 +80,11 @@ class CallRecord:
     @property
     def ok(self) -> bool:
         return self.status == 200
+
+    @property
+    def server_fault(self) -> bool:
+        """A Metrc-side error returned as a 400, not a rejected request."""
+        return not self.ok and is_server_fault(self.response_body)
 
     @property
     def endpoint(self) -> str:
@@ -203,6 +224,10 @@ class MetrcClient:
             if resp.status_code == 429 and attempt < self.config.max_retries:
                 wait = float(resp.headers.get("Retry-After") or self.config.default_backoff)
                 time.sleep(wait)
+                continue
+            # A server fault can clear on its own; a rejected request never will.
+            if is_server_fault(record.response_body) and attempt < self.config.max_retries:
+                time.sleep(2 ** attempt)
                 continue
             break
 

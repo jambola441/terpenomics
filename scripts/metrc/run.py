@@ -31,7 +31,8 @@ from .steps import (
     read_sweep,
     run_full,
 )
-from .workbook import map_workbook, write_results
+from .validate import load_records, to_json, validate
+from .workbook import applicable_sheets, map_workbook, write_results
 
 DEFAULT_WORKBOOK = "evidence/metrc/Generic_Evaluation_for_All_States_MASTER_10.2025.xlsx"
 
@@ -192,12 +193,16 @@ def cmd_full(args, config: MetrcConfig, recorder: Recorder) -> int:
     results = run_full(client, ctx, only=only, licenses=licenses)
     print()
     for name, status, detail in results:
-        print(f"  {status:<4} {name:<28} {detail}")
+        print(f"  {status:<18} {name:<28} {detail}")
+    faults = [r for r in results if r[1] == "METRC SERVER FAULT"]
+    if faults:
+        print(f"\n{len(faults)} tab(s) blocked by a Metrc-side fault, not by the request. "
+              "Retry later; nothing to change here.")
 
     summary_path = recorder.write_summary()
     print(f"\n{len(recorder.records)} calls recorded -> {recorder.run_dir}")
     print(f"summary: {summary_path}")
-    return 1 if any(s == "FAIL" for _, s, _ in results) else 0
+    return 1 if any(s != "ok" for _, s, _ in results) else 0
 
 
 def cmd_fill(args, config: MetrcConfig, recorder: Recorder) -> int:
@@ -238,11 +243,79 @@ def cmd_fill(args, config: MetrcConfig, recorder: Recorder) -> int:
     if config.user_key:
         company["User Key Used"] = config.user_key
 
-    written = write_results(src, args.out, replay, company=company)
+    try:
+        scope = applicable_sheets(src, config.state)
+        print(f"{config.state.upper()} requires {len(scope)} tabs per the States matrix")
+    except KeyError as exc:
+        print(f"  {exc}; filling every tab", file=sys.stderr)
+        scope = None
+
+    written = write_results(src, args.out, replay, company=company, only_sheets=set(scope) if scope else None)
     for sheet, count in written.items():
         print(f"  {sheet}: {count} step(s)")
     print(f"\nwrote {args.out}")
-    return 0
+
+    # The same run, as data. A reviewer can diff it; the workbook they cannot.
+    json_path = args.json or os.path.splitext(args.out)[0] + ".json"
+    payload = to_json(args.out, replay.records, sheets=scope)
+    payload["runs"] = run_ids
+    payload["state"] = config.state
+    payload["sandbox"] = config.sandbox
+    with open(json_path, "w", encoding="utf-8") as fh:
+        json.dump(payload, fh, indent=2, default=str)
+    print(f"wrote {json_path}")
+
+    # Filling without checking is how a blank cell reaches Metrc.
+    report = validate(
+        args.out, replay.records, sheets=scope,
+        template_path=src if os.path.exists(src) else None,
+        expected_host=config.base_url.split("//")[-1],
+    )
+    _print_report(report)
+    return 0 if report.ok() else 1
+
+
+def _print_report(report) -> None:
+    print(f"\nvalidation: {report.cells_checked} cells, "
+          f"{report.steps_ok}/{report.steps_total} steps at HTTP 200")
+    for level, items in (("error", report.errors), ("warn", report.warnings)):
+        for finding in items:
+            print(f"  {finding}")
+    info = [f for f in report.findings if f.level == "info"]
+    if info:
+        print(f"  ({len(info)} informational note(s); --verbose to show)")
+    if report.errors:
+        print(f"\n{len(report.errors)} error(s) — do not submit this workbook yet.")
+    else:
+        print("\nno errors.")
+
+
+def cmd_validate(args, config: MetrcConfig, recorder: Recorder) -> int:
+    run_dirs = [
+        r if os.path.isdir(r) else os.path.join(config.run_dir, r)
+        for r in (r.strip() for r in args.run.split(",")) if r
+    ]
+    missing = [d for d in run_dirs if not os.path.exists(f"{d}/calls.jsonl")]
+    if missing:
+        print(f"no transcript at: {', '.join(missing)}", file=sys.stderr)
+        return 1
+
+    records = load_records(run_dirs)
+    try:
+        scope = applicable_sheets(args.template, config.state)
+    except (KeyError, FileNotFoundError):
+        scope = None
+    report = validate(
+        args.workbook, records, sheets=scope,
+        template_path=args.template if os.path.exists(args.template) else None,
+        expected_host=config.base_url.split("//")[-1],
+    )
+    _print_report(report)
+    if args.verbose:
+        for finding in report.findings:
+            if finding.level == "info":
+                print(f"  {finding}")
+    return 0 if report.ok() else 1
 
 
 def cmd_map(args, config: MetrcConfig, recorder: Recorder) -> int:
@@ -293,7 +366,15 @@ def main(argv=None) -> int:
     p.add_argument("--workbook", default=DEFAULT_WORKBOOK)
     p.add_argument("--out", default="evidence/metrc/Evaluation_completed.xlsx")
     p.add_argument("--company", default="evidence/metrc/company.json")
+    p.add_argument("--json", default="", help="JSON output path (default: alongside --out)")
     p.set_defaults(fn=cmd_fill)
+
+    p = sub.add_parser("validate", help="check a filled workbook against its transcript")
+    p.add_argument("--run", required=True, help="run id(s), comma-separated")
+    p.add_argument("--workbook", default="evidence/metrc/Evaluation_NY_completed.xlsx")
+    p.add_argument("--template", default=DEFAULT_WORKBOOK)
+    p.add_argument("--verbose", action="store_true", help="also show informational notes")
+    p.set_defaults(fn=cmd_validate)
 
     p = sub.add_parser("map", help="print the workbook's derived cell map")
     p.add_argument("--workbook", default=DEFAULT_WORKBOOK)

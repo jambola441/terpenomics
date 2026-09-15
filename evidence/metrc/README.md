@@ -89,7 +89,47 @@ python -m scripts.metrc.run get-only --window 90
 python -m scripts.metrc.run fill --run <run-id> --out evidence/metrc/Evaluation_completed.xlsx
 ```
 
+Filling also writes a JSON twin of the workbook and validates the result, so a
+blank cell cannot reach Metrc unnoticed. To re-check an existing workbook:
+
+```bash
+python -m scripts.metrc.run validate --run <read-run>,<write-run> [--verbose]
+```
+
 Inspect the derived cell map at any time with `python -m scripts.metrc.run map`.
+
+## Scope is derived, not hardcoded
+
+`applicable_sheets` reads the workbook's own States matrix, so the tabs a state
+must complete come from the sheet rather than from a list in the code. NY
+resolves to the open-loop PlantBatches tab, the patient-lookup sales variant
+and the generic LabResults tab; CA resolves to the Closed Loop, CA ONLY Labs
+and Retail Deliveries tabs instead. Running against another state needs
+`METRC_STATE` and nothing else.
+
+## Validation
+
+`scripts/metrc/validate.py` compares the workbook against the transcript it was
+built from, which is the only way to catch the failure mode that matters here:
+a step label matching no row, a column resolved from the wrong header, or a
+write into a merged cell that is not its anchor all produce a blank cell rather
+than an error.
+
+It reports as an **error** any cell disagreeing with the transcript, a result
+code that is not an HTTP status, a non-https request URL, evidence JSON that is
+not minified, and a write that would land in a merged range's non-anchor cell.
+It **warns** on a non-200 result and unparseable evidence, and notes blanks
+informationally. A non-zero exit means do not submit.
+
+`test_validate.py` breaks a filled workbook in five specific ways and asserts
+each is caught, so the validator cannot quietly degrade into always passing.
+
+## JSON output
+
+Every fill writes `<workbook>.json` beside the .xlsx: per sheet, per step, the
+task text, result code, license, ids, tags, last-modified, the full request
+(method, URL, body) and the response. Reviewable in a diff, which a spreadsheet
+is not, and usable as a fixture.
 
 ## How results reach the workbook
 
@@ -132,6 +172,16 @@ gives every step its own "License Facility" column.
 
 **`GET /labtests/v2/types` returns over 10,000 rows in NY.** Anything that
 walks that list needs to expect it.
+
+**Plants are not read-after-write consistent.** `POST
+/plantbatches/v2/growthphase` returns 200, but a `GET /plants/v2/flowering`
+issued immediately afterwards returns nothing; the plants appear seconds later.
+Reads that follow a write retry briefly.
+
+**Some Metrc server faults arrive as a 400.** A missing server-side assembly
+surfaces as `400 {"Message": "Could not load file or assembly ..."}`, which is
+indistinguishable from a rejected request unless you read the message. These
+are retried and reported separately, because they are not the caller's to fix.
 
 **`PUT /packages/v2/adjust` sets the quantity, it does not adjust by it.** The
 documented example passes `-2.0` as if it were a delta. In NY, sending the

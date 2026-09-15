@@ -1134,6 +1134,11 @@ def run_full(
                     reference_cache[lic] = load_reference(client)
                 fn(client, ctx, reference_cache[lic])
             results.append((name, "ok", lic))
+        except MetrcError as exc:
+            # Distinguish "Metrc is broken" from "our request was rejected" —
+            # only the second is ours to fix.
+            kind = "METRC SERVER FAULT" if exc.record.server_fault else "FAIL"
+            results.append((name, kind, f"[{lic}] {exc}"))
         except Exception as exc:
             results.append((name, "FAIL", f"[{lic}] {exc}"))
     return results
