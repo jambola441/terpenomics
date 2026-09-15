@@ -1,0 +1,19 @@
+{
+  "_comment": "The access request written onto the Permissions tab. Facility types drive the dependency chain the workbook enforces; areas are what gets marked.",
+  "facility_types": ["Sales"],
+  "areas": {
+    "Strains": {"get": true, "write": false},
+    "Items": {"get": true, "write": false},
+    "Packages": {"get": true, "write": false},
+    "Sales": {"get": true, "write": false},
+    "Sales Deliveries": {"get": true, "write": false},
+    "GET Transfers / Wholesale": {"get": true, "write": false}
+  },
+  "_not_requested": {
+    "Locations": "not in the Sales dependency chain; package reads already carry LocationName",
+    "Plant Batches / Plants": "grow-side only",
+    "Harvests": "grow-side only",
+    "Labs": "GET /labtests/v2/results is gated by View Packages, not by Labs",
+    "Transfer Template / External Incoming": "optional for every facility type; not used"
+  }
+}

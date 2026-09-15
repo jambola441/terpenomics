@@ -135,6 +135,7 @@ def write_results(
     *,
     company: dict | None = None,
     only_sheets: set | None = None,
+    permissions: dict | None = None,
 ) -> dict:
     """Fill the workbook from a run. Returns a per-sheet write count."""
     wb = openpyxl.load_workbook(src_path)
@@ -167,6 +168,9 @@ def write_results(
 
     if company:
         _fill_company(wb, company)
+    if permissions:
+        for problem in fill_permissions(wb, permissions):
+            written.setdefault("_permission_gaps", []).append(problem)
 
     wb.save(dest_path)
     return written
@@ -248,3 +252,73 @@ def applicable_sheets(path_or_wb, state: str) -> list:
 
     wb = path_or_wb if hasattr(path_or_wb, "sheetnames") else openpyxl.load_workbook(path_or_wb)
     return [s for s in sheets if s in wb.sheetnames]
+
+
+# The dependency table the Permissions tab prints: requesting a facility type
+# obliges you to request every area marked "D" for it.
+FACILITY_DEPENDENCIES = {
+    "Grow": ["Locations", "Strains", "Plant Batches / Plants", "Harvests", "Items",
+             "Packages", "GET Transfers / Wholesale"],
+    "Processor": ["Strains", "Items", "Packages", "GET Transfers / Wholesale"],
+    "Labs": ["Strains", "Packages", "Labs", "GET Transfers / Wholesale"],
+    "Sales": ["Strains", "Packages", "Items", "Sales", "Sales Deliveries",
+              "GET Transfers / Wholesale"],
+}
+
+MARK = "X"
+
+
+def _permission_rows(ws) -> dict:
+    """Area label -> row, for the request table on the Permissions tab."""
+    rows = {}
+    header = None
+    for r in range(1, ws.max_row + 1):
+        if str(ws.cell(r, 3).value or "").strip().upper() == "GET":
+            header = r
+            break
+    if header is None:
+        return rows
+    for r in range(header + 1, ws.max_row + 1):
+        label = str(ws.cell(r, 2).value or "").strip()
+        if not label:
+            continue
+        if label.lower().startswith("please complete"):
+            break
+        rows[label] = r
+    return rows
+
+
+def _match_area(label: str, requested: dict) -> dict | None:
+    """Match a sheet's area label to a requested key, tolerating its wording."""
+    norm = lambda s: "".join(ch for ch in s.lower() if ch.isalnum())
+    target = norm(label)
+    for key, value in requested.items():
+        if norm(key) == target or norm(key) in target or target in norm(key):
+            return value
+    return None
+
+
+def fill_permissions(wb, request: dict) -> list:
+    """Mark the requested access, returning any dependency the request misses."""
+    ws = wb["Permissions"]
+    rows = _permission_rows(ws)
+    areas = request.get("areas", {})
+
+    for label, row in rows.items():
+        wanted = _match_area(label, areas)
+        if not wanted:
+            continue
+        if wanted.get("get"):
+            ws.cell(row, 3).value = MARK
+        if wanted.get("write"):
+            ws.cell(row, 4).value = MARK
+
+    problems = []
+    for facility in request.get("facility_types", []):
+        for required in FACILITY_DEPENDENCIES.get(facility, []):
+            got = _match_area(required, areas)
+            if not got or not (got.get("get") or got.get("write")):
+                problems.append(
+                    f"{facility} requires {required!r}, which is not requested"
+                )
+    return problems

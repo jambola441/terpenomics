@@ -250,9 +250,25 @@ def cmd_fill(args, config: MetrcConfig, recorder: Recorder) -> int:
         print(f"  {exc}; filling every tab", file=sys.stderr)
         scope = None
 
-    written = write_results(src, args.out, replay, company=company, only_sheets=set(scope) if scope else None)
+    permissions = None
+    if args.permissions and os.path.exists(args.permissions):
+        with open(args.permissions, encoding="utf-8") as fh:
+            permissions = json.load(fh)
+
+    written = write_results(
+        src, args.out, replay, company=company,
+        only_sheets=set(scope) if scope else None,
+        permissions=permissions,
+    )
+    gaps = written.pop("_permission_gaps", [])
     for sheet, count in written.items():
         print(f"  {sheet}: {count} step(s)")
+    if permissions:
+        areas = [a for a, v in permissions.get("areas", {}).items() if v.get("get") or v.get("write")]
+        print(f"  Permissions: {len(areas)} area(s) marked for "
+              f"{', '.join(permissions.get('facility_types', [])) or 'no facility type'}")
+        for gap in gaps:
+            print(f"    ! {gap}")
     print(f"\nwrote {args.out}")
 
     # The same run, as data. A reviewer can diff it; the workbook they cannot.
@@ -367,6 +383,8 @@ def main(argv=None) -> int:
     p.add_argument("--out", default="evidence/metrc/Evaluation_completed.xlsx")
     p.add_argument("--company", default="evidence/metrc/company.json")
     p.add_argument("--json", default="", help="JSON output path (default: alongside --out)")
+    p.add_argument("--permissions", default="evidence/metrc/permissions.json",
+                   help="the access request to mark on the Permissions tab")
     p.set_defaults(fn=cmd_fill)
 
     p = sub.add_parser("validate", help="check a filled workbook against its transcript")

@@ -139,3 +139,45 @@ class TestStateScope(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestPermissions(unittest.TestCase):
+    """The Permissions tab decides production access, so a request that omits
+    part of its own dependency chain must not pass silently."""
+
+    def setUp(self):
+        self.wb = openpyxl.load_workbook(TEMPLATE)
+
+    def test_a_complete_sales_request_reports_no_gaps(self):
+        from .workbook import fill_permissions
+        request = {
+            "facility_types": ["Sales"],
+            "areas": {a: {"get": True, "write": False} for a in [
+                "Strains", "Items", "Packages", "Sales", "Sales Deliveries",
+                "GET Transfers / Wholesale",
+            ]},
+        }
+        self.assertEqual(fill_permissions(self.wb, request), [])
+
+    def test_an_incomplete_request_names_every_missing_dependency(self):
+        from .workbook import fill_permissions
+        gaps = fill_permissions(
+            self.wb, {"facility_types": ["Sales"], "areas": {"Sales": {"get": True}}}
+        )
+        joined = " ".join(gaps)
+        for required in ("Strains", "Packages", "Items", "GET Transfers"):
+            self.assertIn(required, joined)
+
+    def test_marks_land_in_the_get_and_write_columns(self):
+        from .workbook import fill_permissions, _permission_rows
+        fill_permissions(self.wb, {
+            "facility_types": [],
+            "areas": {"Packages": {"get": True, "write": True},
+                      "Strains": {"get": True, "write": False}},
+        })
+        ws = self.wb["Permissions"]
+        rows = _permission_rows(ws)
+        self.assertEqual(ws.cell(rows["Packages"], 3).value, "X")
+        self.assertEqual(ws.cell(rows["Packages"], 4).value, "X")
+        self.assertEqual(ws.cell(rows["Strains"], 3).value, "X")
+        self.assertIsNone(ws.cell(rows["Strains"], 4).value)
