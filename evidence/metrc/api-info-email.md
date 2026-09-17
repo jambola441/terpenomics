@@ -54,6 +54,23 @@ facility. Same result each time, on both tenants.
 Is this capability disabled for NY sandbox facilities? If it is, we would
 appreciate confirmation that those steps can be submitted documented as 401s.
 
+**3. The NY sandbox is currently rejecting writes**
+
+Since 15 September, `POST /strains/v2/` has returned:
+
+    400 {"Message":"Could not load file or assembly 'System.Data.SqlClient,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.
+    The system cannot find the file specified."}
+
+It persists across retries and was still occurring on 17 September. Reads are
+unaffected — `GET /strains/v2/active`, `/facilities/v2` and the rest all return
+200 — and `POST /locations/v2/` succeeded on a retry, so it may be intermittent
+across instances rather than total.
+
+Flagging it in case it is not already known. It is why the attached evidence is
+dated 6 September rather than this week; we are happy to re-run once writes are
+healthy.
+
 ---
 
 **Documentation notes**
