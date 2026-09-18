@@ -570,6 +570,11 @@ def locations_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
     )
     loc_id = created.object_ids[0]
     annotate(created, ids=[loc_id], names=[name])
+    # Record the moment it exists. A later step in this tab can still fail —
+    # the sandbox throws intermittent server faults — and the object is no less
+    # real for that, so tabs downstream should still be able to use it.
+    ctx.created["location_name"] = name
+    ctx.created["location_id"] = loc_id
 
     renamed = f"{name} (Updated)"
     updated = client.put(
@@ -579,12 +584,11 @@ def locations_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
     )
     annotate(updated, ids=[loc_id], names=[renamed])
 
+    ctx.created["location_name"] = renamed
+
     fetched = client.get(f"/locations/v2/{loc_id}", step="Step 3", sheet=sheet)
     row = (rows(fetched.response_body) or [{}])[0]
     annotate(fetched, ids=[loc_id], names=[row.get("Name", renamed)], last_modified=_lm(row))
-
-    ctx.created["location_name"] = renamed
-    ctx.created["location_id"] = loc_id
 
 
 def strains_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
@@ -602,6 +606,8 @@ def strains_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
     )
     strain_id = created.object_ids[0]
     annotate(created, ids=[strain_id], names=[name])
+    ctx.created["strain_name"] = name
+    ctx.created["strain_id"] = strain_id
 
     # Step 2 asks specifically for the indica/sativa split to change.
     updated = client.put(
@@ -618,9 +624,6 @@ def strains_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
     fetched = client.get(f"/strains/v2/{strain_id}", step="Step 3", sheet=sheet)
     row = (rows(fetched.response_body) or [{}])[0]
     annotate(fetched, ids=[strain_id], names=[row.get("Name", name)], last_modified=_lm(row))
-
-    ctx.created["strain_name"] = name
-    ctx.created["strain_id"] = strain_id
 
 
 def items_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
@@ -653,6 +656,10 @@ def items_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
     created = client.post("/items/v2/", body=[body], step="Step 1", sheet=sheet)
     item_id = created.object_ids[0]
     annotate(created, ids=[item_id], names=[name])
+    ctx.created["item_name"] = name
+    ctx.created["item_id"] = item_id
+    ctx.created["item_category"] = category_name
+    ctx.created["item_unit"] = second_unit
 
     # Step 2 asks for the unit of measure specifically to change.
     updated_body = dict(body, Id=item_id, UnitOfMeasure=second_unit)
@@ -662,11 +669,6 @@ def items_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
     fetched = client.get(f"/items/v2/{item_id}", step="Step 3", sheet=sheet)
     row = (rows(fetched.response_body) or [{}])[0]
     annotate(fetched, ids=[item_id], names=[row.get("Name", name)], last_modified=_lm(row))
-
-    ctx.created["item_name"] = name
-    ctx.created["item_id"] = item_id
-    ctx.created["item_category"] = category_name
-    ctx.created["item_unit"] = second_unit
 
     # Packaging clones or immature plants requires an item that is both
     # Plant-typed and count-based; a weight-based bud item is rejected with
