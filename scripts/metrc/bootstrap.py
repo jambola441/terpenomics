@@ -207,6 +207,7 @@ def prepare_environment(
     plant_tags: int = 25,
     package_tags: int = 25,
     opening_packages: int = 10,
+    resume: list | None = None,
 ) -> dict:
     """Leave the sandbox ready to run the evaluation.
 
@@ -232,18 +233,38 @@ def prepare_environment(
         "incomplete": [],
     }
 
+    # Carry forward anything earlier attempts managed to mint. Tags are already
+    # spent from the pool, and a flaky backend means a single attempt often
+    # gets one kind and not the other.
+    carried = []
+    for previous in resume or []:
+        for key in ("plant_tags", "package_tags", "opening_package_ids"):
+            for value in previous.get(key) or []:
+                if value not in env[key]:
+                    env[key].append(value)
+                    carried.append(key)
+    if carried:
+        env["carried_forward"] = {
+            key: carried.count(key) for key in sorted(set(carried))
+        }
+
     for key, tag_type, count in (
         ("plant_tags", plant_type, plant_tags),
         ("package_tags", package_type, package_tags),
     ):
+        if len(env[key]) >= count:
+            continue
         try:
-            env[key] = mint_tags(client, tag_type, count)
+            env[key] += mint_tags(client, tag_type, count - len(env[key]))
         except MetrcError as exc:
             env["incomplete"].append(f"{key}: {exc}")
 
-    try:
-        env["opening_package_ids"] = mint_opening_packages(client, opening_packages)
-    except MetrcError as exc:
-        env["incomplete"].append(f"opening_packages: {exc}")
+    if len(env["opening_package_ids"]) < opening_packages:
+        try:
+            env["opening_package_ids"] += mint_opening_packages(
+                client, opening_packages - len(env["opening_package_ids"])
+            )
+        except MetrcError as exc:
+            env["incomplete"].append(f"opening_packages: {exc}")
 
     return env

@@ -80,11 +80,20 @@ def cmd_facilities(args, config: MetrcConfig, recorder: Recorder) -> int:
 def cmd_bootstrap(args, config: MetrcConfig, recorder: Recorder) -> int:
     config.require("license_number")
     client = _client(config, recorder)
+    resume = []
+    for path in args.resume:
+        if os.path.exists(path):
+            with open(path, encoding="utf-8") as fh:
+                resume.append(json.load(fh))
+        else:
+            print(f"  ! no environment at {path}", file=sys.stderr)
+
     env = prepare_environment(
         client,
         plant_tags=args.plant_tags,
         package_tags=args.package_tags,
         opening_packages=args.packages,
+        resume=resume,
     )
     print(json.dumps({k: (v[:5] if isinstance(v, list) else v) for k, v in env.items()}, indent=2))
     path = os.path.join(recorder.run_dir, "environment.json")
@@ -376,6 +385,8 @@ def main(argv=None) -> int:
     p.add_argument("--plant-tags", type=int, default=25)
     p.add_argument("--package-tags", type=int, default=25)
     p.add_argument("--packages", type=int, default=10)
+    p.add_argument("--resume", action="append", default=[],
+                   help="carry unused tags forward from an earlier environment.json")
     p.set_defaults(fn=cmd_bootstrap)
 
     p = sub.add_parser("get-only", help="run the read-only evaluation")
