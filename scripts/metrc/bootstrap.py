@@ -18,6 +18,8 @@ and inventory before you can make a package.
 """
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from .client import MetrcClient, MetrcError, rows
 
 PLANT_TAG_TYPES = ("Cannabis Plant", "Marijuana Plant")
@@ -206,15 +208,42 @@ def prepare_environment(
     package_tags: int = 25,
     opening_packages: int = 10,
 ) -> dict:
-    """One call that leaves the sandbox ready to run the evaluation."""
+    """Leave the sandbox ready to run the evaluation.
+
+    Minted tags are consumed from the facility's pool the moment they are
+    issued, so they are returned even when a later step fails. Losing them
+    because opening-balance packages could not be created would leave the
+    caller spending a stale environment on the next run, which surfaces much
+    later as "Tag is not valid" and looks like a bug in the caller.
+    """
     available = tag_types(client)
     plant_type = _pick_tag_type(available, PLANT_TAG_TYPES, "Plant")
     package_type = _pick_tag_type(available, PACKAGE_TAG_TYPES, "Package")
-    return {
+
+    env = {
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "license_number": client.config.license_number,
         "tag_types": [t.get("Name") for t in available],
         "plant_tag_type": plant_type,
         "package_tag_type": package_type,
-        "plant_tags": mint_tags(client, plant_type, plant_tags),
-        "package_tags": mint_tags(client, package_type, package_tags),
-        "opening_package_ids": mint_opening_packages(client, opening_packages),
+        "plant_tags": [],
+        "package_tags": [],
+        "opening_package_ids": [],
+        "incomplete": [],
     }
+
+    for key, tag_type, count in (
+        ("plant_tags", plant_type, plant_tags),
+        ("package_tags", package_type, package_tags),
+    ):
+        try:
+            env[key] = mint_tags(client, tag_type, count)
+        except MetrcError as exc:
+            env["incomplete"].append(f"{key}: {exc}")
+
+    try:
+        env["opening_package_ids"] = mint_opening_packages(client, opening_packages)
+    except MetrcError as exc:
+        env["incomplete"].append(f"opening_packages: {exc}")
+
+    return env

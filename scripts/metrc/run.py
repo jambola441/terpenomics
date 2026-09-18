@@ -12,6 +12,7 @@ import argparse
 import json
 import os
 import sys
+from datetime import datetime, timedelta, timezone
 
 from .bootstrap import (
     facility_permissions,
@@ -147,6 +148,23 @@ def cmd_full(args, config: MetrcConfig, recorder: Recorder) -> int:
         ctx.plant_tags = list(env.get("plant_tags") or [])
         ctx.package_tags = list(env.get("package_tags") or [])
         print(f"loaded {len(ctx.plant_tags)} plant / {len(ctx.package_tags)} package tags")
+
+        # Tags are single-use. Running against a stale environment spends tags
+        # that are already consumed, and Metrc reports that as "Tag is not
+        # valid" several steps later, which reads like a bug here.
+        created = env.get("created_at")
+        if created:
+            age = datetime.now(timezone.utc) - datetime.fromisoformat(created)
+            if age > timedelta(hours=12):
+                print(f"  ! this environment is {age.days}d {age.seconds // 3600}h old; "
+                      "its tags are probably spent. Re-run bootstrap.", file=sys.stderr)
+                return 1
+        else:
+            print("  ! environment has no created_at; cannot tell whether its tags "
+                  "are still unused. Re-run bootstrap to be sure.", file=sys.stderr)
+        if env.get("incomplete"):
+            for item in env["incomplete"]:
+                print(f"  ! bootstrap was incomplete — {item}", file=sys.stderr)
     else:
         print(f"no environment file at {env_path} — run `bootstrap` first", file=sys.stderr)
         return 1
