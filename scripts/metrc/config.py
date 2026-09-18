@@ -30,6 +30,9 @@ class MetrcConfig:
     # Seconds to wait when the API asks us to back off and gives no Retry-After.
     default_backoff: float = 30.0
     max_retries: int = 4
+    # Server faults flap: the same call fails on one instance and succeeds on
+    # the next, so they get a larger budget than ordinary retries.
+    server_fault_retries: int = 8
     timeout: float = 60.0
     extra: dict = field(default_factory=dict)
 

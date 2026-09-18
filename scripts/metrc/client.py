@@ -193,7 +193,8 @@ class MetrcClient:
         )
 
         started = time.time()
-        for attempt in range(1, self.config.max_retries + 1):
+        budget = max(self.config.max_retries, self.config.server_fault_retries)
+        for attempt in range(1, budget + 1):
             record.attempts = attempt
             try:
                 resp = self.session.request(
@@ -205,7 +206,7 @@ class MetrcClient:
                 )
             except requests.RequestException as exc:
                 record.error = f"{type(exc).__name__}: {exc}"
-                if attempt == self.config.max_retries:
+                if attempt >= self.config.max_retries:
                     break
                 time.sleep(2 ** attempt)
                 continue
@@ -226,10 +227,15 @@ class MetrcClient:
                 time.sleep(wait)
                 continue
             # A server fault can clear on its own; a rejected request never will.
-            if is_server_fault(record.response_body) and attempt < self.config.max_retries:
-                time.sleep(2 ** attempt)
+            if (
+                is_server_fault(record.response_body)
+                and attempt < self.config.server_fault_retries
+            ):
+                time.sleep(min(2 ** attempt, 15))
                 continue
-            break
+            # Anything else is settled on the first answer.
+            if attempt >= self.config.max_retries or not is_server_fault(record.response_body):
+                break
 
         record.duration_ms = int((time.time() - started) * 1000)
         record.object_ids = _extract_ids(record.response_body)
