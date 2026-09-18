@@ -389,6 +389,22 @@ def _pick(options: list, *preferred: str, optional: bool = False):
     )
 
 
+def _plant_item(ctx: Context) -> str:
+    """The Plants-typed, count-based item clone packaging requires.
+
+    Substituting the ordinary weight-based item produces "the selected Item
+    must be of Plant type", which reads as a bug in the request rather than a
+    missing item, so this fails with the real reason instead.
+    """
+    name = ctx.created.get("plant_item_name")
+    if not name:
+        raise RuntimeError(
+            "no Plants-typed, count-based item is available; the Items tab "
+            "could not create or find one, so clone packaging cannot run"
+        )
+    return name
+
+
 def _pick_category(categories: list, *preferred: str, exclude: str | None = None) -> dict:
     """An item category the facility offers, by name, avoiding one already used.
 
@@ -681,7 +697,19 @@ def items_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
         ),
         None,
     )
-    if plant_category:
+    # Reuse one if the facility already has it: a run that failed after
+    # creating this item should not need to create it again.
+    existing = client.get(
+        "/items/v2/active", step="find plant item", sheet="_reference",
+        raise_on_error=False,
+    )
+    for row in rows(existing.response_body) if existing.ok else []:
+        if (row.get("ProductCategoryType") == "Plants"
+                and row.get("QuantityType") == "CountBased" and row.get("Name")):
+            ctx.created["plant_item_name"] = row["Name"]
+            break
+
+    if plant_category and not ctx.created.get("plant_item_name"):
         plant_item = f"Terpenomics Clone {ctx.suffix}"
         plant_body = build_item_body(
             plant_category, name=plant_item, unit=_pick(ref["units"], "Each"),
@@ -689,12 +717,11 @@ def items_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
             brand=ensure_brand(client, ctx) if plant_category.get("RequiresItemBrand") else None,
             weight_unit=_pick(ref["units"], "Grams"),
         )
-        made = client.post(
+        # Not optional: packaging clones and immature plants both require it.
+        client.post(
             "/items/v2/", body=[plant_body], step="plant item", sheet="_reference",
-            raise_on_error=False,
         )
-        if made.ok:
-            ctx.created["plant_item_name"] = plant_item
+        ctx.created["plant_item_name"] = plant_item
 
 
 def plantbatches_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
@@ -723,7 +750,7 @@ def plantbatches_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
         body=[{
             "Id": None, "PlantBatch": batch_name, "Count": 3,
             "Location": location, "Sublocation": None,
-            "Item": ctx.created.get("plant_item_name", ctx.created["item_name"]),
+            "Item": _plant_item(ctx),
             "Tag": package_tag,
             "PatientLicenseNumber": None, "Note": "Evaluation step",
             "IsTradeSample": False, "IsDonation": False, "ActualDate": today(),
@@ -862,7 +889,7 @@ def plants_tab(client: MetrcClient, ctx: Context, ref: dict) -> None:
         body=[{
             "PlantLabel": plants[0]["Label"], "PackageTag": clone_tag,
             "PlantBatchType": "Clone",
-            "Item": ctx.created.get("plant_item_name", ctx.created["item_name"]),
+            "Item": _plant_item(ctx),
             "Location": location, "Sublocation": None, "Note": None,
             "IsTradeSample": False, "PatientLicenseNumber": None,
             "IsDonation": False, "Count": 3, "ActualDate": stamp(utc_now()),

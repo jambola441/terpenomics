@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import sys
 from datetime import datetime, timedelta, timezone
 
@@ -281,6 +282,14 @@ def cmd_fill(args, config: MetrcConfig, recorder: Recorder) -> int:
     if args.permissions and os.path.exists(args.permissions):
         with open(args.permissions, encoding="utf-8") as fh:
             permissions = json.load(fh)
+
+    # A refill from a worse run should not destroy a better workbook. Keep the
+    # previous one alongside; runs against a flaky sandbox are not monotonic.
+    if os.path.exists(args.out):
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        backup = f"{os.path.splitext(args.out)[0]}.{stamp}.xlsx"
+        shutil.copy2(args.out, backup)
+        print(f"  previous workbook kept at {backup}")
 
     written = write_results(
         src, args.out, replay, company=company,
