@@ -160,10 +160,12 @@ sending when a step specifically calls for a date search. The docs' "Requesting
 Large Amounts of Data" section describes chronological paging but never states
 the cap.
 
-**Tag types are state-specific.** NY offers `Cannabis package` and
-`Cannabis plant`, with `TagInventoryType` values of `CannabisPackage` and
-`CannabisPlant` — not the `Marijuana Package` / `Package` in the doc examples.
-Match case-insensitively and partially.
+**Tag types are state-specific, and they change.** The doc examples show
+`Marijuana Package` / `Package`. NY offered `Cannabis package` and
+`Cannabis plant` in August, and by mid-September had split them into
+`Industry-Paid` and `State-Paid` variants of each. Only `TagInventoryType`
+(`CannabisPackage`, `CannabisPlant`) stayed stable, so tag types are matched on
+that, case-insensitively and partially, rather than by exact name.
 
 **Incoming and outgoing transfers live at different facilities.** A cultivator
 has outgoing, a processor has incoming; no single facility has both. The GET
