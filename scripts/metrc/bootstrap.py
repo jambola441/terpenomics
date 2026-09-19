@@ -1,0 +1,270 @@
+"""Sandbox self-service bootstrap.
+
+Metrc's sandbox exposes four endpoints that let an integrator stand up their
+own test environment without a licensee partner:
+
+    POST /sandbox/v2/integrator/setup   mint an industry user key
+    GET  /sandbox/v2/tagtypes           discover valid tag types
+    POST /sandbox/v2/facility/tags      mint plant/package tags, instantly received
+    POST /sandbox/v2/packages/create    create opening-balance packages
+
+All four authenticate with the vendor key alone, in an x-metrc-key header —
+NOT the basic auth every other endpoint uses. The published docs only mention
+this for integrator/setup; basic auth returns 401 on all of them.
+
+Together these solve the cold-start problem the workbook's 'Closed Loop
+Environment' tab describes: you need tags before you can make a plant batch,
+and inventory before you can make a package.
+"""
+from __future__ import annotations
+
+from datetime import datetime, timezone
+
+from .client import MetrcClient, MetrcError, rows
+
+PLANT_TAG_TYPES = ("Cannabis Plant", "Marijuana Plant")
+PACKAGE_TAG_TYPES = ("Cannabis Package", "Marijuana Package")
+
+# Tag type names and inventory types vary by state ("Cannabis plant" in NY,
+# "Marijuana Plant" elsewhere), so matching is case-insensitive and partial.
+
+
+def request_user_key(client: MetrcClient, user_key: str = "") -> dict:
+    """Create or look up the sandbox industry user key.
+
+    Called bare, this queues creation and Metrc emails the key to the contact
+    on file. Called with an existing key, it echoes the key back once creation
+    has completed.
+
+    Returns a dict describing what happened; it does not raise on the
+    non-200 statuses, because 201/202/204 are all expected here.
+    """
+    params = {"userKey": user_key} if user_key else None
+    record = client.post(
+        "/sandbox/v2/integrator/setup",
+        params=params,
+        license_number="",
+        vendor_only=True,
+        step="bootstrap",
+        sheet="_bootstrap",
+        raise_on_error=False,
+    )
+    meanings = {
+        200: "user key returned in the response body (or sent to the email on file)",
+        201: "user queued for creation — call again shortly",
+        202: "user creation in process — call again shortly",
+        204: "user key not found",
+    }
+    return {
+        "status": record.status,
+        "meaning": meanings.get(record.status or 0, "unexpected status"),
+        "body": record.response_body,
+        "record": record,
+    }
+
+
+def list_facilities(client: MetrcClient) -> list:
+    """GET /facilities/v2 — the docs' recommended first call.
+
+    Reveals which facilities the user key can reach and, crucially, the exact
+    permission set the state has granted each one.
+    """
+    record = client.get(
+        "/facilities/v2/",
+        license_number="",
+        step="facilities",
+        sheet="_bootstrap",
+    )
+    return rows(record.response_body)
+
+
+def facility_permissions(facility: dict) -> dict:
+    """Flatten a facility's FacilityType block into name -> bool."""
+    ftype = facility.get("FacilityType") or {}
+    return {k: v for k, v in ftype.items() if isinstance(v, bool)}
+
+
+def tag_types(client: MetrcClient) -> list:
+    record = client.get(
+        "/sandbox/v2/tagtypes", vendor_only=True, step="bootstrap", sheet="_bootstrap",
+    )
+    return rows(record.response_body)
+
+
+def _pick_tag_type(available: list, preferred: tuple, inventory_type: str) -> str:
+    names = [t.get("Name", "") for t in available]
+    lowered = {n.lower(): n for n in names}
+    for want in preferred:
+        if want.lower() in lowered:
+            return lowered[want.lower()]
+    for t in available:
+        if inventory_type.lower() in str(t.get("TagInventoryType", "")).lower():
+            return t.get("Name", "")
+    for t in available:
+        if inventory_type.lower() in str(t.get("Name", "")).lower():
+            return t.get("Name", "")
+    raise RuntimeError(
+        f"no {inventory_type} tag type available; sandbox offers: {names}"
+    )
+
+
+def mint_tags(client: MetrcClient, tag_type: str, count: int) -> list:
+    """Generate tags and return their labels. Max 1000 per request."""
+    if not 1 <= count <= 1000:
+        raise ValueError("count must be between 1 and 1000")
+    record = client.post(
+        "/sandbox/v2/facility/tags",
+        body={"TagType": tag_type, "Count": count},
+        vendor_only=True,
+        step="bootstrap",
+        sheet="_bootstrap",
+    )
+    payload = record.response_body or {}
+    labels = payload.get("Labels") if isinstance(payload, dict) else None
+    return list(labels or [])
+
+
+def mint_opening_packages(
+    client: MetrcClient,
+    count: int = 10,
+    filter_by: str | None = None,
+    filter_value: str | None = None,
+) -> list:
+    """Create opening-balance packages so there is inventory to work with."""
+    if count > 100:
+        raise ValueError("Metrc caps opening-balance packages at 100 per call")
+    body: dict = {"Count": count}
+    if filter_by:
+        if not filter_value:
+            raise ValueError("filter_value is required when filter_by is set")
+        body["FilterBy"] = filter_by
+        body["FilterValue"] = filter_value
+    record = client.post(
+        "/sandbox/v2/packages/create",
+        body=body,
+        vendor_only=True,
+        step="bootstrap",
+        sheet="_bootstrap",
+    )
+    return record.object_ids
+
+
+def seed_inventory(client: MetrcClient, ctx, count: int = 10) -> list:
+    """Give a facility sellable inventory, creating an item first if needed.
+
+    POST /sandbox/v2/packages/create picks from weight-based items by default
+    and fails with "No weight-based items found for the facility" where there
+    are none — a dispensary that may only hold finished goods stocks nothing
+    but count-based categories. Naming an item explicitly reaches those.
+    """
+    from .steps import (
+        build_item_body, ensure_brand, load_reference, _names, _pick, _pick_category,
+    )
+
+    try:
+        return mint_opening_packages(client, count)
+    except MetrcError as exc:
+        if "weight-based" not in str(exc).lower():
+            raise
+
+    ref = load_reference(client)
+    category = _pick_category(ref["item_categories"])
+    strains = _names(
+        client.get("/strains/v2/active", step="seed", sheet="_bootstrap").response_body
+    )
+    # A facility can have no strains at all — a freshly reset sandbox, or a
+    # dispensary that has never received product — while its only item
+    # categories require one.
+    if category.get("RequiresStrain") and not strains:
+        strain = f"Terpenomics Seed Strain {ctx.suffix}"
+        client.post(
+            "/strains/v2/",
+            body=[{
+                "Name": strain, "TestingStatus": "None",
+                "ThcLevel": 0.2, "CbdLevel": 0.1,
+                "IndicaPercentage": 50.0, "SativaPercentage": 50.0,
+            }],
+            step="seed strain", sheet="_bootstrap",
+        )
+        strains = [strain]
+    name = f"Terpenomics Seed Item {ctx.suffix}"
+    unit = _pick(
+        ref["units"], "Each" if category.get("QuantityType") == "CountBased" else "Grams"
+    )
+    body = build_item_body(
+        category, name=name, unit=unit,
+        strain=strains[0] if strains else None,
+        brand=ensure_brand(client, ctx) if category.get("RequiresItemBrand") else None,
+        weight_unit=_pick(ref["units"], "Grams"),
+    )
+    client.post("/items/v2/", body=[body], step="seed item", sheet="_bootstrap")
+    return mint_opening_packages(client, count, filter_by="Name", filter_value=name)
+
+
+def prepare_environment(
+    client: MetrcClient,
+    *,
+    plant_tags: int = 25,
+    package_tags: int = 25,
+    opening_packages: int = 10,
+    resume: list | None = None,
+) -> dict:
+    """Leave the sandbox ready to run the evaluation.
+
+    Minted tags are consumed from the facility's pool the moment they are
+    issued, so they are returned even when a later step fails. Losing them
+    because opening-balance packages could not be created would leave the
+    caller spending a stale environment on the next run, which surfaces much
+    later as "Tag is not valid" and looks like a bug in the caller.
+    """
+    available = tag_types(client)
+    plant_type = _pick_tag_type(available, PLANT_TAG_TYPES, "Plant")
+    package_type = _pick_tag_type(available, PACKAGE_TAG_TYPES, "Package")
+
+    env = {
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "license_number": client.config.license_number,
+        "tag_types": [t.get("Name") for t in available],
+        "plant_tag_type": plant_type,
+        "package_tag_type": package_type,
+        "plant_tags": [],
+        "package_tags": [],
+        "opening_package_ids": [],
+        "incomplete": [],
+    }
+
+    # Carry forward anything earlier attempts managed to mint. Tags are already
+    # spent from the pool, and a flaky backend means a single attempt often
+    # gets one kind and not the other.
+    carried = []
+    for previous in resume or []:
+        for key in ("plant_tags", "package_tags", "opening_package_ids"):
+            for value in previous.get(key) or []:
+                if value not in env[key]:
+                    env[key].append(value)
+                    carried.append(key)
+    if carried:
+        env["carried_forward"] = {
+            key: carried.count(key) for key in sorted(set(carried))
+        }
+
+    for key, tag_type, count in (
+        ("plant_tags", plant_type, plant_tags),
+        ("package_tags", package_type, package_tags),
+    ):
+        if len(env[key]) >= count:
+            continue
+        try:
+            env[key] += mint_tags(client, tag_type, count - len(env[key]))
+        except MetrcError as exc:
+            env["incomplete"].append(f"{key}: {exc}")
+
+    if len(env["opening_package_ids"]) < opening_packages:
+        try:
+            env["opening_package_ids"] += mint_opening_packages(
+                client, opening_packages - len(env["opening_package_ids"])
+            )
+        except MetrcError as exc:
+            env["incomplete"].append(f"opening_packages: {exc}")
+
+    return env

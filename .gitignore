@@ -28,3 +28,11 @@ data/enrich_cache/
 # Secrets
 *.env
 .claude/
+
+# Metrc evaluation run transcripts — may contain live facility data
+evidence/metrc/*/
+evidence/metrc/Evaluation_completed.xlsx
+
+# Completed evaluation workbooks and company details carry live API keys
+evidence/metrc/Evaluation_*.xlsx
+evidence/metrc/company.json
