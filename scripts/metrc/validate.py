@@ -282,3 +282,48 @@ def records_from_json(payload: dict) -> list:
                 last_modified=step.get("last_modified", ""),
             ))
     return records
+
+
+def merge_by_tab(base: list, fresh: list) -> tuple:
+    """Lay a fresh run over an older one, a whole tab at a time.
+
+    Steps within a tab chain off each other — the harvest step packages the
+    plants the previous step harvested — so mixing steps from two runs puts
+    unrelated object ids side by side in one tab. A fresh tab replaces the old
+    one only when it got at least as far: every step that succeeded before
+    succeeded again. Otherwise the older tab is kept whole.
+
+    Returns the merged records and {sheet: "fresh" | "base"} for each tab.
+    """
+    def by_sheet(records):
+        out = {}
+        for r in records:
+            out.setdefault(r.sheet, []).append(r)
+        return out
+
+    def best(records):
+        # Per step: a success beats a failure, otherwise the latest wins.
+        steps = {}
+        for r in records:
+            prev = steps.get(r.step)
+            if prev is None or r.ok or not prev.ok:
+                steps[r.step] = r
+        return steps
+
+    old, new = by_sheet(base), by_sheet(fresh)
+    merged, provenance = [], {}
+    for sheet in list(old) + [s for s in new if s not in old]:
+        if sheet.startswith("_"):
+            merged += old.get(sheet, []) + new.get(sheet, [])
+            continue
+        b, f = best(old.get(sheet, [])), best(new.get(sheet, []))
+        took_fresh = bool(f) and all(
+            step in f and (f[step].ok or not b[step].ok) for step in b
+        )
+        if took_fresh:
+            merged += new[sheet]
+            provenance[sheet] = "fresh"
+        else:
+            merged += old.get(sheet, [])
+            provenance[sheet] = "base"
+    return merged, provenance

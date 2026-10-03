@@ -27,13 +27,15 @@ from .client import CallRecord, MetrcError, rows
 from .config import ConfigError, MetrcConfig
 from .recorder import Recorder
 from .steps import (
+    TAB_FACILITY,
     Context,
     get_transfers_and_wholesale,
     read_lab_results,
     read_sweep,
     run_full,
+    selected_tabs,
 )
-from .validate import load_records, records_from_json, to_json, validate
+from .validate import load_records, merge_by_tab, records_from_json, to_json, validate
 from .workbook import applicable_sheets, map_workbook, write_results
 
 DEFAULT_WORKBOOK = "evidence/metrc/Generic_Evaluation_for_All_States_MASTER_10.2025.xlsx"
@@ -197,12 +199,50 @@ def cmd_full(args, config: MetrcConfig, recorder: Recorder) -> int:
         (f.get("License") or {}).get("Number") or f.get("LicenseNumber") for f in facilities
     ]
     ctx.counterparty = args.recipient_license
+
+    # A run against a failing sandbox can outlive the process running it, so
+    # progress is checkpointed after every tab and every tag spent. Resuming
+    # skips finished tabs and reruns an interrupted one from its start.
+    completed: set = set()
+    if args.state and os.path.exists(args.state):
+        with open(args.state, encoding="utf-8") as fh:
+            state = json.load(fh)
+        ctx.restore(state.get("ctx") or {})
+        completed = set(state.get("completed") or [])
+        print(f"resuming from {args.state}: {len(completed)} tab(s) done, "
+              f"{len(ctx.plant_tags)} plant / {len(ctx.package_tags)} package tags left")
+
+    def save_state() -> None:
+        if not args.state:
+            return
+        tmp = args.state + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as fh:
+            json.dump({
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+                "environment": env_path,
+                "completed": sorted(completed),
+                "ctx": ctx.snapshot(),
+            }, fh, indent=2)
+        os.replace(tmp, args.state)  # never leave a half-written checkpoint
+
+    def tab_done(name: str) -> None:
+        completed.add(name)
+        save_state()
+
+    ctx.persist = save_state
+    save_state()
+
     print(f"grow={licenses['grow']}  sales={licenses['sales']}"
           + (f"  recipient={ctx.counterparty}" if ctx.counterparty else ""))
 
+    only = set(args.only.split(",")) if args.only else None
+    pending = [t for t in selected_tabs(only) if t not in completed]
+    wants_sales = any(TAB_FACILITY.get(t) == "sales" for t in pending)
+
     # The sales tabs need sellable inventory at the dispensary, which is a
-    # different facility from the one bootstrap prepared.
-    if licenses.get("sales") and licenses["sales"] != licenses["grow"]:
+    # different facility from the one bootstrap prepared. Only worth creating
+    # when a sales tab is actually going to run.
+    if wants_sales and licenses.get("sales") and licenses["sales"] != licenses["grow"]:
         with client.using(licenses["sales"]):
             existing = rows(
                 client.get(
@@ -217,8 +257,10 @@ def cmd_full(args, config: MetrcConfig, recorder: Recorder) -> int:
                 except Exception as exc:
                     print(f"could not seed {licenses['sales']}: {exc}")
 
-    only = set(args.only.split(",")) if args.only else None
-    results = run_full(client, ctx, only=only, licenses=licenses)
+    results = run_full(
+        client, ctx, only=only, licenses=licenses,
+        completed=completed, on_tab_done=tab_done,
+    )
     print()
     for name, status, detail in results:
         print(f"  {status:<18} {name:<28} {detail}")
@@ -230,7 +272,7 @@ def cmd_full(args, config: MetrcConfig, recorder: Recorder) -> int:
     summary_path = recorder.write_summary()
     print(f"\n{len(recorder.records)} calls recorded -> {recorder.run_dir}")
     print(f"summary: {summary_path}")
-    return 1 if any(s != "ok" for _, s, _ in results) else 0
+    return 1 if any(s not in ("ok", "done") for _, s, _ in results) else 0
 
 
 def cmd_fill(args, config: MetrcConfig, recorder: Recorder) -> int:
@@ -239,22 +281,28 @@ def cmd_fill(args, config: MetrcConfig, recorder: Recorder) -> int:
         print(f"workbook not found: {src}", file=sys.stderr)
         return 1
 
+    if not args.run and not args.from_json:
+        print("give --run, --from-json, or both", file=sys.stderr)
+        return 2
+
+    # A complete evaluation is several runs — the read tabs and the write tabs
+    # are separate passes — so they merge, and for each step the latest
+    # successful result wins. A JSON twin goes in first, as the oldest layer,
+    # so a partial fresh run replaces only the steps it actually got through.
+    replay = Recorder(config.run_dir, run_id="fill")
+    replay.records = []
+    base_records: list = []
+    run_ids: list = []
     if args.from_json:
         with open(args.from_json, encoding="utf-8") as fh:
             source = json.load(fh)
-        run_ids = list(source.get("runs") or [])
-        replay = Recorder(config.run_dir, run_id="from-json")
-        replay.records = records_from_json(source)
-        print(f"rebuilt {len(replay.records)} calls from {args.from_json} "
-              f"(runs {', '.join(run_ids) or 'unrecorded'})")
-    else:
-        # A complete evaluation is several runs — the read tabs and the write
-        # tabs are separate passes — so runs merge, later ones winning per step.
-        run_ids = [r.strip() for r in args.run.split(",") if r.strip()]
-        replay = Recorder(config.run_dir, run_id=run_ids[-1])
-        replay.records = []
+        base_records = records_from_json(source)
+        run_ids += list(source.get("runs") or [])
+        print(f"base: {len(base_records)} calls from {args.from_json}")
+    fresh = [r.strip() for r in (args.run or "").split(",") if r.strip()]
+    run_ids += fresh
 
-    for run_id in ([] if args.from_json else run_ids):
+    for run_id in fresh:
         run_dir = run_id if os.path.isdir(run_id) else os.path.join(config.run_dir, run_id)
         calls_path = os.path.join(run_dir, "calls.jsonl")
         if not os.path.exists(calls_path):
@@ -264,8 +312,16 @@ def cmd_fill(args, config: MetrcConfig, recorder: Recorder) -> int:
             for line in fh:
                 if line.strip():
                     replay.records.append(CallRecord(**json.loads(line)))
-    if not args.from_json:
-        print(f"merged {len(run_ids)} run(s), {len(replay.records)} calls")
+
+    provenance = {}
+    if base_records:
+        replay.records, provenance = merge_by_tab(base_records, replay.records)
+        if fresh:
+            took = [s for s, p in provenance.items() if p == "fresh"]
+            kept = [s for s, p in provenance.items() if p == "base"]
+            print(f"  from this run: {', '.join(took) or 'nothing'}")
+            print(f"  kept from {args.from_json}: {', '.join(kept) or 'nothing'}")
+    print(f"merged {len(run_ids)} run(s), {len(replay.records)} calls")
 
     company = {}
     if args.company and os.path.exists(args.company):
@@ -321,6 +377,8 @@ def cmd_fill(args, config: MetrcConfig, recorder: Recorder) -> int:
     json_path = args.json or os.path.splitext(args.out)[0] + ".json"
     payload = to_json(args.out, replay.records, sheets=scope)
     payload["runs"] = run_ids
+    if provenance and fresh:
+        payload["provenance"] = provenance
     payload["state"] = config.state
     payload["sandbox"] = config.sandbox
     with open(json_path, "w", encoding="utf-8") as fh:
@@ -416,6 +474,8 @@ def main(argv=None) -> int:
     p.add_argument("--environment", default="", help="environment.json from bootstrap")
     p.add_argument("--only", default="", help="comma-separated tab names")
     p.add_argument("--sales-license", default="", help="facility for the sales tabs")
+    p.add_argument("--state", default="",
+                   help="checkpoint file: saved after each tab, resumed from if present")
     p.add_argument(
         "--recipient-license", default="",
         help="counterparty licensee for transfers (e.g. a partner's facility)",
@@ -423,14 +483,13 @@ def main(argv=None) -> int:
     p.set_defaults(fn=cmd_full)
 
     p = sub.add_parser("fill", help="write a recorded run into the workbook")
-    src_group = p.add_mutually_exclusive_group(required=True)
-    src_group.add_argument(
+    p.add_argument(
         "--run",
         help="run id or directory; comma-separate several to merge them",
     )
-    src_group.add_argument(
+    p.add_argument(
         "--from-json",
-        help="rebuild from a committed JSON twin instead of run transcripts",
+        help="start from a committed JSON twin; --run results are laid over it",
     )
     p.add_argument("--workbook", default=DEFAULT_WORKBOOK)
     p.add_argument("--out", default="evidence/metrc/Evaluation_completed.xlsx")

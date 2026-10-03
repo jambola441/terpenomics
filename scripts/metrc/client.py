@@ -118,6 +118,10 @@ class MetrcClient:
         # The evaluation spans several facilities — grow steps run at the
         # cultivator, sales at the dispensary, lab tests at the testing lab.
         self.active_license: str | None = None
+        # Endpoints that have already exhausted the whole server-fault budget in
+        # this process. An endpoint that went 0 for 100 is down, not flaky, so
+        # later calls to it get one attempt instead of another hundred.
+        self.dead_endpoints: set = set()
 
     @contextlib.contextmanager
     def using(self, license_number: str):
@@ -193,7 +197,9 @@ class MetrcClient:
         )
 
         started = time.time()
-        budget = max(self.config.max_retries, self.config.server_fault_retries)
+        endpoint = (method.upper(), path)
+        fault_budget = 1 if endpoint in self.dead_endpoints else self.config.server_fault_retries
+        budget = max(self.config.max_retries, fault_budget)
         for attempt in range(1, budget + 1):
             record.attempts = attempt
             try:
@@ -229,15 +235,18 @@ class MetrcClient:
             # A server fault can clear on its own; a rejected request never will.
             if (
                 is_server_fault(record.response_body)
-                and attempt < self.config.server_fault_retries
+                and attempt < fault_budget
             ):
                 time.sleep(min(2 ** attempt, self.config.server_fault_backoff_cap))
                 continue
-            # Anything else is settled on the first answer.
-            if attempt >= self.config.max_retries or not is_server_fault(record.response_body):
-                break
+            # Everything that warrants another attempt has continued above; any
+            # other answer — success, a rejection, a fault past its budget — is
+            # final.
+            break
 
         record.duration_ms = int((time.time() - started) * 1000)
+        if record.server_fault and record.attempts >= fault_budget:
+            self.dead_endpoints.add(endpoint)
         record.object_ids = _extract_ids(record.response_body)
 
         if self.recorder is not None:

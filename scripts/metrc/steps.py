@@ -48,16 +48,34 @@ class Context:
     package_tags: list = field(default_factory=list)
     created: dict = field(default_factory=dict)
     suffix: str = field(default_factory=lambda: utc_now().strftime("%m%d-%H%M"))
+    # Called whenever state that must survive an interrupted run changes. A tag
+    # is spent the moment Metrc accepts it, so a run killed mid-tab must not
+    # hand the same tag out again when it resumes.
+    persist: object = field(default=None, repr=False, compare=False)
+
+    def _take(self, pool: list, kind: str) -> str:
+        if not pool:
+            raise RuntimeError(f"out of {kind} tags — mint more via bootstrap")
+        tag = pool.pop(0)
+        if self.persist:
+            self.persist()
+        return tag
 
     def take_plant_tag(self) -> str:
-        if not self.plant_tags:
-            raise RuntimeError("out of plant tags — mint more via bootstrap.mint_tags")
-        return self.plant_tags.pop(0)
+        return self._take(self.plant_tags, "plant")
 
     def take_package_tag(self) -> str:
-        if not self.package_tags:
-            raise RuntimeError("out of package tags — mint more via bootstrap.mint_tags")
-        return self.package_tags.pop(0)
+        return self._take(self.package_tags, "package")
+
+    STATE_FIELDS = ("license_number", "counterparty", "plant_tags", "package_tags", "created")
+
+    def snapshot(self) -> dict:
+        return {name: getattr(self, name) for name in self.STATE_FIELDS}
+
+    def restore(self, state: dict) -> None:
+        for name in self.STATE_FIELDS:
+            if name in state:
+                setattr(self, name, state[name])
 
 
 def annotate(
@@ -1136,24 +1154,38 @@ TAB_FACILITY = {
 }
 
 
+def selected_tabs(only: set | None = None) -> list:
+    return [name for name, _ in _all_write_tabs() if not only or name in only]
+
+
 def run_full(
     client: MetrcClient,
     ctx: Context,
     only: set | None = None,
     licenses: dict | None = None,
+    completed: set | None = None,
+    on_tab_done=None,
 ) -> list:
     """Run the write tabs in dependency order, reporting per-tab outcomes.
 
     `licenses` maps a role ("grow", "sales") to a license number. A tab runs at
     its mapped facility, falling back to the configured one.
+
+    `completed` names tabs a previous, interrupted run already finished; they
+    are skipped, and `on_tab_done` is called as each new one succeeds so the
+    caller can checkpoint. A tab interrupted partway is rerun from its start.
     """
     licenses = licenses or {}
+    completed = completed if completed is not None else set()
     grow = licenses.get("grow") or ctx.license_number
     results = []
     reference_cache = {}
 
     for name, fn in _all_write_tabs():
         if only and name not in only:
+            continue
+        if name in completed:
+            results.append((name, "done", "in an earlier run"))
             continue
         role = TAB_FACILITY.get(name, "grow")
         lic = licenses.get(role) or grow
@@ -1163,6 +1195,8 @@ def run_full(
                     reference_cache[lic] = load_reference(client)
                 fn(client, ctx, reference_cache[lic])
             results.append((name, "ok", lic))
+            if on_tab_done:
+                on_tab_done(name)
         except MetrcError as exc:
             # Distinguish "Metrc is broken" from "our request was rejected" —
             # only the second is ours to fix.
