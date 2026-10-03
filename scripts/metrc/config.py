@@ -30,9 +30,11 @@ class MetrcConfig:
     # Seconds to wait when the API asks us to back off and gives no Retry-After.
     default_backoff: float = 30.0
     max_retries: int = 4
-    # Server faults flap: the same call fails on one instance and succeeds on
-    # the next, so they get a larger budget than ordinary retries.
-    server_fault_retries: int = 8
+    # Server faults are retried far more than anything else: when the sandbox
+    # fails most writes but not all, an identical retry eventually succeeds.
+    # Backoff is kept short, since waiting longer does not raise the odds.
+    server_fault_retries: int = 100
+    server_fault_backoff_cap: float = 5.0
     timeout: float = 60.0
     extra: dict = field(default_factory=dict)
 
@@ -66,4 +68,5 @@ class MetrcConfig:
             user_key=os.getenv("METRC_USER_KEY", "").strip(),
             license_number=os.getenv("METRC_LICENSE_NUMBER", "").strip(),
             run_dir=os.getenv("METRC_RUN_DIR", "evidence/metrc").strip(),
+            server_fault_retries=int(os.getenv("METRC_SERVER_FAULT_RETRIES", "100")),
         )

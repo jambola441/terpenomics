@@ -231,7 +231,7 @@ class MetrcClient:
                 is_server_fault(record.response_body)
                 and attempt < self.config.server_fault_retries
             ):
-                time.sleep(min(2 ** attempt, 15))
+                time.sleep(min(2 ** attempt, self.config.server_fault_backoff_cap))
                 continue
             # Anything else is settled on the first answer.
             if attempt >= self.config.max_retries or not is_server_fault(record.response_body):
