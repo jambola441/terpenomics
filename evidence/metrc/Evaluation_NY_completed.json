@@ -1,0 +1,2711 @@
+{
+  "sheets": [
+    {
+      "name": "PlantBatches",
+      "steps": [
+        {
+          "step": "Step 1",
+          "task": "Create a new plant batch containing 6 plants using: POST /plantbatches/v2/plantings",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            59708
+          ],
+          "tags": [],
+          "names": [
+            "TP Batch 0906-1620"
+          ],
+          "last_modified": "2026-09-06T16:20:33Z",
+          "request": {
+            "method": "POST",
+            "url": "https://sandbox-api-ny.metrc.com/plantbatches/v2/plantings?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "Name": "TP Batch 0906-1620",
+                "Type": "Clone",
+                "Count": 6,
+                "Strain": "Terpenomics Strain 0906-1620",
+                "Location": "Terpenomics Loc 0906-1620 (Updated)",
+                "Sublocation": null,
+                "PatientLicenseNumber": null,
+                "ActualDate": "2026-09-06",
+                "SourcePlantBatches": null
+              }
+            ]
+          },
+          "response": {
+            "Ids": [
+              59708
+            ],
+            "Warnings": null
+          }
+        },
+        {
+          "step": "Step 2",
+          "task": "Create a package containing 3 clones from the Plant Batch ceated in step 1 using: POST /plantbatches/v2/packages",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            221223
+          ],
+          "tags": [
+            "1A4120300004532000001605"
+          ],
+          "names": [
+            "TP Batch 0906-1620"
+          ],
+          "last_modified": "2026-09-06T16:20:33Z",
+          "request": {
+            "method": "POST",
+            "url": "https://sandbox-api-ny.metrc.com/plantbatches/v2/packages?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "Id": null,
+                "PlantBatch": "TP Batch 0906-1620",
+                "Count": 3,
+                "Location": "Terpenomics Loc 0906-1620 (Updated)",
+                "Sublocation": null,
+                "Item": "Terpenomics Clone 0906-1620",
+                "Tag": "1A4120300004532000001605",
+                "PatientLicenseNumber": null,
+                "Note": "Evaluation step",
+                "IsTradeSample": false,
+                "IsDonation": false,
+                "ActualDate": "2026-09-06"
+              }
+            ]
+          },
+          "response": {
+            "Ids": [
+              221223
+            ],
+            "Warnings": null
+          }
+        },
+        {
+          "step": "Step 3",
+          "task": "Change the growth phase of 2 of the plants created in Step 1 to the Vegetative Stage using: POST /plantbatches/v2/growthphase",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            756514,
+            756515
+          ],
+          "tags": [
+            "1A4120200004532000001755",
+            "1A4120200004532000001756"
+          ],
+          "names": [
+            "TP Batch 0906-1620"
+          ],
+          "last_modified": "2026-09-06T16:20:34Z",
+          "request": {
+            "method": "POST",
+            "url": "https://sandbox-api-ny.metrc.com/plantbatches/v2/growthphase?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "Name": "TP Batch 0906-1620",
+                "Count": 2,
+                "StartingTag": "1A4120200004532000001755",
+                "GrowthPhase": "Vegetative",
+                "NewLocation": "Terpenomics Loc 0906-1620 (Updated)",
+                "NewSublocation": null,
+                "GrowthDate": "2026-09-06",
+                "PatientLicenseNumber": null
+              }
+            ]
+          },
+          "response": {
+            "Ids": [
+              756514,
+              756515
+            ],
+            "Warnings": null
+          }
+        },
+        {
+          "step": "Step 4",
+          "task": "Destroy 1 of the plants using: DELETE /plantbatches/v2/",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            59708
+          ],
+          "tags": [],
+          "names": [
+            "TP Batch 0906-1620"
+          ],
+          "last_modified": "2026-09-06T16:20:34Z",
+          "request": {
+            "method": "DELETE",
+            "url": "https://sandbox-api-ny.metrc.com/plantbatches/v2/?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "PlantBatch": "TP Batch 0906-1620",
+                "Count": 1,
+                "WasteMethodName": null,
+                "WasteMaterialMixed": null,
+                "WasteReasonName": "Waste",
+                "ReasonNote": "Evaluation step \u2014 destroying one immature plant.",
+                "WasteWeight": 1.0,
+                "WasteUnitOfMeasure": "Grams",
+                "ActualDate": "2026-09-06"
+              }
+            ]
+          },
+          "response": {
+            "Ids": [
+              59708
+            ],
+            "Warnings": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "Locations",
+      "steps": [
+        {
+          "step": "Step 1",
+          "task": "Create a new location using: POST /locations/v2/",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            39903
+          ],
+          "tags": [],
+          "names": [
+            "Terpenomics Loc 0906-1620"
+          ],
+          "last_modified": "2026-09-06T16:20:32Z",
+          "request": {
+            "method": "POST",
+            "url": "https://sandbox-api-ny.metrc.com/locations/v2/?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "Name": "Terpenomics Loc 0906-1620",
+                "LocationTypeName": "Default Location Type"
+              }
+            ]
+          },
+          "response": {
+            "Ids": [
+              39903
+            ],
+            "Warnings": null
+          }
+        },
+        {
+          "step": "Step 2",
+          "task": "Update the name of the location created in Step 1 using: PUT/locations/v2/",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            39903
+          ],
+          "tags": [],
+          "names": [
+            "Terpenomics Loc 0906-1620 (Updated)"
+          ],
+          "last_modified": "2026-09-06T16:20:32Z",
+          "request": {
+            "method": "PUT",
+            "url": "https://sandbox-api-ny.metrc.com/locations/v2/?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "Id": 39903,
+                "Name": "Terpenomics Loc 0906-1620 (Updated)",
+                "LocationTypeName": "Default Location Type"
+              }
+            ]
+          },
+          "response": null
+        },
+        {
+          "step": "Step 3",
+          "task": "View the location Created and Updated in Step 1 & 2 by the ID number : GET /locations/v2/{id}",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            39903
+          ],
+          "tags": [],
+          "names": [
+            "Terpenomics Loc 0906-1620 (Updated)"
+          ],
+          "last_modified": "2026-09-06T16:20:32Z",
+          "request": {
+            "method": "GET",
+            "url": "https://sandbox-api-ny.metrc.com/locations/v2/39903?licenseNumber=SF-SBX-NY-3-30301",
+            "body": null
+          },
+          "response": {
+            "Id": 39903,
+            "Name": "Terpenomics Loc 0906-1620 (Updated)",
+            "LocationTypeId": 1,
+            "LocationTypeName": "Default Location Type",
+            "ForPlantBatches": true,
+            "ForPlants": true,
+            "ForHarvests": true,
+            "ForPackages": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Strains",
+      "steps": [
+        {
+          "step": "Step 1",
+          "task": "Create a new Strain using: POST/strains/v2/",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            62504
+          ],
+          "tags": [],
+          "names": [
+            "Terpenomics Strain 0906-1620"
+          ],
+          "last_modified": "2026-09-06T16:20:32Z",
+          "request": {
+            "method": "POST",
+            "url": "https://sandbox-api-ny.metrc.com/strains/v2/?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "Name": "Terpenomics Strain 0906-1620",
+                "TestingStatus": "None",
+                "ThcLevel": 0.1865,
+                "CbdLevel": 0.1075,
+                "IndicaPercentage": 25.0,
+                "SativaPercentage": 75.0
+              }
+            ]
+          },
+          "response": {
+            "Ids": [
+              62504
+            ],
+            "Warnings": null
+          }
+        },
+        {
+          "step": "Step 2",
+          "task": "Update the Strain by changing the Indica and Sativa Percentage PUT/strains/v2/",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            62504
+          ],
+          "tags": [],
+          "names": [
+            "Terpenomics Strain 0906-1620"
+          ],
+          "last_modified": "2026-09-06T16:20:32Z",
+          "request": {
+            "method": "PUT",
+            "url": "https://sandbox-api-ny.metrc.com/strains/v2/?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "Id": 62504,
+                "Name": "Terpenomics Strain 0906-1620",
+                "TestingStatus": "None",
+                "ThcLevel": 0.1865,
+                "CbdLevel": 0.1075,
+                "IndicaPercentage": 60.0,
+                "SativaPercentage": 40.0
+              }
+            ]
+          },
+          "response": null
+        },
+        {
+          "step": "Step 3",
+          "task": "View the Strain Created and Updated in Step 1 & 2 by the ID number : GET/strains/v2/{id}",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            62504
+          ],
+          "tags": [],
+          "names": [
+            "Terpenomics Strain 0906-1620"
+          ],
+          "last_modified": "2026-09-06T16:20:32Z",
+          "request": {
+            "method": "GET",
+            "url": "https://sandbox-api-ny.metrc.com/strains/v2/62504?licenseNumber=SF-SBX-NY-3-30301",
+            "body": null
+          },
+          "response": {
+            "Id": 62504,
+            "Name": "Terpenomics Strain 0906-1620",
+            "TestingStatus": "None",
+            "ThcLevel": 0.1865,
+            "CbdLevel": 0.1075,
+            "IndicaPercentage": 60.0,
+            "SativaPercentage": 40.0,
+            "IsUsed": false,
+            "Genetics": "60% Indica / 40% Sativa"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Items",
+      "steps": [
+        {
+          "step": "Step 1",
+          "task": "Create a new Item using: POST/Items/v2/",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            295304
+          ],
+          "tags": [],
+          "names": [
+            "Terpenomics Item 0906-1620"
+          ],
+          "last_modified": "2026-09-06T16:20:32Z",
+          "request": {
+            "method": "POST",
+            "url": "https://sandbox-api-ny.metrc.com/items/v2/?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "ItemCategory": "Bud/Flower - Bulk",
+                "Name": "Terpenomics Item 0906-1620",
+                "UnitOfMeasure": "Grams",
+                "Strain": "Terpenomics Strain 0906-1620"
+              }
+            ]
+          },
+          "response": {
+            "Ids": [
+              295304
+            ],
+            "Warnings": null
+          }
+        },
+        {
+          "step": "Step 2",
+          "task": "Using the Item created in Step 1 Change the Unit of Measure Type using: PUT/Items/v2/",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            295304
+          ],
+          "tags": [],
+          "names": [
+            "Terpenomics Item 0906-1620"
+          ],
+          "last_modified": "2026-09-06T16:20:33Z",
+          "request": {
+            "method": "PUT",
+            "url": "https://sandbox-api-ny.metrc.com/items/v2/?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "ItemCategory": "Bud/Flower - Bulk",
+                "Name": "Terpenomics Item 0906-1620",
+                "UnitOfMeasure": "Kilograms",
+                "Strain": "Terpenomics Strain 0906-1620",
+                "Id": 295304
+              }
+            ]
+          },
+          "response": {
+            "Ids": [
+              295304
+            ],
+            "Warnings": null
+          }
+        },
+        {
+          "step": "Step 3",
+          "task": "View the Item Created and Updated in Step 1 & 2 by the ID number : GET/Items/v2/{id}",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            295304
+          ],
+          "tags": [],
+          "names": [
+            "Terpenomics Item 0906-1620"
+          ],
+          "last_modified": "2026-09-06T16:20:33Z",
+          "request": {
+            "method": "GET",
+            "url": "https://sandbox-api-ny.metrc.com/items/v2/295304?licenseNumber=SF-SBX-NY-3-30301",
+            "body": null
+          },
+          "response": {
+            "Id": 295304,
+            "Name": "Terpenomics Item 0906-1620",
+            "GlobalProductName": null,
+            "GlobalProductNumber": null,
+            "ProductCategoryName": "Bud/Flower - Bulk",
+            "ProductCategoryType": "Buds",
+            "IsExpirationDateRequired": false,
+            "HasExpirationDate": false,
+            "IsSellByDateRequired": false,
+            "HasSellByDate": false,
+            "IsUseByDateRequired": false,
+            "HasUseByDate": false,
+            "QuantityType": "WeightBased",
+            "DefaultLabTestingState": "NotSubmitted",
+            "UnitOfMeasureName": "Kilograms",
+            "ApprovalStatus": "Approved",
+            "ApprovalStatusDateTime": "2026-09-06T16:20:33+00:00",
+            "StrainId": 62504,
+            "StrainName": "Terpenomics Strain 0906-1620",
+            "ItemBrandId": 0,
+            "ItemBrandName": null,
+            "AdministrationMethodDescription": "",
+            "AdministrationMethodId": null,
+            "AdministrationMethodName": null,
+            "AdministrationMethod": "",
+            "UnitCbdPercent": null,
+            "UnitCbdContent": null,
+            "UnitCbdContentUnitOfMeasureName": null,
+            "UnitCbdContentDose": null,
+            "UnitCbdContentDoseUnitOfMeasureName": null,
+            "UnitCbdAPercent": null,
+            "UnitCbdAContent": null,
+            "UnitCbdAContentUnitOfMeasureName": null,
+            "UnitCbdAContentDose": null,
+            "UnitCbdAContentDoseUnitOfMeasureName": null,
+            "UnitThcAPercent": null,
+            "UnitThcAContent": null,
+            "UnitThcAContentUnitOfMeasureName": null,
+            "UnitThcAContentDose": null,
+            "UnitThcAContentDoseUnitOfMeasureId": null,
+            "UnitThcAContentDoseUnitOfMeasureName": null,
+            "UnitThcPercent": null,
+            "UnitThcContent": null,
+            "UnitThcContentUnitOfMeasureName": null,
+            "UnitThcContentDose": null,
+            "UnitThcContentDoseUnitOfMeasureId": null,
+            "UnitThcContentDoseUnitOfMeasureName": null,
+            "UnitVolume": null,
+            "UnitVolumeUnitOfMeasureName": null,
+            "UnitWeight": null,
+            "UnitWeightUnitOfMeasureName": null,
+            "ServingSize": "",
+            "NumberOfDoses": null,
+            "UnitQuantity": null,
+            "UnitQuantityUnitOfMeasureName": null,
+            "PublicIngredients": "",
+            "Description": "",
+            "Allergens": "",
+            "ProductImages": [],
+            "ProductPhotoDescription": "",
+            "LabelImages": [],
+            "LabelPhotoDescription": "",
+            "PackagingImages": [],
+            "PackagingPhotoDescription": "",
+            "ProductPDFDocuments": [],
+            "IsUsed": false,
+            "CreatedDateTime": "2026-09-06T16:20:32.84+00:00",
+            "LabTestBatchNames": [],
+            "ProcessingJobCategoryName": null,
+            "ProcessingJobTypeName": null,
+            "ProductBrandName": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "Plants",
+      "steps": [
+        {
+          "step": "Step 1",
+          "task": "Move 1 of the Flowering Plants to a Different location using: PUT /plants/v2/location",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [],
+          "tags": [
+            "1A4120200004532000001717"
+          ],
+          "names": [],
+          "last_modified": "2026-09-06T16:19:31+00:00",
+          "request": {
+            "method": "PUT",
+            "url": "https://sandbox-api-ny.metrc.com/plants/v2/location?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "Id": null,
+                "Label": "1A4120200004532000001717",
+                "Location": "Terpenomics Loc 0906-1620 (Updated)",
+                "Sublocation": null,
+                "ActualDate": "2026-09-06"
+              }
+            ]
+          },
+          "response": null
+        },
+        {
+          "step": "Step 2",
+          "task": "Create an Immature Plant Batch from one of the Plants using: POST/plants/v2/plantings",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            59709
+          ],
+          "tags": [
+            "1A4120200004532000001717"
+          ],
+          "names": [
+            "TP Immature 0906-1620"
+          ],
+          "last_modified": "2026-09-06T16:20:34Z",
+          "request": {
+            "method": "POST",
+            "url": "https://sandbox-api-ny.metrc.com/plants/v2/plantings?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "PlantLabel": "1A4120200004532000001717",
+                "PlantBatchName": "TP Immature 0906-1620",
+                "PlantBatchType": "Clone",
+                "PlantCount": 3,
+                "LocationName": "Terpenomics Loc 0906-1620 (Updated)",
+                "SublocationName": null,
+                "StrainName": "Terpenomics Strain 0906-1620",
+                "PatientLicenseNumber": null,
+                "ActualDate": "2026-09-06T16:20:34Z"
+              }
+            ]
+          },
+          "response": {
+            "Ids": [
+              59709
+            ],
+            "Warnings": null
+          }
+        },
+        {
+          "step": "Step 3",
+          "task": "Create a Package of Seeds or Clones from one of the Plants using: POST/plants/v2/plantbatch/packages",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            221224
+          ],
+          "tags": [
+            "1A4120300004532000001606"
+          ],
+          "names": [],
+          "last_modified": "2026-09-06T16:20:35Z",
+          "request": {
+            "method": "POST",
+            "url": "https://sandbox-api-ny.metrc.com/plants/v2/plantbatch/packages?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "PlantLabel": "1A4120200004532000001717",
+                "PackageTag": "1A4120300004532000001606",
+                "PlantBatchType": "Clone",
+                "Item": "Terpenomics Clone 0906-1620",
+                "Location": "Terpenomics Loc 0906-1620 (Updated)",
+                "Sublocation": null,
+                "Note": null,
+                "IsTradeSample": false,
+                "PatientLicenseNumber": null,
+                "IsDonation": false,
+                "Count": 3,
+                "ActualDate": "2026-09-06T16:20:34Z"
+              }
+            ]
+          },
+          "response": {
+            "Ids": [
+              221224
+            ],
+            "Warnings": null
+          }
+        },
+        {
+          "step": "Step 4",
+          "task": "Destroy one of the plants using: DELETE /plants/v2/",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            756508
+          ],
+          "tags": [
+            "1A4120200004532000001718"
+          ],
+          "names": [],
+          "last_modified": "2026-09-06T16:20:36Z",
+          "request": {
+            "method": "DELETE",
+            "url": "https://sandbox-api-ny.metrc.com/plants/v2/?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "Id": null,
+                "Label": "1A4120200004532000001718",
+                "WasteMethodName": null,
+                "WasteMaterialMixed": null,
+                "WasteWeight": 15.0,
+                "WasteUnitOfMeasureName": "Grams",
+                "WasteReasonName": "Waste",
+                "Count": 0,
+                "ReasonNote": "Evaluation step \u2014 plant destruction.",
+                "ActualDate": "2026-09-06"
+              }
+            ]
+          },
+          "response": {
+            "Ids": [
+              756508
+            ],
+            "Warnings": null
+          }
+        },
+        {
+          "step": "Step 5",
+          "task": "Manicure a portion of a Plant using: POST/plants/v2/manicure",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            29101
+          ],
+          "tags": [
+            "1A4120200004532000001719"
+          ],
+          "names": [],
+          "last_modified": "2026-09-06T16:20:36Z",
+          "request": {
+            "method": "POST",
+            "url": "https://sandbox-api-ny.metrc.com/plants/v2/manicure?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "Plant": "1A4120200004532000001719",
+                "Weight": 25.0,
+                "UnitOfWeight": "Grams",
+                "DryingLocation": "Terpenomics Loc 0906-1620 (Updated)",
+                "DryingSublocation": null,
+                "HarvestName": null,
+                "PatientLicenseNumber": null,
+                "ActualDate": "2026-09-06",
+                "PlantCount": 1
+              }
+            ]
+          },
+          "response": {
+            "Ids": [
+              29101
+            ],
+            "Warnings": null
+          }
+        },
+        {
+          "step": "Step 6",
+          "task": "Using the 2 remaining Plants create a Harvest: (This can be done per plant or all at once, to join a harvest you must use the exact harvest name and it must be the same calender day.) PUT /plants/v2/harvest",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            29102,
+            29102
+          ],
+          "tags": [
+            "1A4120200004532000001719",
+            "1A4120200004532000001720"
+          ],
+          "names": [
+            "TP Harvest 0906-1620"
+          ],
+          "last_modified": "2026-09-06T16:20:36Z",
+          "request": {
+            "method": "PUT",
+            "url": "https://sandbox-api-ny.metrc.com/plants/v2/harvest?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "Plant": "1A4120200004532000001719",
+                "Weight": 100.0,
+                "UnitOfWeight": "Grams",
+                "DryingLocation": "Terpenomics Loc 0906-1620 (Updated)",
+                "DryingSublocation": null,
+                "HarvestName": "TP Harvest 0906-1620",
+                "PatientLicenseNumber": null,
+                "ActualDate": "2026-09-06"
+              },
+              {
+                "Plant": "1A4120200004532000001720",
+                "Weight": 100.0,
+                "UnitOfWeight": "Grams",
+                "DryingLocation": "Terpenomics Loc 0906-1620 (Updated)",
+                "DryingSublocation": null,
+                "HarvestName": "TP Harvest 0906-1620",
+                "PatientLicenseNumber": null,
+                "ActualDate": "2026-09-06"
+              }
+            ]
+          },
+          "response": {
+            "Ids": [
+              29102,
+              29102
+            ],
+            "Warnings": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "Harvest",
+      "steps": [
+        {
+          "step": "Step 1",
+          "task": "Using the Harvest Created in Step 6 from Plants, create a package using: POST /harvests/v2/packages",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            221225
+          ],
+          "tags": [
+            "1A4120300004532000001607"
+          ],
+          "names": [
+            "TP Harvest 0906-1620"
+          ],
+          "last_modified": "2026-09-06T16:20:39Z",
+          "request": {
+            "method": "POST",
+            "url": "https://sandbox-api-ny.metrc.com/harvests/v2/packages?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "Tag": "1A4120300004532000001607",
+                "Location": "Terpenomics Loc 0906-1620 (Updated)",
+                "Sublocation": null,
+                "Item": "Terpenomics Item 0906-1620",
+                "UnitOfWeight": "Grams",
+                "PatientLicenseNumber": null,
+                "Note": "Evaluation step",
+                "IsProductionBatch": false,
+                "ProductionBatchNumber": null,
+                "IsTradeSample": false,
+                "IsDonation": false,
+                "ProductRequiresRemediation": false,
+                "RemediateProduct": false,
+                "ActualDate": "2026-09-06",
+                "Ingredients": [
+                  {
+                    "HarvestId": 29102,
+                    "HarvestName": null,
+                    "Weight": 50.0,
+                    "UnitOfWeight": "Grams"
+                  }
+                ]
+              }
+            ]
+          },
+          "response": {
+            "Ids": [
+              221225
+            ],
+            "Warnings": null
+          }
+        },
+        {
+          "step": "Step 2",
+          "task": "Using the Harvest Created in Step 6 from Plants, Remove the remaining weight as Waste.  (MOISTURE LOSS IS NOT REMOVED AS WASTE): POST /harvests/v2/waste",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            29102
+          ],
+          "tags": [],
+          "names": [
+            "TP Harvest 0906-1620"
+          ],
+          "last_modified": "2026-09-06T16:20:39Z",
+          "request": {
+            "method": "POST",
+            "url": "https://sandbox-api-ny.metrc.com/harvests/v2/waste?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "Id": 29102,
+                "WasteType": "Plant Material",
+                "UnitOfWeight": "Grams",
+                "WasteWeight": 200.0,
+                "ActualDate": "2026-09-06"
+              }
+            ]
+          },
+          "response": null
+        },
+        {
+          "step": "Step 3",
+          "task": "Using the Harvest in step 2 -  Finish that Harvest using: PUT /harvests/v2/finish",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            29102
+          ],
+          "tags": [],
+          "names": [
+            "TP Harvest 0906-1620"
+          ],
+          "last_modified": "2026-09-06T16:20:40Z",
+          "request": {
+            "method": "PUT",
+            "url": "https://sandbox-api-ny.metrc.com/harvests/v2/finish?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "Id": 29102,
+                "ActualDate": "2026-09-06"
+              }
+            ]
+          },
+          "response": null
+        },
+        {
+          "step": "Step 4",
+          "task": "Using the Harvest finished in Step 3 - Unfinish that Harvest using: PUT /harvests/v2/unfinish",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            29102
+          ],
+          "tags": [],
+          "names": [
+            "TP Harvest 0906-1620"
+          ],
+          "last_modified": "2026-09-06T16:20:40Z",
+          "request": {
+            "method": "PUT",
+            "url": "https://sandbox-api-ny.metrc.com/harvests/v2/unfinish?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "Id": 29102
+              }
+            ]
+          },
+          "response": null
+        }
+      ]
+    },
+    {
+      "name": "Packages",
+      "steps": [
+        {
+          "step": "Step 1",
+          "task": "Using the Package created in Harvest Step 1 OR create a package from an existing package that you have found.  Create a package from another package using: POST/packages/v2/",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            221226
+          ],
+          "tags": [
+            "1A4120300004532000001608"
+          ],
+          "names": [],
+          "last_modified": "2026-09-06T16:20:41Z",
+          "request": {
+            "method": "POST",
+            "url": "https://sandbox-api-ny.metrc.com/packages/v2/?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "Tag": "1A4120300004532000001608",
+                "Location": "Terpenomics Loc 0906-1620 (Updated)",
+                "Sublocation": null,
+                "Item": "Terpenomics Item 0906-1620",
+                "Quantity": 10.0,
+                "UnitOfMeasure": "Grams",
+                "PatientLicenseNumber": null,
+                "Note": "Evaluation step",
+                "IsProductionBatch": false,
+                "ProductionBatchNumber": null,
+                "IsDonation": false,
+                "IsTradeSample": false,
+                "ProductRequiresRemediation": false,
+                "UseSameItem": true,
+                "ActualDate": "2026-09-06",
+                "Ingredients": [
+                  {
+                    "Package": "1A4120300004532000001607",
+                    "Quantity": 10.0,
+                    "UnitOfMeasure": "Grams"
+                  }
+                ]
+              }
+            ]
+          },
+          "response": {
+            "Ids": [
+              221226
+            ],
+            "Warnings": null
+          }
+        },
+        {
+          "step": "Step 2",
+          "task": "Using the new package created in Step 1 Change the item of a package using: PUT/packages/v2/item",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            221226
+          ],
+          "tags": [
+            "1A4120300004532000001608"
+          ],
+          "names": [
+            "Terpenomics Alt Item 0906-1620"
+          ],
+          "last_modified": "2026-09-06T16:20:42Z",
+          "request": {
+            "method": "PUT",
+            "url": "https://sandbox-api-ny.metrc.com/packages/v2/item?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "Label": "1A4120300004532000001608",
+                "Item": "Terpenomics Alt Item 0906-1620"
+              }
+            ]
+          },
+          "response": null
+        },
+        {
+          "step": "Step 3",
+          "task": "Using the Package from Step 2 Adjust The weight or quantity  to 0 using: ** Note if you are going to POST sales using this package, wait to finish the package until you post sales. PUT/packages/v2/adjust",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            221226
+          ],
+          "tags": [
+            "1A4120300004532000001608"
+          ],
+          "names": [],
+          "last_modified": "2026-09-06T16:20:42Z",
+          "request": {
+            "method": "PUT",
+            "url": "https://sandbox-api-ny.metrc.com/packages/v2/adjust?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "Label": "1A4120300004532000001608",
+                "Quantity": 0,
+                "UnitOfMeasure": "Grams",
+                "AdjustmentReason": "Drying",
+                "AdjustmentDate": "2026-09-06",
+                "ReasonNote": "Evaluation step \u2014 adjusting to zero."
+              }
+            ]
+          },
+          "response": null
+        },
+        {
+          "step": "Step 4",
+          "task": "Using the Package from Step 3, Finish that package using: PUT/packages/v2/finish",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            221226
+          ],
+          "tags": [
+            "1A4120300004532000001608"
+          ],
+          "names": [],
+          "last_modified": "2026-09-06T16:20:42Z",
+          "request": {
+            "method": "PUT",
+            "url": "https://sandbox-api-ny.metrc.com/packages/v2/finish?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "Label": "1A4120300004532000001608",
+                "ActualDate": "2026-09-06"
+              }
+            ]
+          },
+          "response": null
+        },
+        {
+          "step": "Step 5",
+          "task": "Using the new package created in Packages Step 1                             Unfinish a package using: PUT/packages/v2/unfinish",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            221226
+          ],
+          "tags": [
+            "1A4120300004532000001608"
+          ],
+          "names": [],
+          "last_modified": "2026-09-06T16:20:43Z",
+          "request": {
+            "method": "PUT",
+            "url": "https://sandbox-api-ny.metrc.com/packages/v2/unfinish?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "Label": "1A4120300004532000001608"
+              }
+            ]
+          },
+          "response": null
+        }
+      ]
+    },
+    {
+      "name": "LabResults",
+      "steps": [
+        {
+          "step": "Step 1",
+          "task": "Record a lab test result using: POST/labtests/v2/record",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-5-30301",
+          "object_ids": [
+            221214
+          ],
+          "tags": [
+            "1A4120300004533000000023"
+          ],
+          "names": [],
+          "last_modified": "2026-09-06T16:20:46+00:00",
+          "request": {
+            "method": "GET",
+            "url": "https://sandbox-api-ny.metrc.com/labtests/v2/results?packageId=221214&licenseNumber=SF-SBX-NY-5-30301",
+            "body": null
+          },
+          "response": {
+            "Data": [],
+            "Total": 0,
+            "TotalRecords": 0,
+            "PageSize": 0,
+            "RecordsOnPage": 0,
+            "Page": 1,
+            "CurrentPage": 1,
+            "TotalPages": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sales with Patient Look Up",
+      "steps": [
+        {
+          "step": "Step 1",
+          "task": "Create a sales receipt using: POST/sales/v2/receipts",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-5-30301",
+          "object_ids": [
+            688
+          ],
+          "tags": [
+            "1A4120300004533000000021"
+          ],
+          "names": [
+            "TP-0906-1620"
+          ],
+          "last_modified": "2026-09-06T16:20:44Z",
+          "request": {
+            "method": "POST",
+            "url": "https://sandbox-api-ny.metrc.com/sales/v2/receipts?licenseNumber=SF-SBX-NY-5-30301",
+            "body": [
+              {
+                "SalesDateTime": "2026-09-06T16:20:44Z",
+                "ExternalReceiptNumber": "TP-0906-1620",
+                "SalesCustomerType": "Consumer",
+                "PatientLicenseNumber": null,
+                "CaregiverLicenseNumber": null,
+                "IdentificationMethod": null,
+                "PatientRegistrationLocationId": null,
+                "Transactions": [
+                  {
+                    "PackageLabel": "1A4120300004533000000021",
+                    "Quantity": 1.0,
+                    "UnitOfMeasure": "Each",
+                    "TotalAmount": 9.99
+                  }
+                ]
+              }
+            ]
+          },
+          "response": {
+            "Ids": [
+              688
+            ],
+            "Warnings": []
+          }
+        },
+        {
+          "step": "Step 2",
+          "task": "Update the sales receipt created in Step 1 using: PUT/sales/v2/receipts",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-5-30301",
+          "object_ids": [
+            688
+          ],
+          "tags": [
+            "1A4120300004533000000021"
+          ],
+          "names": [
+            "TP-0906-1620"
+          ],
+          "last_modified": "2026-09-06T16:20:44Z",
+          "request": {
+            "method": "PUT",
+            "url": "https://sandbox-api-ny.metrc.com/sales/v2/receipts?licenseNumber=SF-SBX-NY-5-30301",
+            "body": [
+              {
+                "SalesDateTime": "2026-09-06T16:20:44Z",
+                "ExternalReceiptNumber": "TP-0906-1620",
+                "SalesCustomerType": "Consumer",
+                "PatientLicenseNumber": null,
+                "CaregiverLicenseNumber": null,
+                "IdentificationMethod": null,
+                "PatientRegistrationLocationId": null,
+                "Transactions": [
+                  {
+                    "PackageLabel": "1A4120300004533000000021",
+                    "Quantity": 2.0,
+                    "UnitOfMeasure": "Each",
+                    "TotalAmount": 19.98
+                  }
+                ],
+                "Id": 688
+              }
+            ]
+          },
+          "response": {
+            "Ids": null,
+            "Warnings": []
+          }
+        },
+        {
+          "step": "Step 3",
+          "task": "Void the sales receipt created in Step 1 using: DELETE/sales/v2/receipts/{id}",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-5-30301",
+          "object_ids": [
+            688
+          ],
+          "tags": [
+            "1A4120300004533000000021"
+          ],
+          "names": [
+            "TP-0906-1620"
+          ],
+          "last_modified": "2026-09-06T16:20:44Z",
+          "request": {
+            "method": "DELETE",
+            "url": "https://sandbox-api-ny.metrc.com/sales/v2/receipts/688?licenseNumber=SF-SBX-NY-5-30301",
+            "body": null
+          },
+          "response": null
+        },
+        {
+          "step": "Step 4",
+          "task": "Verify a patient\u2019s \u201cFlowerOuncesAvailable\u201d using: GET/patients/v2/statuses/{patientLicenseNumber}",
+          "result_code": 401,
+          "license_number": "SF-SBX-NY-5-30301",
+          "object_ids": [],
+          "tags": [],
+          "names": [
+            ""
+          ],
+          "last_modified": "2026-09-06T16:20:44Z",
+          "request": {
+            "method": "GET",
+            "url": "https://sandbox-api-ny.metrc.com/patients/v2/statuses/PTN-123-456?licenseNumber=SF-SBX-NY-5-30301",
+            "body": null
+          },
+          "response": null
+        },
+        {
+          "step": "Step 5",
+          "task": "Create a sales receipt with a customer type being ExternalPatient using: POST/sales/v2/receipts",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-5-30301",
+          "object_ids": [
+            689
+          ],
+          "tags": [
+            "1A4120300004533000000021"
+          ],
+          "names": [
+            "TP-0906-1620-EP"
+          ],
+          "last_modified": "2026-09-06T16:20:45Z",
+          "request": {
+            "method": "POST",
+            "url": "https://sandbox-api-ny.metrc.com/sales/v2/receipts?licenseNumber=SF-SBX-NY-5-30301",
+            "body": [
+              {
+                "SalesDateTime": "2026-09-06T16:20:44Z",
+                "ExternalReceiptNumber": "TP-0906-1620-EP",
+                "SalesCustomerType": "ExternalPatient",
+                "PatientLicenseNumber": "PTN-123-456",
+                "CaregiverLicenseNumber": null,
+                "IdentificationMethod": null,
+                "PatientRegistrationLocationId": null,
+                "Transactions": [
+                  {
+                    "PackageLabel": "1A4120300004533000000021",
+                    "Quantity": 1.0,
+                    "UnitOfMeasure": "Each",
+                    "TotalAmount": 9.99
+                  }
+                ]
+              }
+            ]
+          },
+          "response": {
+            "Ids": [
+              689
+            ],
+            "Warnings": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sales Deliveries (NOT CA)",
+      "steps": [
+        {
+          "step": "Step 1",
+          "task": "Create a valid home delivery with a SalesCustomerType as \u201cPatient\u201d or \"Consumer\" as it applies to the State  with three (3) Transactions using: POST/sales/v2/deliveries",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-5-30301",
+          "object_ids": [
+            417
+          ],
+          "tags": [
+            "1A4120300004533000000021"
+          ],
+          "names": [],
+          "last_modified": "2026-09-06T16:20:45Z",
+          "request": {
+            "method": "POST",
+            "url": "https://sandbox-api-ny.metrc.com/sales/v2/deliveries?licenseNumber=SF-SBX-NY-5-30301",
+            "body": [
+              {
+                "SalesDateTime": "2026-09-06T16:20:45Z",
+                "SalesCustomerType": "Consumer",
+                "PatientLicenseNumber": null,
+                "ConsumerId": null,
+                "DriverEmployeeId": "1",
+                "DriverName": "Evaluation Driver",
+                "DriversLicenseNumber": "D0000001",
+                "PhoneNumberForQuestions": "+1-555-000-0000",
+                "VehicleMake": "Car",
+                "VehicleModel": "Small",
+                "VehicleLicensePlateNumber": "TP-0001",
+                "RecipientAddressStreet1": "1 Evaluation Way",
+                "RecipientAddressCity": "Albany",
+                "RecipientAddressState": "NY",
+                "RecipientAddressPostalCode": "12207",
+                "PlannedRoute": "Drive to destination.",
+                "EstimatedDepartureDateTime": "2026-09-06T17:20:45Z",
+                "EstimatedArrivalDateTime": "2026-09-06T19:20:45Z",
+                "Transactions": [
+                  {
+                    "PackageLabel": "1A4120300004533000000021",
+                    "Quantity": 1.0,
+                    "UnitOfMeasure": "Each",
+                    "TotalAmount": 9.99
+                  },
+                  {
+                    "PackageLabel": "1A4120300004533000000022",
+                    "Quantity": 1.0,
+                    "UnitOfMeasure": "Each",
+                    "TotalAmount": 19.98
+                  },
+                  {
+                    "PackageLabel": "1A4120300004533000000023",
+                    "Quantity": 1.0,
+                    "UnitOfMeasure": "Each",
+                    "TotalAmount": 29.97
+                  }
+                ]
+              }
+            ]
+          },
+          "response": {
+            "Ids": [
+              417
+            ],
+            "Warnings": []
+          }
+        },
+        {
+          "step": "Step 2",
+          "task": "Using the Delivery created in Step 1 remove ONE of the Transactions using: PUT/sales/v2/deliveries/complete",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-5-30301",
+          "object_ids": [
+            417
+          ],
+          "tags": [
+            "1A4120300004533000000021"
+          ],
+          "names": [],
+          "last_modified": "2026-09-06T16:20:45Z",
+          "request": {
+            "method": "PUT",
+            "url": "https://sandbox-api-ny.metrc.com/sales/v2/deliveries?licenseNumber=SF-SBX-NY-5-30301",
+            "body": [
+              {
+                "SalesDateTime": "2026-09-06T16:20:45Z",
+                "SalesCustomerType": "Consumer",
+                "PatientLicenseNumber": null,
+                "ConsumerId": null,
+                "DriverEmployeeId": "1",
+                "DriverName": "Evaluation Driver",
+                "DriversLicenseNumber": "D0000001",
+                "PhoneNumberForQuestions": "+1-555-000-0000",
+                "VehicleMake": "Car",
+                "VehicleModel": "Small",
+                "VehicleLicensePlateNumber": "TP-0001",
+                "RecipientAddressStreet1": "1 Evaluation Way",
+                "RecipientAddressCity": "Albany",
+                "RecipientAddressState": "NY",
+                "RecipientAddressPostalCode": "12207",
+                "PlannedRoute": "Drive to destination.",
+                "EstimatedDepartureDateTime": "2026-09-06T17:20:45Z",
+                "EstimatedArrivalDateTime": "2026-09-06T19:20:45Z",
+                "Transactions": [
+                  {
+                    "PackageLabel": "1A4120300004533000000021",
+                    "Quantity": 1.0,
+                    "UnitOfMeasure": "Each",
+                    "TotalAmount": 9.99
+                  },
+                  {
+                    "PackageLabel": "1A4120300004533000000022",
+                    "Quantity": 1.0,
+                    "UnitOfMeasure": "Each",
+                    "TotalAmount": 19.98
+                  }
+                ],
+                "Id": 417
+              }
+            ]
+          },
+          "response": {
+            "Ids": null,
+            "Warnings": []
+          }
+        },
+        {
+          "step": "Step 3",
+          "task": "Using the Delivery created in Step 1 Complete the home delivery  with one (1) AcceptedPackage and one (1) ReturnedPackage PUT /sales/v2/deliveries/complete",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-5-30301",
+          "object_ids": [
+            417
+          ],
+          "tags": [
+            "1A4120300004533000000021"
+          ],
+          "names": [],
+          "last_modified": "2026-09-06T16:20:46Z",
+          "request": {
+            "method": "PUT",
+            "url": "https://sandbox-api-ny.metrc.com/sales/v2/deliveries/complete?licenseNumber=SF-SBX-NY-5-30301",
+            "body": [
+              {
+                "Id": 417,
+                "ActualArrivalDateTime": "2026-09-06T16:20:45Z",
+                "PaymentType": null,
+                "AcceptedPackages": [
+                  "1A4120300004533000000021"
+                ],
+                "ReturnedPackages": [
+                  {
+                    "Label": "1A4120300004533000000022",
+                    "ReturnQuantityVerified": 1.0,
+                    "ReturnUnitOfMeasure": "Each",
+                    "ReturnReason": "Unable to Deliver",
+                    "ReturnReasonNote": "Evaluation step"
+                  }
+                ]
+              }
+            ]
+          },
+          "response": {
+            "Ids": null,
+            "Warnings": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET Transfers and Wholesale",
+      "steps": [
+        {
+          "step": "Step 1",
+          "task": "Find a Incoming Transfer GET/transfers/v2/incoming",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-14-30301",
+          "object_ids": [
+            38509,
+            38510
+          ],
+          "tags": [],
+          "names": [
+            "0000038509",
+            "0000038510"
+          ],
+          "last_modified": "2026-08-27T13:16:40+00:00",
+          "request": {
+            "method": "GET",
+            "url": "https://sandbox-api-ny.metrc.com/transfers/v2/incoming?lastModifiedStart=2026-08-26T16%3A23%3A35Z&lastModifiedEnd=2026-08-27T16%3A23%3A35Z&licenseNumber=SF-SBX-NY-14-30301",
+            "body": null
+          },
+          "response": {
+            "Data": [
+              {
+                "Id": 38509,
+                "ManifestNumber": "0000038509",
+                "InvoiceNumber": "Invoice 123",
+                "ShipmentLicenseType": "Licensed",
+                "ShipperFacilityLicenseNumber": "SF-SBX-NY-7-30301",
+                "ShipperFacilityName": "Sandbox MED Cultivator",
+                "Name": null,
+                "TransporterFacilityLicenseNumber": "",
+                "TransporterFacilityName": "",
+                "DriverName": "",
+                "DriverOccupationalLicenseNumber": "",
+                "DriverVehicleLicenseNumber": "",
+                "VehicleMake": "",
+                "VehicleModel": "",
+                "VehicleLicensePlateNumber": "",
+                "VehicleRegistrationNumber": "",
+                "DeliveryCount": 1,
+                "ReceivedDeliveryCount": 1,
+                "PackageCount": 3,
+                "ReceivedPackageCount": 3,
+                "ContainsPlantPackage": false,
+                "ContainsProductPackage": true,
+                "ContainsTradeSample": false,
+                "ContainsDonation": false,
+                "ContainsTestingSample": false,
+                "ContainsProductRequiresRemediation": false,
+                "ContainsRemediatedProductPackage": false,
+                "ContainsPreTreatedProductPackage": false,
+                "IsVoided": false,
+                "CreatedDateTime": "2026-08-27T13:16:38+00:00",
+                "CreatedByUserName": "Pablo Dayton",
+                "LastModified": "2026-08-27T13:16:40+00:00",
+                "DeliveryId": 38509,
+                "RecipientFacilityLicenseNumber": "SF-SBX-NY-14-30301",
+                "RecipientFacilityName": "Sandbox AU Processor",
+                "ShipmentTypeName": "Affiliated Transfer",
+                "ShipmentTransactionType": "Standard",
+                "EstimatedDepartureDateTime": "2026-08-28T07:16:38.340",
+                "ActualDepartureDateTime": null,
+                "EstimatedArrivalDateTime": "2026-08-28T19:16:38.340",
+                "ActualArrivalDateTime": null,
+                "DeliveryPackageCount": 3,
+                "DeliveryReceivedPackageCount": 3,
+                "ReceivedDateTime": "2026-08-27T13:16:39+00:00",
+                "EstimatedReturnDepartureDateTime": null,
+                "ActualReturnDepartureDateTime": null,
+                "EstimatedReturnArrivalDateTime": null,
+                "ActualReturnArrivalDateTime": null,
+                "OriginatingTemplateId": null
+              },
+              {
+                "Id": 38510,
+                "ManifestNumber": "0000038510",
+                "InvoiceNumber": "Invoice 123",
+                "ShipmentLicenseType": "Licensed",
+                "ShipperFacilityLicenseNumber": "SF-SBX-NY-7-30301",
+                "ShipperFacilityName": "Sandbox MED Cultivator",
+                "Name": null,
+                "TransporterFacilityLicenseNumber": "",
+                "TransporterFacilityName": "",
+                "DriverName": "",
+                "DriverOccupationalLicenseNumber": "",
+                "DriverVehicleLicenseNumber": "",
+                "VehicleMake": "",
+                "VehicleModel": "",
+                "VehicleLicensePlateNumber": "",
+                "VehicleRegistrationNumber": "",
+                "DeliveryCount": 1,
+                "ReceivedDeliveryCount": 1,
+                "PackageCount": 3,
+                "ReceivedPackageCount": 3,
+                "ContainsPlantPackage": false,
+                "ContainsProductPackage": true,
+                "ContainsTradeSample": false,
+                "ContainsDonation": false,
+                "ContainsTestingSample": false,
+                "ContainsProductRequiresRemediation": false,
+                "ContainsRemediatedProductPackage": false,
+                "ContainsPreTreatedProductPackage": false,
+                "IsVoided": false,
+                "CreatedDateTime": "2026-08-27T13:16:50+00:00",
+                "CreatedByUserName": "Pablo Dayton",
+                "LastModified": "2026-08-27T13:16:51+00:00",
+                "DeliveryId": 38510,
+                "RecipientFacilityLicenseNumber": "SF-SBX-NY-14-30301",
+                "RecipientFacilityName": "Sandbox AU Processor",
+                "ShipmentTypeName": "Affiliated Transfer",
+                "ShipmentTransactionType": "Standard",
+                "EstimatedDepartureDateTime": "2026-08-28T07:16:50.067",
+                "ActualDepartureDateTime": null,
+                "EstimatedArrivalDateTime": "2026-08-28T19:16:50.067",
+                "ActualArrivalDateTime": null,
+                "DeliveryPackageCount": 3,
+                "DeliveryReceivedPackageCount": 3,
+                "ReceivedDateTime": "2026-08-27T13:16:50+00:00",
+                "EstimatedReturnDepartureDateTime": null,
+                "ActualReturnDepartureDateTime": null,
+                "EstimatedReturnArrivalDateTime": null,
+                "ActualReturnArrivalDateTime": null,
+                "OriginatingTemplateId": null
+              }
+            ],
+            "Total": 2,
+            "TotalRecords": 2,
+            "PageSize": 2,
+            "RecordsOnPage": 2,
+            "Page": 1,
+            "CurrentPage": 1,
+            "TotalPages": 1
+          }
+        },
+        {
+          "step": "Step 2",
+          "task": "Find a Outgoing  Transfer GET /transfers/v2/outgoing",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            38515,
+            38516
+          ],
+          "tags": [],
+          "names": [
+            "0000038515",
+            "0000038516"
+          ],
+          "last_modified": "2026-08-27T13:23:04+00:00",
+          "request": {
+            "method": "GET",
+            "url": "https://sandbox-api-ny.metrc.com/transfers/v2/outgoing?lastModifiedStart=2026-08-26T16%3A23%3A44Z&lastModifiedEnd=2026-08-27T16%3A23%3A44Z&licenseNumber=SF-SBX-NY-3-30301",
+            "body": null
+          },
+          "response": {
+            "Data": [
+              {
+                "Id": 38515,
+                "ManifestNumber": "0000038515",
+                "InvoiceNumber": "Invoice 123",
+                "ShipmentLicenseType": "Licensed",
+                "ShipperFacilityLicenseNumber": "SF-SBX-NY-3-30301",
+                "ShipperFacilityName": "Sandbox AU Cultivator",
+                "Name": null,
+                "TransporterFacilityLicenseNumber": "",
+                "TransporterFacilityName": "",
+                "DriverName": "",
+                "DriverOccupationalLicenseNumber": "",
+                "DriverVehicleLicenseNumber": "",
+                "VehicleMake": "",
+                "VehicleModel": "",
+                "VehicleLicensePlateNumber": "",
+                "VehicleRegistrationNumber": "",
+                "DeliveryCount": 1,
+                "ReceivedDeliveryCount": 1,
+                "PackageCount": 3,
+                "ReceivedPackageCount": 3,
+                "ContainsPlantPackage": false,
+                "ContainsProductPackage": true,
+                "ContainsTradeSample": false,
+                "ContainsDonation": false,
+                "ContainsTestingSample": false,
+                "ContainsProductRequiresRemediation": false,
+                "ContainsRemediatedProductPackage": false,
+                "ContainsPreTreatedProductPackage": false,
+                "IsVoided": false,
+                "CreatedDateTime": "2026-08-27T13:23:03+00:00",
+                "CreatedByUserName": "Pablo Dayton",
+                "LastModified": "2026-08-27T13:23:04+00:00",
+                "DeliveryId": 0,
+                "RecipientFacilityLicenseNumber": null,
+                "RecipientFacilityName": null,
+                "ShipmentTypeName": null,
+                "ShipmentTransactionType": null,
+                "EstimatedDepartureDateTime": "0001-01-01T00:00:00.000",
+                "ActualDepartureDateTime": null,
+                "EstimatedArrivalDateTime": "0001-01-01T00:00:00.000",
+                "ActualArrivalDateTime": null,
+                "DeliveryPackageCount": 0,
+                "DeliveryReceivedPackageCount": 0,
+                "ReceivedDateTime": null,
+                "EstimatedReturnDepartureDateTime": null,
+                "ActualReturnDepartureDateTime": null,
+                "EstimatedReturnArrivalDateTime": null,
+                "ActualReturnArrivalDateTime": null,
+                "OriginatingTemplateId": null
+              },
+              {
+                "Id": 38516,
+                "ManifestNumber": "0000038516",
+                "InvoiceNumber": "Invoice 123",
+                "ShipmentLicenseType": "Licensed",
+                "ShipperFacilityLicenseNumber": "SF-SBX-NY-3-30301",
+                "ShipperFacilityName": "Sandbox AU Cultivator",
+                "Name": null,
+                "TransporterFacilityLicenseNumber": "",
+                "TransporterFacilityName": "",
+                "DriverName": "",
+                "DriverOccupationalLicenseNumber": "",
+                "DriverVehicleLicenseNumber": "",
+                "VehicleMake": "",
+                "VehicleModel": "",
+                "VehicleLicensePlateNumber": "",
+                "VehicleRegistrationNumber": "",
+                "DeliveryCount": 1,
+                "ReceivedDeliveryCount": 1,
+                "PackageCount": 3,
+                "ReceivedPackageCount": 3,
+                "ContainsPlantPackage": false,
+                "ContainsProductPackage": true,
+                "ContainsTradeSample": false,
+                "ContainsDonation": false,
+                "ContainsTestingSample": false,
+                "ContainsProductRequiresRemediation": false,
+                "ContainsRemediatedProductPackage": false,
+                "ContainsPreTreatedProductPackage": false,
+                "IsVoided": false,
+                "CreatedDateTime": "2026-08-27T13:23:33+00:00",
+                "CreatedByUserName": "Pablo Dayton",
+                "LastModified": "2026-08-27T13:23:33+00:00",
+                "DeliveryId": 0,
+                "RecipientFacilityLicenseNumber": null,
+                "RecipientFacilityName": null,
+                "ShipmentTypeName": null,
+                "ShipmentTransactionType": null,
+                "EstimatedDepartureDateTime": "0001-01-01T00:00:00.000",
+                "ActualDepartureDateTime": null,
+                "EstimatedArrivalDateTime": "0001-01-01T00:00:00.000",
+                "ActualArrivalDateTime": null,
+                "DeliveryPackageCount": 0,
+                "DeliveryReceivedPackageCount": 0,
+                "ReceivedDateTime": null,
+                "EstimatedReturnDepartureDateTime": null,
+                "ActualReturnDepartureDateTime": null,
+                "EstimatedReturnArrivalDateTime": null,
+                "ActualReturnArrivalDateTime": null,
+                "OriginatingTemplateId": null
+              }
+            ],
+            "Total": 2,
+            "TotalRecords": 2,
+            "PageSize": 2,
+            "RecordsOnPage": 2,
+            "Page": 1,
+            "CurrentPage": 1,
+            "TotalPages": 1
+          }
+        },
+        {
+          "step": "Step 3",
+          "task": "Find a Rejected  Transfer GET /transfers/v2/rejected",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [],
+          "tags": [],
+          "names": [],
+          "last_modified": "",
+          "request": {
+            "method": "GET",
+            "url": "https://sandbox-api-ny.metrc.com/transfers/v2/rejected?lastModifiedStart=2026-09-04T16%3A23%3A44Z&lastModifiedEnd=2026-09-05T16%3A23%3A44Z&licenseNumber=SF-SBX-NY-3-30301",
+            "body": null
+          },
+          "response": {
+            "Data": [],
+            "Total": 0,
+            "TotalRecords": 0,
+            "PageSize": 0,
+            "RecordsOnPage": 0,
+            "Page": 1,
+            "CurrentPage": 1,
+            "TotalPages": 1
+          }
+        },
+        {
+          "step": "Step 4",
+          "task": "Find a Transfer by the Manifest ID number GET /transfers/v2/{id}/deliveries",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-14-30301",
+          "object_ids": [
+            38509
+          ],
+          "tags": [],
+          "names": [
+            "0000038509"
+          ],
+          "last_modified": "2026-08-27T13:16:40+00:00",
+          "request": {
+            "method": "GET",
+            "url": "https://sandbox-api-ny.metrc.com/transfers/v2/38509/deliveries",
+            "body": null
+          },
+          "response": {
+            "Data": [
+              {
+                "Id": 38509,
+                "ManifestNumber": null,
+                "DeliveryNumber": 0,
+                "RecipientFacilityLicenseNumber": "SF-SBX-NY-14-30301",
+                "RecipientFacilityName": "Sandbox AU Processor",
+                "ShipmentTypeName": "Affiliated Transfer",
+                "ShipmentTransactionType": "Standard",
+                "InvoiceNumber": "Invoice 123",
+                "PaymentTermDays": null,
+                "PaymentDueDate": null,
+                "EstimatedDepartureDateTime": "2026-08-28T07:16:38.340",
+                "ActualDepartureDateTime": null,
+                "EstimatedArrivalDateTime": "2026-08-28T19:16:38.340",
+                "ActualArrivalDateTime": null,
+                "GrossWeight": null,
+                "GrossUnitOfWeightId": null,
+                "GrossUnitOfWeightName": null,
+                "PlannedRoute": "I will use this route.",
+                "DeliveryPackageCount": 3,
+                "DeliveryReceivedPackageCount": 3,
+                "ReceivedDateTime": "2026-08-27T13:16:39+00:00",
+                "EstimatedReturnDepartureDateTime": null,
+                "ActualReturnDepartureDateTime": null,
+                "EstimatedReturnArrivalDateTime": null,
+                "ActualReturnArrivalDateTime": null,
+                "RejectedPackagesReturned": false,
+                "PDFDocumentFileSystemId": null
+              }
+            ],
+            "Total": 1,
+            "TotalRecords": 1,
+            "PageSize": 1,
+            "RecordsOnPage": 1,
+            "Page": 1,
+            "CurrentPage": 1,
+            "TotalPages": 1
+          }
+        },
+        {
+          "step": "Step 5",
+          "task": "Find The Packages Using the Delivery ID number GET /transfers/v2/delivery/{id}/packages",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-14-30301",
+          "object_ids": [
+            38509
+          ],
+          "tags": [
+            "1A412030000453A000000011",
+            "1A412030000453A000000012",
+            "1A412030000453A000000013"
+          ],
+          "names": [],
+          "last_modified": "2026-09-06T16:23:46Z",
+          "request": {
+            "method": "GET",
+            "url": "https://sandbox-api-ny.metrc.com/transfers/v2/deliveries/38509/packages",
+            "body": null
+          },
+          "response": {
+            "Data": [
+              {
+                "PackageId": 218655,
+                "PackageLabel": "1A412030000453A000000011",
+                "PackageType": "Product",
+                "SourceHarvestNames": "2026-07-08-SBX Default Location Type Location 1-M",
+                "SourcePackageLabels": "",
+                "ItemId": 294435,
+                "ProductName": "SBX Bud/Flower - Bulk SBX Strain 1 Item",
+                "ItemName": "SBX Bud/Flower - Bulk SBX Strain 1 Item",
+                "ProductCategoryName": "Bud/Flower - Bulk",
+                "ItemCategoryName": "Bud/Flower - Bulk",
+                "ItemStrainName": "SBX Strain 1",
+                "ItemBrandName": null,
+                "ItemUnitCbdPercent": null,
+                "ItemUnitCbdContent": null,
+                "ItemUnitCbdContentUnitOfMeasureName": null,
+                "ItemUnitCbdContentDose": null,
+                "ItemUnitCbdContentDoseUnitOfMeasureName": null,
+                "ItemUnitThcPercent": null,
+                "ItemUnitThcContent": null,
+                "ItemUnitThcContentUnitOfMeasureName": null,
+                "ItemUnitThcContentDose": null,
+                "ItemUnitThcContentDoseUnitOfMeasureName": null,
+                "ItemUnitCbdAPercent": null,
+                "ItemUnitCbdAContent": null,
+                "ItemUnitCbdAContentUnitOfMeasureName": null,
+                "ItemUnitCbdAContentDose": null,
+                "ItemUnitCbdAContentDoseUnitOfMeasureName": null,
+                "ItemUnitThcAPercent": null,
+                "ItemUnitThcAContent": null,
+                "ItemUnitThcAContentUnitOfMeasureName": null,
+                "ItemUnitThcAContentDose": null,
+                "ItemUnitThcAContentDoseUnitOfMeasureName": null,
+                "ItemUnitVolume": null,
+                "ItemUnitVolumeUnitOfMeasureName": null,
+                "ItemUnitWeight": null,
+                "ItemUnitWeightUnitOfMeasureName": null,
+                "ItemServingSize": "",
+                "ItemSupplyDurationDays": null,
+                "ItemUnitQuantity": null,
+                "ItemUnitQuantityUnitOfMeasureName": null,
+                "LabTestingState": "NotSubmitted",
+                "ProductionBatchNumber": null,
+                "IsTradeSample": false,
+                "IsTradeSamplePersistent": false,
+                "SourcePackageIsTradeSample": false,
+                "IsDonation": false,
+                "SourcePackageIsDonation": false,
+                "IsTestingSample": false,
+                "ProductRequiresRemediation": false,
+                "ContainsRemediatedProduct": false,
+                "RemediationDate": null,
+                "ContainsPreTreatedProduct": false,
+                "PreTreatmentDate": null,
+                "ShipmentPackageState": "Accepted",
+                "ShippedQuantity": 11.0,
+                "ShippedUnitOfMeasureName": "Grams",
+                "PackagedDate": "2026-07-18",
+                "ExpirationDate": null,
+                "SellByDate": null,
+                "UseByDate": null,
+                "GrossUnitOfWeightName": null,
+                "ReceivedQuantity": 11.0,
+                "ReceivedUnitOfMeasureName": "Grams",
+                "ProductLabel": null,
+                "SourceProductionBatchNumbers": null,
+                "ExternalId": null,
+                "IsFinishedGood": false,
+                "CreatedQuantity": 11.0,
+                "CreatedQuantityUnitOfMeasureAbbreviation": "g",
+                "TagId": null
+              },
+              {
+                "PackageId": 218656,
+                "PackageLabel": "1A412030000453A000000012",
+                "PackageType": "Product",
+                "SourceHarvestNames": "2026-07-08-SBX Default Location Type Location 1-H",
+                "SourcePackageLabels": "",
+                "ItemId": 294435,
+                "ProductName": "SBX Bud/Flower - Bulk SBX Strain 1 Item",
+                "ItemName": "SBX Bud/Flower - Bulk SBX Strain 1 Item",
+                "ProductCategoryName": "Bud/Flower - Bulk",
+                "ItemCategoryName": "Bud/Flower - Bulk",
+                "ItemStrainName": "SBX Strain 1",
+                "ItemBrandName": null,
+                "ItemUnitCbdPercent": null,
+                "ItemUnitCbdContent": null,
+                "ItemUnitCbdContentUnitOfMeasureName": null,
+                "ItemUnitCbdContentDose": null,
+                "ItemUnitCbdContentDoseUnitOfMeasureName": null,
+                "ItemUnitThcPercent": null,
+                "ItemUnitThcContent": null,
+                "ItemUnitThcContentUnitOfMeasureName": null,
+                "ItemUnitThcContentDose": null,
+                "ItemUnitThcContentDoseUnitOfMeasureName": null,
+                "ItemUnitCbdAPercent": null,
+                "ItemUnitCbdAContent": null,
+                "ItemUnitCbdAContentUnitOfMeasureName": null,
+                "ItemUnitCbdAContentDose": null,
+                "ItemUnitCbdAContentDoseUnitOfMeasureName": null,
+                "ItemUnitThcAPercent": null,
+                "ItemUnitThcAContent": null,
+                "ItemUnitThcAContentUnitOfMeasureName": null,
+                "ItemUnitThcAContentDose": null,
+                "ItemUnitThcAContentDoseUnitOfMeasureName": null,
+                "ItemUnitVolume": null,
+                "ItemUnitVolumeUnitOfMeasureName": null,
+                "ItemUnitWeight": null,
+                "ItemUnitWeightUnitOfMeasureName": null,
+                "ItemServingSize": "",
+                "ItemSupplyDurationDays": null,
+                "ItemUnitQuantity": null,
+                "ItemUnitQuantityUnitOfMeasureName": null,
+                "LabTestingState": "NotSubmitted",
+                "ProductionBatchNumber": null,
+                "IsTradeSample": false,
+                "IsTradeSamplePersistent": false,
+                "SourcePackageIsTradeSample": false,
+                "IsDonation": false,
+                "SourcePackageIsDonation": false,
+                "IsTestingSample": false,
+                "ProductRequiresRemediation": false,
+                "ContainsRemediatedProduct": false,
+                "RemediationDate": null,
+                "ContainsPreTreatedProduct": false,
+                "PreTreatmentDate": null,
+                "ShipmentPackageState": "Accepted",
+                "ShippedQuantity": 9.0,
+                "ShippedUnitOfMeasureName": "Grams",
+                "PackagedDate": "2026-07-18",
+                "ExpirationDate": null,
+                "SellByDate": null,
+                "UseByDate": null,
+                "GrossUnitOfWeightName": null,
+                "ReceivedQuantity": 9.0,
+                "ReceivedUnitOfMeasureName": "Grams",
+                "ProductLabel": null,
+                "SourceProductionBatchNumbers": null,
+                "ExternalId": null,
+                "IsFinishedGood": false,
+                "CreatedQuantity": 9.0,
+                "CreatedQuantityUnitOfMeasureAbbreviation": "g",
+                "TagId": null
+              },
+              {
+                "PackageId": 218657,
+                "PackageLabel": "1A412030000453A000000013",
+                "PackageType": "Product",
+                "SourceHarvestNames": "2026-07-08-SBX Default Location Type Location 1-M",
+                "SourcePackageLabels": "",
+                "ItemId": 294435,
+                "ProductName": "SBX Bud/Flower - Bulk SBX Strain 1 Item",
+                "ItemName": "SBX Bud/Flower - Bulk SBX Strain 1 Item",
+                "ProductCategoryName": "Bud/Flower - Bulk",
+                "ItemCategoryName": "Bud/Flower - Bulk",
+                "ItemStrainName": "SBX Strain 1",
+                "ItemBrandName": null,
+                "ItemUnitCbdPercent": null,
+                "ItemUnitCbdContent": null,
+                "ItemUnitCbdContentUnitOfMeasureName": null,
+                "ItemUnitCbdContentDose": null,
+                "ItemUnitCbdContentDoseUnitOfMeasureName": null,
+                "ItemUnitThcPercent": null,
+                "ItemUnitThcContent": null,
+                "ItemUnitThcContentUnitOfMeasureName": null,
+                "ItemUnitThcContentDose": null,
+                "ItemUnitThcContentDoseUnitOfMeasureName": null,
+                "ItemUnitCbdAPercent": null,
+                "ItemUnitCbdAContent": null,
+                "ItemUnitCbdAContentUnitOfMeasureName": null,
+                "ItemUnitCbdAContentDose": null,
+                "ItemUnitCbdAContentDoseUnitOfMeasureName": null,
+                "ItemUnitThcAPercent": null,
+                "ItemUnitThcAContent": null,
+                "ItemUnitThcAContentUnitOfMeasureName": null,
+                "ItemUnitThcAContentDose": null,
+                "ItemUnitThcAContentDoseUnitOfMeasureName": null,
+                "ItemUnitVolume": null,
+                "ItemUnitVolumeUnitOfMeasureName": null,
+                "ItemUnitWeight": null,
+                "ItemUnitWeightUnitOfMeasureName": null,
+                "ItemServingSize": "",
+                "ItemSupplyDurationDays": null,
+                "ItemUnitQuantity": null,
+                "ItemUnitQuantityUnitOfMeasureName": null,
+                "LabTestingState": "NotSubmitted",
+                "ProductionBatchNumber": null,
+                "IsTradeSample": false,
+                "IsTradeSamplePersistent": false,
+                "SourcePackageIsTradeSample": false,
+                "IsDonation": false,
+                "SourcePackageIsDonation": false,
+                "IsTestingSample": false,
+                "ProductRequiresRemediation": false,
+                "ContainsRemediatedProduct": false,
+                "RemediationDate": null,
+                "ContainsPreTreatedProduct": false,
+                "PreTreatmentDate": null,
+                "ShipmentPackageState": "Accepted",
+                "ShippedQuantity": 15.0,
+                "ShippedUnitOfMeasureName": "Grams",
+                "PackagedDate": "2026-07-18",
+                "ExpirationDate": null,
+                "SellByDate": null,
+                "UseByDate": null,
+                "GrossUnitOfWeightName": null,
+                "ReceivedQuantity": 15.0,
+                "ReceivedUnitOfMeasureName": "Grams",
+                "ProductLabel": null,
+                "SourceProductionBatchNumbers": null,
+                "ExternalId": null,
+                "IsFinishedGood": false,
+                "CreatedQuantity": 15.0,
+                "CreatedQuantityUnitOfMeasureAbbreviation": "g",
+                "TagId": null
+              }
+            ],
+            "Total": 3,
+            "TotalRecords": 3,
+            "PageSize": 3,
+            "RecordsOnPage": 3,
+            "Page": 1,
+            "CurrentPage": 1,
+            "TotalPages": 1
+          }
+        },
+        {
+          "step": "Step 6",
+          "task": "Transfers Wholesale Find Packages Wholesale Pricing Using the Delivery ID GET/transfers/v2/delivery/{id}/packages/wholesale",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-14-30301",
+          "object_ids": [
+            38509
+          ],
+          "tags": [
+            "1A412030000453A000000011",
+            "1A412030000453A000000012",
+            "1A412030000453A000000013"
+          ],
+          "names": [],
+          "last_modified": "2026-09-06T16:23:46Z",
+          "request": {
+            "method": "GET",
+            "url": "https://sandbox-api-ny.metrc.com/transfers/v2/deliveries/38509/packages/wholesale",
+            "body": null
+          },
+          "response": {
+            "Data": [
+              {
+                "PackageId": 218655,
+                "PackageLabel": "1A412030000453A000000011",
+                "ShipperWholesalePrice": null,
+                "ReceiverWholesalePrice": null
+              },
+              {
+                "PackageId": 218656,
+                "PackageLabel": "1A412030000453A000000012",
+                "ShipperWholesalePrice": null,
+                "ReceiverWholesalePrice": null
+              },
+              {
+                "PackageId": 218657,
+                "PackageLabel": "1A412030000453A000000013",
+                "ShipperWholesalePrice": null,
+                "ReceiverWholesalePrice": null
+              }
+            ],
+            "Total": 3,
+            "TotalRecords": 3,
+            "PageSize": 3,
+            "RecordsOnPage": 3,
+            "Page": 1,
+            "CurrentPage": 1,
+            "TotalPages": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transfer Templates",
+      "steps": [
+        {
+          "step": "Step 1a",
+          "task": "Set up a Template A POST/transfers/v2/templates/outgoing",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            16107
+          ],
+          "tags": [],
+          "names": [
+            "TP Template A 0906-1620"
+          ],
+          "last_modified": "2026-09-06T16:20:46Z",
+          "request": {
+            "method": "POST",
+            "url": "https://sandbox-api-ny.metrc.com/transfers/v2/templates/outgoing?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "Name": "TP Template A 0906-1620",
+                "TransporterFacilityLicenseNumber": null,
+                "DriverOccupationalLicenseNumber": null,
+                "DriverName": null,
+                "DriverLicenseNumber": null,
+                "PhoneNumberForQuestions": null,
+                "VehicleMake": null,
+                "VehicleModel": null,
+                "VehicleLicensePlateNumber": null,
+                "VehicleRegistrationNumber": null,
+                "Destinations": [
+                  {
+                    "RecipientLicenseNumber": "SF-SBX-NY-6-13402",
+                    "InvoiceNumber": "INV-A-0906-1620",
+                    "TransferTypeName": "Unaffiliated Transfer",
+                    "PlannedRoute": "Evaluation route.",
+                    "EstimatedDepartureDateTime": "2026-09-06T17:20:46Z",
+                    "EstimatedArrivalDateTime": "2026-09-06T20:20:46Z",
+                    "Transporters": [],
+                    "Packages": []
+                  }
+                ]
+              }
+            ]
+          },
+          "response": {
+            "Ids": [
+              16107
+            ],
+            "Warnings": []
+          }
+        },
+        {
+          "step": "Step 1b",
+          "task": "Set up a Template B POST/transfers/v2/templates/outgoing",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            16108
+          ],
+          "tags": [],
+          "names": [
+            "TP Template B 0906-1620"
+          ],
+          "last_modified": "2026-09-06T16:20:46Z",
+          "request": {
+            "method": "POST",
+            "url": "https://sandbox-api-ny.metrc.com/transfers/v2/templates/outgoing?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "Name": "TP Template B 0906-1620",
+                "TransporterFacilityLicenseNumber": null,
+                "DriverOccupationalLicenseNumber": null,
+                "DriverName": null,
+                "DriverLicenseNumber": null,
+                "PhoneNumberForQuestions": null,
+                "VehicleMake": null,
+                "VehicleModel": null,
+                "VehicleLicensePlateNumber": null,
+                "VehicleRegistrationNumber": null,
+                "Destinations": [
+                  {
+                    "RecipientLicenseNumber": "SF-SBX-NY-6-13402",
+                    "InvoiceNumber": "INV-B-0906-1620",
+                    "TransferTypeName": "Unaffiliated Transfer",
+                    "PlannedRoute": "Evaluation route.",
+                    "EstimatedDepartureDateTime": "2026-09-06T17:20:46Z",
+                    "EstimatedArrivalDateTime": "2026-09-06T20:20:46Z",
+                    "Transporters": [],
+                    "Packages": []
+                  }
+                ]
+              }
+            ]
+          },
+          "response": {
+            "Ids": [
+              16108
+            ],
+            "Warnings": []
+          }
+        },
+        {
+          "step": "Step 2",
+          "task": "Find the two Templates created in Step 1a and 1b  using the date search GE",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            16107,
+            16108
+          ],
+          "tags": [],
+          "names": [
+            "TP Template A 0906-1620",
+            "TP Template B 0906-1620"
+          ],
+          "last_modified": "2026-09-06T16:20:46+00:00",
+          "request": {
+            "method": "GET",
+            "url": "https://sandbox-api-ny.metrc.com/transfers/v2/templates/outgoing?lastModifiedStart=2026-09-05T16%3A20%3A46Z&lastModifiedEnd=2026-09-06T16%3A20%3A46Z&licenseNumber=SF-SBX-NY-3-30301",
+            "body": null
+          },
+          "response": {
+            "Data": [
+              {
+                "Id": 16107,
+                "ManifestNumber": "T-0000016107",
+                "InvoiceNumber": "INV-A-0906-1620",
+                "ShipmentLicenseType": "Licensed",
+                "ShipperFacilityLicenseNumber": "SF-SBX-NY-3-30301",
+                "ShipperFacilityName": "Sandbox AU Cultivator",
+                "Name": "TP Template A 0906-1620",
+                "TransporterFacilityLicenseNumber": null,
+                "TransporterFacilityName": null,
+                "DriverName": null,
+                "DriverOccupationalLicenseNumber": null,
+                "DriverVehicleLicenseNumber": null,
+                "VehicleMake": null,
+                "VehicleModel": null,
+                "VehicleLicensePlateNumber": null,
+                "VehicleRegistrationNumber": null,
+                "DeliveryCount": 1,
+                "ReceivedDeliveryCount": 0,
+                "PackageCount": 0,
+                "ReceivedPackageCount": 0,
+                "ContainsPlantPackage": false,
+                "ContainsProductPackage": false,
+                "ContainsTradeSample": false,
+                "ContainsDonation": false,
+                "ContainsTestingSample": false,
+                "ContainsProductRequiresRemediation": false,
+                "ContainsRemediatedProductPackage": false,
+                "ContainsPreTreatedProductPackage": false,
+                "IsVoided": false,
+                "CreatedDateTime": "2026-09-06T16:20:46+00:00",
+                "CreatedByUserName": "Pablo Dayton",
+                "LastModified": "2026-09-06T16:20:46+00:00",
+                "DeliveryId": 0,
+                "RecipientFacilityLicenseNumber": null,
+                "RecipientFacilityName": null,
+                "ShipmentTypeName": null,
+                "ShipmentTransactionType": null,
+                "EstimatedDepartureDateTime": "0001-01-01T00:00:00.000",
+                "ActualDepartureDateTime": null,
+                "EstimatedArrivalDateTime": "0001-01-01T00:00:00.000",
+                "ActualArrivalDateTime": null,
+                "DeliveryPackageCount": 0,
+                "DeliveryReceivedPackageCount": 0,
+                "ReceivedDateTime": null,
+                "EstimatedReturnDepartureDateTime": null,
+                "ActualReturnDepartureDateTime": null,
+                "EstimatedReturnArrivalDateTime": null,
+                "ActualReturnArrivalDateTime": null,
+                "OriginatingTemplateId": null
+              },
+              {
+                "Id": 16108,
+                "ManifestNumber": "T-0000016108",
+                "InvoiceNumber": "INV-B-0906-1620",
+                "ShipmentLicenseType": "Licensed",
+                "ShipperFacilityLicenseNumber": "SF-SBX-NY-3-30301",
+                "ShipperFacilityName": "Sandbox AU Cultivator",
+                "Name": "TP Template B 0906-1620",
+                "TransporterFacilityLicenseNumber": null,
+                "TransporterFacilityName": null,
+                "DriverName": null,
+                "DriverOccupationalLicenseNumber": null,
+                "DriverVehicleLicenseNumber": null,
+                "VehicleMake": null,
+                "VehicleModel": null,
+                "VehicleLicensePlateNumber": null,
+                "VehicleRegistrationNumber": null,
+                "DeliveryCount": 1,
+                "ReceivedDeliveryCount": 0,
+                "PackageCount": 0,
+                "ReceivedPackageCount": 0,
+                "ContainsPlantPackage": false,
+                "ContainsProductPackage": false,
+                "ContainsTradeSample": false,
+                "ContainsDonation": false,
+                "ContainsTestingSample": false,
+                "ContainsProductRequiresRemediation": false,
+                "ContainsRemediatedProductPackage": false,
+                "ContainsPreTreatedProductPackage": false,
+                "IsVoided": false,
+                "CreatedDateTime": "2026-09-06T16:20:46+00:00",
+                "CreatedByUserName": "Pablo Dayton",
+                "LastModified": "2026-09-06T16:20:46+00:00",
+                "DeliveryId": 0,
+                "RecipientFacilityLicenseNumber": null,
+                "RecipientFacilityName": null,
+                "ShipmentTypeName": null,
+                "ShipmentTransactionType": null,
+                "EstimatedDepartureDateTime": "0001-01-01T00:00:00.000",
+                "ActualDepartureDateTime": null,
+                "EstimatedArrivalDateTime": "0001-01-01T00:00:00.000",
+                "ActualArrivalDateTime": null,
+                "DeliveryPackageCount": 0,
+                "DeliveryReceivedPackageCount": 0,
+                "ReceivedDateTime": null,
+                "EstimatedReturnDepartureDateTime": null,
+                "ActualReturnDepartureDateTime": null,
+                "EstimatedReturnArrivalDateTime": null,
+                "ActualReturnArrivalDateTime": null,
+                "OriginatingTemplateId": null
+              },
+              {
+                "Id": 16106,
+                "ManifestNumber": "T-0000016106",
+                "InvoiceNumber": "INV-B-0906-1619",
+                "ShipmentLicenseType": "Licensed",
+                "ShipperFacilityLicenseNumber": "SF-SBX-NY-3-30301",
+                "ShipperFacilityName": "Sandbox AU Cultivator",
+                "Name": "TP Template B 0906-1619",
+                "TransporterFacilityLicenseNumber": null,
+                "TransporterFacilityName": null,
+                "DriverName": null,
+                "DriverOccupationalLicenseNumber": null,
+                "DriverVehicleLicenseNumber": null,
+                "VehicleMake": null,
+                "VehicleModel": null,
+                "VehicleLicensePlateNumber": null,
+                "VehicleRegistrationNumber": null,
+                "DeliveryCount": 1,
+                "ReceivedDeliveryCount": 0,
+                "PackageCount": 0,
+                "ReceivedPackageCount": 0,
+                "ContainsPlantPackage": false,
+                "ContainsProductPackage": false,
+                "ContainsTradeSample": false,
+                "ContainsDonation": false,
+                "ContainsTestingSample": false,
+                "ContainsProductRequiresRemediation": false,
+                "ContainsRemediatedProductPackage": false,
+                "ContainsPreTreatedProductPackage": false,
+                "IsVoided": false,
+                "CreatedDateTime": "2026-09-06T16:19:38+00:00",
+                "CreatedByUserName": "Pablo Dayton",
+                "LastModified": "2026-09-06T16:19:38+00:00",
+                "DeliveryId": 0,
+                "RecipientFacilityLicenseNumber": null,
+                "RecipientFacilityName": null,
+                "ShipmentTypeName": null,
+                "ShipmentTransactionType": null,
+                "EstimatedDepartureDateTime": "0001-01-01T00:00:00.000",
+                "ActualDepartureDateTime": null,
+                "EstimatedArrivalDateTime": "0001-01-01T00:00:00.000",
+                "ActualArrivalDateTime": null,
+                "DeliveryPackageCount": 0,
+                "DeliveryReceivedPackageCount": 0,
+                "ReceivedDateTime": null,
+                "EstimatedReturnDepartureDateTime": null,
+                "ActualReturnDepartureDateTime": null,
+                "EstimatedReturnArrivalDateTime": null,
+                "ActualReturnArrivalDateTime": null,
+                "OriginatingTemplateId": null
+              },
+              {
+                "Id": 16105,
+                "ManifestNumber": "T-0000016105",
+                "InvoiceNumber": "INV-A-0906-1619",
+                "ShipmentLicenseType": "Licensed",
+                "ShipperFacilityLicenseNumber": "SF-SBX-NY-3-30301",
+                "ShipperFacilityName": "Sandbox AU Cultivator",
+                "Name": "TP Template A 0906-1619 (Updated)",
+                "TransporterFacilityLicenseNumber": null,
+                "TransporterFacilityName": null,
+                "DriverName": null,
+                "DriverOccupationalLicenseNumber": null,
+                "DriverVehicleLicenseNumber": null,
+                "VehicleMake": null,
+                "VehicleModel": null,
+                "VehicleLicensePlateNumber": null,
+                "VehicleRegistrationNumber": null,
+                "DeliveryCount": 1,
+                "ReceivedDeliveryCount": 0,
+                "PackageCount": 0,
+                "ReceivedPackageCount": 0,
+                "ContainsPlantPackage": false,
+                "ContainsProductPackage": false,
+                "ContainsTradeSample": false,
+                "ContainsDonation": false,
+                "ContainsTestingSample": false,
+                "ContainsProductRequiresRemediation": false,
+                "ContainsRemediatedProductPackage": false,
+                "ContainsPreTreatedProductPackage": false,
+                "IsVoided": false,
+                "CreatedDateTime": "2026-09-06T16:19:37+00:00",
+                "CreatedByUserName": "Pablo Dayton",
+                "LastModified": "2026-09-06T16:19:38+00:00",
+                "DeliveryId": 0,
+                "RecipientFacilityLicenseNumber": null,
+                "RecipientFacilityName": null,
+                "ShipmentTypeName": null,
+                "ShipmentTransactionType": null,
+                "EstimatedDepartureDateTime": "0001-01-01T00:00:00.000",
+                "ActualDepartureDateTime": null,
+                "EstimatedArrivalDateTime": "0001-01-01T00:00:00.000",
+                "ActualArrivalDateTime": null,
+                "DeliveryPackageCount": 0,
+                "DeliveryReceivedPackageCount": 0,
+                "ReceivedDateTime": null,
+                "EstimatedReturnDepartureDateTime": null,
+                "ActualReturnDepartureDateTime": null,
+                "EstimatedReturnArrivalDateTime": null,
+                "ActualReturnArrivalDateTime": null,
+                "OriginatingTemplateId": null
+              }
+            ],
+            "Total": 4,
+            "TotalRecords": 4,
+            "PageSize": 4,
+            "RecordsOnPage": 4,
+            "Page": 1,
+            "CurrentPage": 1,
+            "TotalPages": 1
+          }
+        },
+        {
+          "step": "Step 3",
+          "task": "Find a Template by the Template ID number GET /transfers/v2/templates/{id}/deliveries",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            16107
+          ],
+          "tags": [],
+          "names": [
+            "TP Template A 0906-1620"
+          ],
+          "last_modified": "2026-09-06T16:20:46Z",
+          "request": {
+            "method": "GET",
+            "url": "https://sandbox-api-ny.metrc.com/transfers/v2/templates/outgoing/16107/deliveries",
+            "body": null
+          },
+          "response": {
+            "Data": [
+              {
+                "Id": 16608,
+                "ManifestNumber": null,
+                "DeliveryNumber": 0,
+                "RecipientFacilityLicenseNumber": "SF-SBX-NY-6-13402",
+                "RecipientFacilityName": "Sandbox AU Distributor",
+                "ShipmentTypeName": "Unaffiliated Transfer",
+                "ShipmentTransactionType": "Wholesale",
+                "InvoiceNumber": "INV-A-0906-1620",
+                "PaymentTermDays": null,
+                "PaymentDueDate": null,
+                "EstimatedDepartureDateTime": "2026-09-06T17:20:00.000",
+                "ActualDepartureDateTime": null,
+                "EstimatedArrivalDateTime": "2026-09-06T20:20:00.000",
+                "ActualArrivalDateTime": null,
+                "GrossWeight": null,
+                "GrossUnitOfWeightId": null,
+                "GrossUnitOfWeightName": null,
+                "PlannedRoute": "Evaluation route.",
+                "DeliveryPackageCount": 0,
+                "DeliveryReceivedPackageCount": 0,
+                "ReceivedDateTime": null,
+                "EstimatedReturnDepartureDateTime": null,
+                "ActualReturnDepartureDateTime": null,
+                "EstimatedReturnArrivalDateTime": null,
+                "ActualReturnArrivalDateTime": null,
+                "RejectedPackagesReturned": false,
+                "PDFDocumentFileSystemId": null
+              }
+            ],
+            "Total": 1,
+            "TotalRecords": 1,
+            "PageSize": 1,
+            "RecordsOnPage": 1,
+            "Page": 1,
+            "CurrentPage": 1,
+            "TotalPages": 1
+          }
+        },
+        {
+          "step": "Step 4",
+          "task": "Update one of the Templates created in Step 1 by using PUT/transfers/v2/templates/outgoing",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [
+            16107
+          ],
+          "tags": [],
+          "names": [
+            "TP Template A 0906-1620 (Updated)"
+          ],
+          "last_modified": "2026-09-06T16:20:46Z",
+          "request": {
+            "method": "PUT",
+            "url": "https://sandbox-api-ny.metrc.com/transfers/v2/templates/outgoing?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "Name": "TP Template A 0906-1620 (Updated)",
+                "TransporterFacilityLicenseNumber": null,
+                "DriverOccupationalLicenseNumber": null,
+                "DriverName": null,
+                "DriverLicenseNumber": null,
+                "PhoneNumberForQuestions": null,
+                "VehicleMake": null,
+                "VehicleModel": null,
+                "VehicleLicensePlateNumber": null,
+                "VehicleRegistrationNumber": null,
+                "Destinations": [
+                  {
+                    "RecipientLicenseNumber": "SF-SBX-NY-6-13402",
+                    "InvoiceNumber": "INV-A-0906-1620",
+                    "TransferTypeName": "Unaffiliated Transfer",
+                    "PlannedRoute": "Evaluation route.",
+                    "EstimatedDepartureDateTime": "2026-09-06T17:20:46Z",
+                    "EstimatedArrivalDateTime": "2026-09-06T20:20:46Z",
+                    "Transporters": [],
+                    "Packages": [],
+                    "TransferDestinationId": 0
+                  }
+                ],
+                "TransferTemplateId": 16107
+              }
+            ]
+          },
+          "response": null
+        }
+      ]
+    },
+    {
+      "name": "Transfer External Incoming",
+      "steps": [
+        {
+          "step": "Step 1a",
+          "task": "Set up an external Incoming transfer POST/transfers/v2/external/incoming",
+          "result_code": 401,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [],
+          "tags": [],
+          "names": [
+            "EXT-A-0906-1620"
+          ],
+          "last_modified": "2026-09-06T16:20:46Z",
+          "request": {
+            "method": "POST",
+            "url": "https://sandbox-api-ny.metrc.com/transfers/v2/external/incoming?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "ShipperLicenseNumber": "SF-SBX-NY-6-13402",
+                "ShipperName": "Evaluation Shipper",
+                "ShipperMainPhoneNumber": "555-000-0000",
+                "ShipperAddress1": "1 Evaluation Way",
+                "ShipperAddress2": null,
+                "ShipperAddressCity": "Albany",
+                "ShipperAddressState": "NY",
+                "ShipperAddressPostalCode": "12207",
+                "TransporterFacilityLicenseNumber": null,
+                "DriverOccupationalLicenseNumber": null,
+                "DriverName": null,
+                "DriverLicenseNumber": null,
+                "PhoneNumberForQuestions": null,
+                "VehicleMake": null,
+                "VehicleModel": null,
+                "VehicleLicensePlateNumber": null,
+                "VehicleRegistrationNumber": null,
+                "Destinations": [
+                  {
+                    "RecipientLicenseNumber": "SF-SBX-NY-3-30301",
+                    "InvoiceNumber": "EXT-A-0906-1620",
+                    "TransferTypeName": "Beginning Inventory",
+                    "PlannedRoute": "Evaluation route.",
+                    "EstimatedDepartureDateTime": "2026-09-06T17:20:46Z",
+                    "EstimatedArrivalDateTime": "2026-09-06T20:20:46Z",
+                    "GrossWeight": null,
+                    "GrossUnitOfWeightId": null,
+                    "Transporters": [],
+                    "Packages": []
+                  }
+                ]
+              }
+            ]
+          },
+          "response": null
+        },
+        {
+          "step": "Step 1b",
+          "task": "Set up an external Incoming transfer POST/transfers/v2/external/incoming",
+          "result_code": 401,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [],
+          "tags": [],
+          "names": [
+            "EXT-B-0906-1620"
+          ],
+          "last_modified": "2026-09-06T16:20:46Z",
+          "request": {
+            "method": "POST",
+            "url": "https://sandbox-api-ny.metrc.com/transfers/v2/external/incoming?licenseNumber=SF-SBX-NY-3-30301",
+            "body": [
+              {
+                "ShipperLicenseNumber": "SF-SBX-NY-6-13402",
+                "ShipperName": "Evaluation Shipper",
+                "ShipperMainPhoneNumber": "555-000-0000",
+                "ShipperAddress1": "1 Evaluation Way",
+                "ShipperAddress2": null,
+                "ShipperAddressCity": "Albany",
+                "ShipperAddressState": "NY",
+                "ShipperAddressPostalCode": "12207",
+                "TransporterFacilityLicenseNumber": null,
+                "DriverOccupationalLicenseNumber": null,
+                "DriverName": null,
+                "DriverLicenseNumber": null,
+                "PhoneNumberForQuestions": null,
+                "VehicleMake": null,
+                "VehicleModel": null,
+                "VehicleLicensePlateNumber": null,
+                "VehicleRegistrationNumber": null,
+                "Destinations": [
+                  {
+                    "RecipientLicenseNumber": "SF-SBX-NY-3-30301",
+                    "InvoiceNumber": "EXT-B-0906-1620",
+                    "TransferTypeName": "Beginning Inventory",
+                    "PlannedRoute": "Evaluation route.",
+                    "EstimatedDepartureDateTime": "2026-09-06T17:20:46Z",
+                    "EstimatedArrivalDateTime": "2026-09-06T20:20:46Z",
+                    "GrossWeight": null,
+                    "GrossUnitOfWeightId": null,
+                    "Transporters": [],
+                    "Packages": []
+                  }
+                ]
+              }
+            ]
+          },
+          "response": null
+        },
+        {
+          "step": "Step 2",
+          "task": "Find the two Transfers created in Step 1a and 1b by using the date parameter search GET/transfers/v2/incoming",
+          "result_code": 200,
+          "license_number": "SF-SBX-NY-3-30301",
+          "object_ids": [],
+          "tags": [],
+          "names": [],
+          "last_modified": "2026-09-06T16:20:47Z",
+          "request": {
+            "method": "GET",
+            "url": "https://sandbox-api-ny.metrc.com/transfers/v2/incoming?lastModifiedStart=2026-09-05T16%3A20%3A46Z&lastModifiedEnd=2026-09-06T16%3A20%3A46Z&licenseNumber=SF-SBX-NY-3-30301",
+            "body": null
+          },
+          "response": {
+            "Data": [],
+            "Total": 0,
+            "TotalRecords": 0,
+            "PageSize": 0,
+            "RecordsOnPage": 0,
+            "Page": 1,
+            "CurrentPage": 1,
+            "TotalPages": 1
+          }
+        },
+        {
+          "step": "Step 3",
+          "task": "Update one of the Transfers created in Step 1 by using: PUT/transfers/v2/external/incoming",
+          "result_code": null,
+          "license_number": "",
+          "object_ids": [],
+          "tags": [],
+          "names": [],
+          "last_modified": "",
+          "request": {
+            "method": "",
+            "url": "",
+            "body": null
+          },
+          "response": null
+        },
+        {
+          "step": "Step 4",
+          "task": "Delete the Transfer not updated in Step 3 by using: DELETE/transfers/v2/external/incoming/{id}",
+          "result_code": null,
+          "license_number": "",
+          "object_ids": [],
+          "tags": [],
+          "names": [],
+          "last_modified": "",
+          "request": {
+            "method": "",
+            "url": "",
+            "body": null
+          },
+          "response": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "steps_total": 53,
+    "steps_ok": 48,
+    "steps_not_ok": 5,
+    "sheets": 13
+  },
+  "runs": [
+    "20260906T162322Z",
+    "20260906T162030Z"
+  ],
+  "state": "ny",
+  "sandbox": true
+}
