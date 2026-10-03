@@ -62,14 +62,17 @@ Since 15 September, `POST /strains/v2/` has returned:
     Version=0.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.
     The system cannot find the file specified."}
 
-It persists across retries and was still occurring on 17 September. Reads are
-unaffected — `GET /strains/v2/active`, `/facilities/v2` and the rest all return
-200 — and `POST /locations/v2/` succeeded on a retry, so it may be intermittent
-across instances rather than total.
+It was still occurring on 3 October, on every write endpoint we tried —
+`/strains/v2/`, `/locations/v2/`, `/items/v2/`, `/plantbatches/v2/*` and the
+`/sandbox/v2/` tag and package endpoints. Reads are unaffected throughout:
+`GET /facilities/v2` and the rest return 200.
+
+Writes recovered briefly on 18 September around 17:32 UTC, long enough for a
+handful of calls to succeed, then failed again within minutes. Outside that
+window we have not had a write succeed since 15 September.
 
 Flagging it in case it is not already known. It is why the attached evidence is
-dated 6 September rather than this week; we are happy to re-run once writes are
-healthy.
+dated 6 September; we are happy to re-run once writes are healthy.
 
 ---
 
