@@ -248,3 +248,37 @@ def to_json(workbook_path: str, records: list, *, sheets: list | None = None) ->
         "sheets": len(out["sheets"]),
     }
     return out
+
+
+def records_from_json(payload: dict) -> list:
+    """Rebuild call records from a JSON twin written by to_json.
+
+    The JSON is committed and the transcripts are not, so this is what lets a
+    workbook be regenerated after the run directories are gone — a container
+    reset, a fresh clone. It carries everything the writer reads: the result
+    code, license, ids, tags, names, last-modified, request and response.
+    """
+    from urllib.parse import urlparse
+
+    records = []
+    for sheet in payload.get("sheets", []):
+        for step in sheet.get("steps", []):
+            request = step.get("request") or {}
+            if not request.get("url") and step.get("result_code") is None:
+                continue  # the step never ran
+            records.append(CallRecord(
+                sheet=sheet["name"],
+                step=step["step"],
+                method=request.get("method", ""),
+                path=urlparse(request.get("url", "")).path,
+                url=request.get("url", ""),
+                status=step.get("result_code"),
+                license_number=step.get("license_number", ""),
+                request_body=request.get("body"),
+                response_body=step.get("response"),
+                object_ids=list(step.get("object_ids") or []),
+                tags=list(step.get("tags") or []),
+                names=list(step.get("names") or []),
+                last_modified=step.get("last_modified", ""),
+            ))
+    return records

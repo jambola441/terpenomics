@@ -33,7 +33,7 @@ from .steps import (
     read_sweep,
     run_full,
 )
-from .validate import load_records, to_json, validate
+from .validate import load_records, records_from_json, to_json, validate
 from .workbook import applicable_sheets, map_workbook, write_results
 
 DEFAULT_WORKBOOK = "evidence/metrc/Generic_Evaluation_for_All_States_MASTER_10.2025.xlsx"
@@ -239,13 +239,22 @@ def cmd_fill(args, config: MetrcConfig, recorder: Recorder) -> int:
         print(f"workbook not found: {src}", file=sys.stderr)
         return 1
 
-    # A complete evaluation is several runs — the read tabs and the write tabs
-    # are separate passes — so runs merge, later ones winning per step.
-    run_ids = [r.strip() for r in args.run.split(",") if r.strip()]
-    replay = Recorder(config.run_dir, run_id=run_ids[-1])
-    replay.records = []
+    if args.from_json:
+        with open(args.from_json, encoding="utf-8") as fh:
+            source = json.load(fh)
+        run_ids = list(source.get("runs") or [])
+        replay = Recorder(config.run_dir, run_id="from-json")
+        replay.records = records_from_json(source)
+        print(f"rebuilt {len(replay.records)} calls from {args.from_json} "
+              f"(runs {', '.join(run_ids) or 'unrecorded'})")
+    else:
+        # A complete evaluation is several runs — the read tabs and the write
+        # tabs are separate passes — so runs merge, later ones winning per step.
+        run_ids = [r.strip() for r in args.run.split(",") if r.strip()]
+        replay = Recorder(config.run_dir, run_id=run_ids[-1])
+        replay.records = []
 
-    for run_id in run_ids:
+    for run_id in ([] if args.from_json else run_ids):
         run_dir = run_id if os.path.isdir(run_id) else os.path.join(config.run_dir, run_id)
         calls_path = os.path.join(run_dir, "calls.jsonl")
         if not os.path.exists(calls_path):
@@ -255,7 +264,8 @@ def cmd_fill(args, config: MetrcConfig, recorder: Recorder) -> int:
             for line in fh:
                 if line.strip():
                     replay.records.append(CallRecord(**json.loads(line)))
-    print(f"merged {len(run_ids)} run(s), {len(replay.records)} calls")
+    if not args.from_json:
+        print(f"merged {len(run_ids)} run(s), {len(replay.records)} calls")
 
     company = {}
     if args.company and os.path.exists(args.company):
@@ -413,9 +423,14 @@ def main(argv=None) -> int:
     p.set_defaults(fn=cmd_full)
 
     p = sub.add_parser("fill", help="write a recorded run into the workbook")
-    p.add_argument(
-        "--run", required=True,
+    src_group = p.add_mutually_exclusive_group(required=True)
+    src_group.add_argument(
+        "--run",
         help="run id or directory; comma-separate several to merge them",
+    )
+    src_group.add_argument(
+        "--from-json",
+        help="rebuild from a committed JSON twin instead of run transcripts",
     )
     p.add_argument("--workbook", default=DEFAULT_WORKBOOK)
     p.add_argument("--out", default="evidence/metrc/Evaluation_completed.xlsx")

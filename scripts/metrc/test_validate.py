@@ -188,3 +188,53 @@ class TestPermissions(unittest.TestCase):
         self.assertTrue(marked(rows["Strains"], 3))
         self.assertFalse(marked(rows["Strains"], 4), "write column marked when not requested")
         self.assertFalse(marked(rows["Locations"], 3), "unrequested area was marked")
+
+
+class TestJsonRoundTrip(unittest.TestCase):
+    """The committed JSON twin is the durable record; the workbook and the run
+    transcripts are not committed and do not survive a fresh checkout. So the
+    workbook must be rebuildable from the JSON alone, without loss."""
+
+    SOURCE = os.path.join(HERE, "..", "..", "evidence", "metrc", "Evaluation_NY_completed.json")
+
+    def setUp(self):
+        if not os.path.exists(self.SOURCE):
+            self.skipTest("no committed JSON twin")
+        with open(self.SOURCE, encoding="utf-8") as fh:
+            self.source = json.load(fh)
+        self.dir = tempfile.mkdtemp()
+        self.out = os.path.join(self.dir, "rebuilt.xlsx")
+
+    def tearDown(self):
+        shutil.rmtree(self.dir, ignore_errors=True)
+
+    def _rebuild(self):
+        from .validate import records_from_json
+        records = records_from_json(self.source)
+        sheets = [s["name"] for s in self.source["sheets"]]
+
+        class Replay:
+            def __init__(self, records):
+                self.records = records
+
+            def for_step(self, sheet, step):
+                hits = [r for r in self.records if r.sheet == sheet and r.step == step]
+                for r in reversed(hits):
+                    if r.ok:
+                        return r
+                return hits[-1] if hits else None
+
+        write_results(TEMPLATE, self.out, Replay(records), only_sheets=set(sheets))
+        return records, sheets
+
+    def test_rebuilt_workbook_validates(self):
+        records, sheets = self._rebuild()
+        report = validate(self.out, records, sheets=sheets, template_path=TEMPLATE)
+        self.assertTrue(report.ok(), [str(f) for f in report.errors])
+        self.assertEqual(report.steps_ok, self.source["summary"]["steps_ok"])
+
+    def test_json_survives_a_round_trip_unchanged(self):
+        records, sheets = self._rebuild()
+        again = to_json(self.out, records, sheets=sheets)
+        self.assertEqual(again["sheets"], self.source["sheets"])
+        self.assertEqual(again["summary"], self.source["summary"])

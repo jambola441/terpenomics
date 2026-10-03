@@ -124,6 +124,23 @@ informationally. A non-zero exit means do not submit.
 `test_validate.py` breaks a filled workbook in five specific ways and asserts
 each is caught, so the validator cannot quietly degrade into always passing.
 
+## Regenerating after a reset
+
+Run transcripts, the completed workbook, `company.json` and `metrc.env` are all
+git-ignored, so a fresh clone or a container reset loses them. The committed
+JSON twin is the durable record, and the workbook rebuilds from it alone:
+
+```bash
+python -m scripts.metrc.run fill \
+  --from-json evidence/metrc/Evaluation_NY_completed.json \
+  --out evidence/metrc/Evaluation_NY_completed.xlsx
+```
+
+This needs no API access, so it works while the sandbox is down. Recreate
+`company.json` from `company.example.json` first, or CompanyInformation comes
+back blank; the Permissions tab comes from the committed `permissions.json`.
+`test_validate` checks the round trip is lossless.
+
 ## JSON output
 
 Every fill writes `<workbook>.json` beside the .xlsx: per sheet, per step, the
