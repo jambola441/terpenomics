@@ -50,16 +50,21 @@ be submitted documented as 401s?
 
 3. Sandbox writes have been failing since 15 September
 
-Every write endpoint we have tried returns:
+Most write requests return:
 
   400 {"Message":"Could not load file or assembly 'System.Data.SqlClient,
   Version=0.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'. The
   system cannot find the file specified."}
 
-This was still happening on 3 October. Reads are unaffected. Writes recovered
-for a few minutes on 18 September around 17:32 UTC, then failed again. This is
-why the attached evidence is dated 6 September. We are happy to re-run once
-writes are working.
+On 3 October, 9 of 10 identical POST /strains/v2/ requests returned this and
+1 succeeded. It happens on every write endpoint we have tried, across
+facilities and both sandbox tenants, and even with the example body from your
+documentation. Reads are unaffected, and invalid bodies still get normal
+validation errors, so the failure happens after a request passes validation.
+
+Because the evaluation needs several dozen writes in a row to succeed, we have
+not been able to complete a fresh run. This is why the attached evidence is
+dated 6 September. We are happy to re-run once writes are working.
 
 A few documentation notes, in case they help other NY integrators. We can send
 full request and response transcripts for any of them.
