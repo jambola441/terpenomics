@@ -548,6 +548,28 @@
     "longitude": -74.0142133
   },
   {
+    "name": "Ignyte Whitestone",
+    "slug": "ignyte-whitestone",
+    "platform": "tymber",
+    "scraper": "prototypes/tymber-scraper/scrape_blaze.py",
+    "status": "active",
+    "dutchie_id": null,
+    "blaze_id": "29d186b2-782e-4d3f-a485-45139b7aad9b",
+    "alleaves_tenant": null,
+    "menu_url": "https://shop.ignyteny.com/whitestone/categories/flower",
+    "store_url": "https://shop.ignyteny.com",
+    "neighborhood": "Whitestone",
+    "address": {
+      "street": "145-18 14th Ave",
+      "city": "Whitestone",
+      "state": "NY",
+      "zip": "11357"
+    },
+    "latitude": 40.786844,
+    "longitude": -73.8221196,
+    "_note": "In Queens. Shares one shop with Ignyte Red Hook: /whitestone/ is this store (Blaze store 29d186b2-...), /brooklyn/ is Red Hook (efcb37ae-...). Live 2026-10-04: 632/632 products."
+  },
+  {
     "name": "Hold Up Roll Up",
     "slug": "hold-up-roll-up",
     "platform": "tymber",

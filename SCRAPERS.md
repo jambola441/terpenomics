@@ -107,16 +107,18 @@ nothing; **unsupported** have no scraper.
 | Bedford Club | bedford-club-bk | tymber | **active** | — |
 | Hold Up Roll Up | hold-up-roll-up | tymber | **active** | Prospect Heights |
 | Ignyte Red Hook | ignyte-red-hook | tymber | **active** | Red Hook |
+| Ignyte Whitestone | ignyte-whitestone | tymber | **active** | Whitestone (Queens) |
 | The Spot Dispensary | the-spot-bk | tymber | **active** | — |
 | Coney Island Cannabis | coney-island-cannabis | dutchie_plus | inactive | Coney Island |
 | Happy Munkey Brooklyn | happy-munkey-bk | tymber | inactive | Downtown Brooklyn |
 | Happy Buds Brooklyn | happy-buds-bk | shopify | unsupported | Bed-Stuy |
 | Misha's Flower Shop | mishas-flower-shop-bk | sweedpos | unsupported | Bushwick |
 
-**Ignyte Red Hook's menu is `shop.ignyteny.com/brooklyn/`** (Blaze store `efcb37ae-…`).
-Until 2026-10-04 the registry pointed at Ignyte Whitestone's (`/whitestone/`, Queens);
-the one-time cleanup of the Whitestone listings stored under Red Hook is in
-[PIPELINE_HEALTH.md](PIPELINE_HEALTH.md).
+**Ignyte's two stores share one shop.** `shop.ignyteny.com/brooklyn/` is Red Hook
+(Blaze store `efcb37ae-…`) and `/whitestone/` is Whitestone, in Queens (`29d186b2-…`).
+Until 2026-10-04 the registry pointed Red Hook at Whitestone's menu; Whitestone is now
+its own store. The one-time cleanup of the Whitestone listings stored under Red Hook
+is in [PIPELINE_HEALTH.md](PIPELINE_HEALTH.md).
 
 ---
 

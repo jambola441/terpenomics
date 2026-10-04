@@ -48,8 +48,8 @@ which was off, is now on in production (item 1). The rest is yours to run (below
      11,425 rows of listing data, which is menu data the stores publish anyway.
      `ALTER VIEW public.products SET (security_invoker = true)` closes it.
    - Auth's leaked-password protection is off. It is a toggle in the dashboard.
-2. **Ignyte Red Hook: fixed in this change; one cleanup run left.** The store did not
-   change. Both Ignyte stores are open: Whitestone, at 145-18 14th Ave, Queens, and Red
+2. **Ignyte: fixed in this change; two first runs left.** Neither store changed.
+   Both Ignyte stores are open: Whitestone, at 145-18 14th Ave, Queens, and Red
    Hook, at 387 Van Brunt St, Brooklyn. Our registry pointed Red Hook at Whitestone's
    menu. Red Hook's own menu is `shop.ignyteny.com/brooklyn/` (Blaze store
    `efcb37ae-…`, 246 products, scraped live: 246/246, every link under `/brooklyn/`),
@@ -63,8 +63,14 @@ which was off, is now on in production (item 1). The rest is yours to run (below
    ```bash
    IMPORT_STALE_THRESHOLD=0 python scripts/scrape.py --slug ignyte-red-hook
    ```
-   Whitestone is a real store that is not in the registry at all. Adding it means a
-   `dispensaries` row plus a registry entry with Blaze store `29d186b2-…`.
+   **Whitestone is now its own store** (`ignyte-whitestone`, added 2026-10-04): a
+   `dispensaries` row and a registry entry for Blaze store `29d186b2-…`. A live scrape
+   collected 632 of 632 products. It has no listings until its first import:
+   ```bash
+   python scripts/scrape.py --slug ignyte-whitestone
+   ```
+   Red Hook's own row also carried Whitestone's store id in `pos_tenant_id`; it now
+   holds Red Hook's (`efcb37ae-…`).
 3. `python scripts/db_migrate.py --run` — four idempotent migrations; the first two are
    no-ops on production (they codify drift), the third adds catalog columns, and the
    fourth (row-level security) is already applied, so it re-runs as a no-op.
