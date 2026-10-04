@@ -533,9 +533,9 @@
     "scraper": "prototypes/tymber-scraper/scrape_blaze.py",
     "status": "active",
     "dutchie_id": null,
-    "blaze_id": "29d186b2-782e-4d3f-a485-45139b7aad9b",
+    "blaze_id": "efcb37ae-f5f8-4545-b9f4-b42c55a0ecfa",
     "alleaves_tenant": null,
-    "menu_url": "https://shop.ignyteny.com/whitestone/categories/flower",
+    "menu_url": "https://shop.ignyteny.com/brooklyn/categories/flower",
     "store_url": "https://shop.ignyteny.com",
     "neighborhood": "Red Hook",
     "address": {

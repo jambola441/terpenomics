@@ -10,18 +10,30 @@ It could not have run on a schedule. No worker was ever deployed, so the data is
 days old (last scrape 2026-08-29/30). And had one been deployed it would have failed
 in ways nobody would have seen: 20 of 25 stores could not start, the run would still
 have reported "ok", and the Dutchie stores that did run would have retired 48
-listings each. All of that is fixed and tested in this change. Two things are yours
-to decide (security, one store) and four are yours to run (below).
+listings each. All of that is fixed and tested in this change. One thing is yours to
+decide (security) and four are yours to run (below).
 
 ## Do these
 
-1. **Security — decide today.** Row-level security is off on all 19 public tables, and
-   the anon key ships in the frontend bundle. With nothing but that key, anyone can
-   read `customers`, `phone_auth_challenges` and `orders` over the REST API (checked
-   with a count-only request: 7, 5 and 0 rows). The frontend uses Supabase only for
-   auth, and the API and pipeline connect as the table owner / service role, which
-   bypass RLS — so enabling it with no policies closes the hole without breaking
-   either. Review, then run:
+1. **Security — decide today.** The database password does not protect this. Supabase
+   serves every table over a public REST API (`<project>.supabase.co/rest/v1`) that
+   authenticates with the *anon* key, and that key is public by design: it is compiled
+   into the web app (`VITE_SUPABASE_ANON_KEY`) and the mobile app
+   (`EXPO_PUBLIC_SUPABASE_ANON_KEY`). Row-level security is what is supposed to limit it,
+   and it is off. Checked 2026-10-04:
+   - Supabase's own security advisor reports "RLS disabled in public" as an error on
+     **26 tables**. That includes `customers`, `phone_auth_challenges`, `orders`, and the
+     new `pos_connections`, which holds stores' Square connections.
+   - The anon role holds SELECT, INSERT, UPDATE and DELETE on all 27 public tables and
+     views, so anyone with the key could change or delete data, not just read it.
+   - A request with nothing but the anon key returns row counts for `customers` (7),
+     `phone_auth_challenges` (5) and `orders` (0). Those were count-only requests; no
+     rows were read, and no writes were tried.
+
+   Enabling RLS with no policies closes this without breaking anything that exists.
+   Neither app reads tables through the anon key; both use Supabase only for login
+   sessions, and all data goes through the API. The API and the pipeline connect as
+   the table owner / service role, which bypass RLS. Review, then run:
    ```sql
    DO $$ DECLARE t text; BEGIN
      FOR t IN SELECT tablename FROM pg_tables WHERE schemaname = 'public' LOOP
@@ -29,17 +41,27 @@ to decide (security, one store) and four are yours to run (below).
      END LOOP;
    END $$;
    ```
-   Not applied here: it changes production auth, and that is your call.
-2. **Ignyte "Red Hook" is Ignyte Whitestone.** Its `blaze_id` belongs to the Queens
-   store — all 653 products scraped today link to `shop.ignyteny.com/whitestone/`, and
-   the storefront lists no other location. Its 672 active listings are another store's
-   menu at a Brooklyn address. Unless you know where Red Hook's menu really lives, set
-   its `status` to `inactive` in `dispensaries.json` (so `--all` stops scraping it) and
-   retire what is already there:
-   ```sql
-   UPDATE listings SET is_active = false, in_stock = false
-   WHERE dispensary_id = (SELECT id FROM dispensaries WHERE slug = 'ignyte-red-hook');
+   Not applied here: it changes production auth, and that is your call. Two smaller
+   flags from the same advisor: the `products` view is `SECURITY DEFINER` (it only
+   exposes listing data, which is public menu data anyway), and Auth's leaked-password
+   protection is off.
+2. **Ignyte Red Hook: fixed in this change; one cleanup run left.** The store did not
+   change. Both Ignyte stores are open: Whitestone, at 145-18 14th Ave, Queens, and Red
+   Hook, at 387 Van Brunt St, Brooklyn. Our registry pointed Red Hook at Whitestone's
+   menu. Red Hook's own menu is `shop.ignyteny.com/brooklyn/` (Blaze store
+   `efcb37ae-…`, 246 products, scraped live: 246/246, every link under `/brooklyn/`),
+   and `dispensaries.json` now points there.
+
+   Today the database holds 654 active "Red Hook" listings from Whitestone's menu. 86 of
+   them are products Red Hook also carries; those will update in place. The other 568
+   should retire, but the importer's partial-scrape guard would protect them, because
+   246 is less than half of 654. So run that store's first import once with the guard
+   off:
+   ```bash
+   IMPORT_STALE_THRESHOLD=0 python scripts/scrape.py --slug ignyte-red-hook
    ```
+   Whitestone is a real store that is not in the registry at all. Adding it means a
+   `dispensaries` row plus a registry entry with Blaze store `29d186b2-…`.
 3. `python scripts/db_migrate.py --run` — three idempotent migrations; the first two are
    no-ops on production (they codify drift), the third adds catalog columns.
 4. Push catalogs and deploy the worker — [PIPELINE.md → One-time setup](PIPELINE.md#one-time-setup).

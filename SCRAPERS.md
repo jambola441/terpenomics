@@ -113,8 +113,10 @@ nothing; **unsupported** have no scraper.
 | Happy Buds Brooklyn | happy-buds-bk | shopify | unsupported | Bed-Stuy |
 | Misha's Flower Shop | mishas-flower-shop-bk | sweedpos | unsupported | Bushwick |
 
-**Ignyte "Red Hook" scrapes Ignyte Whitestone (Queens)** — every product URL is under
-`/whitestone/`. See [PIPELINE_HEALTH.md](PIPELINE_HEALTH.md).
+**Ignyte Red Hook's menu is `shop.ignyteny.com/brooklyn/`** (Blaze store `efcb37ae-…`).
+Until 2026-10-04 the registry pointed at Ignyte Whitestone's (`/whitestone/`, Queens);
+the one-time cleanup of the Whitestone listings stored under Red Hook is in
+[PIPELINE_HEALTH.md](PIPELINE_HEALTH.md).
 
 ---
 
