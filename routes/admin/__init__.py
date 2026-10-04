@@ -5,6 +5,7 @@ from .dispensaries import router as dispensaries_router
 from .lab_reports import router as lab_reports_router
 from .listings import router as listings_router
 from .orders import router as orders_router
+from .partners import router as partners_router
 from .products import router as products_router
 from .purchases import router as purchases_router
 
@@ -15,5 +16,6 @@ router.include_router(dispensaries_router)
 router.include_router(lab_reports_router)
 router.include_router(listings_router)
 router.include_router(orders_router)
+router.include_router(partners_router)
 router.include_router(products_router)
 router.include_router(purchases_router)
