@@ -17,7 +17,6 @@ const SHEET_PAN_OFFSET = 110
 
 interface Props {
   activeDispensaryId?: string | null
-  onProductClick?: (productId: string) => void
   onAddToCart?: (item: CartItem) => void
   cart?: CartItem[]
 }
@@ -63,7 +62,7 @@ function BoroughChip({ borough, style }: { borough: Borough | null; style?: Reac
   )
 }
 
-export default function DispensaryMap({ activeDispensaryId, onProductClick, onAddToCart, cart = [] }: Props) {
+export default function DispensaryMap({ activeDispensaryId, onAddToCart, cart = [] }: Props) {
   const navigate = useNavigate()
   const matchAisle = useMatch('/portal/map/:dispensaryId/aisle/:category')
   const mapRef = useRef<HTMLDivElement>(null)

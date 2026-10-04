@@ -9,7 +9,6 @@ const sections = [
   { label: 'Dispensaries',   path: '/admin/dispensaries',   desc: 'Manage dispensary locations and POS settings' },
   { label: 'Listings',       path: '/admin/listings',       desc: 'Browse all scraped listings' },
   { label: 'Brand Catalogs', path: '/admin/brand-catalogs', desc: "Products a brand says it makes \u2014 the referent enrichment is checked against" },
-  { label: 'Match Listings', path: '/admin/listings/match', desc: 'Link scraped listings to products' },
 ]
 
 export default function AdminHome() {

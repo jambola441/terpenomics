@@ -33,8 +33,8 @@ interface Props {
   dispensaryName: string
   dispensarySlug?: string
   dispensaryAddress?: string | null
-  dispensaryLat?: number
-  dispensaryLng?: number
+  dispensaryLat?: number | null
+  dispensaryLng?: number | null
   dispensaryLogoUrl?: string | null
   dispensaryBannerUrl?: string | null
   acceptsPickup?: boolean
