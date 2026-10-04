@@ -4,8 +4,15 @@ from enum import Enum
 from typing import Optional
 from uuid import UUID, uuid4
 
-from sqlalchemy import Column, DateTime, Index, LargeBinary, Text, UniqueConstraint, text
+from sqlalchemy import JSON, Column, DateTime, Index, LargeBinary, Text, UniqueConstraint, text
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, REAL
+
+# Postgres column types with a SQLite stand-in. Production gets jsonb and text[]
+# exactly; the test suite (tests/conftest.py runs on SQLite) gets JSON, which it can
+# create. Without the variants, create_all failed on the first JSONB column and 120
+# tests errored from 2026-09-06 — unnoticed, because nothing runs them.
+JSONB_T = JSON().with_variant(JSONB(), "postgresql")
+TEXT_ARRAY_T = JSON().with_variant(ARRAY(Text), "postgresql")
 from sqlmodel import SQLModel, Field, Relationship
 
 
@@ -214,11 +221,11 @@ class BrandCatalogEntry(SQLModel, table=True):
     variant:      Optional[str] = Field(default=None, sa_type=Text)
 
     attributes: Optional[dict] = Field(
-        default=None, sa_column=Column("attributes", JSONB, nullable=True)
+        default=None, sa_column=Column("attributes", JSONB_T, nullable=True)
     )
     # Normalised strings a listing name is matched against, in addition to `name`.
     match_terms: Optional[list[str]] = Field(
-        default=None, sa_column=Column("match_terms", ARRAY(Text), nullable=True)
+        default=None, sa_column=Column("match_terms", TEXT_ARRAY_T, nullable=True)
     )
 
     is_active: bool = Field(default=True, nullable=False)
@@ -235,7 +242,7 @@ class BrandCatalogEntry(SQLModel, table=True):
     # Per-field human claims, same shape as listings.verified_fields — see
     # scripts/verification.py.
     verified_fields: Optional[dict] = Field(
-        default=None, sa_column=Column("verified_fields", JSONB, nullable=True)
+        default=None, sa_column=Column("verified_fields", JSONB_T, nullable=True)
     )
     verified_by: Optional[str] = Field(default=None, sa_type=Text)
     verified_at: Optional[datetime] = Field(
@@ -335,6 +342,20 @@ class Listing(ListingBase, TimestampMixin, table=True):
         sa_column=Column("catalog_match_confidence", REAL, nullable=True),
     )
     catalog_match_method: Optional[str] = Field(default=None, sa_type=Text)
+
+    # Live in production but missing from this model until 2026-10-04 (added by
+    # migrate_add_verification.py and, for attributes, by hand). Declared so the ORM
+    # and the database agree on what a listing is. Both are written by the pipeline
+    # (scripts/import_listings.py), never by the API.
+    verified_fields: Optional[dict] = Field(
+        default=None, sa_column=Column("verified_fields", JSONB_T, nullable=True)
+    )
+    verified_at: Optional[datetime] = Field(
+        default=None, sa_column=Column("verified_at", DateTime(timezone=True), nullable=True)
+    )
+    attributes: Optional[dict] = Field(
+        default=None, sa_column=Column("attributes", JSONB_T, nullable=True)
+    )
 
     dispensary:     Dispensary              = Relationship(back_populates="listings")
     purchase_items: list["PurchaseItem"]    = Relationship(back_populates="listing")

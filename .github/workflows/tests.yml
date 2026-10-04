@@ -1,0 +1,36 @@
+# The test suite went red on 2026-09-06 and stayed red for four weeks because
+# nothing ran it. This runs it on every push.
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      # A throwaway database for scripts/test_import_listings.py, which runs the
+      # importer against the production schema in db/schema/pipeline.sql.
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: terp_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/terp_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: |
+          sudo apt-get update && sudo apt-get install -y libpq-dev
+          pip install -r requirements.txt pytest
+      - name: Test
+        run: pytest -q

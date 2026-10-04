@@ -26,7 +26,9 @@ services:
     dockerCommand: python scripts/scrape_worker.py
     plan: starter          # smallest paid instance; disks require a paid plan
     region: oregon         # TODO: match the region of the existing services
-    autoDeploy: true       # redeploy on every push to main
+    # Redeploy on every push to main. A deploy mid-run kills that day's run; caches
+    # are written atomically and the lock self-expires, so tomorrow's run is clean.
+    autoDeploy: true
     disk:
       name: enrich-cache
       mountPath: /app/data/enrich_cache   # exactly where enrich.py reads/writes
@@ -41,11 +43,19 @@ services:
         sync: false
       - key: ALLEAVES_PASS
         sync: false
+      # Enrichment with --model haiku-or, and catalog matching with Jev
+      # (typesafe/jev-1.13), both go through OpenRouter on this key.
       - key: OPENROUTER_API_KEY
         sync: false
-      - key: COA_API_KEY
+      # Optional: a Slack/Discord-style incoming webhook; failed runs POST here.
+      - key: ALERT_WEBHOOK_URL
         sync: false
       # --- schedule / behavior knobs (safe defaults, edit freely) ---
+      # Only stores marked "active" in dispensaries.json are run. Drop --model to use
+      # native Haiku (needs ANTHROPIC_API_KEY) — note the cache is namespaced per
+      # model, so switching models starts the enrich cache cold (~$11).
+      - key: SCRAPE_ARGS
+        value: "--all --parallel --model haiku-or"
       - key: SCRAPE_RUN_AT_ET
         value: "09:00"      # daily run time, America/New_York
       - key: SCRAPE_RUN_ON_START

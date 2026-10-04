@@ -27,4 +27,10 @@ data/enrich_cache/
 
 # Secrets
 *.env
-.claude/
+
+# Claude Code: personal overrides stay local; shared settings, hooks and
+# commands are versioned so every session gets the same permission rules.
+.claude/*
+!.claude/settings.json
+!.claude/hooks/
+!.claude/commands/

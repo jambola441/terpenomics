@@ -25,7 +25,7 @@ import time
 import requests
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../scripts"))
-from scraper_common import apply_brand_aliases, canonical_brands, map_category, normalize_variant, now_iso, stamped_path, write_csv  # noqa: E402
+from scraper_common import apply_brand_aliases, canonical_brands, map_category, normalize_variant, now_iso, stamped_path, write_csv, write_scrape_meta  # noqa: E402
 from enrich import enrich, write_usage  # noqa: E402
 
 # ---------------------------------------------------------------------------
@@ -249,6 +249,7 @@ def scrape_store(blaze_id: str, dispensary_slug: str, dispensary_name: str, out_
     write_usage(usage, out_path)
 
     write_csv(all_rows, out_path)
+    write_scrape_meta(out_path, total, len(seen_ids))
     print(f"  Wrote {len(all_rows)} rows → {out_path}")
     return len(all_rows)
 

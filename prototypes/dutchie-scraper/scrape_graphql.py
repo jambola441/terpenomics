@@ -28,7 +28,7 @@ import sys
 import time
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../scripts"))
-from scraper_common import apply_brand_aliases, canonical_brands, map_category, normalize_variant, now_iso, stamped_path, write_csv  # noqa: E402
+from scraper_common import apply_brand_aliases, canonical_brands, map_category, normalize_variant, now_iso, stamped_path, write_csv, write_scrape_meta  # noqa: E402
 from enrich import enrich, write_usage  # noqa: E402
 
 try:
@@ -227,8 +227,14 @@ def scrape_store(
     all_rows:  list[dict] = []
     seen_ids:  set[str]   = set()
 
-    # Page 1 — always fetch first to learn total_pages
-    resp = session.post(GQL_URL, json=_gql_payload(dutchie_id, 1), headers=HEADERS, timeout=30)
+    # Dutchie numbers pages from 0. Checked 2026-10-04 against a 122-product menu:
+    # pages 0, 1 and 2 held 48 + 48 + 26 distinct products and page 3 was empty. This
+    # loop used to start at page 1, so every store silently lost its first 48 products
+    # — and the importer then retired those listings as stale on every run. Fetch
+    # pages 0..totalPages inclusive (the extra page is empty on a 0-indexed API and is
+    # the last page on a 1-indexed one), then check what arrived against totalCount
+    # instead of trusting the page arithmetic.
+    resp = session.post(GQL_URL, json=_gql_payload(dutchie_id, 0), headers=HEADERS, timeout=30)
     resp.raise_for_status()
     body = resp.json()
 
@@ -249,9 +255,9 @@ def scrape_store(
         if pid not in seen_ids:
             seen_ids.add(pid)
             all_rows.extend(normalise_gql(p, dispensary_slug, scraped_at))
-    print(f"  page=  1  unique products: {len(seen_ids)}")
+    print(f"  page=  0  unique products: {len(seen_ids)}")
 
-    remaining = list(range(2, total_pages + 1))
+    remaining = list(range(1, total_pages + 1))
 
     if remaining and parallel:
         from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -290,6 +296,7 @@ def scrape_store(
         print("  [WARN] No rows collected")
         return 0
 
+
     raw_brands  = {r["brand"] for r in all_rows if r["brand"]}
     brand_canon = canonical_brands(raw_brands)
     for r in all_rows:
@@ -303,6 +310,8 @@ def scrape_store(
     write_usage(usage, out_path)
 
     write_csv(all_rows, out_path)
+    # Checked against totalCount, not the page arithmetic: see write_scrape_meta.
+    write_scrape_meta(out_path, total_count, len(seen_ids))
     print(f"  Wrote {len(all_rows)} rows → {out_path}")
     return len(all_rows)
 
@@ -326,7 +335,7 @@ def parse_args():
     p.add_argument("--out",     default=None, help="Output CSV path (single-store mode)")
     p.add_argument("--out-dir", default=os.path.join(ROOT, "data/scrapes"),
                       help="Output directory for --all mode")
-    p.add_argument("--parallel",   action="store_true", help="Fetch pages 2..N concurrently")
+    p.add_argument("--parallel",   action="store_true", help="Fetch pages after the first concurrently")
     p.add_argument("--no-enrich",  action="store_true", help="Skip Haiku enrichment")
     p.add_argument("--model",      default="haiku", help="Enrichment model id (see MODELS in scripts/enrich.py)")
     return p.parse_args()
@@ -390,7 +399,9 @@ def main():
             or args.dutchie_id
         )
         out_path = args.out or stamped_path(os.path.join(HERE, f"{disp_slug}_listings.csv"))
-        scrape_store(session, args.dutchie_id, disp_slug, args.name or args.dutchie_id, out_path, parallel=args.parallel, no_enrich=args.no_enrich, model=args.model)
+        n = scrape_store(session, args.dutchie_id, disp_slug, args.name or args.dutchie_id, out_path, parallel=args.parallel, no_enrich=args.no_enrich, model=args.model)
+        # Exit status is how scripts/scrape.py learns a store produced nothing.
+        sys.exit(0 if n > 0 else 1)
 
 
 if __name__ == "__main__":

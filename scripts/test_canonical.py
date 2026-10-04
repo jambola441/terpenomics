@@ -24,6 +24,11 @@ class TestDoseVariants:
         assert normalize_variant("1000mg", "flower") == "1g"
         assert normalize_variant("1/8oz", "flower") == "3.5g"
 
+    def test_topical_dose_stays_mg(self):
+        # Topicals are dosed like tinctures (scripts/taxonomy.py). Before, a 1000mg
+        # balm was normalised to "1g".
+        assert normalize_variant("1000mg", "topical") == "1000mg"
+
     def test_no_category_keeps_legacy_behavior(self):
         assert normalize_variant("1000mg") == "1g"
         assert normalize_variant("12oz") == "336g"

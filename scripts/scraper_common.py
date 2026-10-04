@@ -8,6 +8,7 @@ Scrapers import this via:
 """
 
 import csv
+import sys
 import json
 import os
 import re
@@ -36,6 +37,11 @@ CSV_COLUMNS = [
     "subtype",
     "strain",
     "product_line",
+    # "true" when enrichment did not answer this row (batch error, truncation, no API
+    # key). Its subtype/strain/product_line are fallbacks, not answers, and the
+    # importer keeps the stored identity of a listing it already holds rather than
+    # writing them over it.
+    "enrich_failed",
 ]
 
 # ---------------------------------------------------------------------------
@@ -164,16 +170,20 @@ _OZ_WORD_MAP = {
 _OZ_PER_G = 28  # cannabis convention: 1 oz = 28g
 
 
-# Categories whose variant is a DOSE, not a physical weight. For these, mg is the
-# canonical unit at every magnitude and ounces are package volume — so the
-# weight-oriented conversions below must not run (they were turning a 1000mg
-# tincture into "1g" and a 12oz beverage into "336g").
-_DOSE_CATEGORIES = {"edible", "tinctures"}
+# Which categories are dosed and which are weighed is declared in scripts/taxonomy.py.
+#
+# DOSE: mg is the canonical unit at every magnitude and ounces are package volume —
+# so the weight-oriented conversions below must not run (they were turning a 1000mg
+# tincture into "1g" and a 12oz beverage into "336g"). Topical is one of these: it
+# was missing from this set, so a 1000mg balm also became "1g" — one of the reasons
+# topical variants held grams, mg and oz side by side (REFACTOR.md §1).
+#
+# WEIGHT: grams at every magnitude. A 0.4g pre-roll rendered as "400mg" sits
+# inconsistently beside its own 0.5g and 0.6g siblings, and reads as a dose it is not.
+import taxonomy  # noqa: E402
 
-# Categories whose variant is a physical WEIGHT. These stay in grams at every
-# magnitude: a 0.4g pre-roll rendered as "400mg" sits inconsistently beside its
-# own 0.5g and 0.6g siblings, and reads as a dose it is not.
-_WEIGHT_CATEGORIES = {"flower", "preroll", "vaporizers", "concentrate"}
+_DOSE_CATEGORIES = taxonomy.categories_measured_by("dose")
+_WEIGHT_CATEGORIES = taxonomy.categories_measured_by("weight")
 
 
 def normalize_variant(v: str, category: str | None = None) -> str:
@@ -341,6 +351,45 @@ def stamped_path(path: str, stamp: str | None = None) -> str:
 # ---------------------------------------------------------------------------
 # CSV output
 # ---------------------------------------------------------------------------
+
+def _meta_path(csv_path: str) -> str:
+    root, _ = os.path.splitext(csv_path)
+    return root + ".meta.json"
+
+
+def write_scrape_meta(csv_path: str, reported_total: int | None, collected: int) -> None:
+    """Record how much of the menu a scrape actually got, next to its CSV.
+
+    The importer retires every listing a scrape did not carry, so a short scrape is
+    destructive: Dutchie's 0-indexed pages cost every store its first 48 products,
+    and Flowhub's re-sweeps can stall at 94% of a menu. With this written, the
+    importer still refreshes the rows it got but retires nothing on a partial scrape,
+    and scrape.py reports the store as failed so the gap gets looked at.
+    """
+    meta = {"reported_total": reported_total, "collected": collected,
+            "partial": scrape_is_partial(reported_total, collected)}
+    with open(_meta_path(csv_path), "w", encoding="utf-8") as f:
+        json.dump(meta, f)
+    if meta["partial"]:
+        print(f"  [WARN] partial scrape: {collected} of {reported_total} products — the "
+              f"import will refresh these but retire nothing", file=sys.stderr)
+
+
+def read_scrape_meta(csv_path: str) -> dict:
+    try:
+        with open(_meta_path(csv_path), encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return {}
+
+
+def scrape_is_partial(reported_total: int | None, collected: int) -> bool:
+    """Short by more than a couple of products or 1% — a product can legitimately
+    drop off a menu between two page requests."""
+    if not reported_total:
+        return False
+    return reported_total - collected > max(2, 0.01 * reported_total)
+
 
 def write_csv(rows: list[dict], path: str) -> int:
     """Write rows to path using the canonical CSV schema. Returns row count."""

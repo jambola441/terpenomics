@@ -23,6 +23,7 @@ from canonical import canonicalize, find_format_category  # noqa: E402
 import verification  # noqa: E402
 import attributes as attribute_registry  # noqa: E402
 import enrichers  # noqa: E402
+import taxonomy  # noqa: E402
 import catalog_enricher  # noqa: E402
 
 _DATA_DIR = Path(__file__).parent.parent / "data"
@@ -62,17 +63,8 @@ _TOKENS: dict[str, OrderedDict] = {
 # outside the rails below.
 # ---------------------------------------------------------------------------
 
-_CATEGORY_DEFAULTS: dict[str, str | None] = {
-    "vaporizers":  None,
-    "edible":      None,
-    "preroll":     "single",
-    "flower":      "flower",
-    "concentrate": None,
-    "tinctures":   "tincture",
-    "topical":     "topical",
-    "merch":       "merch",
-    "other":       "other",
-}
+# Defined in scripts/taxonomy.py, with every other per-category attribute.
+_CATEGORY_DEFAULTS: dict[str, str | None] = taxonomy.default_subtypes()
 
 
 def classify_by_token(category: str, name: str) -> str | None:
@@ -192,17 +184,38 @@ def _slug_for_rows(rows: list[dict]) -> str | None:
 
 
 def _load_cache(slug: str) -> dict:
+    """The store's cache, or {} — never an exception.
+
+    A cache that cannot be parsed (a write cut off by a deploy restarting the worker,
+    a full disk) used to raise here, after the whole menu had been scraped, and keep
+    raising every day until someone deleted the file. It is set aside instead, so the
+    run re-enriches that store once and the evidence is kept for a look.
+    """
     path = _CACHE_DIR / f"{slug}.json"
-    if path.exists():
+    if not path.exists():
+        return {}
+    try:
         return json.loads(path.read_text(encoding="utf-8"))
-    return {}
+    except (json.JSONDecodeError, UnicodeDecodeError, OSError) as exc:
+        bad = path.with_name(f"{path.name}.corrupt-{int(time.time())}")
+        try:
+            path.rename(bad)
+        except OSError:
+            bad = path
+        print(f"  [warn] unreadable enrich cache {path.name} ({exc}); moved to {bad.name}, "
+              f"starting empty", file=sys.stderr)
+        return {}
 
 
 def _save_cache(cache: dict, slug: str) -> None:
-    _CACHE_DIR.mkdir(exist_ok=True)
-    (_CACHE_DIR / f"{slug}.json").write_text(
-        json.dumps(cache, indent=2, ensure_ascii=False, sort_keys=True), encoding="utf-8"
-    )
+    """Write via a temp file and rename, so a kill mid-write leaves the old cache
+    intact rather than a truncated one."""
+    _CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    path = _CACHE_DIR / f"{slug}.json"
+    tmp = path.with_name(f"{path.name}.tmp")
+    tmp.write_text(json.dumps(cache, indent=2, ensure_ascii=False, sort_keys=True),
+                   encoding="utf-8")
+    os.replace(tmp, path)
 
 
 # ---------------------------------------------------------------------------
@@ -323,22 +336,12 @@ def _make_client(model_cfg: dict):
 # every model response against these; anything off-list snaps to a hint/default.
 # ---------------------------------------------------------------------------
 
-CATEGORIES = ["flower", "preroll", "vaporizers", "edible", "concentrate",
-              "tinctures", "topical", "merch", "other"]
+# Both come from scripts/taxonomy.py, which defines every category's attributes in
+# one place. Their order is the prompt's — scripts/test_taxonomy.py pins the prompt
+# text byte for byte, because a rail edit is a prompt edit.
+CATEGORIES = list(taxonomy.CATEGORY_ORDER)
 
-SUBTYPES: dict[str, list[str]] = {
-    "vaporizers":  ["cart", "all-in-one", "pod", "battery", "other"],
-    "edible":      ["gummy", "chocolate", "beverage", "tablet", "other"],
-    "concentrate": ["diamonds", "rosin", "resin", "hash", "rso", "other"],
-    "preroll":     ["single", "infused", "pack"],
-    "flower":      ["flower", "smalls", "preground", "infused"],
-    "tinctures":   ["tincture"],
-    "topical":     ["topical"],
-    # Owned by MerchEnricher — see scripts/enrichers.py. Kept in one place so a
-    # new merch subtype cannot be added to the tokens and forgotten in the rail.
-    "merch":       list(enrichers.for_category("merch").subtypes),
-    "other":       ["other"],
-}
+SUBTYPES: dict[str, list[str]] = taxonomy.rails()
 
 _CATEGORY_LIST = ", ".join(CATEGORIES)
 # Only the categories the model actually answers. A category whose owner declares
@@ -671,6 +674,13 @@ def _run_enrich(
 
     client = _make_client(model_cfg)
     if client is None:
+        # No key means no answers. Say so on every row, loudly: rows that leave here
+        # unmarked look exactly like answered ones, and the importer would write their
+        # fallback subtype/strain/product_line over a listing's stored identity.
+        print(f"  [error] no client for {model_cfg['api_model']} — "
+              f"{len(pending)} row(s) left unenriched and marked enrich_failed", file=sys.stderr)
+        for _, row in pending:
+            row["enrich_failed"] = True
         return dict(_ZERO_USAGE)
 
     # Rows whose batch errored or whose id the model dropped (truncation). They
@@ -845,11 +855,12 @@ def _run_enrich(
     for (oi, row) in pending:
         if oi in failed_rows:
             # Tell the caller which rows carry fallbacks rather than answers. A
-            # caller writing back over an existing file needs to distinguish
-            # "empty because the batch broke" from "empty on purpose" — merch
-            # strain is deliberately null, and so is any field the model
-            # legitimately declines. Without this, both look identical.
-            row["_enrich_failed"] = True
+            # caller writing back over an existing file — or the importer, writing
+            # over a stored listing — needs to distinguish "empty because the batch
+            # broke" from "empty on purpose": merch strain is deliberately null, and
+            # so is any field the model legitimately declines. It is a CSV column
+            # (scraper_common.CSV_COLUMNS), so the marker survives to the import.
+            row["enrich_failed"] = True
             continue
         key = _cache_key(row)
         if key:
@@ -895,6 +906,12 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
     Returns a token usage dict: {input_tokens, output_tokens, cache_write_tokens,
     cache_read_tokens, cost_usd}. All zeros when everything was cached.
     """
+    # The marker describes this run. A row read back from an earlier CSV may still
+    # carry "True" from a run that failed; left in place, an answered row would look
+    # failed (and have deliberate nulls "restored"), so it is cleared up front.
+    for row in rows:
+        row.pop("enrich_failed", None)
+
     if no_enrich:
         for row in rows:
             row.setdefault("subtype", "other")
@@ -1019,6 +1036,11 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
         if lapsed_n:
             msg += f", {lapsed_n} lapsed (renamed since review — needs re-check)"
         print(msg)
+
+    usage["failed_rows"] = sum(1 for row in rows if row.get("enrich_failed"))
+    if usage["failed_rows"]:
+        print(f"  [warn] {usage['failed_rows']} row(s) unenriched this run "
+              f"(marked enrich_failed; the importer keeps their stored identity)", file=sys.stderr)
 
     c = model_cfg["cost"]
     cost = (

@@ -1,5 +1,9 @@
 # Re-running the pipeline — current as of 2026-08-30
 
+> **Superseded for day-to-day operation by [PIPELINE.md](../../PIPELINE.md)** (2026-10-04):
+> the importer now matches catalogs, protects failed enrichments and partial scrapes, and
+> `scrape.py` reports failures. The cache and namespace notes below still hold.
+
 Everything below the next heading is the 2026-08-25 first-load writeup and is kept
 for its gotchas. **Start here.**
 

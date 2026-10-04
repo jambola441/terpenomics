@@ -154,6 +154,22 @@ def select(table: str, query: str = "") -> list[dict[str, Any]]:
     return rest("GET", table, query)
 
 
+def select_all(table: str, query: str = "", page: int = 1000) -> list[dict[str, Any]]:
+    """`select`, paged until exhausted.
+
+    PostgREST caps a response at the project's max-rows (1,000 on Supabase), and a
+    capped response looks exactly like a complete one. Pass an explicit `order=` in
+    `query` when the result must be stable across pages.
+    """
+    out: list[dict[str, Any]] = []
+    sep = "&" if query else ""
+    while True:
+        rows = select(table, f"{query}{sep}limit={page}&offset={len(out)}")
+        out.extend(rows)
+        if len(rows) < page:
+            return out
+
+
 def insert(table: str, rows: Any) -> list[dict[str, Any]]:
     return rest("POST", table, payload=rows)
 

@@ -3,7 +3,8 @@
 All dispensary metadata lives in **`dispensaries.json`** at the project root — that is the
 single source of truth. Scrapers read from it; do not create per-scraper `stores.json` files.
 
-Scraped CSVs go to **`data/scrapes/<slug>_listings.csv`**.
+Scraped CSVs go to **`data/scrapes/<slug>_<YYYYMMDDTHHMMSSZ>.csv`**, with a `.usage.json`
+(enrichment cost) and a `.meta.json` (products reported vs collected) beside each.
 
 ---
 
@@ -74,79 +75,59 @@ python prototypes/travel-agency-scraper/scrape.py
 
 ## Dispensary registry
 
-All 31 Brooklyn dispensaries. Status: **active** = scraper confirmed working; **pending** = not yet run; **inactive** = returns 0 products; **unsupported** = platform not implemented.
+Generated from `dispensaries.json` (the source of truth) on 2026-10-04. `scrape.py --all`
+runs **active** stores only; **pending** need `--include-pending`; **inactive** return
+nothing; **unsupported** have no scraper.
 
 | Name | Slug | Platform | Status | Neighborhood |
 |---|---|---|---|---|
-| Coney Island Cannabis | coney-island-cannabis | dutchie_plus | pending | Coney Island |
-| The Plug | the-plug-crown-heights | flowhub | pending | Crown Heights |
-| Grow Together | grow-together-bk | flowhub | pending | — |
-| The Emerald Dispensary | emerald-dispensary-bk | dutchie_graphql | **active** | Bushwick |
-| Hii NYC Williamsburg | hii-nyc-williamsburg | dutchie_graphql | **active** | Williamsburg |
-| Hii NYC Bay Ridge | hii-nyc-bay-ridge | dutchie_graphql | **active** | Bay Ridge |
-| The Garden Club | garden-club-carroll-gardens | dutchie_graphql | **active** | Carroll Gardens |
-| Herbology | herbology-bed-stuy | dutchie_graphql | **active** | Bed-Stuy |
-| Fireleaf | fireleaf-canarsie | dutchie_graphql | **active** | Canarsie |
-| Twisted Vibration | twisted-vibration-wburg | dutchie_graphql | **active** | Williamsburg |
+| Brooklyn Organic Buds | brooklyn-organic-buds | alleaves | **active** | Prospect Heights |
 | By Any Other Name | by-any-other-name-bk | dutchie_graphql | **active** | — |
-| StashMaster NYC | stashmaster-nyc | dutchie_graphql | **active** | — |
-| Kaya Bliss Dispensary | kaya-bliss-bay-ridge | dutchie_graphql | **active** | Bay Ridge |
-| Kaya Bliss Brooklyn Heights | kaya-bliss-brooklyn-heights | dutchie_graphql | **active** | Brooklyn Heights |
-| RNR Dispensary | rnr-dispensary-bk | dutchie_graphql | **active** | — |
-| OC Dispensary | oc-dispensary-bk | dutchie_graphql | **active** | — |
-| Soulmate | soulmate-fort-greene | dutchie_graphql | **active** | Fort Greene |
-| Quality Control Dispensary | quality-control-brighton-beach | dutchie_graphql | **active** | Brighton Beach |
-| Milligrams | milligrams-greenpoint | dutchie_graphql | **active** | Greenpoint |
 | Dagmar Cannabis Williamsburg | dagmar-cannabis-wburg | dutchie_graphql | **active** | Williamsburg |
-| Greene Street | greene-street-sheepshead-bay | dutchie_graphql | **active** | Sheepshead Bay |
 | Emerald Dispensary Carroll Gardens | emerald-dispensary-carroll-gardens | dutchie_graphql | **active** | Carroll Gardens |
+| Fireleaf | fireleaf-canarsie | dutchie_graphql | **active** | Canarsie |
+| Greene Street | greene-street-sheepshead-bay | dutchie_graphql | **active** | Sheepshead Bay |
+| Herbology | herbology-bed-stuy | dutchie_graphql | **active** | Bed-Stuy |
+| Hii NYC Bay Ridge | hii-nyc-bay-ridge | dutchie_graphql | **active** | Bay Ridge |
+| Hii NYC Williamsburg | hii-nyc-williamsburg | dutchie_graphql | **active** | Williamsburg |
+| Kaya Bliss Brooklyn Heights | kaya-bliss-brooklyn-heights | dutchie_graphql | **active** | Brooklyn Heights |
+| Kaya Bliss Dispensary | kaya-bliss-bay-ridge | dutchie_graphql | **active** | Bay Ridge |
+| Milligrams | milligrams-greenpoint | dutchie_graphql | **active** | Greenpoint |
+| OC Dispensary | oc-dispensary-bk | dutchie_graphql | **active** | — |
+| Quality Control Dispensary | quality-control-brighton-beach | dutchie_graphql | **active** | Brighton Beach |
+| RNR Dispensary | rnr-dispensary-bk | dutchie_graphql | **active** | — |
+| Soulmate | soulmate-fort-greene | dutchie_graphql | **active** | Fort Greene |
+| StashMaster NYC | stashmaster-nyc | dutchie_graphql | **active** | — |
+| The Emerald Dispensary | emerald-dispensary-bk | dutchie_graphql | **active** | Bushwick |
+| The Garden Club | garden-club-carroll-gardens | dutchie_graphql | **active** | Carroll Gardens |
+| The Plug | the-plug-crown-heights | dutchie_graphql | **active** | Crown Heights |
+| Twisted Vibration | twisted-vibration-wburg | dutchie_graphql | **active** | Williamsburg |
+| Grow Together | grow-together-bk | flowhub | **active** | — |
+| The Travel Agency | travel-agency-ny | travel_agency | **active** | — |
 | Bedford Club | bedford-club-bk | tymber | **active** | — |
-| Happy Munkey Brooklyn | happy-munkey-bk | tymber | inactive | Downtown Brooklyn |
-| The Spot Dispensary | the-spot-bk | tymber | **active** | — |
+| Hold Up Roll Up | hold-up-roll-up | tymber | **active** | Prospect Heights |
 | Ignyte Red Hook | ignyte-red-hook | tymber | **active** | Red Hook |
-| Hold Up Roll Up | hold-up-roll-up | tymber | **active** | — |
-| Brooklyn Organic Buds | brooklyn-organic-buds | alleaves | pending | — |
-| The Travel Agency | travel-agency-ny | travel_agency | pending | — |
-| Misha's Flower Shop | mishas-flower-shop-bk | sweedpos | unsupported | — |
-| Happy Buds Brooklyn | happy-buds-bk | shopify | unsupported | — |
+| The Spot Dispensary | the-spot-bk | tymber | **active** | — |
+| Coney Island Cannabis | coney-island-cannabis | dutchie_plus | inactive | Coney Island |
+| Happy Munkey Brooklyn | happy-munkey-bk | tymber | inactive | Downtown Brooklyn |
+| Happy Buds Brooklyn | happy-buds-bk | shopify | unsupported | Bed-Stuy |
+| Misha's Flower Shop | mishas-flower-shop-bk | sweedpos | unsupported | Bushwick |
+
+**Ignyte "Red Hook" scrapes Ignyte Whitestone (Queens)** — every product URL is under
+`/whitestone/`. See [PIPELINE_HEALTH.md](PIPELINE_HEALTH.md).
 
 ---
 
 ## Scheduled scraping (Render worker)
 
-The full pipeline runs once a day on a Render **background worker**, not a cron
-job — Render cron jobs can't mount a persistent disk, and the per-SKU enrich
-cache (`data/enrich_cache/`) is what keeps Haiku spend low. The worker holds the
-disk and schedules itself.
+**Not deployed as of 2026-10-04** — see [PIPELINE.md](PIPELINE.md#running-it-regularly)
+for setup, what runs daily, what counts as a failure, and alerting.
 
 | File | Role |
 |---|---|
-| `scripts/scrape_worker.py` | Long-running loop. Sleeps until `SCRAPE_RUN_AT_ET` (default 09:00 ET), runs one sweep, repeats. Drift-free, DST-aware, crash-proof. |
-| `scripts/run_scrape_cron.py` | One robust sweep: wraps `scrape.py --all --parallel` with logging, an overlap lock, a 90-min wall-clock timeout, a heartbeat file, and a meaningful exit code. |
+| `scripts/scrape_worker.py` | Long-running loop. Sleeps until `SCRAPE_RUN_AT_ET` (default 09:00 ET), runs one sweep, repeats. |
+| `scripts/run_scrape_cron.py` | One sweep: wraps `scrape.py` with an overlap lock, a whole-tree timeout, a heartbeat (`_cron_status.json`), a per-store summary (`_last_run.json`) and an optional `ALERT_WEBHOOK_URL`. |
 | `scripts/render.yaml` | Reference spec for the worker + 1 GB disk mounted at `/app/data/enrich_cache`. |
-
-**Run a one-off locally:**
-
-```bash
-python scripts/run_scrape_cron.py                    # full --all --parallel sweep
-SCRAPE_ARGS="--all --dry-run" python scripts/run_scrape_cron.py   # no-op rehearsal
-```
-
-**Env knobs** (set on the worker; secrets copied from the `terpenomics` web service):
-
-| Var | Default | Meaning |
-|---|---|---|
-| `SCRAPE_RUN_AT_ET` | `09:00` | Daily run time, America/New_York |
-| `SCRAPE_RUN_ON_START` | `false` | Also run once immediately on deploy |
-| `SCRAPE_ARGS` | `--all --parallel` | Args passed to `scrape.py` |
-| `SCRAPE_TIMEOUT_SEC` | `5400` | Hard kill if one sweep runs longer |
-
-**Deploy:** Render Dashboard → New → Background Worker → pick this repo (Docker
-runtime), then transcribe the command, disk, and env vars from
-`scripts/render.yaml` and fill the `sync:false` secrets. (Render only auto-detects
-Blueprints from a root `render.yaml`; move the file back to the root if you want
-Blueprint sync instead.) Health check: `data/enrich_cache/_cron_status.json` on
-the disk records the last run's state/duration/exit code; logs stream to Render.
 
 ## Adding a new dispensary
 
