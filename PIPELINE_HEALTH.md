@@ -96,6 +96,7 @@ to decide (security, one store) and four are yours to run (below).
 | **Test suite red for four weeks** | 120 errors since 2026-09-06 (SQLite cannot compile JSONB/ARRAY); no CI; pytest not a dependency; bare `pytest` hit live APIs | type variants; `pytest.ini` (live tests opt-in); GitHub Actions with Postgres; **322 passing** |
 | Schema defined nowhere | `products` view only in a destructive reset script, and drifted; `listings.attributes` had no DDL; models.py lacked 3 live columns; no record of what ran | `db/migrations` + `scripts/db_migrate.py` (recorded, checksummed); `db/schema/pipeline.sql` snapshot; models updated |
 | Importer untestable | one 300-line `main()` over positional tuples | named records, overlays as functions; 19 integration tests against real Postgres 16 with the production schema |
+| Two scripts that damage production if run | `scripts/migrate.py` dropped every table (orders included) and rebuilt from models.py; `scripts/import_listings_rest.py` was a drifted importer with no verification, attributes or failure protection | deleted |
 
 ## Not changed — worth doing next
 
@@ -113,11 +114,9 @@ to decide (security, one store) and four are yours to run (below).
   now, but the scraper needs a better pagination strategy.
 - **The portal re-implements product identity in five places** with different NULL
   handling, and none includes `attributes`, so merch colour variants merge there.
-- **Dead or unsafe code:** `scripts/import_listings_rest.py` (a drifted importer with no
-  verification, attributes or failure protection — running it would now do damage),
-  `services/matching.py` (no callers), `ui/my-app/src/ListingMatch.tsx` (calls endpoints
-  that no longer exist), the root `generate_*.py` scripts, and `scripts/migrate.py`
-  (drops everything). Recommend deleting.
+- **Dead code:** `services/matching.py` (no callers), `ui/my-app/src/ListingMatch.tsx`
+  (calls endpoints that no longer exist) and the root `generate_*.py` scripts.
+  Recommend deleting.
 - Alleaves is wired to one store and its prices include tax, unlike every other scraper.
 - Haiku's batch endpoint is half price and latency is free for a nightly run.
 

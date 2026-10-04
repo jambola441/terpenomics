@@ -5,7 +5,7 @@
 A script that touches the database hangs, then dies:
 
 ```
-$ python scripts/migrate.py
+$ python scripts/db_migrate.py
   ... (long pause) ...
   OperationalError: connection to server at "aws-0-us-west-2.pooler.supabase.com",
   port 5432 failed: timeout expired
@@ -62,7 +62,7 @@ the API server runs with; treat a sandbox that holds it as production-adjacent.
 
 ### 2. Management API — arbitrary SQL and DDL
 
-Needed for the `migrate.py` class of work: `CREATE VIEW`, `DROP TABLE`, window
+Needed for schema work (`scripts/db_migrate.py --via-http`): `CREATE VIEW`, `DROP TABLE`, window
 functions, anything PostgREST cannot express. Requires one extra credential —
 a personal access token from https://supabase.com/dashboard/account/tokens —
 exposed as `SUPABASE_ACCESS_TOKEN`:

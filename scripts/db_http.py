@@ -15,7 +15,7 @@ Supabase serves the same database over two HTTPS APIs. This module wraps both:
     Cannot run DDL, joins, or aggregates.
   * Management API — arbitrary SQL, DDL included, using SUPABASE_ACCESS_TOKEN
     (a personal access token from supabase.com/dashboard/account/tokens).
-    Optional; only needed for the migrate.py class of work.
+    Optional; only needed for DDL (db_migrate.py --via-http).
 
 Scope: ad-hoc surgery, inspection, and migrations from a sandbox. Long batch
 jobs (enrich.py, import_listings.py) should still run where 5432 is reachable
