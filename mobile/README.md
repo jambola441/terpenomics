@@ -74,10 +74,15 @@ Admin screens stay web-only.
 
 ## Before the App Store
 
-App Store guideline 1.4.3 disallows apps that facilitate the sale of cannabis,
-with an exception for licensed cannabis dispensaries. terpenomics is a
-marketplace across dispensaries rather than a dispensary itself, so whether
-it qualifies, and which entity has to own the developer account, needs
-settling (and re-checking against the current guidelines) before investing in
-App Store submission. TestFlight internal testing does not go through App
-Review, so development can proceed regardless.
+Marketplaces like Leafly ship reserve-for-pickup apps on the App Store, so
+this is a known path. App Store guideline 1.4.3 restricts apps that facilitate
+cannabis sales. Apps like Leafly typically get through with:
+
+- an **organization** Apple Developer account (a registered business, not an
+  individual one);
+- a **21+ age gate** at sign-up, and a 17+ age rating in App Store Connect;
+- **geo-restriction** to where sale is legal (New York for now);
+- **no in-app payment** for cannabis. Pay-at-pickup already satisfies this.
+
+The age gate and geo-restriction aren't built yet. TestFlight internal testing
+skips App Review, so none of this blocks development.
