@@ -878,7 +878,8 @@ class PartnerMember(SQLModel, table=True):
     with that email (Google sign-in, which Supabase only issues for a verified
     address); `auth_user_id` is recorded on first sign-in so a later email change
     on the Google account does not lock the person out. Created by
-    db/migrations/0005_partner_members.sql.
+    scripts/migrate_add_pos_connectors.py, alongside the partner tables it
+    depends on (they are not in db/migrations).
     """
 
     __tablename__ = "partner_members"
