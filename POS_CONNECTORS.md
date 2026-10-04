@@ -97,8 +97,11 @@ unmatched orders inside the claim window, and purging contacts on orders past it
 
 ## Setup
 
-1. Create the Square app at developer.squareup.com. Set its OAuth redirect URL to
-   `<API base>/pos/oauth/square/callback`.
+1. Create the Square app at developer.squareup.com. Set its OAuth redirect URL
+   (Sandbox and Production tabs separately) to either the API's
+   `<API base>/pos/oauth/square/callback` or the admin site's
+   `https://terpenomics.generic.tech/pos/oauth/square/callback`. The admin-site
+   page (`ui/my-app/src/PosOAuthForward.tsx`) just forwards to the API's callback.
 2. Set these on the web service and the cron job (see `.env.example`):
    - `POS_CREDENTIALS_KEY`: must be the same value on both
    - `SQUARE_APPLICATION_ID`, `SQUARE_APPLICATION_SECRET`, `SQUARE_ENVIRONMENT`
