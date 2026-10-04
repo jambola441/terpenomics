@@ -188,12 +188,13 @@ are in [evals/enrich/README.md](evals/enrich/README.md#jev-classifies-code-sizes
 One design was rejected: Haiku writing the size inside its single call made sizes
 less stable between runs (19.6 rows against 12.9).
 
-**Catalog first.** A listing whose name is a recorded catalog product now takes the
-catalog's answer before any model is asked. With the top-50 bootstrap catalogs in
-place, that is 14% of the model-bound rows in the morning's five scrapes. Those
-answers agree with what Haiku stored on 99% of category, subtype, size and strain.
-The remaining disagreements are mostly product line, where the catalog's consensus
-is the point and which the importer applies anyway.
+**Catalog first.** A listing whose name — with or without the brand — is one a store
+already uses for a catalog product now takes the catalog's answer before any model is
+asked. With the top-50 bootstrap catalogs in place, that is 21% of the model-bound rows
+in the morning's five scrapes. Those answers agree with what Haiku stored on 100% of
+category, 99.5% of subtype, 99.1% of size and 97.8% of strain. The strain differences
+are spellings, and product line differs where stores split a line. The catalog's
+consensus wins both, as it already does at import.
 
 In dollars, the saving is small: about $9 → $5 for a full re-enrichment of the
 fleet, and cents on a normal day, when only new listings reach a model. The gains

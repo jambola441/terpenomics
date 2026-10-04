@@ -60,7 +60,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from brand_catalog import norm_name  # noqa: E402
+from brand_catalog import norm_name, strip_brand  # noqa: E402
 import catalog_store  # noqa: E402
 import jev  # noqa: E402
 import sizes  # noqa: E402
@@ -240,10 +240,16 @@ class CatalogIndex:
 
     # -- tiers -------------------------------------------------------------------
     def exact(self, name: str, category: str | None) -> tuple[str | None, str]:
-        ln = norm_name(name)
-        if ln and ln in self.by_term:
-            chosen = self._disambiguate(self.by_term[ln], category)
-            return (chosen, "exact") if chosen else (None, "ambiguous")
+        """The name is a catalog title, or a store name recorded for one product.
+
+        Compared with and without the brand's own words: recorded store names are
+        kept brand-less (catalog_bootstrap) and most stores put the brand in, so
+        without the second try a store's own name for a product would not match it.
+        """
+        for ln in dict.fromkeys((norm_name(name), strip_brand(name, self.brand_name))):
+            if ln and ln in self.by_term:
+                chosen = self._disambiguate(self.by_term[ln], category)
+                return (chosen, "exact") if chosen else (None, "ambiguous")
         return None, "none"
 
     def deterministic(self, name: str, category: str | None) -> tuple[str | None, float, str]:

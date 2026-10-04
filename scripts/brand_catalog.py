@@ -75,6 +75,21 @@ def norm_name(s: str) -> str:
     return re.sub(r"\s+", " ", s).strip()
 
 
+def strip_brand(name: str, brand: str | None) -> str:
+    """norm_name(name) without the brand's own words.
+
+    How a catalog records a store's name for a product (catalog_bootstrap), and how a
+    listing's name is compared with those records (catalog_match), so "Jetpacks - FJ
+    Mini Afghani" and "FJ Mini Afghani" are one name — most stores put the brand in,
+    some do not.
+    """
+    n = norm_name(name)
+    b = norm_name(brand or "")
+    if b:
+        n = re.sub(rf"\b{re.escape(b)}\b", " ", n)
+    return re.sub(r"\s+", " ", n).strip()
+
+
 def _fetch_json(url: str) -> dict:
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     with urllib.request.urlopen(req, timeout=TIMEOUT_SECONDS) as r:

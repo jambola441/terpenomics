@@ -20,7 +20,7 @@ import catalog_match  # noqa: E402
 import catalog_store  # noqa: E402
 import enrich  # noqa: E402
 import jev_classify  # noqa: E402
-from brand_catalog import norm_name  # noqa: E402
+from brand_catalog import strip_brand  # noqa: E402
 
 
 # --- catalog first -----------------------------------------------------------
@@ -36,7 +36,7 @@ STORE_NAMES = {
 def entry(key, name, category, subtype, strain, variant, line=None):
     return {"id": f"id-{key}", "product_key": key, "name": name, "category": category,
             "subtype": subtype, "strain": strain, "variant": variant, "product_line": line,
-            "is_active": True, "match_terms": [norm_name(STORE_NAMES[key])]}
+            "is_active": True, "match_terms": [strip_brand(STORE_NAMES[key], "Jetpacks")]}
 
 
 CATALOG = {"brand_name": "Jetpacks", "entries": [

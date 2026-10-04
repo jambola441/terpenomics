@@ -73,10 +73,13 @@ two spellings of one size never split a product.
 Steps 1–4 make no model call. On the gold suites, steps 5–6 are more accurate than
 Haiku alone, change fewer answers between runs, and cost 34% less (285.2 vs 278.7 of
 302 cases; [evals/enrich/README.md](evals/enrich/README.md#jev-classifies-code-sizes-haiku-writes-text-2026-10-04)).
-Step 4 would have answered 14% of today's model-bound rows once the top-50 bootstrap
-catalogs are pushed, more as catalogs grow. Its answers agreed with the stored
-category, subtype, size and strain on 99% of rows. The rest disagreed mainly on
-product line, where the catalog's consensus is the point. `ENRICH_CLASSIFIER=llm`
+Step 4 would have answered 21% of today's model-bound rows once the top-50 bootstrap
+catalogs are pushed, more as catalogs grow. A listing qualifies when its name, with
+or without the brand, is one a store has already used for that product — recorded in
+the catalog when it was built. Its answers agreed with the stored category, subtype
+and size on 99–100% of rows and strain on 98%. Strain differences are spellings
+("Grand Daddy Purple" vs "Granddaddy Purple"); product line differences are line
+splits. In both cases the catalog's consensus is the point. `ENRICH_CLASSIFIER=llm`
 puts every model-bound row through step 6, as before; `ENRICH_CATALOG_FIRST=0`
 skips step 4.
 

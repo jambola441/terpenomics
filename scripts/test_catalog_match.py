@@ -32,6 +32,18 @@ AYRLOOM = catalog(
 )
 
 
+def test_a_store_name_matches_with_or_without_the_brand():
+    """Recorded store names are kept brand-less (catalog_bootstrap); most stores put
+    the brand in. Both are the store's own name for the product."""
+    idx = cm.CatalogIndex(catalog({"name": "mood: bliss", "category": "vaporizers",
+                                   "product_line": "Mood", "strain": "Bliss", "variant": "1g",
+                                   "match_terms": ["mood bliss 1g all in one"]}))
+    for name in ("Mood Bliss 1g All-In-One", "Ayrloom | Mood Bliss 1g All-In-One",
+                 "AYRLOOM - Mood: Bliss 1g All in One"):
+        assert idx.exact(name, "vaporizers")[1] == "exact", name
+    assert idx.exact("Ayrloom Mood Bliss 1g All-In-One Rechargeable", "vaporizers")[1] == "none"
+
+
 class TestSizes:
     @pytest.mark.parametrize("texts,cat,expect", [
         (("0.6g", "FJ-Mini Infused Pre-roll | 0.6G"), "preroll", sizes.Size(grams=0.6)),

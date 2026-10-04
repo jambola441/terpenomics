@@ -69,7 +69,7 @@ from datetime import datetime, timezone
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import catalog_store  # noqa: E402
 import sizes  # noqa: E402
-from brand_catalog import norm_name  # noqa: E402
+from brand_catalog import strip_brand  # noqa: E402
 from scraper_common import slugify  # noqa: E402
 
 import taxonomy  # noqa: E402
@@ -87,15 +87,6 @@ def squash(s: str | None) -> str:
 def _mode(values, default=None):
     vals = [v for v in values if v]
     return Counter(vals).most_common(1)[0][0] if vals else default
-
-
-def _strip_brand(name: str, brand: str) -> str:
-    """The listing name without the brand, normalised — what match_terms hold."""
-    n = norm_name(name)
-    b = norm_name(brand)
-    if b:
-        n = re.sub(rf"\b{re.escape(b)}\b", " ", n)
-    return re.sub(r"\s+", " ", n).strip()
 
 
 @dataclass
@@ -200,7 +191,7 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
         strain = _mode([l["strain"].strip() for l in g.listings])
         line = line_spelling.get(g.line_key) if g.line_key else None
         product_key = f"lb:{g.category}:{g.subtype}:{g.line_key}:{g.strain_key}"
-        terms = Counter(_strip_brand(l["name"], brand) for l in g.listings)
+        terms = Counter(strip_brand(l["name"], brand) for l in g.listings)
         entries.append({
             "external_id": f"{product_key}:{g.size_key or 'nosize'}",
             "product_key": product_key,
