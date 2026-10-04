@@ -46,6 +46,10 @@ import type {
   PosConnection,
   PosSyncRun,
   PosOrderPage,
+  PartnerMember,
+  PartnerMe,
+  PartnerPortalDetail,
+  PartnerPosOrder,
 } from '../types'
 
 // Get API base URL from environment variable or use default
@@ -475,6 +479,47 @@ export const api = {
 
     orders: (params: { partner_id?: string; unmatched?: boolean; limit?: number; offset?: number }) =>
       authenticatedFetch<PosOrderPage>(`/admin/pos-orders${buildQueryString(params)}`),
+
+    /** Let someone sign in to this partner's /partner dashboard with Google as `email`. */
+    inviteMember: (partnerId: string, email: string) =>
+      authenticatedFetch<PartnerMember>(`/admin/partners/${partnerId}/members`, {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      }),
+
+    removeMember: (memberId: string) =>
+      authenticatedFetch<{ ok: boolean }>(`/admin/partner-members/${memberId}`, { method: 'DELETE' }),
+  },
+
+  /**
+   * The partner's own portal (/partner). Same signed-in Supabase session as
+   * everything else; the API only answers for partners this person was invited to.
+   */
+  partnerPortal: {
+    me: () => authenticatedFetch<PartnerMe>(`/partner/me`),
+
+    get: (partnerId: string) =>
+      authenticatedFetch<PartnerPortalDetail>(`/partner/partners/${partnerId}`),
+
+    startOAuth: (partnerId: string, provider = 'square') =>
+      authenticatedFetch<{ authorize_url: string }>(`/partner/partners/${partnerId}/oauth/${provider}/start`),
+
+    setConnectionStatus: (partnerId: string, connectionId: string, status: 'active' | 'disabled') =>
+      authenticatedFetch<PosConnection>(`/partner/partners/${partnerId}/connections/${connectionId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+      }),
+
+    disconnect: (partnerId: string, connectionId: string) =>
+      authenticatedFetch<PosConnection>(`/partner/partners/${partnerId}/connections/${connectionId}`, { method: 'DELETE' }),
+
+    runs: (partnerId: string, connectionId: string) =>
+      authenticatedFetch<PosSyncRun[]>(`/partner/partners/${partnerId}/connections/${connectionId}/runs`),
+
+    orders: (partnerId: string, params: { members_only?: boolean; limit?: number; offset?: number }) =>
+      authenticatedFetch<{ total: number; items: PartnerPosOrder[] }>(
+        `/partner/partners/${partnerId}/orders${buildQueryString(params)}`,
+      ),
   },
 
   adminOrders: {

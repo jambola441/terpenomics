@@ -20,6 +20,7 @@ Tables:
   pos_order_items     its lines
   pos_customer_links  POS customer id -> Terpee customer, once known
   pos_sync_runs       one row per sync, for the admin UI
+  partner_members     who may sign in to a partner's /partner dashboard
 
 Idempotent — safe to re-run.
 
@@ -156,11 +157,26 @@ CREATE TABLE IF NOT EXISTS pos_sync_runs (
 );
 CREATE INDEX IF NOT EXISTS ix_pos_sync_runs_connection_id ON pos_sync_runs (connection_id);
 CREATE INDEX IF NOT EXISTS ix_pos_sync_runs_started_at ON pos_sync_runs (started_at);
+
+-- Partner logins. An admin invites an email; whoever signs in with Google as that
+-- address gets in, and their Supabase user id is recorded on first sign-in.
+CREATE TABLE IF NOT EXISTS partner_members (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  partner_id    uuid NOT NULL REFERENCES partners(id) ON DELETE CASCADE,
+  email         text NOT NULL,           -- lower-cased
+  auth_user_id  uuid,
+  invited_at    timestamptz NOT NULL DEFAULT now(),
+  last_login_at timestamptz,
+  CONSTRAINT partner_members_partner_email_key UNIQUE (partner_id, email)
+);
+CREATE INDEX IF NOT EXISTS ix_partner_members_partner_id ON partner_members (partner_id);
+CREATE INDEX IF NOT EXISTS ix_partner_members_email ON partner_members (email);
+CREATE INDEX IF NOT EXISTS ix_partner_members_auth_user_id ON partner_members (auth_user_id);
 """
 
 TABLES = (
     "partners", "pos_connections", "partner_locations", "pos_orders",
-    "pos_order_items", "pos_customer_links", "pos_sync_runs",
+    "pos_order_items", "pos_customer_links", "pos_sync_runs", "partner_members",
 )
 
 

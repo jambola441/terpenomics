@@ -869,3 +869,29 @@ class PosSyncRun(SQLModel, table=True):
     orders_matched:  int = Field(default=0, nullable=False)
 
     error: Optional[str] = Field(default=None, sa_type=Text)
+
+
+class PartnerMember(SQLModel, table=True):
+    """Someone allowed into a partner's /partner dashboard.
+
+    Invited by email from the admin UI. Access is granted to whoever signs in
+    with that email (Google sign-in, which Supabase only issues for a verified
+    address); `auth_user_id` is recorded on first sign-in so a later email change
+    on the Google account does not lock the person out. Created by
+    scripts/migrate_add_pos_connectors.py, alongside the partner tables it
+    depends on (they are not in db/migrations).
+    """
+
+    __tablename__ = "partner_members"
+    __table_args__ = (
+        UniqueConstraint("partner_id", "email", name="partner_members_partner_email_key"),
+    )
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    partner_id:   UUID           = Field(foreign_key="partners.id", index=True, nullable=False)
+    email:        str            = Field(nullable=False, sa_type=Text, index=True)  # lower-cased
+    auth_user_id: Optional[UUID] = Field(default=None, index=True)
+
+    invited_at:    datetime           = Field(default_factory=utcnow_tz, sa_column=_tz_column("invited_at", nullable=False))
+    last_login_at: Optional[datetime] = Field(default=None, sa_column=_tz_column("last_login_at"))
