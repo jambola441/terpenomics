@@ -1,0 +1,18 @@
+import { Stack } from 'expo-router'
+import { t } from '@/lib/theme'
+
+export default function ShopLayout() {
+  return (
+    <Stack
+      screenOptions={{
+        headerStyle: { backgroundColor: t.bg },
+        headerTintColor: t.text1,
+        headerShadowVisible: false,
+        contentStyle: { backgroundColor: t.bg },
+      }}
+    >
+      <Stack.Screen name="index" options={{ title: 'Shop' }} />
+      <Stack.Screen name="[category]" options={{ title: '' }} />
+    </Stack>
+  )
+}
