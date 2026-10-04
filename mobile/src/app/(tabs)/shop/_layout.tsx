@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router'
+import CartButton from '@/components/CartButton'
 import { t } from '@/lib/theme'
 
 export default function ShopLayout() {
@@ -8,6 +9,7 @@ export default function ShopLayout() {
         headerStyle: { backgroundColor: t.bg },
         headerTintColor: t.text1,
         headerShadowVisible: false,
+        headerRight: () => <CartButton />,
         contentStyle: { backgroundColor: t.bg },
       }}
     >

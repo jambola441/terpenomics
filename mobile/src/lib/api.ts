@@ -100,6 +100,10 @@ export const api = {
   },
 
   orders: {
+    /** Prices come from the listings server-side; the client never sends a total. */
+    create: (payload: { dispensary_id: string; items: { listing_id: string; quantity: number }[]; note?: string }) =>
+      authed<Order>(`/me/orders`, post(payload)),
+
     list: (params?: { limit?: number; offset?: number }) => authed<Order[]>(`/me/orders${query(params)}`),
     get: (orderId: string) => authed<Order>(`/me/orders/${orderId}`),
     cancel: (orderId: string) => authed<Order>(`/me/orders/${orderId}/cancel`, post()),

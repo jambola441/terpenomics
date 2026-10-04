@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { Alert, FlatList, RefreshControl } from 'react-native'
+import { useFocusEffect } from 'expo-router'
 import { api } from '@/lib/api'
 import { useFetch } from '@/lib/useFetch'
 import OrderCard from '@/components/OrderCard'
@@ -9,6 +10,17 @@ import { t, space } from '@/lib/theme'
 export default function Orders() {
   const { data, setData, error, loading, refreshing, refresh } = useFetch('orders', () => api.orders.list())
   const [cancelling, setCancelling] = useState<string | null>(null)
+
+  // An order placed from the cart, or marked ready by the store, should show
+  // up on return to this tab, not only after a pull. Skip the first focus,
+  // which the initial load already covers.
+  const focused = useRef(false)
+  useFocusEffect(
+    useCallback(() => {
+      if (focused.current) refresh()
+      focused.current = true
+    }, [refresh]),
+  )
 
   function confirmCancel(orderId: string) {
     Alert.alert('Cancel this order?', 'The store will be told not to hold it for you.', [

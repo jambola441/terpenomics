@@ -2,10 +2,14 @@ import { createContext, use, useEffect, useState, type PropsWithChildren } from 
 import type { Session } from '@supabase/supabase-js'
 import supabase from './supabase'
 import { api } from './api'
+import { confirmAge as storeAgeConfirmation, isAgeConfirmed } from './ageGate'
 
 type AuthState = {
   /** undefined while the stored session is still being read from the Keychain. */
   session: Session | null | undefined
+  /** undefined while being read from the Keychain. Asked once, before sign-in. */
+  ageConfirmed: boolean | undefined
+  confirmAge: () => Promise<void>
   signInWithSms: (challengeId: string, code: string) => Promise<void>
   signOut: () => Promise<void>
 }
@@ -20,8 +24,10 @@ export function useAuth(): AuthState {
 
 export function AuthProvider({ children }: PropsWithChildren) {
   const [session, setSession] = useState<Session | null | undefined>(undefined)
+  const [ageConfirmed, setAgeConfirmed] = useState<boolean | undefined>(undefined)
 
   useEffect(() => {
+    isAgeConfirmed().then(setAgeConfirmed)
     supabase.auth.getSession().then(({ data }) => setSession(data.session ?? null))
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => setSession(s))
     return () => subscription.unsubscribe()
@@ -46,9 +52,14 @@ export function AuthProvider({ children }: PropsWithChildren) {
     }
   }
 
+  async function confirmAge() {
+    await storeAgeConfirmation()
+    setAgeConfirmed(true)
+  }
+
   async function signOut() {
     await supabase.auth.signOut()
   }
 
-  return <AuthContext.Provider value={{ session, signInWithSms, signOut }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ session, ageConfirmed, confirmAge, signInWithSms, signOut }}>{children}</AuthContext.Provider>
 }

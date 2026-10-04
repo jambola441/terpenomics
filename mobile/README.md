@@ -47,12 +47,19 @@ Before declaring a change done: `npm run typecheck` and `npx expo lint`.
 
 | Screen | Route | Backend |
 | --- | --- | --- |
+| 21+ age gate (once per device) | `src/app/age-gate.tsx` | none; stored in the Keychain |
 | SMS sign-in | `src/app/sign-in.tsx` | `/auth/sms/start`, `/auth/sms/verify`, then `/me/link-customer` on first login |
 | Home feed (combined) | `src/app/(tabs)/index.tsx` | `/me/feed?view=combined` |
 | Shop → category | `src/app/(tabs)/shop/` | `/customer/categories`, `/customer/categories/{name}`, `/customer/products/detail` |
 | Listing detail | `src/app/listing/[dispensaryId]/[listingId].tsx` | `/customer/dispensaries/{id}/listings/{id}` |
+| Cart → reserve for pickup | `src/app/cart.tsx` | location check (`src/lib/region.ts`), then `POST /me/orders` |
 | Orders (with cancel) | `src/app/(tabs)/orders.tsx` | `/me/orders`, `/me/orders/{id}/cancel` |
 | You | `src/app/(tabs)/profile.tsx` | `/me`, `/me/preferred-dispensaries` |
+
+The cart holds one store's items at a time, because an order goes to one
+store. Adding from a second store asks before replacing the cart. It enforces
+the same per-line and line-count limits as `routes/orders.py`. It is in memory
+only and resets on sign-out.
 
 The session lives in the iOS Keychain (`src/lib/supabase.ts`), chunked
 because a Supabase session can exceed what SecureStore advises per value.
@@ -61,14 +68,12 @@ because a Supabase session can exceed what SecureStore advises per value.
 
 Roughly in order of value:
 
-1. **Cart and checkout**: the web `CartDrawer` + `Checkout` → `POST /me/orders`.
-   Without it the app browses and tracks orders but can't place one.
-2. **Cross-store product page** (`ProductView`); category taps currently jump
+1. **Cross-store product page** (`ProductView`); category taps currently jump
    to the cheapest store's listing instead.
-3. **Brands** and **Search** tabs.
-4. **Map** and following/unfollowing stores (`react-native-maps` replaces
+2. **Brands** and **Search** tabs.
+3. **Map** and following/unfollowing stores (`react-native-maps` replaces
    Leaflet). Until then, stores are followed on the web.
-5. Per-store feed view, price/terpene filters, purchase feedback.
+4. Per-store feed view, price/terpene filters, purchase feedback.
 
 Admin screens stay web-only.
 
@@ -78,11 +83,15 @@ Marketplaces like Leafly ship reserve-for-pickup apps on the App Store, so
 this is a known path. App Store guideline 1.4.3 restricts apps that facilitate
 cannabis sales. Apps like Leafly typically get through with:
 
-- an **organization** Apple Developer account (a registered business, not an
-  individual one);
-- a **21+ age gate** at sign-up, and a 17+ age rating in App Store Connect;
-- **geo-restriction** to where sale is legal (New York for now);
-- **no in-app payment** for cannabis. Pay-at-pickup already satisfies this.
+- [ ] an **organization** Apple Developer account (a registered business, not
+  an individual one);
+- [x] a **21+ age gate** before sign-in (`src/app/age-gate.tsx`). Also set a
+  17+ age rating in App Store Connect;
+- [x] **geo-restriction**: placing an order requires the device to be in New
+  York (`src/lib/region.ts`). Browsing works anywhere. Also limit App Store
+  availability to the US;
+- [x] **no in-app payment** for cannabis. Orders are pay-at-pickup.
 
-The age gate and geo-restriction aren't built yet. TestFlight internal testing
-skips App Review, so none of this blocks development.
+Known gaps: the age confirmation is device-local self-attestation (the
+backend has no date-of-birth field), and the location check is client-side
+only. Neither is enforced by the API.

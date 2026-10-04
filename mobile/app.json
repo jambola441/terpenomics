@@ -27,7 +27,13 @@
       "expo-router",
       "expo-secure-store",
       "expo-image",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Terpenomics checks that you are in New York, where reserving cannabis for pickup is legal, before placing an order."
+        }
+      ]
     ],
     "scheme": "terpenomics",
     "experiments": {
