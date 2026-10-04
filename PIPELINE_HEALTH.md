@@ -115,7 +115,7 @@ decide (security) and four are yours to run (below).
 
 | finding | evidence | status |
 | --- | --- | --- |
-| **Test suite red for four weeks** | 120 errors since 2026-09-06 (SQLite cannot compile JSONB/ARRAY); no CI; pytest not a dependency; bare `pytest` hit live APIs | type variants; `pytest.ini` (live tests opt-in); GitHub Actions with Postgres; **322 passing** |
+| **Test suite red for four weeks** | 120 errors since 2026-09-06 (SQLite cannot compile JSONB/ARRAY); no CI; pytest not a dependency; bare `pytest` hit live APIs | type variants; `pytest.ini` (live tests opt-in); GitHub Actions with Postgres; **393 passing** |
 | Schema defined nowhere | `products` view only in a destructive reset script, and drifted; `listings.attributes` had no DDL; models.py lacked 3 live columns; no record of what ran | `db/migrations` + `scripts/db_migrate.py` (recorded, checksummed); `db/schema/pipeline.sql` snapshot; models updated |
 | Importer untestable | one 300-line `main()` over positional tuples | named records, overlays as functions; 19 integration tests against real Postgres 16 with the production schema |
 | Two scripts that damage production if run | `scripts/migrate.py` dropped every table (orders included) and rebuilt from models.py; `scripts/import_listings_rest.py` was a drifted importer with no verification, attributes or failure protection | deleted |
