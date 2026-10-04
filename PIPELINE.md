@@ -52,8 +52,10 @@ every time one was made.
 
 A listing whose enrichment failed (`enrich_failed` in the CSV — a batch error, or no
 API key) keeps its stored identity at import instead of having fallbacks written over
-it. Sizes are parsed as numbers by [`scripts/sizes.py`](scripts/sizes.py)
-(`5pk x 0.6g` = `3g`), never by a model.
+it. The size itself still comes from the model (`normalize_variant` standardises its
+units); catalog matching and the bootstrap compare sizes as numbers parsed by
+[`scripts/sizes.py`](scripts/sizes.py) (`5pk x 0.6g` = `3g`, `1/8 oz` = `3.5g`), so
+two spellings of one size never split a product.
 
 ## Brand catalogs
 

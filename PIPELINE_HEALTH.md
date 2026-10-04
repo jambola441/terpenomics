@@ -109,7 +109,8 @@ to decide (security, one store) and four are yours to run (below).
   that store's day. It is now visible and retried tomorrow; decoupling (scrape → CSV,
   then enrich the CSV) is the cleaner end state.
 - **The enriched variant is part of the listing key**, so a model changing a size
-  re-keys a listing. Mitigated for failed rows only.
+  re-keys a listing. Mitigated for failed rows only. The size still comes from the
+  model; `sizes.py` (used by matching) could parse most of them deterministically.
 - **Flowhub never reaches its reported total** (94% after 50 passes). Imported safely
   now, but the scraper needs a better pagination strategy.
 - **The portal re-implements product identity in five places** with different NULL
