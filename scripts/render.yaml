@@ -52,3 +52,31 @@ services:
         value: "false"      # set "true" to also scrape immediately on deploy
       - key: PYTHONUNBUFFERED
         value: "1"          # stream logs in real time to Render
+
+  # Partner POS order sync — see POS_CONNECTORS.md. A cron job, not a worker:
+  # unlike the scraper it needs no disk, and every run is independent (the
+  # cursor lives in pos_connections). Like the worker above, create it from the
+  # dashboard (New -> Cron Job) unless this file is moved to the repo root.
+  - type: cron
+    name: terpenomics-pos-sync
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerCommand: python scripts/pos_sync.py
+    schedule: "*/15 * * * *"   # every 15 minutes
+    plan: starter
+    region: oregon             # TODO: match the region of the existing services
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: POS_CREDENTIALS_KEY
+        sync: false            # must be the same key the web service uses
+      - key: SQUARE_APPLICATION_ID
+        sync: false
+      - key: SQUARE_APPLICATION_SECRET
+        sync: false
+      - key: SQUARE_ENVIRONMENT
+        value: production
+      - key: PYTHONUNBUFFERED
+        value: "1"

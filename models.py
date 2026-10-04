@@ -603,3 +603,255 @@ class PhoneAuthChallenge(SQLModel, table=True):
     attempts:    int                = Field(default=0, nullable=False)
     consumed_at: Optional[datetime] = Field(default=None)
     request_ip:  Optional[str]      = Field(default=None, max_length=64, index=True)
+
+
+# ---------------------------
+# Partner stores + POS connectors
+# ---------------------------
+#
+# Partners are non-dispensary businesses whose customers earn Terpee points.
+# They are not `Dispensary` rows: they have no menu, no listings and no pickup,
+# and their orders must not feed cannabis recommendations, so they also never
+# become `Purchase` rows. `pos_orders` is the record of what was bought at a
+# partner, and the points ledger reads from it.
+#
+# These tables were created by scripts/migrate_add_pos_connectors.py. The classes
+# below map onto them; change the migration first. Timestamps are timestamptz, as
+# with the brand-catalog tables.
+#
+# String columns stand in for enums (status, provider, state). A Postgres enum
+# type needs a migration for every new provider or state, and providers are
+# exactly the thing this module is built to add.
+
+# JSONB in Postgres, plain JSON elsewhere, so the tables also build on the
+# SQLite the test suite runs against.
+_JSON = JSON().with_variant(JSONB(), "postgresql")
+
+
+def _tz_column(name: str, nullable: bool = True, index: bool = False) -> Column:
+    return Column(name, DateTime(timezone=True), nullable=nullable, index=index)
+
+
+class PosProvider(str, Enum):
+    square = "square"
+
+
+class PosConnectionStatus(str, Enum):
+    active   = "active"     # syncing
+    error    = "error"      # repeated failures; skipped until an admin re-enables it
+    disabled = "disabled"   # paused by an admin; credentials kept
+    revoked  = "revoked"    # disconnected; credentials discarded, orders kept
+
+
+class PosOrderKind(str, Enum):
+    sale   = "sale"
+    # A return order references the sale it returns (source_external_order_id).
+    # Square records an itemized return as its own order rather than editing the
+    # original, so a sale's net value is its total minus the returns that point
+    # at it.
+    return_ = "return"
+
+
+class PosOrderState(str, Enum):
+    open      = "open"
+    completed = "completed"
+    canceled  = "canceled"
+
+
+class Partner(SQLModel, table=True):
+    __tablename__ = "partners"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    name:      str           = Field(nullable=False, sa_type=Text)
+    slug:      str           = Field(nullable=False, sa_type=Text, sa_column_kwargs={"unique": True})
+    is_active: bool          = Field(default=True, nullable=False)
+    logo_url:  Optional[str] = Field(default=None, sa_type=Text)
+
+    created_at: datetime = Field(default_factory=utcnow_tz, sa_column=_tz_column("created_at", nullable=False))
+    updated_at: datetime = Field(default_factory=utcnow_tz, sa_column=_tz_column("updated_at", nullable=False))
+
+
+class PosConnection(SQLModel, table=True):
+    """One partner's authorization to read one POS merchant account.
+
+    `credentials` is a Fernet token (connectors/crypto.py), never plaintext, and
+    never returned by the API. `sync_cursor` is the high-water mark of the POS's
+    own `updated_at` across orders already ingested; the sync reads from a little
+    before it, so the overlap is re-read and absorbed by the upsert.
+    """
+
+    __tablename__ = "pos_connections"
+    __table_args__ = (
+        UniqueConstraint("provider", "external_merchant_id", name="pos_connections_provider_merchant_key"),
+    )
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    partner_id:           UUID          = Field(foreign_key="partners.id", index=True, nullable=False)
+    provider:             str           = Field(nullable=False, sa_type=Text)
+    status:               str           = Field(default=PosConnectionStatus.active.value, nullable=False, sa_type=Text)
+    external_merchant_id: str           = Field(nullable=False, sa_type=Text)
+    credentials:          Optional[str] = Field(default=None, sa_type=Text)
+    scopes:               Optional[str] = Field(default=None, sa_type=Text)
+
+    token_expires_at:      Optional[datetime] = Field(default=None, sa_column=_tz_column("token_expires_at"))
+    sync_cursor:           Optional[datetime] = Field(default=None, sa_column=_tz_column("sync_cursor"))
+    # Lease, not history: set when a sync claims the connection, cleared when it
+    # finishes. A stale lease (a crashed run) is taken over after a timeout.
+    sync_locked_at:        Optional[datetime] = Field(default=None, sa_column=_tz_column("sync_locked_at"))
+    last_synced_at:        Optional[datetime] = Field(default=None, sa_column=_tz_column("last_synced_at"))
+    last_error:            Optional[str]      = Field(default=None, sa_type=Text)
+    consecutive_failures:  int                = Field(default=0, nullable=False)
+
+    created_at: datetime = Field(default_factory=utcnow_tz, sa_column=_tz_column("created_at", nullable=False))
+    updated_at: datetime = Field(default_factory=utcnow_tz, sa_column=_tz_column("updated_at", nullable=False))
+
+
+class PartnerLocation(SQLModel, table=True):
+    """A physical store, as the POS knows it.
+
+    Imported from the POS when a connection is made. Orders from an inactive
+    location are still ingested -- deactivating is a points decision, not a data
+    one -- but the ledger can skip them.
+    """
+
+    __tablename__ = "partner_locations"
+    __table_args__ = (
+        UniqueConstraint("connection_id", "external_location_id", name="partner_locations_connection_location_key"),
+    )
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    partner_id:           UUID           = Field(foreign_key="partners.id", index=True, nullable=False)
+    connection_id:        Optional[UUID] = Field(default=None, foreign_key="pos_connections.id", index=True)
+    external_location_id: Optional[str]  = Field(default=None, sa_type=Text)
+    name:                 str            = Field(nullable=False, sa_type=Text)
+    address:              Optional[str]  = Field(default=None, sa_type=Text)
+    timezone:             Optional[str]  = Field(default=None, sa_type=Text)
+    is_active:            bool           = Field(default=True, nullable=False)
+
+    created_at: datetime = Field(default_factory=utcnow_tz, sa_column=_tz_column("created_at", nullable=False))
+    updated_at: datetime = Field(default_factory=utcnow_tz, sa_column=_tz_column("updated_at", nullable=False))
+
+
+class PosOrder(SQLModel, table=True):
+    """An order rung up at a partner, matched to a customer or not yet.
+
+    Upserted on (connection_id, external_order_id): a re-fetch rewrites the row,
+    which is how a later completion, cancellation or refund arrives. `raw` keeps
+    the provider's payload so normalization can be re-run without re-fetching.
+
+    Matching (connectors/matching.py) fills `customer_id`. An order that is still
+    unmatched after the claim window has its contact fields and `raw` cleared:
+    we hold a non-member's phone number only as long as they could still claim.
+    """
+
+    __tablename__ = "pos_orders"
+    __table_args__ = (
+        UniqueConstraint("connection_id", "external_order_id", name="pos_orders_connection_order_key"),
+        Index("pos_orders_unmatched_idx", "ordered_at", postgresql_where=text("customer_id IS NULL")),
+    )
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    connection_id:        UUID           = Field(foreign_key="pos_connections.id", index=True, nullable=False)
+    partner_id:           UUID           = Field(foreign_key="partners.id", index=True, nullable=False)
+    partner_location_id:  Optional[UUID] = Field(default=None, foreign_key="partner_locations.id", index=True)
+
+    external_order_id:        str           = Field(nullable=False, sa_type=Text)
+    external_location_id:     Optional[str] = Field(default=None, sa_type=Text)
+    kind:                     str           = Field(default=PosOrderKind.sale.value, nullable=False, sa_type=Text)
+    source_external_order_id: Optional[str] = Field(default=None, sa_type=Text, index=True)
+    state:                    str           = Field(nullable=False, sa_type=Text)
+
+    currency:       str = Field(default="USD", nullable=False, sa_type=Text)
+    total_cents:    int = Field(default=0, nullable=False)
+    tax_cents:      int = Field(default=0, nullable=False)
+    tip_cents:      int = Field(default=0, nullable=False)
+    discount_cents: int = Field(default=0, nullable=False)
+    # Refunds recorded on this order itself (as opposed to return orders that
+    # point at it). Kept separate so the ledger can see both shapes.
+    refunded_cents: int = Field(default=0, nullable=False)
+
+    external_customer_id: Optional[str] = Field(default=None, sa_type=Text)
+    customer_phone:       Optional[str] = Field(default=None, sa_type=Text, index=True)  # E.164
+    customer_email:       Optional[str] = Field(default=None, sa_type=Text)
+
+    customer_id: Optional[UUID]     = Field(default=None, foreign_key="customers.id", index=True)
+    matched_via: Optional[str]      = Field(default=None, sa_type=Text)  # link | phone | receipt
+    matched_at:  Optional[datetime] = Field(default=None, sa_column=_tz_column("matched_at"))
+    contact_purged_at: Optional[datetime] = Field(default=None, sa_column=_tz_column("contact_purged_at"))
+
+    ordered_at:          datetime           = Field(sa_column=_tz_column("ordered_at", nullable=False))
+    closed_at:           Optional[datetime] = Field(default=None, sa_column=_tz_column("closed_at"))
+    external_updated_at: datetime           = Field(sa_column=_tz_column("external_updated_at", nullable=False))
+
+    raw: Optional[dict] = Field(default=None, sa_column=Column("raw", _JSON, nullable=True))
+
+    first_seen_at:  datetime = Field(default_factory=utcnow_tz, sa_column=_tz_column("first_seen_at", nullable=False))
+    last_synced_at: datetime = Field(default_factory=utcnow_tz, sa_column=_tz_column("last_synced_at", nullable=False))
+
+    items: list["PosOrderItem"] = Relationship(
+        back_populates="order",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    )
+
+
+class PosOrderItem(SQLModel, table=True):
+    """One line of a partner order. Replaced wholesale when the order is re-fetched."""
+
+    __tablename__ = "pos_order_items"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    order_id:         UUID          = Field(foreign_key="pos_orders.id", index=True, nullable=False)
+    external_line_id: Optional[str] = Field(default=None, sa_type=Text)
+    external_sku:     Optional[str] = Field(default=None, sa_type=Text)
+    name:             str           = Field(nullable=False, sa_type=Text)
+    variation:        Optional[str] = Field(default=None, sa_type=Text)
+    # The POS's quantity verbatim: Square sends decimals ("1.5" lb of coffee).
+    quantity:         str           = Field(default="1", nullable=False, sa_type=Text)
+    total_cents:      int           = Field(default=0, nullable=False)
+
+    order: PosOrder = Relationship(back_populates="items")
+
+
+class PosCustomerLink(SQLModel, table=True):
+    """A POS customer profile known to be a Terpee customer.
+
+    Written whenever an order is matched and carries the POS's customer id, so a
+    customer matched once -- by phone or by a receipt -- matches automatically on
+    every later order, even ones rung up without their phone number.
+    """
+
+    __tablename__ = "pos_customer_links"
+
+    connection_id:        UUID = Field(foreign_key="pos_connections.id", primary_key=True)
+    external_customer_id: str  = Field(primary_key=True, sa_type=Text)
+    customer_id:          UUID = Field(foreign_key="customers.id", index=True, nullable=False)
+    linked_via:           str  = Field(nullable=False, sa_type=Text)
+
+    created_at: datetime = Field(default_factory=utcnow_tz, sa_column=_tz_column("created_at", nullable=False))
+
+
+class PosSyncRun(SQLModel, table=True):
+    """One sync of one connection: what was asked for and what came back."""
+
+    __tablename__ = "pos_sync_runs"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    connection_id: UUID = Field(foreign_key="pos_connections.id", index=True, nullable=False)
+    status:        str  = Field(default="running", nullable=False, sa_type=Text)  # running | ok | error
+
+    since:       Optional[datetime] = Field(default=None, sa_column=_tz_column("since"))
+    started_at:  datetime           = Field(default_factory=utcnow_tz, sa_column=_tz_column("started_at", nullable=False, index=True))
+    finished_at: Optional[datetime] = Field(default=None, sa_column=_tz_column("finished_at"))
+
+    orders_fetched:  int = Field(default=0, nullable=False)
+    orders_inserted: int = Field(default=0, nullable=False)
+    orders_updated:  int = Field(default=0, nullable=False)
+    orders_matched:  int = Field(default=0, nullable=False)
+
+    error: Optional[str] = Field(default=None, sa_type=Text)
