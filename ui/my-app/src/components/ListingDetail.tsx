@@ -31,7 +31,8 @@ import { formatDist, formatDollars, haversineMi } from '../utils/format'
 interface Props {
   dispensaryId: string
   listingId: string
-  onAddToCart?: (item: CartItem) => void
+  /** Returns false when the shopper declined (e.g. a cart from another store). */
+  onAddToCart?: (item: CartItem) => boolean | void
   cartQuantity?: number
   /** The same product at another store. */
   onOpenListing?: (dispensaryId: string, listingId: string) => void
@@ -111,7 +112,7 @@ export default function ListingDetailView({
 
   function handleAddToCart() {
     if (!onAddToCart || !listing) return
-    onAddToCart({
+    const added = onAddToCart({
       listingId: listing.id,
       dispensaryId: listing.dispensary_id,
       dispensarySlug: listing.dispensary_slug,
@@ -124,6 +125,7 @@ export default function ListingDetailView({
       image_url: listing.image_url ?? null,
       quantity: 1,
     })
+    if (added === false) return
     setAddedFlash(true)
     setTimeout(() => setAddedFlash(false), 1500)
   }
