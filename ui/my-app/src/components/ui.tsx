@@ -6,7 +6,7 @@
 
 import { useState } from 'react'
 import type { CSSProperties, ReactNode, PointerEvent } from 'react'
-import { t, radius, motion, font, categoryColor, categoryImage, alpha } from '../theme'
+import { t, radius, font, categoryColor, categoryImage, alpha } from '../theme'
 
 /* ── Spinner ───────────────────────────────────────────────────────────────── */
 

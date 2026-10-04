@@ -1,7 +1,6 @@
 import Login from './Login'
 import AuthCallback from './AuthCallback'
 import AdminHome from './AdminHome'
-import AddProduct from './AddProduct'
 import Products from './Products'
 import ProductDetail from './ProductDetail'
 import Customers from './Customers'
@@ -17,7 +16,6 @@ import CustomerRegister from './CustomerRegister'
 import CustomerPortal from './CustomerPortal'
 import LabReportUpload from './LabReportUpload'
 import LabReportDetail from './LabReportDetail'
-import ListingMatch from './ListingMatch'
 import Listings from './Listings'
 import AdminListingDetail from './AdminListingDetail'
 
@@ -31,7 +29,6 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/admin" element={<AdminHome />} />
-        <Route path="/admin/add-product" element={<AddProduct />} />
         <Route path="/admin/products" element={<Products />} />
         <Route path="/admin/products/detail" element={<ProductDetail />} />
         <Route path="/admin/customers" element={<Customers />} />
@@ -47,7 +44,6 @@ function App() {
         <Route path="/admin/dispensaries/:dispensaryId" element={<DispensaryEdit />} />
         <Route path="/admin/dispensaries/:dispensaryId/listings" element={<DispensaryListingsAdmin />} />
         <Route path="/admin/listings" element={<Listings />} />
-        <Route path="/admin/listings/match" element={<ListingMatch />} />
         <Route path="/admin/listings/:listingId" element={<AdminListingDetail />} />
         <Route path="/portal/*" element={<CustomerPortal />} />
       </Routes>

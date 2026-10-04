@@ -8,7 +8,7 @@ from sqlmodel import Session, select, or_, func
 
 from auth import SupabaseAuthUser
 from database import get_session
-from models import Customer, Listing, Purchase, PurchaseItem
+from models import Customer, Listing, ListingTerpene, Purchase, PurchaseItem, Terpene
 from .auth import require_admin
 from .serializers import serialize_customer, serialize_purchase_item
 
@@ -143,6 +143,27 @@ def get_customer_purchases(
         items = purchases_by_id[pur_id]["items"]
         if not any(x["id"] == item_id for x in items):
             items.append(serialize_purchase_item(item, listing))
+
+    # Each item carries its listing's terpene profile, which the customer page
+    # shows beside the feedback. One query for the whole page of purchases.
+    listing_ids = {
+        UUID(i["listing_id"])
+        for p in purchases_by_id.values() for i in p["items"] if i["listing_id"]
+    }
+    terpenes: dict[str, list] = {}
+    if listing_ids:
+        for link, t in session.exec(
+            select(ListingTerpene, Terpene)
+            .join(Terpene, Terpene.id == ListingTerpene.terpene_id)
+            .where(ListingTerpene.listing_id.in_(listing_ids))
+        ).all():
+            terpenes.setdefault(str(link.listing_id), []).append({"name": t.name, "percent": link.percent})
+    for p in purchases_by_id.values():
+        for i in p["items"]:
+            i["terpenes"] = sorted(
+                terpenes.get(i["listing_id"] or "", []),
+                key=lambda x: x["percent"] or 0, reverse=True,
+            )
 
     order = {str(pid): i for i, pid in enumerate(purchase_ids)}
     return sorted(purchases_by_id.values(), key=lambda x: order.get(x["id"], 10**9))

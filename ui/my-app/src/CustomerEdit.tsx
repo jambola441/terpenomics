@@ -2,9 +2,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import supabase  from './utils/supabase'
-import api from './api/client'
-import { ProductSearch } from './components/ProductSearch'
-import type { Product, RecommendedProduct } from './types'
+import api, { API_BASE } from './api/client'
+import { ListingSearch } from './components/ListingSearch'
+import type { Listing } from './types'
 
 type Feedback = 'like' | 'dislike' | 'neutral' | null
 
@@ -15,8 +15,10 @@ type ItemTerpene = {
 
 type PurchaseItem = {
   id: string
-  product_id: string
-  product_name: string
+  listing_id: string | null
+  product_name: string | null
+  /** The listing's lab profile, strongest first; empty when it has none. */
+  terpenes: ItemTerpene[]
   quantity: number
   line_amount_cents?: number | null
   feedback?: Feedback
@@ -41,8 +43,6 @@ type Customer = {
   last_visit_at?: string | null
 }
 
-type ProductTerpenesMap = Record<string, ItemTerpene[]>
-
 type TerpeneScoreRow = {
   terpene: string
   score: number
@@ -57,8 +57,6 @@ type TerpeneScoresResponse = {
   cutoff: string
   scores: TerpeneScoreRow[]
 }
-
-const API_BASE = 'https://sturdy-parakeet-qg59j4pjp9q29j9j-8000.app.github.dev'
 
 function dollars(cents: number | null | undefined) {
   if (cents == null) return '—'
@@ -90,7 +88,6 @@ export default function CustomerEdit() {
 
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [purchases, setPurchases] = useState<Purchase[]>([])
-  const [productTerpenes, setProductTerpenes] = useState<ProductTerpenesMap>({})
   const [hasMorePurchases, setHasMorePurchases] = useState(true)
   const [purchasesLimit] = useState(20)
 
@@ -113,17 +110,12 @@ export default function CustomerEdit() {
   // order creation state
   const [isOrderFormOpen, setIsOrderFormOpen] = useState(false)
   const [orderItems, setOrderItems] = useState<Array<{
-    product: Product
+    listing: Listing
     quantity: number
     price_cents: number
   }>>([])
   const [orderSubmitting, setOrderSubmitting] = useState(false)
   const [orderError, setOrderError] = useState<string | null>(null)
-
-  // recommendations state
-  const [recommendations, setRecommendations] = useState<RecommendedProduct[]>([])
-  const [recsLoading, setRecsLoading] = useState(false)
-  const [recsError, setRecsError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!cid) return
@@ -186,26 +178,7 @@ export default function CustomerEdit() {
       setPurchases(prev => reset ? purchasesData : [...prev, ...purchasesData])
       setHasMorePurchases(purchasesData.length === purchasesLimit)
 
-      // 3. Load product terpenes for all products in these purchases
-      const productIds = new Set<string>()
-      for (const p of purchasesData) {
-        for (const it of p.items ?? []) {
-          productIds.add(it.product_id)
-        }
-      }
-
-      if (productIds.size > 0) {
-        const terpenesRes = await fetch(
-          `${API_BASE}/admin/products/terpenes?product_ids=${Array.from(productIds).join(',')}`,
-          { headers }
-        )
-        if (!terpenesRes.ok) throw new Error(await terpenesRes.text())
-        const terpenesData: ProductTerpenesMap = await terpenesRes.json()
-        
-        setProductTerpenes(prev => ({ ...prev, ...terpenesData }))
-      }
-
-      // 4. Initialize feedback state
+      // 3. Initialize feedback state
       const fb: Record<string, Feedback> = {}
       for (const p of purchasesData) {
         for (const it of p.items ?? []) {
@@ -326,37 +299,13 @@ export default function CustomerEdit() {
     }
   }
 
-  // Load recommendations
-  async function loadRecommendations() {
-    if (!cid) return
-    setRecsLoading(true)
-    setRecsError(null)
-    try {
-      const data = await api.customers.getRecommendedProducts(cid, { 
-        limit: 10, 
-        window_days: windowDays 
-      })
-      setRecommendations(data)
-    } catch (e: any) {
-      setRecsError(e?.message ?? String(e))
-    } finally {
-      setRecsLoading(false)
-    }
-  }
-
-  // Load recommendations when terpene window changes
-  useEffect(() => {
-    if (!cid) return
-    void loadRecommendations()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cid, windowDays])
-
-  // Order creation functions
-  function addOrderItem(product: Product) {
+  // Order creation functions. Purchases record what was bought at a specific
+  // store, so items are listings, priced from the shelf by default.
+  function addOrderItem(listing: Listing) {
     setOrderItems(prev => [...prev, {
-      product,
+      listing,
       quantity: 1,
-      price_cents: 0,
+      price_cents: listing.price_cents ?? 0,
     }])
   }
 
@@ -389,7 +338,7 @@ export default function CustomerEdit() {
 
       // Step 2: Add items (batch)
       const items = orderItems.map(item => ({
-        product_id: item.product.id,
+        listing_id: item.listing.id,
         quantity: item.quantity,
         line_amount_cents: item.price_cents,
       }))
@@ -467,10 +416,10 @@ export default function CustomerEdit() {
 
         {isOrderFormOpen && (
           <div style={{ display: 'grid', gap: 12 }}>
-            <ProductSearch
+            <ListingSearch
               onSelect={addOrderItem}
               disabled={orderSubmitting}
-              placeholder="Search products to add..."
+              placeholder="Search listings to add..."
             />
 
             {orderError && (
@@ -482,7 +431,7 @@ export default function CustomerEdit() {
                 <table border={1} cellPadding={8} style={{ borderCollapse: 'collapse' }}>
                   <thead>
                     <tr>
-                      <th align="left">Product</th>
+                      <th align="left">Listing</th>
                       <th align="center">Quantity</th>
                       <th align="right">Price (cents)</th>
                       <th align="right">Line Total</th>
@@ -493,10 +442,10 @@ export default function CustomerEdit() {
                     {orderItems.map((item, index) => (
                       <tr key={index}>
                         <td>
-                          <div><strong>{item.product.name}</strong></div>
-                          {item.product.brand && (
-                            <div style={{ fontSize: 12, opacity: 0.7 }}>{item.product.brand}</div>
-                          )}
+                          <div><strong>{item.listing.scraped_name ?? '(unnamed listing)'}</strong></div>
+                          <div style={{ fontSize: 12, opacity: 0.7 }}>
+                            {[item.listing.scraped_brand, item.listing.dispensary_name, item.listing.variant].filter(Boolean).join(' · ')}
+                          </div>
                         </td>
                         <td align="center">
                           <input
@@ -554,77 +503,9 @@ export default function CustomerEdit() {
               </>
             ) : (
               <p style={{ margin: 0, opacity: 0.7 }}>
-                Search for products above to add them to the order.
+                Search for listings above to add them to the order.
               </p>
             )}
-          </div>
-        )}
-      </div>
-
-      {/* Recommendations Section */}
-      <div style={{ border: '1px solid #ddd', padding: 12, marginBottom: 24 }}>
-        <h2 style={{ margin: '0 0 12px 0' }}>Recommended Products (Based on Terpene Preferences)</h2>
-        
-        {recsLoading && <div>Loading recommendations...</div>}
-        {recsError && <div style={{ color: 'crimson' }}>Error: {recsError}</div>}
-        
-        {!recsLoading && recommendations.length === 0 && (
-          <p style={{ margin: 0, opacity: 0.7 }}>
-            No recommendations available. Customer needs purchase history with feedback to generate recommendations.
-          </p>
-        )}
-
-        {!recsLoading && recommendations.length > 0 && (
-          <div style={{ display: 'grid', gap: 12 }}>
-            {recommendations.map((rec) => (
-              <div key={rec.id} style={{ border: '1px solid #eee', padding: 12, borderRadius: 4 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <strong>{rec.name}</strong>
-                      {rec.purchased_count > 0 && (
-                        <span style={{ 
-                          fontSize: 11, 
-                          backgroundColor: '#e3f2fd', 
-                          color: '#1976d2',
-                          padding: '2px 6px',
-                          borderRadius: 3,
-                        }}>
-                          Purchased {rec.purchased_count}x
-                        </span>
-                      )}
-                    </div>
-                    {rec.brand && (
-                      <div style={{ fontSize: 12, opacity: 0.7 }}>{rec.brand} · {rec.category}</div>
-                    )}
-                    <div style={{ fontSize: 12, marginTop: 4 }}>
-                      <strong>Top Terpenes:</strong> {fmtTerpenes(rec.terpenes.slice(0, 5))}
-                    </div>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: 14, fontWeight: 'bold', color: '#2e7d32' }}>
-                      {rec.score.toFixed(2)} match score
-                    </div>
-                    {isOrderFormOpen && (
-                      <button
-                        type="button"
-                        onClick={() => addOrderItem({
-                          id: rec.id,
-                          name: rec.name,
-                          brand: rec.brand,
-                          category: rec.category,
-                          is_active: true,
-                          terpenes: rec.terpenes,
-                        })}
-                        style={{ marginTop: 4, fontSize: 12 }}
-                      >
-                        Add to Order
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
         )}
       </div>
@@ -707,7 +588,7 @@ export default function CustomerEdit() {
                 >
                   <thead>
                     <tr>
-                      <th align="left">Product</th>
+                      <th align="left">Listing</th>
                       <th align="left">Terpenes</th>
                       <th align="right">Qty</th>
                       <th align="right">Line</th>
@@ -721,12 +602,11 @@ export default function CustomerEdit() {
                       const current = rowFeedback[it.id] ?? (it.feedback ?? null)
                       const savingRow = Boolean(rowSaving[it.id])
                       const errRow = rowError[it.id]
-                      const terpenes = productTerpenes[it.product_id] ?? []
 
                       return (
                         <tr key={it.id}>
                           <td>{it.product_name}</td>
-                          <td style={{ maxWidth: 420 }}>{fmtTerpenes(terpenes)}</td>
+                          <td style={{ maxWidth: 420 }}>{fmtTerpenes(it.terpenes)}</td>
                           <td align="right">{it.quantity}</td>
                           <td align="right">{dollars(it.line_amount_cents)}</td>
                           <td>{fmtFeedback(it.feedback ?? null)}</td>
