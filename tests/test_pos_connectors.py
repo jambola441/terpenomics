@@ -392,6 +392,15 @@ def test_phone_match_writes_a_link_that_matches_later_orders(session):
     assert session.exec(select(PosCustomerLink)).one().customer_id == ada.id
 
 
+def test_phone_match_ignores_the_plus_sign(session):
+    # Logins store the number as the Supabase JWT carries it: digits, no "+".
+    conn = make_connection(session)
+    ada = add_customer(session, "16465550101")
+    rows, _, _ = upsert_orders(session, conn, [norm("O1", phone="+16465550101")], {})
+    assert matching.match_orders(session, rows, NOW) == 1
+    assert rows[0].customer_id == ada.id and rows[0].matched_via == "phone"
+
+
 def test_return_inherits_the_sales_customer(session):
     conn = make_connection(session)
     ada = add_customer(session, "+16465550101")
