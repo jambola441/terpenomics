@@ -30,6 +30,7 @@ import re
 from collections import OrderedDict
 
 import attributes as attribute_registry
+import taxonomy
 from canonical import find_product_line
 
 
@@ -119,11 +120,10 @@ class MerchEnricher(CategoryEnricher):
 
     category = "merch"
     needs_model = False
-    default_subtype = "merch"
-    subtypes = ("gift-card", "filter-tip", "roller", "ashtray", "cone", "paper",
-                "wrap", "grinder", "tray", "bong", "pipe", "dab-tool", "bowl",
-                "downstem", "charger", "battery", "lighter", "storage", "apparel",
-                "cleaning", "scale", "merch")
+    # The rail is declared in scripts/taxonomy.py with every other category's; the
+    # tokens below must only ever produce values on it (test_taxonomy.py checks).
+    default_subtype = taxonomy.SPECS["merch"].default_subtype
+    subtypes = taxonomy.MERCH_SUBTYPES
 
     # A booklet sold with filter tips is a different SKU at a different price and
     # is otherwise named identically to the plain one. Used twice: it sets the

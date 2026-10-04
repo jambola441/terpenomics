@@ -38,6 +38,7 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from scraper_common import slugify  # noqa: E402
+import taxonomy  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 CATALOG_DIR = ROOT / "data" / "catalogs"
@@ -74,6 +75,21 @@ def norm_name(s: str) -> str:
     return re.sub(r"\s+", " ", s).strip()
 
 
+def strip_brand(name: str, brand: str | None) -> str:
+    """norm_name(name) without the brand's own words.
+
+    How a catalog records a store's name for a product (catalog_bootstrap), and how a
+    listing's name is compared with those records (catalog_match), so "Jetpacks - FJ
+    Mini Afghani" and "FJ Mini Afghani" are one name — most stores put the brand in,
+    some do not.
+    """
+    n = norm_name(name)
+    b = norm_name(brand or "")
+    if b:
+        n = re.sub(rf"\b{re.escape(b)}\b", " ", n)
+    return re.sub(r"\s+", " ", n).strip()
+
+
 def _fetch_json(url: str) -> dict:
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     with urllib.request.urlopen(req, timeout=TIMEOUT_SECONDS) as r:
@@ -95,8 +111,7 @@ def _category_for(tags: list[str]) -> tuple[str | None, str | None]:
 # Categories whose products are identified by a cultivar or flavour. A topical is a
 # 'Restore balm', not a strain of anything, and merch never carries one — writing the
 # title into strain for those is the same overload this work exists to remove.
-STRAIN_BEARING = {"vaporizers", "preroll", "edible", "tinctures", "flower",
-                  "concentrate"}
+STRAIN_BEARING = taxonomy.strain_bearing()
 
 
 def _identity_for(title: str, tags: list[str], category: str | None
@@ -181,6 +196,8 @@ def fetch_shopify(brand: str, domain: str) -> dict:
                 "attributes": None,
                 "match_terms": sorted({norm_name(title)}),
                 "source_tags": _clean_tags(tags),
+                "product_key": str(p.get("id")),
+                "source": "shopify_products_json",
             })
 
     return {
@@ -226,18 +243,28 @@ def _connect():
     return psycopg2.connect(url)
 
 
-def push(catalog: dict, dry_run: bool = False) -> None:
-    """Upsert a catalog into Postgres, the system of record.
+def push(catalog: dict, dry_run: bool = False) -> dict:
+    """Upsert a catalog into Postgres, the system of record — additively.
 
-    Entries are matched on (catalog_id, external_id) — the source's own variant id —
-    so a re-fetch updates in place rather than duplicating. Two things are never
-    written by an update: first_seen_at, which would erase when we first saw the
-    product, and the verified_* columns, because a human sign-off must survive a
-    re-fetch exactly as it survives a scrape on listings.
+    A catalog is curated after it lands: the admin page edits sizes and strains and
+    takes out products a store will never carry (Ayrloom's online-only hemp D9 line,
+    98 entries, 2026-09-06). A re-fetch used to overwrite every field and set
+    is_active = TRUE on everything the source still listed, so one refresh would
+    have undone all of that. Now the rule is:
 
-    Products that vanish from the source are deactivated, never deleted: listings
-    carry a foreign key to these rows, so a delete would dangle it and destroy the
-    history of what was on the menu.
+      new entries      inserted, active
+      existing entries identity fields are never touched — name, line, category,
+                       subtype, strain, variant, attributes stay as curated. Only
+                       metadata refreshes: match_terms (union), last_seen_at,
+                       support, and product_key/source when they were empty.
+      deactivated      stay deactivated. Reactivating is a person's decision; the
+                       entries the source lists again are counted and reported.
+      vanished         storefront catalogs: deactivated, never deleted (listings hold
+                       a foreign key to these rows). Bootstrap catalogs: left alone —
+                       a product one store dropped this week is still a product.
+
+    first_seen_at and the verified_* columns are never written by an update.
+    Returns counts; prints them.
     """
     import psycopg2.extras
     conn = _connect()
@@ -248,7 +275,7 @@ def push(catalog: dict, dry_run: bool = False) -> None:
         VALUES (%s,%s,%s,%s,%s)
         ON CONFLICT (brand_slug) DO UPDATE SET
             brand_name = EXCLUDED.brand_name,
-            source_url = EXCLUDED.source_url,
+            source_url = COALESCE(EXCLUDED.source_url, brand_catalogs.source_url),
             source_method = EXCLUDED.source_method,
             fetched_at = EXCLUDED.fetched_at,
             updated_at = now()
@@ -259,47 +286,83 @@ def push(catalog: dict, dry_run: bool = False) -> None:
     )
     catalog_id = cur.fetchone()[0]
 
+    # product_key / source / support arrive with db/migrations/0003. Written when the
+    # columns exist, skipped with a warning when they do not, so a push never fails on
+    # a database that has not been migrated yet.
+    cur.execute("""SELECT column_name FROM information_schema.columns
+                   WHERE table_name = 'brand_catalog_entries'
+                     AND column_name IN ('product_key', 'source', 'support')""")
+    extra = sorted(r[0] for r in cur.fetchall())
+    if len(extra) < 3:
+        print("  [warn] brand_catalog_entries lacks product_key/source/support — "
+              "run scripts/db_migrate.py --run to record them")
+    default_source = catalog.get("source_method")
+
+    def meta(e: dict, c: str):
+        if c == "product_key":
+            # Exports written before product_key existed carry the same value as
+            # product_external_id, so pushing an old file backfills it.
+            return e.get("product_key") or e.get("product_external_id")
+        if c == "source":
+            return e.get("source") or default_source
+        return e.get(c)
+
     rows = [(catalog_id, e["external_id"], e["name"], e["product_line"], e["category"],
              e["subtype"], e["strain"], e["variant"],
              json.dumps(e["attributes"]) if e.get("attributes") else None,
-             e.get("match_terms") or []) for e in catalog["entries"]]
-    psycopg2.extras.execute_values(
+             e.get("match_terms") or [],
+             *[meta(e, c) for c in extra])
+            for e in catalog["entries"]]
+    cols = ["catalog_id", "external_id", "name", "product_line", "category", "subtype",
+            "strain", "variant", "attributes", "match_terms", *extra]
+    metadata = {
+        "product_key": "COALESCE(brand_catalog_entries.product_key, EXCLUDED.product_key)",
+        "source": "COALESCE(brand_catalog_entries.source, EXCLUDED.source)",
+        "support": "EXCLUDED.support",
+    }
+    sets = [f"{c} = {metadata[c]}" for c in extra]
+    returned = psycopg2.extras.execute_values(
         cur,
-        """
-        INSERT INTO brand_catalog_entries
-            (catalog_id, external_id, name, product_line, category, subtype,
-             strain, variant, attributes, match_terms)
+        f"""
+        INSERT INTO brand_catalog_entries ({", ".join(cols)})
         VALUES %s
         ON CONFLICT (catalog_id, external_id) DO UPDATE SET
-            name         = EXCLUDED.name,
-            product_line = EXCLUDED.product_line,
-            category     = EXCLUDED.category,
-            subtype      = EXCLUDED.subtype,
-            strain       = EXCLUDED.strain,
-            variant      = EXCLUDED.variant,
-            attributes   = EXCLUDED.attributes,
-            match_terms  = EXCLUDED.match_terms,
-            is_active    = TRUE,
-            last_seen_at = now()
+            match_terms  = ARRAY(SELECT DISTINCT t FROM unnest(
+                               COALESCE(brand_catalog_entries.match_terms, '{{}}')
+                               || COALESCE(EXCLUDED.match_terms, '{{}}')) AS t ORDER BY t),
+            {"".join(f"{x}, " for x in sets)}last_seen_at = now()
+        RETURNING (xmax = 0) AS inserted, is_active
         """,
-        rows,
+        rows, fetch=True,
     )
-    seen = [e["external_id"] for e in catalog["entries"]]
-    cur.execute(
-        """
-        UPDATE brand_catalog_entries SET is_active = FALSE
-        WHERE catalog_id = %s AND is_active AND external_id <> ALL(%s)
-        """,
-        (catalog_id, seen),
-    )
-    deactivated = cur.rowcount
+    inserted = sum(1 for ins, _ in returned if ins)
+    back_inactive = sum(1 for ins, active in returned if not ins and not active)
+
+    deactivated = 0
+    if catalog.get("source_method") != "listings_bootstrap":
+        seen = [e["external_id"] for e in catalog["entries"]]
+        cur.execute(
+            """
+            UPDATE brand_catalog_entries SET is_active = FALSE
+            WHERE catalog_id = %s AND is_active AND external_id <> ALL(%s)
+            """,
+            (catalog_id, seen),
+        )
+        deactivated = cur.rowcount
+    counts = {"inserted": inserted, "refreshed": len(returned) - inserted,
+              "listed_again_but_inactive": back_inactive, "deactivated": deactivated}
     if dry_run:
         conn.rollback()
-        print(f"[dry run] would upsert {len(rows)} entries, deactivate {deactivated}")
+        print(f"[dry run] would push: {counts}")
     else:
         conn.commit()
-        print(f"pushed {len(rows)} entries; deactivated {deactivated} no longer on source")
+        print(f"pushed {catalog['brand_name']}: {inserted} new, {counts['refreshed']} refreshed "
+              f"(curated fields kept), {deactivated} no longer on source deactivated")
+    if back_inactive:
+        print(f"  {back_inactive} entries the source lists are inactive here (taken out by "
+              f"hand, or gone and back) — left inactive; reactivate in the admin if wanted")
     conn.close()
+    return counts
 
 
 def main() -> None:

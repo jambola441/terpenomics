@@ -2,27 +2,37 @@
 """
 scrape.py — Single entry point to scrape any dispensary by slug.
 
-Reads dispensaries.json, picks the right scraper, runs it, then imports the
-resulting CSV into the DB.
+Reads dispensaries.json, picks the right scraper, runs it (scrape + enrich into a
+CSV), then imports the CSV into the DB — where catalog matching also happens.
 
 Usage
 -----
-  python scripts/scrape.py --slug coney-island-cannabis
+  python scripts/scrape.py --slug the-spot-bk
   python scripts/scrape.py --slug the-spot-bk --dry-run
-  python scripts/scrape.py --all
-  python scripts/scrape.py --all --dry-run
+  python scripts/scrape.py --all                      # every store whose status is "active"
+  python scripts/scrape.py --all --include-pending    # ... plus "pending" ones
+  python scripts/scrape.py --all --import-only        # re-import the newest CSV per store
+  python scripts/scrape.py --all --summary run.json   # per-store results for monitoring
+
+Exit code: 0 when every targeted store succeeded, 1 when any failed. A store fails
+when its scraper exits non-zero or times out, produces no CSV or an empty one, its
+import fails, or enrichment answered fewer than half its rows. Before, this script
+exited 0 no matter what, so a run with every Dutchie store broken reported "ok".
 """
 
 import argparse
+import csv
+import json
 import os
 import re
+import signal
 import subprocess
 import sys
-import json
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from scraper_common import run_stamp  # noqa: E402
+from scraper_common import read_scrape_meta, run_stamp  # noqa: E402
 
 ROOT      = Path(__file__).parent.parent
 DISPOS    = ROOT / "dispensaries.json"
@@ -38,6 +48,16 @@ SCRAPER = {
     "alleaves":        PROTOS / "alleaves-scraper"  / "scrape.py",
     "travel_agency":   PROTOS / "travel-agency-scraper" / "scrape.py",
 }
+
+# One store's scrape + enrich. The slowest healthy store takes a few minutes; this is
+# a ceiling for a hung connection or a model retry loop, so it never eats the run.
+SCRAPER_TIMEOUT_SEC = int(os.environ.get("SCRAPER_TIMEOUT_SEC", "1200"))
+IMPORT_TIMEOUT_SEC = int(os.environ.get("IMPORT_TIMEOUT_SEC", "900"))
+# Below this share of rows answered, a store's enrichment is treated as broken.
+MIN_ENRICHED_SHARE = 0.5
+
+EMPTY_USAGE = {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0,
+               "cache_read_tokens": 0, "cost_usd": 0.0, "failed_rows": 0}
 
 
 def load_registry() -> list[dict]:
@@ -62,7 +82,8 @@ def find_latest_csv(slug: str) -> Path | None:
     return None
 
 
-def build_scraper_cmd(d: dict, out: str, parallel: bool = False, no_enrich: bool = False, passes: int = 1, model: str = "haiku") -> list[str] | None:
+def build_scraper_cmd(d: dict, out: str, parallel: bool = False, no_enrich: bool = False,
+                      passes: int = 50, model: str = "haiku") -> list[str] | None:
     platform = d["platform"]
     slug     = d["slug"]
     name     = d["name"]
@@ -75,55 +96,28 @@ def build_scraper_cmd(d: dict, out: str, parallel: bool = False, no_enrich: bool
         if not d.get("dutchie_id"):
             print(f"  [skip] {slug}: missing dutchie_id", file=sys.stderr)
             return None
-        cmd = [
-            sys.executable, str(scraper),
-            "--dutchie-id", d["dutchie_id"],
-            "--dispensary-slug", slug,
-            "--name", name,
-            "--out", out,
-        ]
-
+        cmd = [sys.executable, str(scraper), "--dutchie-id", d["dutchie_id"],
+               "--dispensary-slug", slug, "--name", name, "--out", out]
     elif platform in ("dutchie_plus", "flowhub"):
         if not d.get("menu_url"):
             print(f"  [skip] {slug}: missing menu_url", file=sys.stderr)
             return None
-        cmd = [
-            sys.executable, str(scraper),
-            "--url", d["menu_url"],
-            "--dispensary-slug", slug,
-            "--name", name,
-            "--out", out,
-        ]
-
+        cmd = [sys.executable, str(scraper), "--url", d["menu_url"],
+               "--dispensary-slug", slug, "--name", name, "--out", out]
     elif platform == "tymber":
         if not d.get("blaze_id"):
             print(f"  [skip] {slug}: missing blaze_id", file=sys.stderr)
             return None
-        cmd = [
-            sys.executable, str(scraper),
-            "--blaze-id", d["blaze_id"],
-            "--dispensary-slug", slug,
-            "--name", name,
-            "--out", out,
-        ]
-
+        cmd = [sys.executable, str(scraper), "--blaze-id", d["blaze_id"],
+               "--dispensary-slug", slug, "--name", name, "--out", out]
     elif platform == "alleaves":
         if not d.get("alleaves_tenant"):
             print(f"  [skip] {slug}: missing alleaves_tenant", file=sys.stderr)
             return None
-        cmd = [
-            sys.executable, str(scraper),
-            "--tenant", d["alleaves_tenant"],
-            "--dispensary-slug", slug,
-            "--out", out,
-        ]
-
+        cmd = [sys.executable, str(scraper), "--tenant", d["alleaves_tenant"],
+               "--dispensary-slug", slug, "--out", out]
     elif platform == "travel_agency":
-        cmd = [
-            sys.executable, str(scraper),
-            "--output", out,
-        ]
-
+        cmd = [sys.executable, str(scraper), "--output", out]
     else:
         return None
 
@@ -138,116 +132,221 @@ def build_scraper_cmd(d: dict, out: str, parallel: bool = False, no_enrich: bool
     return cmd
 
 
-def read_usage(csv: Path) -> dict:
-    path = csv.with_suffix(".usage.json")
+# The child currently running, so a SIGTERM to this process (run_scrape_cron's
+# timeout) can take it down too. Each child runs in its own session to be killable
+# as a tree on its own timeout — which also puts it out of reach of a kill aimed at
+# this process's group, so it has to be forwarded explicitly.
+_active_child: subprocess.Popen | None = None
+
+
+def _kill_tree(proc: subprocess.Popen) -> None:
+    try:
+        os.killpg(proc.pid, signal.SIGKILL)
+    except (ProcessLookupError, PermissionError):
+        pass
+
+
+def _on_sigterm(signum, frame) -> None:
+    if _active_child is not None:
+        _kill_tree(_active_child)
+    sys.exit(128 + signum)
+
+
+def run_bounded(cmd: list[str], timeout: int) -> int:
+    """Run a child in its own process group and kill the whole group on timeout.
+
+    subprocess.run(timeout=) kills only the direct child; a scraper's own children
+    (and anything an importer spawned) would carry on as orphans holding the lock's
+    resources. 124 is the conventional timeout exit code.
+    """
+    global _active_child
+    proc = subprocess.Popen(cmd, cwd=ROOT, start_new_session=True)
+    _active_child = proc
+    try:
+        return proc.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        print(f"  [error] timed out after {timeout}s — killing {' '.join(cmd[:2])}",
+              file=sys.stderr)
+        _kill_tree(proc)
+        proc.wait()
+        return 124
+    finally:
+        _active_child = None
+
+
+def read_usage(csv_file: Path) -> dict:
+    path = csv_file.with_suffix(".usage.json")
     if path.exists():
-        return json.loads(path.read_text())
-    return {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0, "cost_usd": 0.0}
+        return {**EMPTY_USAGE, **json.loads(path.read_text())}
+    return dict(EMPTY_USAGE)
 
 
-def run_import(csv: Path, dry_run: bool) -> bool:
-    if not csv.exists():
-        print(f"  [skip] no CSV at {csv}")
-        return False
-    import_cmd = [sys.executable, str(SCRIPTS / "import_listings.py"), "--csv", str(csv)]
+def count_rows(csv_file: Path) -> int:
+    try:
+        with open(csv_file, newline="", encoding="utf-8") as f:
+            return sum(1 for _ in csv.DictReader(f))
+    except OSError:
+        return 0
+
+
+def run_import(csv_file: Path, dry_run: bool) -> tuple[bool, str]:
+    if not csv_file.exists():
+        return False, f"no CSV at {csv_file.name}"
     if dry_run:
-        print(f"  [dry-run] would import: {csv.name}")
-        return True
-    result = subprocess.run(import_cmd, cwd=ROOT)
-    return result.returncode == 0
+        print(f"  [dry-run] would import: {csv_file.name}")
+        return True, "dry-run"
+    code = run_bounded([sys.executable, str(SCRIPTS / "import_listings.py"),
+                        "--csv", str(csv_file)], IMPORT_TIMEOUT_SEC)
+    reasons = {2: "dispensary not in DB (run import_dispensaries.py)",
+               3: "empty CSV", 124: "import timed out"}
+    return code == 0, ("imported" if code == 0 else reasons.get(code, f"import exited {code}"))
 
 
-def run_one(d: dict, dry_run: bool, import_only: bool = False, scrape_only: bool = False, parallel: bool = False, no_enrich: bool = False, passes: int = 1, model: str = "haiku") -> tuple[bool, dict]:
+def run_one(d: dict, dry_run: bool, import_only: bool = False, scrape_only: bool = False,
+            parallel: bool = False, no_enrich: bool = False, passes: int = 50,
+            model: str = "haiku") -> dict:
+    """One store, start to finish. Returns a result row for the run summary."""
     slug = d["slug"]
     platform = d["platform"]
-    empty_usage = {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0, "cost_usd": 0.0}
+    result = {"slug": slug, "platform": platform, "ok": False, "stage": "", "detail": "",
+              "rows": 0, "usage": dict(EMPTY_USAGE), "seconds": 0.0}
+    t0 = time.time()
 
     print(f"\n{'='*60}")
     print(f"  {d['name']}  [{platform}]")
 
-    if import_only:
-        latest = find_latest_csv(slug)
-        if latest is None:
-            print(f"  [skip] no CSV found for {slug}")
-            return False, empty_usage
-        return run_import(latest, dry_run), empty_usage
+    try:
+        if import_only:
+            latest = find_latest_csv(slug)
+            if latest is None:
+                result.update(stage="import", detail="no CSV found")
+                return result
+            result["rows"] = count_rows(latest)
+            ok, detail = run_import(latest, dry_run)
+            result.update(ok=ok, stage="import", detail=detail)
+            return result
 
-    out_path = csv_path(slug, run_stamp())
-    cmd = build_scraper_cmd(d, str(out_path), parallel=parallel, no_enrich=no_enrich, passes=passes, model=model)
-    if cmd is None:
-        print(f"  [skip] {slug}: unsupported platform '{platform}'")
-        return False, empty_usage
+        out_path = csv_path(slug, run_stamp())
+        cmd = build_scraper_cmd(d, str(out_path), parallel=parallel, no_enrich=no_enrich,
+                                passes=passes, model=model)
+        if cmd is None:
+            result.update(stage="scrape", detail=f"unsupported platform '{platform}'")
+            return result
 
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
+        OUT_DIR.mkdir(parents=True, exist_ok=True)
+        if dry_run:
+            print(f"  [dry-run] would run: {' '.join(cmd)}")
+            result.update(ok=True, stage="scrape", detail="dry-run")
+            return result
 
-    if dry_run:
-        print(f"  [dry-run] would run: {' '.join(cmd)}")
-        return True, empty_usage
+        code = run_bounded(cmd, SCRAPER_TIMEOUT_SEC)
+        if code != 0:
+            result.update(stage="scrape", detail="timed out" if code == 124 else f"scraper exited {code}")
+            return result
+        if not out_path.exists():
+            result.update(stage="scrape", detail="scraper wrote no CSV")
+            return result
 
-    result = subprocess.run(cmd, cwd=ROOT)
-    if result.returncode != 0:
-        print(f"  [error] scraper exited {result.returncode}", file=sys.stderr)
-        return False, empty_usage
+        usage = read_usage(out_path)
+        rows = count_rows(out_path)
+        result.update(usage=usage, rows=rows)
+        if rows == 0:
+            result.update(stage="scrape", detail="scrape returned 0 rows")
+            return result
+        degraded = (not no_enrich and usage.get("failed_rows", 0)
+                    and usage["failed_rows"] > (1 - MIN_ENRICHED_SHARE) * rows)
+        if scrape_only:
+            partial = read_scrape_meta(str(out_path)).get("partial")
+            result.update(ok=not (degraded or partial), stage="scrape",
+                          detail=("enrichment mostly failed" if degraded else
+                                  "partial scrape" if partial else "scraped"))
+            return result
+        # Import even when enrichment degraded: the importer keeps the stored identity
+        # of every row marked enrich_failed, so prices and stock still refresh. The
+        # store is still reported as failed so someone looks at why.
+        ok, detail = run_import(out_path, dry_run=False)
+        if degraded:
+            ok, detail = False, f"enrichment answered only {rows - usage['failed_rows']}/{rows} rows; {detail}"
+        meta = read_scrape_meta(str(out_path))
+        if meta.get("partial"):
+            ok, detail = False, (f"partial scrape {meta['collected']}/{meta['reported_total']} "
+                                 f"products (nothing retired); {detail}")
+        result.update(ok=ok, stage="import", detail=detail)
+        return result
+    finally:
+        result["seconds"] = round(time.time() - t0, 1)
 
-    usage = read_usage(out_path)
-    if scrape_only:
-        return True, usage
-    return run_import(out_path, dry_run=False), usage
+
+def select_targets(registry: list[dict], slug: str | None, include_pending: bool) -> list[dict]:
+    """--slug runs that store whatever its status (it was asked for by name); --all runs
+    "active" stores, plus "pending" with --include-pending. "inactive" and "unsupported"
+    stores used to be attempted — and fail — every day, burying real failures."""
+    if slug:
+        return [d for d in registry if d["slug"] == slug]
+    wanted = {"active"} | ({"pending"} if include_pending else set())
+    return [d for d in registry if d.get("status", "active") in wanted]
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Scrape dispensary menus and import into DB")
     group  = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--slug", help="Dispensary slug (from dispensaries.json)")
-    group.add_argument("--all",  action="store_true", help="Run all supported dispensaries")
+    group.add_argument("--all",  action="store_true", help="Run every active dispensary")
+    parser.add_argument("--include-pending", action="store_true",
+                        help="With --all, also run stores whose status is 'pending'")
     parser.add_argument("--dry-run",     action="store_true", help="Print commands without running")
     parser.add_argument("--import-only", action="store_true", help="Skip scraping; import existing CSVs from data/scrapes/")
     parser.add_argument("--scrape-only", action="store_true", help="Scrape to CSV only; skip DB import")
     parser.add_argument("--parallel",    action="store_true", help="Fetch pages concurrently within each dispensary scrape")
-    parser.add_argument("--no-enrich",   action="store_true", help="Skip Haiku enrichment; write raw scraped data only")
+    parser.add_argument("--no-enrich",   action="store_true", help="Skip enrichment; write raw scraped data only")
     parser.add_argument("--model",       default="haiku", help="Enrichment model id (see MODELS in scripts/enrich.py)")
     parser.add_argument("--passes",      type=int, default=50, help="Flowhub: max page sweeps until all reported products collected (default 50)")
+    parser.add_argument("--summary",     help="Write a JSON summary of this run (per store) to this path")
     args = parser.parse_args()
+    signal.signal(signal.SIGTERM, _on_sigterm)
 
     registry = load_registry()
+    targets = select_targets(registry, args.slug, args.include_pending)
+    if args.slug and not targets:
+        print(f"Unknown slug: {args.slug!r}", file=sys.stderr)
+        print(f"Known slugs: {', '.join(d['slug'] for d in registry)}", file=sys.stderr)
+        sys.exit(1)
+    if args.slug and targets[0].get("status") in ("inactive", "unsupported"):
+        print(f"  [note] {args.slug} is marked {targets[0]['status']} in dispensaries.json")
+    if args.all:
+        skipped = [d["slug"] for d in registry if d not in targets]
+        if skipped:
+            print(f"Skipping {len(skipped)} store(s) not marked active: {', '.join(skipped)}")
 
-    if args.slug:
-        matches = [d for d in registry if d["slug"] == args.slug]
-        if not matches:
-            slugs = [d["slug"] for d in registry]
-            print(f"Unknown slug: {args.slug!r}", file=sys.stderr)
-            print(f"Known slugs: {', '.join(slugs)}", file=sys.stderr)
-            sys.exit(1)
-        targets = matches
-    else:
-        targets = registry
-
-    ok = skipped = failed = 0
-    total_usage = {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0, "cost_usd": 0.0}
-
+    results = []
     for d in targets:
-        success, u = run_one(d, dry_run=args.dry_run, import_only=args.import_only, scrape_only=args.scrape_only, parallel=args.parallel, no_enrich=args.no_enrich, passes=args.passes, model=args.model)
-        if success:
-            ok += 1
-            if not args.import_only and not args.dry_run:
-                for k in ("input_tokens", "output_tokens", "cache_write_tokens", "cache_read_tokens"):
-                    total_usage[k] += u.get(k, 0)
-                total_usage["cost_usd"] = round(total_usage["cost_usd"] + u.get("cost_usd", 0.0), 4)
-                if u.get("input_tokens") or u.get("cache_read_tokens"):
-                    print(f"  enrich: input={u.get('input_tokens',0):,}  output={u.get('output_tokens',0):,}  "
-                          f"cache_write={u.get('cache_write_tokens',0):,}  cache_read={u.get('cache_read_tokens',0):,}  "
-                          f"cost=${u.get('cost_usd',0.0):.4f}")
-        elif args.import_only or d["platform"] in SCRAPER:
-            failed += 1
-        else:
-            skipped += 1
+        res = run_one(d, dry_run=args.dry_run, import_only=args.import_only,
+                      scrape_only=args.scrape_only, parallel=args.parallel,
+                      no_enrich=args.no_enrich, passes=args.passes, model=args.model)
+        results.append(res)
+        u = res["usage"]
+        if u.get("input_tokens") or u.get("cache_read_tokens"):
+            print(f"  enrich: input={u.get('input_tokens',0):,}  output={u.get('output_tokens',0):,}  "
+                  f"cost=${u.get('cost_usd',0.0):.4f}")
+        status = "ok" if res["ok"] else "FAILED"
+        print(f"  -> {status} ({res['stage']}: {res['detail']}, {res['rows']} rows, {res['seconds']}s)")
 
+    failed = [r for r in results if not r["ok"]]
+    cost = round(sum(r["usage"].get("cost_usd", 0.0) for r in results), 4)
     print(f"\n{'='*60}")
-    print(f"Done.  ok={ok}  skipped={skipped}  failed={failed}")
-    if not args.import_only and not args.dry_run and (total_usage["input_tokens"] or total_usage["cache_read_tokens"]):
-        print(f"Enrich tokens — input: {total_usage['input_tokens']:,}  output: {total_usage['output_tokens']:,}  "
-              f"cache_write: {total_usage['cache_write_tokens']:,}  cache_read: {total_usage['cache_read_tokens']:,}")
-        print(f"Estimated cost: ${total_usage['cost_usd']:.4f}")
+    print(f"Done.  ok={len(results) - len(failed)}  failed={len(failed)}  enrich cost=${cost:.4f}")
+    for r in failed:
+        print(f"  FAILED {r['slug']:34} {r['stage']}: {r['detail']}")
+
+    if args.summary:
+        Path(args.summary).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.summary).write_text(json.dumps({
+            "finished_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "ok": len(results) - len(failed), "failed": len(failed), "cost_usd": cost,
+            "stores": results,
+        }, indent=2))
+
+    sys.exit(1 if failed else 0)
 
 
 if __name__ == "__main__":

@@ -31,28 +31,11 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import taxonomy  # noqa: E402
 
-# What each category means for the fields we extract. Sourced from the rules already
-# in enrich.py's _CLASSIFY_BODY and _EXTRACT_PROMPT; kept per-category here so a
-# brand batch only pays tokens for the categories that brand actually sells.
-CATEGORY_RULES: dict[str, dict[str, str]] = {
-    "flower":      {"variant": "weight (3.5g, 1g, 7g)", "strain": "cultivar"},
-    "preroll":     {"variant": "weight (1g, 0.5g)", "strain": "cultivar"},
-    "vaporizers":  {"variant": "weight (1g, 0.5g, 2g)", "strain": "cultivar or flavour"},
-    "edible":      {"variant": "TOTAL package THC in mg — multiply a per-piece dose by "
-                               "the pack count (5mg x 20pk = 100mg). For a drink this is "
-                               "still the mg dose, never the liquid volume.",
-                    "strain": "flavour"},
-    "concentrate": {"variant": "weight (1g, 0.5g)", "strain": "cultivar"},
-    "tinctures":   {"variant": "total mg (1000mg) — never converted to grams",
-                    "strain": "flavour or blend name"},
-    "topical":     {"variant": "total mg (1000mg)",
-                    "strain": "scent or blend name — but a product line "
-                              "(Revive/Restore/Rescue) is a line, not a strain"},
-    "merch":       {"variant": "size and pack together (1 1/4 33ct)",
-                    "strain": "null — accessories have no cultivar"},
-    "other":       {"variant": "\"\" when there is no meaningful size", "strain": "flavour"},
-}
+# What each category means for the fields we extract — declared in scripts/taxonomy.py
+# beside the rails, so this prompt and the generic one cannot drift into disagreeing.
+CATEGORY_RULES: dict[str, dict[str, str]] = taxonomy.prompt_rules()
 
 
 def _catalog_lines(catalog: dict) -> list[str]:

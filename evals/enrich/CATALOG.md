@@ -153,3 +153,21 @@ naive match before any tuning, and it is implicated in two standing eval failure
 plus the topical product-line problem REFACTOR.md marked blocked. It exercises
 acquisition, matching, staleness and verification in one brand, and if the pattern
 does not pay there it will not pay anywhere.
+
+## Built — 2026-10-04
+
+The proposed shape is in place; [PIPELINE.md](../../PIPELINE.md) is how it runs and
+[PIPELINE_HEALTH.md](../../PIPELINE_HEALTH.md) has the measurements.
+
+- **Acquisition tier 4 became a pipeline:** `scripts/catalog_bootstrap.py` proposes a
+  catalog for any brand from the consensus of the stores that carry it — 3,135 products
+  for the top 300 brands, covering 64% of their listings — with per-entry `support`.
+- **The model tier is Jev**, not a constrained LLM pick: a closed-set Choice over a
+  shortlist with "none" offered first, gated on its calibrated probability. Ayrloom:
+  92.1% auto-matched (vs the 79–82% lexical baseline here), 0% wrong picks at p ≥ 0.90 in
+  a holdout with the true product removed. The lexical tiers now only nominate — they
+  had matched seven gummies to a beverage.
+- **Matching reads Postgres**, so admin curation applies on the next import, and the
+  importer overlays a trusted match's identity onto the listing.
+- **Staleness** stayed a state, as proposed: pushes are additive, never resurrect what a
+  person removed, and never overwrite a curated field.

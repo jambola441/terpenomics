@@ -2,8 +2,7 @@
 """
 migrate_listing_variant_key.py — In-place migration for the variant-aware listing key.
 
-Non-destructive (unlike migrate.py, which drops everything). Idempotent — safe to
-re-run. Does three things:
+Non-destructive. Idempotent — safe to re-run. Does three things:
 
   1. Replaces the unique index (dispensary_id, sku) with
      (dispensary_id, sku, COALESCE(variant, '')) so one SKU can hold a row per

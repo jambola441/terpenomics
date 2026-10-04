@@ -101,7 +101,9 @@ def main() -> None:
         # — the deterministic path had run and only the blanking was undone.
         restored = 0
         for row, prev in zip(rows, before):
-            if not row.pop("_enrich_failed", False):
+            # Read, not popped: the marker must reach the rewritten CSV so the
+            # importer keeps the stored identity of rows that failed again.
+            if not row.get("enrich_failed"):
                 continue
             for f in FIELDS:
                 if not (row.get(f) or "").strip() and (prev.get(f) or "").strip():
@@ -121,7 +123,7 @@ def main() -> None:
             print(f"  [warn] strain filled on only {filled}/{len(eligible)} rows that can "
                   f"carry one — pass B likely failed; re-run to fill from cache")
 
-        for f in FIELDS:
+        for f in (*FIELDS, "enrich_failed"):
             if f not in fieldnames:
                 fieldnames.append(f)
         with path.open("w", newline="", encoding="utf-8") as fh:

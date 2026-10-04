@@ -5,7 +5,7 @@
 A script that touches the database hangs, then dies:
 
 ```
-$ python scripts/migrate.py
+$ python scripts/db_migrate.py
   ... (long pause) ...
   OperationalError: connection to server at "aws-0-us-west-2.pooler.supabase.com",
   port 5432 failed: timeout expired
@@ -49,6 +49,19 @@ python scripts/db_http.py update listings "id=eq.<uuid>" '{"in_stock": false}'
 `update` and `delete` refuse to run without a filter, so a missed `WHERE`
 cannot quietly rewrite a whole table.
 
+`count` reads only row totals (a HEAD request; no rows come back). With `--anon`
+it asks with the public anon key that ships in the apps, which shows what anyone
+on the internet can read. Row-level security is on (`db/migrations/0004`), so that
+should be 0 for every table:
+
+```
+python scripts/db_http.py count customers orders listings --anon
+```
+
+`check`, `select` and `count` are pre-approved in `.claude/settings.json`, as are
+read-only SQL through the Supabase connector (`.claude/hooks/readonly_sql.py`) and
+the connectors' other read tools. Writes still ask first.
+
 From Python:
 
 ```python
@@ -62,7 +75,7 @@ the API server runs with; treat a sandbox that holds it as production-adjacent.
 
 ### 2. Management API — arbitrary SQL and DDL
 
-Needed for the `migrate.py` class of work: `CREATE VIEW`, `DROP TABLE`, window
+Needed for schema work (`scripts/db_migrate.py --via-http`): `CREATE VIEW`, `DROP TABLE`, window
 functions, anything PostgREST cannot express. Requires one extra credential —
 a personal access token from https://supabase.com/dashboard/account/tokens —
 exposed as `SUPABASE_ACCESS_TOKEN`:

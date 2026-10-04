@@ -1,0 +1,57 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Supabase__list_projects",
+      "mcp__Supabase__get_project",
+      "mcp__Supabase__list_tables",
+      "mcp__Supabase__list_extensions",
+      "mcp__Supabase__list_migrations",
+      "mcp__Supabase__list_branches",
+      "mcp__Supabase__list_edge_functions",
+      "mcp__Supabase__get_edge_function",
+      "mcp__Supabase__get_advisors",
+      "mcp__Supabase__query_logs",
+      "mcp__Supabase__search_docs",
+      "mcp__Supabase__get_organization",
+      "mcp__Supabase__list_organizations",
+      "mcp__Supabase__get_project_url",
+      "mcp__Supabase__generate_typescript_types",
+      "Bash(python3 scripts/db_http.py check)",
+      "Bash(python3 scripts/db_http.py select:*)",
+      "Bash(python3 scripts/db_http.py count:*)",
+      "Bash(python scripts/db_http.py check)",
+      "Bash(python scripts/db_http.py select:*)",
+      "Bash(python scripts/db_http.py count:*)",
+      "mcp__Render__query_render_postgres",
+      "mcp__Render__list_workspaces",
+      "mcp__Render__get_selected_workspace",
+      "mcp__Render__list_services",
+      "mcp__Render__get_service",
+      "mcp__Render__list_deploys",
+      "mcp__Render__get_deploy",
+      "mcp__Render__list_logs",
+      "mcp__Render__list_log_label_values",
+      "mcp__Render__list_events",
+      "mcp__Render__get_metrics",
+      "mcp__Render__list_postgres_instances",
+      "mcp__Render__get_postgres",
+      "mcp__Render__list_key_value",
+      "mcp__Render__get_key_value"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "mcp__Supabase__execute_sql",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/readonly_sql.py\"",
+            "timeout": 10,
+            "statusMessage": "Checking SQL is read-only"
+          }
+        ]
+      }
+    ]
+  }
+}

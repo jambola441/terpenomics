@@ -15,7 +15,7 @@ Supabase serves the same database over two HTTPS APIs. This module wraps both:
     Cannot run DDL, joins, or aggregates.
   * Management API — arbitrary SQL, DDL included, using SUPABASE_ACCESS_TOKEN
     (a personal access token from supabase.com/dashboard/account/tokens).
-    Optional; only needed for the migrate.py class of work.
+    Optional; only needed for DDL (db_migrate.py --via-http).
 
 Scope: ad-hoc surgery, inspection, and migrations from a sandbox. Long batch
 jobs (enrich.py, import_listings.py) should still run where 5432 is reachable
@@ -28,6 +28,8 @@ Usage:
     python scripts/db_http.py check
     python scripts/db_http.py sql "SELECT count(*) FROM listings"
     python scripts/db_http.py select listings "select=id,strain&limit=5"
+    python scripts/db_http.py count listings customers          # row totals only
+    python scripts/db_http.py count customers orders --anon     # what the public key sees
     python scripts/db_http.py insert terpenes '{"name": "myrcene"}'
     python scripts/db_http.py update listings "id=eq.42" '{"in_stock": false}'
     python scripts/db_http.py delete listings "id=eq.42"
@@ -154,6 +156,53 @@ def select(table: str, query: str = "") -> list[dict[str, Any]]:
     return rest("GET", table, query)
 
 
+def count(table: str, query: str = "", *, as_anon: bool = False) -> Optional[int]:
+    """Rows of `table` visible over PostgREST, from a HEAD request: the answer is a
+    Content-Range total and no row is transferred.
+
+    as_anon=True asks with the public anon key, which ships in the web and mobile
+    apps, so it shows what anyone on the internet can see. With row-level security
+    on (db/migrations/0004) that is 0 for every table.
+    """
+    if as_anon:
+        base = (os.getenv("SUPABASE_URL") or "").strip().rstrip("/")
+        key = (os.getenv("SUPABASE_ANON_KEY") or "").strip()
+        if not base or not key:
+            raise DbHttpError("count --anon needs SUPABASE_URL and SUPABASE_ANON_KEY.")
+    else:
+        base, key = _rest_config()
+    url = f"{base}/rest/v1/{urllib.parse.quote(table)}?select=*"
+    if query:
+        url = f"{url}&{query}"
+    headers = {"User-Agent": USER_AGENT, **_rest_headers(key, write=False), "Prefer": "count=exact"}
+    req = urllib.request.Request(url, headers=headers, method="HEAD")
+    try:
+        with urllib.request.urlopen(req, timeout=TIMEOUT_SECONDS) as resp:
+            total = (resp.headers.get("Content-Range") or "").rpartition("/")[2]
+    except urllib.error.HTTPError as exc:
+        # A HEAD response has no body, so the status is all there is to report.
+        raise DbHttpError(f"HEAD {url} -> {exc.code}") from exc
+    except urllib.error.URLError as exc:
+        raise DbHttpError(f"HEAD {url} -> {exc.reason}") from exc
+    return int(total) if total.isdigit() else None
+
+
+def select_all(table: str, query: str = "", page: int = 1000) -> list[dict[str, Any]]:
+    """`select`, paged until exhausted.
+
+    PostgREST caps a response at the project's max-rows (1,000 on Supabase), and a
+    capped response looks exactly like a complete one. Pass an explicit `order=` in
+    `query` when the result must be stable across pages.
+    """
+    out: list[dict[str, Any]] = []
+    sep = "&" if query else ""
+    while True:
+        rows = select(table, f"{query}{sep}limit={page}&offset={len(out)}")
+        out.extend(rows)
+        if len(rows) < page:
+            return out
+
+
 def insert(table: str, rows: Any) -> list[dict[str, Any]]:
     return rest("POST", table, payload=rows)
 
@@ -263,6 +312,12 @@ def main() -> int:
     p_sel.add_argument("table")
     p_sel.add_argument("query", nargs="?", default="", help='PostgREST querystring, e.g. "limit=5&select=id"')
 
+    p_cnt = sub.add_parser("count", help="count the rows visible via PostgREST (reads no rows)")
+    p_cnt.add_argument("tables", nargs="+")
+    p_cnt.add_argument("--query", default="", help='PostgREST filter, e.g. "is_active=is.true"')
+    p_cnt.add_argument("--anon", action="store_true",
+                       help="ask with the public anon key: what anyone with the app's key can see")
+
     p_ins = sub.add_parser("insert", help="insert rows via PostgREST")
     p_ins.add_argument("table")
     p_ins.add_argument("json", help="a JSON object or array of objects")
@@ -281,6 +336,11 @@ def main() -> int:
     try:
         if args.command == "check":
             return check()
+        if args.command == "count":
+            for table in args.tables:
+                n = count(table, args.query, as_anon=args.anon)
+                print(f"{table:32s} {'?' if n is None else n}")
+            return 0
         if args.command == "sql":
             query = sys.stdin.read() if args.query == "-" else args.query
             result = run_sql(query)

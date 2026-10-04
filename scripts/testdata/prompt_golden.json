@@ -1,0 +1,141 @@
+{
+ "CLASSIFY_PROMPT_HINTED": "You classify a cannabis dispensary product into three fields: category, subtype, variant.\nEach item includes hint_category (scraper guess), hint_subtype (rule-based guess) and\nhint_variant. These hints are usually correct — TRUST them and confirm them; only override\nwhen the name or description clearly contradicts the hint. If unsure about variant, return\nhint_variant unchanged.\n\ncategory — choose EXACTLY one of: flower, preroll, vaporizers, edible, concentrate, tinctures, topical, merch, other\n  Override hint_category only when the name clearly contradicts it:\n  - vape / cart / pod / aio / disposable in the name → vaporizers (even if hint says concentrate)\n  - pills / tablets / capsules → edible\n  - grinders / papers / lighters / apparel → merch\n\nsubtype — choose EXACTLY one from the chosen category's list:\n  vaporizers: cart, all-in-one, pod, battery, other\n  edible: gummy, chocolate, beverage, tablet, other\n  concentrate: diamonds, rosin, resin, hash, rso, other\n  preroll: single, infused, pack\n  flower: flower, smalls, preground, infused\n  tinctures: tincture\n  topical: topical\n  other: other\n\nvariant — the canonical size/dose, in compact form:\n  - edible: TOTAL package THC in mg (10pk × 10mg/piece = \"100mg\"); grams are wrong unless the\n    item has no THC dose or the quantity is at least 0.5g, in which case it must be reported as grams. \n    Use the description for per-piece dose and pack count. Non standard reporting like \"halfgram\" \n    should be reported as their standard equivalent. A per-piece mg DOSE written next to a pack\n    count MUST be multiplied out (\"20MG x 2PK\" = \"40mg\", \"5mg 20pk\" = \"100mg\") — reporting the\n    per-piece dose alone is wrong. This multiply-out rule is for mg doses only: for a\n    flower/preroll/vape WEIGHT, prefer hint_variant when it disagrees with your own per-unit\n    math, since source names misplace decimals (\"5 x .05g\" with hint_variant \"2.5g\" → \"2.5g\").\n    This applies to a drinkable edible too: its variant is the THC dose in mg, never the\n    liquid volume — a 12oz can holding 5mg THC has variant \"5mg\", not \"12oz\" and not \"355ml\".\n    Fall back to the volume only when no dose appears in the name or description. (This is a\n    rule about VARIANT only — it says nothing about which subtype to choose.)\n  - flower / preroll / concentrate / vaporizers: weight (\"3.5g\", \"1g\", \"0.5g\").\n  - tinctures: total mg (\"1000mg\") — never converted to grams.\n  - merch / no meaningful size: \"\"\n\nReply ONLY with a JSON array, no prose, no markdown fences:\n[{\"id\": \"0\", \"category\": \"edible\", \"subtype\": \"gummy\", \"variant\": \"100mg\"}, ...]",
+ "CLASSIFY_PROMPT_FRESH": "You classify a cannabis dispensary product into three fields: category, subtype, variant.\nNo reliable sub-format hint is available for these items, so DECIDE from scratch: read the\nname and description carefully. hint_category and hint_variant may be present but are weak —\ntreat them as loose suggestions, not answers.\n\ncategory — choose EXACTLY one of: flower, preroll, vaporizers, edible, concentrate, tinctures, topical, merch, other\n  Override hint_category only when the name clearly contradicts it:\n  - vape / cart / pod / aio / disposable in the name → vaporizers (even if hint says concentrate)\n  - pills / tablets / capsules → edible\n  - grinders / papers / lighters / apparel → merch\n\nsubtype — choose EXACTLY one from the chosen category's list:\n  vaporizers: cart, all-in-one, pod, battery, other\n  edible: gummy, chocolate, beverage, tablet, other\n  concentrate: diamonds, rosin, resin, hash, rso, other\n  preroll: single, infused, pack\n  flower: flower, smalls, preground, infused\n  tinctures: tincture\n  topical: topical\n  other: other\n\nvariant — the canonical size/dose, in compact form:\n  - edible: TOTAL package THC in mg (10pk × 10mg/piece = \"100mg\"); grams are wrong unless the\n    item has no THC dose or the quantity is at least 0.5g, in which case it must be reported as grams. \n    Use the description for per-piece dose and pack count. Non standard reporting like \"halfgram\" \n    should be reported as their standard equivalent. A per-piece mg DOSE written next to a pack\n    count MUST be multiplied out (\"20MG x 2PK\" = \"40mg\", \"5mg 20pk\" = \"100mg\") — reporting the\n    per-piece dose alone is wrong. This multiply-out rule is for mg doses only: for a\n    flower/preroll/vape WEIGHT, prefer hint_variant when it disagrees with your own per-unit\n    math, since source names misplace decimals (\"5 x .05g\" with hint_variant \"2.5g\" → \"2.5g\").\n    This applies to a drinkable edible too: its variant is the THC dose in mg, never the\n    liquid volume — a 12oz can holding 5mg THC has variant \"5mg\", not \"12oz\" and not \"355ml\".\n    Fall back to the volume only when no dose appears in the name or description. (This is a\n    rule about VARIANT only — it says nothing about which subtype to choose.)\n  - flower / preroll / concentrate / vaporizers: weight (\"3.5g\", \"1g\", \"0.5g\").\n  - tinctures: total mg (\"1000mg\") — never converted to grams.\n  - merch / no meaningful size: \"\"\n\nReply ONLY with a JSON array, no prose, no markdown fences:\n[{\"id\": \"0\", \"category\": \"edible\", \"subtype\": \"gummy\", \"variant\": \"100mg\"}, ...]",
+ "EXTRACT_PROMPT": "You extract two fields from a cannabis product whose category is already known: strain and\nproduct_line.\n\nstrain — the specific strain, flavor, or differentiator. A FLAVOR IS A STRAIN: for edibles,\nbeverages, vapes, and any product without a cannabis strain name, the flavor name is the strain\n(e.g. \"Limeade\", \"Watermelon Lemonade\", \"Blue Razz\", \"Wild Cherry\"). Always extract it — never\nreturn null just because the product is a drink, gummy, or other flavored item.\n- Strip the brand name, pure format words (Cart, Pre-Roll, Tincture, Gummy, Disposable, etc.)\n  and any size/quantity.\n- The strain is ONLY the strain/flavor. NEVER fold the product_line / sub-brand into it — if you\n  put a value in product_line, it must NOT also appear in strain\n  (\"Night Cap Elderberry Sage\" → strain \"Elderberry Sage\", product_line \"Night Cap\").\n- Strip cannabinoid ratios and potency from the strain: ratios like \"1:2:3\", \"5:10:15mg\",\n  \"THC:CBD:CBN\", and mg/percent amounts are NOT part of the strain\n  (\"Elderberry Sage 1:2:3 THC:CBD:CBN\" → \"Elderberry Sage\").\n- Normalize to Title Case; crosses use \" x \" as the separator.\n- KEEP version/edition suffixes — they distinguish real products (\"Creamsicle x Rainbow\n  Beltz 2.0\" keeps the \"2.0\"). Only pure size/format words are stripped.\n- Preserve cannabis abbreviations in all-caps: OG, AK, RSO, CBD, THC, BC, NYC, LA.\n- Do NOT correct other spellings — keep the source spelling (e.g. \"Tie Die\", \"Perisimmon\").\n- A candidate that only restates the product's own FORMAT is not a differentiator: \"Milk\n  Chocolate\" on a chocolate bar, \"Gummies\" on a gummy, \"Cart\" on a cartridge. Skip it and\n  keep looking. This applies only when the format word is the WHOLE candidate — a strain\n  that merely contains one is real and must be kept (\"Chocolate Diesel\", \"Gummy Bearz\").\n- If Sativa / Indica / Hybrid is the only differentiator left, use that as the strain.\n- Topicals DO have strains: a balm's scent or blend name is its strain (\"Ayrloom Balm - Revive\"\n  → \"Revive\"). Treat it exactly like a flavor.\n- Return null ONLY when category is merch, or nothing but the brand and a format/size\n  word remains (no flavor, scent, strain, or other differentiator at all).\n\nproduct_line — a word/phrase the brand uses to group a family of products (e.g. \"Releaf\",\n\"Protab\", \"22's\"). Assign one ONLY when the product name actually contains that line's text;\notherwise return null. Never infer a line just because the brand has one.\n\nSome items carry known_strains / known_product_lines — values ALREADY recorded for this brand\nin our catalog. Use them to stay consistent:\n- If the product is clearly the SAME strain as one of known_strains, REUSE that exact spelling.\n  This overrides \"keep source spelling\": it consolidates typos/variants (\"Blu Dreem\" → \"Blue Dream\").\n- They are a shortlist, not a constraint — if none genuinely matches, extract the strain normally.\n- For product_line, every value in known_product_lines already appears in this product's name —\n  reuse the matching one's exact spelling; if the list is absent/empty, return null.\n\nReply ONLY with a JSON array, no prose, no markdown fences:\n[{\"id\": \"0\", \"strain\": \"Watermelon Lemonade\", \"product_line\": null}, ...]",
+ "CATEGORIES": [
+  "flower",
+  "preroll",
+  "vaporizers",
+  "edible",
+  "concentrate",
+  "tinctures",
+  "topical",
+  "merch",
+  "other"
+ ],
+ "SUBTYPES": {
+  "vaporizers": [
+   "cart",
+   "all-in-one",
+   "pod",
+   "battery",
+   "other"
+  ],
+  "edible": [
+   "gummy",
+   "chocolate",
+   "beverage",
+   "tablet",
+   "other"
+  ],
+  "concentrate": [
+   "diamonds",
+   "rosin",
+   "resin",
+   "hash",
+   "rso",
+   "other"
+  ],
+  "preroll": [
+   "single",
+   "infused",
+   "pack"
+  ],
+  "flower": [
+   "flower",
+   "smalls",
+   "preground",
+   "infused"
+  ],
+  "tinctures": [
+   "tincture"
+  ],
+  "topical": [
+   "topical"
+  ],
+  "merch": [
+   "gift-card",
+   "filter-tip",
+   "roller",
+   "ashtray",
+   "cone",
+   "paper",
+   "wrap",
+   "grinder",
+   "tray",
+   "bong",
+   "pipe",
+   "dab-tool",
+   "bowl",
+   "downstem",
+   "charger",
+   "battery",
+   "lighter",
+   "storage",
+   "apparel",
+   "cleaning",
+   "scale",
+   "merch"
+  ],
+  "other": [
+   "other"
+  ]
+ },
+ "CATEGORY_DEFAULTS": {
+  "vaporizers": null,
+  "edible": null,
+  "preroll": "single",
+  "flower": "flower",
+  "concentrate": null,
+  "tinctures": "tincture",
+  "topical": "topical",
+  "merch": "merch",
+  "other": "other"
+ },
+ "BRAND_CATEGORY_RULES": {
+  "flower": {
+   "variant": "weight (3.5g, 1g, 7g)",
+   "strain": "cultivar"
+  },
+  "preroll": {
+   "variant": "weight (1g, 0.5g)",
+   "strain": "cultivar"
+  },
+  "vaporizers": {
+   "variant": "weight (1g, 0.5g, 2g)",
+   "strain": "cultivar or flavour"
+  },
+  "edible": {
+   "variant": "TOTAL package THC in mg — multiply a per-piece dose by the pack count (5mg x 20pk = 100mg). For a drink this is still the mg dose, never the liquid volume.",
+   "strain": "flavour"
+  },
+  "concentrate": {
+   "variant": "weight (1g, 0.5g)",
+   "strain": "cultivar"
+  },
+  "tinctures": {
+   "variant": "total mg (1000mg) — never converted to grams",
+   "strain": "flavour or blend name"
+  },
+  "topical": {
+   "variant": "total mg (1000mg)",
+   "strain": "scent or blend name — but a product line (Revive/Restore/Rescue) is a line, not a strain"
+  },
+  "merch": {
+   "variant": "size and pack together (1 1/4 33ct)",
+   "strain": "null — accessories have no cultivar"
+  },
+  "other": {
+   "variant": "\"\" when there is no meaningful size",
+   "strain": "flavour"
+  }
+ },
+ "STRAIN_BEARING": [
+  "concentrate",
+  "edible",
+  "flower",
+  "preroll",
+  "tinctures",
+  "vaporizers"
+ ]
+}

@@ -342,6 +342,20 @@ class Listing(ListingBase, TimestampMixin, table=True):
     )
     catalog_match_method: Optional[str] = Field(default=None, sa_type=Text)
 
+    # Live in production but missing from this model until 2026-10-04 (added by
+    # migrate_add_verification.py and, for attributes, by hand). Declared so the ORM
+    # and the database agree on what a listing is. Both are written by the pipeline
+    # (scripts/import_listings.py), never by the API.
+    verified_fields: Optional[dict] = Field(
+        default=None, sa_column=Column("verified_fields", JSONB_, nullable=True)
+    )
+    verified_at: Optional[datetime] = Field(
+        default=None, sa_column=Column("verified_at", DateTime(timezone=True), nullable=True)
+    )
+    attributes: Optional[dict] = Field(
+        default=None, sa_column=Column("attributes", JSONB_, nullable=True)
+    )
+
     dispensary:     Dispensary              = Relationship(back_populates="listings")
     purchase_items: list["PurchaseItem"]    = Relationship(back_populates="listing")
     terpene_links:  list["ListingTerpene"]  = Relationship(back_populates="listing")

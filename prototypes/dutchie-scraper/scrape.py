@@ -40,7 +40,7 @@ import sys
 import time
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../scripts"))
-from scraper_common import apply_brand_aliases, canonical_brands, map_category, normalize_variant, now_iso, stamped_path, write_csv  # noqa: E402
+from scraper_common import apply_brand_aliases, canonical_brands, map_category, normalize_variant, now_iso, stamped_path, write_csv, write_scrape_meta  # noqa: E402
 from enrich import enrich, write_usage  # noqa: E402
 
 try:
@@ -228,7 +228,8 @@ def scrape_dutchie_plus(client: httpx.Client, url: str, dispensary_slug: str,
         print(f"  pass {i}: {new} new  {len(collected)}/{total}")
 
     all_rows = [row for rows in collected.values() for row in rows]
-    return _finish(all_rows, out_path, no_enrich=no_enrich, model=model)
+    return _finish(all_rows, out_path, no_enrich=no_enrich, model=model,
+                   reported_total=total, collected=len(collected))
 
 
 # ---------------------------------------------------------------------------
@@ -366,14 +367,16 @@ def scrape_flowhub(client: httpx.Client, url: str, dispensary_slug: str,
         new = _run_pass(i)
         print(f"  pass {i}: {new} new  {len(collected)}/{total}")
 
-    return _finish(list(collected.values()), out_path, no_enrich=no_enrich, model=model)
+    return _finish(list(collected.values()), out_path, no_enrich=no_enrich, model=model,
+                   reported_total=total, collected=len(collected))
 
 
 # ---------------------------------------------------------------------------
 # Shared finishing step
 # ---------------------------------------------------------------------------
 
-def _finish(all_rows: list[dict], out_path: str, no_enrich: bool = False, model: str = "haiku") -> int:
+def _finish(all_rows: list[dict], out_path: str, no_enrich: bool = False, model: str = "haiku",
+            reported_total: int | None = None, collected: int | None = None) -> int:
     if not all_rows:
         return 0
     raw_brands  = {r["brand"] for r in all_rows if r["brand"]}
@@ -387,6 +390,8 @@ def _finish(all_rows: list[dict], out_path: str, no_enrich: bool = False, model:
     usage = enrich(all_rows, no_enrich=no_enrich, model=model)
     write_usage(usage, out_path)
     write_csv(all_rows, out_path)
+    if reported_total is not None:
+        write_scrape_meta(out_path, reported_total, collected or 0)
     print(f"  Wrote {len(all_rows)} rows → {out_path}")
     return len(all_rows)
 

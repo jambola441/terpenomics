@@ -128,7 +128,9 @@ def normalise(p: dict, scraped_at: str) -> dict:
     # price
     raw_price = p.get("price")
     try:
-        price_cents = int(float(raw_price) * 100) if raw_price is not None else ""
+        # round, not int: int(19.99 * 100) is 1998 — float multiplication lands just
+        # under the integer and int() truncates, so most prices lost a cent.
+        price_cents = round(float(raw_price) * 100) if raw_price is not None else ""
     except (ValueError, TypeError):
         price_cents = ""
 

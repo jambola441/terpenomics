@@ -46,7 +46,7 @@
 | 37 | Quality Roots | Bed-Stuy | CAURD | qualityroots.nyc | https://getqualityroots.com/categories/ | Custom (in-house) | inferred | Proprietary CDN |
 | 38 | All Good Dispensary | Flatbush | CAURD | stayallgood.com | https://stayallgood.com/shop | Tymber/BLAZE | inferred | URL pattern matches BLAZE convention |
 | 39 | Green Apple | Greenpoint | RETL | greenapple.nyc | https://greenapple.nyc/shop/ | SparkMenus | confirmed | Footer "Powered by SparkMenus" |
-| 40 | Ignyte Red Hook | Red Hook | RETL | ignyteny.com | https://shop.ignyteny.com/whitestone/categories/flower | Tymber/BLAZE | confirmed | tymber-blaze-products.imgix.net; `/whitestone/` location slug |
+| 40 | Ignyte Red Hook | Red Hook | RETL | ignyteny.com | https://shop.ignyteny.com/brooklyn/categories/flower | Tymber/BLAZE | confirmed | tymber-blaze-products.imgix.net; `/brooklyn/` location slug (2026-10-04: `/whitestone/` is the Queens store, tracked as `ignyte-whitestone`) |
 | 41 | Quality Control Dispensary | Brighton Beach | RETL | qualitycontroldispensary.com | https://qualitycontroldispensary.com/shop-brooklyn | Dutchie | confirmed | 403 on fetch = Dutchie bot-block signature |
 | 42 | Chrome Flowers | Greenpoint | CAURD | chromeflwrs.com | https://menus.dispenseapp.com/3d218a90fcb2edb0/menu/ | Dispense | confirmed | chromeflwrs.com is brochure-ware; menu is external Dispense link |
 | 43 | Rustik Smokes | Fort Greene | CAURD | rustiksmokes.com | https://rustiksmokes.com/product-category/shop/flower/ | WooCommerce | inferred | `/product-category/` URL pattern |
