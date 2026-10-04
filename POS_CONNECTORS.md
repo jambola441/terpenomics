@@ -105,11 +105,10 @@ unmatched orders inside the claim window, and purging contacts on orders past it
    - `POS_OAUTH_RETURN_URL`: web service only
 3. Run `python scripts/migrate_add_pos_connectors.py --run`.
 4. Create the `terpenomics-pos-sync` cron job (see `scripts/render.yaml`).
-5. Connect a partner:
-   1. `POST /admin/partners`
-   2. `GET /admin/pos-connections/oauth/square/start?partner_id=…`
-   3. Open the returned `authorize_url` in a browser and approve it as the
-      partner's Square account.
+5. Connect a partner from the admin UI: **Admin → Partner Stores → + Add
+   partner**, then **Connect Square** on the partner's page and approve with
+   the partner's Square account. Set `POS_OAUTH_RETURN_URL` to
+   `<admin UI>/admin/partners` so Square's redirect lands back there.
 
 ## API
 
@@ -137,7 +136,6 @@ unmatched orders inside the claim window, and purging contacts on orders past it
   `total − refunded_cents − Σ returns pointing at it`. Only completed sales should
   earn points.
 - **Square webhooks** (`order.updated`), to cut latency. Polling stays as the backstop.
-- **Admin UI pages** for partners and connections.
 - **Unconfirmed: how Square reports a refund on the original sale.** Square's
   docs don't say whether the original sale order is edited when it's refunded, so
   both possible shapes are captured. Confirm against a sandbox refund before the

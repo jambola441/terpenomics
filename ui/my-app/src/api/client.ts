@@ -40,6 +40,12 @@ import type {
   Feed,
   FeedView,
   CustomerProfile,
+  Partner,
+  PartnerDetail,
+  PartnerLocation,
+  PosConnection,
+  PosSyncRun,
+  PosOrderPage,
 } from '../types'
 
 // Get API base URL from environment variable or use default
@@ -415,6 +421,60 @@ export const api = {
         `/admin/brand-catalogs/${id}/export`,
         { method: 'POST' },
       ),
+  },
+
+  /**
+   * Partner stores (non-dispensaries whose purchases earn Terpee points) and
+   * their POS connections. Syncing is not here: scripts/pos_sync.py runs on a
+   * schedule. Connecting is OAuth — `startOAuth` returns the POS consent URL to
+   * send the browser to, and the POS redirects back to /admin/partners.
+   */
+  partners: {
+    list: (params?: { limit?: number; offset?: number }) =>
+      authenticatedFetch<Partner[]>(`/admin/partners${buildQueryString(params)}`),
+
+    get: (id: string) =>
+      authenticatedFetch<PartnerDetail>(`/admin/partners/${id}`),
+
+    create: (data: { name: string; slug: string; logo_url?: string | null }) =>
+      authenticatedFetch<Partner>(`/admin/partners`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    update: (id: string, data: { name?: string; slug?: string; logo_url?: string | null; is_active?: boolean }) =>
+      authenticatedFetch<Partner>(`/admin/partners/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
+
+    updateLocation: (locationId: string, data: { name?: string; is_active?: boolean }) =>
+      authenticatedFetch<PartnerLocation>(`/admin/partner-locations/${locationId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
+
+    startOAuth: (provider: string, partnerId: string) =>
+      authenticatedFetch<{ authorize_url: string }>(
+        `/admin/pos-connections/oauth/${provider}/start${buildQueryString({ partner_id: partnerId })}`,
+      ),
+
+    /** Pause ('disabled'), resume, or re-enable a connection that hit errors. */
+    setConnectionStatus: (connectionId: string, status: 'active' | 'disabled') =>
+      authenticatedFetch<PosConnection>(`/admin/pos-connections/${connectionId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+      }),
+
+    /** Revoke at the POS and drop credentials. Orders already pulled are kept. */
+    disconnect: (connectionId: string) =>
+      authenticatedFetch<PosConnection>(`/admin/pos-connections/${connectionId}`, { method: 'DELETE' }),
+
+    runs: (connectionId: string, limit = 10) =>
+      authenticatedFetch<PosSyncRun[]>(`/admin/pos-connections/${connectionId}/runs${buildQueryString({ limit })}`),
+
+    orders: (params: { partner_id?: string; unmatched?: boolean; limit?: number; offset?: number }) =>
+      authenticatedFetch<PosOrderPage>(`/admin/pos-orders${buildQueryString(params)}`),
   },
 
   adminOrders: {
