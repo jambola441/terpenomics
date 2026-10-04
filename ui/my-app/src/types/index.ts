@@ -695,10 +695,25 @@ export type PosConnection = {
   updated_at: string
 }
 
+export type PartnerMember = {
+  id: string
+  partner_id: string
+  email: string
+  signed_in: boolean
+  invited_at: string
+  last_login_at: string | null
+}
+
 export type PartnerDetail = Partner & {
   locations: PartnerLocation[]
   connections: PosConnection[]
+  members: PartnerMember[]
 }
+
+/** /partner/partners/:id — the same minus who has logins. */
+export type PartnerPortalDetail = Omit<PartnerDetail, 'members'>
+
+export type PartnerMe = { email: string | null; partners: Partner[] }
 
 export type PosSyncRun = {
   id: string
@@ -714,7 +729,8 @@ export type PosSyncRun = {
   error: string | null
 }
 
-export type PosOrder = {
+/** What every view of a partner order has: the sale itself, never the shopper. */
+export type PosOrderBase = {
   id: string
   partner_id: string
   connection_id: string
@@ -729,14 +745,21 @@ export type PosOrder = {
   tip_cents: number
   discount_cents: number
   refunded_cents: number
+  ordered_at: string
+  closed_at: string | null
+  items: { name: string; variation: string | null; quantity: string; total_cents: number }[]
+}
+
+/** The admin's view: which customer it matched and how. */
+export type PosOrder = PosOrderBase & {
   customer_id: string | null
   matched_via: 'link' | 'phone' | 'receipt' | 'sale' | null
   matched_at: string | null
   has_contact: boolean
   contact_purged_at: string | null
-  ordered_at: string
-  closed_at: string | null
-  items: { name: string; variation: string | null; quantity: string; total_cents: number }[]
 }
+
+/** The partner's view: only whether the shopper was a Terpee member. */
+export type PartnerPosOrder = PosOrderBase & { is_member: boolean }
 
 export type PosOrderPage = { total: number; items: PosOrder[] }

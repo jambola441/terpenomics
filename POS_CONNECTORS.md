@@ -127,6 +127,27 @@ unmatched orders inside the claim window, and purging contacts on orders past it
 | `GET /admin/pos-connections/{id}/runs` | sync history |
 | `GET /admin/pos-orders[?partner_id&customer_id&unmatched]` | read-only; contact details are not exposed |
 
+## Partner portal (`/partner`)
+
+Partners manage their own connection. An admin adds the person's Google email
+under **Partner logins** on the partner's admin page; that person signs in at
+`https://terpenomics.generic.tech/partner` with Google and can connect,
+reconnect, pause/resume or disconnect Square, and see sync history and orders.
+
+- **Access** (`routes/partner/auth.py`): a `partner_members` row grants access to
+  whoever signs in with that email, and binds to their Supabase user id on first
+  sign-in, so a later change to the Google address keeps working and a new
+  holder of the old address does not get in. SMS-login placeholder emails
+  (`…@phone.invalid`) and unverified emails never match. A partner that isn't
+  yours returns the same 404 as one that doesn't exist.
+- **Privacy**: partner order responses carry `is_member` only, never the customer,
+  how they matched, or contact details (`order_json(for_partner=True)`).
+- **Stays admin-only**: renaming, which locations earn points, and managing logins.
+- **OAuth return**: the signed state records where the connect started
+  (`admin` or `partner`), and the callback sends the browser back there. The
+  partner page is `POS_PARTNER_RETURN_URL`, defaulting to `/partner` on the
+  `POS_OAUTH_RETURN_URL` host.
+
 ## Not built yet
 
 - **Receipt upload.** A customer uploads a photo of a receipt. We read the

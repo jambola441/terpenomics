@@ -8,6 +8,7 @@ from routes.admin import router as admin_router
 from routes.customer import router as customer_router
 from routes.auth_sms import router as auth_sms_router
 from routes.pos_oauth import router as pos_oauth_router
+from routes.partner import router as partner_router
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 
@@ -30,6 +31,7 @@ app.include_router(orders_router)
 app.include_router(admin_router)
 app.include_router(customer_router)
 app.include_router(pos_oauth_router)
+app.include_router(partner_router)
 
 
 @app.on_event("startup")

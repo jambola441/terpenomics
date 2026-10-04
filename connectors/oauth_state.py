@@ -43,13 +43,20 @@ def _unb64(text: str) -> bytes:
     return base64.urlsafe_b64decode(text + "=" * (-len(text) % 4))
 
 
-def sign_state(partner_id: UUID, provider: str, now: Optional[float] = None) -> str:
+# Where the connect flow started, so the callback can send the browser back there.
+ORIGINS = ("admin", "partner")
+
+
+def sign_state(partner_id: UUID, provider: str, now: Optional[float] = None, origin: str = "admin") -> str:
+    if origin not in ORIGINS:
+        raise ValueError(f"origin must be one of {ORIGINS}")
     now = time.time() if now is None else now
     payload = {
         "p": str(partner_id),
         "v": provider,
         "e": int(now) + STATE_TTL_SECONDS,
         "n": secrets.token_urlsafe(8),
+        "o": origin,
     }
     body = _b64(json.dumps(payload, separators=(",", ":")).encode())
     sig = _b64(hmac.new(_secret(), body.encode(), hashlib.sha256).digest())
@@ -58,6 +65,11 @@ def sign_state(partner_id: UUID, provider: str, now: Optional[float] = None) -> 
 
 def verify_state(state: str, provider: str, now: Optional[float] = None) -> UUID:
     """Return the partner id the state was issued for, or raise InvalidState."""
+    return read_state(state, provider, now)[0]
+
+
+def read_state(state: str, provider: str, now: Optional[float] = None) -> tuple[UUID, str]:
+    """Return (partner id, origin) for a valid state, or raise InvalidState."""
     now = time.time() if now is None else now
     try:
         body, sig = state.split(".", 1)
@@ -75,4 +87,5 @@ def verify_state(state: str, provider: str, now: Optional[float] = None) -> UUID
         raise InvalidState("state was issued for another provider")
     if payload.get("e", 0) < now:
         raise InvalidState("state expired")
-    return partner_id
+    origin = payload.get("o", "admin")
+    return partner_id, origin if origin in ORIGINS else "admin"

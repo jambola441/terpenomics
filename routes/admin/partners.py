@@ -19,93 +19,30 @@ from sqlmodel import Session, func, select
 
 from auth import SupabaseAuthUser
 from connectors.base import PosConnector
-from connectors.oauth_state import sign_state
-from connectors.registry import PROVIDERS, get_connector
-from connectors.store import as_utc
-from connectors.sync import disconnect
 from database import get_session
+from routes.pos_common import (
+    authorize_url,
+    connection_json as _connection,
+    connector_factory,
+    disconnect_connection,
+    location_json as _location,
+    member_json,
+    order_json,
+    partner_json as _partner,
+    run_json as _run,
+    set_connection_status,
+)
 from models import (
     Partner,
     PartnerLocation,
+    PartnerMember,
     PosConnection,
-    PosConnectionStatus,
     PosOrder,
     PosSyncRun,
 )
 from .auth import require_admin
 
 router = APIRouter()
-
-
-def connector_factory() -> Callable[[str], PosConnector]:
-    """Overridable in tests, so no request ever reaches a real POS."""
-    return get_connector
-
-
-def _iso(dt: Optional[datetime]) -> Optional[str]:
-    dt = as_utc(dt)
-    return dt.isoformat() if dt else None
-
-
-# ----------------------------------------------------------------------
-# Serializers
-# ----------------------------------------------------------------------
-
-def _partner(p: Partner) -> dict:
-    return {
-        "id": str(p.id), "name": p.name, "slug": p.slug, "is_active": p.is_active,
-        "logo_url": p.logo_url, "created_at": _iso(p.created_at), "updated_at": _iso(p.updated_at),
-    }
-
-
-def _location(loc: PartnerLocation) -> dict:
-    return {
-        "id": str(loc.id), "partner_id": str(loc.partner_id),
-        "connection_id": str(loc.connection_id) if loc.connection_id else None,
-        "external_location_id": loc.external_location_id, "name": loc.name,
-        "address": loc.address, "timezone": loc.timezone, "is_active": loc.is_active,
-    }
-
-
-def _connection(c: PosConnection) -> dict:
-    return {
-        "id": str(c.id), "partner_id": str(c.partner_id), "provider": c.provider,
-        "status": c.status, "external_merchant_id": c.external_merchant_id,
-        "scopes": c.scopes, "has_credentials": bool(c.credentials),
-        "token_expires_at": _iso(c.token_expires_at), "sync_cursor": _iso(c.sync_cursor),
-        "syncing": c.sync_locked_at is not None, "last_synced_at": _iso(c.last_synced_at),
-        "last_error": c.last_error, "consecutive_failures": c.consecutive_failures,
-        "created_at": _iso(c.created_at), "updated_at": _iso(c.updated_at),
-    }
-
-
-def _run(r: PosSyncRun) -> dict:
-    return {
-        "id": str(r.id), "connection_id": str(r.connection_id), "status": r.status,
-        "since": _iso(r.since), "started_at": _iso(r.started_at), "finished_at": _iso(r.finished_at),
-        "orders_fetched": r.orders_fetched, "orders_inserted": r.orders_inserted,
-        "orders_updated": r.orders_updated, "orders_matched": r.orders_matched, "error": r.error,
-    }
-
-
-def _order(o: PosOrder) -> dict:
-    return {
-        "id": str(o.id), "partner_id": str(o.partner_id), "connection_id": str(o.connection_id),
-        "partner_location_id": str(o.partner_location_id) if o.partner_location_id else None,
-        "external_order_id": o.external_order_id, "kind": o.kind,
-        "source_external_order_id": o.source_external_order_id, "state": o.state,
-        "currency": o.currency, "total_cents": o.total_cents, "tax_cents": o.tax_cents,
-        "tip_cents": o.tip_cents, "discount_cents": o.discount_cents, "refunded_cents": o.refunded_cents,
-        "customer_id": str(o.customer_id) if o.customer_id else None,
-        "matched_via": o.matched_via, "matched_at": _iso(o.matched_at),
-        "has_contact": bool(o.customer_phone or o.customer_email),
-        "contact_purged_at": _iso(o.contact_purged_at),
-        "ordered_at": _iso(o.ordered_at), "closed_at": _iso(o.closed_at),
-        "items": [
-            {"name": i.name, "variation": i.variation, "quantity": i.quantity, "total_cents": i.total_cents}
-            for i in o.items
-        ],
-    }
 
 
 # ----------------------------------------------------------------------
@@ -180,10 +117,14 @@ def get_partner(
         select(PartnerLocation).where(PartnerLocation.partner_id == partner_id).order_by(PartnerLocation.name)
     ).all()
     connections = session.exec(select(PosConnection).where(PosConnection.partner_id == partner_id)).all()
+    members = session.exec(
+        select(PartnerMember).where(PartnerMember.partner_id == partner_id).order_by(PartnerMember.invited_at)
+    ).all()
     return {
         **_partner(partner),
         "locations": [_location(loc) for loc in locations],
         "connections": [_connection(c) for c in connections],
+        "members": [member_json(m) for m in members],
     }
 
 
@@ -207,6 +148,57 @@ def update_partner(
     session.commit()
     session.refresh(partner)
     return _partner(partner)
+
+
+# ----------------------------------------------------------------------
+# Partner logins
+# ----------------------------------------------------------------------
+#
+# Who may sign in to the partner's own dashboard at /partner. Inviting is just
+# recording an email: whoever signs in with Google as that address gets in.
+
+_EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+class MemberCreate(BaseModel):
+    email: str
+
+
+@router.post("/partners/{partner_id}/members", status_code=201)
+def invite_member(
+    partner_id: UUID,
+    payload: MemberCreate,
+    session: Session = Depends(get_session),
+    _: SupabaseAuthUser = Depends(require_admin),
+):
+    _get_partner(session, partner_id)
+    email = payload.email.strip().lower()
+    if not _EMAIL.match(email) or email.endswith("@phone.invalid"):
+        raise HTTPException(422, "enter a valid email address")
+    clash = session.exec(select(PartnerMember).where(
+        PartnerMember.partner_id == partner_id, PartnerMember.email == email,
+    )).first()
+    if clash is not None:
+        raise HTTPException(409, "that email already has access")
+    member = PartnerMember(partner_id=partner_id, email=email)
+    session.add(member)
+    session.commit()
+    session.refresh(member)
+    return member_json(member)
+
+
+@router.delete("/partner-members/{member_id}")
+def remove_member(
+    member_id: UUID,
+    session: Session = Depends(get_session),
+    _: SupabaseAuthUser = Depends(require_admin),
+):
+    member = session.get(PartnerMember, member_id)
+    if member is None:
+        raise HTTPException(404, "member not found")
+    session.delete(member)
+    session.commit()
+    return {"ok": True}
 
 
 # ----------------------------------------------------------------------
@@ -262,14 +254,8 @@ def start_oauth(
     JSON rather than a redirect: the admin's token is a bearer header, which a
     browser navigation would not carry.
     """
-    if provider not in PROVIDERS:
-        raise HTTPException(404, "unknown provider")
     _get_partner(session, partner_id)
-    try:
-        connector = factory(provider)
-    except Exception as e:
-        raise HTTPException(503, f"{provider} is not configured: {e}")
-    return {"authorize_url": connector.authorize_url(sign_state(partner_id, provider))}
+    return authorize_url(factory, provider, partner_id, origin="admin")
 
 
 @router.get("/pos-connections")
@@ -310,17 +296,7 @@ def update_connection(
     _: SupabaseAuthUser = Depends(require_admin),
 ):
     """Pause, resume, or re-enable after errors. A revoked connection needs OAuth again."""
-    conn = _get_connection(session, connection_id)
-    if conn.status == PosConnectionStatus.revoked.value:
-        raise HTTPException(409, "connection was disconnected; reconnect through OAuth")
-    conn.status = payload.status
-    if payload.status == "active":
-        conn.consecutive_failures = 0
-    conn.updated_at = datetime.now(timezone.utc)
-    session.add(conn)
-    session.commit()
-    session.refresh(conn)
-    return _connection(conn)
+    return set_connection_status(session, _get_connection(session, connection_id), payload.status)
 
 
 @router.delete("/pos-connections/{connection_id}")
@@ -331,14 +307,7 @@ def delete_connection(
     factory: Callable[[str], PosConnector] = Depends(connector_factory),
 ):
     """Disconnect: revoke at the POS and drop credentials. Orders are kept."""
-    conn = _get_connection(session, connection_id)
-    if conn.status == PosConnectionStatus.revoked.value:
-        return _connection(conn)
-    try:
-        connector = factory(conn.provider)
-    except Exception as e:
-        raise HTTPException(503, f"{conn.provider} is not configured: {e}")
-    return _connection(disconnect(session, connector, conn))
+    return disconnect_connection(session, factory, _get_connection(session, connection_id))
 
 
 @router.get("/pos-connections/{connection_id}/runs")
@@ -383,4 +352,4 @@ def list_pos_orders(
         stmt = stmt.where(f)
         count = count.where(f)
     rows = session.exec(stmt.order_by(PosOrder.ordered_at.desc()).offset(offset).limit(limit)).all()
-    return {"total": session.exec(count).one(), "items": [_order(o) for o in rows]}
+    return {"total": session.exec(count).one(), "items": [order_json(o) for o in rows]}
