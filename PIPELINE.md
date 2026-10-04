@@ -172,7 +172,8 @@ Re-measure after changing the question or upgrading the model:
 ### One-time setup
 
 1. **Apply the schema migrations** (adds catalog `product_key`/`source`/`support`; the
-   first two only codify what production already has):
+   first two only codify what production already has, and the fourth, row-level
+   security, was applied on 2026-10-04 and re-runs as a no-op):
    ```bash
    python scripts/db_migrate.py           # shows what would run
    python scripts/db_migrate.py --run

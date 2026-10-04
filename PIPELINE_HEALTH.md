@@ -10,41 +10,44 @@ It could not have run on a schedule. No worker was ever deployed, so the data is
 days old (last scrape 2026-08-29/30). And had one been deployed it would have failed
 in ways nobody would have seen: 20 of 25 stores could not start, the run would still
 have reported "ok", and the Dutchie stores that did run would have retired 48
-listings each. All of that is fixed and tested in this change. One thing is yours to
-decide (security) and four are yours to run (below).
+listings each. All of that is fixed and tested in this change. Row-level security,
+which was off, is now on in production (item 1). The rest is yours to run (below).
 
 ## Do these
 
-1. **Security — decide today.** The database password does not protect this. Supabase
+1. **Security: done 2026-10-04.** The database password never protected this. Supabase
    serves every table over a public REST API (`<project>.supabase.co/rest/v1`) that
    authenticates with the *anon* key, and that key is public by design: it is compiled
    into the web app (`VITE_SUPABASE_ANON_KEY`) and the mobile app
-   (`EXPO_PUBLIC_SUPABASE_ANON_KEY`). Row-level security is what is supposed to limit it,
-   and it is off. Checked 2026-10-04:
-   - Supabase's own security advisor reports "RLS disabled in public" as an error on
-     **26 tables**. That includes `customers`, `phone_auth_challenges`, `orders`, and the
+   (`EXPO_PUBLIC_SUPABASE_ANON_KEY`). Row-level security is what limits it, and it was
+   off:
+   - Supabase's own security advisor reported "RLS disabled in public" as an error on
+     **26 tables**, including `customers`, `phone_auth_challenges`, `orders`, and the
      new `pos_connections`, which holds stores' Square connections.
-   - The anon role holds SELECT, INSERT, UPDATE and DELETE on all 27 public tables and
-     views, so anyone with the key could change or delete data, not just read it.
-   - A request with nothing but the anon key returns row counts for `customers` (7),
-     `phone_auth_challenges` (5) and `orders` (0). Those were count-only requests; no
-     rows were read, and no writes were tried.
+   - The anon role held SELECT, INSERT, UPDATE and DELETE on every public table and
+     view, so anyone with the key could change or delete data, not just read it.
+   - With nothing but the anon key, count-only requests returned 7 `customers` and 5
+     `phone_auth_challenges`.
 
-   Enabling RLS with no policies closes this without breaking anything that exists.
-   Neither app reads tables through the anon key; both use Supabase only for login
-   sessions, and all data goes through the API. The API and the pipeline connect as
-   the table owner / service role, which bypass RLS. Review, then run:
-   ```sql
-   DO $$ DECLARE t text; BEGIN
-     FOR t IN SELECT tablename FROM pg_tables WHERE schemaname = 'public' LOOP
-       EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', t);
-     END LOOP;
-   END $$;
-   ```
-   Not applied here: it changes production auth, and that is your call. Two smaller
-   flags from the same advisor: the `products` view is `SECURITY DEFINER` (it only
-   exposes listing data, which is public menu data anyway), and Auth's leaked-password
-   protection is off.
+   RLS is now on for every public table, with no policies
+   (`db/migrations/0004_row_level_security.sql`). An event trigger turns it on for each
+   new table too, because the API's `create_all` and the `migrate_add_*.py` scripts
+   create tables outside the migrations. Checked afterwards:
+   - the advisor's 26 RLS errors are gone;
+   - the anon key sees 0 rows in every table (`python scripts/db_http.py count customers --anon`);
+   - the service-role key still sees everything;
+   - a newly created table gets RLS.
+
+   Nothing that exists reads tables as anon. Both apps use Supabase only for login; the
+   API connects as `postgres` and the pipeline uses the service-role key, and both of
+   those bypass RLS. In the 24 hours before the change, the only REST traffic was this
+   work's own reads; neither app made a REST call.
+
+   Two smaller flags remain from the advisor:
+   - The `products` view is `SECURITY DEFINER`, so the anon key can still read it:
+     11,425 rows of listing data, which is menu data the stores publish anyway.
+     `ALTER VIEW public.products SET (security_invoker = true)` closes it.
+   - Auth's leaked-password protection is off. It is a toggle in the dashboard.
 2. **Ignyte Red Hook: fixed in this change; one cleanup run left.** The store did not
    change. Both Ignyte stores are open: Whitestone, at 145-18 14th Ave, Queens, and Red
    Hook, at 387 Van Brunt St, Brooklyn. Our registry pointed Red Hook at Whitestone's
@@ -62,8 +65,9 @@ decide (security) and four are yours to run (below).
    ```
    Whitestone is a real store that is not in the registry at all. Adding it means a
    `dispensaries` row plus a registry entry with Blaze store `29d186b2-…`.
-3. `python scripts/db_migrate.py --run` — three idempotent migrations; the first two are
-   no-ops on production (they codify drift), the third adds catalog columns.
+3. `python scripts/db_migrate.py --run` — four idempotent migrations; the first two are
+   no-ops on production (they codify drift), the third adds catalog columns, and the
+   fourth (row-level security) is already applied, so it re-runs as a no-op.
 4. Push catalogs and deploy the worker — [PIPELINE.md → One-time setup](PIPELINE.md#one-time-setup).
 
 ## Measured state (live database, read-only)
@@ -115,7 +119,7 @@ decide (security) and four are yours to run (below).
 
 | finding | evidence | status |
 | --- | --- | --- |
-| **Test suite red for four weeks** | 120 errors since 2026-09-06 (SQLite cannot compile JSONB/ARRAY); no CI; pytest not a dependency; bare `pytest` hit live APIs | type variants; `pytest.ini` (live tests opt-in); GitHub Actions with Postgres; **393 passing** |
+| **Test suite red for four weeks** | 120 errors since 2026-09-06 (SQLite cannot compile JSONB/ARRAY); no CI; pytest not a dependency; bare `pytest` hit live APIs | type variants; `pytest.ini` (live tests opt-in); GitHub Actions with Postgres; **398 passing** |
 | Schema defined nowhere | `products` view only in a destructive reset script, and drifted; `listings.attributes` had no DDL; models.py lacked 3 live columns; no record of what ran | `db/migrations` + `scripts/db_migrate.py` (recorded, checksummed); `db/schema/pipeline.sql` snapshot; models updated |
 | Importer untestable | one 300-line `main()` over positional tuples | named records, overlays as functions; 19 integration tests against real Postgres 16 with the production schema |
 | Two scripts that damage production if run | `scripts/migrate.py` dropped every table (orders included) and rebuilt from models.py; `scripts/import_listings_rest.py` was a drifted importer with no verification, attributes or failure protection | deleted |
