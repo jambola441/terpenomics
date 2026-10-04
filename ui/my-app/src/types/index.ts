@@ -650,3 +650,93 @@ export type CustomerProfile = {
   email: string | null
   marketing_opt_in: boolean
 }
+
+/* ── Partner stores + POS connectors (routes/admin/partners.py) ─────────────── */
+
+export type Partner = {
+  id: string
+  name: string
+  slug: string
+  is_active: boolean
+  logo_url: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type PartnerLocation = {
+  id: string
+  partner_id: string
+  connection_id: string | null
+  external_location_id: string | null
+  name: string
+  address: string | null
+  timezone: string | null
+  is_active: boolean
+}
+
+export type PosConnectionStatus = 'active' | 'error' | 'disabled' | 'revoked'
+
+/** Credentials never leave the API; `has_credentials` is all the UI gets. */
+export type PosConnection = {
+  id: string
+  partner_id: string
+  provider: string
+  status: PosConnectionStatus
+  external_merchant_id: string
+  scopes: string | null
+  has_credentials: boolean
+  token_expires_at: string | null
+  sync_cursor: string | null
+  syncing: boolean
+  last_synced_at: string | null
+  last_error: string | null
+  consecutive_failures: number
+  created_at: string
+  updated_at: string
+}
+
+export type PartnerDetail = Partner & {
+  locations: PartnerLocation[]
+  connections: PosConnection[]
+}
+
+export type PosSyncRun = {
+  id: string
+  connection_id: string
+  status: 'running' | 'ok' | 'error'
+  since: string | null
+  started_at: string
+  finished_at: string | null
+  orders_fetched: number
+  orders_inserted: number
+  orders_updated: number
+  orders_matched: number
+  error: string | null
+}
+
+export type PosOrder = {
+  id: string
+  partner_id: string
+  connection_id: string
+  partner_location_id: string | null
+  external_order_id: string
+  kind: 'sale' | 'return'
+  source_external_order_id: string | null
+  state: 'open' | 'completed' | 'canceled'
+  currency: string
+  total_cents: number
+  tax_cents: number
+  tip_cents: number
+  discount_cents: number
+  refunded_cents: number
+  customer_id: string | null
+  matched_via: 'link' | 'phone' | 'receipt' | 'sale' | null
+  matched_at: string | null
+  has_contact: boolean
+  contact_purged_at: string | null
+  ordered_at: string
+  closed_at: string | null
+  items: { name: string; variation: string | null; quantity: string; total_cents: number }[]
+}
+
+export type PosOrderPage = { total: number; items: PosOrder[] }

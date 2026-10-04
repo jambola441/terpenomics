@@ -8,6 +8,7 @@ const sections = [
   { label: 'Lab Reports',    path: '/admin/lab-reports',    desc: 'Upload and review COAs' },
   { label: 'Dispensaries',   path: '/admin/dispensaries',   desc: 'Manage dispensary locations and POS settings' },
   { label: 'Listings',       path: '/admin/listings',       desc: 'Browse all scraped listings' },
+  { label: 'Partner Stores', path: '/admin/partners',       desc: 'Non-dispensary partners whose purchases earn Terpee points; connect their Square' },
   { label: 'Brand Catalogs', path: '/admin/brand-catalogs', desc: "Products a brand says it makes \u2014 the referent enrichment is checked against" },
 ]
 

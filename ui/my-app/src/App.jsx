@@ -18,6 +18,8 @@ import LabReportUpload from './LabReportUpload'
 import LabReportDetail from './LabReportDetail'
 import Listings from './Listings'
 import AdminListingDetail from './AdminListingDetail'
+import Partners from './Partners'
+import PartnerDetail from './PartnerDetail'
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
@@ -45,6 +47,8 @@ function App() {
         <Route path="/admin/dispensaries/:dispensaryId/listings" element={<DispensaryListingsAdmin />} />
         <Route path="/admin/listings" element={<Listings />} />
         <Route path="/admin/listings/:listingId" element={<AdminListingDetail />} />
+        <Route path="/admin/partners" element={<Partners />} />
+        <Route path="/admin/partners/:partnerId" element={<PartnerDetail />} />
         <Route path="/portal/*" element={<CustomerPortal />} />
       </Routes>
       </BrowserRouter>
