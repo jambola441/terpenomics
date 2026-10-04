@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import api from './api/client'
-import type { LabReport, LabReportResult, LabReportUpload, Product } from './types'
+import type { LabReport, LabReportResult, LabReportUpload } from './types'
 
 // ---------------------------------------------------------------------------
 // Confidence badge
@@ -67,7 +67,7 @@ function ResultsPanel({ result }: { result: LabReportResult }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
         <ConfidenceBadge score={result.confidence} />
         <PassFailBadge value={result.pass_fail} />
-        {result.applied_to_product && (
+        {result.applied_to_listing && (
           <span style={{
             fontSize: 13,
             background: '#ddf4ff',
@@ -77,7 +77,7 @@ function ResultsPanel({ result }: { result: LabReportResult }) {
             border: '1px solid #0969da40',
             fontWeight: 600,
           }}>
-            Applied to product
+            Applied to listing
           </span>
         )}
       </div>
@@ -160,7 +160,6 @@ export default function LabReportUpload() {
   const navigate = useNavigate()
   const [files, setFiles] = useState<File[]>([])
   const [dragging, setDragging] = useState(false)
-  const [products, setProducts] = useState<Product[]>([])
   const [uploading, setUploading] = useState(false)
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -190,11 +189,7 @@ export default function LabReportUpload() {
       .finally(() => setListLoading(false))
   }
 
-  // Load product list for the selector
   useEffect(() => {
-    api.products.list({ limit: 200 })
-      .then(setProducts)
-      .catch(() => { /* non-fatal */ })
     loadLabReports(0)
   }, [])
 
@@ -426,7 +421,7 @@ export default function LabReportUpload() {
                     <th style={thStyle}>Date</th>
                     <th style={thStyle}>Status</th>
                     <th style={thStyle}>Lab</th>
-                    <th style={thStyle}>Assigned Product</th>
+                    <th style={thStyle}>Assigned Listing</th>
                     <th style={thStyle}>Product on Report</th>
                     <th style={thStyle}>Batch ID</th>
                     <th style={thStyle}>Test Date</th>
@@ -437,11 +432,9 @@ export default function LabReportUpload() {
                 </thead>
                 <tbody>
                   {(() => {
-                    const productMap = new Map(products.map(p => [p.id, p]))
                     return labReports.map(r => {
                       const canSelect = r.status === 'pending'
                       const isSelected = selectedIds.has(r.id)
-                      const assignedProduct = r.product_id ? productMap.get(r.product_id) : undefined
                       return (
                         <tr
                           key={r.id}
@@ -456,7 +449,11 @@ export default function LabReportUpload() {
                           <td style={{ ...tdStyle, whiteSpace: 'nowrap' }}>{r.created_at ? new Date(r.created_at).toLocaleDateString() : '—'}</td>
                           <td style={tdStyle}><StatusBadge status={r.status} /></td>
                           <td style={tdStyle}>{r.lab_name ?? <span style={{ color: '#475569' }}>—</span>}</td>
-                          <td style={{ ...tdStyle, color: '#f1f5f9' }}>{assignedProduct ? assignedProduct.name : <span style={{ color: '#475569' }}>—</span>}</td>
+                          <td style={{ ...tdStyle, color: '#f1f5f9' }}>
+                            {r.listing_id
+                              ? <Link to={`/admin/listings/${r.listing_id}`} onClick={e => e.stopPropagation()} style={{ color: '#93c5fd' }}>View listing</Link>
+                              : <span style={{ color: '#475569' }}>—</span>}
+                          </td>
                           <td style={tdStyle}>{r.product_name_on_report ?? <span style={{ color: '#475569' }}>—</span>}</td>
                           <td style={tdStyle}>{r.batch_id ?? <span style={{ color: '#475569' }}>—</span>}</td>
                           <td style={tdStyle}>{r.test_date ?? <span style={{ color: '#475569' }}>—</span>}</td>

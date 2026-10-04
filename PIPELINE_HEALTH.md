@@ -116,9 +116,9 @@ to decide (security, one store) and four are yours to run (below).
   now, but the scraper needs a better pagination strategy.
 - **The portal re-implements product identity in five places** with different NULL
   handling, and none includes `attributes`, so merch colour variants merge there.
-- **Dead code:** `services/matching.py` (no callers), `ui/my-app/src/ListingMatch.tsx`
-  (calls endpoints that no longer exist) and the root `generate_*.py` scripts.
-  Recommend deleting.
+- **Dead code:** `services/matching.py` (no callers) and the root `generate_*.py`
+  scripts. Recommend deleting. (`ui/my-app/src/ListingMatch.tsx`, which called
+  endpoints that no longer exist, was removed on main in the admin move to listings.)
 - Alleaves is wired to one store and its prices include tax, unlike every other scraper.
 - Haiku's batch endpoint is half price and latency is free for a nightly run.
 

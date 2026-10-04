@@ -32,6 +32,9 @@ import { t, radius, font } from './theme'
 import { FeedState } from './components/ui'
 import 'leaflet/dist/leaflet.css'
 
+/** Mirrors MAX_QTY_PER_LINE in routes/orders.py. */
+const MAX_QTY_PER_LINE = 12
+
 type Tab = 'home' | 'brands' | 'categories' | 'search' | 'map' | 'profile'
 
 const TABS: { key: Tab; label: string; icon: string }[] = [
@@ -172,16 +175,41 @@ export default function CustomerPortal() {
     await supabase.auth.signOut()
   }
 
-  function handleAddToCart(item: CartItem) {
+  /**
+   * Returns whether the item went in. An order is placed with one store, and
+   * POST /me/orders rejects a mixed cart, so adding from a second store asks
+   * to start over rather than failing later at checkout. Quantity is capped at
+   * the backend's per-line limit (MAX_QTY_PER_LINE in routes/orders.py) for
+   * the same reason.
+   */
+  function handleAddToCart(item: CartItem): boolean {
+    const other = cart.find(i => i.dispensaryId !== item.dispensaryId)
+    if (other) {
+      const fresh = confirm(
+        `Your cart has items from ${other.dispensaryName}. An order can only be picked up from one store.\n\n`
+        + `Empty your cart and add this from ${item.dispensaryName} instead?`,
+      )
+      if (!fresh) return false
+      setCart([{ ...item, quantity: 1 }])
+      return true
+    }
+
+    const existing = cart.find(i => i.listingId === item.listingId)
+    if (existing && existing.quantity >= MAX_QTY_PER_LINE) {
+      alert(`You can reserve up to ${MAX_QTY_PER_LINE} of one item per order.`)
+      return false
+    }
+
     setCart(prev => {
-      const existing = prev.findIndex(i => i.listingId === item.listingId)
-      if (existing !== -1) {
+      const index = prev.findIndex(i => i.listingId === item.listingId)
+      if (index !== -1) {
         const next = [...prev]
-        next[existing] = { ...next[existing], quantity: next[existing].quantity + 1 }
+        next[index] = { ...next[index], quantity: next[index].quantity + 1 }
         return next
       }
       return [...prev, item]
     })
+    return true
   }
 
   function handleRemoveFromCart(listingId: string) {
