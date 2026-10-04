@@ -78,11 +78,16 @@ def match_orders(session: Session, orders: Iterable[PosOrder], now: Optional[dat
         for link in session.exec(select(PosCustomerLink).where(PosCustomerLink.connection_id.in_(conn_ids))).all():
             links[(link.connection_id, link.external_customer_id)] = link.customer_id
 
+    # customers.phone is not stored in one format: logins write the number the
+    # way the Supabase JWT carries it ("16462606799", no "+"), while orders carry
+    # E.164 ("+16462606799"). Look up both spellings and key on the digits.
     phones = {o.customer_phone for o in pending if o.customer_phone}
     by_phone: dict[str, UUID] = {}
     if phones:
-        for c in session.exec(select(Customer).where(Customer.phone.in_(phones))).all():
-            by_phone[c.phone] = c.id
+        spellings = phones | {p.lstrip("+") for p in phones}
+        for c in session.exec(select(Customer).where(Customer.phone.in_(spellings))).all():
+            by_phone[c.phone.lstrip("+")] = c.id
+    by_phone = {f"+{digits}": cid for digits, cid in by_phone.items()}
 
     matched = 0
     linked: set = set(links)
