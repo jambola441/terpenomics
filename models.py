@@ -6,6 +6,12 @@ from uuid import UUID, uuid4
 
 from sqlalchemy import JSON, Column, DateTime, Index, LargeBinary, Text, UniqueConstraint, text
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, REAL
+
+# Postgres in production, SQLite in the test suite (tests/conftest.py). SQLite
+# has neither JSONB nor arrays, so both fall back to plain JSON there; the
+# Postgres DDL is unchanged.
+JSONB_ = JSONB().with_variant(JSON(), "sqlite")
+TEXT_ARRAY = ARRAY(Text).with_variant(JSON(), "sqlite")
 from sqlmodel import SQLModel, Field, Relationship
 
 
@@ -214,11 +220,11 @@ class BrandCatalogEntry(SQLModel, table=True):
     variant:      Optional[str] = Field(default=None, sa_type=Text)
 
     attributes: Optional[dict] = Field(
-        default=None, sa_column=Column("attributes", JSONB, nullable=True)
+        default=None, sa_column=Column("attributes", JSONB_, nullable=True)
     )
     # Normalised strings a listing name is matched against, in addition to `name`.
     match_terms: Optional[list[str]] = Field(
-        default=None, sa_column=Column("match_terms", ARRAY(Text), nullable=True)
+        default=None, sa_column=Column("match_terms", TEXT_ARRAY, nullable=True)
     )
 
     is_active: bool = Field(default=True, nullable=False)
@@ -235,7 +241,7 @@ class BrandCatalogEntry(SQLModel, table=True):
     # Per-field human claims, same shape as listings.verified_fields — see
     # scripts/verification.py.
     verified_fields: Optional[dict] = Field(
-        default=None, sa_column=Column("verified_fields", JSONB, nullable=True)
+        default=None, sa_column=Column("verified_fields", JSONB_, nullable=True)
     )
     verified_by: Optional[str] = Field(default=None, sa_type=Text)
     verified_at: Optional[datetime] = Field(

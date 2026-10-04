@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import api from './api/client'
-import type { LabReportDetail, LabReportResult, Product } from './types'
-import { ProductSearch } from './components/ProductSearch'
+import type { LabReportDetail, LabReportResult, Listing } from './types'
+import { ListingSearch } from './components/ListingSearch'
 
 // ---------------------------------------------------------------------------
 // Shared badge components
@@ -80,14 +80,14 @@ function TerpeneRow({ name, percent, max }: { name: string; percent: number; max
 // ---------------------------------------------------------------------------
 export default function LabReportDetailPage() {
   const { reportId } = useParams<{ reportId: string }>()
-  const navigate = useNavigate()
 
   const [report, setReport] = useState<LabReportDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Product assignment — tracks the currently-selected product (from search)
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  // Listing assignment. A report's terpenes are written to one store's listing;
+  // this tracks the listing currently picked in the search.
+  const [selectedListing, setSelectedListing] = useState<Listing | null>(null)
   const [assigning, setAssigning] = useState(false)
   const [assignError, setAssignError] = useState<string | null>(null)
   const [assignSuccess, setAssignSuccess] = useState(false)
@@ -103,10 +103,10 @@ export default function LabReportDetailPage() {
     api.labReports.get(reportId)
       .then(reportData => {
         setReport(reportData)
-        // If already assigned, pre-populate the selected product
-        if (reportData.product_id) {
-          api.products.get(reportData.product_id)
-            .then(p => setSelectedProduct(p))
+        // If already assigned, pre-populate the selected listing
+        if (reportData.listing_id) {
+          api.listings.get(reportData.listing_id)
+            .then(l => setSelectedListing(l))
             .catch(() => { /* non-fatal */ })
         }
       })
@@ -120,8 +120,8 @@ export default function LabReportDetailPage() {
     setAssignError(null)
     setAssignSuccess(false)
     try {
-      const updated = await api.labReports.assign(reportId, selectedProduct?.id ?? null)
-      setReport(prev => prev ? { ...prev, product_id: updated.product_id } : prev)
+      const updated = await api.labReports.assign(reportId, selectedListing?.id ?? null)
+      setReport(prev => prev ? { ...prev, listing_id: updated.listing_id } : prev)
       setAssignSuccess(true)
     } catch (err: any) {
       setAssignError(err.message)
@@ -138,7 +138,7 @@ export default function LabReportDetailPage() {
     try {
       const results = await api.labReports.process(
         [reportId],
-        selectedProduct?.id ?? undefined,
+        selectedListing?.id ?? undefined,
       )
       const result = results[0] ?? null
       setProcessResult(result)
@@ -156,6 +156,9 @@ export default function LabReportDetailPage() {
           confidence: result.confidence,
           confidence_notes: result.confidence_notes,
           terpenes: result.terpenes,
+          cannabinoids: result.cannabinoids,
+          // Processing sets the report's listing to whatever was sent, null included.
+          listing_id: selectedListing?.id ?? null,
         } : prev)
       }
     } catch (err: any) {
@@ -189,7 +192,7 @@ export default function LabReportDetailPage() {
   const maxPct = Math.max(...report.terpenes.map(t => t.percent ?? 0), 0.001)
   const sortedCannabinoids = [...report.cannabinoids].sort((a, b) => (b.percent ?? 0) - (a.percent ?? 0))
   const maxCbdPct = Math.max(...report.cannabinoids.map(c => c.percent ?? 0), 0.001)
-  const productChanged = (selectedProduct?.id ?? null) !== (report.product_id ?? null)
+  const listingChanged = (selectedListing?.id ?? null) !== (report.listing_id ?? null)
   const canProcess = report.status === 'pending' || report.status === 'failed' || report.status === 'extracted'
 
   return (
@@ -239,22 +242,22 @@ export default function LabReportDetailPage() {
         )}
       </div>
 
-      {/* Product assignment */}
+      {/* Listing assignment */}
       <div style={{ border: '1px solid #d0d7de', borderRadius: 8, padding: '16px 20px', marginBottom: 20 }}>
-        <h2 style={{ margin: '0 0 14px', fontSize: 16 }}>Assigned Product</h2>
+        <h2 style={{ margin: '0 0 14px', fontSize: 16 }}>Assigned Listing</h2>
 
-        {selectedProduct ? (
+        {selectedListing ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
             <div style={{
               flex: 1, padding: '8px 12px', borderRadius: 6,
               border: '1px solid #d0d7de', background: '#373737', fontSize: 14,
             }}>
-              <span style={{ fontWeight: 600 }}>{selectedProduct.name}</span>
-              {selectedProduct.brand && <span style={{ color: '#57606a' }}> — {selectedProduct.brand}</span>}
-              <span style={{ color: '#57606a' }}> ({selectedProduct.category})</span>
+              <span style={{ fontWeight: 600 }}>{selectedListing.scraped_name ?? '(unnamed listing)'}</span>
+              {selectedListing.scraped_brand && <span style={{ color: '#57606a' }}> — {selectedListing.scraped_brand}</span>}
+              <span style={{ color: '#57606a' }}> ({selectedListing.dispensary_name})</span>
             </div>
             <button
-              onClick={() => { setSelectedProduct(null); setAssignSuccess(false) }}
+              onClick={() => { setSelectedListing(null); setAssignSuccess(false) }}
               disabled={assigning}
               style={{
                 padding: '6px 12px', fontSize: 13, borderRadius: 6,
@@ -267,10 +270,10 @@ export default function LabReportDetailPage() {
           </div>
         ) : (
           <div style={{ marginBottom: 12 }}>
-            <ProductSearch
-              onSelect={p => { setSelectedProduct(p); setAssignSuccess(false) }}
+            <ListingSearch
+              onSelect={l => { setSelectedListing(l); setAssignSuccess(false) }}
               disabled={assigning}
-              placeholder="Search for a product to assign…"
+              placeholder="Search for a listing to assign…"
             />
           </div>
         )}
@@ -278,25 +281,25 @@ export default function LabReportDetailPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <button
             onClick={handleAssign}
-            disabled={assigning || !productChanged}
+            disabled={assigning || !listingChanged}
             style={{
               padding: '6px 18px', fontSize: 14, fontWeight: 600, borderRadius: 6, border: 'none',
-              background: assigning || !productChanged ? '#d0d7de' : '#1f6feb',
-              color: assigning || !productChanged ? '#57606a' : '#fff',
-              cursor: assigning || !productChanged ? 'not-allowed' : 'pointer',
+              background: assigning || !listingChanged ? '#d0d7de' : '#1f6feb',
+              color: assigning || !listingChanged ? '#57606a' : '#fff',
+              cursor: assigning || !listingChanged ? 'not-allowed' : 'pointer',
             }}
           >
             {assigning ? 'Saving…' : 'Save Assignment'}
           </button>
-          {selectedProduct && (
-            <Link to={`/admin/products/${selectedProduct.id}`} style={{ fontSize: 13, color: '#57606a' }}>
-              View product →
+          {selectedListing && (
+            <Link to={`/admin/listings/${selectedListing.id}`} style={{ fontSize: 13, color: '#57606a' }}>
+              View listing →
             </Link>
           )}
         </div>
 
         {assignSuccess && (
-          <p style={{ margin: '10px 0 0', fontSize: 13, color: '#1a7f37' }}>✓ Product assignment saved</p>
+          <p style={{ margin: '10px 0 0', fontSize: 13, color: '#1a7f37' }}>✓ Listing assignment saved</p>
         )}
         {assignError && (
           <p style={{ margin: '10px 0 0', fontSize: 13, color: '#cf222e' }}>{assignError}</p>
@@ -310,7 +313,7 @@ export default function LabReportDetailPage() {
         </h2>
         <p style={{ margin: '0 0 14px', fontSize: 13, color: '#57606a' }}>
           Runs Claude vision extraction on the uploaded PDF.
-          {selectedProduct && ' Terpenes will be written to the assigned product.'}
+          {selectedListing && ' Terpenes and cannabinoids will be written to the assigned listing.'}
         </p>
         <button
           onClick={handleProcess}
@@ -336,7 +339,7 @@ export default function LabReportDetailPage() {
         {processResult && (
           <div style={{ marginTop: 16, padding: '10px 14px', background: '#dafbe1', color: '#1a7f37', borderRadius: 6, fontSize: 14 }}>
             ✓ Extraction complete — {processResult.terpenes.length} terpenes found
-            {processResult.applied_to_product && ', applied to product'}
+            {processResult.applied_to_listing && ', applied to listing'}
           </div>
         )}
       </div>

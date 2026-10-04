@@ -1,16 +1,22 @@
 import { useState, useEffect, useRef } from 'react'
 import api from '../api/client'
-import type { Product } from '../types'
+import type { Listing } from '../types'
+import { formatDollars } from '../utils/format'
 
-type ProductSearchProps = {
-  onSelect: (product: Product) => void
+/**
+ * Pick a store listing by name. Listings, not products, are what purchases and
+ * lab reports attach to: a product is a view derived from listings and has no
+ * id of its own.
+ */
+type ListingSearchProps = {
+  onSelect: (listing: Listing) => void
   disabled?: boolean
   placeholder?: string
 }
 
-export function ProductSearch({ onSelect, disabled, placeholder = 'Search products...' }: ProductSearchProps) {
+export function ListingSearch({ onSelect, disabled, placeholder = 'Search listings...' }: ListingSearchProps) {
   const [query, setQuery] = useState('')
-  const [results, setResults] = useState<Product[]>([])
+  const [results, setResults] = useState<Listing[]>([])
   const [loading, setLoading] = useState(false)
   const [showDropdown, setShowDropdown] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -28,10 +34,8 @@ export function ProductSearch({ onSelect, disabled, placeholder = 'Search produc
       setLoading(true)
       setError(null)
       try {
-        const data = await api.products.list({ q: query.trim(), limit: 10 })
-        // Filter to only active products
-        const activeProducts = data.filter(p => p.is_active)
-        setResults(activeProducts)
+        const data = await api.listings.list({ q: query.trim(), limit: 10 })
+        setResults(data.filter(l => l.is_active))
         setShowDropdown(true)
       } catch (e: any) {
         setError(e?.message ?? String(e))
@@ -56,8 +60,8 @@ export function ProductSearch({ onSelect, disabled, placeholder = 'Search produc
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  function handleSelect(product: Product) {
-    onSelect(product)
+  function handleSelect(listing: Listing) {
+    onSelect(listing)
     setQuery('')
     setResults([])
     setShowDropdown(false)
@@ -108,10 +112,10 @@ export function ProductSearch({ onSelect, disabled, placeholder = 'Search produc
           marginTop: 4,
           boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
         }}>
-          {results.map((product) => (
+          {results.map((listing) => (
             <div
-              key={product.id}
-              onClick={() => handleSelect(product)}
+              key={listing.id}
+              onClick={() => handleSelect(listing)}
               style={{
                 padding: '8px 12px',
                 cursor: 'pointer',
@@ -124,11 +128,14 @@ export function ProductSearch({ onSelect, disabled, placeholder = 'Search produc
                 e.currentTarget.style.backgroundColor = 'darkgray'
               }}
             >
-              <div style={{ fontWeight: 500 }}>{product.name}</div>
-              {product.brand && (
-                <div style={{ fontSize: 12, color: 'white' }}>{product.brand}</div>
+              <div style={{ fontWeight: 500 }}>{listing.scraped_name ?? '(unnamed listing)'}</div>
+              {listing.scraped_brand && (
+                <div style={{ fontSize: 12, color: 'white' }}>{listing.scraped_brand}</div>
               )}
-              <div style={{ fontSize: 11, color: '#999' }}>{product.category}</div>
+              <div style={{ fontSize: 11, color: '#eee' }}>
+                {[listing.dispensary_name, listing.variant, listing.price_cents != null ? formatDollars(listing.price_cents) : null]
+                  .filter(Boolean).join(' · ')}
+              </div>
             </div>
           ))}
         </div>
@@ -149,7 +156,7 @@ export function ProductSearch({ onSelect, disabled, placeholder = 'Search produc
           color: 'white',
           zIndex: 1000,
         }}>
-          No products found
+          No listings found
         </div>
       )}
     </div>

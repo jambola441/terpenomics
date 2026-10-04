@@ -43,7 +43,7 @@ import type {
 } from '../types'
 
 // Get API base URL from environment variable or use default
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://sturdy-parakeet-qg59j4pjp9q29j9j-8000.app.github.dev'
+export const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://sturdy-parakeet-qg59j4pjp9q29j9j-8000.app.github.dev'
 
 // Helper function to build query string from params
 function buildQueryString(params?: Record<string, any>): string {
@@ -212,9 +212,6 @@ export const api = {
     
     getTerpeneScores: (id: string, params?: TerpeneScoresParams) =>
       authenticatedFetch<TerpeneScoresResponse>(`/admin/customers/${id}/terpene-scores${buildQueryString(params)}`),
-    
-    getRecommendedProducts: (id: string, params?: { limit?: number, window_days?: number }) =>
-      authenticatedFetch<RecommendedProduct[]>(`/admin/customers/${id}/recommended-products${buildQueryString(params)}`),
   },
 
   products: {
@@ -539,8 +536,6 @@ export const api = {
         body: JSON.stringify({ feedback }),
       }),
 
-    getRecommendations: (customerId: string, params?: { limit?: number; window_days?: number }) =>
-      portalFetch<RecommendedProduct[]>(`/customer/${customerId}/recommendations${buildQueryString(params)}`),
 
     getProducts: (params?: { q?: string; category?: string; brand?: string; limit?: number; offset?: number }) =>
       portalFetch<PortalProduct[]>(`/customer/products${buildQueryString(params)}`),
