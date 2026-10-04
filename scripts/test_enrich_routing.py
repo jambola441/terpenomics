@@ -20,6 +20,7 @@ import catalog_match  # noqa: E402
 import catalog_store  # noqa: E402
 import enrich  # noqa: E402
 import jev_classify  # noqa: E402
+import jev_extract  # noqa: E402
 from brand_catalog import strip_brand  # noqa: E402
 
 
@@ -119,6 +120,11 @@ def fakes(monkeypatch, tmp_path):
     calls = {"classify": [], "extract": [], "extract_sized": []}
 
     def fake_llm(client, provider, api_model, system_prompt, payload, *rest):
+        if isinstance(payload, dict):          # settled answers riding along as context
+            calls.setdefault("context", []).append(payload["answered"])
+            payload = payload["items"]
+            system_prompt = {enrich._with_context(p): p
+                             for p in (enrich._EXTRACT_PROMPT, enrich._EXTRACT_PROMPT_SIZED)}[system_prompt]
         if system_prompt in (enrich._CLASSIFY_PROMPT_HINTED, enrich._CLASSIFY_PROMPT_FRESH):
             calls["classify"] += payload
             out = {p["id"]: {"category": "edible", "subtype": "gummy", "variant": "50mg"}
@@ -137,6 +143,8 @@ def fakes(monkeypatch, tmp_path):
     monkeypatch.setattr(enrich, "_make_client", lambda cfg: object())
     monkeypatch.setattr(enrich, "_CACHE_DIR", tmp_path)
     monkeypatch.setattr(enrich.jev, "available", lambda: True)
+    # Jev's strain/line step answers nothing unless a test says otherwise.
+    monkeypatch.setattr(enrich.jev_extract, "extract", lambda items, **kw: [None] * len(items))
     return calls
 
 
@@ -180,6 +188,11 @@ def test_confident_jev_rows_skip_pass_a_and_code_or_pass_b_writes_the_size(fakes
     ("Drops | 150MG THC : 450MG CBD", ".15g", "tinctures", None),  # two doses: model reads it
     ("Tea Sachets", "50.0 milligrams", "edible", "50mg"),
     ("Mystery", "", "edible", None),
+    # An empty size field: the name's figure, when it states exactly one weight
+    ("BIRTHDAY CAKE LIVE RESIN POD 0.5G", None, "vaporizers", "0.5g"),
+    ("Papaya Eighth", None, "flower", "3.5g"),
+    ("Durban Kush (S) | Kief Infused | Pre-Ground | 14g", "", "flower", "14g"),
+    ("Dream Star 1g / Cherry Diesel 3g", "", "preroll", None),     # two weights, no pack
 ])
 def test_stated_size(name, variant, category, want):
     assert enrich.stated_size({"name": name, "variant": variant}, category) == want
@@ -213,3 +226,71 @@ def test_jev_questions_put_the_hints_first():
     assert next(iter(qs["subtype.vaporizers"].criteria)) == "pod"
     assert next(iter(qs["subtype.flower"].criteria)) == "flower"     # its default
     assert "subtype.merch" not in qs                                 # tokens decide merch
+
+
+# --- Jev picks strain and line from the name -------------------------------------
+
+def text_answers(*specs):
+    def fake_extract(items, **kw):
+        assert len(items) == len(specs)
+        return [None if sp is None else jev_extract.TextAnswer(*sp) for sp in specs]
+    return fake_extract
+
+
+def test_a_row_jev_settles_reaches_no_llm(fakes, monkeypatch):
+    monkeypatch.setenv("ENRICH_CLASSIFIER", "jev")
+    monkeypatch.setattr(enrich.jev_classify, "classify", jev_answers(*[(0.97, 0.93)] * 7))
+    monkeypatch.setattr(enrich.jev_extract, "extract", text_answers(
+        ("BLUE RAZZ", 0.95, None, 0.70),          # settled: strain sure, "no line" past 0.5
+        ("Lychee", 0.95, "Bliss", 0.90),          # settled, with a line
+        ("Mango", 0.60, None, 0.90),              # strain unsure          -> LLM
+        ("Peach", 0.95, None, 0.40),              # "no line" unsure       -> LLM
+        ("Night Cap", 0.95, "Night Cap", 0.95),   # same phrase twice      -> LLM
+        ("Cherry", 0.95, "Sours", 0.70),          # a named line unsure    -> LLM
+        ("Kiwi", 0.85, None, 0.90),               # strain under the 0.90 bar -> LLM
+    ))
+    rows = [gummy(f"Gummies {c} 10pk", c) for c in "abcdefg"]
+    usage = enrich.enrich(rows, model="haiku-or", brand_examples={}, catalog_first=False)
+
+    assert sorted(p["name"] for p in fakes["extract"]) == [f"Gummies {c} 10pk" for c in "cdefg"]
+    assert (rows[0]["strain"], rows[0]["product_line"]) == ("Blue Razz", None)   # tidied
+    assert (rows[1]["strain"], rows[1]["product_line"]) == ("Lychee", "Bliss")
+    assert all(r["strain"] == "Plain" for r in rows[2:])
+    assert usage["jev_settled"] == 2
+    # The LLM saw the settled answers as context, not as items to answer.
+    assert fakes["context"] == [[{"name": "Gummies a 10pk", "strain": "Blue Razz", "product_line": None},
+                                 {"name": "Gummies b 10pk", "strain": "Lychee", "product_line": "Bliss"}]]
+    cache = json.loads((enrich._CACHE_DIR / "test-store.haiku-or.json").read_text())
+    assert cache["a|10mg"]["jx"] == jev_extract.QUESTION_VERSION
+    assert "jx" not in cache["c|10mg"]
+
+
+def test_jev_text_off_sends_every_row_to_the_llm(fakes, monkeypatch):
+    monkeypatch.setenv("ENRICH_CLASSIFIER", "jev")
+    monkeypatch.setenv("ENRICH_JEV_TEXT", "0")
+    monkeypatch.setattr(enrich.jev_classify, "classify", jev_answers((0.97, 0.93)))
+    monkeypatch.setattr(enrich.jev_extract, "extract",
+                        lambda *a, **k: pytest.fail("Jev asked for text under ENRICH_JEV_TEXT=0"))
+    rows = [gummy("Gummies a 10pk", "a")]
+    enrich.enrich(rows, model="haiku-or", brand_examples={}, catalog_first=False)
+    assert rows[0]["strain"] == "Plain"
+
+
+@pytest.mark.parametrize("name,brand,want_in,never", [
+    ("JAUNTY- Sugar Cookie | 1.5G All-In-One Palm", "Jaunty", "Sugar Cookie", "Jaunty"),
+    ("Lemon Candy Runtz -Hybrid- 28.2% THC | 2pk (Pre-Roll) 1.5g | Runtz", "Runtz",
+     "Lemon Candy Runtz", "Runtz"),
+    ("Jetpacks - Empire Dream Diamond Infused Powdered Donuts - 3.5g", "Jetpacks",
+     "Empire Dream", "Diamond Infused"),
+    ("Camino | Watermelon Lemonade 'Bliss' Gummies [20pk]", "Camino", "Bliss", "Gummies"),
+])
+def test_phrases_offer_the_strain_and_never_the_brand_or_a_bare_format(name, brand, want_in, never):
+    got = jev_extract.phrases(name, brand)
+    assert want_in in got and never not in got
+
+
+def test_tidy_keeps_mixed_case_and_title_cases_one_case_phrases():
+    assert jev_extract.tidy("STRAWBERRY COUGH") == "Strawberry Cough"
+    assert jev_extract.tidy("og kush") == "OG Kush"
+    assert jev_extract.tidy("Cherry Lime X RZ-11") == "Cherry Lime x RZ-11"
+    assert jev_extract.tidy("McFlurry Kush") == "McFlurry Kush"

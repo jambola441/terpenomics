@@ -8,8 +8,10 @@ Each row is answered by the cheapest thing that can answer it, in this order:
   4. the brand catalog, when the name IS a catalog product
      (catalog_answer; ENRICH_CATALOG_FIRST=0 turns it off)               no model
   5. Jev picks category and subtype (jev_classify.py); code writes the size where
-     the store's figure is unambiguous (stated_size); one Haiku call writes strain
-     and product line, and the size where code could not
+     the store's figure is unambiguous (stated_size); Jev picks strain and product
+     line from the name's phrases (jev_extract.py; ENRICH_JEV_TEXT=0 turns it off).
+     Whatever is still open goes to one Haiku call, which sees the rows Jev settled
+     as context
   6. rows Jev is unsure of (below ENRICH_JEV_MIN_CONFIDENCE): Haiku's two calls —
      pass A classifies and sizes, pass B extracts strain and product line
 ENRICH_CLASSIFIER=llm sends every model-bound row down 6, as before Jev.
@@ -36,6 +38,7 @@ import taxonomy  # noqa: E402
 import catalog_enricher  # noqa: E402
 import jev  # noqa: E402
 import jev_classify  # noqa: E402
+import jev_extract  # noqa: E402
 
 _DATA_DIR = Path(__file__).parent.parent / "data"
 
@@ -464,6 +467,23 @@ _EXTRACT_PROMPT_SIZED = (
 _ZERO_USAGE = {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0}
 
 
+# When Jev has settled some of a store's rows (jev_extract.py), the LLM sees only the
+# hard remainder — and measured, it reads those worse without the easy ones beside it
+# ("Lemon Candy Runtz" lost its brand word, "Unscented" became a strain). So the
+# settled answers ride along as context: name and answer only, no description, so
+# they cost a few input tokens and no output.
+_CONTEXT_NOTE = (
+    "\n\nThe request is a JSON object. `items` are the products to answer. `answered` lists "
+    "other products from the same store whose strain and product_line are already settled: "
+    "they are context only — never answer them — but read the items consistently with them.")
+_CONTEXT_EXAMPLES = 30
+
+
+def _with_context(prompt: str) -> str:
+    head, sep, reply = prompt.rpartition("\n\nReply ONLY")
+    return head + _CONTEXT_NOTE + sep + reply
+
+
 # ---------------------------------------------------------------------------
 # Catalog first — a listing that names a catalog product needs no model call
 # ---------------------------------------------------------------------------
@@ -506,12 +526,14 @@ def stated_size(row: dict, category: str | None) -> str | None:
     weight  the store's own figure (the variant field), which pass A is told to prefer
             over its own per-unit math ("2pk" beside "0.8g" is as often the package as
             the piece) — unless the name states a different weight ("Runtz - 28G" filed
-            as 1/8 oz), a conflict for the model to settle.
+            as 1/8 oz), a conflict for the model to settle. With the field empty, the
+            name's figure when it states exactly one weight.
     dose    the package total, a pack count multiplied in under New York's 100mg cap,
             as pass A is told to — unless more than one dose is named (THC beside CBD
             or CBN, a per-piece figure beside a total that no pack count explains).
-    Measured on the gold suites: willing on 87% of rows and right on all of them, the
-    two refusals above included (evals/enrich/README.md); pass A's answer is 97% right.
+    Measured on the gold suites: willing on 92% of rows and right on all of them
+    (evals/enrich/README.md); pass A's answer is 97% right. On 1,703 real listings it
+    answers 91% and agrees with the size Haiku stored on 96.3%.
     """
     import sizes
     spec = taxonomy.spec(category)
@@ -519,9 +541,15 @@ def stated_size(row: dict, category: str | None) -> str | None:
         return None
     if spec.measure == "weight":
         stated = sizes.parse(row.get("variant"), category=category)
-        if not stated.grams:
-            return None
         named = sizes.parse(row.get("name"), category=category)
+        if not stated.grams:
+            # No figure in the size field: the name's, when it states exactly one
+            # weight ("... POD 0.5G", "Papaya Eighth") — pack math there is the
+            # name's own ("5pk x 0.6g"), not a guess about the field.
+            weights = sizes.weight_mentions(row.get("name"))
+            if not named.grams or len(weights) > 1 and not named.pack:
+                return None
+            return normalize_variant(f"{named.grams:g}g", category)
         if named.grams and sizes.same_size(named, stated) is False:
             return None
         return normalize_variant(f"{stated.grams:g}g", category)
@@ -605,6 +633,47 @@ def _classifier() -> str:
 # (evals/enrich/README.md): 0.80 sends ~7% of rows to the LLM and every wrong Jev
 # answer was among them.
 JEV_MIN_CONFIDENCE = float(os.environ.get("ENRICH_JEV_MIN_CONFIDENCE", "0.80"))
+
+
+# Strain and product line picked by Jev from the name's phrases (jev_extract.py), for
+# rows Jev classified and code sized — those then reach no LLM at all. A strain is
+# taken at JEV_TEXT_MIN (0.90: Jev's picks there are 99.4% right on the gold suites), a
+# named line at JEV_LINE_MIN, "no line" at the lower JEV_NO_LINE_MIN — a missing line
+# costs less than a wrong one. ENRICH_JEV_TEXT=0 sends these rows to the LLM as before.
+def _jev_text() -> bool:
+    return os.environ.get("ENRICH_JEV_TEXT", "1").strip() != "0"
+
+
+JEV_TEXT_MIN = float(os.environ.get("ENRICH_JEV_TEXT_MIN", "0.90"))
+JEV_LINE_MIN = float(os.environ.get("ENRICH_JEV_LINE_MIN", "0.80"))
+JEV_NO_LINE_MIN = float(os.environ.get("ENRICH_JEV_NO_LINE_MIN", "0.50"))
+
+
+def _extract_with_jev(rows: list[tuple[int, dict]], categories: list, strains: list,
+                      product_lines: list, subtypes: list
+                      ) -> tuple[list[tuple[int, dict]], jev.Usage]:
+    """Settle strain and line with Jev where it is confident; returns the rows settled.
+
+    The same phrase picked as both strain and line is a contradiction, not an answer,
+    and leaves the row to the LLM.
+    """
+    usage = jev.Usage()
+    answers = jev_extract.extract([(row, categories[oi], subtypes[oi]) for oi, row in rows],
+                                  usage=usage)
+    settled = []
+    for (oi, row), a in zip(rows, answers):
+        if a is None or a.strain is None or a.p_strain < JEV_TEXT_MIN:
+            continue
+        if a.line is None:
+            if a.p_line < JEV_NO_LINE_MIN:
+                continue
+        elif a.p_line < JEV_LINE_MIN or a.line.lower() == a.strain.lower():
+            continue
+        strains[oi] = enrichers.for_category(categories[oi]).strain(
+            row.get("name", ""), jev_extract.tidy(a.strain))
+        product_lines[oi] = a.line
+        settled.append((oi, row))
+    return settled, usage
 
 
 def _classify_with_jev(pending: list[tuple[int, dict]], categories: list, subtypes: list,
@@ -759,7 +828,11 @@ def _call_llm_once(
             }
         if text.startswith("```"):
             text = text.split("\n", 1)[1].rsplit("```", 1)[0].strip()
-        items = {item["id"]: item for item in json.loads(text)}
+        parsed = json.loads(text)
+        if isinstance(parsed, dict):        # a reply that echoed the request's shape
+            parsed = parsed.get("items") or []
+        # Entries without an id are not answers — e.g. a context row the model echoed.
+        items = {str(item["id"]): item for item in parsed if isinstance(item, dict) and "id" in item}
     except Exception as exc:
         delay = _retry_delay(exc)
         with print_lock:
@@ -928,6 +1001,18 @@ def _run_enrich(
     by_jev_ids = {oi for oi, _ in by_jev}
     need_size_ids = {oi for oi, _ in need_size}
 
+    # ---- Pass A1: Jev picks strain and line from the name — rows it settles are done ----
+    settled: list[tuple[int, dict]] = []
+    if sized_by_code and _jev_text():
+        settled, text_usage = _extract_with_jev(sized_by_code, categories, strains,
+                                                product_lines, subtypes)
+        usage["jev_text_requests"] = text_usage.requests
+        usage["jev_cost_usd"] = usage.get("jev_cost_usd", 0.0) + text_usage.cost_usd
+        usage["jev_settled"] = len(settled)
+        print(f"    pass A1: jev settled strain/line for {len(settled)} of {len(sized_by_code)} "
+              f"item(s); the rest → {api_model} (${text_usage.cost_usd:.4f})")
+    settled_ids = {oi for oi, _ in settled}
+
     # ---- Pass A: classification, split by hint availability ----
     hinted   = [(oi, r) for (oi, r) in to_llm if _hint_subtype(r) is not None]
     fresh    = [(oi, r) for (oi, r) in to_llm if _hint_subtype(r) is None]
@@ -1060,14 +1145,27 @@ def _run_enrich(
         return item
 
     extract_tasks = []
-    for kind, bucket, prompt, sized in (("", to_llm + sized_by_code, _EXTRACT_PROMPT, False),
+    plain = to_llm + [(oi, r) for oi, r in sized_by_code if oi not in settled_ids]
+    answered = [{"name": r.get("name", ""), "strain": strains[oi],
+                 "product_line": product_lines[oi]} for oi, r in settled]
+    for kind, bucket, prompt, sized in (("", plain, _EXTRACT_PROMPT, False),
                                         ("+size ", need_size, _EXTRACT_PROMPT_SIZED, True)):
         for bi, chunk in enumerate(_chunks(bucket, batch_size)):
             payload = [extract_payload_item(i, oi, r) for i, (oi, r) in enumerate(chunk)]
-            extract_tasks.append((f"extract {kind}{bi + 1}", prompt, payload,
+            sp = prompt
+            if answered:
+                # The batch's own brands first: that is where reading consistently matters.
+                brands = {(r.get("brand") or "").lower() for _, r in chunk}
+                same = [i for i, (_, r) in enumerate(settled)
+                        if (r.get("brand") or "").lower() in brands]
+                rest = [i for i in range(len(settled)) if i not in set(same)]
+                context = [answered[i] for i in (same + rest)[:_CONTEXT_EXAMPLES]]
+                payload, sp = {"answered": context, "items": payload}, _with_context(prompt)
+            extract_tasks.append((f"extract {kind}{bi + 1}", sp, payload,
                                   extract_applier(chunk, sized)))
 
-    print(f"    pass B: extract strain/product_line for {len(pending)} item(s) → {api_model}")
+    print(f"    pass B: extract strain/product_line for {len(plain) + len(need_size)} "
+          f"item(s) → {api_model}")
     run_phase(extract_tasks)
 
     # ---- Write cache once, both passes applied ----
@@ -1095,6 +1193,8 @@ def _run_enrich(
             }
             if oi in by_jev_ids:
                 cache[key]["jq"] = jev_classify.QUESTION_VERSION
+            if oi in settled_ids:
+                cache[key]["jx"] = jev_extract.QUESTION_VERSION
 
     _save_cache(cache, slug)
     return usage
@@ -1206,7 +1306,8 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
         # fields, or if it was written under an older prompt/taxonomy version.
         if entry and "variant" in entry and "category" in entry \
                 and entry.get("v") == _ENRICH_VERSION \
-                and entry.get("jq") in (None, jev_classify.QUESTION_VERSION):
+                and entry.get("jq") in (None, jev_classify.QUESTION_VERSION) \
+                and entry.get("jx") in (None, jev_extract.QUESTION_VERSION):
             categories.append(entry.get("category"))
             subtypes.append(entry.get("subtype"))
             strains.append(entry.get("strain"))

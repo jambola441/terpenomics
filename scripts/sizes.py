@@ -160,6 +160,20 @@ def mg_mentions(*texts: str | None) -> list[float]:
     return sorted({round(v, 3) for v in _floats(_MG, text) if v > 0})
 
 
+def weight_mentions(*texts: str | None) -> list[float]:
+    """Every distinct gram weight the texts state (ounce words and fractions included)."""
+    text = " | ".join(t for t in texts if t)
+    text = _PERCENT.sub(" ", _RATIO.sub(" ", text))
+    grams = _floats(_GRAMS, text)
+    grams += [int(m.group(1)) / int(m.group(2)) * OZ_GRAMS
+              for m in _OZ_FRAC.finditer(text) if int(m.group(2))]
+    lowered = _OZ_FRAC.sub(" ", text).lower()
+    for word, g in sorted(_OZ_WORDS.items(), key=lambda kv: -len(kv[0])):
+        lowered, hits = re.subn(rf"\b{word}\b", " ", lowered)
+        grams += [g] * bool(hits)
+    return sorted({round(v, 3) for v in grams if v > 0})
+
+
 def _total(values: list[float], pack: int | None, unit: float | None, *,
            unit_below: float | None, cap: float | None = None) -> float | None:
     """The package total implied by the mentions.

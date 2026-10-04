@@ -181,7 +181,12 @@ On all nine gold case files (302 cases), with the arms interleaved:
 | | cases passed | size right | rows that changed between two runs | $/run |
 | --- | ---: | ---: | ---: | ---: |
 | Haiku only (9 runs) | 278.7 | 97.2% | 29.4 | $0.164 |
-| Jev + code sizes + Haiku (6 runs) | **285.2** | **98.8%** | **26.1** | **$0.108** |
+| Jev + code sizes + Haiku (6 runs) | 285.2 | 98.8% | 26.1 | $0.108 |
+| + Jev picks strain and line from the name (6 runs) | **287.7** | 98.6% | **22.5** | **$0.086** |
+
+The last row: Jev settles about half the remaining rows with no LLM at all, and product
+line goes from 85% to 100%. Haiku has to see those settled rows as context: without
+them, it read the leftover hard rows worse. That is in the eval README.
 
 Category stays at 100%, and every other field is equal or better. Detail and caveats
 are in [evals/enrich/README.md](evals/enrich/README.md#jev-classifies-code-sizes-haiku-writes-text-2026-10-04).
@@ -196,6 +201,6 @@ category, 99.5% of subtype, 99.1% of size and 97.8% of strain. The strain differ
 are spellings, and product line differs where stores split a line. The catalog's
 consensus wins both, as it already does at import.
 
-In dollars, the saving is small: about $9 → $5 for a full re-enrichment of the
+In dollars, the saving is small: about $9 → $4 for a full re-enrichment of the
 fleet, and cents on a normal day, when only new listings reach a model. The gains
 that matter are accuracy and consistency.

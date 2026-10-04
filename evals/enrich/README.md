@@ -502,6 +502,62 @@ Haiku-only has nine runs; the other arms have six each.
 Reproduce: `python evals/enrich/run_eval.py --models haiku-or` (Jev) and
 `--classifier llm` (Haiku only). Run each several times: one run moves ±3 cases.
 
+## Jev picks strain and line too — and Haiku needs the easy rows (2026-10-04)
+
+After Jev took category and subtype, Haiku's remaining job was strain and product line
+(80% of the cost). Jev cannot write text, but a strain does not have to be written: in
+all 263 gold cases with a strain, it is a phrase of the listing's name.
+
+**How** ([`scripts/jev_extract.py`](../../scripts/jev_extract.py)):
+- **Code proposes phrases.** It cuts the name at separators, sizes, potencies and
+  ratios, and offers the pieces and their sub-phrases. That's 6.7 phrases per row,
+  with the right strain among them for 99.6% of rows.
+- **Jev picks the strain and the line,** with "none" offered first. A phrase in quotes
+  is shown as quoted; that alone took lines from 13/20 to 20/20.
+- **Bars:** a strain is taken at p ≥ 0.90, a named line at 0.80, "no line" at 0.50.
+  Anything less, or the same phrase picked for both, goes to Haiku.
+- **Size:** code now also reads it from the name when the size field is empty. On
+  gold it's willing on 92% of rows and right on all of them (it was 87%). On 1,703 real
+  listings it answers 91% and agrees with Haiku's stored size 96.3% of the time.
+
+**The surprise.** The first A/B lost about 3 strain answers per run, and none of them
+were Jev's picks. Tracing one run showed Haiku itself reading the leftover rows worse
+once the easy rows were taken out of its batch:
+
+| listing | Haiku with the full batch | Haiku with only the leftovers |
+| --- | --- | --- |
+| Lemon Candy Runtz (brand Runtz) | "Lemon Candy Runtz" | "Lemon Candy" |
+| Unscented CBD lotion | no strain | "Unscented" |
+
+The fix: Jev's settled answers ride along as context, as name and answer only. That
+costs a few input tokens and no output (`_with_context`).
+
+**A/B, all nine case files, six interleaved runs each:**
+
+| | Jev classify + code sizes (before) | + Jev picks strain and line |
+| --- | ---: | ---: |
+| cases passed (of 302) | 285.5 | **287.7** |
+| strain / product line right | 97.8% / 85.0% | 97.7% / **100%** (every run) |
+| size right | 98.9% | 98.6% |
+| rows that change between two runs | 33.0 | **22.5** |
+| $/run | $0.107 | **$0.086** |
+
+Jev settles 47% of rows outright. The rest get one Haiku call with the context.
+- **Real listings:** at the same bars Jev settles 48% of 400 real listings. Its
+  strains agree with what Haiku stored 98.5% of the time, and its lines 94.3%; most
+  line differences are stored lines of doubtful value ("Exotic Flower", "Moonrock
+  Infused").
+- **Cost so far on the gold run:** Haiku alone was $0.164; Jev classification plus
+  code sizes is $0.107; adding Jev strain and line is $0.086, 48% less than Haiku alone.
+
+**Tried and not shipped:**
+- **Jev picking the size where code declines.** Jev was 6/6 right on the gold rows
+  where code could offer readings. But 11 of the 17 declined rows have no number in the
+  name or size field at all, so it would settle about 2% of rows. Not worth the code.
+- **Shorter Jev classification requests.** Asking the subtype only for categories in
+  play cut Jev's tokens by 39%. But Haiku escalations rose from 7.9% to 13.9%, which
+  cost more than the tokens saved.
+
 ## Model comparison — DeepSeek v4 vs Haiku 4.5 (2026-08-25)
 
 Same gold suites, same prompts, `haiku-or` transport throughout. Haiku has 4 runs
