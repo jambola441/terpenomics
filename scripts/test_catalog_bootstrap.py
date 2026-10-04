@@ -77,6 +77,18 @@ def test_entries_are_stable_and_carry_store_names():
     assert all("jetpacks" not in t for t in e["match_terms"])
 
 
+def test_a_strains_cart_pod_and_aio_are_separate_products():
+    vapes = [L(s, f"Jetpacks Afghani {fmt}", "Afghani", None, "1g", "vaporizers", sub)
+             for s, fmt, sub in (("s1", "Cart", "cart"), ("s2", "510 Cart", "cart"),
+                                 ("s3", "Pod", "pod"), ("s4", "Pod", "pod"),
+                                 # the model said pod; the name says Cart, and the name wins
+                                 ("s5", "Cart", "pod"))]
+    entries = cb.propose("Jetpacks", vapes)["catalog"]["entries"]
+    got = sorted((e["subtype"], e["support"]) for e in entries)
+    assert got == [("cart", 3), ("pod", 2)]
+    assert len({e["product_key"] for e in entries}) == 2
+
+
 def test_input_rows_are_not_mutated():
     rows = [dict(r) for r in JETPACKS]
     cb.propose("Jetpacks", rows)

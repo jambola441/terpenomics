@@ -1,12 +1,22 @@
 """
-enrich.py — Post-scrape enrichment: subtype + strain + product line.
+enrich.py — Post-scrape enrichment: category, subtype, strain, product line, size.
 
-classify_by_token gives a cheap rule-based subtype hint.  A single Haiku call
-then confirms/corrects the subtype and extracts strain and product_line.
-Results are cached in data/enrich_cache.json keyed by "dispensary_slug:sku".
+Each row is answered by the cheapest thing that can answer it, in this order:
+  1. a human's verified claim (verification.py)                          no model
+  2. a category owner that reads the name — merch (enrichers.py)         no model
+  3. this store's cache of earlier answers                               no model
+  4. the brand catalog, when the name IS a catalog product
+     (catalog_answer; ENRICH_CATALOG_FIRST=0 turns it off)               no model
+  5. Jev picks category and subtype (jev_classify.py); code writes the size where
+     the store's figure is unambiguous (stated_size); one Haiku call writes strain
+     and product line, and the size where code could not
+  6. rows Jev is unsure of (below ENRICH_JEV_MIN_CONFIDENCE): Haiku's two calls —
+     pass A classifies and sizes, pass B extracts strain and product line
+ENRICH_CLASSIFIER=llm sends every model-bound row down 6, as before Jev.
+Answers are cached per store in data/enrich_cache/<slug>.json.
 
     from enrich import enrich
-    rows = enrich(rows)
+    usage = enrich(rows)
 """
 
 import json
@@ -14,7 +24,6 @@ import os
 import re
 import sys
 import time
-from collections import OrderedDict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -25,6 +34,8 @@ import attributes as attribute_registry  # noqa: E402
 import enrichers  # noqa: E402
 import taxonomy  # noqa: E402
 import catalog_enricher  # noqa: E402
+import jev  # noqa: E402
+import jev_classify  # noqa: E402
 
 _DATA_DIR = Path(__file__).parent.parent / "data"
 
@@ -33,29 +44,9 @@ _DATA_DIR = Path(__file__).parent.parent / "data"
 # Token patterns — cheap subtype hint
 # ---------------------------------------------------------------------------
 
-_TOKENS: dict[str, OrderedDict] = {
-    "vaporizers": OrderedDict([
-        ("all-in-one", re.compile(r"\ball[\s-]*in[\s-]*one\b|\baio\b|\bdisposable\b", re.I)),
-        ("cart",       re.compile(r"\b(cart|510|cartridge|preload|reload)\b", re.I)),
-        ("pod",        re.compile(r"\bpod\b", re.I)),
-        ("battery",    re.compile(r"\b(battery|starter\s*kit)\b", re.I)),
-    ]),
-    "edible": OrderedDict([
-        ("beverage",  re.compile(r"\b(beverage|sparkling\s+water|tea\s+sachet|drink)\b", re.I)),
-        ("gummy",     re.compile(r"\bgumm|\bchews?\b|\brope\b|\bpearl\b", re.I)),
-        ("chocolate", re.compile(r"\bchocolate\b|\bbar\b", re.I)),
-        ("tablet",    re.compile(r"\btablet\b|\bprotab\b|\bcapsule\b|\bpill\b|\bbean\b|\bdrop\b", re.I)),
-    ]),
-    "preroll": OrderedDict([
-        ("infused", re.compile(r"\b(infused|kief|diamond|hash\s*hole|live\s*resin|live\s*rosin)\b", re.I)),
-        ("pack",    re.compile(r"\bpack\b|\bvariety\b|\b\d+\s*pk\b", re.I)),
-    ]),
-    "flower": OrderedDict([
-        ("smalls",    re.compile(r"\bsmalls?\b|\bsmall\s+bud", re.I)),
-        ("preground", re.compile(r"\bpre-?ground\b|\bground\s+flower\b|\bready\s*-?\s*to\s*-?\s*roll\b", re.I)),
-        ("infused",   re.compile(r"\bdiamond\s+infused\b|\binfused\b", re.I)),
-    ]),
-}
+# The rule-based subtype tokens live with every other per-category definition,
+# in taxonomy.py, so the catalog paths read the same rules.
+_TOKENS = taxonomy.SUBTYPE_TOKENS
 
 # Merch identity — size, pack, colour, flavour — used to live here as a block of
 # module-level helpers. It moved to MerchEnricher (scripts/enrichers.py) and
@@ -67,14 +58,7 @@ _TOKENS: dict[str, OrderedDict] = {
 _CATEGORY_DEFAULTS: dict[str, str | None] = taxonomy.default_subtypes()
 
 
-def classify_by_token(category: str, name: str) -> str | None:
-    patterns = _TOKENS.get(category)
-    if not patterns:
-        return None
-    for subtype, pat in patterns.items():
-        if pat.search(name):
-            return subtype
-    return None
+classify_by_token = taxonomy.token_subtype
 
 
 def _hint_category(row: dict) -> str:
@@ -361,16 +345,9 @@ _SUBTYPE_LINES = "\n".join(
 # a "decide from scratch" prompt for rows with no reliable sub-format hint.
 # ---------------------------------------------------------------------------
 
-_CLASSIFY_BODY = f"""\
-category — choose EXACTLY one of: {_CATEGORY_LIST}
-  Override hint_category only when the name clearly contradicts it:
-  - vape / cart / pod / aio / disposable in the name → vaporizers (even if hint says concentrate)
-  - pills / tablets / capsules → edible
-  - grinders / papers / lighters / apparel → merch
-
-subtype — choose EXACTLY one from the chosen category's list:
-{_SUBTYPE_LINES}
-
+# The size rules, shared by pass A (where the LLM classifies) and the sized extract
+# prompt (where Jev classified and the LLM writes the size instead).
+_VARIANT_RULES = """\
 variant — the canonical size/dose, in compact form:
   - edible: TOTAL package THC in mg (10pk × 10mg/piece = "100mg"); grams are wrong unless the
     item has no THC dose or the quantity is at least 0.5g, in which case it must be reported as grams. 
@@ -386,7 +363,19 @@ variant — the canonical size/dose, in compact form:
     rule about VARIANT only — it says nothing about which subtype to choose.)
   - flower / preroll / concentrate / vaporizers: weight ("3.5g", "1g", "0.5g").
   - tinctures: total mg ("1000mg") — never converted to grams.
-  - merch / no meaningful size: ""
+  - merch / no meaningful size: \"\""""
+
+_CLASSIFY_BODY = f"""\
+category — choose EXACTLY one of: {_CATEGORY_LIST}
+  Override hint_category only when the name clearly contradicts it:
+  - vape / cart / pod / aio / disposable in the name → vaporizers (even if hint says concentrate)
+  - pills / tablets / capsules → edible
+  - grinders / papers / lighters / apparel → merch
+
+subtype — choose EXACTLY one from the chosen category's list:
+{_SUBTYPE_LINES}
+
+{_VARIANT_RULES}
 
 Reply ONLY with a JSON array, no prose, no markdown fences:
 [{{"id": "0", "category": "edible", "subtype": "gummy", "variant": "100mg"}}, ...]"""
@@ -408,10 +397,7 @@ treat them as loose suggestions, not answers.
 
 {_CLASSIFY_BODY}"""
 
-_EXTRACT_PROMPT = """\
-You extract two fields from a cannabis product whose category is already known: strain and
-product_line.
-
+_EXTRACT_RULES = """\
 strain — the specific strain, flavor, or differentiator. A FLAVOR IS A STRAIN: for edibles,
 beverages, vapes, and any product without a cannabis strain name, the flavor name is the strain
 (e.g. "Limeade", "Watermelon Lemonade", "Blue Razz", "Wild Cherry"). Always extract it — never
@@ -451,11 +437,207 @@ in our catalog. Use them to stay consistent:
 - For product_line, every value in known_product_lines already appears in this product's name —
   reuse the matching one's exact spelling; if the list is absent/empty, return null.
 
-Reply ONLY with a JSON array, no prose, no markdown fences:
-[{"id": "0", "strain": "Watermelon Lemonade", "product_line": null}, ...]"""
+"""
+
+_EXTRACT_PROMPT = (
+    "You extract two fields from a cannabis product whose category is already known: strain and\n"
+    "product_line.\n\n"
+    + _EXTRACT_RULES
+    + "Reply ONLY with a JSON array, no prose, no markdown fences:\n"
+    '[{"id": "0", "strain": "Watermelon Lemonade", "product_line": null}, ...]'
+)
+
+# Pass B for rows Jev classified (jev_classify.py) whose size code could not read
+# (stated_size): Jev cannot write text, so the size pass A would have written is asked
+# for here, under the same rules, with the category already settled.
+_EXTRACT_PROMPT_SIZED = (
+    "You extract three fields from a cannabis product whose category is already known: strain,\n"
+    "product_line and variant.\n\n"
+    + _EXTRACT_RULES
+    + _VARIANT_RULES
+    + "\n  Each item carries hint_variant, the size the store listed; if unsure, return it unchanged.\n\n"
+    "Reply ONLY with a JSON array, no prose, no markdown fences:\n"
+    '[{"id": "0", "strain": "Watermelon Lemonade", "product_line": null, "variant": "100mg"}, ...]'
+)
 
 
 _ZERO_USAGE = {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0}
+
+
+# ---------------------------------------------------------------------------
+# Catalog first — a listing that names a catalog product needs no model call
+# ---------------------------------------------------------------------------
+
+# On by default. The eval harness turns it off, so a model comparison measures the
+# model rather than whichever gold brands happen to have catalogs.
+def _catalog_first_default() -> bool:
+    return os.environ.get("ENRICH_CATALOG_FIRST", "1").strip() != "0"
+
+
+_CATALOG_INDEXES: dict | None = None
+
+
+def _catalog_indexes() -> dict:
+    """{brand_key: CatalogIndex}, read from Postgres once per process.
+
+    Empty — catalog-first simply off for the run — when the database cannot be read.
+    Never the data/catalogs/ export files: they can hold products the catalog has
+    since dropped, and a dropped product must not be matched (PIPELINE_HEALTH.md).
+    """
+    global _CATALOG_INDEXES
+    if _CATALOG_INDEXES is None:
+        import catalog_match
+        import catalog_store
+        try:
+            catalogs = catalog_store.load_all("db")
+        except Exception as e:  # noqa: BLE001 — an optimisation must not fail a scrape
+            print(f"  [warn] catalog-first off this run: catalogs unavailable ({e})",
+                  file=sys.stderr)
+            catalogs = {}
+        _CATALOG_INDEXES = {k: catalog_match.CatalogIndex(c)
+                            for k, c in catalogs.items() if c.get("entries")}
+    return _CATALOG_INDEXES
+
+
+def stated_size(row: dict, category: str | None) -> str | None:
+    """The size pass A would write, when code can read it without guessing — or None,
+    and a model reads it.
+
+    weight  the store's own figure (the variant field), which pass A is told to prefer
+            over its own per-unit math ("2pk" beside "0.8g" is as often the package as
+            the piece) — unless the name states a different weight ("Runtz - 28G" filed
+            as 1/8 oz), a conflict for the model to settle.
+    dose    the package total, a pack count multiplied in under New York's 100mg cap,
+            as pass A is told to — unless more than one dose is named (THC beside CBD
+            or CBN, a per-piece figure beside a total that no pack count explains).
+    Measured on the gold suites: willing on 87% of rows and right on all of them, the
+    two refusals above included (evals/enrich/README.md); pass A's answer is 97% right.
+    """
+    import sizes
+    spec = taxonomy.spec(category)
+    if spec is None:
+        return None
+    if spec.measure == "weight":
+        stated = sizes.parse(row.get("variant"), category=category)
+        if not stated.grams:
+            return None
+        named = sizes.parse(row.get("name"), category=category)
+        if named.grams and sizes.same_size(named, stated) is False:
+            return None
+        return normalize_variant(f"{stated.grams:g}g", category)
+    if spec.measure == "dose":
+        stated = sizes.parse(row.get("variant"), row.get("name"), category=category)
+        doses = sizes.mg_mentions(row.get("variant"), row.get("name"))
+        if not stated.mg or not doses:
+            return None
+        if len(doses) > 1:
+            pack = stated.pack or 0
+            if not (len(doses) == 2 and pack > 1
+                    and abs(doses[0] * pack - doses[1]) <= 0.05 * doses[1]):
+                return None
+        return normalize_variant(f"{stated.mg:g}mg", category)
+    return None
+
+
+def catalog_answer(row: dict, indexes: dict) -> dict | None:
+    """Every field enrichment would ask a model for, read from the brand's catalog —
+    or None, and the row goes to the model as usual.
+
+    Only for a listing whose name IS a catalog title or a store name already recorded
+    for that product (catalog_match's `exact` tier, the one that needs no model), and
+    only when the entry settles every field the way the importer would:
+      - category from the entry; subtype from it too unless a format word in the
+        name says otherwise (catalog_match.matched_subtype, as the importer does)
+      - strain from the entry — never a self-censored spelling, never blank
+      - product_line as the entry has it, blank included (import_listings._overlay)
+      - size: the listing's own, read the way pass A reads it, which must agree with
+        the entry's. The listing's figure is what gets written, in the form pass A
+        writes it, because the size is part of the listing key and the products
+        view's identity — a catalog label ("5pk 3g") would split a product from its
+        other stores' "3g".
+    Anything short of that — an ambiguous match, a missing field, a size that is
+    absent or disagrees — returns None. The importer re-resolves every listing
+    against the catalog anyway, so a row this declines loses nothing but the saving.
+    """
+    import catalog_match
+    import catalog_store
+    import sizes
+    from catalog_enricher import _is_masked
+    index = indexes.get(catalog_store.brand_key(row.get("brand")))
+    if index is None:
+        return None
+    name = row.get("name", "")
+    key, _ = index.exact(name, _hint_category(row) or None)
+    if key is None:
+        return None
+    product = index.products[key]
+    cat = product.category
+    if cat not in SUBTYPES or enrichers.skips_model(cat):
+        return None
+    entry = index.pick_entry(key, row.get("variant"), cat, name)
+    subtype = catalog_match.matched_subtype(entry, name)
+    strain = entry.get("strain") or product.strain
+    if subtype not in SUBTYPES[cat] or not strain or _is_masked(strain):
+        return None
+    size = stated_size(row, cat)
+    if size is None or sizes.same_size(sizes.parse(size, category=cat),
+                                       sizes.parse(entry.get("variant"), category=cat)) is not True:
+        return None
+    return {"category": cat, "subtype": subtype, "strain": strain,
+            "product_line": entry.get("product_line"), "variant": size}
+
+
+# ---------------------------------------------------------------------------
+# Who decides category and subtype — Jev or the LLM's pass A
+# ---------------------------------------------------------------------------
+
+# "jev": jev_classify.py answers category and subtype, code writes the size where it
+#        can (stated_size), the LLM writes strain and product line — and the size where
+#        code could not — in one call, and rows Jev is unsure of take the full LLM path
+#        instead. "llm": pass A for every row, as before.
+# Read per call so one process (the eval harness) can compare both.
+def _classifier() -> str:
+    return os.environ.get("ENRICH_CLASSIFIER", "jev").strip().lower()
+
+
+# A Jev answer below this probability — for the category, or for the subtype within
+# it — is not taken; the row goes to the LLM's pass A. Measured on the gold suites
+# (evals/enrich/README.md): 0.80 sends ~7% of rows to the LLM and every wrong Jev
+# answer was among them.
+JEV_MIN_CONFIDENCE = float(os.environ.get("ENRICH_JEV_MIN_CONFIDENCE", "0.80"))
+
+
+def _classify_with_jev(pending: list[tuple[int, dict]], categories: list, subtypes: list,
+                       ) -> tuple[list[tuple[int, dict]], list[tuple[int, dict]], jev.Usage]:
+    """Settle category and subtype with Jev where it is confident.
+
+    Returns (classified, rest, usage). `rest` — failed calls and answers below
+    JEV_MIN_CONFIDENCE — goes through pass A unchanged. The overrides are the ones
+    pass A's applier makes, in the same order: a curated device token fixes the
+    category, the owning enricher's name tokens and the rails fix the subtype.
+    """
+    usage = jev.Usage()
+    items = [(row, _hint_category(row), _hint_subtype(row)) for _, row in pending]
+    answers = jev_classify.classify(items, usage=usage)
+    classified, rest = [], []
+    for (oi, row), (_, _, hint_sub), a in zip(pending, items, answers):
+        if a is None:
+            rest.append((oi, row))
+            continue
+        name = row.get("name", "")
+        forced = find_format_category(row.get("brand", ""), name)
+        cat = forced or _valid_category(a.category, row.get("category"))
+        owner = enrichers.for_category(cat)
+        sub_answer, p_sub = a.subtype_for(cat)
+        if len(SUBTYPES.get(cat, ())) <= 1 or not owner.needs_model:
+            p_sub = 1.0          # nothing to choose, or the owner's tokens decide (merch)
+        if min(1.0 if forced else a.p_category, p_sub) < JEV_MIN_CONFIDENCE:
+            rest.append((oi, row))
+            continue
+        categories[oi] = cat
+        subtypes[oi] = _valid_subtype(sub_answer, cat, owner.token_subtype(name) or hint_sub)
+        classified.append((oi, row))
+    return classified, rest, usage
 
 
 # ---------------------------------------------------------------------------
@@ -714,13 +896,41 @@ def _run_enrich(
             }
             for fut in as_completed(futs):
                 items, u = fut.result()
-                for k in usage:
+                for k in _ZERO_USAGE:       # usage also carries jev_* totals
                     usage[k] += u[k]
                 futs[fut](items)
 
+    # ---- Pass A0: Jev classifies; what it is unsure of falls through to pass A ----
+    by_jev: list[tuple[int, dict]] = []
+    to_llm = pending
+    if _classifier() == "jev" and jev.available():
+        by_jev, to_llm, jev_usage = _classify_with_jev(pending, categories, subtypes)
+        usage["jev_requests"] = jev_usage.requests
+        usage["jev_cost_usd"] = jev_usage.cost_usd
+        usage["jev_classified"] = len(by_jev)
+        print(f"    pass A0: jev classified {len(by_jev)} of {len(pending)} item(s); "
+              f"{len(to_llm)} below {JEV_MIN_CONFIDENCE:.2f} or failed → {api_model} "
+              f"(${jev_usage.cost_usd:.4f})")
+    # A size code can read (stated_size) needs no model either; only the rest are asked
+    # for one, alongside strain and product line, in the sized pass B prompt.
+    need_size: list[tuple[int, dict]] = []
+    sized_by_code: list[tuple[int, dict]] = []
+    for oi, row in by_jev:
+        size = stated_size(row, categories[oi])
+        if size is None:
+            need_size.append((oi, row))
+            continue
+        ov = enrichers.for_category(categories[oi]).variant(row.get("name", ""), size)
+        variants[oi] = ov or size
+        sized_by_code.append((oi, row))
+    if by_jev:
+        usage["sized_by_code"] = len(sized_by_code)
+    by_jev_ids = {oi for oi, _ in by_jev}
+    need_size_ids = {oi for oi, _ in need_size}
+
     # ---- Pass A: classification, split by hint availability ----
-    hinted   = [(oi, r) for (oi, r) in pending if _hint_subtype(r) is not None]
-    fresh    = [(oi, r) for (oi, r) in pending if _hint_subtype(r) is None]
+    hinted   = [(oi, r) for (oi, r) in to_llm if _hint_subtype(r) is not None]
+    fresh    = [(oi, r) for (oi, r) in to_llm if _hint_subtype(r) is None]
 
     _cap_a = _pass_a_desc_cap()
 
@@ -775,7 +985,7 @@ def _run_enrich(
                 (f"classify[{kind}] {bi + 1}", prompt, classify_payload(chunk), classify_applier(chunk))
             )
 
-    print(f"    pass A: classify {len(pending)} item(s) "
+    print(f"    pass A: classify {len(to_llm)} item(s) "
           f"({len(hinted)} hinted, {len(fresh)} fresh) → {api_model}")
     run_phase(classify_tasks)
 
@@ -791,13 +1001,22 @@ def _run_enrich(
         else:
             brand_examples = {}
 
-    def extract_applier(chunk):
+    def extract_applier(chunk, sized=False):
         def on_result(items):
             for local_id, (oi, row) in enumerate(chunk):
                 it = (items or {}).get(str(local_id))
                 if it is None:
                     failed_rows.add(oi)
                     it = {}
+                if sized:
+                    # Jev classified this row, so the size pass A would have written
+                    # comes from here — same rules, same owner override.
+                    v = it.get("variant")
+                    variants[oi] = v if v is not None else row.get("variant", "")
+                    ov = enrichers.for_category(categories[oi]).variant(
+                        row.get("name", ""), variants[oi])
+                    if ov:
+                        variants[oi] = ov
                 product_lines[oi] = it.get("product_line")
                 # The owner decides what `strain` means for its category — merch
                 # returns None, because a cultivar is not what separates two
@@ -815,6 +1034,8 @@ def _run_enrich(
             "category":    categories[oi] or r.get("category", "other"),
             "description": r.get("description", ""),
         }
+        if oi in need_size_ids:
+            item["hint_variant"] = r.get("variant", "")
         ex = brand_examples.get((r.get("brand") or "").strip().lower())
         if ex:
             name = r.get("name", "")
@@ -839,9 +1060,12 @@ def _run_enrich(
         return item
 
     extract_tasks = []
-    for bi, chunk in enumerate(_chunks(pending, batch_size)):
-        payload = [extract_payload_item(i, oi, r) for i, (oi, r) in enumerate(chunk)]
-        extract_tasks.append((f"extract {bi + 1}", _EXTRACT_PROMPT, payload, extract_applier(chunk)))
+    for kind, bucket, prompt, sized in (("", to_llm + sized_by_code, _EXTRACT_PROMPT, False),
+                                        ("+size ", need_size, _EXTRACT_PROMPT_SIZED, True)):
+        for bi, chunk in enumerate(_chunks(bucket, batch_size)):
+            payload = [extract_payload_item(i, oi, r) for i, (oi, r) in enumerate(chunk)]
+            extract_tasks.append((f"extract {kind}{bi + 1}", prompt, payload,
+                                  extract_applier(chunk, sized)))
 
     print(f"    pass B: extract strain/product_line for {len(pending)} item(s) → {api_model}")
     run_phase(extract_tasks)
@@ -869,6 +1093,8 @@ def _run_enrich(
                 "category": categories[oi], "subtype": subtypes[oi], "strain": strains[oi],
                 "product_line": product_lines[oi], "variant": variants[oi],
             }
+            if oi in by_jev_ids:
+                cache[key]["jq"] = jev_classify.QUESTION_VERSION
 
     _save_cache(cache, slug)
     return usage
@@ -880,7 +1106,7 @@ def _run_enrich(
 
 def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
            model: str = DEFAULT_MODEL, brand_examples: dict[str, dict] | None = None,
-           catalog_hints: bool = False) -> dict:
+           catalog_hints: bool = False, catalog_first: bool | None = None) -> dict:
     """Enrich every row in place: corrects category, adds subtype/strain/product_line/variant.
 
     `model` selects an entry from MODELS (default "haiku"). Each non-default model
@@ -939,6 +1165,9 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
     product_lines: list[str | None] = []
     variants:      list[str | None] = []
     pending:       list[tuple[int, dict]] = []
+    if catalog_first is None:
+        catalog_first = _catalog_first_default()
+    from_catalog = 0
 
     for i, row in enumerate(rows):
         # A row a human has signed off on entirely never reaches the model — the
@@ -976,12 +1205,23 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
         # Re-enrich if not cached, if the cache pre-dates the variant/category
         # fields, or if it was written under an older prompt/taxonomy version.
         if entry and "variant" in entry and "category" in entry \
-                and entry.get("v") == _ENRICH_VERSION:
+                and entry.get("v") == _ENRICH_VERSION \
+                and entry.get("jq") in (None, jev_classify.QUESTION_VERSION):
             categories.append(entry.get("category"))
             subtypes.append(entry.get("subtype"))
             strains.append(entry.get("strain"))
             product_lines.append(entry.get("product_line"))
             variants.append(entry.get("variant"))
+        elif catalog_first and (hit := catalog_answer(row, _catalog_indexes())):
+            # The listing names a known product: its identity is the catalog's, which
+            # the importer would overlay anyway, so there is nothing to ask a model.
+            # Not cached — it is recomputed for free, and a catalog edit lands at once.
+            categories.append(hit["category"])
+            subtypes.append(hit["subtype"])
+            strains.append(hit["strain"])
+            product_lines.append(hit["product_line"])
+            variants.append(hit["variant"])
+            from_catalog += 1
         else:
             categories.append(None)
             subtypes.append(_hint_subtype(row))
@@ -991,9 +1231,11 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
             pending.append((i, row))
 
     no_model = sum(1 for r in rows if enrichers.skips_model(_hint_category(r)))
-    cached_count = len(rows) - len(pending) - no_model
+    cached_count = len(rows) - len(pending) - no_model - from_catalog
     if no_model:
         print(f"  deterministic: {no_model} row(s) answered from the name, no model call")
+    if from_catalog:
+        print(f"  catalog: {from_catalog} row(s) name a catalog product, no model call")
     if pending:
         print(f"  enrich: {cached_count} cached, {len(pending)} → {model}")
         usage = _run_enrich(pending, cache, slug, categories, subtypes, strains, product_lines, variants, model_cfg, batch_size, brand_examples, catalog_hints)
@@ -1038,6 +1280,7 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
         print(msg)
 
     usage["failed_rows"] = sum(1 for row in rows if row.get("enrich_failed"))
+    usage["from_catalog"] = from_catalog
     if usage["failed_rows"]:
         print(f"  [warn] {usage['failed_rows']} row(s) unenriched this run "
               f"(marked enrich_failed; the importer keeps their stored identity)", file=sys.stderr)
@@ -1049,7 +1292,7 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
         + usage["cache_write_tokens"] * c.get("cache_write", 0)
         + usage["cache_read_tokens"]  * c.get("cache_read", 0)
     )
-    usage["cost_usd"] = round(cost, 4)
+    usage["cost_usd"] = round(cost + usage.get("jev_cost_usd", 0.0), 4)
     return usage
 
 

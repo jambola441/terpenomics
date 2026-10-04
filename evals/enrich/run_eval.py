@@ -14,6 +14,7 @@ Usage
   python evals/enrich/run_eval.py --models haiku,deepseek
   python evals/enrich/run_eval.py --models haiku,mimo,deepseek,gemini-flash,gpt-mini
   python evals/enrich/run_eval.py --models haiku --cases cases/categorization.json
+  python evals/enrich/run_eval.py --models haiku-or --classifier llm   # Haiku-only baseline
 
 Outputs land in evals/enrich/results/: <model>.json, comparison.md, summary.md.
 Model enrichment is run with brand_examples={} so results reflect the model alone
@@ -103,8 +104,10 @@ def enrich_with_model(model: str, suites: list[dict], brand_nudge: bool = False,
     err = None
     t = time.time()
     try:
+        # catalog_first=False: a gold row whose brand has a catalog would otherwise be
+        # answered from the catalog, and the run would stop measuring the model.
         usage = enrich.enrich(rows, model=model, brand_examples=brand_examples,
-                              catalog_hints=catalog_hint)
+                              catalog_hints=catalog_hint, catalog_first=False)
     except Exception as e:  # registry guard, client build, etc.
         usage, err = {}, f"{type(e).__name__}: {e}"
     secs = time.time() - t
@@ -215,7 +218,8 @@ def write_comparison(results: list[dict], suites: list[dict], out_dir: Path) -> 
 
 
 def write_summary(results: list[dict], suites: list[dict], out_dir: Path,
-                  brand_nudge: bool = False, catalog_hint: bool = False) -> None:
+                  brand_nudge: bool = False, catalog_hint: bool = False,
+                  classifier: str = "llm") -> None:
     lines = ["# Enrich model eval — summary\n",
              f"brand-examples nudge: **{'on' if brand_nudge else 'off'}** "
              "(off = model only; on = DB brand index in play)\n",
@@ -223,6 +227,8 @@ def write_summary(results: list[dict], suites: list[dict], out_dir: Path,
              # indistinguishable in this file, and the two do not score the same.
              f"catalog hint: **{'on' if catalog_hint else 'off'}** "
              "(on = the brand's catalog is in the pass-B prompt)\n",
+             f"classifier: **{classifier}** (jev = Jev decides category/subtype, Haiku the "
+             "rest; llm = Haiku's pass A for every row)\n",
              "Score = passing cases / total (clusters: groups converged + canonical-matched).\n",
              "| model | api_model | time s | in tok | out tok | cost $ | "
              + " | ".join(s["eval_type"] for s in suites) + " | note |",
@@ -253,12 +259,17 @@ def main() -> None:
     ap.add_argument("--cases", default="cases/*.json", help="glob(s) of case files, comma-separated")
     ap.add_argument("--brand-nudge", action="store_true",
                     help="enable the DB brand-examples nudge (default off, model-only)")
+    ap.add_argument("--classifier", choices=["jev", "llm"],
+                    default=os.environ.get("ENRICH_CLASSIFIER", "jev"),
+                    help="who decides category/subtype: jev (default; Haiku only where Jev "
+                         "is unsure) or llm (Haiku's pass A for every row)")
     ap.add_argument("--catalog-hint", action="store_true",
                     help="put the brand's real product list (data/catalogs/) in the "
                          "pass-B prompt (default off, so a model comparison measures "
                          "the model rather than the catalog)")
     args = ap.parse_args()
 
+    os.environ["ENRICH_CLASSIFIER"] = args.classifier
     suites = load_suites([c.strip() for c in args.cases.split(",")])
     if not suites:
         print("No case files matched.", file=sys.stderr)
@@ -270,7 +281,8 @@ def main() -> None:
     total_cases = sum(len(s["cases"]) for s in suites)
     print(f"Suites: {', '.join(s['_file'] for s in suites)}  ({total_cases} cases)"
           f"  brand_nudge={'on' if args.brand_nudge else 'off'}"
-          f"  catalog_hint={'on' if args.catalog_hint else 'off'}")
+          f"  catalog_hint={'on' if args.catalog_hint else 'off'}"
+          f"  classifier={args.classifier}")
     results = []
     for m in models:
         if m not in enrich.MODELS:
@@ -290,7 +302,7 @@ def main() -> None:
     if results:
         write_comparison(results, suites, out_dir)
         write_summary(results, suites, out_dir, brand_nudge=args.brand_nudge,
-                      catalog_hint=args.catalog_hint)
+                      catalog_hint=args.catalog_hint, classifier=args.classifier)
         print(f"\nWrote {out_dir}/comparison.md and summary.md")
 
 

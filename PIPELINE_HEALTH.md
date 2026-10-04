@@ -109,8 +109,9 @@ to decide (security, one store) and four are yours to run (below).
   that store's day. It is now visible and retried tomorrow; decoupling (scrape → CSV,
   then enrich the CSV) is the cleaner end state.
 - **The enriched variant is part of the listing key**, so a model changing a size
-  re-keys a listing. Mitigated for failed rows only. The size still comes from the
-  model; `sizes.py` (used by matching) could parse most of them deterministically.
+  re-keys a listing. Mitigated for failed rows, and now for most new rows: code
+  writes the size when the store's figure is unambiguous (below). Rows Haiku
+  classifies still get Haiku's size.
 - **Flowhub never reaches its reported total** (94% after 50 passes). Imported safely
   now, but the scraper needs a better pagination strategy.
 - **The portal re-implements product identity in five places** with different NULL
@@ -156,9 +157,44 @@ Ayrloom, 655 active listings, against the curated catalog (47 products):
 
 | scope | proposed products | listings covered | product rows |
 | --- | ---: | ---: | --- |
-| Jetpacks | 71 | 232 / 304 | 210 → 141 |
-| top 50 brands without a catalog | 1,922 | 7,294 / 9,692 (75%) | 4,796 → 3,916 |
-| top 300 | 3,135 | 10,561 / 16,546 (64%) | 9,014 → 7,827 |
+| Jetpacks | 66 | 219 / 304 | 210 → 148 |
+| top 50 brands without a catalog | 1,936 | 6,955 / 9,692 (72%) | 4,796 → 4,263 |
+| top 300 | 3,122 | 10,078 / 16,546 (61%) | 9,014 → 8,283 |
 
 Before Jev absorbs the single-store variants and before any human review. Not pushed —
 see [PIPELINE.md](PIPELINE.md#one-time-setup).
+
+These numbers are lower than the first version's (top 50: 75%). That version grouped
+without subtype, so a strain's cart, pod and all-in-one merged into one product and
+the most common format won. Checked against the morning's scrapes, 16 vapes whose
+names say Cart, AIO, Pod or Starter Kit would have been given another format. Subtype
+is now part of the grouping. Wherever a catalog identity is applied, a format word in
+the listing's own name beats the entry's subtype.
+
+## Enrichment with Jev, measured
+
+Haiku's first call decided category, subtype and size. Now Jev picks category and
+subtype, code writes the size when the store's figure is unambiguous, and Haiku
+writes strain and product line in one call. Rows Jev is unsure of (7%) go the old way.
+On all nine gold case files (302 cases), with the arms interleaved:
+
+| | cases passed | size right | rows that changed between two runs | $/run |
+| --- | ---: | ---: | ---: | ---: |
+| Haiku only (9 runs) | 278.7 | 97.2% | 29.4 | $0.164 |
+| Jev + code sizes + Haiku (6 runs) | **285.2** | **98.8%** | **26.1** | **$0.108** |
+
+Category stays at 100%, and every other field is equal or better. Detail and caveats
+are in [evals/enrich/README.md](evals/enrich/README.md#jev-classifies-code-sizes-haiku-writes-text-2026-10-04).
+One design was rejected: Haiku writing the size inside its single call made sizes
+less stable between runs (19.6 rows against 12.9).
+
+**Catalog first.** A listing whose name is a recorded catalog product now takes the
+catalog's answer before any model is asked. With the top-50 bootstrap catalogs in
+place, that is 14% of the model-bound rows in the morning's five scrapes. Those
+answers agree with what Haiku stored on 99% of category, subtype, size and strain.
+The remaining disagreements are mostly product line, where the catalog's consensus
+is the point and which the importer applies anyway.
+
+In dollars, the saving is small: about $9 → $5 for a full re-enrichment of the
+fleet, and cents on a normal day, when only new listings reach a model. The gains
+that matter are accuracy and consistency.

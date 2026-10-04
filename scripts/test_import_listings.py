@@ -233,6 +233,26 @@ def test_unsure_jev_match_goes_to_review_without_overlay(db, tmp_path, monkeypat
     assert (r["strain"], r["product_line"]) == ("Blue Dreem", None)
 
 
+def test_a_format_word_in_the_name_beats_the_entrys_subtype(db, tmp_path):
+    """A bootstrap merged a strain's cart and pod; the listing that says Cart stays a cart."""
+    add_catalog(db, [{"name": "acme blue dream cart", "category": "vaporizers",
+                      "subtype": "pod", "strain": "Blue Dream", "variant": "1g"}])
+    run(tmp_path, [row("A", "Acme Blue Dream Cart", category="vaporizers", subtype="pod",
+                       variant="1g", strain="Blue Dream")])
+    [r] = listings(db)
+    assert r["catalog_match_method"] == "exact" and r["subtype"] == "cart"
+
+
+def test_catalogs_load_over_database_url_when_rest_is_not_configured(db, monkeypatch):
+    """The scrape worker has DATABASE_URL and no Supabase REST credentials."""
+    import catalog_store
+    add_catalog(db, [{"name": "acme blue dream", "category": "flower", "strain": "Blue Dream"}])
+    monkeypatch.delenv("SUPABASE_URL", raising=False)
+    monkeypatch.delenv("SUPABASE_SERVICE_ROLE_KEY", raising=False)
+    cats = catalog_store.load_all("db")
+    assert [e["name"] for e in catalog_store.for_brand(cats, "Acme")["entries"]] == ["acme blue dream"]
+
+
 def test_masked_catalog_strain_is_not_copied(db, tmp_path):
     add_catalog(db, [{"name": "acme alaskan thunder fu*k", "category": "flower",
                       "strain": "Alaskan Thunder Fu*K"}])

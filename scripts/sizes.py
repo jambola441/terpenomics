@@ -33,7 +33,7 @@ WEIGHT_CATEGORIES = taxonomy.categories_measured_by("weight")
 
 _NUM = r"(\d+(?:\.\d+)?|\.\d+)"
 _GRAMS = re.compile(rf"{_NUM}\s*(?:g|gr|gram|grams)\b", re.I)
-_MG = re.compile(rf"{_NUM}\s*mg\b", re.I)
+_MG = re.compile(rf"{_NUM}\s*(?:mg|milligrams?)\b", re.I)
 # "5pk", "5 pack", "5-pack", "5ct", "10 count", "2 pcs", "5 x" (when followed by a size)
 _PACK = re.compile(r"\b(\d+)\s*[-\s]?(?:pk|pack|packs|ct|count|pcs|pieces|pc)\b", re.I)
 _PACK_X = re.compile(rf"\b(\d+)\s*(?:pk\s*)?x\s*{_NUM}\s*(g|mg)\b", re.I)
@@ -149,6 +149,15 @@ def parse(*texts: str | None, category: str | None = None) -> Size:
         pack = None
     return Size(grams=_round(total_g), mg=_round(total_mg), pack=pack,
                 unit_g=_round(unit_g), unit_mg=_round(unit_mg))
+
+
+def mg_mentions(*texts: str | None) -> list[float]:
+    """Every distinct mg amount the texts name, potency and ratios stripped as parse()
+    strips them — so a caller can tell one dose ("10mg x 10pk") from several
+    ("150MG THC : 450MG CBD"), which parse() would otherwise reduce to its largest."""
+    text = " | ".join(t for t in texts if t)
+    text = _PERCENT.sub(" ", _RATIO.sub(" ", text))
+    return sorted({round(v, 3) for v in _floats(_MG, text) if v > 0})
 
 
 def _total(values: list[float], pack: int | None, unit: float | None, *,

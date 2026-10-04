@@ -245,7 +245,7 @@ def apply_catalog(records: list[dict], existing: dict[tuple, dict], catalogs: di
 
     stats = {"exact": 0, "jev": 0, "jev_review": 0, "manual": 0, "substring": 0,
              "token": 0, "ambiguous": 0, "none": 0, "no_catalog": 0, "overlaid": 0,
-             "kept_previous": 0, "masked_strain_skipped": 0}
+             "kept_previous": 0, "masked_strain_skipped": 0, "subtype_from_name": 0}
     by_id = catalog_store.entries_by_id(catalogs)
     by_brand: dict[str, list[int]] = {}
     for i, rec in enumerate(records):
@@ -326,12 +326,17 @@ def _overlay(rec: dict, entry: dict, stats: dict, is_masked) -> None:
     stores and absent at others is the split this exists to remove, so an entry with
     no line means every listing of it has no line. subtype and strain are taken only
     when the entry has one — a catalog row without them is incomplete, not a claim
-    that the product has none. A self-censored strain ("Fu*K") is never copied onto
-    a listing: the catalog is authoritative about which product it is, not about how
-    to spell it on our menu. Fix those once in the admin and they flow everywhere.
+    that the product has none — and a format word in the listing's own name beats the
+    entry's subtype (catalog_match.matched_subtype). A self-censored strain ("Fu*K")
+    is never copied onto a listing: the catalog is authoritative about which product
+    it is, not about how to spell it on our menu. Fix those once in the admin and
+    they flow everywhere.
     """
-    if entry.get("subtype"):
-        rec["subtype"] = entry["subtype"]
+    import catalog_match
+    subtype = catalog_match.matched_subtype(entry, rec.get("scraped_name"))
+    if subtype:
+        stats["subtype_from_name"] += subtype != entry.get("subtype")
+        rec["subtype"] = subtype
     strain = entry.get("strain")
     if strain and is_masked(strain):
         stats["masked_strain_skipped"] += 1

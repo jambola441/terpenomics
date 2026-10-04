@@ -101,6 +101,7 @@ def _strip_brand(name: str, brand: str) -> str:
 @dataclass
 class Group:
     category: str
+    subtype: str
     strain_key: str
     line_key: str
     size_key: str
@@ -157,13 +158,21 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
     # ("100mg" at one, "100mg 10pk" at the next), and keying on the full label split
     # Wyld's 27 product rows into 42. The entry's displayed size is the group's most
     # common full label.
+    #
+    # Subtype is part of the key, as it is of a product's identity (taxonomy.py): a
+    # strain's cart, pod and all-in-one are three products. Without it they merged and
+    # the most common format won: on 2026-10-04's scrapes, 16 vapes whose names say
+    # Cart, AIO, Pod or Starter Kit took another format from their catalog entry. A
+    # format word in the name beats the model's subtype here, as it does wherever a
+    # catalog is applied (catalog_match.matched_subtype).
     groups: dict[tuple, Group] = {}
     for l in rows:
         size = sizes.parse(l.get("variant"), l.get("name"), category=l.get("category"))
         l["_size_label"] = size.label()
         total = (f"{size.grams:g}g" if size.grams is not None
                  else f"{size.mg:g}mg" if size.mg is not None else "")
-        key = (l["category"], squash(l["strain"]), squash(l.get("product_line")), total)
+        subtype = taxonomy.token_subtype(l["category"], l.get("name")) or l.get("subtype") or ""
+        key = (l["category"], subtype, squash(l["strain"]), squash(l.get("product_line")), total)
         groups.setdefault(key, Group(*key)).listings.append(l)
 
     # The product_line split: fold a line-less group into the single lined group that
@@ -171,13 +180,13 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
     # product the store meant, so it is left alone.
     lined: dict[tuple, list[tuple]] = defaultdict(list)
     for key in groups:
-        if key[2]:
-            lined[(key[0], key[1], key[3])].append(key)
+        if key[3]:
+            lined[(key[0], key[1], key[2], key[4])].append(key)
     folded = 0
     for key in list(groups):
-        if key[2]:
+        if key[3]:
             continue
-        targets = lined.get((key[0], key[1], key[3]), [])
+        targets = lined.get((key[0], key[1], key[2], key[4]), [])
         if len(targets) == 1:
             groups[targets[0]].listings.extend(groups.pop(key).listings)
             folded += 1
@@ -190,7 +199,7 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
         kept_listings += len(g.listings)
         strain = _mode([l["strain"].strip() for l in g.listings])
         line = line_spelling.get(g.line_key) if g.line_key else None
-        product_key = f"lb:{g.category}:{g.line_key}:{g.strain_key}"
+        product_key = f"lb:{g.category}:{g.subtype}:{g.line_key}:{g.strain_key}"
         terms = Counter(_strip_brand(l["name"], brand) for l in g.listings)
         entries.append({
             "external_id": f"{product_key}:{g.size_key or 'nosize'}",
@@ -198,7 +207,7 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
             "name": " ".join(x for x in (line, strain) if x),
             "product_line": line,
             "category": g.category,
-            "subtype": _mode([l.get("subtype") for l in g.listings]),
+            "subtype": g.subtype or None,
             "strain": strain,
             "variant": _mode([l["_size_label"] for l in g.listings]) or _mode([l.get("variant") for l in g.listings]),
             "attributes": None,

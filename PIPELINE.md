@@ -52,10 +52,33 @@ every time one was made.
 
 A listing whose enrichment failed (`enrich_failed` in the CSV — a batch error, or no
 API key) keeps its stored identity at import instead of having fallbacks written over
-it. The size itself still comes from the model (`normalize_variant` standardises its
-units); catalog matching and the bootstrap compare sizes as numbers parsed by
+it. Catalog matching and the bootstrap compare sizes as numbers parsed by
 [`scripts/sizes.py`](scripts/sizes.py) (`5pk x 0.6g` = `3g`, `1/8 oz` = `3.5g`), so
 two spellings of one size never split a product.
+
+**Within enrichment**, each row is answered by the cheapest thing that can answer it
+([`scripts/enrich.py`](scripts/enrich.py)):
+
+| order | answered by | fields |
+| --- | --- | --- |
+| 1 | a human's verified claim | all |
+| 2 | merch rules — the name's tokens | all |
+| 3 | this store's cache of earlier answers | all |
+| 4 | the brand catalog, when the listing's name *is* a recorded catalog product | all |
+| 5 | **Jev** | category, subtype |
+| 5 | code, when the store's figure is unambiguous (`stated_size`) | size |
+| 5 | Haiku, one call | strain, product line — and size where code refused |
+| 6 | Haiku, two calls, for rows Jev is unsure of (p < 0.80) | all |
+
+Steps 1–4 make no model call. On the gold suites, steps 5–6 are more accurate than
+Haiku alone, change fewer answers between runs, and cost 34% less (285.2 vs 278.7 of
+302 cases; [evals/enrich/README.md](evals/enrich/README.md#jev-classifies-code-sizes-haiku-writes-text-2026-10-04)).
+Step 4 would have answered 14% of today's model-bound rows once the top-50 bootstrap
+catalogs are pushed, more as catalogs grow. Its answers agreed with the stored
+category, subtype, size and strain on 99% of rows. The rest disagreed mainly on
+product line, where the catalog's consensus is the point. `ENRICH_CLASSIFIER=llm`
+puts every model-bound row through step 6, as before; `ENRICH_CATALOG_FIRST=0`
+skips step 4.
 
 ## Brand catalogs
 
@@ -71,12 +94,14 @@ products view instead of three spellings of it.
 | `listings_bootstrap` | `python scripts/catalog_bootstrap.py --brand X --write --push` | everyone else — built from the consensus of stores that carry the brand |
 | `manual` | admin → Brand catalogs | fixes, additions |
 
-The bootstrap groups a brand's listings across stores by (category, strain, line,
-size), folds the product_line split (a line-less group joins the one lined group that
-matches it on everything else), and keeps products at least two stores carry. On the
-top 300 brands it proposes 3,135 products covering 64% of their listings. Each entry
-records its `support` (how many stores) and the store names it was built from, so
-those listings resolve exactly — no model call — on every later run.
+The bootstrap groups a brand's listings across stores by (category, subtype, strain,
+line, size) — a strain's cart, pod and all-in-one are three products, and a format
+word in the name ("Cart", "AIO") beats the model's subtype. It folds the product_line
+split (a line-less group joins the one lined group that matches it on everything
+else) and keeps products at least two stores carry. On the top 300 brands it proposes
+3,122 products covering 61% of their listings. Each entry records its `support` (how
+many stores) and the store names it was built from, so those listings resolve
+exactly — no model call — on every later run, at enrichment and at import.
 
 **Pushing is additive.** `brand_catalog.py push` and `catalog_bootstrap.py --push`
 insert new products and refresh metadata (store names, support, last seen), but never
@@ -90,6 +115,10 @@ snapshot (`python scripts/catalog_store.py --snapshot`), not the read path. Edit
 the admin page apply on the next import — there is no export step to remember.
 
 ## Matching listings to catalogs — and where Jev fits
+
+Jev does two jobs, both of them picks from a list: at enrichment it chooses a
+listing's category and subtype (above), and at import it chooses which catalog
+product a listing is.
 
 [`scripts/catalog_match.py`](scripts/catalog_match.py) resolves each listing:
 
@@ -120,8 +149,14 @@ p ≥ 0.90 and 3.4% at p ≥ 0.85. A full pass over the brand cost $0.013 and to
 answers are cached on the persistent disk keyed by the listing *and its candidates*,
 so repeat runs are free and a catalog edit re-asks only the listings it affects.
 
+A matched listing takes the entry's strain and product line; it takes the entry's
+subtype unless a format word in its own name says otherwise ("Cart", "AIO", "Starter
+Kit") — the name is a fact about the listing, the entry's subtype a claim about the
+product (`catalog_match.matched_subtype`, shared with enrichment's step 4).
+
 If OpenRouter is down, five consecutive failures open a circuit breaker for ten
 minutes and listings simply go unmatched (the safe outcome) instead of stalling the run.
+At enrichment the same breaker sends rows to Haiku's two calls instead.
 
 Thresholds: `CATALOG_MATCH_AUTO`, `CATALOG_MATCH_AUTO_BOOTSTRAP`, `CATALOG_MATCH_REVIEW`.
 Re-measure after changing the question or upgrading the model:
@@ -189,4 +224,6 @@ python evals/enrich/audit.py --db                         # suspects per store
 
 Knobs: `SCRAPER_TIMEOUT_SEC` (1200), `IMPORT_TIMEOUT_SEC` (900),
 `IMPORT_STALE_THRESHOLD` (0.5), `SCRAPE_TIMEOUT_SEC` (5400, whole sweep),
-`ENRICH_MAX_WORKERS` (8), `JEV_MODEL`, `JEV_TIMEOUT`.
+`ENRICH_MAX_WORKERS` (8), `ENRICH_CLASSIFIER` (`jev`; `llm` is the rollback),
+`ENRICH_JEV_MIN_CONFIDENCE` (0.80), `ENRICH_CATALOG_FIRST` (1), `JEV_MODEL`,
+`JEV_TIMEOUT`.

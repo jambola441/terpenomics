@@ -9,9 +9,10 @@ also regenerated the file *and* committed it. That is a second source of truth w
 manual sync step, and it had already drifted (the file carries a product grouping the
 table does not).
 
-So this reads the database first, over PostgREST (HTTPS, works from the sandbox and
-from Render alike), and falls back to the export files only when no database
-credentials are present — an offline run on a CSV handoff still works, and says so.
+So this reads the database first — over PostgREST when SUPABASE_URL and the service
+role key are set (HTTPS, which works from a sandbox), otherwise over DATABASE_URL (the
+scrape worker has only that) — and falls back to the export files only under "auto"
+when neither reaches it: an offline run on a CSV handoff still works, and says so.
 
 Every catalog comes back in the export's shape, with two additions on each entry:
   id            the entry's database id, which is what listings.catalog_entry_id holds
@@ -121,6 +122,17 @@ def _from_db() -> dict[str, dict]:
     return _assemble(catalogs, entries, "db")
 
 
+def _from_postgres(url: str) -> dict[str, dict]:
+    import psycopg2
+    # Fail fast where 5432 is blocked (DB_ACCESS.md): the connect hangs, it is not refused.
+    conn = psycopg2.connect(url, connect_timeout=10)
+    try:
+        with conn.cursor() as cur:
+            return load_from_cursor(cur)
+    finally:
+        conn.close()
+
+
 def load_from_cursor(cur) -> dict[str, dict]:
     """Catalogs over an open psycopg2 cursor — what the importer uses, so catalog reads
     and listing writes share one connection and one view of the data."""
@@ -147,16 +159,23 @@ def _load_dotenv() -> None:
 def load_all(source: str = "auto") -> dict[str, dict]:
     """Every catalog, keyed by brand_key(brand_name).
 
-    source: "db" | "file" | "auto" (db when SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY
-    are set, otherwise the export files). A database error under "auto" falls back
-    to the files with a warning rather than failing a fleet run.
+    source: "db" | "file" | "auto". "db" reads Postgres — PostgREST when SUPABASE_URL +
+    SUPABASE_SERVICE_ROLE_KEY are set, else DATABASE_URL — and raises if it cannot.
+    "auto" does the same but falls back to the export files with a warning rather
+    than failing a fleet run.
     """
     _load_dotenv()
-    have_db = bool(os.getenv("SUPABASE_URL") and os.getenv("SUPABASE_SERVICE_ROLE_KEY"))
-    if source == "file" or (source == "auto" and not have_db):
+    have_rest = bool(os.getenv("SUPABASE_URL") and os.getenv("SUPABASE_SERVICE_ROLE_KEY"))
+    url = os.getenv("DATABASE_URL")
+    if source == "file" or (source == "auto" and not (have_rest or url)):
         return _from_files()
     try:
-        return _from_db()
+        if have_rest:
+            return _from_db()
+        if url:
+            return _from_postgres(url)
+        raise RuntimeError("no database credentials (SUPABASE_URL + service role key, "
+                           "or DATABASE_URL)")
     except Exception as e:  # noqa: BLE001
         if source == "db":
             raise

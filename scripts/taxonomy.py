@@ -42,6 +42,7 @@ scrapers included, can import it without a cycle.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 
 
@@ -133,6 +134,43 @@ RULES_ORDER = ("flower", "preroll", "vaporizers", "edible", "concentrate",
                "tinctures", "topical", "merch", "other")
 
 assert set(CATEGORY_ORDER) == set(SPECS) == set(RAIL_ORDER) == set(RULES_ORDER)
+
+
+# Format words that settle a subtype from the name alone — string facts about the
+# listing ("Cart", "AIO", "Starter Kit"). Order matters: the first match wins, so an
+# infused 5-pack is infused. Enrichment sends the result to the model as its hint;
+# the catalog paths let it beat a catalog entry's subtype (catalog_match.py).
+SUBTYPE_TOKENS: dict[str, dict[str, re.Pattern]] = {
+    "vaporizers": {
+        "all-in-one": re.compile(r"\ball[\s-]*in[\s-]*one\b|\baio\b|\bdisposable\b", re.I),
+        "cart": re.compile(r"\b(cart|510|cartridge|preload|reload)\b", re.I),
+        "pod": re.compile(r"\bpod\b", re.I),
+        "battery": re.compile(r"\b(battery|starter\s*kit)\b", re.I),
+    },
+    "edible": {
+        "beverage": re.compile(r"\b(beverage|sparkling\s+water|tea\s+sachet|drink)\b", re.I),
+        "gummy": re.compile(r"\bgumm|\bchews?\b|\brope\b|\bpearl\b", re.I),
+        "chocolate": re.compile(r"\bchocolate\b|\bbar\b", re.I),
+        "tablet": re.compile(r"\btablet\b|\bprotab\b|\bcapsule\b|\bpill\b|\bbean\b|\bdrop\b", re.I),
+    },
+    "preroll": {
+        "infused": re.compile(r"\b(infused|kief|diamond|hash\s*hole|live\s*resin|live\s*rosin)\b", re.I),
+        "pack": re.compile(r"\bpack\b|\bvariety\b|\b\d+\s*pk\b", re.I),
+    },
+    "flower": {
+        "smalls": re.compile(r"\bsmalls?\b|\bsmall\s+bud", re.I),
+        "preground": re.compile(r"\bpre-?ground\b|\bground\s+flower\b|\bready\s*-?\s*to\s*-?\s*roll\b", re.I),
+        "infused": re.compile(r"\bdiamond\s+infused\b|\binfused\b", re.I),
+    },
+}
+
+
+def token_subtype(category: str | None, name: str | None) -> str | None:
+    """The subtype a format word in the name states, or None."""
+    for subtype, pattern in SUBTYPE_TOKENS.get((category or "").strip().lower(), {}).items():
+        if pattern.search(name or ""):
+            return subtype
+    return None
 
 
 def spec(category: str | None) -> CategorySpec | None:

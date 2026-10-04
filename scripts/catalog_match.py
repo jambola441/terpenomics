@@ -64,6 +64,7 @@ from brand_catalog import norm_name  # noqa: E402
 import catalog_store  # noqa: E402
 import jev  # noqa: E402
 import sizes  # noqa: E402
+import taxonomy  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 # On the persistent disk the Render worker mounts, so repeat runs are free there too.
@@ -338,6 +339,19 @@ class CatalogIndex:
                 scored = fits
         scored.sort(key=lambda sk: (-sk[0], len(self.products[sk[1]].title)))
         return [key for _, key in scored[:k]]
+
+
+def matched_subtype(entry: dict, name: str | None) -> str | None:
+    """The subtype a listing resolved to `entry` takes.
+
+    The entry's — unless a format word in the listing's own name says otherwise
+    ("Cart", "AIO", "Starter Kit": taxonomy.SUBTYPE_TOKENS). The name is a fact about
+    this listing; the entry's subtype is a claim about the product, and a bootstrap
+    built from model answers can get a format wrong. Used wherever a catalog identity
+    is applied — enrichment's catalog-first step and the importer's overlay — so the
+    two never disagree.
+    """
+    return taxonomy.token_subtype(entry.get("category"), name) or entry.get("subtype")
 
 
 # ---------------------------------------------------------------------------

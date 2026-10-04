@@ -444,6 +444,64 @@ The two model-answer appliers were **not** dead and were not deleted: a row hint
 another category can still come back `merch` from the model. They now ask the owning
 enricher for the subtype, variant and strain, so the registry governs both paths.
 
+## Jev classifies, code sizes, Haiku writes text (2026-10-04)
+
+Pass A asked Haiku three things: category, subtype and size. The first two are
+picks from taxonomy.py's rails, which is the only kind of question Jev
+(`typesafe/jev-1.13`, [`scripts/jev.py`](../../scripts/jev.py)) answers, with a
+calibrated probability, for input tokens only. Jev cannot write text, so the size
+had to go somewhere else. Now the default (`ENRICH_CLASSIFIER=jev`):
+
+1. **Jev** answers category and subtype ([`scripts/jev_classify.py`](../../scripts/jev_classify.py)):
+   one request per listing, asking the category and the subtype within each
+   category at once. The same curated-token overrides as pass A follow.
+2. **Code** writes the size when the store's figure is unambiguous
+   (`enrich.stated_size`): a weight as the store states it (pass A is told to
+   prefer it), a dose as the package total under the 100mg cap (pass A is told
+   to multiply). It refuses when the name and the size field disagree, or when
+   more than one dose is named (THC beside CBD).
+3. **Haiku**, one call, writes strain and product line, and the size where code
+   refused (`_EXTRACT_PROMPT_SIZED`).
+4. Rows where Jev's probability is under 0.80 (`ENRICH_JEV_MIN_CONFIDENCE`), or the
+   call failed, take the old path: pass A and pass B. On the gold suites that is
+   7% of rows, and every wrong Jev answer was among them.
+
+`ENRICH_CLASSIFIER=llm` is the old pipeline, unchanged, and the rollback.
+
+**A/B, all nine case files** (302 cases), `haiku-or`, arms interleaved, catalogs off.
+Haiku-only has nine runs; the other arms have six each.
+
+| arm | cases passed (of 302) | category | subtype | strain | line | size | rows that changed between two runs: any field / size | $/run | s/run |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Haiku only (before) | 278.7 (277–282) | 100% | 98.3% | 98.0% | 69.4% | 97.2% | 29.4 / 12.9 | $0.164 | 16 |
+| Jev + Haiku writes the size | 281.7 (280–284) | 100% | 98.5% | 97.9% | 79.2% | 97.3% | 35.1 / **19.6** | $0.122 | 30 |
+| **Jev + code sizes + Haiku** | **285.2 (281–289)** | 100% | 98.5% | 98.4% | 81.7% | **98.8%** | **26.1 / 8.9** | **$0.108** | 28 |
+
+- **More accurate, more consistent, 34% cheaper.** +6.5 cases over Haiku alone,
+  every field equal or better, and fewer answers move between runs. That last
+  column matters most here, because `products` is a view keyed on these strings
+  (see the DeepSeek comparison below).
+- **The middle row is why code writes the size.** Moving the size into pass B
+  (one longer prompt for strain, line and size) made sizes *less* stable: 19.6
+  rows changed between runs against 12.9. One run lost a whole batch of edible and
+  topical sizes to "100mg". Code answers 74% of the sizes Jev's rows need, the
+  same way every time.
+- **Slower.** Jev is one request per listing, against Haiku's 50-item batches.
+  That adds about 12s per 300 rows with 8 workers: under a minute for the largest
+  store's full re-enrichment, and nothing on a normal day.
+- **Caveats.** I wrote Jev's option text on a dev split (The Plug, categorization,
+  common errors). Two descriptions were corrected there: "badder" is `other`, not
+  `resin`, and a live resin gummy is an edible. On the held-out suites Jev alone
+  scored category 146/146 and subtype 131/132. The size rule's two refusals came
+  from its four gold misses, so check it outside the gold too. On 1,703 listings
+  scraped today, code was willing on 82% and agreed with the size Haiku had stored
+  on 96.1%. Most disagreements are stored values that are wrong: topicals in
+  grams from before topical became a dose, and a gummy stored as "50g". A few are
+  genuinely ambiguous ("4c" beside "20mg").
+
+Reproduce: `python evals/enrich/run_eval.py --models haiku-or` (Jev) and
+`--classifier llm` (Haiku only). Run each several times: one run moves ±3 cases.
+
 ## Model comparison — DeepSeek v4 vs Haiku 4.5 (2026-08-25)
 
 Same gold suites, same prompts, `haiku-or` transport throughout. Haiku has 4 runs
