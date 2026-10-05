@@ -1,0 +1,90 @@
+{
+  "brand": "Camino",
+  "site": "https://www.kivaconfections.com",
+  "source": {
+    "kind": "html",
+    "url": "https://www.kivaconfections.com/brand/camino",
+    "sitemap": {
+      "url": "https://www.kivaconfections.com/sitemap.xml",
+      "match": "/flavor/(?!lf-)"
+    },
+    "fields": {
+      "title": "h1.kv-h1",
+      "product_type": ".kv-pdp-crumb",
+      "tags": ".kv-pdp-market",
+      "body": ".kv-pdp-stats",
+      "url": "link[rel=canonical]@href"
+    }
+  },
+  "learned": "2026-10-05, agent pass: Camino is Kiva Confections' gummy brand. The sitemap lists 195 /flavor/<slug> detail pages for all five Kiva brands; 89 survive the match, 45 are Camino and 18 of those list NY (17 entries plus one skipped High Dose page). Check: 17 of the 33 products NY stores sell are on the site.",
+  "notes": [
+    "One product per detail page (/flavor/<slug>). The sitemap match drops the 106 Lost Farm pages (slugs start 'lf-'); the breadcrumb ('Products / Camino / Gummies') drops the remaining Kiva, Petra and Terra pages.",
+    "New York is the 'Available in:' market list on the detail page (div.kv-pdp-market). The cards on /products carry the same list capped at five codes, which hides NY on half the NY products (Wild Berry shows CA CT FL IL MA), so the cards cannot be the source.",
+    "Each market has its own page for one flavour (tropical-burst for AZ/CA/MO/NY, tropical-burst-200mg for MI/OH), so the NY filter also picks the NY formulation.",
+    "Titles lead with the per-gummy dose, then cannabinoid ratios, then the effect in quotes, which is the product line ('Chill', 'Energy'), then the flavour: \"10mg : 5mg THCV 'Energy' Tropical Burst\", \"10mg 'Energy' Forest Berry Fruit Chews\".",
+    "Size: the pages' own pack figures disagree with each other (Forest Berry chews say 10 servings and 200mg per pack; Strawberry Sunset says 20 servings and 100mg per pack). New York caps a package at 100mg and NY stores sell every 5mg Camino as a 20-pack (100mg) and every 10mg one as a 10-pack (100mg), which is also what most NY pages say; the 2mg Sparkling Pear is 20 x 2mg = 40mg ('THC per pack 40mg'). So the dose in the title picks the pack; any other dose falls through to unparsed on purpose.",
+    "'High Dose' pages are skipped: the one that lists NY (blackberry-dream-high-dose, 200mg per pack) copies the regular Blackberry Dream's market list and is over New York's 100mg package cap.",
+    "Not tagged NY on the site though NY stores carry them (2026-10-05): 'Recover' Freshly Squeezed, 'Bliss' Raspberry Lemonade, 'Uplifting' Watermelon Spritz (10mg), Boysenberry Sleep fruit chews. They stay as store-consensus products."
+  ],
+  "skip": [
+    {
+      "when": {
+        "product_type": "^(?!.*\\bCamino\\b)"
+      },
+      "why": "another Kiva brand (Lost Farm, Kiva, Petra, Terra)"
+    },
+    {
+      "when": {
+        "tags": "^(?!.*\\bNY\\b)"
+      },
+      "why": "not sold in New York"
+    },
+    {
+      "when": {
+        "title": "(?i)\\bhigh dose\\b"
+      },
+      "why": "high dose: over New York's 100mg package cap"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "product_type": "\\bCamino\\b"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "gummy"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "^5\\s*mg\\b[^']*'(?P<line>[^']+)'\\s*(?P<strain>.+?)(?:\\s+(?:Fruit\\s+Chews|Gummies))?$",
+      "set": {
+        "size": "20pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "^10\\s*mg\\b[^']*'(?P<line>[^']+)'\\s*(?P<strain>.+?)(?:\\s+(?:Fruit\\s+Chews|Gummies))?$",
+      "set": {
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "body": "THC per pack 40\\s*mg"
+      },
+      "match": "^2\\s*mg\\b[^']*'(?P<line>[^']+)'\\s*(?P<strain>.+?)(?:\\s+(?:Fruit\\s+Chews|Gummies))?$",
+      "set": {
+        "size": "20pk 40mg"
+      }
+    }
+  ]
+}

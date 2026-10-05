@@ -1,0 +1,73 @@
+{
+  "brand": "Wyld",
+  "site": "https://wyldcanna.com/us/",
+  "source": {
+    "kind": "html",
+    "sitemap": {
+      "url": "https://wyldcanna.com/us-page-sitemap.xml",
+      "match": "/us/products/[^/]+/$"
+    },
+    "url": "https://wyldcanna.com/us/products/",
+    "fields": {
+      "title": "swiper-slide div.text div.heading",
+      "url": "link[rel=canonical]@href",
+      "tags": "info-table div.region@data-region",
+      "body": "info-table div.dose-row"
+    }
+  },
+  "learned": "2026-10-05, by hand: 16 US product pages in the sitemap, 15 of them sold in NY.",
+  "notes": [
+    "One product page per gummy flavor, listed in the us-page sitemap. Each page's Region list (div.region data-region) is that product's own states: Prickly Pear lists six western states and no NY, so items without NY are skipped. The WP JSON (wp/v2/us-page?markets=47) agrees but has no doses.",
+    "The dose row says the THC per gummy, per container and the count ('20mg CBD:1mg THC per gummy | 200mg CBD:10mg THC per container | 10 gummies per package'; some pages say 'per package' for the THC and 'per container' for the count). One size rule per container THC the NY pages state (100mg, Peach 50mg, Strawberry 10mg), each requiring '10 gummies'; a page with any other dose or count falls through to unparsed on purpose.",
+    "Title is the page heading, 'Strawberry 20:1 CBD + Hybrid Enhanced Gummies' or 'Prickly Pear THC Sativa Enhanced Gummies': flavor, cannabinoid ratio, enhancement.",
+    "Strawberry's size is written '10mg' without its pack: sizes.py reads '10pk 10mg' back as ten 10mg pieces (100mg) under the NY 100mg cap."
+  ],
+  "skip": [
+    {
+      "when": {
+        "tags": "^(?!.*\\bNY\\b)"
+      },
+      "why": "not sold in New York"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "title": "(?i)\\bgumm"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "gummy"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "body": "(?s)(?=.*\\b10 gummies per (?:package|container)\\b).*(?<![\\d.])100mg THC\\b(?:(?!per ).)*per (?:container|package)\\b"
+      },
+      "match": "^(?P<strain>.+?)\\s+(?:(?:THC|\\d+(?::\\d+)+\\s+[A-Za-z:]+)\\s+(?:\\+\\s+)?)?(?:Indica|Sativa|Hybrid)\\s+Enhanced\\s+Gummies$",
+      "set": {
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "body": "(?s)(?=.*\\b10 gummies per (?:package|container)\\b).*(?<![\\d.])50mg THC\\b(?:(?!per ).)*per (?:container|package)\\b"
+      },
+      "match": "^(?P<strain>.+?)\\s+(?:(?:THC|\\d+(?::\\d+)+\\s+[A-Za-z:]+)\\s+(?:\\+\\s+)?)?(?:Indica|Sativa|Hybrid)\\s+Enhanced\\s+Gummies$",
+      "set": {
+        "size": "10pk 50mg"
+      }
+    },
+    {
+      "when": {
+        "body": "(?s)(?=.*\\b10 gummies per (?:package|container)\\b).*(?<![\\d.])10mg THC\\b(?:(?!per ).)*per (?:container|package)\\b"
+      },
+      "match": "^(?P<strain>.+?)\\s+(?:(?:THC|\\d+(?::\\d+)+\\s+[A-Za-z:]+)\\s+(?:\\+\\s+)?)?(?:Indica|Sativa|Hybrid)\\s+Enhanced\\s+Gummies$",
+      "set": {
+        "size": "10mg"
+      }
+    }
+  ]
+}

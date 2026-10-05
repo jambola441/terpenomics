@@ -1,0 +1,38 @@
+{
+  "brand": "PUFF",
+  "site": "https://puffprerolls.com",
+  "source": {"kind": "shopify_json", "url": "https://puffprerolls.com/products.json"},
+  "learned": "2026-10-05, by an agent pass: 35 products, 90 variants (29 pre-roll products, 6 vapes). Wholesale storefront ('intended for resale only') with a CA and a NY OCM licence in the footer; the catalog is not split by state.",
+  "notes": [
+    "product_type and tags are empty; the title is the strain, and the size is the variant: '1 gram Pre-Roll', '5 x 0.5 gram Pre-Rolls', '14 x 0.5 gram Pre-Rolls'. sizes.py reads '5 x 0.5 gram' as 0.5g (its pack-times-unit pattern wants a bare 'g'), so each pre-roll rule extracts '5 x 0.5 g' from the variant, which it reads as 2.5g.",
+    "Lines exist only as collections (/collections/<handle>/products.json). Bubble Hash Infused titles are the crosses 'Flower x Hash' (all six have ' x ', no other product does). Triple Infused has no mark in title or tags, and only two bodies say it, so the six are listed by handle (collection triple-infused on 2026-10-05); a new triple-infused product falls back to the body test, else reads as a plain strain pre-roll.",
+    "'Mule Fuel Flower rolled x Acapulco Gold' is named 'Mule Fuel x Acapulco Gold' (a constant), the way NY stores write it; the filler 'Flower rolled' made it miss them.",
+    "The six vapes (collection extracts, 'Default Title' variant) state no size anywhere on the site, and no NY store sells them at 2+ stores, so they are skipped rather than given an invented size.",
+    "Not on the site but sold by NY stores (2026-10-05): Alien OG and an effect series (Balance, Blended Uplift, Chill), all 1g pre-rolls. They come from the stores' consensus."
+  ],
+  "skip": [
+    {"when": {"variant": "^$", "body": "(?i)\\bvap(e|or)\\b|ceramic hardware"},
+     "why": "vape (Extracts): no size on the site and none at NY stores to take one from"}
+  ],
+  "category": [
+    {"when": {"variant": "(?i)pre-?rolls?"}, "set": {"category": "preroll"}}
+  ],
+  "title": [
+    {"when": {"category": "^preroll$"}, "match": "^Mule Fuel Flower rolled x Acapulco Gold$",
+     "extract": {"variant": "^(?P<size>\\d+\\s*x\\s*\\d*\\.?\\d+\\s*g)ram"},
+     "set": {"line": "Bubble Hash Infused", "strain": "Mule Fuel x Acapulco Gold"}},
+    {"when": {"category": "^preroll$"}, "match": "^(?P<strain>.+\\sx\\s.+)$",
+     "extract": {"variant": "^(?P<size>\\d+\\s*x\\s*\\d*\\.?\\d+\\s*g)ram"},
+     "set": {"line": "Bubble Hash Infused"}},
+    {"when": {"category": "^preroll$", "url": "/products/(lemon-lime-twist-1|grapeness-1|bubba-peach-2|cherry-limeade-1|tangerine-dream-1|strawberry-banana-splash)$"},
+     "match": "^(?P<strain>.+)$",
+     "extract": {"variant": "^(?P<size>\\d+\\s*x\\s*\\d*\\.?\\d+\\s*g)ram"},
+     "set": {"line": "Triple Infused"}},
+    {"when": {"category": "^preroll$", "body": "(?i)triple[\\s-]infused"},
+     "match": "^(?P<strain>.+)$",
+     "extract": {"variant": "^(?P<size>\\d+\\s*x\\s*\\d*\\.?\\d+\\s*g)ram"},
+     "set": {"line": "Triple Infused"}},
+    {"when": {"category": "^preroll$"}, "match": "^(?P<strain>.+)$",
+     "extract": {"variant": "^(?P<size>\\d+\\s*x\\s*\\d*\\.?\\d+\\s*g)ram"}}
+  ]
+}

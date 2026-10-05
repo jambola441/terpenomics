@@ -1,0 +1,51 @@
+{
+  "brand": "Spacebuds",
+  "site": "https://www.veteranschoicecreations.com/spacebuds",
+  "source": {
+    "kind": "json",
+    "url": "https://www.veteranschoicecreations.com/spacebuds?page=3",
+    "extract": "<script type=\"application/json\" id=\"wix-warmup-data\">(.*?)</script>",
+    "items": "appsWarmupData.*.*.catalog.category.productsWithMetaData.list.*",
+    "fields": {
+      "id": "id",
+      "title": "name",
+      "product_type": "options.*.key",
+      "body": "media.*.altText"
+    }
+  },
+  "title_case": true,
+  "learned": "2026-10-05, by an agent pass: Spacebuds is a Veterans Choice Creations (NY licensee) line sold through VCC's Wix store, which also carries VCC's other brands; the /spacebuds category page holds 27 products (Moonrocks 4g/28g, Moon Matter 1g, Moon Rolls 1.5g, Moon Stone 1g AIO vapes). Catalog only: every price is 0.",
+  "notes": [
+    "Read the Spacebuds category page only; VCC's store carries Pot & Head, New York Honey and others on other pages. The gallery shows 20 a page but loads cumulatively, and ?page=N carries the first 20*N products in its wix-warmup-data, so ?page=3 covers up to 60 (27 on 2026-10-05). If productsWithMetaData.totalCount passes 60, raise the page.",
+    "Titles are 'SIZE | LINE | FLAVOR' with uneven spacing and order ('1G | MOON STONE | LIQUID DIAMONDS | BERRY FRUIT BLAST', '1G |  LIQUID DIAMONDS MOON STONE | ...', 'MOON ROLL' beside 'MOON ROLLS'). The flavour is always the last segment; the lines are set as constants so spelling variants do not split a line. title_case turns the capitals into 'Melon Ball' (three-letter words stay as written: 'Apple PIE').",
+    "The category is the product's option key (MOONROCKS, PRE-ROLLS, CONCENTRATES, VAPE). Moonrocks are infused flower (product pages: buds drenched in hash rosin and coated in kief); Moon Matter is pressed hash, kief and terpenes; the Moon Stone vapes are all-in-ones, as their image alt text says.",
+    "The 28G Moonrocks jars are titled 'MOONROCKS' but are the 'Space Ballers' line: their product pages say 'Space Ballers have landed... These 1-ounce jars', their alt text names Space Baller, and stores list them as 'Space Ballers'. The alt text decides, so the jars get that line.",
+    "Moon Bites edibles, which a few stores sell, are not on the site (their category page is empty)."
+  ],
+  "skip": [],
+  "category": [
+    {"when": {"product_type": "^MOONROCKS$"}, "set": {"category": "flower", "subtype": "infused"}},
+    {"when": {"product_type": "^PRE-ROLLS$"}, "set": {"category": "preroll"}},
+    {"when": {"product_type": "^CONCENTRATES$", "title": "(?i)\\bMOON MATTER\\b"}, "set": {"category": "concentrate", "subtype": "hash"}},
+    {"when": {"product_type": "^CONCENTRATES$"}, "set": {"category": "concentrate"}},
+    {"when": {"product_type": "^VAPE$", "body": "(?i)\\ball-in-one\\b"}, "set": {"category": "vaporizers", "subtype": "all-in-one"}},
+    {"when": {"product_type": "^VAPE$"}, "set": {"category": "vaporizers"}}
+  ],
+  "title": [
+    {"when": {"category": "^flower$", "body": "(?i)\\bspace\\s*ballers?\\b"},
+     "match": "(?i)^\\s*(?P<size>\\d+(?:\\.\\d+)?\\s*G)\\s*\\|\\s*MOON\\s*ROCKS?\\s*\\|\\s*(?P<strain>[^|]+?)\\s*$",
+     "set": {"line": "Space Ballers"}},
+    {"when": {"category": "^flower$"},
+     "match": "(?i)^\\s*(?P<size>\\d+(?:\\.\\d+)?\\s*G)\\s*\\|\\s*MOON\\s*ROCKS?\\s*\\|\\s*(?P<strain>[^|]+?)\\s*$",
+     "set": {"line": "Moonrocks"}},
+    {"when": {"category": "^preroll$"},
+     "match": "(?i)^\\s*(?P<size>\\d+(?:\\.\\d+)?\\s*G)\\s*\\|\\s*MOON\\s*ROLLS?\\s*\\|\\s*(?P<strain>[^|]+?)\\s*$",
+     "set": {"line": "Moon Rolls"}},
+    {"when": {"category": "^concentrate$"},
+     "match": "(?i)^\\s*(?P<size>\\d+(?:\\.\\d+)?\\s*G)\\s*\\|\\s*MOON\\s*MATTER\\s*\\|\\s*(?P<strain>[^|]+?)\\s*$",
+     "set": {"line": "Moon Matter"}},
+    {"when": {"category": "^vaporizers$"},
+     "match": "(?i)^\\s*(?P<size>\\d+(?:\\.\\d+)?\\s*G)\\s*\\|(?=.*\\bMOON\\s*STONE\\b).*\\|\\s*(?P<strain>[^|]+?)\\s*$",
+     "set": {"line": "Moon Stone"}}
+  ]
+}

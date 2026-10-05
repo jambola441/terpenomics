@@ -1,0 +1,62 @@
+{
+  "brand": "Good Tide",
+  "site": "https://www.goodtidecannabis.com",
+  "source": {
+    "kind": "html",
+    "url": "https://www.goodtidecannabis.com/",
+    "urls": [
+      "https://www.goodtidecannabis.com/mango",
+      "https://www.goodtidecannabis.com/guava",
+      "https://www.goodtidecannabis.com/pineapple",
+      "https://www.goodtidecannabis.com/grapefruit",
+      "https://www.goodtidecannabis.com/kiwi-strawberry",
+      "https://www.goodtidecannabis.com/passion-fruit"
+    ],
+    "fields": {
+      "title": "title",
+      "product_type": "h3",
+      "body": "p"
+    }
+  },
+  "learned": "2026-10-05, by an agent pass: six single-strain rosin gummy flavors, one Squarespace page each, linked from the homepage. No shop or product feed. One page serves every state; the NY COA reports (/ny-coa-reports) cover all six flavor codes (mg, gv, pa, gf, ks, pf).",
+  "notes": [
+    "The flavor pages are listed by hand in source.urls: the homepage cards (article.Index-gallery-item) link to them, and a new flavor needs adding here.",
+    "Each page states the dose per state group: 'AZ, CA, CO, IL, MA, MO, NJ, NM, NV, NY, OR, WA | 10mg THC per gummy, 100mg per package', and 'MI | 20mg ... 200mg'. The ratio flavors write each cannabinoid ('10mg THC:10mg CBD:10mg CBC per gummy, 100mg THC:100mg CBD:100mg CBC per package'); the size is the THC, as stores list it. The title rule applies only when NY is in the 10mg THC / 100mg group, so a dose change for New York falls through to unparsed rather than writing a wrong size; a page with no NY at all is skipped as not sold here.",
+    "Three flavors are 1:1:1 ratio gummies: Grapefruit THC:CBD:CBC, Kiwi Strawberry THC:CBD:CBG, Passion Fruit THC:CBD:CBN. The flavor still names the product.",
+    "The line is the flavor's effect word, the first h3 on the page ('UPLIFTING'), as stores write 'Uplifting Pineapple' / 'Mellow Mango'; the strain is the flavor, from the page title 'Pineapple | Good Tide'. The effect comes out upper case, as the site writes it."
+  ],
+  "skip": [
+    {
+      "when": {
+        "body": "(?s)^(?!.*\\bNY\\b)"
+      },
+      "why": "not sold in New York (NY missing from the page's state lines)"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "body": "(?i)\\bper gummy\\b"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "gummy"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^edible$",
+        "body": "\\bNY\\b[^|]*\\|\\s*10\\s*mg THC\\b[^|]*?per gummy,\\s*100\\s*mg\\b[^|]*?per package"
+      },
+      "match": "^(?P<strain>.+?)\\s*\\|\\s*Good Tide$",
+      "extract": {
+        "product_type": "^(?P<line>[A-Z]+)\\b"
+      },
+      "set": {
+        "size": "10pk 100mg"
+      }
+    }
+  ]
+}

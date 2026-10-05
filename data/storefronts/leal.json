@@ -1,0 +1,87 @@
+{
+  "brand": "Leal",
+  "site": "https://www.sapphirefarms.com/brand/leal/",
+  "source": {
+    "kind": "wp_json",
+    "url": "https://www.sapphirefarms.com/wp-json/wp/v2/product?brand=6&state=99"
+  },
+  "learned": "2026-10-05, by hand: Sapphire Farms' 'product' post type, brand=6 (Leal) and state=99 (New York) gives 72 products: 25 Flower, 22 Pre-Rolls, 6 Pre-Roll Multipacks (5g), 10 Ground Flower Packs, 8 Littles, 1 without a category. lealorganics.com redirects to sapphirefarms.com/brand/leal/.",
+  "notes": [
+    "Titles are bare strain names, repeated across formats (slugs stank-breath, stank-breath-pre-rolls, stank-breath-3), so the format comes from the product-category class in class_list (product_type). brand=5 and brand=3 are Sapphire Farms' other brands; state=100 is Michigan.",
+    "Sizes: a Pre-Rolls page says 'Made with 1 gram of 100% Flower' under the title (a single 1g); a multipack is the category 'Pre-Roll Multipacks (5g)' (slug 5g-pre-roll-multipacks). Neither is in the API, so both are constants from the category, checked on the pages 2026-10-05.",
+    "Flower pages offer every strain as 'Eighths (3.5g), Quarters (7g), Ounces (28g)' without saying which a store has, but NY stores sell Leal flower as 7g bags only ('7g Flower | Animal Face (IH)', 'Flower Bag Super Boof (H)'; all four flower products at 2+ stores were 7g on 2026-10-05), so Flower is a constant 7g. If stores start selling an eighth or an ounce, it comes back from the stores' consensus (sizes must agree to match); recheck then.",
+    "Not catalogued: Littles and Ground Flower Packs pages state no size and no NY store sells them at 2+ stores.",
+    "One NY product has no category (Kush Cake, id 3015) and is skipped; spelling varies across formats ('Nic the Bruiser' / 'Nic The Bruiser', 'Sunset Sherbet' / 'Sunset Sherbert')."
+  ],
+  "skip": [
+    {
+      "when": {
+        "product_type": "\\bproduct-category-(littles|ground-flower-packs)\\b"
+      },
+      "why": "littles, ground flower packs: no size on the site"
+    },
+    {
+      "when": {
+        "product_type": "^(?!.*\\bproduct-category-)"
+      },
+      "why": "no product category"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "product_type": "\\bproduct-category-5g-pre-roll-multipacks\\b"
+      },
+      "set": {
+        "category": "preroll"
+      }
+    },
+    {
+      "when": {
+        "product_type": "\\bproduct-category-pre-rolls\\b"
+      },
+      "set": {
+        "category": "preroll"
+      }
+    },
+    {
+      "when": {
+        "product_type": "\\bproduct-category-flower\\b"
+      },
+      "set": {
+        "category": "flower"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^preroll$",
+        "product_type": "\\bproduct-category-5g-pre-roll-multipacks\\b"
+      },
+      "match": "^(?P<strain>.+?)(?:\\s+Multipack)?$",
+      "set": {
+        "size": "5g"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$",
+        "product_type": "\\bproduct-category-pre-rolls\\b"
+      },
+      "match": "^(?P<strain>.+)$",
+      "set": {
+        "size": "1g"
+      }
+    },
+    {
+      "when": {
+        "category": "^flower$"
+      },
+      "match": "^(?P<strain>.+)$",
+      "set": {
+        "size": "7g"
+      }
+    }
+  ]
+}

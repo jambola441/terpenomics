@@ -1,0 +1,50 @@
+{
+  "brand": "Super Dope",
+  "site": "https://www.superdopebrand.com",
+  "source": {
+    "kind": "html",
+    "url": "https://www.superdopebrand.com/buy-super-dope-weed",
+    "item": "p.flex-page-p",
+    "fields": {
+      "title": "."
+    }
+  },
+  "learned": "2026-10-05, by agent pass: a server-rendered SEO page listing every product under format headings (7G Jars 9, Flower/3.5G Mylars 7, Rosins 9, Donut Holes 9, Prerolls 9, Disposables 5), one emoji-prefixed line each. /products is a members-only points shop and /merch is apparel.",
+  "notes": [
+    "The page is every market's (its footer lists delivery to Florida, Michigan, California, Pennsylvania); nothing on it is tagged by state. NY is restricted by format: the New York page (/new-york, a stocklist of about 30 NY dispensaries, updated 2026-06-02) says the brand came to New York with 'our flowers', and every NY listing of ours is a 7g jar or a 3.5g mylar. So the jar and mylar lines are kept and the rosins, donut holes, pre-rolls and disposables are skipped as other markets' products (the last three state no size either). Which strains each market gets is not on the site.",
+    "Lines read '🍒 Cherry Popperz 7G Jar' or '🔴 Mega Z: Red 3.5G Mylar' (some with no space after the emoji); the strain is the name between the emoji and the size. Stores write 'Flower Jar Cherry Popperz' and 'Mega Z Red', which match.",
+    "The page is hand-edited marketing copy, so expect drift; its non-product lines (website links, 'Shop now', delivery locations) are skipped."
+  ],
+  "skip": [
+    {
+      "when": {
+        "title": "(?i)official website|www\\.superdopebrand|shop now|delivery locations"
+      },
+      "why": "page text"
+    },
+    {
+      "when": {
+        "title": "(?i)\\b(rosin|donuts?|prerolls?|disposable|pocket vape)\\b"
+      },
+      "why": "not a New York product: NY carries the flower (jars and mylars)"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "title": "(?i)\\b\\d*\\.?\\d+\\s*G\\s+(jar|mylar)\\b"
+      },
+      "set": {
+        "category": "flower"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^flower$"
+      },
+      "match": "(?i)^\\W*(?P<strain>.+?)\\s+(?P<size>\\d*\\.?\\d+\\s*G)\\s+(?:Jar|Mylar)\\s*$"
+    }
+  ]
+}

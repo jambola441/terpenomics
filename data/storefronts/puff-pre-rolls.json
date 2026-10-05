@@ -1,0 +1,83 @@
+{
+  "brand": "PUFF Pre-Rolls",
+  "site": "https://puffprerolls.com",
+  "source": {
+    "kind": "shopify_json",
+    "url": "https://puffprerolls.com/products.json"
+  },
+  "learned": "2026-10-05, agent pass: Shopify, 35 products (29 pre-rolls with 1g / 5 x 0.5g / 14 x 0.5g variants, 6 vapes). product_type, tags, vendor and SKUs carry nothing.",
+  "notes": [
+    "One catalog for California and New York with no state split (no tag, collection or page per state); the footer carries a CA licence and NY OCM processor licence OCM-PROC-25-000251. Checked 2026-10-05: 6 of the 8 products two or more NY stores sell are on it.",
+    "Titles are the strain only; the size is the variant ('1 gram Pre-Roll', '5 x 0.5 gram Pre-Rolls', '14 x 0.5 gram Pre-Rolls'). sizes.py reads '5 x 0.5 gram' as 0.5g (its pack pattern wants 'g' right after the number), so the rules extract the count and unit weight from the variant with the unit split off ('5 x 0.5' + 'g' is 5pk 2.5g).",
+    "The line is only collection membership: /collections/bubble-hash-infused (all titled 'Flower x Hash', so ' x ' in the title marks them) and /collections/triple-infused, whose six products only two mention in their copy. Those six are listed by handle; a new triple-infused product gets the line only if its copy says 'Triple Infused', so compare with /collections/triple-infused/products.json when the catalog changes.",
+    "The six vapes (/collections/extracts: 'Pink Runtz', 'Grapeness Extract', 'Sour Diesel' at handle sour-diesel-vape ...) have one 'Default Title' variant and no size in the copy, so they are skipped; stores list them as 1g carts, but too few stores to confirm (2026-10-05)."
+  ],
+  "skip": [
+    {
+      "when": {
+        "variant": "^$",
+        "body": "(?i)\\bvape\\b|zirconium ceramic hardware"
+      },
+      "why": "vape: the site states no size"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "variant": "(?i)pre-?rolls?\\b"
+      },
+      "set": {
+        "category": "preroll"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^preroll$",
+        "url": "/products/(?:lemon-lime-twist-1|tangerine-dream-1|grapeness-1|bubba-peach-2|strawberry-banana-splash|cherry-limeade-1)$"
+      },
+      "match": "^(?P<strain>.+)$",
+      "extract": {
+        "variant": "^(?P<size>(?:\\d+\\s*x\\s*)?\\d+(?:\\.\\d+)?)\\s*(?P<size2>g)ram"
+      },
+      "set": {
+        "line": "Triple Infused"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$",
+        "body": "(?i)\\btriple infused\\b"
+      },
+      "match": "^(?P<strain>.+)$",
+      "extract": {
+        "variant": "^(?P<size>(?:\\d+\\s*x\\s*)?\\d+(?:\\.\\d+)?)\\s*(?P<size2>g)ram"
+      },
+      "set": {
+        "line": "Triple Infused"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "^(?P<strain>.+?\\s+x\\s+.+)$",
+      "extract": {
+        "variant": "^(?P<size>(?:\\d+\\s*x\\s*)?\\d+(?:\\.\\d+)?)\\s*(?P<size2>g)ram"
+      },
+      "set": {
+        "line": "Bubble Hash Infused"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "^(?P<strain>.+)$",
+      "extract": {
+        "variant": "^(?P<size>(?:\\d+\\s*x\\s*)?\\d+(?:\\.\\d+)?)\\s*(?P<size2>g)ram"
+      }
+    }
+  ]
+}

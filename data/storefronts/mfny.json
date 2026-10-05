@@ -1,0 +1,321 @@
+{
+  "brand": "MFNY",
+  "site": "https://www.mfny.co",
+  "source": {
+    "kind": "html",
+    "url": "https://www.mfny.co/all-products",
+    "item": "div.grid.w-dyn-items > div.w-dyn-item",
+    "fields": {
+      "title": "h2.product-title",
+      "url": "a.product-link@href",
+      "body": "img.product-image-file@src"
+    },
+    "pages": {
+      "param": "096aeb62_page",
+      "from": 1,
+      "to": 20
+    }
+  },
+  "learned": "2026-10-05, by an agent pass: 179 products on 15 Webflow pages of 12 (page 16 is empty). No sitemap, no JSON; product pages add nothing but a 'More <Category>' block and, for BagelHole, a description.",
+  "notes": [
+    "body is the card image's URL, not a description: its file name ('MFNY%20Live%20Resin%20510%20Vape%20Cart%20Honey%20Banana%20.5g.png') is the only place the site states most sizes. About a third of the images are bare 'image.png'.",
+    "Sizes, in order: a size in the title, then one in the image name, then a format constant where every sized image and the stores agree: 510 carts 0.5g (the 1g carts say 1g in the title), non-Classics Vape Pens 0.5g, Classics AIOs 1g (UK Cheese's title; stores sell Sour Diesel at 1g only), Mini Pre-Rolls 0.75g and their Four Packs 4 x 0.75g, Two-Fers 2 x 0.5g, gummies 10 x 10mg, BagelHole 2g flower + 0.5g extract (its product page).",
+    "Skipped on purpose because the site never states the size: tinctures (images say 15ml; stores list lab totals from 391mg to 1000mg), the intimacy oil, badders/concentrates with neither a titled nor an imaged size (stores sell MFNY badder at 1g and 2g), and the older plain 'Pre-Roll' singles (not Mini; no size anywhere, and stores carry none of them).",
+    "A Four Pack is sometimes only in the image name ('... .75g Four Pack.png' under a title without it); the image decides then. A Mini Pre-Rolls title with a bare image is read as a single, as the brand titles its Four Packs; 'Blueberry 2.0 x Turbo Blueberry Resin Mini Pre-Rolls' may really be the 4-pack stores sell.",
+    "Line is the extract (Live Resin / Live Rosin), with 'Classics' in front for that line; Two-Fer packs get line 'Two-Fer' so a 2 x 0.5g pack is not the same product as a 1g cart. Pre-rolls and gummies have no line but Classics and BagelHole: every MFNY pre-roll is resin-infused, and titles say 'Resin' only sometimes.",
+    "A leading 'MFNY' is dropped from single-strain names ('MFNY Skunk' -> 'Skunk'), as stores write them. Titles carry typos ('Gumies', 'Mii Pre-Rolls', double spaces) that the patterns absorb.",
+    "Category comes from the title's format word; the all-products cards carry no category. 'Mango x Honey Banana' has no format word and gets edible from its image name.",
+    "Check on 2026-10-05: 135 entries (the site lists five products twice), stores sell 91 products, 48 found. Of the 43 store-only: 12 are products skipped above for want of a size, 23 are not on the site (Sleepy MF-er, Pina Colada, Super Lemon Haze, White Fire OG pre-rolls, the Belafonte Two-Fer...), and 7 are store spellings the matcher misses: stores write the site's 'Hash Burger x Hash Burger' as 'Hash Burger' (also Candy Rain, Gelonade, Honey Banana, Sour Diesel pre-rolls) and some put Candy Rain rosin under a 'Riverway' line."
+  ],
+  "skip": [
+    {
+      "when": {
+        "title": "(?i)tincture"
+      },
+      "why": "tincture: the site gives the bottle volume, never the dose"
+    },
+    {
+      "when": {
+        "title": "(?i)intimacy oil"
+      },
+      "why": "topical: no dose on the site"
+    },
+    {
+      "when": {
+        "title": "(?i)^(?!.*\\b(?:mini|mii|four pack|classics)\\b).*\\bpre-?rolls?\\b"
+      },
+      "why": "plain pre-roll: size not on the site"
+    },
+    {
+      "when": {
+        "title": "(?i)^(?!.*\\d\\s*g\\b).*\\b(?:badder|concentrate)\\b",
+        "body": "^(?!.*(?:%20|_)\\.?\\d+(?:\\.\\d+)?g(?![a-z0-9]))"
+      },
+      "why": "concentrate: size not on the site"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "title": "(?i)pre-?rolls?|bagel\\s*hole"
+      },
+      "set": {
+        "category": "preroll"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)vape pen"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "all-in-one"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\b(?:510|cart|aio)\\b"
+      },
+      "set": {
+        "category": "vaporizers"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\bgum+(?:ies|y)\\b"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "gummy"
+      }
+    },
+    {
+      "when": {
+        "title": "^(?!.*(?i:pre-?roll|cart|vape|badder|concentrate))",
+        "body": "(?i)%20gummies"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "gummy"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)live rosin.*\\b(?:badder|concentrate)\\b"
+      },
+      "set": {
+        "category": "concentrate",
+        "subtype": "rosin"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\bresin\\b.*\\b(?:badder|concentrate)\\b"
+      },
+      "set": {
+        "category": "concentrate",
+        "subtype": "resin"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\b(?:badder|concentrate)\\b",
+        "body": "Live%20Resin"
+      },
+      "set": {
+        "category": "concentrate",
+        "subtype": "resin"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\b(?:badder|concentrate)\\b"
+      },
+      "set": {
+        "category": "concentrate"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "^BagelHole(?:\\s+Season\\s+\\d+)?\\s+(?P<strain>.+?)\\s+Live\\s+R[eo]s[ie]n$",
+      "set": {
+        "line": "BagelHole",
+        "size": "2.5g"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "^(?:(?P<line>Classics)\\s+)?(?P<strain>.+?)\\s+(?:(?:Live\\s+)?Resin\\s+)?(?:(?i:mini|mii)[\\s-]*)?(?i:pre-?rolls?\\s+four\\s+pack)",
+      "set": {
+        "size": "4pk 0.75g"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$",
+        "body": "Four%20Pack"
+      },
+      "match": "^(?P<strain>.+?)\\s+(?:(?:Live\\s+)?Resin\\s+)?(?i:mini|mii)[\\s-]*Pre-?Rolls?$",
+      "set": {
+        "size": "4pk 0.75g"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "^(?P<strain>.+?)\\s+(?:(?:Live\\s+)?Resin\\s+)?(?i:mini|mii)[\\s-]*Pre-?Rolls?$",
+      "set": {
+        "size": "0.75g"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "^(?P<line>Classics)\\s+(?P<strain>.+?)\\s+Live\\s+Resin\\s+Pre-?roll$",
+      "set": {
+        "size": "0.75g"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$"
+      },
+      "match": "^Classics\\s+(?P<strain>.+?)\\s+Live\\s+Resin\\s+510\\s+(?:Vape\\s+)?Cart\\s+(?i:Two-?Fer)",
+      "set": {
+        "line": "Classics Two-Fer",
+        "size": "2pk 0.5g"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$"
+      },
+      "match": "^(?:MFNY\\s+)?(?P<strain>.+?)\\s+Live\\s+Resin\\s+510\\s+(?:Vape\\s+)?Cart\\s+(?i:Two-?Fer)",
+      "set": {
+        "line": "Two-Fer",
+        "size": "2pk 0.5g"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$"
+      },
+      "match": "^Classics\\s+(?P<strain>.+?)\\s+Live\\s+Resin\\s+(?:Vape\\s+Pen|AIO\\s+Vape)(?:\\s+(?P<size>\\d*\\.?\\d+\\s*g))?$",
+      "set": {
+        "line": "Classics Live Resin",
+        "size": "1g"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "title": "Live Rosin"
+      },
+      "match": "^Classics\\s+(?P<strain>.+?)\\s+Live\\s+Rosin\\s+510\\s+(?:Vape\\s+)?Cart$",
+      "extract": {
+        "body": "(?:%20|_)(?P<size>\\.?\\d+(?:\\.\\d+)?g)(?![a-z0-9])"
+      },
+      "set": {
+        "line": "Classics Live Rosin",
+        "size": "0.5g"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$"
+      },
+      "match": "^Classics\\s+(?P<strain>.+?)\\s+Live\\s+Resin\\s+510\\s+(?:Vape\\s+)?Cart$",
+      "extract": {
+        "body": "(?:%20|_)(?P<size>\\.?\\d+(?:\\.\\d+)?g)(?![a-z0-9])"
+      },
+      "set": {
+        "line": "Classics Live Resin",
+        "size": "0.5g"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$"
+      },
+      "match": "^(?:MFNY\\s+)?(?P<strain>.+?)\\s+(?:(?P<line>Live\\s+Rosin)|(?:Live\\s+)?Resin)\\s+(?:(?P<size>\\d*\\.?\\d+\\s*g)\\s+)?(?:510\\s+(?:Vape\\s+)?Cart|AIO\\s+Vape|Vape\\s+Pen)(?:\\s+(?P<size2>\\d*\\.?\\d+\\s*g))?$",
+      "extract": {
+        "body": "(?:%20|_)(?P<size>\\.?\\d+(?:\\.\\d+)?g)(?![a-z0-9])"
+      },
+      "set": {
+        "line": "Live Resin",
+        "size": "0.5g"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$"
+      },
+      "match": "^(?:MFNY\\s+)?(?P<strain>.+?)\\s+Vape\\s+Pen$",
+      "extract": {
+        "body": "(?:%20|_)(?P<size>\\.?\\d+(?:\\.\\d+)?g)(?![a-z0-9])"
+      },
+      "set": {
+        "size": "0.5g"
+      }
+    },
+    {
+      "when": {
+        "category": "^concentrate$"
+      },
+      "match": "^Classics\\s+(?P<strain>.+?)\\s+Live\\s+Rosin\\s+(?:Badder|Concentrate)(?:\\s+(?P<size>\\d*\\.?\\d+\\s*g))?$",
+      "extract": {
+        "body": "(?:%20|_)(?P<size>\\.?\\d+(?:\\.\\d+)?g)(?![a-z0-9])"
+      },
+      "set": {
+        "line": "Classics Live Rosin"
+      }
+    },
+    {
+      "when": {
+        "category": "^concentrate$"
+      },
+      "match": "^Classics\\s+(?P<strain>.+?)\\s+Live\\s+Resin\\s+(?:Badder|Concentrate)(?:\\s+(?P<size>\\d*\\.?\\d+\\s*g))?$",
+      "extract": {
+        "body": "(?:%20|_)(?P<size>\\.?\\d+(?:\\.\\d+)?g)(?![a-z0-9])"
+      },
+      "set": {
+        "line": "Classics Live Resin"
+      }
+    },
+    {
+      "when": {
+        "category": "^concentrate$"
+      },
+      "match": "^(?:MFNY\\s+)?(?P<strain>.+?)\\s+(?:(?P<line>Live\\s+Res[ie]n|Live\\s+Rosin)\\s+)?(?:Badder|Concentrate)(?:\\s+(?P<size>\\d*\\.?\\d+\\s*g))?$",
+      "extract": {
+        "body": "(?:%20|_)(?P<size>\\.?\\d+(?:\\.\\d+)?g)(?![a-z0-9])"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "^(?P<line>Classics)\\s+(?P<strain>.+?)\\s+Live\\s+Res[ie]n\\s+Gum+ies$",
+      "set": {
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "^(?P<strain>.+?)(?:\\s+Gum+ies)?$",
+      "set": {
+        "size": "10pk 100mg"
+      }
+    }
+  ]
+}

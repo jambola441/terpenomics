@@ -1,0 +1,84 @@
+{
+  "brand": "Golden Garden",
+  "site": "https://goldengardenny.com",
+  "source": {
+    "kind": "html",
+    "url": "https://goldengardenny.com/products",
+    "item": "div.collection-item-main.w-dyn-item",
+    "fields": {
+      "title": "h2",
+      "product_type": "[fs-list-field=\"category\"]",
+      "body": "img@src"
+    }
+  },
+  "learned": "2026-10-05, by an agent pass: 27 products on one Webflow page (NY-only brand, OCM processor license on the site).",
+  "notes": [
+    "One server-rendered Webflow collection list; each product is a div.collection-item-main.w-dyn-item with the name in an h2 and Finsweet fields (fs-list-field category, type, thc, cbd, price). The hidden price field is not reliable (the same 1g pre-roll is 21 or 5).",
+    "Moonrock and infused pre-roll titles state the format; flower and single pre-roll titles do not state a size ('No Cap Flower'), but their images are named with it ('GG - 3.5g - Flower - No Cap.png', 'GG - 1g - Pre-roll - No Cap.png'), so the size is read from the image URL (body). London Poundcake Flower's newer image has no size; every other jar is 3.5g and 6 NY stores sell it as 3.5g, so a flower image without a size falls back to 3.5g.",
+    "The 3-Pack Live Resin Infused Pre-Rolls never state a per-roll weight on the site; NY stores sell them as '1.2g | 3 pack | 3.6g', so they are set to 3 x 1.2g.",
+    "Zero Gravity is the moonrock line (the site banner: 'Zero Gravity Moon Rocks have landed'); moonrock is flower with the subtype infused."
+  ],
+  "category": [
+    {
+      "when": {
+        "title": "(?i)moon\\s*rock"
+      },
+      "set": {
+        "category": "flower",
+        "subtype": "infused"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\bpre-?rolls?\\b"
+      },
+      "set": {
+        "category": "preroll"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\bflower\\s*$"
+      },
+      "set": {
+        "category": "flower"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^flower$"
+      },
+      "match": "^(?P<strain>.+?)\\s+(?P<line>Zero Gravity)\\s+Moon\\s*rocks?\\s+(?P<size>\\d+(?:\\.\\d+)?\\s*g)$"
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "^(?P<strain>.+?)\\s+3[- ]?Pack\\s+(?P<line>Live Resin Infused)\\s+Pre-?Roll$",
+      "set": {
+        "size": "3 x 1.2g"
+      }
+    },
+    {
+      "when": {
+        "category": "^(flower|preroll)$",
+        "body": "%20\\d+(?:\\.\\d+)?g%20"
+      },
+      "match": "^(?P<strain>.+?)\\s+(?:Flower|Pre-?Roll)$",
+      "extract": {
+        "body": "%20(?P<size>\\d+(?:\\.\\d+)?g)%20"
+      }
+    },
+    {
+      "when": {
+        "category": "^flower$"
+      },
+      "match": "^(?P<strain>.+?)\\s+Flower$",
+      "set": {
+        "size": "3.5g"
+      }
+    }
+  ]
+}

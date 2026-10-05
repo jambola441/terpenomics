@@ -1,0 +1,110 @@
+{
+  "brand": "Olio",
+  "site": "https://www.dabolio.com",
+  "source": {
+    "kind": "html",
+    "url": "https://www.dabolio.com/new-york/",
+    "item": "p",
+    "fields": {
+      "title": "."
+    }
+  },
+  "learned": "2026-10-05, by agent pass: the New York 'where to buy' page (about 90 NY dispensaries, each followed by the Olio products it carries): 773 paragraphs, about 675 product lines, 31 distinct products plus a 510 battery. The page was last modified 2026-02-18.",
+  "notes": [
+    "NY only: this is Olio's New York page (the brand also has Colorado, Michigan and New Mexico pages). It is a stock list by store, not a shop, so each product appears once per store carrying it; the script keeps one entry per product and size.",
+    "Product lines are '<dose> – Live Rosin All In One – <strain>', '<dose> – Live Rosin Cartridge – <strain>', '100mg – Traditional Live Rosin Gummies – <flavor>' and '<strain> – 1G Cold Cure Live Rosin'. Vape sizes are given as mg of oil (1000mg AIO, 500mg cart); sizes.py reads 1000mg as 1g for a vape.",
+    "Not products: store names (all capitals, 'BAYSIDE CANNABIS – QUEENS'), the page's own headings, its 'contact your location' line and the footer (emails, sign-up, copyright). The first store's paragraph wraps its product paragraphs, so its text is a whole list; each of those lines is also an item of its own, so the wrapper is skipped.",
+    "Inline markup splits a word on a few stores' lines ('Sour Cranberr</span>y', 'Live Rosin C</span>artridge', 'Live R</span>osin'), and the text comes out with a space inside the word. Lines with a lone capital before a lowercase fragment, or a lone trailing letter other than the 'x' of a cross ('Sour D x Wilson'), are skipped; other stores list those products whole.",
+    "The 510 Thread Battery is an accessory. 'Le’Moon Cake' (concentrate) and 'Le Moon Cake' (vapes) are one strain; the product key ignores the apostrophe."
+  ],
+  "skip": [
+    {
+      "when": {
+        "title": "^[^a-z]*$"
+      },
+      "why": "an NY store's name or a page heading"
+    },
+    {
+      "when": {
+        "title": "(?i)^contact your location|@dabolio\\.com|^sign up\\b|all rights reserved"
+      },
+      "why": "page text"
+    },
+    {
+      "when": {
+        "title": "(?:–[^–]*){3,}"
+      },
+      "why": "a store's whole list in one paragraph (each line is also its own item)"
+    },
+    {
+      "when": {
+        "title": "(?i)\\bbattery\\b"
+      },
+      "why": "510 battery, an accessory"
+    },
+    {
+      "when": {
+        "title": "\\b[A-Z] [a-z]{2,}|[a-z]{2,} [a-wyz]\\b"
+      },
+      "why": "a word split by inline markup (other stores list the product whole)"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "title": "(?i)\\ball in one\\b"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "all-in-one"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\bcartridge\\b"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "cart"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\bgummies\\b"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "gummy"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\bcold cure live rosin\\b"
+      },
+      "set": {
+        "category": "concentrate",
+        "subtype": "rosin"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^vaporizers$"
+      },
+      "match": "^(?P<size>\\d+\\s*mg)\\s*–\\s*(?P<line>Live Rosin)\\s+(?:All In One|Cartridge)\\s*–\\s*(?P<strain>.+?)\\s*$"
+    },
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "^(?P<size>\\d+\\s*mg)\\s*–\\s*Traditional\\s+(?P<line>Live Rosin)\\s+Gummies\\s*–\\s*(?P<strain>.+?)\\s*$"
+    },
+    {
+      "when": {
+        "category": "^concentrate$"
+      },
+      "match": "^(?P<strain>.+?)\\s*–\\s*(?P<size>\\d*\\.?\\d+\\s*G)\\s+(?P<line>Cold Cure) Live Rosin\\s*$"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "brand": "5Boro",
+  "site": "https://nanticoke.co",
+  "source": {
+    "kind": "html",
+    "url": "https://nanticoke.co/index.php?route=product/category&path=20_61&limit=500",
+    "item": "div.product-thumb",
+    "fields": {
+      "title": "h4 a",
+      "url": "h4 a@href",
+      "body": "p.desc",
+      "meta": "img@src"
+    }
+  },
+  "learned": "2026-10-05, by agent pass: 24 products in Nanticoke's '5Boro' category (OpenCart, one page). 5borocannabisnyc.com does not resolve; the brand lives on its maker's site.",
+  "notes": [
+    "NY only: 5 Boro is a sub-brand of Nanticoke Hemp Inc., Endicott NY (OCM-PROC-24-000002). Its products are in Nanticoke's catalog; this category page holds exactly them, so every item here is 5Boro. Nanticoke's recipe skips them by image folder.",
+    "Only the two blunts say '5 Boro' in the title ('5 Boro - Cereal Milk 1.5 g Blunt with Glass Tip'); the prefix is stripped. The strain is everything before the first size ('.7 g', '3.5 g', '1g', '5 Pack Of').",
+    "Formats: '.7 g Flower (Dime Bag)' and '3.5 g Flower Pack' are flower; '1g Single Preroll', '5 Pack Of .7g Prerolls' (3.5g) and '1.5 g Blunt with Glass Tip' are pre-rolls. 'Dime Bag' names the 0.7g package, not a line. The site spells the strain 'Hood Candyz' on flower and 'Hood Candy' on the blunt."
+  ],
+  "category": [
+    {
+      "when": {
+        "title": "(?i)\\bpre-?rolls?\\b|\\bblunt\\b"
+      },
+      "set": {
+        "category": "preroll"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\bflower\\b"
+      },
+      "set": {
+        "category": "flower"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^(flower|preroll)$"
+      },
+      "match": "(?i)^(?:5\\s*Boro\\s*-\\s*)?(?P<strain>.+?)\\s+(?:\\d*\\.?\\d+\\s*g\\b|\\d+\\s+Pack\\b)"
+    }
+  ]
+}

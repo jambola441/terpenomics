@@ -1,0 +1,41 @@
+{
+  "brand": "ADK Hemp Co.",
+  "site": "https://adkhempco.com",
+  "source": {
+    "kind": "html",
+    "url": "https://adkhempco.com/prerolls/",
+    "urls": ["https://adkhempco.com/prerolls/", "https://adkhempco.com/strains/"],
+    "item": "li.card",
+    "fields": {
+      "id": ".coa-links a@href",
+      "title": ".body > h3",
+      "body": ".meta",
+      "product_type": "img@alt",
+      "url": "a[href^='/strains/']@href"
+    }
+  },
+  "learned": "2026-10-05, by an agent pass: hand-built static site of a NY microbusiness (OCM-MICR-25-000303). /prerolls/ has 2 hash-infused five-packs and 10 whole-flower singles; /strains/ has the 9 flower strains in rotation. Paths need the trailing slash (the bare path answers 308).",
+  "notes": [
+    "Cards are li.card on both pages. A pre-roll card's image alt says what it is ('hash infused pre-roll five-pack jar', 'pre-roll tube'); a strain card's alt is just the name, so a card with no pre-roll in its alt and a /strains/ link is flower. Ids are the COA PDF path for pre-rolls (one per lot) and the strain page for flower.",
+    "The five-packs state their weight in .meta ('hybrid · Five 0.7 g joints · 3.5 g'); the package total at the end is the size. The line is the page's 'Hash Infused'.",
+    "Singles state a weight only on Carbon Fiber ('1 g whole-flower pre-roll'); the rest say only indica/hybrid. Every single NY stores sell is 1g (Donny Burger, Hive #11, Rambutan, Sherb, 2026-10-05), so singles without a stated weight are set to 1g.",
+    "Flower jar size is not stated anywhere on the site. Every ADK flower product NY stores sell is 3.5g (Donny Burger, Garlic Mountain Slurry, Grape Falls Diesel, Mellon Collie, 2026-10-05), so the strains page is read as 3.5g jars. Re-check if stores start listing another size.",
+    "Stores also list this brand as 'Adirondack Flowers', a separate scraped_brand that check does not compare. The flower strains stores sell that are not in the current rotation (Garlic Mountain Slurry, Grape Falls Diesel, Mellon Collie) and the rosin vape and concentrate stores carry are not on the site."
+  ],
+  "skip": [],
+  "category": [
+    {"when": {"product_type": "(?i)\\bpre-?roll\\b"}, "set": {"category": "preroll"}},
+    {"when": {"url": "/strains/[a-z0-9-]+/?$"}, "set": {"category": "flower"}}
+  ],
+  "title": [
+    {"when": {"category": "^preroll$", "product_type": "(?i)\\bhash infused\\b"},
+     "match": "^(?P<strain>.+)$",
+     "extract": {"body": "(?i)\\b(?P<size>\\d+(?:\\.\\d+)?\\s*g)\\s*$"},
+     "set": {"line": "Hash Infused"}},
+    {"when": {"category": "^preroll$"},
+     "match": "^(?P<strain>.+)$",
+     "extract": {"body": "(?i)^(?P<size>\\d+(?:\\.\\d+)?\\s*g)\\b"},
+     "set": {"size": "1g"}},
+    {"when": {"category": "^flower$"}, "match": "^(?P<strain>.+)$", "set": {"size": "3.5g"}}
+  ]
+}

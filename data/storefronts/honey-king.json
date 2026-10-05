@@ -1,0 +1,85 @@
+{
+  "brand": "Honey King",
+  "site": "https://honeyking.com",
+  "source": {
+    "kind": "wp_json",
+    "url": "https://honeyking.com/wp-json/wp/v2/product?categories=59"
+  },
+  "learned": "2026-10-05, by an agent pass: 41 New York products (category 59) of 115, one page.",
+  "notes": [
+    "A custom 'product' post type, not WooCommerce. Ordinary WP categories hold both blog and product terms; New York is id 59, with Vapes (229) and Pre-Roll (70) under it and a leaf per line: '2G Royal Palm Premium Oil All-in-One', '1.1G Premium Oil All-in-One', '1.1G Premium Oil All-in-One Sweet Edition', '1.5G Diamond Infused Pre-Roll', '3.5G Royal Minis 7x Live Resin Pre-Roll Pack'. California products sit under their own category and are not in this feed.",
+    "Titles are '<SIZE> <LINE> - <STRAIN>' in capitals, so title_case is on ('2G PALM - MANGO HAZE', '1.1G Premium Oil All-In-One - CHEMDAWG'); the 2g titles shorten Royal Palm to PALM, so the line comes from the category. The site's spellings are kept ('COOCHIE RUNTS' on the 2g, 'KING LOUIS XII').",
+    "Every NY vape is an all-in-one (the category names say so). Royal Minis are 7 x 0.5g, 3.5g in all, as the title says.",
+    "No flower in NY on the site (the New York > Flower category is empty), though stores carry Honey King flower."
+  ],
+  "title_case": true,
+  "category": [
+    {
+      "when": {
+        "tags": "(?i)\\bpre-?roll\\b"
+      },
+      "set": {
+        "category": "preroll"
+      }
+    },
+    {
+      "when": {
+        "tags": "(?i)\\bvapes\\b"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "all-in-one"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "tags": "(?i)royal palm"
+      },
+      "match": "(?i)^(?P<size>\\d+(?:\\.\\d+)?G)\\s+(?:ROYAL\\s+)?PALM\\s*-\\s*(?P<strain>.+)$",
+      "set": {
+        "line": "Royal Palm"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "tags": "(?i)sweet edition"
+      },
+      "match": "(?i)^(?P<size>\\d+(?:\\.\\d+)?G)\\s+PREMIUM OIL ALL-IN-ONE\\s+SWEET EDITION\\s*-\\s*(?P<strain>.+)$",
+      "set": {
+        "line": "Sweet Edition"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$"
+      },
+      "match": "(?i)^(?P<size>\\d+(?:\\.\\d+)?G)\\s+PREMIUM OIL ALL-IN-ONE\\s*-\\s*(?P<strain>.+)$",
+      "set": {
+        "line": "Premium Oil"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$",
+        "tags": "(?i)royal minis"
+      },
+      "match": "(?i)^(?P<size>\\d+(?:\\.\\d+)?G)\\s+7X\\s+LIVE RESIN ROYAL MINIS\\s*-\\s*(?P<strain>.+)$",
+      "set": {
+        "line": "Royal Minis"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^(?P<size>\\d+(?:\\.\\d+)?G)\\s+DIAMOND INFUSED PRE-?ROLL\\s*-\\s*(?P<strain>.+)$",
+      "set": {
+        "line": "Diamond Infused"
+      }
+    }
+  ]
+}

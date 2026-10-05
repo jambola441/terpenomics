@@ -1,0 +1,124 @@
+{
+  "brand": "Grön",
+  "site": "https://eatgron.com",
+  "source": {
+    "kind": "wp_json",
+    "url": "https://eatgron.com/wp-json/wp/v2/product?state=81"
+  },
+  "learned": "2026-10-05, by an agent pass: 38 New York products (state term 81) of 298 across 11 states, one page. Doses read off the rendered product pages, one per line.",
+  "notes": [
+    "Custom post type 'product' with taxonomies category, post_tag and state; state=81 is New York (AZ 60, IL 91, MI 203, MO 61, NV 62, NJ 64, OH 82, OR 63, PA 125). The category term names (tags here) carry the line: Mega, Pearls, Pips, Chocolate, 'Rosin Mega - NY', 'Rosin Pearls - NY'.",
+    "Titles are a ratio prefix and a flavour ('THC Lemonade', '1:1 Strawberry Lemonade', '3:1 Milk Chocolate'); rosin products are the bare flavour ('Cherry Cola'). Some titles hold <br>, which the reader strips.",
+    "Neither the title nor the REST content has a dose; the product pages do, fixed per line: a Mega is one 100mg piece ('one whole Mega is 100mg THC'); Pearls are 10 per package at 10mg; Pips are 20 per package at 5mg; full bars and Mini Bars are 10 pieces at 10mg. Rosin Mega and Rosin Pearls pages reuse the same blocks.",
+    "The 10:1 CBN:THC Tart Cherry Pearls page shows the generic 10mg-a-Pearl block, which its own ratio contradicts. 8 NY stores sell it as 25mg THC (2.5mg x 10 Pearls; 2 stores write 100mg), so it is set to 10pk 25mg. Recheck if the page ever states its dose.",
+    "Rosin Mega and Rosin Pearls are given the line Mega and Pearls, the way NY stores write them; their flavours (Cherry Cola, Peach Mango, Baja Blaze, Electric Honeydew, Dragon Punch, Orange Yuzu) exist only in rosin, so nothing collides.",
+    "Gummy strains drop the ratio prefix: each gummy flavour comes in one ratio, and stores write the flavour alone. Chocolates keep it (not 'THC'), because one flavour comes as THC and as a ratio ('THC Dark Chocolate Pips' and '1:1:1 Dark Chocolate Pips'). Full bars have no line; Mini Bars have the line 'Mini Bar'.",
+    "One New York product has an Illinois slug (mega-1-1-blackberry-il) and repeats mega-1-1-blackberry-ny; it is skipped.",
+    "PIXLZ, Grön's gummy-cluster sub-brand that NY stores sell under Grön, is on its own Webflow site (eatpixlz.com: Blue Razzberry 3:1, Tropical Rush, Berry Blast), not in this feed. A recipe reads one source, so PIXLZ stays with the stores' consensus.",
+    "Stores call the NY Sour Apple Mega 'Big Apple' (its page: 'gives the term Big Apple a whole new meaning') and the Mini Bars 'Sea Salt' bars; the site's names are kept, so those store names show as only at stores.",
+    "Stores call the Mega Sour Apple 'Big Apple' (store_aliases)."
+  ],
+  "skip": [
+    {
+      "when": {
+        "url": "-il/?$"
+      },
+      "why": "an Illinois page filed under New York; repeats its -ny twin"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "tags": "(?i)\\b(mega|pearls)\\b"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "gummy"
+      }
+    },
+    {
+      "when": {
+        "tags": "(?i)\\b(pips|chocolate)\\b"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "chocolate"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "tags": "(?i)\\bmega\\b"
+      },
+      "match": "^(?:THC\\s+|\\d+(?::\\d+)+\\s+)?(?P<strain>.+?)$",
+      "set": {
+        "line": "Mega",
+        "size": "100mg"
+      }
+    },
+    {
+      "when": {
+        "tags": "(?i)\\bpearls\\b"
+      },
+      "match": "^10:1\\s+(?P<strain>Tart Cherry)$",
+      "set": {
+        "line": "Pearls",
+        "size": "10pk 25mg"
+      }
+    },
+    {
+      "when": {
+        "tags": "(?i)\\bpearls\\b"
+      },
+      "match": "^(?:THC\\s+|\\d+(?::\\d+)+\\s+)?(?P<strain>.+?)$",
+      "set": {
+        "line": "Pearls",
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "tags": "(?i)\\bpips\\b"
+      },
+      "match": "^THC Pips (?P<strain>.+)$",
+      "set": {
+        "line": "Pips",
+        "size": "20pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "tags": "(?i)\\bpips\\b"
+      },
+      "match": "^(?:THC\\s+)?(?P<strain>.+?)(?:\\s+Pips)?$",
+      "set": {
+        "line": "Pips",
+        "size": "20pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "tags": "(?i)\\bchocolate\\b"
+      },
+      "match": "^(?:THC\\s+)?(?P<strain>.+?)\\s+(?P<line>Mini Bar)$",
+      "set": {
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "tags": "(?i)\\bchocolate\\b"
+      },
+      "match": "^(?:THC\\s+)?(?P<strain>.+)$",
+      "set": {
+        "size": "10pk 100mg"
+      }
+    }
+  ],
+  "store_aliases": {
+    "names": {
+      "Big Apple": "Sour Apple"
+    }
+  }
+}

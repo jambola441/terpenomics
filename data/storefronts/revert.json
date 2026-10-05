@@ -1,0 +1,153 @@
+{
+  "brand": "Revert",
+  "site": "https://www.revertnyc.com",
+  "source": {
+    "kind": "html",
+    "url": "https://www.revertnyc.com/products",
+    "urls": [
+      "https://www.revertnyc.com/category/flower",
+      "https://www.revertnyc.com/category/pre-roll",
+      "https://www.revertnyc.com/category/infused-pre-roll",
+      "https://www.revertnyc.com/category/kief-infused-ground-flower",
+      "https://www.revertnyc.com/category/vape",
+      "https://www.revertnyc.com/category/edibles"
+    ],
+    "item": "div.collection-item-products",
+    "fields": {
+      "title": "h2",
+      "product_type": "[fs-list-field=category]",
+      "variant": "[fs-list-field=size]",
+      "tags": "[fs-list-field=types]",
+      "url": "a.card-product@href"
+    }
+  },
+  "learned": "2026-10-05, by an agent pass: 101 products over six category pages (flower 26, pre-roll 21, infused pre-roll 16, kief ground flower 20, vape 12, edibles 6). NY-only brand (OCM-PROC-24-000095).",
+  "notes": [
+    "Webflow CMS. /products shows one grid that stops at 100 items (it missed /products/cap-junkie, a 3.5g flower), so the recipe reads the six /category/<slug> pages instead, each well under the cap. A new category on the site (sitemap.xml lists them under /category/) needs adding to urls.",
+    "Each card: fs-list-field=category is the site's format (Flower, Pre-roll, Infused pre-roll, Kief infused ground-flower, Vape, Edibles), h2 the bare strain or flavour, and a nested fs-list-field=size one size (14g, 3.5g, 0.5g, 1g, 0.7g, 2g, 100mg). Pack counts are only in the h2 ('Blue Dream 10 Pack', 'Wedding Mintz 2 PK').",
+    "Pack sizes are set from the packaging renders on the cards, because the card size is per pre-roll and the reader takes '1g' beside '10 Pack' as the total: the 10-pack bag says '10 one gram prerolls, NET WT. 10G'; 'The Infused Pack' says 'Five 0.7 gram pre-rolls, 3.5 grams'; 'The Six Pack' image is named '.5g Pre-roll 6 Pack' and its page says six pre-rolls.",
+    "The infused 2-packs' cards say 0.7g, but that field was copied from the singles (the Green Crack 2 Pack page even carries Green Goblin's kief text). The Green Crack 2-pack tube reads 48.1% and THC/PKG 721.5MG, which is a 1.5g package, and NY stores list all eight 2-packs at 1.5g. So 2-packs are set to 2pk 1.5g.",
+    "Edible pages say 'Each package contains 10 easily separable 10mg portions (100mg total)', so every 100mg gummy is 10pk 100mg. 2g vapes are 'All-In-One Disposable' on their pages; the 1g vapes are carts (the Skywalker OG COA is 'Revert Cartridge Skywalker OG 1g').",
+    "Kief infused ground-flower is flower with subtype preground, the subtype taxonomy.token_subtype gives a store's 'Kief Infused Ground Flower'. 'Homie Pack - <STRAIN>' is the same 14g ground flower sold with papers; Homie Pack is the line. Infused pre-rolls carry no line: the brand names none beyond 'Infused', and no strain is sold both infused and plain."
+  ],
+  "category": [
+    {
+      "when": {
+        "product_type": "^Edibles$"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "gummy"
+      }
+    },
+    {
+      "when": {
+        "product_type": "^Vape$",
+        "variant": "^2g$"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "all-in-one"
+      }
+    },
+    {
+      "when": {
+        "product_type": "^Vape$",
+        "variant": "^1g$"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "cart"
+      }
+    },
+    {
+      "when": {
+        "product_type": "^(Pre-roll|Infused pre-roll)$"
+      },
+      "set": {
+        "category": "preroll"
+      }
+    },
+    {
+      "when": {
+        "product_type": "^Kief infused ground-flower$"
+      },
+      "set": {
+        "category": "flower",
+        "subtype": "preground"
+      }
+    },
+    {
+      "when": {
+        "product_type": "^Flower$"
+      },
+      "set": {
+        "category": "flower"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^edible$",
+        "variant": "^100mg$"
+      },
+      "match": "^(?P<strain>.+)$",
+      "set": {
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^flower$"
+      },
+      "match": "^(?P<line>Homie Pack)\\s*-\\s*(?P<strain>.+)$"
+    },
+    {
+      "when": {
+        "category": "^preroll$",
+        "variant": "^1g$"
+      },
+      "match": "^(?P<strain>.+?)\\s+10\\s*(?:Pack|PK)$",
+      "set": {
+        "size": "10 x 1g"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$",
+        "product_type": "^Infused pre-roll$"
+      },
+      "match": "^(?P<strain>.+?)\\s+2\\s*(?:Pack|PK)$",
+      "set": {
+        "size": "2pk 1.5g"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$",
+        "variant": "^0\\.5g$"
+      },
+      "match": "^(?P<strain>The Six Pack)$",
+      "set": {
+        "size": "6 x 0.5g"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$",
+        "variant": "^0\\.7g$"
+      },
+      "match": "^(?P<strain>The Infused Pack)$",
+      "set": {
+        "size": "5 x 0.7g"
+      }
+    },
+    {
+      "when": {
+        "category": "^(flower|preroll|vaporizers)$"
+      },
+      "match": "^(?!.*\\b(?:Pack|PK)\\b)(?P<strain>[^|]+?)$"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "brand": "New York Honey",
+  "site": "https://www.newyorkhoneyvapes.com",
+  "source": {
+    "kind": "html",
+    "url": "https://www.newyorkhoneyvapes.com/shop",
+    "pages": {"param": "page", "from": 1, "to": 10},
+    "item": "li[data-hook=\"product-list-grid-item\"]",
+    "fields": {
+      "title": "[data-hook=\"product-item-name\"]",
+      "url": "a[data-hook=\"product-item-container\"]@href"
+    }
+  },
+  "title_case": true,
+  "learned": "2026-10-05, by an agent pass: 70 products on /shop, four pages of 20 (Wix Stores, display only: $0.00, out of stock). NY-only brand (Veterans Holdings, OCM-PROC-24-000069, Gloversville).",
+  "notes": [
+    "Wix renders the /shop gallery server-side 20 at a time and honours ?page=N; page 5 is empty, where the reader stops. Each page is about 1.2 MB, and Wix answered 429 to back-to-back fetches on 2026-10-05 after a burst of exploration; a check a few minutes later went through. store-products-sitemap.xml lists the same 70 products if the gallery ever changes.",
+    "Names are '<SIZE> | <FORMAT> | <STRAIN>' in capitals: '1G | 510 CARTRIDGE | MIMOSA', '1G | AIO | RUNTZ', '1G | LIVE RESIN STONE | GG4', '1G | LIVE RESIN BADDER | GMO', '2G | DAB DART | SOUR TANGIE', '1G | N’FUSED PRE-ROLL | GOLDEN TICKET'. The size segment is the size; there are no packs.",
+    "The Stone is the brand's rechargeable resin all-in-one (nav: 'Resin All-In-One'; /knowthestone), so Live/Cured Resin Stone is an all-in-one with line Live Resin or Cured Resin. 510 Cartridge and AIO are the distillate line and carry no line.",
+    "Concentrates keep the texture in the line ('Live Resin Badder', 'Live Resin Sugar', 'Cured Sugar', 'Crumble', 'Honeycomb'): GG4, BBS and The Eclipse come as both badder and sugar, which would otherwise be one entry. The Dab Dart is a 2g concentrate applicator ('Our 2g Dab Dart makes dabbing or refilling effortless'). N'Fused pre-rolls are infused with bubble hash and distillate.",
+    "The 12oz Honey Spritzers say 'THC: 10 mg per serving' but not how many servings a can holds, and no NY store sells them at 2+ stores, so they are skipped rather than given a dose.",
+    "title_case leaves three-letter capitalised words as they are ('ICE Cream Cake', 'KEY Lime PIE', 'THE Eclipse'), which keeps GG4, BBS, GMO and MAC right."
+  ],
+  "skip": [
+    {"when": {"title": "(?i)\\|\\s*SPRITZER\\s*\\|"},
+     "why": "12oz spritzer: 10mg per serving, servings per can not stated"}
+  ],
+  "category": [
+    {"when": {"title": "(?i)\\|\\s*(510 CARTRIDGE|AIO)\\s*\\|"}, "set": {"category": "vaporizers"}},
+    {"when": {"title": "(?i)\\bRESIN STONE\\b"}, "set": {"category": "vaporizers", "subtype": "all-in-one"}},
+    {"when": {"title": "(?i)\\bPRE-?ROLL"}, "set": {"category": "preroll"}},
+    {"when": {"title": "(?i)\\|\\s*(LIVE|CURED) RESIN (BADDER|SUGAR)\\s*\\|"}, "set": {"category": "concentrate", "subtype": "resin"}},
+    {"when": {"title": "(?i)\\|\\s*(CURED SUGAR|CRUMBLE|HONEYCOMB|DAB DART)\\s*\\|"}, "set": {"category": "concentrate"}}
+  ],
+  "title": [
+    {"when": {"category": "^vaporizers$"},
+     "match": "^(?P<size>\\d*\\.?\\d+\\s*G)\\s*\\|\\s*(?:510 CARTRIDGE|AIO)\\s*\\|\\s*(?P<strain>.+?)\\s*$"},
+    {"when": {"category": "^vaporizers$"},
+     "match": "^(?P<size>\\d*\\.?\\d+\\s*G)\\s*\\|\\s*(?P<line>LIVE RESIN|CURED RESIN) STONE\\s*\\|\\s*(?P<strain>.+?)\\s*$"},
+    {"when": {"category": "^concentrate$"},
+     "match": "^(?P<size>\\d*\\.?\\d+\\s*G)\\s*\\|\\s*DAB DART\\s*\\|\\s*(?P<strain>.+?)\\s*$",
+     "set": {"line": "Dab Dart"}},
+    {"when": {"category": "^concentrate$"},
+     "match": "^(?P<size>\\d*\\.?\\d+\\s*G)\\s*\\|\\s*(?P<line>LIVE RESIN BADDER|CURED RESIN BADDER|LIVE RESIN SUGAR|CURED SUGAR|CRUMBLE|HONEYCOMB)\\s*\\|\\s*(?P<strain>.+?)\\s*$"},
+    {"when": {"category": "^preroll$"},
+     "match": "^(?P<size>\\d*\\.?\\d+\\s*G)\\s*\\|\\s*N.FUSED PRE-ROLL\\s*\\|\\s*(?P<strain>.+?)\\s*$",
+     "set": {"line": "N'Fused"}}
+  ]
+}

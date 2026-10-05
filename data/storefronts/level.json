@@ -1,0 +1,88 @@
+{
+  "brand": "Level",
+  "site": "https://levelexperience.com",
+  "title_case": true,
+  "source": {
+    "kind": "html",
+    "url": "https://levelexperience.com/states-ny/",
+    "item": "div.c-all-products-single",
+    "fields": {
+      "title": ".c-all-products-single__eyebrow, h4",
+      "body": "ul.c-all-products-single__specs",
+      "url": "a@href"
+    }
+  },
+  "learned": "2026-10-05, agent pass: the New York state page (/states-ny/) holds 11 product cards; other states have their own /states-<xx>/ pages. WordPress, but products are not on the REST API.",
+  "notes": [
+    "A card's title is its eyebrow (the line: 'LEVEL 5', 'Protab Max', 'Protab+ ™', 'Protab ™') and its h4 (the product: 'ENERGY', 'Sativa – 2-Pack', 'Boost'), read together as 'LEVEL 5 | ENERGY'. Body is the spec list: 'Dose 20 mg THC / tablet Quantity 5 tablets / package Duration ...'.",
+    "The h4 of a LEVEL 5 card is in capitals ('ENERGY'); title_case writes 'Level 5 Energy'.",
+    "Package size is dose per tablet times tablets per package, and sizes.py cannot read 'N tablets / package' as a pack. Protab Max names its pack in the title ('2-Pack'), so its size is read: 50 mg x 2-Pack = 2pk 100mg. The others are constants, each guarded by the card's exact Dose and Quantity text, so a changed card falls to unparsed instead of keeping a stale size.",
+    "The constants use THC per tablet from each product's own page, because the cards give total cannabinoids for LEVEL 5 and Protab+: LEVEL 5 is 5 mg delta-9 THC (plus THCv, CBG) x 20 = 20pk 100mg; Recover is 10 mg THCa (plus CBDa, CBG, CBC) x 10 = 10pk 100mg; Boost and Lights Out are 20 mg THC x 5 = 5pk 100mg; Protab is 20 mg THC x 5 = 5pk 100mg. Stores sold exactly these on 2026-10-05.",
+    "The site writes Boost, Lights Out and Recover's line 'Protab+'. Stores write 'Protab', and the matcher reads '+' as 'and' ('protaband'), so the recipe writes the line 'Protab' for both. They do not collide: Protab is Sativa/Hybrid/Indica, Protab+ is Boost/Lights Out/Recover.",
+    "Stores list LEVEL 5 Slumber as 'Protab Slumber' (20pk 100mg); the brand's line is LEVEL 5, so it shows as store-only in check. A 2pk 20mg 'Protab Slumber' at stores is not on the NY page."
+  ],
+  "category": [
+    {
+      "when": {
+        "title": "."
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "tablet"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "^(?P<line>Protab Max)\\s*\\|\\s*(?P<strain>[A-Za-z]+)\\s*[–-]\\s*(?P<size2>\\d+-Pack)$",
+      "extract": {
+        "body": "Dose\\s+(?P<size>\\d+\\s*mg)\\s+THC\\s*/\\s*tablet"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "body": "^Dose 5\\+? mg cannabinoids / tablet Quantity 20 tablets / package\\b"
+      },
+      "match": "^(?P<line>LEVEL 5)\\s*\\|\\s*(?P<strain>.+)$",
+      "set": {
+        "size": "20pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "body": "^Dose 30\\+? mg cannabinoids / tablet Quantity 10 tablets / package\\b"
+      },
+      "match": "^Protab\\+\\s*™?\\s*\\|\\s*(?P<strain>.+)$",
+      "set": {
+        "line": "Protab",
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "body": "^Dose 20 mg cannabinoids / tablet Quantity 5 tablets / package\\b"
+      },
+      "match": "^Protab\\+\\s*™?\\s*\\|\\s*(?P<strain>.+)$",
+      "set": {
+        "line": "Protab",
+        "size": "5pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "body": "^Dose 20 mg THC / tablet Quantity 5 tablets / package\\b"
+      },
+      "match": "^(?P<line>Protab)\\s*™?\\s*\\|\\s*(?P<strain>.+)$",
+      "set": {
+        "size": "5pk 100mg"
+      }
+    }
+  ]
+}

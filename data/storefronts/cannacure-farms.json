@@ -1,0 +1,110 @@
+{
+  "brand": "Cannacure Farms",
+  "site": "https://nycannacurefarms.com",
+  "source": {
+    "kind": "json",
+    "url": "https://nycannacurefarms.com/js/strains-data.js",
+    "extract": "window\\.CC_STRAINS\\s*=\\s*(\\[.*\\])\\s*;",
+    "lenient": true,
+    "items": "*",
+    "fields": {
+      "title": "name",
+      "product_type": "category",
+      "variant": "format",
+      "tags": "type",
+      "meta": "thc",
+      "body": "note"
+    }
+  },
+  "learned": "2026-10-05, by an agent pass: 21 entries in one JS file (window.CC_STRAINS, a JS object literal with comments and unquoted keys). The pages render it client-side; products.html has only format prose. The file's header says it is sourced from NY dispensary menus.",
+  "notes": [
+    "Each entry is name (the strain), category (Flower, Dime Bag, Pre-Roll, Infused, Vape, Gummies) and format ('3.5g Jar', '.7g Pouch', '1g Pre-Roll', '1g Infused Pre-Roll', '1g Live Cart', 'Nighttime · 20-pack'). Size comes from format; meta is the thc field, which for gummies is the pack's dose ('100mg').",
+    "Lines are the brand's own names from products.html: 'Liquid Gold' for the infused pre-rolls, 'Live Resin' for the carts ('1g live-resin carts'), and Nighttime / Daytime for the gummies (5mg THC each, 20 to a tin).",
+    "A dime bag is the same flower in a .7g pouch, so it is flower; White Widow and Pineapple Express appear in two formats.",
+    "products.html says pre-rolls also come in 5-pack boxes, but the data has no 5-pack entries; those come from the stores.",
+    "Check on 2026-10-05: 21 entries; stores sell 19 products, 13 found. The 6 store-only (Blue Zushi flower and pack, Bomb Pop, Caramel Apple infused, Strawberry Diesel dime bag, a Sour Diesel 3g pack) are not in the data."
+  ],
+  "category": [
+    {
+      "when": {
+        "product_type": "^(Flower|Dime Bag)$"
+      },
+      "set": {
+        "category": "flower"
+      }
+    },
+    {
+      "when": {
+        "product_type": "^(Pre-Roll|Infused)$"
+      },
+      "set": {
+        "category": "preroll"
+      }
+    },
+    {
+      "when": {
+        "product_type": "^Vape$",
+        "variant": "(?i)\\bcart\\b"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "cart"
+      }
+    },
+    {
+      "when": {
+        "product_type": "^Vape$"
+      },
+      "set": {
+        "category": "vaporizers"
+      }
+    },
+    {
+      "when": {
+        "product_type": "^Gummies$"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "gummy"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^preroll$",
+        "product_type": "^Infused$"
+      },
+      "match": "^(?P<strain>.+)$",
+      "set": {
+        "line": "Liquid Gold"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "variant": "(?i)\\blive\\b"
+      },
+      "match": "^(?P<strain>.+)$",
+      "set": {
+        "line": "Live Resin"
+      }
+    },
+    {
+      "when": {
+        "category": "^(flower|preroll|vaporizers)$"
+      },
+      "match": "^(?P<strain>.+)$"
+    },
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "^(?P<strain>.+)$",
+      "extract": {
+        "variant": "(?P<line>Nighttime|Daytime)\\W+(?P<size>\\d+\\s*-?\\s*pack)",
+        "meta": "^(?P<size2>\\d+\\s*mg)$"
+      }
+    }
+  ]
+}

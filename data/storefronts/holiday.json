@@ -1,0 +1,32 @@
+{
+  "brand": "Holiday",
+  "site": "https://hbarholiday.com",
+  "source": {
+    "kind": "wc_store_api",
+    "url": "https://hbarholiday.com/wp-json/wc/store/v1/products"
+  },
+  "learned": "2026-10-05, agent pass: 20 variable products (10 flavours x 'Holiday H-Bar <Flavour> THC Vape' and 'Holiday H-Bar Plus <Flavour> 2G THC Vape'), 3 variations each.",
+  "notes": [
+    "Both parents of a flavour carry the same three variations (Device / Capacity as slugs: 'h-bar / 0-5g', 'h-bar / 1g', 'h-bar-plus / 2g'), with different ids. The H-Bar parent keeps its 0.5g and 1g, the H-Bar Plus parent its 2g; the repeats are skipped.",
+    "'0-5g' is a slug for 0.5g and would read as 5g, so that variation's size is set; 1g and 2g read from the variant.",
+    "The same ten flavours serve Massachusetts, New York and New Jersey ('No matter which of the three states you're in', home page); there is no state filter. NY COAs are a Google Drive folder. Collabs (STAYME70 x Holiday, NY only; TYSON 2.0 x Holiday) have their own pages and are not in the Store API.",
+    "prices are 0 (no online sales); every H-Bar is an all-in-one.",
+    "On 2026-10-05 stores sold 10 products (2+ stores); 9 are here. 'Flapjacks' 1g is on no page of the site (not a lineup flavour, not named on the collab pages)."
+  ],
+  "skip": [
+    {"when": {"title": "^Holiday H-Bar Plus\\b", "variant": "^h-bar /"}, "why": "H-Bar 0.5g/1g repeated under the H-Bar Plus parent"},
+    {"when": {"title": "^Holiday H-Bar (?!Plus\\b)", "variant": "^h-bar-plus /"}, "why": "H-Bar Plus 2g repeated under the H-Bar parent"}
+  ],
+  "category": [
+    {"when": {"product_type": "THC Vapes"}, "set": {"category": "vaporizers", "subtype": "all-in-one"}}
+  ],
+  "title": [
+    {"when": {"variant": "^h-bar / 0-5g$"},
+     "match": "^Holiday\\s+(?P<line>H-Bar)\\s+(?P<strain>.+?)\\s+THC Vape$",
+     "set": {"size": "0.5g"}},
+    {"when": {"variant": "^h-bar / 1g$"},
+     "match": "^Holiday\\s+(?P<line>H-Bar)\\s+(?P<strain>.+?)\\s+THC Vape$"},
+    {"when": {"variant": "^h-bar-plus / 2g$"},
+     "match": "^Holiday\\s+(?P<line>H-Bar Plus)\\s+(?P<strain>.+?)\\s+(?P<size>2G)\\s+THC Vape$"}
+  ]
+}

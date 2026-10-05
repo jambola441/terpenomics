@@ -1,0 +1,105 @@
+{
+  "brand": "Dank By Definition",
+  "site": "https://www.dankbydefinition.com",
+  "source": {
+    "kind": "json",
+    "url": "https://www.dankbydefinition.com/s/1790440163767_dank-coa-master.js",
+    "extract": "DANK_COA_ROWS\\s*=\\s*(\\[.*\\]);",
+    "items": "*",
+    "fields": {
+      "title": "2",
+      "product_type": "0",
+      "variant": "1",
+      "tags": "3",
+      "meta": "5",
+      "id": "2"
+    },
+    "discover": {
+      "url": "https://www.dankbydefinition.com/coa",
+      "match": "'(/s/\\d+_dank-coa-master\\.js)'"
+    }
+  },
+  "title_case": true,
+  "learned": "2026-10-05, by an agent pass: the brand's COA list (DANK_COA_UPDATED 2026-09-26), 1729 lab-batch rows; 640 tested in the last year, which make 482 entries.",
+  "notes": [
+    "The only machine-readable catalog is the /coa page's data file, window.DANK_COA_ROWS = [[category, subcategory, product, batch, coa_url, tested, thc, is_new, lab_sample_id], ...]. Category is FLOWER, PRE-ROLLS or INFUSED PRE-ROLLS; subcategory is size and format ('3.5 GRAM BAGS', '.5 GRAM JOINTS', '1.25 GRAM BLUNTS', '7 PACK PRE-ROLLS'); product is the strain in capitals. One row per batch: repeats collapse to one entry per product and size, and id is the strain so an entry's id does not change with which batch comes first.",
+    "Pack rows give the count but not the unit weight. 7 PACK PRE-ROLLS is 7 x 0.5g = 3.5g: batch ids say so ('DANK-26024-PRE-3.5G-GSC', 'PRE-7PK-3.5G-C99') and NY stores list them at 3.5g. Infused 5-packs are 2.75g at NY stores (Blue Dream, Northern Lights; the 2024 batch ids said 2.5G, an older pack outside the window). Plain 5-packs and 14-packs have no unit weight on the site and none at stores, so they are skipped.",
+    "INFUSED PRE-ROLLS take the line Infused: 29 strain and size pairs exist both infused and plain. Bag and jar of one strain and size, and a joint and blunt of one strain and size, are one entry (packaging is not part of identity).",
+    "The data file is renamed on every upload (/s/<timestamp>_dank-coa-master.js); `discover` reads the current name from the /coa page's DATA_SCRIPT_URLS each run.",
+    "The /coa page hides undated batches and batches tested more than 365 days ago (HIDE_AFTER_DAYS); the skip rule's older_than does the same, rolling with the date. Girl Scout Cookies 3.5g (last tested 2025-07-24) is still at two stores, so it comes from the stores' consensus as old stock."
+  ],
+  "skip": [
+    {
+      "when": {},
+      "older_than": {
+        "field": "meta",
+        "days": 365
+      },
+      "why": "batch tested over a year ago, or undated (the /coa page hides these)"
+    },
+    {
+      "when": {
+        "product_type": "^PRE-ROLLS$",
+        "variant": "^(5 PACK PREROLLS|14 PACK PRE ROLL)$"
+      },
+      "why": "plain 5- and 14-packs: no unit weight on the site or at stores"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "product_type": "^FLOWER$"
+      },
+      "set": {
+        "category": "flower"
+      }
+    },
+    {
+      "when": {
+        "product_type": "^(INFUSED )?PRE-ROLLS$"
+      },
+      "set": {
+        "category": "preroll"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "product_type": "^PRE-ROLLS$",
+        "variant": "^7 PACK PRE-ROLLS$"
+      },
+      "match": "^(?P<strain>.+)$",
+      "set": {
+        "size": "7 x 0.5g"
+      }
+    },
+    {
+      "when": {
+        "product_type": "^INFUSED PRE-ROLLS$",
+        "variant": "^5 PACK PREROLLS$"
+      },
+      "match": "^(?P<strain>.+)$",
+      "set": {
+        "line": "Infused",
+        "size": "5pk 2.75g"
+      }
+    },
+    {
+      "when": {
+        "product_type": "^INFUSED PRE-ROLLS$",
+        "variant": "\\bGRAM\\b"
+      },
+      "match": "^(?P<strain>.+)$",
+      "set": {
+        "line": "Infused"
+      }
+    },
+    {
+      "when": {
+        "variant": "\\bGRAM\\b"
+      },
+      "match": "^(?P<strain>.+)$"
+    }
+  ]
+}
