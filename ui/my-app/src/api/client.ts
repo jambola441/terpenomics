@@ -534,7 +534,8 @@ export const api = {
       return URL.createObjectURL(await res.blob())
     },
 
-    approve: (id: string, data: { subtotal_cents: number; purchased_on: string; partner_id?: string }) =>
+    /** Approve by the matching synced POS order, or by subtotal and date. */
+    approve: (id: string, data: { pos_order_id: string } | { subtotal_cents: number; purchased_on: string; partner_id?: string }) =>
       authenticatedFetch<AdminReceiptDetail>(`/admin/receipts/${id}/approve`, {
         method: 'POST',
         body: JSON.stringify(data),

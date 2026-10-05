@@ -14,7 +14,7 @@ from sqlmodel import Session, select
 
 from connectors import receipts as svc
 from database import get_session
-from models import Customer, Partner, PointsEntry, ReceiptSubmission
+from models import Customer, Partner, ReceiptSubmission
 from routes.pos_common import iso
 from routes_me import get_current_customer
 
@@ -64,11 +64,11 @@ def my_receipts(
     session: Session = Depends(get_session),
 ):
     rows = session.exec(
-        select(ReceiptSubmission, Partner.name, PointsEntry.points)
+        select(ReceiptSubmission, Partner.name)
         .join(Partner, Partner.id == ReceiptSubmission.partner_id)
-        .join(PointsEntry, PointsEntry.id == ReceiptSubmission.points_entry_id, isouter=True)
         .where(ReceiptSubmission.customer_id == customer.id)
         .order_by(ReceiptSubmission.created_at.desc())
         .limit(50)
     ).all()
-    return [receipt_json(r, name, pts) for r, name, pts in rows]
+    points = svc.receipt_points(session, [r for r, _ in rows])
+    return [receipt_json(r, name, points[r.id]) for r, name in rows]

@@ -216,6 +216,17 @@ CREATE INDEX IF NOT EXISTS ix_receipt_submissions_customer_id ON receipt_submiss
 CREATE INDEX IF NOT EXISTS ix_receipt_submissions_partner_id ON receipt_submissions (partner_id);
 CREATE INDEX IF NOT EXISTS ix_receipt_submissions_status ON receipt_submissions (status);
 CREATE INDEX IF NOT EXISTS ix_receipt_submissions_created_at ON receipt_submissions (created_at);
+
+-- Receipt reader (connectors/receipt_reader.py) and approval by POS order.
+ALTER TABLE receipt_submissions ADD COLUMN IF NOT EXISTS pos_order_id  uuid REFERENCES pos_orders(id);
+ALTER TABLE receipt_submissions ADD COLUMN IF NOT EXISTS image_sha256  text;
+ALTER TABLE receipt_submissions ADD COLUMN IF NOT EXISTS read_result   jsonb;
+ALTER TABLE receipt_submissions ADD COLUMN IF NOT EXISTS read_model    text;
+ALTER TABLE receipt_submissions ADD COLUMN IF NOT EXISTS read_at       timestamptz;
+ALTER TABLE receipt_submissions ADD COLUMN IF NOT EXISTS read_error    text;
+ALTER TABLE receipt_submissions ADD COLUMN IF NOT EXISTS read_attempts integer NOT NULL DEFAULT 0;
+CREATE INDEX IF NOT EXISTS ix_receipt_submissions_pos_order_id ON receipt_submissions (pos_order_id);
+CREATE INDEX IF NOT EXISTS ix_receipt_submissions_image_sha256 ON receipt_submissions (image_sha256);
 """
 
 TABLES = (

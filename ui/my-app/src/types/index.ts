@@ -817,6 +817,60 @@ export type AdminReceipt = MyReceipt & {
   customer_phone: string | null
   reviewed_by: string | null
   image_content_type: string
+  /** Set when approved by matching a synced POS order. */
+  pos_order_id: string | null
+  /** Whether the receipt reader has read the photo yet. */
+  read_status: 'read' | 'pending' | 'failed'
+}
+
+/** What Claude read off the photo (connectors/receipt_reader.py ReceiptRead). */
+export type ReceiptRead = {
+  is_receipt: boolean
+  legible: boolean
+  merchant_name: string | null
+  partner_id: string | null
+  purchase_date: string | null
+  purchase_time: string | null
+  subtotal_cents: number | null
+  tax_cents: number | null
+  tip_cents: number | null
+  total_cents: number | null
+  card_brand: string | null
+  card_last4: string | null
+  receipt_number: string | null
+  confidence: 'low' | 'medium' | 'high'
+  notes: string | null
+}
+
+/** A synced POS order that may be the purchase on the receipt. */
+export type ReceiptOrderCandidate = {
+  id: string
+  ordered_at: string
+  total_cents: number
+  tax_cents: number
+  tip_cents: number
+  subtotal_cents: number
+  cards: string[]
+  score: number
+  signals: string[]
+  strength: 'exact' | 'likely' | 'weak'
+  /** Who already earned on this order, if anyone. */
+  claimed: null | 'this_customer' | 'other_customer'
+}
+
+export type ReceiptFlag = { code: string; message: string; level: 'bad' | 'warn' | 'info' }
+
+export type ReceiptReading = {
+  read: ReceiptRead | null
+  read_model: string | null
+  read_at: string | null
+  read_error: string | null
+  /** The store has a POS connected, so a matching sale is expected. */
+  has_pos: boolean
+  candidates: ReceiptOrderCandidate[]
+  best_order_id: string | null
+  flags: ReceiptFlag[]
+  suggestion: 'approve_order' | 'approve_subtotal' | 'reject_duplicate' | 'review'
 }
 
 export type AdminReceiptDetail = AdminReceipt & {
@@ -827,6 +881,7 @@ export type AdminReceiptDetail = AdminReceipt & {
   partners: PartnerOption[]
   duplicate_receipts: { id: string; status: ReceiptStatus; purchased_on: string | null; subtotal_cents: number | null; created_at: string }[]
   nearby_orders: { id: string; ordered_at: string; total_cents: number; subtotal_cents: number; same_customer: boolean; matched: boolean }[]
+  reading: ReceiptReading
 }
 
 export type AdminReceiptQueue = {
