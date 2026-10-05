@@ -159,6 +159,7 @@ def run_pipeline(timeout: int = DEFAULT_TIMEOUT_SEC) -> int:
     dur = (finished - started).total_seconds()
     summary = _read_summary()
     failed = [s for s in summary.get("stores", []) if not s.get("ok")]
+    warned = [s for s in summary.get("stores", []) if s.get("ok") and s.get("warning")]
     _write_status(
         state=state,
         started_at=started,
@@ -168,12 +169,14 @@ def run_pipeline(timeout: int = DEFAULT_TIMEOUT_SEC) -> int:
         stores_ok=summary.get("ok"),
         stores_failed=[{"slug": s["slug"], "stage": s["stage"], "detail": s["detail"]}
                        for s in failed],
+        stores_warned=[{"slug": s["slug"], "warning": s["warning"]} for s in warned],
         enrich_cost_usd=summary.get("cost_usd"),
     )
     log.info("pipeline %s in %.0fs (exit %d)", state, dur, code)
     if code != 0:
         lines = [f"terpenomics scrape {state} (exit {code}, {dur / 60:.0f} min)"]
         lines += [f"• {s['slug']}: {s['stage']} — {s['detail']}" for s in failed[:15]]
+        lines += [f"• {s['slug']} (warning): {s['warning']}" for s in warned[:5]]
         _alert("\n".join(lines))
     return code
 

@@ -143,6 +143,14 @@ overwrite a field you curated and never reactivate an entry you took out — a S
 re-fetch used to do both. Storefront products that vanish are deactivated; bootstrap
 entries are not, since one quiet week at the stores is not a discontinuation.
 
+**Auditing a catalog's structure.** A catalog built right looks like a brand's range:
+named lines, each in several strains or flavours. `python scripts/catalog_shape.py show
+"<Brand>"` lays a catalog out that way and lists the places it does not (a line with one
+strain, a big line-less group beside named lines, a strain or effect filed as a line, two
+entries for one product); `triage` ranks every catalog by them. Which of those are real
+takes evidence from store names and the brand's site, so the judgment is an agent skill,
+`.claude/skills/catalog-audit/SKILL.md`: ask Claude Code to "spot check the X catalog".
+
 **Postgres is the system of record.** Matching reads catalogs from the database
 (`scripts/catalog_store.py`); the `data/catalogs/*.json` files are an offline
 snapshot (`python scripts/catalog_store.py --snapshot`), not the read path. Edits in
@@ -250,10 +258,12 @@ Re-measure after changing the question or upgrading the model:
 match every active store. Results land in `data/enrich_cache/_last_run.json` (per
 store) and `_cron_status.json` (the run). On the cron job those files go with the
 container, so read the run's log in Render instead. A store counts as **failed** when its
-scraper errors or times out, it returns nothing, its import fails, enrichment
-answered fewer than half its rows, or the scrape was partial (fewer products than the
-platform reported). A partial scrape is still imported — prices and stock refresh —
-but retires nothing.
+scraper errors or times out, it returns nothing, its import fails, or enrichment
+answered fewer than half its rows; any failure makes the run exit non-zero. A
+**partial** scrape (fewer products than the platform reported) is a warning: it is
+still imported — prices and stock refresh — but retires nothing, and it does not fail
+the run, so a chronic one (Grow Together's Flowhub menu stalls near 810 of 861) cannot
+bury real failures.
 
 ### Weekly, or after editing catalogs
 
@@ -262,6 +272,7 @@ python scripts/catalog_match.py --all --jev --write     # re-match every listing
 python scripts/storefront.py push --all                   # refresh storefront catalogs
 python scripts/catalog_bootstrap.py --rebuild --push       # refresh bootstrap catalogs (additive)
 python scripts/catalog_bootstrap.py --top 50 --push        # propose catalogs for the next brands
+python scripts/catalog_shape.py triage                     # which catalogs to spot check
 python evals/enrich/audit.py --db                         # suspects per store
 ```
 
@@ -277,6 +288,7 @@ python evals/enrich/audit.py --db                         # suspects per store
 | catalog coverage for a brand | `python scripts/catalog_match.py --brand X --jev --misses` |
 | propose a catalog | `python scripts/catalog_bootstrap.py --brand X --show 20` |
 | test a storefront recipe | `python scripts/storefront.py check --brand X` |
+| a catalog's structure and leads | `python scripts/catalog_shape.py show "X"` (`triage` for all) |
 | list catalogs (DB) | `python scripts/catalog_store.py` |
 | schema state | `python scripts/db_migrate.py --status` |
 | tests | `pytest` (add `TEST_DATABASE_URL=...` for the importer integration tests) |
