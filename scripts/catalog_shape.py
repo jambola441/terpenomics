@@ -503,6 +503,23 @@ def _store_only_leads(cat: str, everything: list[Product]) -> list[Lead]:
 
 # --------------------------------------------------------------------------- render
 
+def store_sizes(prods: list[Product], listings: list[dict]) -> dict[tuple, list[tuple[str, int, int]]]:
+    """(category, line) -> [(size, listings, stores)]: the sizes the stores' own listings
+    of the line state, commonest first. The counts are the tell no single row gives:
+    STIIIZY's 40's read 1g and 2.5g on dozens of listings and 4.5g on two at one store."""
+    owner = {e["id"]: p for p in prods for e in p.entries}
+    counts: dict[tuple, Counter] = defaultdict(Counter)
+    stores: dict[tuple, dict[str, set]] = defaultdict(lambda: defaultdict(set))
+    for l in listings:
+        p = owner.get(l.get("catalog_entry_id"))
+        if not p or not is_fresh(l):
+            continue
+        size = sizes.parse(l.get("variant"), l.get("scraped_name"), category=p.category).label() or "unstated"
+        counts[(p.category, p.line)][size] += 1
+        stores[(p.category, p.line)][size].add(l.get("dispensary_id"))
+    return {key: [(v, n, len(stores[key][v])) for v, n in c.most_common()] for key, c in counts.items()}
+
+
 def render_show(catalog: dict, entries: list[dict], listings: list[dict],
                 strain_vocab: dict[str, int], category: str | None = None,
                 other_brands: dict[str, str] | None = None,
@@ -534,8 +551,11 @@ def render_show(catalog: dict, entries: list[dict], listings: list[dict],
     out.append("  per product: sizes (* = that size only from stores) · listings matched / stores · "
                "[store-only n] = the whole product kept from n stores, "
                "not on the site")
+    out.append("  per line: stores write = the sizes the line's listings state, listings/stores, "
+               "commonest first; (no product) = no product of the line comes in it")
 
     shape = lines_of(prods)
+    written = store_sizes(prods, listings)
     for cat in sorted(shape):
         if category and cat != category:
             continue
@@ -551,6 +571,11 @@ def render_show(catalog: dict, entries: list[dict], listings: list[dict],
                        + (f" · {'/'.join(subs)}" if subs else "")
                        + " · sizes " + ", ".join(f"{v} ×{n}" for v, n in
                                                  sorted(sizes_seen.items(), key=lambda kv: _size_order(kv[0]))))
+            if written.get((cat, line)):
+                out.append("    stores write: " + " · ".join(
+                    f"{v} {n}/{k}" + ("" if v == "unstated" or any(_same_size(cat, v, c) for c in sizes_seen)
+                                      else " (no product)")
+                    for v, n, k in written[(cat, line)]))
             for p in ps:
                 tag = f" [{p.subtype}]" if multi_sub and p.subtype else ""
                 extra = f"  [store-only {p.support}]" if storefront and p.store_only else ""

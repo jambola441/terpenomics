@@ -326,3 +326,17 @@ def test_no_split_size_where_the_lineless_products_are_a_range_of_their_own():
                for s in ("Apple Fritter", "Gelato", "Runtz") for v in ("1g",)]
     entries += [entry(None, s, "preroll", None, "3.5g") for s in ("Apple Fritter", "Kush", "Haze", "Mints")]
     assert texts(cs.leads(cs.products(entries)), "split-size") == []
+
+
+def test_show_prints_the_sizes_stores_write_per_line():
+    catalog = {"id": "c1", "brand_name": "Acme", "brand_slug": "acme", "source_method": "listings_bootstrap",
+               "fetched_at": "2026-10-05T05:00:00Z", "source_url": None}
+    one, pack = entry("40's", "Biscotti", "preroll", None, "1g"), entry("40's", "Biscotti", "preroll", None, "2.5g")
+    listings = ([{"id": f"a{i}", "dispensary_id": f"d{i}", "catalog_entry_id": one["id"], "variant": "1g",
+                  "scraped_name": "Biscotti 1g"} for i in range(3)]
+                + [{"id": f"b{i}", "dispensary_id": f"d{i}", "catalog_entry_id": pack["id"], "variant": "2.5g",
+                    "scraped_name": "Biscotti 5pk"} for i in range(2)]
+                + [{"id": "c0", "dispensary_id": "d9", "catalog_entry_id": pack["id"], "variant": "4.5g",
+                    "scraped_name": "Biscotti 5 x 0.9g"}])
+    text = cs.render_show(catalog, [one, pack], listings, {})
+    assert "stores write: 1g 3/3 · 5pk 2.5g 2/2 · 5pk 4.5g 1/1 (no product)" in text

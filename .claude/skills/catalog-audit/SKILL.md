@@ -91,6 +91,27 @@ it. They are rules of thumb, not laws: a break is a question, and evidence answe
    pair makes a strain with only one half of the pair stand out. The other half may be
    filed under another name or line, or too few stores sell it for a bootstrap to keep.
    Leads: `missing-pair`.
+10. **Stores mistype sizes** (the user's find, 2026-10-05). A listing's size is the
+    store's own field, copied as typed, and product pages group on it, so a typo shows
+    as a product of its own even when the match is right. A size no product of the line
+    comes in, at one store, is usually one of these:
+    - a mistyped unit: The Spot's STIIIZY 40's "5 x 0.9g ... (2.5g Pre-Roll Pack)" showed
+      as 4.5g, where 40's come in 1g and 2.5g;
+    - a cannabinoid sum or the CBD figure: Ayrloom's 150mg Everyday drops listed as
+      600mg (150mg THC + 450mg CBD) or 450mg;
+    - a per-piece dose typed as the size.
+
+    The counts give it away before any single row does. `show` prints each line's sizes
+    as the stores write them, and a size on two listings beside sizes on dozens is the
+    one to open, even when the catalog has an entry for that size. Open it with
+    `listings "<Brand>" "<strain>" --photos --descriptions`:
+    - the listing's own name or description usually states the real size ("(2.5g
+      Pre-Roll Pack)", "0.5g each / 2.5g total");
+    - a pack of a size the line sells ("2PK 1G Pods") is a bundle, not a typo;
+    - two or more stores agreeing on a size nothing contradicts is probably a size the
+      catalog lacks.
+
+    Read: the `stores write` row in `show`.
 
 **These rules grow.** When the user names another way brands do (or never do) things,
 add it here as a numbered rule. When an audit turns up a pattern worth checking every
@@ -174,6 +195,15 @@ Each product row shows its sizes, then the listings matched to it and the number
 stores they come from. In a storefront catalog, a size marked `*` came only from the
 stores, and `[store-only n]` marks a whole product kept from n stores. Watch the counts:
 a site product at 0/0 beside a store-only product of the same shape is a rename to check.
+
+Under each line, `stores write` lists the sizes the line's listings state, as
+listings/stores, commonest first. `(no product)` marks a size no product of the line comes
+in. Compare the counts as you read: a size on a couple of listings beside sizes on dozens
+is worth opening (rule 10). No lead does this for you; the row is the check.
+- STIIIZY's 40's read `1g 76/12 · 5pk 2.5g 49/12 · 2.5g 5/4 · 5pk 4.5g 2/1 (no product)`.
+  The 4.5g was one store's typo for the 2.5g pack.
+- Camino's Gummies showed `20pk 72mg 5/1`: one store typing 72mg on five different
+  gummies, a store habit no single listing reveals.
 
 For a bootstrap catalog, `python3 scripts/catalog_shape.py preview "<Brand>"` shows
 what a rebuild would propose from today's fresh listings: entries it would add, and
@@ -302,6 +332,8 @@ Fix at the source when three or more entries share a cause. Hand edits are for o
 | any: one brand's products inside another brand's catalog | a skip rule in the parent's recipe (or deactivations), plus a proposed name-based sub-brand rule at import, so stores' "Kiva - Camino ..." listings resolve to the sub-brand. `brand_aliases.json` alone cannot: it maps brand strings, not names |
 | any: products in the wrong category | admin edit of `category` (and subtype); if a recipe produced it, fix its `category` rule |
 | any: wrong size form | admin edit of `variant`; if a recipe produced it, fix the rule's size group |
+| any: a store mistyped a size (rule 10) | nothing in the catalog, which is right. The listing keeps the store's size on its product page until product pages group on a catalog size. Report the store and the size |
+| any: a size 2+ stores agree on that the catalog lacks | it arrives by itself: a store-only size at the next storefront push, an entry at the next bootstrap rebuild. One store's bundle ("2PK 1G Pods") stays out on purpose |
 
 ### 6. Report
 
