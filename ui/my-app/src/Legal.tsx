@@ -146,7 +146,10 @@ export function PrivacyPage() {
 
       <H>What we collect</H>
       <UL>
-        <li><b>Account details:</b> your phone number, first name and, if you give it, your last name.</li>
+        <li>
+          <b>Account details:</b> your phone number, first name and, if you give them, your last
+          name and email address. An email is saved only after you enter the code we send to it.
+        </li>
         <li>
           <b>Sign-up confirmations:</b> that you confirmed you are 21 or older, which version of
           the terms you accepted, and whether you opted in to marketing texts. For each we keep
@@ -191,7 +194,8 @@ export function PrivacyPage() {
         </li>
         <li>
           <b>Service providers</b> that process data on our behalf: Supabase (accounts and
-          database), Render (hosting), Message Central (sign-in text messages), Anthropic
+          database), Render (hosting), Message Central (sign-in text messages), Resend
+          (verification emails), Anthropic
           (reading uploaded receipts) and our map tile provider (map images, which receives
           your IP address when the map loads).
         </li>
@@ -224,7 +228,7 @@ export function PrivacyPage() {
       <H>Your choices</H>
       <UL>
         <li>Turn marketing texts on or off in your profile, or reply STOP to any marketing text.</li>
-        <li>Edit your name in your profile. To change your phone number, contact us.</li>
+        <li>Edit your name, and add, change or remove your email, in your profile. To change your phone number, contact us.</li>
         <li>Ask us for a copy of your information, or to correct it, at <Mail />.</li>
       </UL>
 

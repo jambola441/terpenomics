@@ -687,6 +687,27 @@ class PhoneAuthChallenge(SQLModel, table=True):
     request_ip:  Optional[str]      = Field(default=None, max_length=64, index=True)
 
 
+class EmailChallenge(SQLModel, table=True):
+    """One emailed code that would set a customer's contact email.
+
+    Only a hash of the code is stored. Created by create_all at startup, like
+    the SMS challenge table above. See routes/me_email.py.
+    """
+
+    __tablename__ = "email_challenges"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    customer_id: UUID = Field(foreign_key="customers.id", index=True, nullable=False)
+    email:       str  = Field(max_length=320, nullable=False)
+    code_hash:   str  = Field(max_length=64, nullable=False)
+
+    created_at:  datetime           = Field(default_factory=utcnow, index=True, nullable=False)
+    expires_at:  datetime           = Field(nullable=False)
+    attempts:    int                = Field(default=0, nullable=False)
+    consumed_at: Optional[datetime] = Field(default=None)
+
+
 # ---------------------------
 # Partner stores + POS connectors
 # ---------------------------

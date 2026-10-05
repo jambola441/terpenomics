@@ -4,6 +4,7 @@ import { useAuth } from '@/lib/auth'
 import { formatE164ForDisplay } from '@/lib/phone'
 import { useFetch } from '@/lib/useFetch'
 import { Button, FeedState, SectionTitle, styles } from '@/components/ui'
+import EmailEditor from '@/components/EmailEditor'
 import { t, space } from '@/lib/theme'
 
 export default function Profile() {
@@ -63,7 +64,15 @@ export default function Profile() {
         {me.phone ? <Text style={styles.meta}>{formatE164ForDisplay(me.phone)}</Text> : null}
       </View>
 
-      <View style={[styles.card, { marginHorizontal: space[4], padding: space[4], gap: space[2] }]}>
+      <EmailEditor
+        profile={me}
+        onSaved={updated => {
+          profile.setData(() => updated)
+          setProfile(updated)
+        }}
+      />
+
+      <View style={[styles.card, { marginHorizontal: space[4], marginTop: space[3], padding: space[4], gap: space[2] }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Text style={[styles.name, { flex: 1 }]}>Deals and drops by text</Text>
           <Switch value={me.marketing_opt_in} onValueChange={setOptIn} trackColor={{ true: t.accent }} />

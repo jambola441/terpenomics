@@ -100,6 +100,16 @@ export const api = {
     updateProfile: (payload: ProfileUpdate) =>
       authed<CustomerProfile>(`/me`, post(payload)),
 
+    /** Contact email: a code goes to the new address; it is saved on verify
+     *  (routes/me_email.py). */
+    startEmailChange: (email: string) =>
+      authed<{ challenge_id: string; expires_in: number; resend_in: number }>(`/me/email/start`, post({ email })),
+
+    verifyEmailChange: (challengeId: string, code: string) =>
+      authed<CustomerProfile>(`/me/email/verify`, post({ challenge_id: challengeId, code })),
+
+    removeEmail: () => authed<CustomerProfile>(`/me/email`, { method: 'DELETE' }),
+
     /** Deletes the login and scrubs the account (services/account_deletion.py). */
     deleteAccount: () => authed<null>(`/me`, { method: 'DELETE' }),
 

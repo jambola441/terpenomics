@@ -32,6 +32,7 @@ from sqlmodel import Session, delete, select
 
 from models import (
     Customer,
+    EmailChallenge,
     Order,
     OrderStatus,
     PhoneAuthChallenge,
@@ -91,6 +92,7 @@ def scrub(session: Session, customer: Customer, request: Optional[Request] = Non
 
     session.exec(delete(PosCustomerLink).where(PosCustomerLink.customer_id == customer.id))
     session.exec(delete(PreferredDispensary).where(PreferredDispensary.customer_id == customer.id))
+    session.exec(delete(EmailChallenge).where(EmailChallenge.customer_id == customer.id))
     if customer.auth_user_id is not None:
         session.exec(delete(PhoneAuthIdentity).where(PhoneAuthIdentity.auth_user_id == customer.auth_user_id))
     if phone:
