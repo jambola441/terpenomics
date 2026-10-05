@@ -41,6 +41,8 @@ In this order, new before old:
 3. **Sizes 2+ stores sell that the product lacks.**
 4. **Product-page sizes left behind** (normally zero right after the 13:00 UTC import).
 5. **Review-only clusters** at 3+ stores, then **brandless listings** by count.
+6. **Curated products no listing has matched for 30 days.** Check that they stopped
+   selling, then retire them.
 
 List the rest in the report as open, without investigating them.
 
@@ -59,6 +61,7 @@ stores actually sell, and the brand's site settles what exists. Decide what it i
 | page sizes left behind | a catalog edit since the last import | `catalog_fix.py size-sync` |
 | review-only cluster | the stores' names leave the model unsure, or the catalog lacks the product | if the listings are that product: `catalog_fix.py add-term ENTRY "<store's name>"` for the names they use. If not: say what they are |
 | brandless listings | one store's feed carries no brand (87 STIIIZY listings did on 2026-10-05) | none in the catalog. Find the store (`look` shows dispensary ids) and report it; fixing the scraper or enrichment is code (step 7) |
+| stale curated product | a product admitted by curation (often on one store's listings) that stores stopped selling, or whose listings now match another product | `listings "<Brand>" "<strain>"`: none at all, retire it (`catalog_fix.py deactivate ENTRY` for each entry the `look` names). Listings matched to another product: decide which product they are; that is the edit |
 
 Entry ids come from `python3 scripts/catalog_shape.py entries "<Brand>" "(?i)<regex>"`.
 

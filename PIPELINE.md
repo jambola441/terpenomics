@@ -165,7 +165,8 @@ this repo. Scripts detect and the agent judges:
 - `scripts/data_health.py report --save` runs the deterministic detectors: stores the
   daily run missed, store names recorded on unrelated products, sizes 2+ stores sell
   that the matched product lacks, review-only clusters, product-page sizes left
-  behind, and brandless listings named after a catalog brand.
+  behind, brandless listings named after a catalog brand, and curated products no
+  listing has matched for 30 days.
 - Each finding has a stable key. A snapshot per day (`data_health_snapshots`) lets the
   report mark what is new and how the numbers moved.
 - `dismiss` (`data_health_dismissals`) hides a judged false positive until its evidence

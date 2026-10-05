@@ -148,3 +148,19 @@ def test_snapshots_and_dismissals_round_trip(fresh_db, via_rest):
     assert dh.load_dismissals()["shared-name:x:vape cartridge"]["evidence"] == 5
     assert dh.main(["undismiss", "shared-name:x:vape cartridge"]) == 0
     assert dh.load_dismissals() == {}
+
+
+def test_a_curated_product_nothing_matched_for_30_days_is_flagged():
+    def curated(id, strain, made_days_ago, pk=None):
+        return {"id": id, "name": strain, "pk": pk or f"lb:flower:flower::{strain.lower()}", "category": "flower",
+                "strain": strain, "variant": "3.5g", "source": "curated",
+                "first_seen_at": (NOW - timedelta(days=made_days_ago)).isoformat()}
+    find = catalog("Find.", curated("z", "Zangria", 45), curated("t", "Tierz", 45),
+                   curated("o", "Out Of Office", 5),                         # too new to judge
+                   {"id": "b", "name": "Gas Lit", "category": "flower", "variant": "3.5g",
+                    "source": "listings_bootstrap", "first_seen_at": (NOW - timedelta(days=90)).isoformat()})
+    ls = [listing(1, "A", "Tierz 3.5g", "t", "exact", "3.5g", brand="Find.", category="flower",
+                  seen=NOW - timedelta(days=2))]                              # still selling
+    found = dh.stale_curated(data(ls, find))
+    assert [f.key for f in found] == ["stale-curated:find.:lb:flower:flower::zangria"]
+    assert "never matched" in found[0].text and found[0].look.endswith("z")
