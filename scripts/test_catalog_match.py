@@ -70,6 +70,43 @@ class TestSizes:
     def test_parse(self, texts, cat, expect):
         assert sizes.parse(*texts, category=cat) == expect
 
+    @pytest.mark.parametrize("size,cat", [
+        (sizes.Size(mg=40.0, pack=2), "edible"),
+        (sizes.Size(mg=20.0, pack=2), "edible"),
+        (sizes.Size(mg=100.0, pack=10), "edible"),
+        (sizes.Size(grams=3.0, pack=5), "preroll"),
+        (sizes.Size(grams=0.5, pack=5), "preroll"),
+    ])
+    def test_a_label_reads_back_as_written(self, size, cat):
+        assert sizes.parse(size.label(), category=cat) == size
+
+    def test_a_bare_total_is_the_same_package_as_its_label(self):
+        # Catalog entries write "2pk 40mg"; stores write "40mg" for the same package.
+        assert sizes.same_size(sizes.parse("40mg", category="edible"),
+                               sizes.parse("2pk 40mg", category="edible")) is True
+        # Store text is still read as store text: a dose beside a pack is per piece
+        # while the package stays under the cap.
+        assert sizes.parse("Dreamberry | 20mg | 2pk", category="edible") == sizes.Size(mg=40.0, pack=2)
+
+    def test_a_lone_dose_beside_a_pack_may_be_either_reading(self):
+        per_piece = sizes.parse("10mg", "1906 - Bliss Drops 2pk - 10mg", category="edible")
+        in_all = sizes.parse("20mg", "Bliss Drops 2-pack", category="edible")
+        label = sizes.parse("2pk 20mg", category="edible")
+        assert sizes.same_size(per_piece, label) is True
+        assert sizes.same_size(in_all, label) is True
+        # Only against the same pack count: ten pieces are not a single.
+        assert sizes.same_size(sizes.parse("Gummies 10pk 10mg", category="edible"),
+                               sizes.parse("10mg", category="edible")) is False
+        # An explicit per-piece form is not a guess.
+        assert sizes.parse("Kiva 2pk x 20mg", category="edible").alt_mg is None
+
+    def test_the_first_reading_picks_the_entry_when_both_fit(self):
+        idx = cm.CatalogIndex(catalog(
+            {"name": "dreamberry", "category": "edible", "variant": "2pk 20mg", "pk": "db"},
+            {"name": "dreamberry", "category": "edible", "variant": "2pk 40mg", "pk": "db"}))
+        assert idx.pick_entry("db", "", "edible", "Dreamberry | 20mg | 2pk")["variant"] == "2pk 40mg"
+        assert idx.pick_entry("db", "20mg", "edible", "Dreamberry")["variant"] == "2pk 20mg"
+
     def test_same_size(self):
         assert sizes.same_size(sizes.parse("5pk x 0.6g", category="preroll"),
                                sizes.parse("3g", category="preroll"))

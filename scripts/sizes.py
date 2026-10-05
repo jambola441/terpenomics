@@ -16,6 +16,8 @@ A Size carries what the text states and nothing it does not:
   pack      units in the package (5 prerolls, 10 gummies)
   unit_g    weight of one unit, when a pack states it (0.6g each)
   unit_mg   dose of one unit, when a pack states it (10mg each)
+  alt_mg    the other reading of a lone dose beside a pack: the package total
+            ("Drops 2-pack | 20mg" is 40mg if per piece, 20mg if not)
 
 Totals are derived when the parts are present (5 x 0.6g -> 3g, 10 x 10mg -> 100mg),
 because that is how a store and a brand end up writing the same package differently.
@@ -24,7 +26,7 @@ because that is how a store and a brand end up writing the same package differen
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import taxonomy
 
@@ -50,6 +52,8 @@ _OZ_WORDS = {"eighth ounce": 3.5, "eighth oz": 3.5, "quarter ounce": 7.0,
              "eighth": 3.5, "quarter": 7.0, "ounce": 28.0}
 _FL_OZ = re.compile(rf"{_NUM}\s*fl\.?\s*oz\b", re.I)
 _RATIO = re.compile(r"\b\d+\s*:\s*\d+(?:\s*:\s*\d+)*\b")
+# What Size.label() writes for a pack: the count, then the package total ("2pk 40mg").
+_LABEL = re.compile(rf"\d+pk {_NUM}(?:g|mg)")
 _PERCENT = re.compile(rf"{_NUM}\s*%")
 
 OZ_GRAMS = 28.0   # cannabis convention, same as scraper_common
@@ -63,6 +67,7 @@ class Size:
     pack: int | None = None
     unit_g: float | None = None
     unit_mg: float | None = None
+    alt_mg: float | None = field(default=None, compare=False)
 
     def is_empty(self) -> bool:
         return self == Size()
@@ -95,7 +100,12 @@ def parse(*texts: str | None, category: str | None = None) -> Size:
     Potency is stripped before parsing: "THC 37.45%" and a "1:1" ratio are not sizes,
     and "10mg THC : 5mg CBD" names a dose split rather than a package.
     """
-    text = " | ".join(t for t in texts if t)
+    present = [t for t in texts if t]
+    # A label this module wrote (a catalog entry's variant) states the package total.
+    # The guesses below are for store text, where "2pk 40mg" may mean 40mg a piece:
+    # applied to a label they doubled it, so "40mg" never matched its own "2pk 40mg".
+    is_label = len(present) == 1 and bool(_LABEL.fullmatch(present[0].strip()))
+    text = " | ".join(present)
     text = _PERCENT.sub(" ", _RATIO.sub(" ", text))
     cat = (category or "").strip().lower()
 
@@ -134,11 +144,18 @@ def parse(*texts: str | None, category: str | None = None) -> Size:
             grams.append(g)
     mgs = _floats(_MG, text)
 
-    total_g = _total(grams, pack, unit_g, unit_below=1.0)
+    total_g = _total(grams, pack, unit_g, unit_below=None if is_label else 1.0)
     # New York caps an edible package at 100mg, so a lone dose next to a pack count
     # is per piece whenever multiplying stays within the cap ("10mg / 10 pack" is
     # 100mg) and is the package total when it would not ("100mg 10pk" is 100mg).
-    total_mg = _total(mgs, pack, unit_mg, unit_below=None, cap=EDIBLE_PACKAGE_CAP_MG)
+    total_mg = _total(mgs, pack, unit_mg, unit_below=None,
+                      cap=None if is_label else EDIBLE_PACKAGE_CAP_MG)
+    # That rule is a guess, and stores go both ways: "Bliss Drops 2pk - 10mg" is 10mg
+    # a drop, "Bliss Drops 2-pack" with an option of 20mg is 20mg in all. Keep the
+    # other reading so a size check can accept either (same_size).
+    doses = sorted({v for v in mgs if v > 0})
+    alt_mg = (doses[0] if not is_label and unit_mg is None and pack and pack > 1
+              and len(doses) == 1 and total_mg == pack * doses[0] else None)
 
     # A dose category is measured in mg and a weight category in grams; keep only the
     # unit the category actually sells by, so a gummy's "3.5g" piece weight or a
@@ -148,11 +165,11 @@ def parse(*texts: str | None, category: str | None = None) -> Size:
     if cat in WEIGHT_CATEGORIES:
         if total_g is None and total_mg is not None and total_mg >= 100:
             total_g = total_mg / 1000   # "500mg" cart -> 0.5g
-        total_mg = None
+        total_mg = alt_mg = None
     if pack == 1:
         pack = None
     return Size(grams=_round(total_g), mg=_round(total_mg), pack=pack,
-                unit_g=_round(unit_g), unit_mg=_round(unit_mg))
+                unit_g=_round(unit_g), unit_mg=_round(unit_mg), alt_mg=_round(alt_mg))
 
 
 def _gram_mentions(text: str) -> list[float]:
@@ -218,15 +235,22 @@ def _round(v: float | None) -> float | None:
     return None if v is None else round(v, 3)
 
 
-def same_size(a: Size, b: Size) -> bool | None:
+def same_size(a: Size, b: Size, either_reading: bool = True) -> bool | None:
     """True / False when both sides state a comparable size, None when either is silent.
 
     None is not False: a store that omits the size is not selling a different product.
+    `either_reading=False` compares only each side's first reading of a dose (alt_mg).
     """
     if a.grams is not None and b.grams is not None:
         return abs(a.grams - b.grams) <= max(0.02, 0.03 * max(a.grams, b.grams))
     if a.mg is not None and b.mg is not None:
-        return abs(a.mg - b.mg) <= max(0.5, 0.01 * max(a.mg, b.mg))
+        # A lone dose beside a pack may be per piece or the total (alt_mg); either
+        # reading counts, but only against the same pack count, so a "10pk 10mg"
+        # never passes for a 10mg single.
+        same_pack = either_reading and a.pack is not None and a.pack == b.pack
+        ours = [a.mg] + ([a.alt_mg] if same_pack and a.alt_mg is not None else [])
+        theirs = [b.mg] + ([b.alt_mg] if same_pack and b.alt_mg is not None else [])
+        return any(abs(x - y) <= max(0.5, 0.01 * max(x, y)) for x in ours for y in theirs)
     if a.pack is not None and b.pack is not None:
         return a.pack == b.pack
     return None

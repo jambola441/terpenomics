@@ -230,10 +230,13 @@ class CatalogIndex:
         """
         product = self.products[key]
         want = sizes.parse(listing_variant, name, category=category or product.category)
-        for e in product.entries:
-            got = sizes.parse(e.get("variant"), category=product.category)
-            if sizes.same_size(want, got):
-                return e
+        # A size that fits the listing's first reading beats one that fits only the
+        # other reading of an ambiguous dose ("20mg | 2pk": 40mg, or 20mg in all).
+        for either in (False, True):
+            for e in product.entries:
+                got = sizes.parse(e.get("variant"), category=product.category)
+                if sizes.same_size(want, got, either_reading=either):
+                    return e
         if listing_variant:
             lv = norm_name(listing_variant)
             for e in product.entries:
