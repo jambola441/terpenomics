@@ -399,3 +399,26 @@ def test_a_draft_recipe_can_be_checked_but_not_pushed(monkeypatch):
     monkeypatch.setattr(sys, "argv", ["storefront.py", "push", "--recipe", "draft.json"])
     with pytest.raises(SystemExit, match="--recipe is for check"):
         storefront.main()
+
+
+def test_strain2_joins_a_split_product_name():
+    recipe = storefront.validate({
+        "brand": "Camino", "site": "https://example.com",
+        "source": {"kind": "shopify_json", "url": "https://example.com/products.json"},
+        "category": [{"when": {"title": "."}, "set": {"category": "edible", "subtype": "gummy"}}],
+        "title": [{"when": {"category": "^edible$"},
+                   "match": "^10mg\\b[^']*'(?P<strain>[^']+)'\\s*(?P<strain2>.+)$",
+                   "set": {"line": "Sours", "size": "10pk 100mg"}}]})
+    doc, report = storefront.build(recipe, [storefront.Item("1", "10mg: 10mg CBN 'Deep Sleep' Blackberry Dream",
+                                                            "", {"title": "10mg: 10mg CBN 'Deep Sleep' Blackberry Dream"})])
+    (e,) = doc["entries"]
+    assert (e["product_line"], e["strain"], e["name"]) == ("Sours", "Deep Sleep Blackberry Dream",
+                                                            "Sours Deep Sleep Blackberry Dream")
+
+
+def test_store_listings_leave_a_sub_brand_to_its_own_catalog(monkeypatch):
+    import db_http
+    rows = [{"id": 1, "dispensary_id": 1, "scraped_name": "KIVA Camino - Chews - Boysenberry", "scraped_brand": "Kiva"},
+            {"id": 2, "dispensary_id": 1, "scraped_name": "Kiva Bar - Churro Milk Chocolate", "scraped_brand": "Kiva"}]
+    monkeypatch.setattr(db_http, "select_all", lambda table, query: rows)
+    assert [l["name"] for l in storefront.store_listings("Kiva", via_http=True)] == ["Kiva Bar - Churro Milk Chocolate"]

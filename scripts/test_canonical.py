@@ -161,3 +161,24 @@ class TestFormatTokens:
         assert normalize_variant("0.25g", "preroll") == "0.25g"
         assert normalize_variant("350mg", "vaporizers") == "0.35g"
         assert normalize_variant("0.3g", "edible") == "300mg"   # dose category unchanged
+
+
+# ---------------------------------------------------------------------------
+# One curated line, several spellings (STIIIZY, from the 2026-10-05 catalog audit)
+# ---------------------------------------------------------------------------
+
+class TestLineSpellings:
+    def test_every_spelling_assigns_the_one_line(self):
+        assert find_product_line("STIIIZY", "Tahoe OG Live Resin Liquid Diamond Pod 1g") == "Liquid Diamonds"
+        assert find_product_line("STIIIZY", "Tahoe OG Live Resin Liquid Diamonds Pod | 1g") == "Liquid Diamonds"
+        assert find_product_line("STIIIZY", "STIIIZY 40s | Cereal Milk Infused Preroll 5pk") == "40's"
+        assert find_product_line("STIIIZY", "Stiiizy - Blue Dream Starter Pack - 1g") is None
+
+    def test_the_spelling_found_is_stripped_from_the_strain(self):
+        rows = [{"brand": "STIIIZY", "name": "Tahoe OG Liquid Diamond Pod 1g", "product_line": None,
+                 "strain": "Tahoe OG Liquid Diamond"},
+                {"brand": "STIIIZY", "name": "Skywalker Original THC Pod | 1g", "product_line": None,
+                 "strain": "Skywalker"}]
+        canonicalize(rows)
+        assert (rows[0]["product_line"], rows[0]["strain"]) == ("Liquid Diamonds", "Tahoe OG")
+        assert (rows[1]["product_line"], rows[1]["strain"]) == ("Original", "Skywalker OG")

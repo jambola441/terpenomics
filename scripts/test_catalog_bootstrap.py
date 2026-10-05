@@ -379,3 +379,16 @@ def test_support_counts_only_listings_seen_recently(monkeypatch):
     assert cb.fresh_since(now) == "2026-09-14T13:00:00Z"            # no "+": it would arrive as a space
     cb.fetch_listings()
     assert "&or=(last_seen_at.gte." in asked[0] and "last_seen_at.is.null)" in asked[0]
+
+
+def test_curated_lines_and_strains_apply_at_rebuild():
+    # A listing matched to an entry carries the entry's line, so a lost line came back at
+    # every rebuild; the curated rules are facts about the name and now apply here.
+    rows = [{"id": f"{s}{i}", "dispensary_id": f"d{i}", "brand": "STIIIZY", "category": "vaporizers",
+             "subtype": "pod", "variant": "1g", "product_line": None, "strain": strain,
+             "name": f"{strain} Original THC Pod | 1g"}
+            for i in range(2) for s, strain in (("a", "Apple Fritter"), ("b", "Skywalker"))]
+    out = cb.propose("STIIIZY", rows)
+    names = sorted(e["name"] for e in out["catalog"]["entries"])
+    assert names == ["Original Apple Fritter", "Original Skywalker OG"]
+    assert out["report"]["curated_lines_set"] == 4 and out["report"]["curated_strains"] == 2

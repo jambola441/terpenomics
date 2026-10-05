@@ -84,6 +84,24 @@
     },
     {
       "when": {
+        "category": "^vaporizers$",
+        "title": "^GG4\\s*\\|"
+      },
+      "match": "^GG4\\s*\\|",
+      "set": {
+        "strain": "Gorilla Glue"
+      },
+      "why": "the site renamed its Gorilla Glue vapes GG4 (handle gorilla-glue-vape-cartridge-1g, tag 'Gorilla Glue'); every store still sells them as Gorilla Glue, so a GG4 entry matched nothing while store-only Gorilla Glue copies held the listings. Vapes only: the Kief Coated Gorilla Glue pre-roll is still Gorilla Glue on the site."
+    },
+    {
+      "when": {
+        "category": "^(preroll|vaporizers)$"
+      },
+      "match": "^(?P<line>Live Resin Infused|Live Resin|Kief Coated)\\s+(?P<strain>[^|]+?)\\s*\\|",
+      "why": "the one title that puts the line first: 'Live Resin Infused Super Bud | Half Gram Pre-Rolls | 5pk'"
+    },
+    {
+      "when": {
         "category": "^(preroll|vaporizers)$"
       },
       "match": "^(?P<strain>[^|]+?)\\s*\\|\\s*(?P<line>Live Resin Infused|Live Resin|Kief Coated)\\s*\\|"

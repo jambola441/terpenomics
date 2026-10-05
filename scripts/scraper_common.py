@@ -302,15 +302,36 @@ def _load_brand_aliases() -> dict[str, str]:
     return _ALIASES_CACHE
 
 
+_SUB_BRANDS_CACHE: dict[str, list[str]] | None = None
+
+
+def _load_sub_brands() -> dict[str, list[str]]:
+    """brand_aliases.json "_sub_brands": {parent: [sub-brand, ...]}."""
+    global _SUB_BRANDS_CACHE
+    if _SUB_BRANDS_CACHE is None:
+        raw = {}
+        if os.path.isfile(_ALIASES_PATH):
+            with open(_ALIASES_PATH, encoding="utf-8") as f:
+                raw = json.load(f)
+        _SUB_BRANDS_CACHE = raw.get("_sub_brands", {})
+    return _SUB_BRANDS_CACHE
+
+
 def apply_brand_aliases(rows: list[dict]) -> None:
-    """Normalize brand names in-place using the persistent alias map."""
+    """Normalize brand names in-place using the persistent alias map, then move a
+    sub-brand the store filed under its parent to the sub-brand: "KIVA - Camino - Sour
+    Gummies ..." is a Camino product, and Camino keeps its own catalog."""
     aliases = _load_brand_aliases()
-    if not aliases:
-        return
+    subs = _load_sub_brands()
     for row in rows:
         brand = row.get("brand") or ""
         if brand in aliases:
-            row["brand"] = aliases[brand]
+            row["brand"] = brand = aliases[brand]
+        for sub in subs.get(brand, ()):
+            if re.search(rf"(?<![a-z0-9]){re.escape(sub.lower())}(?![a-z0-9])",
+                         (row.get("name") or "").lower()):
+                row["brand"] = sub
+                break
 
 
 # ---------------------------------------------------------------------------

@@ -86,10 +86,11 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import canonical  # noqa: E402
 import catalog_store  # noqa: E402
 import sizes  # noqa: E402
 from brand_catalog import strip_brand  # noqa: E402
-from scraper_common import slugify  # noqa: E402
+from scraper_common import apply_brand_aliases, slugify  # noqa: E402
 
 import taxonomy  # noqa: E402
 
@@ -138,8 +139,14 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
     """A catalog document for `brand` built from its listings, plus a report."""
     # Copies: de-lining below edits strain/product_line, and the caller's rows must
     # stay what the database says.
-    rows = [dict(l) for l in listings if (l.get("category") or "") not in SKIP_CATEGORIES
-            and (l.get("strain") or "").strip()]
+    rows = [dict(l) for l in listings if (l.get("category") or "") not in SKIP_CATEGORIES]
+    # The curated lines and strain spellings (data/product_lines.json,
+    # strain_aliases.json) are facts about the name, so they apply here too. A listing
+    # matched to an entry carries that entry's line and strain, so without this a line
+    # the catalog lost stayed lost at every rebuild, however many stores print it
+    # (STIIIZY's "Original": printed on 73 listings, recorded on 8).
+    curated = canonical.canonicalize(rows)
+    rows = [l for l in rows if (l.get("strain") or "").strip()]
 
     # A product line that is only the brand's name is no line ("Runtz" on a Runtz
     # pre-roll pack). Kept, it would split that product into a lined and a line-less
@@ -322,6 +329,8 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
         "groups": len(groups), "line_splits_folded": folded, "strains_delined": delined,
         "lines_in_strain_merged": lines_in_strain,
         "sizes_merged": sizes_merged,
+        "curated_lines_set": curated["product_line_set"] + curated["product_line_corrected"],
+        "curated_strains": curated["strain_aliased"],
         "entries": len(entries), "listings_covered": kept_listings,
         "product_rows_before": before, "product_rows_after": after,
     }
@@ -356,10 +365,12 @@ def fetch_listings() -> list[dict]:
         "select=id,dispensary_id,scraped_name,scraped_brand,scraped_category,subtype,strain,"
         f"product_line,variant&is_active=is.true&or=(last_seen_at.gte.{fresh_since()},"
         "last_seen_at.is.null)&order=id")
-    return [{"id": r["id"], "dispensary_id": r["dispensary_id"], "name": r.get("scraped_name") or "",
-             "brand": r.get("scraped_brand"), "category": r.get("scraped_category"),
-             "subtype": r.get("subtype"), "strain": r.get("strain"),
-             "product_line": r.get("product_line"), "variant": r.get("variant")} for r in rows]
+    out = [{"id": r["id"], "dispensary_id": r["dispensary_id"], "name": r.get("scraped_name") or "",
+            "brand": r.get("scraped_brand"), "category": r.get("scraped_category"),
+            "subtype": r.get("subtype"), "strain": r.get("strain"),
+            "product_line": r.get("product_line"), "variant": r.get("variant")} for r in rows]
+    apply_brand_aliases(out)       # a sub-brand filed under its parent counts as the sub-brand's
+    return out
 
 
 def main() -> None:
