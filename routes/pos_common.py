@@ -18,7 +18,7 @@ from connectors.oauth_state import sign_state
 from connectors.registry import PROVIDERS, get_connector
 from connectors.store import as_utc
 from connectors.sync import disconnect
-from models import Partner, PartnerLocation, PartnerMember, PosConnection, PosConnectionStatus, PosOrder, PosSyncRun
+from models import Partner, PartnerLocation, PartnerMember, PointsEntry, PosConnection, PosConnectionStatus, PosOrder, PosSyncRun
 
 
 def connector_factory() -> Callable[[str], PosConnector]:
@@ -77,6 +77,32 @@ def member_json(m: PartnerMember) -> dict:
         "id": str(m.id), "partner_id": str(m.partner_id), "email": m.email,
         "signed_in": m.auth_user_id is not None,
         "invited_at": iso(m.invited_at), "last_login_at": iso(m.last_login_at),
+    }
+
+
+def points_summary_json(session: Session, customer_id: UUID, limit: int = 50) -> dict:
+    """A customer's balance and recent ledger entries."""
+    from connectors.points import PENDING_DAYS, balance, history, points_per_dollar
+    from connectors.store import utcnow
+
+    now = utcnow()
+    bal = balance(session, customer_id, now)
+    return {
+        "available": bal.available,
+        "pending": bal.pending,
+        "points_per_dollar": points_per_dollar(),
+        "pending_days": PENDING_DAYS,
+        "entries": [points_entry_json(e, partner_name, now) for e, partner_name in history(session, customer_id, limit)],
+    }
+
+
+def points_entry_json(e: PointsEntry, partner_name: Optional[str], now: datetime) -> dict:
+    return {
+        "id": str(e.id), "kind": e.kind, "points": e.points,
+        "partner_name": partner_name, "pos_order_id": str(e.pos_order_id) if e.pos_order_id else None,
+        "eligible_cents": e.eligible_cents, "created_at": iso(e.created_at),
+        "available_at": iso(e.available_at), "pending": as_utc(e.available_at) > now,
+        "note": e.note,
     }
 
 

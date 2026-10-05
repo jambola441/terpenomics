@@ -198,6 +198,16 @@ def get_my_purchases(
 # GET /me/preferences (placeholder)
 # ---------------------------
 
+@router.get("/points")
+def get_my_points(
+    customer: Customer = Depends(get_current_customer),
+    session: Session = Depends(get_session),
+):
+    """Terpee points earned at partner stores: balance and recent history."""
+    from routes.pos_common import points_summary_json
+    return points_summary_json(session, customer.id, limit=50)
+
+
 @router.get("/preferences")
 def get_preferences(customer: Customer = Depends(get_current_customer)):
     """

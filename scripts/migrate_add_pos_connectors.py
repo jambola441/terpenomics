@@ -21,6 +21,7 @@ Tables:
   pos_customer_links  POS customer id -> Terpee customer, once known
   pos_sync_runs       one row per sync, for the admin UI
   partner_members     who may sign in to a partner's /partner dashboard
+  points_ledger       Terpee points earned from partner orders (append-only)
 
 Idempotent — safe to re-run.
 
@@ -172,11 +173,31 @@ CREATE TABLE IF NOT EXISTS partner_members (
 CREATE INDEX IF NOT EXISTS ix_partner_members_partner_id ON partner_members (partner_id);
 CREATE INDEX IF NOT EXISTS ix_partner_members_email ON partner_members (email);
 CREATE INDEX IF NOT EXISTS ix_partner_members_auth_user_id ON partner_members (auth_user_id);
+
+-- Terpee points, append-only. connectors/points.py writes the difference between
+-- what an order is worth and what is already recorded for it.
+CREATE TABLE IF NOT EXISTS points_ledger (
+  id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  customer_id       uuid NOT NULL REFERENCES customers(id),
+  pos_order_id      uuid REFERENCES pos_orders(id),
+  partner_id        uuid REFERENCES partners(id),
+  kind              text NOT NULL,          -- earn | refund | adjust
+  points            integer NOT NULL,       -- signed
+  eligible_cents    integer NOT NULL DEFAULT 0,
+  points_per_dollar integer NOT NULL DEFAULT 1,
+  available_at      timestamptz NOT NULL,
+  created_at        timestamptz NOT NULL DEFAULT now(),
+  note              text
+);
+CREATE INDEX IF NOT EXISTS ix_points_ledger_customer_id ON points_ledger (customer_id);
+CREATE INDEX IF NOT EXISTS ix_points_ledger_pos_order_id ON points_ledger (pos_order_id);
+CREATE INDEX IF NOT EXISTS ix_points_ledger_partner_id ON points_ledger (partner_id);
+CREATE INDEX IF NOT EXISTS ix_points_ledger_available_at ON points_ledger (available_at);
 """
 
 TABLES = (
     "partners", "pos_connections", "partner_locations", "pos_orders",
-    "pos_order_items", "pos_customer_links", "pos_sync_runs", "partner_members",
+    "pos_order_items", "pos_customer_links", "pos_sync_runs", "partner_members", "points_ledger",
 )
 
 

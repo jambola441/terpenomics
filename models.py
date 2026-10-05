@@ -895,3 +895,40 @@ class PartnerMember(SQLModel, table=True):
 
     invited_at:    datetime           = Field(default_factory=utcnow_tz, sa_column=_tz_column("invited_at", nullable=False))
     last_login_at: Optional[datetime] = Field(default=None, sa_column=_tz_column("last_login_at"))
+
+
+class PointsEntry(SQLModel, table=True):
+    """One movement of a customer's Terpee points. Append-only.
+
+    connectors/points.py owns every write. It works out what a partner order
+    should be worth and appends the difference from what is already recorded,
+    so a refund shows up as a negative entry rather than an edit, and the ledger
+    stays a full history.
+
+    A customer's balance is the sum of their entries. `available_at` splits it:
+    entries before now are spendable, later ones are pending. An earn waits 7
+    days, so a refund inside that window cancels it before anyone can spend it.
+
+    Created by scripts/migrate_add_pos_connectors.py.
+    """
+
+    __tablename__ = "points_ledger"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    customer_id:  UUID           = Field(foreign_key="customers.id", index=True, nullable=False)
+    pos_order_id: Optional[UUID] = Field(default=None, foreign_key="pos_orders.id", index=True)
+    partner_id:   Optional[UUID] = Field(default=None, foreign_key="partners.id", index=True)
+
+    kind:   str = Field(nullable=False, sa_type=Text)  # earn | refund | adjust
+    points: int = Field(nullable=False)                # signed
+
+    # What the order was worth when this entry was written, and at what rate.
+    # The rate is fixed by an order's first entry, so a later rate change
+    # never rewrites past earnings.
+    eligible_cents:    int = Field(default=0, nullable=False)
+    points_per_dollar: int = Field(default=1, nullable=False)
+
+    available_at: datetime = Field(sa_column=_tz_column("available_at", nullable=False, index=True))
+    created_at:   datetime = Field(default_factory=utcnow_tz, sa_column=_tz_column("created_at", nullable=False))
+    note: Optional[str] = Field(default=None, sa_type=Text)

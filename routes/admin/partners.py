@@ -29,10 +29,13 @@ from routes.pos_common import (
     member_json,
     order_json,
     partner_json as _partner,
+    points_summary_json,
     run_json as _run,
     set_connection_status,
 )
+from connectors.points import points_by_order
 from models import (
+    Customer,
     Partner,
     PartnerLocation,
     PartnerMember,
@@ -352,4 +355,25 @@ def list_pos_orders(
         stmt = stmt.where(f)
         count = count.where(f)
     rows = session.exec(stmt.order_by(PosOrder.ordered_at.desc()).offset(offset).limit(limit)).all()
-    return {"total": session.exec(count).one(), "items": [order_json(o) for o in rows]}
+    awarded = points_by_order(session, [o.id for o in rows])
+    return {
+        "total": session.exec(count).one(),
+        "items": [{**order_json(o), "points": awarded.get(o.id, 0)} for o in rows],
+    }
+
+
+# ----------------------------------------------------------------------
+# Points
+# ----------------------------------------------------------------------
+
+@router.get("/customers/{customer_id}/points")
+def customer_points(
+    customer_id: UUID,
+    session: Session = Depends(get_session),
+    _: SupabaseAuthUser = Depends(require_admin),
+    limit: int = Query(default=100, ge=1, le=500),
+):
+    """A customer's Terpee points balance and ledger."""
+    if session.get(Customer, customer_id) is None:
+        raise HTTPException(404, "customer not found")
+    return points_summary_json(session, customer_id, limit)

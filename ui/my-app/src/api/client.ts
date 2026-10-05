@@ -50,6 +50,7 @@ import type {
   PartnerMe,
   PartnerPortalDetail,
   PartnerPosOrder,
+  PointsSummary,
 } from '../types'
 
 // Get API base URL from environment variable or use default
@@ -489,6 +490,10 @@ export const api = {
 
     removeMember: (memberId: string) =>
       authenticatedFetch<{ ok: boolean }>(`/admin/partner-members/${memberId}`, { method: 'DELETE' }),
+
+    /** A customer's Terpee points balance and ledger. */
+    customerPoints: (customerId: string) =>
+      authenticatedFetch<PointsSummary>(`/admin/customers/${customerId}/points`),
   },
 
   /**
@@ -571,6 +576,10 @@ export const api = {
   },
 
   me: {
+    /** Terpee points earned at partner stores. */
+    getPoints: () =>
+      authenticatedFetch<PointsSummary>(`/me/points`),
+
     getProfile: () =>
       authenticatedFetch<CustomerProfile>(`/me`),
 
