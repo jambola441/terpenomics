@@ -165,14 +165,18 @@ this repo. Scripts detect and the agent judges:
 - `scripts/data_health.py report --save` runs the deterministic detectors: stores the
   daily run missed, store names recorded on unrelated products, sizes 2+ stores sell
   that the matched product lacks, review-only clusters, product-page sizes left
-  behind, and brandless listings named after a catalog brand.
+  behind, brandless listings named after a catalog brand, and curated products no
+  listing has matched for 30 days.
 - Each finding has a stable key. A snapshot per day (`data_health_snapshots`) lets the
   report mark what is new and how the numbers moved.
 - `dismiss` (`data_health_dismissals`) hides a judged false positive until its evidence
   grows.
 - The agent investigates a few findings with the catalog-audit views, then proposes data
   edits made with `scripts/catalog_fix.py`: `drop-term`, `add-term`, `add-size`,
-  `set-size`, `deactivate` and `size-sync`.
+  `set-size`, `deactivate`, `reactivate`, `add-product`, `rekey` and `size-sync`.
+- `rekey` moves a product filed under the wrong line, strain or subtype. The old rows
+  are deactivated and keep their external ids, so a rebuild cannot add the old product
+  back, and the listings follow at the next import.
 - `--measure` runs the matcher before and after on the brand's listings (Jev on, two runs
   per side, noise discounted). An edit is proposed only when it nets positive.
 - Nothing is written without your approval in the conversation. The procedure is

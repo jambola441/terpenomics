@@ -37,6 +37,7 @@ ROOT = Path(__file__).resolve().parent.parent
 STALE_HOURS = 30    # the cron runs daily at 13:00 UTC; a store unseen this long missed a run
 TOP = 15            # findings printed per detector; the rest are counted
 MIN_STORES = 2      # a size or a review cluster at one store is noise, as for the bootstrap
+CURATED_DAYS = 30   # a curated product no listing has matched this long has stopped selling
 SECTIONS = [        # (kind, title), in the order the report prints them
     ("stale-store", "Stores the daily run missed"),
     ("shared-name", "Store names recorded on unrelated products"),
@@ -44,6 +45,7 @@ SECTIONS = [        # (kind, title), in the order the report prints them
     ("review-cluster", "Products with review-only listings at 2+ stores"),
     ("size-sync", "Product-page sizes the last import left behind"),
     ("brandless", "Listings with no brand that start with a catalog brand's name"),
+    ("stale-curated", f"Curated products no listing has matched for {CURATED_DAYS} days"),
 ]
 
 
@@ -297,7 +299,44 @@ def brandless(data: Data) -> list[Finding]:
             for slug, rows in by_brand.items()]
 
 
-DETECTORS = (stale_stores, cross_wired_names, missing_sizes, review_clusters, size_sync, brandless)
+def stale_curated(data: Data) -> list[Finding]:
+    """Curated products (catalog_fix.py: admitted by judgment, often on one store's
+    listings) that no active listing seen in the last CURATED_DAYS matches. A bootstrap
+    rebuild never retires them, by design, so this is how one that stopped selling
+    leaves. A product curated less than CURATED_DAYS ago is not judged yet: its listings
+    move to it at the next import."""
+    import catalog_fix
+    seen: dict[str, datetime] = {}
+    for l in data.listings:
+        when = _when(l.get("last_seen_at"))
+        key = str(l.get("catalog_entry_id") or "")
+        if key and when and (key not in seen or when > seen[key]):
+            seen[key] = when
+    cutoff = data.now - timedelta(days=CURATED_DAYS)
+    out = []
+    for catalog in data.catalogs.values():
+        products: dict[str, list[dict]] = defaultdict(list)
+        for e in catalog.get("entries") or []:
+            if e.get("is_active", True) and e.get("source") == catalog_fix.CURATED:
+                products[e.get("product_key") or catalog_store._product_key(e)].append(e)
+        for key, entries in products.items():
+            made = max((_when(e.get("first_seen_at")) for e in entries), default=None)
+            last = max((seen[str(e["id"])] for e in entries if str(e["id"]) in seen), default=None)
+            if made is None or made > cutoff or (last is not None and last > cutoff):
+                continue
+            name = entries[0].get("name") or key
+            out.append(Finding(
+                f"stale-curated:{catalog['brand_slug']}:{key}", "stale-curated",
+                f"{catalog['brand_name']} {name} ({entries[0].get('category')}, "
+                f"{', '.join(e.get('variant') or '?' for e in entries)}): curated {made:%Y-%m-%d}, "
+                + (f"last matched {last:%Y-%m-%d}" if last else "never matched"),
+                len(entries), "python3 scripts/catalog_fix.py deactivate ENTRY  # each of: "
+                + " ".join(str(e["id"]) for e in entries), (len(entries),)))
+    return out
+
+
+DETECTORS = (stale_stores, cross_wired_names, missing_sizes, review_clusters, size_sync, brandless,
+             stale_curated)
 
 
 def detect(data: Data) -> list[Finding]:

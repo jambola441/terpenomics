@@ -20,7 +20,9 @@ def L(store, name, strain, line=None, variant="0.6g", category="preroll", subtyp
 
 
 JETPACKS = [
-    L("s1", "Afghani FJ-Mini Infused Pre-roll | 0.6G", "Afghani"),
+    # No line in the name, so the curated lines (data/product_lines.json) cannot set
+    # one: the fold into the one lined group of the same strain and size must.
+    L("s1", "Afghani Infused Pre-roll | 0.6G", "Afghani"),
     L("s2", "Jetpacks - FJ Mini Afghani Infused Preroll - .6g", "Afghani", "FJ Mini"),
     L("s3", "Infused Pre-Rolls | Jetpacks - FJ Mini | Afghani", "Afghani", "FJ-Mini"),
     L("s4", "Jetpacks FJ-Mini (0.6g) Infused PreRoll - Afghani", "Afghani", "FJ-Mini"),

@@ -27,7 +27,12 @@
   "Select": [
     "Flavor Series",
     "ACE",
-    "Elite"
+    "Elite",
+    "Legacy Series",
+    "Live Collection",
+    "Essentials",
+    "Squeeze",
+    "X Bites"
   ],
   "Ruby Farms": [
     "Classics"
@@ -92,5 +97,47 @@
   "_comment_1906": "1906 sells its tablets as Drops in effects (Bliss, Boost, Chill, Genius, Go, Love, Sleep): the family is the line, the effect is the product. Stores write \"1906 - Bliss Drops 2pk\".",
   "1906": [
     "Drops"
+  ],
+  "Herb": [
+    {
+      "line": "Hash Infused",
+      "also": [
+        "Infused"
+      ]
+    }
+  ],
+  "Jetpacks": [
+    {
+      "line": "FJ-Mini",
+      "also": [
+        "FJ Mini"
+      ]
+    },
+    {
+      "line": "FJ1",
+      "also": [
+        "FJ-1",
+        "FJ 1"
+      ]
+    },
+    {
+      "line": "FJ2",
+      "also": [
+        "FJ-2",
+        "FJ 2"
+      ]
+    },
+    {
+      "line": "FJ-3",
+      "also": [
+        "FJ3",
+        "FJ 3"
+      ]
+    },
+    "Big Bang Mini",
+    "Big Bang",
+    "Bigger Bang",
+    "Biggest Bang",
+    "Jetfuel"
   ]
 }
