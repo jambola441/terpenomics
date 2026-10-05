@@ -3,14 +3,27 @@ import { StatusBar } from 'expo-status-bar'
 import { AuthProvider, useAuth } from '@/lib/auth'
 import { CartProvider } from '@/lib/cart'
 import CartButton from '@/components/CartButton'
-import { FeedState } from '@/components/ui'
-import { t } from '@/lib/theme'
+import { View } from 'react-native'
+import { Button, FeedState } from '@/components/ui'
+import { space, t } from '@/lib/theme'
 
 function RootNavigator() {
-  const { session, ageConfirmed } = useAuth()
+  const { session, ageConfirmed, profile, profileError, reloadProfile, signOut } = useAuth()
   if (session === undefined || ageConfirmed === undefined) return <FeedState loading />
 
   const signedIn = session !== null
+  if (signedIn && profile === undefined) return <FeedState loading />
+  if (signedIn && profile === null) {
+    return (
+      <View style={{ flex: 1, backgroundColor: t.bg }}>
+        <FeedState error={profileError ?? 'Could not load your account'} onRetry={reloadProfile} />
+        <Button title="Sign out" variant="ghost" onPress={signOut} style={{ margin: space[6] }} />
+      </View>
+    )
+  }
+  // Sign-up is a server-side state: the API refuses orders until it is done,
+  // and a terms change can send a signed-up customer back through it.
+  const signedUp = !!profile?.onboarding.complete
   // Keyed by user so signing out (or in as someone else) starts an empty cart.
   return (
     <CartProvider key={session?.user.id ?? 'signed-out'}>
@@ -28,7 +41,10 @@ function RootNavigator() {
       <Stack.Protected guard={ageConfirmed && !signedIn}>
         <Stack.Screen name="sign-in" options={{ headerShown: false }} />
       </Stack.Protected>
-      <Stack.Protected guard={ageConfirmed && signedIn}>
+      <Stack.Protected guard={ageConfirmed && signedIn && !signedUp}>
+        <Stack.Screen name="sign-up" options={{ headerShown: false }} />
+      </Stack.Protected>
+      <Stack.Protected guard={ageConfirmed && signedIn && signedUp}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen
           name="listing/[dispensaryId]/[listingId]"

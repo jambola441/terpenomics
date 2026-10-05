@@ -202,9 +202,11 @@ pytest tests/ -m "not live"
 - **Phone numbers get recycled.** A number that belonged to customer A can be
   reassigned to customer B, who then inherits the account. Worth a second factor
   before anything sensitive is exposed.
-- **`Customer.phone` is not E.164.** Existing rows were hand-entered, so
-  `/me/link-customer` matching a JWT phone claim can miss and create a duplicate
-  customer. A backfill is the natural follow-up.
+- **`Customer.phone` is E.164 going forward.** `/me/link-customer` and the admin
+  customer form both store E.164; rows written before that are respelled by
+  `scripts/backfill_customer_phone_e164.py`. `/me/link-customer` joins a login to
+  a customer only by the token's verified phone or email, never by the request
+  body.
 - **International is deliberately shallow.** `to_e164` handles `+`-prefixed
   numbers from anywhere and bare national numbers for the configured default,
   and `split_e164` knows a fixed list of country codes (`SMS_COUNTRY_CODES`). If

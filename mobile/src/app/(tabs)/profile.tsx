@@ -1,4 +1,4 @@
-import { ScrollView, Switch, Text, View } from 'react-native'
+import { Alert, Platform, ScrollView, Switch, Text, View } from 'react-native'
 import { api } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import { formatE164ForDisplay } from '@/lib/phone'
@@ -7,7 +7,7 @@ import { Button, FeedState, SectionTitle, styles } from '@/components/ui'
 import { t, space } from '@/lib/theme'
 
 export default function Profile() {
-  const { signOut } = useAuth()
+  const { signOut, setProfile } = useAuth()
   const profile = useFetch('profile', () => api.me.getProfile())
   const stores = useFetch('stores', () => api.me.listPreferredDispensaries())
 
@@ -19,11 +19,41 @@ export default function Profile() {
   async function setOptIn(value: boolean) {
     profile.setData(() => ({ ...me, marketing_opt_in: value }))
     try {
-      const updated = await api.me.updateProfile({ marketing_opt_in: value })
+      // Turning texts on records consent to the disclosure shown below the
+      // switch, so its version goes with the request.
+      const updated = await api.me.updateProfile({
+        marketing_opt_in: value,
+        marketing_sms_version: me.onboarding.disclosures.marketing_sms.version,
+        platform: Platform.OS === 'ios' || Platform.OS === 'android' ? Platform.OS : 'web',
+      })
       profile.setData(() => updated)
+      setProfile(updated)
     } catch {
       profile.setData(() => me)
     }
+  }
+
+  function confirmDelete() {
+    Alert.alert(
+      'Delete your account?',
+      'This signs you out everywhere, cancels open pickup orders, and forfeits your points. '
+        + 'Your name, phone number and receipt photos are erased. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete account',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await api.me.deleteAccount()
+              await signOut()
+            } catch (err) {
+              Alert.alert('Could not delete your account', err instanceof Error ? err.message : String(err))
+            }
+          },
+        },
+      ],
+    )
   }
 
   return (
@@ -33,9 +63,12 @@ export default function Profile() {
         {me.phone ? <Text style={styles.meta}>{formatE164ForDisplay(me.phone)}</Text> : null}
       </View>
 
-      <View style={[styles.card, { marginHorizontal: space[4], padding: space[4], flexDirection: 'row', alignItems: 'center' }]}>
-        <Text style={[styles.name, { flex: 1 }]}>Deals and drops by text</Text>
-        <Switch value={me.marketing_opt_in} onValueChange={setOptIn} trackColor={{ true: t.accent }} />
+      <View style={[styles.card, { marginHorizontal: space[4], padding: space[4], gap: space[2] }]}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Text style={[styles.name, { flex: 1 }]}>Deals and drops by text</Text>
+          <Switch value={me.marketing_opt_in} onValueChange={setOptIn} trackColor={{ true: t.accent }} />
+        </View>
+        <Text style={styles.meta}>{me.onboarding.disclosures.marketing_sms.text}</Text>
       </View>
 
       <SectionTitle>Stores you follow</SectionTitle>
@@ -53,6 +86,7 @@ export default function Profile() {
       </View>
 
       <Button title="Sign out" variant="ghost" onPress={signOut} style={{ margin: space[4], marginTop: space[7] }} />
+      <Button title="Delete account" variant="ghost" onPress={confirmDelete} style={{ marginHorizontal: space[4] }} />
     </ScrollView>
   )
 }

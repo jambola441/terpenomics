@@ -5,15 +5,17 @@ from datetime import datetime
 from typing import List, Literal, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, EmailStr
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from pydantic import BaseModel
 from sqlalchemy import func
 from sqlmodel import Session, select
 
-from auth import SupabaseAuthUser, get_current_user
+from auth import SupabaseAuthUser, get_current_user, verified_email, verified_phone
 from database import get_session
 from models import Customer, Dispensary, Listing, PreferredDispensary, Purchase
+from services import account_deletion, consent, supabase_admin
 from services import feed as feed_rails
+from services.phone import to_e164
 from services.display_name import compose as compose_display_name
 from services.feed import RailItem
 from services.market import context_for, context_or_empty
@@ -47,15 +49,41 @@ def get_current_customer(
     return customer
 
 
+def get_onboarded_customer(
+    customer: Customer = Depends(get_current_customer),
+) -> Customer:
+    """A customer who has finished sign-up, for anything that sells cannabis.
+
+    The 21+ confirmation and terms acceptance are enforced here, not just by
+    the apps' screens: a client that skips them gets a 403 naming what is
+    missing, which is the same list GET /me reports.
+    """
+    missing = consent.missing(customer)
+    if missing:
+        raise HTTPException(
+            status_code=403,
+            detail={"code": "onboarding_required", "missing": missing,
+                    "message": "Finish signing up to place an order."},
+        )
+    return customer
+
+
 # ---------------------------
 # Link customer endpoint
 # ---------------------------
 
 class LinkCustomerRequest(BaseModel):
-    phone: Optional[str] = None
-    email: Optional[EmailStr] = None
+    """Profile details to record when the link creates or claims a customer.
+
+    Deliberately no phone or email. Which customer a login is joined to is
+    decided only by what the token proves -- a verified phone or email -- never
+    by the request body, or anyone signed in could name someone else's number
+    and take over their purchases and points.
+
+    Nor marketing consent: that is given at sign-up, against the disclosure
+    shown there (POST /me/onboarding).
+    """
     name: Optional[str] = None
-    marketing_opt_in: Optional[bool] = None
 
 
 @router.post("/link-customer")
@@ -76,15 +104,18 @@ def link_customer(
     if existing_link:
         return {"customer_id": str(existing_link.id), "linked": True}
 
-    phone = (payload.phone or user.phone or "").strip() or None
-    email = (payload.email or user.email or "").strip().lower() or None
+    phone = verified_phone(user)
+    email = verified_email(user)
 
     if not phone and not email:
-        raise HTTPException(status_code=400, detail="Provide phone or email")
+        raise HTTPException(status_code=400, detail="Sign in with a verified phone number or email")
 
     customer = None
     if phone:
-        customer = session.exec(select(Customer).where(Customer.phone == phone)).first()
+        # Rows written before phones were normalized may lack the "+".
+        customer = session.exec(
+            select(Customer).where(Customer.phone.in_([phone, phone.lstrip("+")]))
+        ).first()
     if not customer and email:
         customer = session.exec(select(Customer).where(Customer.email == email)).first()
 
@@ -93,10 +124,11 @@ def link_customer(
             raise HTTPException(status_code=409, detail="Customer already linked")
 
         customer.auth_user_id = auth_user_id
+        # Respell the number the login proved; never replace a different one.
+        if phone and (not customer.phone or to_e164(customer.phone) == phone):
+            customer.phone = phone
         if payload.name and not customer.name:
             customer.name = payload.name
-        if payload.marketing_opt_in is not None:
-            customer.marketing_opt_in = payload.marketing_opt_in
         customer.last_visit_at = customer.last_visit_at or datetime.utcnow()
         customer.updated_at = datetime.utcnow()
 
@@ -105,14 +137,17 @@ def link_customer(
         session.refresh(customer)
         return {"customer_id": str(customer.id), "linked": True, "created": False}
 
+    # Customers sign up by phone: it is what points and order matching key on.
+    # A verified email can claim a customer a staff member already created, but
+    # never starts a new one.
+    if not phone:
+        raise HTTPException(status_code=400, detail="Sign up with your phone number")
+
     new_customer = Customer(
         name=payload.name,
         phone=phone,
         email=email,
         auth_user_id=auth_user_id,
-        marketing_opt_in=bool(payload.marketing_opt_in)
-        if payload.marketing_opt_in is not None
-        else False,
         last_visit_at=datetime.utcnow(),
     )
     session.add(new_customer)
@@ -126,13 +161,69 @@ def link_customer(
 # ---------------------------
 
 def _serialize_customer(customer: Customer) -> dict:
+    missing = consent.missing(customer)
     return {
         "id": str(customer.id),
         "name": customer.name,
+        "first_name": customer.first_name,
+        "last_name": customer.last_name,
         "phone": customer.phone,
         "email": customer.email,
         "marketing_opt_in": customer.marketing_opt_in,
+        "onboarding": {
+            "complete": not missing,
+            "missing": missing,
+            # Rows from before sign-up have only a display name; offer its
+            # first word rather than an empty box.
+            "prefill": {
+                "first_name": customer.first_name
+                or ((customer.name or "").split() or [None])[0],
+                "last_name": customer.last_name,
+            },
+            "disclosures": consent.disclosures(),
+        },
     }
+
+
+def _clean_name(value: Optional[str], field: str, required: bool = False) -> Optional[str]:
+    name = (value or "").strip() or None
+    if required and not name:
+        raise HTTPException(status_code=422, detail=f"{field} is required")
+    if name and len(name) > 100:
+        raise HTTPException(status_code=422, detail=f"{field} is too long")
+    return name
+
+
+def _set_names(customer: Customer, first: Optional[str], last: Optional[str]) -> None:
+    customer.first_name = first
+    customer.last_name = last
+    customer.name = " ".join(p for p in (first, last) if p) or None
+
+
+def _stale(what: str) -> HTTPException:
+    return HTTPException(
+        status_code=409,
+        detail=f"The {what} shown is out of date. Reload and try again.",
+    )
+
+
+def _set_marketing(
+    session: Session, customer: Customer, opt_in: bool, version: Optional[str],
+    source: str, request: Request,
+) -> None:
+    """Record a change of marketing-text consent; a no-op if nothing changes.
+
+    Opting in must echo the disclosure version the client displayed. Opting out
+    never needs anything: stopping is always allowed.
+    """
+    if opt_in == customer.marketing_opt_in:
+        return
+    if opt_in and version != consent.MARKETING_SMS_VERSION:
+        raise _stale("marketing text disclosure")
+    consent.record(session, customer, consent.MARKETING_SMS, opt_in, source, request)
+
+
+Platform = Literal["ios", "android", "web"]
 
 
 @router.get("")
@@ -140,14 +231,71 @@ def get_me(customer: Customer = Depends(get_current_customer)):
     return _serialize_customer(customer)
 
 
+class OnboardingRequest(BaseModel):
+    first_name: str
+    last_name: Optional[str] = None
+    age_21: bool
+    terms_version: str
+    marketing_sms_opt_in: bool = False
+    marketing_sms_version: Optional[str] = None
+    platform: Optional[Platform] = None
+
+
+@router.post("/onboarding")
+def complete_onboarding(
+    payload: OnboardingRequest,
+    request: Request,
+    customer: Customer = Depends(get_current_customer),
+    session: Session = Depends(get_session),
+):
+    """Sign-up: everything a customer is asked for after their first login.
+
+    Also how anyone already signed up catches up -- a terms change, or a row
+    from before sign-up existed. Re-submitting is safe: consent events are only
+    written for what actually changes.
+    """
+    first = _clean_name(payload.first_name, "first_name", required=True)
+    last = _clean_name(payload.last_name, "last_name")
+    if not payload.age_21:
+        raise HTTPException(status_code=422, detail="You must be 21 or older to use Terpenomics")
+    if payload.terms_version != consent.TERMS_VERSION:
+        raise _stale("terms")
+
+    source = f"onboarding:{payload.platform or 'unknown'}"
+    now = datetime.utcnow()
+
+    _set_names(customer, first, last)
+    if customer.age_confirmed_at is None:
+        consent.record(session, customer, consent.AGE_21, True, source, request, now=now)
+    if customer.terms_version != consent.TERMS_VERSION:
+        consent.record(session, customer, consent.TERMS, True, source, request, now=now)
+    _set_marketing(
+        session, customer, payload.marketing_sms_opt_in, payload.marketing_sms_version,
+        source, request,
+    )
+
+    if customer.onboarded_at is None and not consent.missing(customer):
+        customer.onboarded_at = now
+    customer.updated_at = now
+    session.add(customer)
+    session.commit()
+    session.refresh(customer)
+    return _serialize_customer(customer)
+
+
 class UpdateMeRequest(BaseModel):
     name: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     marketing_opt_in: Optional[bool] = None
+    marketing_sms_version: Optional[str] = None
+    platform: Optional[Platform] = None
 
 
 @router.post("")
 def update_me(
     payload: UpdateMeRequest,
+    request: Request,
     customer: Customer = Depends(get_current_customer),
     session: Session = Depends(get_session),
 ):
@@ -156,18 +304,52 @@ def update_me(
     Phone and email are deliberately not here: they are how the account is
     identified at sign-in and how a walk-in purchase is matched back to a
     person, so changing either is an identity change rather than a profile edit.
+
+    Turning marketing texts on needs `marketing_sms_version`, the disclosure the
+    profile screen displayed, just as sign-up does.
     """
-    if payload.name is not None:
+    if payload.first_name is not None or payload.last_name is not None:
+        first = _clean_name(
+            payload.first_name if payload.first_name is not None else customer.first_name,
+            "first_name", required=True,
+        )
+        last = _clean_name(
+            payload.last_name if payload.last_name is not None else customer.last_name,
+            "last_name",
+        )
+        _set_names(customer, first, last)
+    elif payload.name is not None:
+        # Older clients edit the display name only.
         name = payload.name.strip()
         customer.name = name or None
     if payload.marketing_opt_in is not None:
-        customer.marketing_opt_in = payload.marketing_opt_in
+        _set_marketing(
+            session, customer, payload.marketing_opt_in, payload.marketing_sms_version,
+            f"profile:{payload.platform or 'unknown'}", request,
+        )
 
     customer.updated_at = datetime.utcnow()
     session.add(customer)
     session.commit()
     session.refresh(customer)
     return _serialize_customer(customer)
+
+
+@router.delete("", status_code=204)
+def delete_me(
+    request: Request,
+    customer: Customer = Depends(get_current_customer),
+    session: Session = Depends(get_session),
+):
+    """Delete the account: the login goes, the customer row is scrubbed.
+
+    See services/account_deletion.py for what is kept and why. The client
+    signs out afterwards; the session it holds can no longer refresh.
+    """
+    try:
+        account_deletion.delete_account(session, customer, request)
+    except supabase_admin.SupabaseAdminError:
+        raise HTTPException(status_code=502, detail="Could not delete your account right now. Try again in a minute.")
 
 
 # ---------------------------

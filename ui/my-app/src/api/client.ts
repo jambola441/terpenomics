@@ -40,6 +40,8 @@ import type {
   Feed,
   FeedView,
   CustomerProfile,
+  OnboardingPayload,
+  ProfileUpdate,
   Partner,
   PartnerDetail,
   PartnerLocation,
@@ -82,6 +84,20 @@ async function getAuthHeaders() {
   return { Authorization: `Bearer ${token}` }
 }
 
+/** FastAPI's `detail` as text: a string, or a structured detail's `message`
+ *  (e.g. onboarding_required). Anything else falls back to the raw body. */
+async function errorMessage(res: Response): Promise<string> {
+  const text = await res.text()
+  try {
+    const detail = JSON.parse(text)?.detail
+    if (typeof detail === 'string') return detail
+    if (typeof detail?.message === 'string') return detail.message
+  } catch {
+    // Not JSON (proxy timeout, HTML error page).
+  }
+  return text || `Request failed with status ${res.status}`
+}
+
 // Unauthenticated fetch for customer portal (no Supabase session needed)
 async function portalFetch<T>(
   path: string,
@@ -96,10 +112,11 @@ async function portalFetch<T>(
   })
 
   if (!res.ok) {
-    const text = await res.text()
-    throw new Error(text || `Request failed with status ${res.status}`)
+    throw new Error(await errorMessage(res))
   }
 
+  // DELETE /me and other no-content responses have no body to parse.
+  if (res.status === 204) return null as T
   return res.json()
 }
 
@@ -119,10 +136,11 @@ async function authenticatedFetch<T>(
   })
 
   if (!res.ok) {
-    const text = await res.text()
-    throw new Error(text || `Request failed with status ${res.status}`)
+    throw new Error(await errorMessage(res))
   }
 
+  // DELETE /me and other no-content responses have no body to parse.
+  if (res.status === 204) return null as T
   return res.json()
 }
 
@@ -174,7 +192,10 @@ async function authFetch<T>(path: string, body: unknown): Promise<T> {
   }
 
   if (!res.ok) {
-    const detail = typeof payload?.detail === 'string' ? payload.detail : null
+    // detail is usually a string; structured ones (e.g. onboarding_required)
+    // carry their human-readable text in `message`.
+    const detail = typeof payload?.detail === 'string' ? payload.detail
+      : typeof payload?.detail?.message === 'string' ? payload.detail.message : null
     const retryAfter = Number(res.headers.get('Retry-After'))
     throw new ApiError(
       detail || text || `Request failed with status ${res.status}`,
@@ -659,13 +680,25 @@ export const api = {
       authenticatedFetch<CustomerProfile>(`/me`),
 
     /** Name and marketing opt-in only — phone and email are identity, not profile. */
-    updateProfile: (payload: { name?: string; marketing_opt_in?: boolean }) =>
+    updateProfile: (payload: ProfileUpdate) =>
       authenticatedFetch<CustomerProfile>(`/me`, {
         method: 'POST',
         body: JSON.stringify(payload),
       }),
 
-    linkCustomer: (payload?: { phone?: string; email?: string; name?: string }) =>
+    /** Deletes the login and scrubs the account (services/account_deletion.py). */
+    deleteAccount: () =>
+      authenticatedFetch<null>(`/me`, { method: 'DELETE' }),
+
+    /** Sign-up, and catching up after a terms change. */
+    completeOnboarding: (payload: OnboardingPayload) =>
+      authenticatedFetch<CustomerProfile>(`/me/onboarding`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }),
+
+    /** Which customer the login joins is decided by the token alone. */
+    linkCustomer: (payload?: { name?: string }) =>
       authenticatedFetch<{ customer_id: string; linked: boolean; created?: boolean }>(`/me/link-customer`, {
         method: 'POST',
         body: JSON.stringify(payload ?? {}),
