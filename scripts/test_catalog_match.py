@@ -165,6 +165,23 @@ class TestDeterministic:
         assert idx.exact("Mood: Bliss", "vaporizers") == ("mood: bliss|vaporizers", "exact")
         assert idx.exact("Mood Bliss AIO", "vaporizers")[0] is None
 
+    def test_a_store_name_on_unrelated_products_goes_to_the_one_it_names(self):
+        """A store slip recorded Wyld's Raspberry name on Boysenberry too; the longer
+        title must not take it."""
+        def gummy(name, *terms):
+            return {"name": name, "category": "edible", "variant": "10pk 100mg",
+                    "match_terms": list(terms)}
+        idx = cm.CatalogIndex(catalog(
+            gummy("Raspberry", "raspberry sativa enhanced gummies"),
+            gummy("Boysenberry", "raspberry sativa enhanced gummies", "vape cartridge"),
+            gummy("Grapefruit", "vape cartridge"),
+            gummy("Blue Lobster", "hash infused blue lobster"),
+            gummy("Hash Infused Blue Lobster", "hash infused blue lobster")))
+        assert idx.exact("Raspberry Sativa Enhanced Gummies", "edible") == ("Raspberry|edible", "exact")
+        assert idx.exact("Vape Cartridge", "edible") == (None, "ambiguous")     # names neither
+        # One product's title read short and long: the longest still wins.
+        assert idx.exact("Hash Infused Blue Lobster", "edible")[0] == "Hash Infused Blue Lobster|edible"
+
 
 def fake_ask_many(answer_for):
     """answer_for(state, options) -> (label, p)"""

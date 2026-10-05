@@ -594,6 +594,14 @@ def render_show(catalog: dict, entries: list[dict], listings: list[dict],
                                        else "") for v in p.sizes)
                 out.append(f"      {p.label + tag:<40} {marked:<22} {p.listings}/{p.stores}{extra}")
 
+    shared = [s for s in shared_store_names(prods) if not category or s[0] == category]
+    if shared:
+        out.append(f"\nSTORE NAMES ON 2+ PRODUCTS · {len(shared)} · a listing with the name goes to the "
+                   "product whose title's words it holds; between one product's titles read short and "
+                   "long, to the longest")
+        for cat, term, labels in shared:
+            out.append(f'  {cat}: "{term}" on {" · ".join(labels)}')
+
     found = [l for l in leads(prods, strain_vocab, storefront, other_brands, listings_known=True)
              if not category or l.category == category]
     for brand, n in sorted((filed_elsewhere or {}).items()):
@@ -604,6 +612,18 @@ def render_show(catalog: dict, entries: list[dict], listings: list[dict],
     for l in sorted(found, key=lambda l: (-l.weight, l.category, l.kind, l.text)):
         out.append(f"  [{l.kind}] {l.category}: {l.text}")
     return "\n".join(out)
+
+
+def shared_store_names(prods: list[Product]) -> list[tuple[str, str, list[str]]]:
+    """Store names recorded for two or more products of one category, with the products:
+    one product's titles read short and long ("Blue Lobster", "Hash Infused Blue
+    Lobster"), or a store's slip recorded on the wrong one (Wyld's "Raspberry Sativa
+    Enhanced Gummies" on Boysenberry)."""
+    owners: dict[tuple[str, str], set[str]] = defaultdict(set)
+    for p in prods:
+        for term in p.store_names:
+            owners[(p.category, term)].add(p.name)
+    return sorted((cat, term, sorted(names)) for (cat, term), names in owners.items() if len(names) > 1)
 
 
 def render_entries(entries: list[dict], listings: list[dict], pattern: str | None) -> str:
