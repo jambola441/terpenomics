@@ -205,6 +205,7 @@ export default function PartnerDetail() {
                   style={{ color: '#a5b4fc', textDecoration: 'none' }}
                 >
                   matched <span style={{ color: '#64748b' }}>{MATCH_LABEL[o.matched_via ?? ''] ?? ''}</span>
+                  {o.points ? <span style={{ color: '#86efac' }}> · {o.points > 0 ? '+' : ''}{o.points} pts</span> : null}
                 </a>
               ) : o.contact_purged_at ? (
                 <span style={{ color: '#475569' }}>unclaimed (expired)</span>

@@ -148,6 +148,31 @@ reconnect, pause/resume or disconnect Square, and see sync history and orders.
   partner page is `POS_PARTNER_RETURN_URL`, defaulting to `/partner` on the
   `POS_OAUTH_RETURN_URL` host.
 
+## Terpee points (`connectors/points.py`)
+
+Partner orders turn into points at the end of every sync (`reconcile_points`).
+
+- **What earns:** completed sales matched to a customer. The amount is the
+  order total minus tax and tip. A refund or return removes its share in
+  proportion: refunding half the order removes half the points.
+- **Rate:** 1 point per $1, rounded down (`POINTS_PER_DOLLAR`).
+- **Pending:** points are pending for 7 days after the purchase, then
+  available. A refund inside that window lands as pending too, so it cancels
+  the points before anyone can spend them. A refund after that takes the
+  points back immediately.
+- **Fixed at first earn:** the rate, and whether the partner and location earn
+  at all, are read when an order first earns. Changing a setting later never
+  rewrites past earnings.
+- **Ledger:** `points_ledger` is append-only. Each run works out what every
+  order should be worth, compares that with what is already recorded, and
+  writes only the difference (`earn`, `refund` or `adjust`). Re-running
+  writes nothing.
+- **Where it shows:** customers see their balance and history under
+  **You → Points** in the portal (`GET /me/points`). Admin shows each
+  customer's ledger on the customer page (`GET /admin/customers/{id}/points`)
+  and the points next to each matched order on the partner page.
+- **Not built:** redeeming points.
+
 ## Not built yet
 
 - **Receipt upload.** A customer uploads a photo of a receipt. We read the
@@ -155,10 +180,6 @@ reconnect, pause/resume or disconnect Square, and see sync history and orders.
   the matching `pos_orders` row, and call `matching.claim_order`, which already
   enforces the rules: sales only, inside 30 days, never steal another customer's
   order.
-- **Points ledger.** The open question is which amount earns points: total, or
-  total minus tax and tip (both are stored). A sale's net is
-  `total − refunded_cents − Σ returns pointing at it`. Only completed sales should
-  earn points.
 - **Square webhooks** (`order.updated`), to cut latency. Polling stays as the backstop.
 - **Unconfirmed: how Square reports a refund on the original sale.** Square's
   docs don't say whether the original sale order is edited when it's refunded, so

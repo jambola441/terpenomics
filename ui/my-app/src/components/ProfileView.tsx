@@ -11,7 +11,7 @@
 import { useEffect, useState } from 'react'
 import api from '../api/client'
 import type {
-  CustomerProfile, Feedback, Order, PortalPurchase, PortalDispensary,
+  CustomerProfile, Feedback, Order, PointsSummary, PortalPurchase, PortalDispensary,
 } from '../types'
 import type { Session } from '@supabase/supabase-js'
 import { t, radius, font, categoryColor, alpha } from '../theme'
@@ -19,10 +19,11 @@ import { FeedState, ProductImage, Label } from './ui'
 import OrderCard from './OrderCard'
 import { formatDate, formatDollars } from '../utils/format'
 
-type Pane = 'orders' | 'feedback' | 'profile'
+type Pane = 'orders' | 'points' | 'feedback' | 'profile'
 
 const PANES: { key: Pane; label: string }[] = [
   { key: 'orders', label: 'Orders' },
+  { key: 'points', label: 'Points' },
   { key: 'feedback', label: 'Feedback' },
   { key: 'profile', label: 'Profile' },
 ]
@@ -108,6 +109,7 @@ export default function ProfileView({
             cancellingIds={cancellingIds}
           />
         )}
+        {pane === 'points' && <PointsPane />}
         {pane === 'feedback' && <FeedbackPane customerId={customerId} />}
         {pane === 'profile' && (
           <ProfilePane
@@ -154,6 +156,85 @@ function OrdersPane({ orders, loading, error, onCancelOrder, cancellingIds }: {
           cancelling={cancellingIds.has(order.id)}
         />
       ))}
+    </div>
+  )
+}
+
+/* ── Points ────────────────────────────────────────────────────────────────── */
+
+const POINTS_KIND: Record<string, string> = { earn: 'Earned', refund: 'Refunded', adjust: 'Adjusted' }
+
+/** Terpee points from shopping at partner stores. Earned points sit as pending
+ *  for a week (so a return can cancel them) and then become available. */
+function PointsPane() {
+  const [data, setData] = useState<PointsSummary | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    api.me.getPoints().then(setData).catch(err => setError(err.message))
+  }, [])
+
+  if (error) return <FeedState kind="error" message="Couldn't load your points" hint={error} />
+  if (!data) return <FeedState kind="loading" message="Loading your points…" />
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{
+        background: t.surface1, border: `1px solid ${t.border}`, borderRadius: radius.lg,
+        padding: '18px 20px', display: 'flex', alignItems: 'flex-end', gap: 24,
+      }}>
+        <div>
+          <Label>Available</Label>
+          <div style={{ color: t.accent, fontSize: 34, fontWeight: font.weight.heavy, lineHeight: 1.1, marginTop: 4 }}>
+            {data.available.toLocaleString()}
+          </div>
+        </div>
+        <div style={{ paddingBottom: 4 }}>
+          <Label>Pending</Label>
+          <div style={{ color: t.text2, fontSize: font.size.title, fontWeight: font.weight.bold, marginTop: 4 }}>
+            {data.pending.toLocaleString()}
+          </div>
+        </div>
+      </div>
+      <div style={{ color: t.text3, fontSize: font.size.small, lineHeight: 1.5 }}>
+        Earn {data.points_per_dollar === 1 ? '1 point' : `${data.points_per_dollar} points`} per dollar
+        (before tax and tip) when you shop at Terpee partner stores with your phone number on the
+        receipt. Points become available {data.pending_days} days after your purchase.
+      </div>
+
+      {data.entries.length === 0 ? (
+        <FeedState
+          kind="empty"
+          message="No points yet"
+          hint="Shop at a Terpee partner store and give them your phone number at checkout."
+          icon="✨"
+        />
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {data.entries.map(e => (
+            <div key={e.id} style={{
+              display: 'flex', alignItems: 'center', gap: 12, padding: '12px 2px',
+              borderBottom: `1px solid ${t.border}`,
+            }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ color: t.text1, fontSize: font.size.callout, fontWeight: font.weight.semibold }}>
+                  {e.partner_name ?? 'Terpee'}
+                </div>
+                <div style={{ color: t.text3, fontSize: font.size.small, marginTop: 2 }}>
+                  {POINTS_KIND[e.kind] ?? e.kind} · {formatDate(e.created_at)}
+                  {e.pending && e.points > 0 ? ` · available ${formatDate(e.available_at)}` : ''}
+                </div>
+              </div>
+              <div style={{
+                fontWeight: font.weight.bold, fontSize: font.size.callout,
+                color: e.points < 0 ? t.danger : e.pending ? t.text3 : t.success,
+              }}>
+                {e.points > 0 ? '+' : ''}{e.points.toLocaleString()}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

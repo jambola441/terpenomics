@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import supabase  from './utils/supabase'
 import api, { API_BASE } from './api/client'
 import { ListingSearch } from './components/ListingSearch'
-import type { Listing } from './types'
+import type { Listing, PointsSummary } from './types'
 
 type Feedback = 'like' | 'dislike' | 'neutral' | null
 
@@ -510,6 +510,8 @@ export default function CustomerEdit() {
         )}
       </div>
 
+      {cid && <TerpeePoints customerId={cid} />}
+
       <div style={{ border: '1px solid #ddd', padding: 12, marginBottom: 24 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
           <h2 style={{ margin: 0 }}>Top Terpenes</h2>
@@ -655,6 +657,56 @@ export default function CustomerEdit() {
             {loading ? 'Loading…' : 'Load More Purchases'}
           </button>
         </div>
+      )}
+    </div>
+  )
+}
+
+/** Points earned at partner stores (connectors/points.py), newest first. */
+function TerpeePoints({ customerId }: { customerId: string }) {
+  const [data, setData] = useState<PointsSummary | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    api.partners.customerPoints(customerId).then(setData).catch(err => setError(err.message))
+  }, [customerId])
+
+  return (
+    <div style={{ border: '1px solid #ddd', padding: 12, marginBottom: 24 }}>
+      <h2 style={{ margin: '0 0 8px' }}>Terpee Points</h2>
+      {error ? (
+        <p style={{ color: 'crimson', margin: 0 }}>{error}</p>
+      ) : !data ? (
+        <p style={{ margin: 0, opacity: 0.7 }}>Loading…</p>
+      ) : (
+        <>
+          <p style={{ margin: '0 0 8px' }}>
+            <b>{data.available.toLocaleString()}</b> available · <b>{data.pending.toLocaleString()}</b> pending
+          </p>
+          {data.entries.length === 0 ? (
+            <p style={{ margin: 0, opacity: 0.7 }}>No points yet. Points come from partner-store purchases matched to this customer.</p>
+          ) : (
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+              <thead>
+                <tr style={{ textAlign: 'left' }}>
+                  <th>When</th><th>Partner</th><th>Kind</th><th align="right">Eligible</th><th align="right">Points</th><th>Available</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.entries.map(e => (
+                  <tr key={e.id} style={{ borderTop: '1px solid #eee' }}>
+                    <td>{new Date(e.created_at).toLocaleString()}</td>
+                    <td>{e.partner_name ?? '—'}</td>
+                    <td>{e.kind}</td>
+                    <td align="right">{e.points > 0 ? `$${(e.eligible_cents / 100).toFixed(2)}` : '—'}</td>
+                    <td align="right" style={{ color: e.points < 0 ? 'crimson' : undefined }}>{e.points > 0 ? '+' : ''}{e.points}</td>
+                    <td>{e.pending ? `pending until ${new Date(e.available_at).toLocaleDateString()}` : 'yes'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </>
       )}
     </div>
   )

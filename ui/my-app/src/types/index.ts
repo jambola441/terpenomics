@@ -752,6 +752,8 @@ export type PosOrderBase = {
 
 /** The admin's view: which customer it matched and how. */
 export type PosOrder = PosOrderBase & {
+  /** Points this order has earned so far (net of refunds); admin listing only. */
+  points?: number
   customer_id: string | null
   matched_via: 'link' | 'phone' | 'receipt' | 'sale' | null
   matched_at: string | null
@@ -763,3 +765,26 @@ export type PosOrder = PosOrderBase & {
 export type PartnerPosOrder = PosOrderBase & { is_member: boolean }
 
 export type PosOrderPage = { total: number; items: PosOrder[] }
+
+/* ── Terpee points (connectors/points.py) ───────────────────────────────────── */
+
+export type PointsEntry = {
+  id: string
+  kind: 'earn' | 'refund' | 'adjust'
+  points: number
+  partner_name: string | null
+  pos_order_id: string | null
+  eligible_cents: number
+  created_at: string
+  available_at: string
+  pending: boolean
+  note: string | null
+}
+
+export type PointsSummary = {
+  available: number
+  pending: number
+  points_per_dollar: number
+  pending_days: number
+  entries: PointsEntry[]
+}
