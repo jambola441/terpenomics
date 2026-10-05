@@ -770,7 +770,7 @@ export type PosOrderPage = { total: number; items: PosOrder[] }
 
 export type PointsEntry = {
   id: string
-  kind: 'earn' | 'refund' | 'adjust'
+  kind: 'earn' | 'receipt' | 'refund' | 'adjust'
   points: number
   partner_name: string | null
   pos_order_id: string | null

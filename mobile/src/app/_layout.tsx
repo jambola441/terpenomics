@@ -35,6 +35,7 @@ function RootNavigator() {
           options={{ title: '', headerBackButtonDisplayMode: 'minimal', headerRight: () => <CartButton /> }}
         />
         <Stack.Screen name="cart" options={{ presentation: 'modal', title: 'Your cart' }} />
+        <Stack.Screen name="receipt" options={{ presentation: 'modal', title: 'Upload a receipt' }} />
       </Stack.Protected>
     </Stack>
     </CartProvider>

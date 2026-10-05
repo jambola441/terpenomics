@@ -9,6 +9,7 @@
    ========================================================================== */
 
 import { useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import type {
   CustomerProfile, Feedback, Order, PointsSummary, PortalPurchase, PortalDispensary,
@@ -44,11 +45,22 @@ export default function ProfileView({
   session, customerId, orders, ordersLoading, ordersError,
   onCancelOrder, cancellingIds, onSignOut,
 }: Props) {
-  const [pane, setPane] = useState<Pane>('orders')
+  // The pane is in the URL (/portal/profile/points), so a link can open one.
+  const navigate = useNavigate()
+  const segment = useLocation().pathname.split('/')[3]
+  const pane: Pane = PANES.some(p => p.key === segment) ? segment as Pane : 'orders'
+  const setPane = (next: Pane) => navigate(`/portal/profile/${next}`, { replace: true })
   const [profile, setProfile] = useState<CustomerProfile | null>(null)
+  const [points, setPoints] = useState<PointsSummary | null>(null)
+  const [pointsError, setPointsError] = useState<string | null>(null)
+
+  function loadPoints() {
+    api.me.getPoints().then(setPoints).catch(err => setPointsError(err.message))
+  }
 
   useEffect(() => {
     api.me.getProfile().then(setProfile).catch(() => setProfile(null))
+    loadPoints()
   }, [])
 
   const openOrders = orders.filter(o => o.status === 'submitted' || o.status === 'ready').length
@@ -65,7 +77,7 @@ export default function ProfileView({
         }}>
           {(profile?.name ?? session.user.email ?? session.user.phone ?? '?').charAt(0).toUpperCase()}
         </div>
-        <div style={{ minWidth: 0 }}>
+        <div style={{ minWidth: 0, flex: 1 }}>
           <div style={{
             color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.title,
             letterSpacing: '-0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
@@ -76,6 +88,20 @@ export default function ProfileView({
             {profile?.phone ?? session.user.phone ?? profile?.email ?? session.user.email}
           </div>
         </div>
+        {points && (
+          <button
+            onClick={() => setPane('points')}
+            aria-label={`${points.available} Terpee points`}
+            style={{
+              flexShrink: 0, cursor: 'pointer', padding: '8px 14px', borderRadius: radius.pill,
+              background: alpha(t.accent, 0.12), border: `1px solid ${alpha(t.accent, 0.4)}`,
+              color: t.accent, fontWeight: font.weight.heavy, fontSize: font.size.callout,
+            }}
+          >
+            ★ {points.available.toLocaleString()}
+            <span style={{ fontWeight: font.weight.medium, fontSize: font.size.small, marginLeft: 4 }}>pts</span>
+          </button>
+        )}
       </div>
 
       {/* Pane switcher */}
@@ -110,7 +136,7 @@ export default function ProfileView({
             cancellingIds={cancellingIds}
           />
         )}
-        {pane === 'points' && <PointsPane />}
+        {pane === 'points' && <PointsPane data={points} error={pointsError} onUploaded={loadPoints} />}
         {pane === 'feedback' && <FeedbackPane customerId={customerId} />}
         {pane === 'profile' && (
           <ProfilePane
@@ -167,14 +193,11 @@ const POINTS_KIND: Record<string, string> = { earn: 'Earned', receipt: 'Receipt'
 
 /** Terpee points from shopping at partner stores. Earned points sit as pending
  *  for a week (so a return can cancel them) and then become available. */
-function PointsPane() {
-  const [data, setData] = useState<PointsSummary | null>(null)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    api.me.getPoints().then(setData).catch(err => setError(err.message))
-  }, [])
-
+function PointsPane({ data, error, onUploaded }: {
+  data: PointsSummary | null
+  error: string | null
+  onUploaded: () => void
+}) {
   if (error) return <FeedState kind="error" message="Couldn't load your points" hint={error} />
   if (!data) return <FeedState kind="loading" message="Loading your points…" />
 
@@ -203,7 +226,7 @@ function PointsPane() {
         receipt. Points become available {data.pending_days} days after your purchase.
       </div>
 
-      <ReceiptUpload />
+      <ReceiptUpload onUploaded={onUploaded} />
 
       {data.entries.length === 0 ? (
         <FeedState

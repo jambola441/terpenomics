@@ -168,7 +168,8 @@ Partner orders turn into points at the end of every sync (`reconcile_points`).
   writes only the difference (`earn`, `refund` or `adjust`). Re-running
   writes nothing.
 - **Where it shows:** customers see their balance and history under
-  **You → Points** in the portal (`GET /me/points`). Admin shows each
+  **You → Points** in the web portal and the **Points** tab in the iOS app
+  (`GET /me/points`). Admin shows each
   customer's ledger on the customer page (`GET /admin/customers/{id}/points`)
   and the points next to each matched order on the partner page.
 - **Not built:** redeeming points.
@@ -178,9 +179,11 @@ Partner orders turn into points at the end of every sync (`reconcile_points`).
 For partner purchases the sync can't match: the shopper didn't give their
 phone number, or the partner's POS isn't connected.
 
-- **Customer** (portal → You → Points → Upload a receipt): picks the store and
-  purchase date and takes a photo. The browser shrinks the photo to about
-  1600px JPEG before upload. The customer sees each receipt as In review,
+- **Customer**: on the web, **You → Points → Upload a receipt**
+  (`/portal/profile/points`; the ★ balance next to the shopper's name opens
+  it). In the iOS app, the **Points** tab. They pick the store and purchase
+  date and take or choose a photo. The photo is shrunk to about 1600px JPEG
+  before upload. The customer sees each receipt as In review,
   +N points, or Not approved with the reason.
 - **Reviewer** (`/admin/receipts`): the queue is oldest first. The reviewer
   sees the photo, enters the subtotal before tax and tip, confirms or corrects

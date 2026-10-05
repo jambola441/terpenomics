@@ -1,17 +1,21 @@
 // The customer-facing slice of the web client (ui/my-app/src/api/client.ts):
-// SMS login, /me, orders and the public portal endpoints. Admin endpoints stay
+// SMS login, /me, orders, points and receipts, and the public portal endpoints. Admin endpoints stay
 // web-only. Response types come from the web app so the two can't drift.
 import type {
   CustomerProfile,
   Feed,
   FeedView,
   ListingDetail,
+  MyReceipt,
   Order,
+  PartnerOption,
+  PointsSummary,
   PortalCategory,
   PortalCategoryDetail,
   PortalDispensary,
   PortalProductDetail,
 } from '@web/types'
+import { Platform } from 'react-native'
 import supabase from './supabase'
 import { API_BASE } from './config'
 
@@ -39,7 +43,8 @@ function query(params?: Record<string, unknown>): string {
 /** Every error surfaces FastAPI's `detail` string when there is one, since
  *  on a phone the message goes straight on screen. */
 async function request<T>(path: string, init: RequestInit = {}, auth = false): Promise<T> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  // A FormData body sets its own multipart Content-Type, boundary included.
+  const headers: Record<string, string> = init.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }
   if (auth) {
     const { data } = await supabase.auth.getSession()
     const token = data.session?.access_token
@@ -97,6 +102,29 @@ export const api = {
 
     getFeed: (params?: { view?: FeedView; per_rail?: number; category?: string }) =>
       authed<Feed>(`/me/feed${query(params)}`),
+
+    /** Terpee points earned at partner stores. */
+    getPoints: () => authed<PointsSummary>(`/me/points`),
+
+    /** Partner stores a receipt can be claimed against. */
+    getPartners: () => authed<PartnerOption[]>(`/me/partners`),
+
+    getReceipts: () => authed<MyReceipt[]>(`/me/receipts`),
+
+    /** Upload a receipt photo for review. `image` is a local file URI. */
+    uploadReceipt: async (data: { partnerId: string; purchasedOn: string; note?: string; image: { uri: string; type: string; name: string } }) => {
+      const form = new FormData()
+      form.append('partner_id', data.partnerId)
+      form.append('purchased_on', data.purchasedOn)
+      if (data.note) form.append('note', data.note)
+      if (Platform.OS === 'web') {
+        form.append('image', await (await fetch(data.image.uri)).blob(), data.image.name)
+      } else {
+        // React Native's FormData takes a { uri, type, name } file reference.
+        form.append('image', data.image as unknown as Blob)
+      }
+      return authed<MyReceipt>(`/me/receipts`, { method: 'POST', body: form })
+    },
   },
 
   orders: {

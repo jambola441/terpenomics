@@ -54,12 +54,19 @@ Before declaring a change done: `npm run typecheck` and `npx expo lint`.
 | Listing detail | `src/app/listing/[dispensaryId]/[listingId].tsx` | `/customer/dispensaries/{id}/listings/{id}` |
 | Cart → reserve for pickup | `src/app/cart.tsx` | location check (`src/lib/region.ts`), then `POST /me/orders` |
 | Orders (with cancel) | `src/app/(tabs)/orders.tsx` | `/me/orders`, `/me/orders/{id}/cancel` |
+| Terpee points, receipts | `src/app/(tabs)/points.tsx` | `/me/points`, `/me/receipts` |
+| Upload a receipt (modal) | `src/app/receipt.tsx` | `/me/partners`, `POST /me/receipts` |
 | You | `src/app/(tabs)/profile.tsx` | `/me`, `/me/preferred-dispensaries` |
 
 The cart holds one store's items at a time, because an order goes to one
 store. Adding from a second store asks before replacing the cart. It enforces
 the same per-line and line-count limits as `routes/orders.py`. It is in memory
 only and resets on sign-out.
+
+Receipt photos come from the camera or the photo library (`expo-image-picker`)
+and are shrunk to 1600px JPEG before upload (`expo-image-manipulator`,
+`src/lib/receiptImage.ts`), as the web portal does. Both are native modules, so
+adding them needs a new development build.
 
 The session lives in the iOS Keychain (`src/lib/supabase.ts`), chunked
 because a Supabase session can exceed what SecureStore advises per value.
