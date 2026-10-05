@@ -406,8 +406,10 @@ def catalog_size(variant: str | None, name: str | None, entry: dict,
     target = own[0]
     if not target.pack and target.mg <= 10 < mine.mg:
         return None
+    # A figure the text gives for another cannabinoid corroborates nothing: Wana's Fast
+    # Asleep is "20mg THC", and its "100mg CBD" must not move it to a 100mg entry.
     stated = any(abs(m - target.mg) <= 0.5 for m in sizes.mg_mentions(name, html.unescape(
-        re.sub(r"<[^>]+>", " ", description or ""))))
+        re.sub(r"<[^>]+>", " ", description or "")), non_thc=False))
     per_piece = bool(target.pack) and not mine.pack and abs(mine.mg * target.pack - target.mg) <= 0.5
     return f"{target.mg:g}mg" if stated or per_piece else None
 

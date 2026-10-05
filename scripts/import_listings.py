@@ -385,7 +385,7 @@ def assign_sizes(records: list[dict], catalogs: dict) -> int:
     (`variant`, which stays as typed because it is part of the row's key), or for a
     trusted match whose store mistyped it, the catalog's (catalog_match.catalog_size:
     Camino's 100mg 20-pack listed as 50mg goes back on the 100mg page). Returns how
-    many took the catalog's."""
+    many it changed."""
     import catalog_match
     import catalog_store
     by_id = catalog_store.entries_by_id(catalogs) if catalogs else {}
@@ -408,8 +408,8 @@ def assign_sizes(records: list[dict], catalogs: dict) -> int:
                                           products.get(product_of(catalog, entry), [entry]),
                                           rec.get("description"))
         if size:
+            fixed += size != rec["variant"]     # Ayrloom's "150mg" can come back as itself
             rec["size"] = size
-            fixed += 1
     return fixed
 
 

@@ -228,6 +228,12 @@ def test_only_a_trusted_match_corrects_a_size():
     assert import_listings.assign_sizes(recs, catalogs) == 1
     assert [r["size"] for r in recs] == ["100mg", "50mg", "3.5g"]
     assert import_listings.assign_sizes([dict(recs[0])], {}) == 0      # --no-catalog: the store's size
+    drops = {"id": "e2", "category": "tinctures", "variant": "150mg", "product_key": "k2", "is_active": True}
+    catalogs["ayrloom"] = {"brand_name": "Ayrloom", "entries": [drops]}
+    same = {"variant": "150mg", "scraped_name": "Ayrloom Tincture Drops (150mg THC: 450mg CBD)",
+            "catalog_entry_id": "e2", "catalog_match_method": "exact"}
+    assert import_listings.assign_sizes([same], catalogs) == 0          # already the catalog's
+    assert same["size"] == "150mg"
 
 
 def test_substring_without_jev_is_recorded_but_not_overlaid(db, tmp_path):

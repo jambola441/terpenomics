@@ -55,6 +55,9 @@ _RATIO = re.compile(r"\b\d+\s*:\s*\d+(?:\s*:\s*\d+)*\b")
 # What Size.label() writes for a pack: the count, then the package total ("2pk 40mg").
 _LABEL = re.compile(rf"\d+pk {_NUM}(?:g|mg)")
 _PERCENT = re.compile(rf"{_NUM}\s*%")
+# An amount the text gives for a cannabinoid other than THC: "100mg CBD", "250MG OF CBN".
+_NON_THC_MG = re.compile(rf"{_NUM}\s*(?:mg|milligrams?)\s*(?:of\s+)?(?:cbd|cbn|cbg|cbc|thcv)a?\b",
+                         re.I)
 
 OZ_GRAMS = 28.0   # cannabis convention, same as scraper_common
 EDIBLE_PACKAGE_CAP_MG = 100.0
@@ -180,11 +183,14 @@ def _gram_mentions(text: str) -> list[float]:
     return grams + _floats(_GRAMS, _G_FRAC.sub(" ", text))
 
 
-def mg_mentions(*texts: str | None) -> list[float]:
+def mg_mentions(*texts: str | None, non_thc: bool = True) -> list[float]:
     """Every distinct mg amount the texts name, potency and ratios stripped as parse()
     strips them — so a caller can tell one dose ("10mg x 10pk") from several
-    ("150MG THC : 450MG CBD"), which parse() would otherwise reduce to its largest."""
+    ("150MG THC : 450MG CBD"), which parse() would otherwise reduce to its largest.
+    non_thc=False leaves out the amounts given for another cannabinoid ("100mg CBD")."""
     text = " | ".join(t for t in texts if t)
+    if not non_thc:
+        text = _NON_THC_MG.sub(" ", text)
     text = _PERCENT.sub(" ", _RATIO.sub(" ", text))
     return sorted({round(v, 3) for v in _floats(_MG, text) if v > 0})
 
