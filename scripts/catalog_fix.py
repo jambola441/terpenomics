@@ -6,6 +6,9 @@ conventions worked out by hand, written down once.
   python3 scripts/catalog_fix.py add-size ENTRY 2.5g               # a size the product comes in
   python3 scripts/catalog_fix.py set-size ENTRY "10pk 100mg"       # the entry's own size is wrong
   python3 scripts/catalog_fix.py deactivate ENTRY [--into ENTRY]   # a duplicate; its names move over
+  python3 scripts/catalog_fix.py add-product "Find." --category flower --subtype flower \
+      --strain "Out Of Office" --size 3.5g --term "Out Of Office - 3.5G Flower"   # a product it lacks
+  python3 scripts/catalog_fix.py plan curation.json                # many edits, measured as one
   python3 scripts/catalog_fix.py size-sync                         # product-page sizes left behind
 
 ENTRY is a brand_catalog_entries id (catalog_shape.py entries prints them). Every edit
@@ -13,6 +16,19 @@ prints what it would write and writes nothing without --write. --measure first r
 the matcher (Jev on, twice per side, no cache) over the brand's active listings with
 the edit applied in memory, and prints what moves: an edit is judged on today's data,
 and changes that differ between two runs of one side are Jev's noise, not the edit.
+
+Entries made here are marked source "curated": a bootstrap rebuild with --replace
+retires the bootstrap entries it no longer proposes, and a product added from one
+store's listings by judgment is one it never proposes. In a bootstrap catalog they take
+the bootstrap's id scheme, so a rebuild that does propose them updates them in place.
+
+A plan file curates a catalog in one go (the catalog-audit skill, "Curating a
+store-built catalog"): {"brand": ..., "edits": [{"op": ..., "why": ..., ...}]}, the ops
+being the commands above with their arguments as keys ("entry", "into", "size",
+"term", "name"; add-product: "category", "subtype", "line", "strain", "sizes", "terms").
+An entry is its id or a selector, {"strain", "category", "subtype", "line", "size"},
+that must name one active entry. Edits apply in order to one copy of the catalog, are
+measured together, and are written together; one refusal stops the whole plan.
 """
 from __future__ import annotations
 
@@ -33,6 +49,7 @@ import sizes  # noqa: E402
 from brand_catalog import norm_name, strip_brand  # noqa: E402
 
 BOOTSTRAP = "listings_bootstrap"
+CURATED = "curated"
 TABLE = "brand_catalog_entries"
 
 
@@ -163,7 +180,7 @@ def plan_add_size(catalogs: dict, entry_id: str, size: str, force: bool = False)
            "category": entry.get("category"), "subtype": entry.get("subtype"),
            "strain": entry.get("strain"), "variant": _variant(s, entry.get("category")),
            "attributes": entry.get("attributes"),
-           "match_terms": [], "source": entry.get("source")}
+           "match_terms": [], "source": CURATED}
     changed = copy.deepcopy(catalog)
     changed["entries"].append({**row, "id": f"new-{uuid.uuid4()}", "is_active": True})
     plan = Plan(catalog, changed, entry.get("category"))
@@ -211,6 +228,167 @@ def plan_deactivate(catalogs: dict, entry_id: str, into: str | None = None) -> P
         plan.writes.append(("update", TABLE, f"id=eq.{survivor['id']}", {"match_terms": terms}))
         plan.notes.append(f"move its {len(entry.get('match_terms') or [])} store name(s) to {_desc(survivor)}")
     return plan
+
+
+def catalog_of(catalogs: dict, brand: str) -> dict:
+    want = norm_name(brand)
+    hits = [c for c in catalogs.values() if norm_name(c.get("brand_name") or "") == want]
+    if len(hits) != 1:
+        raise Refused(f"no catalog for brand {brand!r}" if not hits else f"{len(hits)} catalogs for {brand!r}")
+    return hits[0]
+
+
+def product_key(catalog: dict, category: str, subtype: str | None, line: str | None, strain: str) -> str:
+    """The key catalog_bootstrap gives a product, so a rebuild finds a curated product
+    instead of proposing it again; "cur:" in a storefront catalog, whose push owns no
+    such key."""
+    import catalog_bootstrap
+    prefix = "lb" if catalog.get("source_method") == BOOTSTRAP else "cur"
+    return (f"{prefix}:{category}:{subtype or ''}:{catalog_bootstrap.squash(line)}:"
+            f"{catalog_bootstrap.squash(strain)}")
+
+
+def plan_add_product(catalogs: dict, brand: str, category: str, strain: str, sizes_wanted: list[str],
+                     subtype: str | None = None, line: str | None = None,
+                     terms: list[str] | tuple = ()) -> Plan:
+    """A product the catalog lacks: one entry per size, named as the bootstrap names
+    them (line, then strain), with the store names it is sold under recorded so those
+    listings match exactly. Subtype is part of a product's identity where the category
+    keeps one (taxonomy.keeps_subtype: a strain's whole flower and its pre-ground are
+    two products) and is none where it does not (pre-rolls)."""
+    import catalog_bootstrap
+    import taxonomy
+    catalog = catalog_of(catalogs, brand)
+    strain, line = (strain or "").strip(), (line or "").strip() or None
+    if not strain or not sizes_wanted:
+        raise Refused("add-product needs a strain and at least one size")
+    if category not in taxonomy.SPECS:
+        raise Refused(f"unknown category {category!r}")
+    if taxonomy.keeps_subtype(category):
+        if not subtype:
+            raise Refused(f"{category} keeps a subtype (whole flower and pre-ground are two products); give one")
+    elif subtype:
+        raise Refused(f"{category} keeps no subtype")
+    key = product_key(catalog, category, subtype, line, strain)
+    same = [e for e in catalog["entries"] if e.get("is_active", True) and e.get("category") == category
+            and (e.get("subtype") or None) == (subtype or None)
+            and catalog_bootstrap.squash(e.get("product_line")) == catalog_bootstrap.squash(line)
+            and catalog_bootstrap.strain_key(e.get("strain") or e.get("name")) == catalog_bootstrap.strain_key(strain)]
+    if same or any(e.get("product_key") == key and e.get("is_active", True) for e in catalog["entries"]):
+        raise Refused(f"the catalog has this product: {', '.join(_desc(e) for e in same) or key}; "
+                      "add-size it instead")
+    by_variant: dict[str, sizes.Size] = {}
+    for x in (_label(x, category) for x in sizes_wanted):
+        by_variant.setdefault(_variant(x, category), x)        # "28g" and "1 ounce" are one size
+    variants = list(by_variant)
+    recorded = sorted({t for t in (strip_brand(n, catalog.get("brand_name") or "") for n in terms) if t})
+    name = " ".join(x for x in (line, strain) if x)
+    index, mine = cm.CatalogIndex(catalog), set(norm_name(name).split())
+    for t in recorded:                  # the guard add-term has: a name stays on its own product
+        for k in index.by_term.get(t, []):
+            other = index.products[k]
+            theirs = set(norm_name(other.title).split())
+            if other.category == category and not (theirs <= mine or mine <= theirs):
+                raise Refused(f'"{t}" is already a store name for {other.title}: recording it on {name} '
+                              "too would cross-wire it. Leave it out, or drop-term it there first")
+    bootstrap = catalog.get("source_method") == BOOTSTRAP
+    taken = {e.get("external_id") for e in catalog["entries"]}
+    rows = []
+    for i, (variant, x) in enumerate(by_variant.items()):
+        external_id = f"{key}:{_total(x)}" if bootstrap else None
+        if external_id in taken:
+            raise Refused(f"external id {external_id} is taken (an inactive entry?); reactivate that one instead")
+        rows.append({"catalog_id": catalog["id"], "external_id": external_id, "product_key": key,
+                     "name": name, "product_line": line,
+                     "category": category, "subtype": subtype or None, "strain": strain,
+                     "variant": variant, "attributes": None,
+                     "match_terms": recorded if i == 0 else [], "source": CURATED})
+    changed = copy.deepcopy(catalog)
+    changed["entries"] += [{**r, "id": f"new-{uuid.uuid4()}", "is_active": True} for r in rows]
+    plan = Plan(catalog, changed, category)
+    plan.writes.append(("insert", TABLE, None, rows))
+    plan.notes.append(f"add {rows[0]['name']} ({category}{'/' + subtype if subtype else ''}) in "
+                      f"{', '.join(variants)}" + (f", {len(recorded)} store name(s)" if recorded else ""))
+    return plan
+
+
+def resolve_entry(catalogs: dict, brand: str, ref) -> str:
+    """An entry id, or the one active entry a selector names: {"strain", "category",
+    "subtype", "line", "size"}, each optional but together naming one entry. Entries a
+    plan has just added are not selectable: give their sizes and store names in their
+    add-product."""
+    if isinstance(ref, str):
+        return ref
+    import catalog_bootstrap
+    catalog = catalog_of(catalogs, brand)
+    want_size = ref.get("size")
+    hits = []
+    for e in catalog["entries"]:
+        if not e.get("is_active", True) or str(e["id"]).startswith("new-"):
+            continue
+        if "strain" in ref and catalog_bootstrap.strain_key(e.get("strain") or e.get("name")) \
+                != catalog_bootstrap.strain_key(ref["strain"]):
+            continue
+        if "category" in ref and e.get("category") != ref["category"]:
+            continue
+        if "subtype" in ref and (e.get("subtype") or None) != (ref["subtype"] or None):
+            continue
+        if "line" in ref and catalog_bootstrap.squash(e.get("product_line")) != catalog_bootstrap.squash(ref["line"]):
+            continue
+        if want_size and sizes.same_size(sizes.parse(want_size, category=e.get("category")),
+                                         sizes.parse(e.get("variant"), category=e.get("category"))) is not True:
+            continue
+        hits.append(e)
+    if len(hits) != 1:
+        raise Refused(f"{ref} names {len(hits)} active entries"
+                      + (f": {', '.join(_desc(e) for e in hits[:5])}" if hits else ""))
+    return str(hits[0]["id"])
+
+
+OPS = ("add-product", "add-size", "set-size", "add-term", "drop-term", "deactivate")
+
+
+def apply_plan(catalogs: dict, doc: dict) -> Plan:
+    """Every edit of a plan file, in order, each seeing the ones before it. One Plan
+    out: the catalog before, the catalog after, the writes in order."""
+    brand = doc.get("brand") or ""
+    state = copy.deepcopy(catalogs)
+    original = catalog_of(catalogs, brand)
+    writes, notes, categories = [], [], set()
+    for n, edit in enumerate(doc.get("edits") or [], 1):
+        op = edit.get("op")
+        try:
+            if op not in OPS:
+                raise Refused(f"unknown op {op!r} (one of {', '.join(OPS)})")
+            force = bool(edit.get("force"))
+            if op == "add-product":
+                step = plan_add_product(state, brand, edit.get("category"), edit.get("strain"),
+                                        edit.get("sizes") or [], edit.get("subtype"), edit.get("line"),
+                                        edit.get("terms") or [])
+            else:
+                entry = resolve_entry(state, brand, edit.get("entry"))
+                if op == "add-size":
+                    step = plan_add_size(state, entry, edit.get("size"), force)
+                elif op == "set-size":
+                    step = plan_set_size(state, entry, edit.get("size"), force)
+                elif op == "add-term":
+                    step = plan_add_term(state, entry, edit.get("name") or edit.get("term"), force)
+                elif op == "drop-term":
+                    step = plan_drop_term(state, entry, edit.get("term"), force)
+                else:
+                    into = resolve_entry(state, brand, edit["into"]) if edit.get("into") else None
+                    step = plan_deactivate(state, entry, into)
+        except Refused as exc:
+            raise Refused(f"edit {n} ({op}): {exc}") from None
+        for slug, c in state.items():
+            if c.get("id") == step.catalog.get("id"):
+                state[slug] = step.changed
+        writes += step.writes
+        categories.add(step.category)
+        notes += [f"{n}. {note}" + (f"  [{edit['why']}]" if edit.get("why") and i == 0 else "")
+                  for i, note in enumerate(step.notes)]
+    final = catalog_of(state, brand)
+    return Plan(original, final, categories.pop() if len(categories) == 1 else None, writes, notes)
 
 
 def plan_size_sync(catalogs: dict, listings: list[dict]) -> list[tuple[dict, str]]:
@@ -302,23 +480,43 @@ def measure(plan: Plan, runs: int = 2) -> None:
     new = [run(plan.changed) for _ in range(runs)]
     stable, noise = compare(old, new)
     tally = summarize(stable)
+    trusted = [sum(1 for v in r.values() if v[0] == "trusted") for r in (old[0], new[0])]
     print(f"measure: {len(listings)} active {brand} {plan.category or ''} listings, {runs} runs per side"
-          f"{' (Jev on, no cache)' if use_jev else ''}")
+          f"{' (Jev on, no cache)' if use_jev else ''}; trusted {trusted[0]} -> {trusted[1]}")
     print("  " + (", ".join(f"{k} {v}" for k, v in tally.items()) or "no listing changes")
           + f"; {noise} listing(s) differed between runs of one side (Jev's noise, not counted)")
-    for i, (before, after) in list(stable.items())[:20]:
-        print(f'  - "{by_id[i]["name"][:60]}" [{by_id[i].get("variant")}]: '
-              f"{before[0]} {before[3]} -> {after[0]} {after[3]}"
-              + (" (other product)" if before[1] != after[1] else " (other size)" if before[2] != after[2] else ""))
-    if len(stable) > 20:
-        print(f"  ... and {len(stable) - 20} more")
+
+    def line(i, before, after):
+        return (f'  - "{by_id[i]["name"][:64]}" [{by_id[i].get("variant")}]: '
+                f"{before[0]} {before[3]} -> {after[0]} {after[3]}"
+                + (" (other product)" if before[1] != after[1] else " (other size)" if before[2] != after[2] else ""))
+    # Whatever could be a loss is listed in full; gains are sampled.
+    risky = {i: v for i, v in stable.items() if v[0][0] == "trusted" and (v[1][0] != "trusted" or v[0][1] != v[1][1])}
+    if risky:
+        print("  check each (a trusted match lost or moved to another product):")
+        for i, (before, after) in risky.items():
+            print(line(i, before, after) + f"\n      {_names(plan, before[2])} -> {_names(plan, after[2])}")
+    rest = [(i, v) for i, v in stable.items() if i not in risky]
+    for i, (before, after) in rest[:15]:
+        print(line(i, before, after))
+    if len(rest) > 15:
+        print(f"  ... and {len(rest) - 15} more")
+
+
+def _names(plan: Plan, entry_id) -> str:
+    """An entry by name and size, from either side of the plan."""
+    for catalog in (plan.changed, plan.catalog):
+        for e in catalog["entries"]:
+            if str(e["id"]) == str(entry_id):
+                return f"{e.get('name')} {e.get('variant') or ''} [{e.get('category')}]"
+    return "none"
 
 
 def apply(plan: Plan) -> None:
     import db_http
     for op, table, query, row in plan.writes:
         if op == "insert":
-            print("  inserted", db_http.insert(table, row)[0]["id"])
+            print("  inserted", ", ".join(r["id"] for r in db_http.insert(table, row)))
         else:
             db_http.update(table, query, row)
             print(f"  updated {query}")
@@ -339,6 +537,19 @@ def main(argv: list[str] | None = None) -> int:
             p.add_argument("--force", action="store_true", help="do it despite the refusal's reason")
         p.add_argument("--measure", action="store_true", help="run the matcher before and after first")
         p.add_argument("--write", action="store_true", help="write the edit (after the user approved it)")
+    ap_prod = sub.add_parser("add-product", help="a product the catalog lacks, in one or more sizes")
+    ap_prod.add_argument("brand")
+    ap_prod.add_argument("--category", required=True)
+    ap_prod.add_argument("--subtype", help="where the category keeps one: flower, preground, cart, gummy ...")
+    ap_prod.add_argument("--line")
+    ap_prod.add_argument("--strain", required=True)
+    ap_prod.add_argument("--size", action="append", required=True, help="repeat for each size")
+    ap_prod.add_argument("--term", action="append", default=[], help="a store's name for it; repeatable")
+    pl = sub.add_parser("plan", help="many edits from a JSON file, measured and written together")
+    pl.add_argument("file")
+    for p in (ap_prod, pl):
+        p.add_argument("--measure", action="store_true", help="run the matcher before and after first")
+        p.add_argument("--write", action="store_true", help="write it (after the user approved it)")
     ss = sub.add_parser("size-sync")
     ss.add_argument("--write", action="store_true")
     args = ap.parse_args(argv)
@@ -356,7 +567,13 @@ def main(argv: list[str] | None = None) -> int:
         print(f"{len(todo)} listing(s)" + (" written" if args.write else " (dry run; --write writes)"))
         return 0
     try:
-        if args.command == "drop-term":
+        if args.command == "plan":
+            import json
+            plan = apply_plan(catalogs, json.loads(Path(args.file).read_text()))
+        elif args.command == "add-product":
+            plan = plan_add_product(catalogs, args.brand, args.category, args.strain, args.size,
+                                    args.subtype, args.line, args.term)
+        elif args.command == "drop-term":
             plan = plan_drop_term(catalogs, args.entry, args.term, args.force)
         elif args.command == "add-term":
             plan = plan_add_term(catalogs, args.entry, args.name, args.force)

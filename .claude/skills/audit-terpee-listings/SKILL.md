@@ -107,6 +107,11 @@ conversation**, and write only what they approved.
 - Edits to matching take effect for listings at the next import (13:00 UTC). Say which
   product pages should change then, so tomorrow's audit can check.
 
+A brand whose store-built catalog matches under 60% of its listings with trust needs a
+curation, not a handful of edits: propose one under "Needs you" (catalog-audit skill,
+"Curating a store-built catalog"). Curate at most one brand per day; the user approves
+each.
+
 ## 7. Code is the exception
 
 Propose a code change only when the pipeline itself recreates the error every day,

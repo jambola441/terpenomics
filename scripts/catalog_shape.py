@@ -82,6 +82,9 @@ PLAUSIBLE = {  # category: (unit, low, high)
     "vaporizers": ("grams", 0.1, 2.5), "concentrate": ("grams", 0.25, 28),
     "edible": ("mg", 2, 1000), "tinctures": ("mg", 5, 3000), "topical": ("mg", 5, 3000),
 }
+# Bags sold by the ounce past 28g: 1.5, 2, 2.5 and 3 oz, New York's purchase limit (Find.
+# sells 70g bags, "2.5 OZ" on the label). A misread 3.5g reads 35g and is still flagged.
+PLAUSIBLE_TOO = {"flower": {42.0, 56.0, 70.0, 84.0, 85.0}}
 
 
 # --------------------------------------------------------------------------- shape
@@ -218,7 +221,7 @@ def _plausible(category: str, variant: str | None) -> bool | None:
         return None
     unit, lo, hi = rule
     value = getattr(sizes.parse(variant, category=category), unit)
-    return None if value is None else lo <= value <= hi
+    return None if value is None else lo <= value <= hi or value in PLAUSIBLE_TOO.get(category, ())
 
 
 def _tagged(ps: list[Product]) -> str:
@@ -693,8 +696,11 @@ def render_preview(catalog: dict, entries: list[dict], listings: list[dict], fre
             for l in listings if not fresh_only or is_fresh(l)]
     proposed = {e["external_id"]: e for e in
                 catalog_bootstrap.propose(catalog["brand_name"], rows)["catalog"]["entries"]}
+    # Curated entries (catalog_fix.py) take the bootstrap's ids, so a rebuild that
+    # proposes one updates it; only bootstrap-made entries are retired when it does not.
+    held = {e["external_id"] for e in entries if e["is_active"] and e.get("external_id")}
     current = {e["external_id"]: e for e in entries if e["is_active"] and e.get("source") == BOOTSTRAP}
-    added = sorted(proposed.keys() - current.keys())
+    added = sorted(proposed.keys() - held)
     gone = sorted(current.keys() - proposed.keys())
     out = [f"{catalog['brand_name']}: a rebuild from {len(rows)} {'fresh ' if fresh_only else ''}listings "
            f"proposes {len(proposed)} entries; {len(current)} bootstrap entries are active now. "
