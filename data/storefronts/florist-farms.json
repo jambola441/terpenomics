@@ -1,0 +1,98 @@
+{
+  "brand": "Florist Farms",
+  "site": "https://www.floristfarms.com",
+  "source": {
+    "kind": "shopify_json",
+    "url": "https://www.floristfarms.com/products.json"
+  },
+  "learned": "2026-10-05, by hand: 186 products, 202 variants. The bare domain answers 429 with a bot check; www does not.",
+  "notes": [
+    "Titles are 'Strain | [Live Resin Infused | Kief Coated | Live Resin] | Format Size | Pack', except the effect gummies, which lead with the line: 'Calm | Peach Gummies | 10pk'.",
+    "A gummy title gives the pack, not the dose; every product page says 10mg THC per gummy, so the 10-packs are 100mg. A pack of any other count falls through to unparsed on purpose.",
+    "The title is more reliable than product_type: pre-roll packs are typed 'Flower' ('Witches Brew | Live Resin Infused | 1/2 Gram Pre-Rolls | 5pk'), and seven real products have no product_type at all. So format words in the title decide first."
+  ],
+  "skip": [
+    {
+      "when": {
+        "title": "(?i)\\b(crewneck|hoodie|hat|sleeves|shirt|tee|sticker|tote)\\b"
+      },
+      "why": "apparel"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "title": "(?i)\\b(pre-?rolls?|joints?)\\b"
+      },
+      "set": {
+        "category": "preroll"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\b(vape|cartridge)\\b"
+      },
+      "set": {
+        "category": "vaporizers"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\bgumm"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "gummy"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\bounce\\b"
+      },
+      "set": {
+        "category": "flower"
+      }
+    },
+    {
+      "when": {
+        "product_type": "^Flower$"
+      },
+      "set": {
+        "category": "flower"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "^(?P<strain>[^|]+?)\\s*\\|\\s*Live Resin Gummies\\s*\\|\\s*10[- ]?(?:pk|[Pp]ack)$",
+      "set": {
+        "line": "Live Resin",
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "^(?P<line>[A-Za-z]+)\\s*\\|\\s*(?P<strain>.+?)\\s+Gummies\\s*\\|\\s*10[- ]?(?:pk|[Pp]ack)$",
+      "set": {
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^(preroll|vaporizers)$"
+      },
+      "match": "^(?P<strain>[^|]+?)\\s*\\|\\s*(?P<line>Live Resin Infused|Live Resin|Kief Coated)\\s*\\|"
+    },
+    {
+      "when": {
+        "category": "^(preroll|vaporizers|flower)$"
+      },
+      "match": "^(?P<strain>[^|]+?)\\s*\\|"
+    }
+  ]
+}

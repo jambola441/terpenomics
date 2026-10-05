@@ -59,6 +59,13 @@ class TestSizes:
         (("", "Quarter Ounce"), "flower", sizes.Size(grams=7.0)),
         (("500mg",), "vaporizers", sizes.Size(grams=0.5)),
         (("", "Sweet Plum 1:3 | 100MG"), "edible", sizes.Size(mg=100.0)),
+        (("", "Black Scotti | 1/2 Gram Pre-Rolls | 7pk"), "preroll", sizes.Size(grams=3.5, pack=7)),
+        (("", "King Sherb | Half Gram Pre-Rolls | 5pk"), "preroll", sizes.Size(grams=2.5, pack=5)),
+        (("", "Green Crack | Kief Coated | Half Gram Pre-Rolls | Single"), "preroll",
+         sizes.Size(grams=0.5)),
+        (("0.5g", "STIIIZY - Half Gram Premium Pod - 0.5g"), "vaporizers", sizes.Size(grams=0.5)),
+        (("", "Iced Sangria | 1/2g Joints | 7pk"), "preroll", sizes.Size(grams=3.5, pack=7)),
+        (("", "Doobies 0.6g | 0.6g | 5pk"), "preroll", sizes.Size(grams=3.0, pack=5)),
     ])
     def test_parse(self, texts, cat, expect):
         assert sizes.parse(*texts, category=cat) == expect

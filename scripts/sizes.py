@@ -39,6 +39,10 @@ _PACK = re.compile(r"\b(\d+)\s*[-\s]?(?:pk|pack|packs|ct|count|pcs|pieces|pc)\b"
 _PACK_X = re.compile(rf"\b(\d+)\s*(?:pk\s*)?x\s*{_NUM}\s*(g|mg)\b", re.I)
 _EACH = re.compile(rf"{_NUM}\s*(g|mg)\s*(?:each|ea\.?|per\s+\w+)\b", re.I)
 _OZ_FRAC = re.compile(r"\b(\d+)\s*/\s*(\d+)\s*(?:oz|ounce)\b", re.I)
+# "1/2 Gram Joints" is 0.5g a joint, not the "2 Gram" _GRAMS would read inside it;
+# "Half Gram" likewise.
+_G_FRAC = re.compile(r"\b(\d+)\s*/\s*(\d+)\s*(?:g|gr|gram|grams)\b", re.I)
+_HALF_GRAM = re.compile(r"\bhalf[\s-]*grams?\b", re.I)
 # Compounds first (longest-first below), so "Eighth Ounce" is 3.5g and not also an
 # ounce; a bare "ounce" is 28g only when nothing longer claimed it.
 _OZ_WORDS = {"eighth ounce": 3.5, "eighth oz": 3.5, "quarter ounce": 7.0,
@@ -115,7 +119,7 @@ def parse(*texts: str | None, category: str | None = None) -> Size:
         elif m.group(2).lower() == "mg" and unit_mg is None:
             unit_mg = val
 
-    grams = _floats(_GRAMS, text)
+    grams = _gram_mentions(text)
     for m in _OZ_FRAC.finditer(text):
         num, den = int(m.group(1)), int(m.group(2))
         if den:
@@ -151,6 +155,14 @@ def parse(*texts: str | None, category: str | None = None) -> Size:
                 unit_g=_round(unit_g), unit_mg=_round(unit_mg))
 
 
+def _gram_mentions(text: str) -> list[float]:
+    """Gram figures, fractions and "half gram" included, with a fraction never also
+    read as the whole number after its slash."""
+    grams = [int(m.group(1)) / int(m.group(2)) for m in _G_FRAC.finditer(text) if int(m.group(2))]
+    grams += [0.5] * len(_HALF_GRAM.findall(text))
+    return grams + _floats(_GRAMS, _G_FRAC.sub(" ", text))
+
+
 def mg_mentions(*texts: str | None) -> list[float]:
     """Every distinct mg amount the texts name, potency and ratios stripped as parse()
     strips them — so a caller can tell one dose ("10mg x 10pk") from several
@@ -164,7 +176,7 @@ def weight_mentions(*texts: str | None) -> list[float]:
     """Every distinct gram weight the texts state (ounce words and fractions included)."""
     text = " | ".join(t for t in texts if t)
     text = _PERCENT.sub(" ", _RATIO.sub(" ", text))
-    grams = _floats(_GRAMS, text)
+    grams = _gram_mentions(text)
     grams += [int(m.group(1)) / int(m.group(2)) * OZ_GRAMS
               for m in _OZ_FRAC.finditer(text) if int(m.group(2))]
     lowered = _OZ_FRAC.sub(" ", text).lower()
@@ -183,9 +195,10 @@ def _total(values: list[float], pack: int | None, unit: float | None, *,
     ("5 Pack | .6g | 3g"). A lone mention next to a pack is a unit size when it is
     small (`unit_below`: "5pk 0.6g" is 3g) or when multiplying stays within `cap`
     (doses). Without a pack, the largest mention is the package — a listing that
-    restates its size twice is common, one naming a smaller size inside is rare.
+    restates its size twice is common, one naming a smaller size inside is rare. A
+    size restated is one mention: "Half Gram ... 0.5g | 5pk" is 2.5g.
     """
-    values = [v for v in values if v > 0]
+    values = sorted({v for v in values if v > 0})
     if pack and pack > 1 and unit:
         return pack * unit
     if pack and pack > 1 and values:
