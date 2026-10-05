@@ -686,6 +686,23 @@ export const api = {
         body: JSON.stringify(payload),
       }),
 
+    /** Contact email: a code goes to the new address; it is saved on verify
+     *  (routes/me_email.py). */
+    startEmailChange: (email: string) =>
+      authenticatedFetch<{ challenge_id: string; expires_in: number; resend_in: number }>(`/me/email/start`, {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      }),
+
+    verifyEmailChange: (challengeId: string, code: string) =>
+      authenticatedFetch<CustomerProfile>(`/me/email/verify`, {
+        method: 'POST',
+        body: JSON.stringify({ challenge_id: challengeId, code }),
+      }),
+
+    removeEmail: () =>
+      authenticatedFetch<CustomerProfile>(`/me/email`, { method: 'DELETE' }),
+
     /** Deletes the login and scrubs the account (services/account_deletion.py). */
     deleteAccount: () =>
       authenticatedFetch<null>(`/me`, { method: 'DELETE' }),

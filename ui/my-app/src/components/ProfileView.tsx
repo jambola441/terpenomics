@@ -19,6 +19,7 @@ import { t, radius, font, categoryColor, alpha } from '../theme'
 import { FeedState, ProductImage, Label } from './ui'
 import OrderCard from './OrderCard'
 import ReceiptUpload from './ReceiptUpload'
+import EmailEditor from './EmailEditor'
 import { formatDate, formatDollars } from '../utils/format'
 
 type Pane = 'orders' | 'points' | 'feedback' | 'profile'
@@ -508,15 +509,16 @@ function ProfilePane({ profile, session, onSaved, onSignOut }: {
         </div>
       </div>
 
-      {/* Identity, shown but not editable: these are how sign-in and in-store
-          purchase matching find this account. */}
+      {/* Phone is shown but not editable: it is how sign-in and in-store
+          purchase matching find this account. Email is contact only, and
+          changes after a code sent to the new address. */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <ReadOnlyRow label="Phone" value={profile.phone ?? session.user.phone ?? '—'} />
-        <ReadOnlyRow label="Email" value={profile.email ?? session.user.email ?? '—'} />
         <div style={{ color: t.text4, fontSize: font.size.caption, lineHeight: 1.5 }}>
-          Phone and email identify your account at sign-in and at the counter. Ask a staff
-          member to change either.
+          Your phone number is how you sign in and how stores match your purchases. Ask a
+          staff member to change it.
         </div>
+        <EmailEditor profile={profile} onSaved={onSaved} />
       </div>
 
       <label style={{
