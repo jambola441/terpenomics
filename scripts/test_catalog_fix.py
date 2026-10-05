@@ -227,3 +227,125 @@ def test_preflight_stops_a_plan_before_its_first_write(fresh_db, via_rest):
     twice = cf.Plan({}, {}, writes=[("insert", "brand_catalog_entries", None, [fresh.writes[0][3][0]] * 2)])
     with pytest.raises(cf.Refused, match="twice"):
         cf.preflight(twice)
+
+
+def herb_catalogs(method="listings_bootstrap"):
+    def e(id, strain, variant, line=None, category="preroll", subtype=None, terms=(), active=True, ext=None):
+        squash = lambda s: "".join(c for c in (s or "").lower() if c.isalnum())   # noqa: E731
+        pk = f"lb:{category}:{subtype or ''}:{squash(line)}:{squash(strain)}"
+        return {"id": id, "catalog_id": "c3", "name": " ".join(x for x in (line, strain) if x),
+                "product_line": line, "strain": strain, "category": category, "subtype": subtype,
+                "variant": variant, "product_key": pk, "external_id": ext or f"{pk}:{variant}",
+                "is_active": active, "match_terms": list(terms), "source": "listings_bootstrap"}
+    return {"herb": {"id": "c3", "brand_name": "Herb", "brand_slug": "herb", "source_method": method,
+                     "entries": [
+                         e("gg1", "Garlic Gravy", "1g", terms=["garlic gravy infused 1g"]),
+                         e("gg25", "Garlic Gravy", "2.5g", terms=["garlic gravy 5pk"]),
+                         e("hgg1", "Garlic Gravy", "1g", line="Hash Infused", terms=["hash infused garlic gravy"]),
+                         e("lc1", "Lemon Cherry", "1g", terms=["lemon cherry 1g"]),
+                         e("old", "Lemon Cherry", "1g", line="Hash Infused", active=False),
+                         e("pf35", "Passionfruit", "3.5g", category="flower", subtype="flower"),
+                         e("ac35", "Alien Cookies", "3.5g", category="flower", subtype="flower"),
+                         e("ac1", "Alien Cookies", "1g", category="flower", subtype="flower",
+                           terms=["alien cookies smalls 1g"]),
+                         e("ge1", "Gelato", "1g", terms=["gelato 1g"]),
+                         e("gt1", "Gelatto", "1g", terms=["gelatto 1g"])]}}
+
+
+def test_a_rekey_moves_the_sizes_to_new_rows_and_keeps_the_old_ones_for_their_ids():
+    """The key and the external ids carry line, strain and subtype. The old rows are
+    deactivated, not edited: holding their ids, they stop a rebuild that still proposes
+    the old product from adding it back (push never reactivates)."""
+    plan = cf.plan_rekey(herb_catalogs(), "gt1", line="Ice Packs", strain="Gelato")
+    (op, _, _, rows), deactivate = plan.writes
+    assert op == "insert" and deactivate == ("update", "brand_catalog_entries", "id=eq.gt1", {"is_active": False})
+    row, = rows
+    assert (row["product_key"], row["external_id"]) == ("lb:preroll::icepacks:gelato", "lb:preroll::icepacks:gelato:1g")
+    assert (row["name"], row["product_line"], row["strain"]) == ("Ice Packs Gelato", "Ice Packs", "Gelato")
+    assert row["match_terms"] == ["gelatto 1g"] and row["source"] == "curated"
+    new_id = plan.moved["gt1"]
+    assert next(e for e in plan.changed["entries"] if e["id"] == new_id)["is_active"]
+
+
+def test_a_rekey_joins_the_product_that_exists():
+    plan = cf.plan_rekey(herb_catalogs(), "gg1", line="Hash Infused")
+    inserted = [w for w in plan.writes if w[0] == "insert"]
+    updates = {w[2]: w[3] for w in plan.writes if w[0] == "update"}
+    assert updates["id=eq.hgg1"] == {"match_terms": ["garlic gravy infused 1g", "hash infused garlic gravy"]}
+    assert [r["external_id"] for r in inserted[0][3]] == ["lb:preroll::hashinfused:garlicgravy:2.5g"]
+    assert updates["id=eq.gg1"] == updates["id=eq.gg25"] == {"is_active": False}
+    assert [w[0] for w in plan.writes] == ["insert", "update", "update", "update"]   # deactivations last
+    assert plan.moved["gg1"] == "hgg1" and plan.moved["gg25"].startswith("new-")
+
+
+def test_a_rekey_reactivates_the_row_that_holds_the_new_id():
+    plan = cf.plan_rekey(herb_catalogs(), "lc1", line="Hash Infused")
+    assert plan.writes[0] == ("update", "brand_catalog_entries", "id=eq.old",
+                              {"is_active": True, "source": "curated", "match_terms": ["lemon cherry 1g"]})
+    assert plan.moved == {"lc1": "old"} and not [w for w in plan.writes if w[0] == "insert"]
+
+
+def test_a_spelling_the_key_does_not_see_is_a_rename_in_place():
+    plan = cf.plan_rekey(herb_catalogs(), "pf35", strain="Passion Fruit")
+    assert plan.writes == [("update", "brand_catalog_entries", "id=eq.pf35",
+                            {"name": "Passion Fruit", "strain": "Passion Fruit"})]
+    assert plan.moved == {}
+
+
+def test_only_moves_one_size_and_two_spellings_fold_into_one_row():
+    plan = cf.plan_rekey(herb_catalogs(), "ac1", subtype="smalls", only=True)
+    (_, _, _, (row,)), _ = plan.writes
+    assert row["external_id"] == "lb:flower:smalls::aliencookies:1g" and row["subtype"] == "smalls"
+    assert next(e for e in plan.changed["entries"] if e["id"] == "ac35")["is_active"]   # its 3.5g stays
+
+    plan = cf.plan_rekey(herb_catalogs(), ["ge1", "gt1"], line="Ice Packs", strain="Gelato")
+    (_, _, _, (row,)), *deactivations = plan.writes
+    assert row["match_terms"] == ["gelato 1g", "gelatto 1g"] and len(deactivations) == 2
+    assert plan.moved["ge1"] == plan.moved["gt1"]
+
+
+def test_rekey_refusals():
+    cats = herb_catalogs()
+    for args, kw, why in [
+            ("lc1", {"line": ""}, "nothing changes"),
+            ("ac35", {"subtype": "badder"}, "not a flower subtype"),
+            ("lc1", {"subtype": "infused"}, "keeps no subtype"),
+            (["lc1", "ac35"], {"line": "Hash Infused"}, "different categories"),
+            (["ge1", "gt1"], {"line": "Ice Packs"}, "differ in strain"),
+            ("ac1", {"strain": "alien cookies", "only": True}, "some sizes of the product"),
+            ("old", {"line": ""}, "is inactive")]:
+        with pytest.raises(cf.Refused, match=why):
+            cf.plan_rekey(cats, args, **kw)
+    with pytest.raises(cf.Refused, match="storefront catalog"):
+        cf.plan_rekey(herb_catalogs("storefront_html"), "lc1", line="Hash Infused")
+
+
+def test_a_plan_rekeys_follow_each_other_and_refuse_rows_the_plan_adds():
+    doc = {"brand": "Herb", "edits": [
+        {"op": "rekey", "entry": {"strain": "Lemon Cherry"}, "line": "Hash Infused"},
+        {"op": "rekey", "entries": ["ge1", "gt1"], "line": "Ice Packs", "strain": "Gelato", "why": "one strain"}]}
+    plan = cf.apply_plan(herb_catalogs(), doc)
+    assert plan.moved["lc1"] == "old" and plan.moved["ge1"] == plan.moved["gt1"]
+    assert "2. re-key Gelato (preroll), Gelatto (preroll) as Ice Packs Gelato (preroll): " \
+           "lb:preroll::icepacks:gelato  [one strain]" in plan.notes
+
+    chain = cf.apply_plan(herb_catalogs(), {"brand": "Herb", "edits": [
+        {"op": "rekey", "entry": "lc1", "line": "Hash Infused"},          # into the reactivated row
+        {"op": "rekey", "entry": "old", "line": "Classics"}]})            # which moves on
+    assert chain.moved["lc1"] == chain.moved["old"] and chain.moved["lc1"].startswith("new-")
+
+    added = {"brand": "Herb", "edits": [{"op": "add-size", "entry": "lc1", "size": "2.5g"},
+                                         {"op": "rekey", "entry": "lc1", "line": "Hash Infused"}]}
+    with pytest.raises(cf.Refused, match=r"edit 2 \(rekey\).*sizes this plan adds"):
+        cf.apply_plan(herb_catalogs(), added)
+
+
+def test_measuring_a_rekey_counts_a_listing_that_follows_its_entry_as_staying():
+    plan = cf.plan_rekey(herb_catalogs(), "gt1", line="Ice Packs", strain="Gelato")
+    new_id = plan.moved["gt1"]
+    before = {"l1": ("trusted", "lb:preroll:::gelatto", "gt1", "1g"),
+              "l2": ("trusted", "lb:preroll:::gelatto", "gt1", "1g")}
+    after = {"l1": ("trusted", "lb:preroll::icepacks:gelato", new_id, "1g"),
+             "l2": ("trusted", "lb:preroll:::gelato", "ge1", "1g")}        # went elsewhere: a real move
+    stable, noise = cf.compare([cf.carried(plan, before)], [after])
+    assert list(stable) == ["l2"] and noise == 0

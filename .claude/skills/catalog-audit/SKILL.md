@@ -408,8 +408,15 @@ matches go from 130 to 215 of its 216 listings, and none is lost.
    - `add-product`, with the store names it is sold under as `terms`, so those listings
      match exactly.
    - `add-size` for each size a product lacks.
-   - `deactivate` with `into` for a split spelling. Give the survivor any size it lacks
-     first.
+   - `deactivate` with `into` for a split spelling whose sizes the survivor has.
+   - `rekey` for a product filed under the wrong line, strain or subtype. Herb's
+     line-less "Lemon Haze" 7g pre-ground, which stores call "infused ground flower", is
+     Hash Infused.
+     - Every size moves to a new row under the right key, and its listings follow.
+     - Where the right product exists, the sizes join it. A split spelling with sizes
+       the survivor lacks is a `rekey` to the survivor's strain.
+     - `only` moves just the named entries, such as a 1g that is the line's smalls.
+     - A spelling the key cannot see (Passionfruit, Passion Fruit) is renamed in place.
    - `add-term` and `drop-term` as needed.
 
    Entries made this way are marked "curated". A `--replace` rebuild never retires them,

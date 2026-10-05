@@ -173,7 +173,10 @@ this repo. Scripts detect and the agent judges:
   grows.
 - The agent investigates a few findings with the catalog-audit views, then proposes data
   edits made with `scripts/catalog_fix.py`: `drop-term`, `add-term`, `add-size`,
-  `set-size`, `deactivate` and `size-sync`.
+  `set-size`, `deactivate`, `reactivate`, `add-product`, `rekey` and `size-sync`.
+- `rekey` moves a product filed under the wrong line, strain or subtype. The old rows
+  are deactivated and keep their external ids, so a rebuild cannot add the old product
+  back, and the listings follow at the next import.
 - `--measure` runs the matcher before and after on the brand's listings (Jev on, two runs
   per side, noise discounted). An edit is proposed only when it nets positive.
 - Nothing is written without your approval in the conversation. The procedure is
