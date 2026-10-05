@@ -90,11 +90,19 @@ export default function Login() {
       return resend_in || RESEND_SECONDS
     }
 
+    // Email is for staff accounts that already exist. Customers sign up by
+    // phone, which is what points and order matching key on, so an unknown
+    // address gets no account here.
     const { error } = await supabase.auth.signInWithOtp({
       email: destination,
-      options: { shouldCreateUser: true },
+      options: { shouldCreateUser: false },
     })
-    if (error) throw new Error(error.message)
+    if (error) {
+      if (/signups? not allowed|not found|user not found/i.test(error.message)) {
+        throw new Error('No staff account uses that email. Customers sign in with their phone number.')
+      }
+      throw new Error(error.message)
+    }
     return RESEND_SECONDS
   }
 
@@ -249,7 +257,7 @@ export default function Login() {
             <p style={subheadStyle}>
               {channel === 'sms'
                 ? "Enter your mobile number and we'll text you a one-time code."
-                : "Enter your email and we'll send a one-time code."}
+                : "Staff sign-in. Enter your work email and we'll send a one-time code."}
             </p>
 
             {providers.length > 0 && (
@@ -282,7 +290,7 @@ export default function Login() {
                 Text message
               </button>
               <button type="button" onClick={() => switchChannel('email')} style={tabStyle(channel === 'email')}>
-                Email
+                Staff email
               </button>
             </div>
 

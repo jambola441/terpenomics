@@ -40,6 +40,8 @@ import type {
   Feed,
   FeedView,
   CustomerProfile,
+  OnboardingPayload,
+  ProfileUpdate,
   Partner,
   PartnerDetail,
   PartnerLocation,
@@ -662,13 +664,21 @@ export const api = {
       authenticatedFetch<CustomerProfile>(`/me`),
 
     /** Name and marketing opt-in only — phone and email are identity, not profile. */
-    updateProfile: (payload: { name?: string; marketing_opt_in?: boolean }) =>
+    updateProfile: (payload: ProfileUpdate) =>
       authenticatedFetch<CustomerProfile>(`/me`, {
         method: 'POST',
         body: JSON.stringify(payload),
       }),
 
-    linkCustomer: (payload?: { phone?: string; email?: string; name?: string }) =>
+    /** Sign-up, and catching up after a terms change. */
+    completeOnboarding: (payload: OnboardingPayload) =>
+      authenticatedFetch<CustomerProfile>(`/me/onboarding`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }),
+
+    /** Which customer the login joins is decided by the token alone. */
+    linkCustomer: (payload?: { name?: string }) =>
       authenticatedFetch<{ customer_id: string; linked: boolean; created?: boolean }>(`/me/link-customer`, {
         method: 'POST',
         body: JSON.stringify(payload ?? {}),

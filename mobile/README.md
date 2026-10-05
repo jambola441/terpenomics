@@ -49,6 +49,7 @@ Before declaring a change done: `npm run typecheck` and `npx expo lint`.
 | --- | --- | --- |
 | 21+ age gate (once per device) | `src/app/age-gate.tsx` | none; stored in the Keychain |
 | SMS sign-in | `src/app/sign-in.tsx` | `/auth/sms/start`, `/auth/sms/verify`, then `/me/link-customer` on first login |
+| Sign-up | `src/app/sign-up.tsx` | `GET /me` (onboarding), `POST /me/onboarding` |
 | Home feed (combined) | `src/app/(tabs)/index.tsx` | `/me/feed?view=combined` |
 | Shop → category | `src/app/(tabs)/shop/` | `/customer/categories`, `/customer/categories/{name}`, `/customer/products/detail` |
 | Listing detail | `src/app/listing/[dispensaryId]/[listingId].tsx` | `/customer/dispensaries/{id}/listings/{id}` |
@@ -99,6 +100,11 @@ cannabis sales. Apps like Leafly typically get through with:
   availability to the US;
 - [x] **no in-app payment** for cannabis. Orders are pay-at-pickup.
 
-Known gaps: the age confirmation is device-local self-attestation (the
-backend has no date-of-birth field), and the location check is client-side
-only. Neither is enforced by the API.
+Sign-up (`src/app/sign-up.tsx`, after the first login and after any terms
+change) records the 21+ confirmation, terms acceptance and an optional
+marketing-text opt-in on the server, with the wording shown
+(`services/consent.py`), and the API refuses orders until it is done. The
+device age gate stays as the gate in front of the content.
+
+Known gaps: the 21+ confirmation is self-attested (no date of birth; ID is
+checked at the counter), and the location check is client-side only.

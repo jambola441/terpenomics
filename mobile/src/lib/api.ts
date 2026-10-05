@@ -3,6 +3,8 @@
 // web-only. Response types come from the web app so the two can't drift.
 import type {
   CustomerProfile,
+  OnboardingPayload,
+  ProfileUpdate,
   Feed,
   FeedView,
   ListingDetail,
@@ -95,8 +97,11 @@ export const api = {
   me: {
     getProfile: () => authed<CustomerProfile>(`/me`),
 
-    updateProfile: (payload: { name?: string; marketing_opt_in?: boolean }) =>
+    updateProfile: (payload: ProfileUpdate) =>
       authed<CustomerProfile>(`/me`, post(payload)),
+
+    completeOnboarding: (payload: OnboardingPayload) =>
+      authed<CustomerProfile>(`/me/onboarding`, post(payload)),
 
     linkCustomer: () =>
       authed<{ customer_id: string; linked: boolean; created?: boolean }>(`/me/link-customer`, post({})),

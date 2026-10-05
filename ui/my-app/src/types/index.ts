@@ -645,10 +645,47 @@ export type FeedListing = {
 /** The signed-in customer as `/me` returns them. */
 export type CustomerProfile = {
   id: string
+  /** Display name, composed from first_name + last_name once signed up. */
   name: string | null
+  first_name: string | null
+  last_name: string | null
   phone: string | null
   email: string | null
   marketing_opt_in: boolean
+  onboarding: Onboarding
+}
+
+/** Sign-up state and what to show for it (routes_me.py, services/consent.py). */
+export type Onboarding = {
+  complete: boolean
+  missing: Array<'first_name' | 'age_21' | 'terms'>
+  prefill: { first_name: string | null; last_name: string | null }
+  disclosures: {
+    terms: { version: string; terms_url: string | null; privacy_url: string | null }
+    age_21: { version: string; text: string }
+    marketing_sms: { version: string; text: string }
+  }
+}
+
+/** POST /me/onboarding. Versions echo the disclosures that were displayed. */
+export type OnboardingPayload = {
+  first_name: string
+  last_name?: string | null
+  age_21: boolean
+  terms_version: string
+  marketing_sms_opt_in: boolean
+  marketing_sms_version?: string | null
+  platform?: 'ios' | 'android' | 'web'
+}
+
+/** POST /me. Turning marketing texts on needs the disclosure version shown. */
+export type ProfileUpdate = {
+  name?: string
+  first_name?: string
+  last_name?: string
+  marketing_opt_in?: boolean
+  marketing_sms_version?: string
+  platform?: 'ios' | 'android' | 'web'
 }
 
 /* ── Partner stores + POS connectors (routes/admin/partners.py) ─────────────── */

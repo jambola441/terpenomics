@@ -421,7 +421,8 @@ function ProfilePane({ profile, session, onSaved, onSignOut }: {
   onSaved: (profile: CustomerProfile) => void
   onSignOut: () => void
 }) {
-  const [name, setName] = useState('')
+  const [first, setFirst] = useState('')
+  const [last, setLast] = useState('')
   const [optIn, setOptIn] = useState(false)
   const [saving, setSaving] = useState(false)
   const [status, setStatus] = useState<string | null>(null)
@@ -429,7 +430,8 @@ function ProfilePane({ profile, session, onSaved, onSignOut }: {
 
   useEffect(() => {
     if (!profile) return
-    setName(profile.name ?? '')
+    setFirst(profile.first_name ?? '')
+    setLast(profile.last_name ?? '')
     setOptIn(profile.marketing_opt_in)
   }, [profile])
 
@@ -437,18 +439,25 @@ function ProfilePane({ profile, session, onSaved, onSignOut }: {
     api.me.listPreferredDispensaries().then(setStores).catch(() => setStores([]))
   }, [])
 
-  const dirty = profile != null
-    && (name.trim() !== (profile.name ?? '') || optIn !== profile.marketing_opt_in)
+  const namesChanged = profile != null
+    && (first.trim() !== (profile.first_name ?? '') || last.trim() !== (profile.last_name ?? ''))
+  const dirty = profile != null && (namesChanged || optIn !== profile.marketing_opt_in)
 
   async function save() {
     setSaving(true)
     setStatus(null)
     try {
-      const updated = await api.me.updateProfile({ name: name.trim(), marketing_opt_in: optIn })
+      const updated = await api.me.updateProfile({
+        ...(namesChanged ? { first_name: first.trim(), last_name: last.trim() } : {}),
+        marketing_opt_in: optIn,
+        // Opting in records consent to the disclosure shown beside the box.
+        marketing_sms_version: profile!.onboarding.disclosures.marketing_sms.version,
+        platform: 'web',
+      })
       onSaved(updated)
       setStatus('Saved')
-    } catch {
-      setStatus('Could not save. Try again.')
+    } catch (err) {
+      setStatus(err instanceof Error && err.message ? err.message : 'Could not save. Try again.')
     } finally {
       setSaving(false)
     }
@@ -458,18 +467,28 @@ function ProfilePane({ profile, session, onSaved, onSignOut }: {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
-      <div>
-        <Label>Name</Label>
-        <input
-          value={name}
-          onChange={e => setName(e.target.value)}
-          placeholder="What should we call you?"
-          style={{
-            width: '100%', boxSizing: 'border-box', marginTop: 8,
-            background: t.surface2, border: `1px solid ${t.border}`, borderRadius: radius.lg,
-            color: t.text1, fontSize: font.size.body, padding: '12px 14px', outline: 'none',
-          }}
-        />
+      <div style={{ display: 'flex', gap: 12 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Label>First name</Label>
+          <input
+            value={first}
+            onChange={e => setFirst(e.target.value)}
+            autoComplete="given-name"
+            maxLength={100}
+            style={nameInputStyle}
+          />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Label>Last name</Label>
+          <input
+            value={last}
+            onChange={e => setLast(e.target.value)}
+            autoComplete="family-name"
+            maxLength={100}
+            placeholder="Optional"
+            style={nameInputStyle}
+          />
+        </div>
       </div>
 
       {/* Identity, shown but not editable: these are how sign-in and in-store
@@ -495,10 +514,10 @@ function ProfilePane({ profile, session, onSaved, onSignOut }: {
         />
         <span>
           <span style={{ color: t.text1, fontSize: font.size.body, fontWeight: font.weight.semibold }}>
-            Deal alerts
+            Deal alerts by text
           </span>
           <span style={{ display: 'block', color: t.text3, fontSize: font.size.small, marginTop: 3, lineHeight: 1.5 }}>
-            Occasional texts about drops and discounts at the stores you follow.
+            {profile.onboarding.disclosures.marketing_sms.text}
           </span>
         </span>
       </label>
@@ -517,7 +536,7 @@ function ProfilePane({ profile, session, onSaved, onSignOut }: {
       <div>
         <button
           onClick={save}
-          disabled={!dirty || saving}
+          disabled={!dirty || saving || (namesChanged && !first.trim())}
           style={{
             width: '100%', boxSizing: 'border-box',
             background: dirty && !saving ? t.accent : t.surface2,
@@ -568,3 +587,9 @@ function ReadOnlyRow({ label, value }: { label: string; value: string }) {
     </div>
   )
 }
+
+const nameInputStyle = {
+  width: '100%', boxSizing: 'border-box', marginTop: 8,
+  background: t.surface2, border: `1px solid ${t.border}`, borderRadius: radius.lg,
+  color: t.text1, fontSize: font.size.body, padding: '12px 14px', outline: 'none',
+} as const
