@@ -71,10 +71,14 @@ which was off, is now on in production (item 1). The rest is yours to run (below
    ```
    Red Hook's own row also carried Whitestone's store id in `pos_tenant_id`; it now
    holds Red Hook's (`efcb37ae-…`).
-3. `python scripts/db_migrate.py --run` — four idempotent migrations; the first two are
-   no-ops on production (they codify drift), the third adds catalog columns, and the
-   fourth (row-level security) is already applied, so it re-runs as a no-op.
-4. Push catalogs and deploy the worker — [PIPELINE.md → One-time setup](PIPELINE.md#one-time-setup).
+3. **Migrations: done 2026-10-04.** All four are applied and recorded in
+   `schema_migrations`. The first two only codified what production had; the third
+   added the catalog columns; the fourth is row-level security (item 1).
+4. **Catalogs: pushed 2026-10-05.** 48 bootstrap catalogs went in: 1,936 entries,
+   1,640 products, covering 72% of the top 50 brands' listings. Ayrloom's 172 entries
+   got their product keys. Review them in the admin page; PAX "Plus Onyx" is a
+   dry-herb kit filed as a vape and should be switched off.
+5. **Deploy the worker:** [PIPELINE.md → One-time setup](PIPELINE.md#one-time-setup).
 
 ## Measured state (live database, read-only)
 

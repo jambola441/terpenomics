@@ -171,20 +171,24 @@ Re-measure after changing the question or upgrading the model:
 
 ### One-time setup
 
-1. **Apply the schema migrations** (adds catalog `product_key`/`source`/`support`; the
-   first two only codify what production already has, and the fourth, row-level
-   security, was applied on 2026-10-04 and re-runs as a no-op):
+1. **Apply the schema migrations.** Done on production on 2026-10-04: all four are
+   recorded in `schema_migrations`, so this now reports nothing pending. On a new
+   database:
    ```bash
    python scripts/db_migrate.py           # shows what would run
    python scripts/db_migrate.py --run
    ```
-2. **Seed catalogs** for the biggest brands, then review them in the admin page:
+2. **Seed catalogs** for the biggest brands, then review them in the admin page. Done
+   for the top 50 on 2026-10-05 (48 catalogs; RAW and Blazy Susan propose nothing):
    ```bash
    python scripts/catalog_bootstrap.py --top 50              # look first — prints the effect
    python scripts/catalog_bootstrap.py --top 50 --write --push
    python scripts/brand_catalog.py push --brand Ayrloom      # backfills product_key from the
                                                              # existing export; changes nothing else
    ```
+   Pushes write over `DATABASE_URL`. From a sandbox that cannot open a Postgres
+   connection, add `--via-http` to either command: the same rules, over Supabase's REST
+   API ([DB_ACCESS.md](DB_ACCESS.md)).
 3. **Deploy the worker** — Render → New → Background Worker → this repo, Docker, command
    `python scripts/scrape_worker.py`, a 1 GB disk at `/app/data/enrich_cache`, env
    vars from [`scripts/render.yaml`](scripts/render.yaml). Set `ALERT_WEBHOOK_URL` to

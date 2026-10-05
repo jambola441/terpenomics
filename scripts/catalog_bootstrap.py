@@ -38,12 +38,13 @@ What it writes
 `data/catalogs/<brand>.json` in the export shape, source_method "listings_bootstrap",
 each entry carrying `support` and the normalised store names it was built from as
 `match_terms` — so those stores' listings resolve exactly (no model call) next time.
-`--push` also upserts it into Postgres (needs DATABASE_URL), where the admin catalog
-page reviews and edits it like any other catalog. Entries have stable synthetic
-external ids, so a re-run updates in place. Pushes are additive (brand_catalog.push):
-new products are added, curated fields are never overwritten, and bootstrap entries
-are never retired automatically — one quiet week at the stores is not a
-discontinuation. Take a product out in the admin when it really is gone.
+`--push` also upserts it into Postgres (DATABASE_URL, or `--via-http` over Supabase's
+REST API from a sandbox), where the admin catalog page reviews and edits it like any
+other catalog. Entries have stable synthetic external ids, so a re-run updates in
+place. Pushes are additive (brand_catalog.push): new products are added, curated
+fields are never overwritten, and bootstrap entries are never retired automatically —
+one quiet week at the stores is not a discontinuation. Take a product out in the
+admin when it really is gone.
 
 Bootstrap catalogs are matched at a higher Jev threshold (catalog_match.AUTO_BOOTSTRAP)
 because a missing product is exactly when near-miss picks happen.
@@ -54,6 +55,7 @@ Usage
   python scripts/catalog_bootstrap.py --brand Jetpacks --write      # write data/catalogs/jetpacks.json
   python scripts/catalog_bootstrap.py --top 50 --write              # top brands without a catalog
   python scripts/catalog_bootstrap.py --top 50 --write --push       # ...and into Postgres
+  python scripts/catalog_bootstrap.py --top 50 --push --via-http    # ...from a sandbox
 """
 
 from __future__ import annotations
@@ -109,6 +111,13 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
     # stay what the database says.
     rows = [dict(l) for l in listings if (l.get("category") or "") not in SKIP_CATEGORIES
             and (l.get("strain") or "").strip()]
+
+    # A product line that is only the brand's name is no line ("Runtz" on a Runtz
+    # pre-roll pack). Kept, it would split that product into a lined and a line-less
+    # entry. Lines that contain the brand ("PAX ERA", "Baby Jeeter") are real lines.
+    for l in rows:
+        if l.get("product_line") and squash(l["product_line"]) == squash(brand):
+            l["product_line"] = None
 
     # Line spelling by consensus across the brand: "FJ-Mini" over "FJ Mini" when more
     # stores write it that way.
@@ -252,7 +261,10 @@ def main() -> None:
                     help="Keep products carried by at least this many stores (default 2)")
     ap.add_argument("--write", action="store_true", help="Write data/catalogs/<brand>.json")
     ap.add_argument("--push", action="store_true",
-                    help="Write the file and upsert into Postgres (DATABASE_URL)")
+                    help="Write the file and upsert into Postgres (DATABASE_URL, or --via-http)")
+    ap.add_argument("--via-http", action="store_true",
+                    help="Push over Supabase's REST API, for a machine that cannot open a "
+                         "Postgres connection (DB_ACCESS.md)")
     ap.add_argument("--show", type=int, default=0, help="Print N proposed entries per brand")
     args = ap.parse_args()
 
@@ -289,11 +301,15 @@ def main() -> None:
         for e in out["catalog"]["entries"][:args.show]:
             print(f"    [{e['support']}] {e['category']:10} {e['name'][:40]:40} {e['variant'] or '':10} "
                   f"line={e['product_line']!r}")
-        if args.write or args.push:
+        if (args.write or args.push) and not out["catalog"]["entries"]:
+            # An empty catalog would still mark the brand as having one, so later --top
+            # runs would skip it.
+            print(f"    nothing to write: no product reaches support>={args.min_stores}")
+        elif args.write or args.push:
             import brand_catalog
             path = brand_catalog.save(out["catalog"])
             if args.push:
-                brand_catalog.push(out["catalog"])
+                brand_catalog.push(out["catalog"], via_http=args.via_http)
             print(f"    wrote {path.relative_to(brand_catalog.ROOT)}{' and pushed' if args.push else ''}")
 
     if len(keys) > 1:

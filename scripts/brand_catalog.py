@@ -243,7 +243,26 @@ def _connect():
     return psycopg2.connect(url)
 
 
-def push(catalog: dict, dry_run: bool = False) -> dict:
+# Catalog-entry columns that arrived with db/migrations/0003.
+EXTRA_COLUMNS = ("product_key", "source", "support")
+
+
+def _entry_meta(catalog: dict):
+    """The value an entry writes to each of EXTRA_COLUMNS."""
+    default_source = catalog.get("source_method")
+
+    def meta(e: dict, c: str):
+        if c == "product_key":
+            # Exports written before product_key existed carry the same value as
+            # product_external_id, so pushing an old file backfills it.
+            return e.get("product_key") or e.get("product_external_id")
+        if c == "source":
+            return e.get("source") or default_source
+        return e.get(c)
+    return meta
+
+
+def push(catalog: dict, dry_run: bool = False, via_http: bool = False) -> dict:
     """Upsert a catalog into Postgres, the system of record — additively.
 
     A catalog is curated after it lands: the admin page edits sizes and strains and
@@ -264,8 +283,32 @@ def push(catalog: dict, dry_run: bool = False) -> dict:
                        a product one store dropped this week is still a product.
 
     first_seen_at and the verified_* columns are never written by an update.
+
+    Over DATABASE_URL by default. via_http=True applies the same rules over Supabase's
+    REST API, for a machine that cannot open a Postgres connection (DB_ACCESS.md).
     Returns counts; prints them.
     """
+    counts = _push_http(catalog, dry_run) if via_http else _push_postgres(catalog, dry_run)
+    if dry_run:
+        print(f"[dry run] would push: {counts}")
+    else:
+        print(f"pushed {catalog['brand_name']}: {counts['inserted']} new, "
+              f"{counts['refreshed']} refreshed (curated fields kept), "
+              f"{counts['deactivated']} no longer on source deactivated")
+    if counts["listed_again_but_inactive"]:
+        print(f"  {counts['listed_again_but_inactive']} entries the source lists are inactive "
+              f"here (taken out by hand, or gone and back) — left inactive; reactivate in "
+              f"the admin if wanted")
+    return counts
+
+
+def _warn_unmigrated() -> None:
+    print("  [warn] brand_catalog_entries lacks product_key/source/support — "
+          "run scripts/db_migrate.py --run to record them")
+
+
+def _push_postgres(catalog: dict, dry_run: bool) -> dict:
+    """push() as one transaction over DATABASE_URL; a dry run rolls it back."""
     import psycopg2.extras
     conn = _connect()
     cur = conn.cursor()
@@ -286,26 +329,16 @@ def push(catalog: dict, dry_run: bool = False) -> dict:
     )
     catalog_id = cur.fetchone()[0]
 
-    # product_key / source / support arrive with db/migrations/0003. Written when the
-    # columns exist, skipped with a warning when they do not, so a push never fails on
-    # a database that has not been migrated yet.
+    # product_key / source / support are written when the columns exist, and skipped
+    # with a warning when they do not, so a push never fails on a database that has
+    # not been migrated yet.
     cur.execute("""SELECT column_name FROM information_schema.columns
                    WHERE table_name = 'brand_catalog_entries'
                      AND column_name IN ('product_key', 'source', 'support')""")
     extra = sorted(r[0] for r in cur.fetchall())
     if len(extra) < 3:
-        print("  [warn] brand_catalog_entries lacks product_key/source/support — "
-              "run scripts/db_migrate.py --run to record them")
-    default_source = catalog.get("source_method")
-
-    def meta(e: dict, c: str):
-        if c == "product_key":
-            # Exports written before product_key existed carry the same value as
-            # product_external_id, so pushing an old file backfills it.
-            return e.get("product_key") or e.get("product_external_id")
-        if c == "source":
-            return e.get("source") or default_source
-        return e.get(c)
+        _warn_unmigrated()
+    meta = _entry_meta(catalog)
 
     rows = [(catalog_id, e["external_id"], e["name"], e["product_line"], e["category"],
              e["subtype"], e["strain"], e["variant"],
@@ -349,20 +382,106 @@ def push(catalog: dict, dry_run: bool = False) -> dict:
             (catalog_id, seen),
         )
         deactivated = cur.rowcount
-    counts = {"inserted": inserted, "refreshed": len(returned) - inserted,
-              "listed_again_but_inactive": back_inactive, "deactivated": deactivated}
     if dry_run:
         conn.rollback()
-        print(f"[dry run] would push: {counts}")
     else:
         conn.commit()
-        print(f"pushed {catalog['brand_name']}: {inserted} new, {counts['refreshed']} refreshed "
-              f"(curated fields kept), {deactivated} no longer on source deactivated")
-    if back_inactive:
-        print(f"  {back_inactive} entries the source lists are inactive here (taken out by "
-              f"hand, or gone and back) — left inactive; reactivate in the admin if wanted")
     conn.close()
-    return counts
+    return {"inserted": inserted, "refreshed": len(returned) - inserted,
+            "listed_again_but_inactive": back_inactive, "deactivated": deactivated}
+
+
+def _push_http(catalog: dict, dry_run: bool) -> dict:
+    """push() over Supabase's REST API (scripts/db_http.py), for a machine that can
+    reach the database only over HTTPS: a sandbox whose proxy carries no Postgres
+    connections (DB_ACCESS.md).
+
+    The same rules as _push_postgres, decided here from the catalog's current rows
+    instead of inside one statement. It is not one transaction: a push that fails
+    part-way leaves some entries written, and running it again finishes the job,
+    because each step is idempotent. A dry run only reads.
+    """
+    import urllib.parse
+    from concurrent.futures import ThreadPoolExecutor
+
+    import db_http
+
+    now = datetime.now(timezone.utc).isoformat()
+    header = {"brand_name": catalog["brand_name"], "source_method": catalog["source_method"],
+              "fetched_at": catalog["fetched_at"]}
+    slug = urllib.parse.quote(catalog["brand_slug"])
+    found = db_http.select("brand_catalogs", f"select=id&brand_slug=eq.{slug}")
+    catalog_id = found[0]["id"] if found else None
+    if not dry_run:
+        if catalog_id:
+            # source_url keeps the stored value when this catalog has none, like the
+            # SQL path's COALESCE.
+            url = {"source_url": catalog["source_url"]} if catalog.get("source_url") else {}
+            db_http.update("brand_catalogs", f"id=eq.{catalog_id}",
+                           {**header, **url, "updated_at": now})
+        else:
+            catalog_id = db_http.insert("brand_catalogs", {
+                "brand_slug": catalog["brand_slug"], "source_url": catalog.get("source_url"),
+                **header})[0]["id"]
+
+    try:
+        db_http.select("brand_catalog_entries", f"select={','.join(EXTRA_COLUMNS)}&limit=1")
+        extra = list(EXTRA_COLUMNS)
+    except db_http.DbHttpError as exc:
+        if "42703" not in str(exc):           # undefined_column; anything else is real
+            raise
+        extra = []
+        _warn_unmigrated()
+    meta = _entry_meta(catalog)
+
+    existing: dict[str, dict] = {}
+    if catalog_id:
+        cols = ["id", "external_id", "match_terms", "is_active",
+                *[c for c in extra if c != "support"]]
+        for r in db_http.select_all("brand_catalog_entries",
+                                    f"select={','.join(cols)}&catalog_id=eq.{catalog_id}"
+                                    f"&order=id"):
+            if r["external_id"] is not None:  # NULL never matches, as in SQL
+                existing[r["external_id"]] = r
+
+    new_rows, refreshes, back_inactive = [], [], 0
+    for e in catalog["entries"]:
+        row = {"catalog_id": catalog_id, "external_id": e["external_id"], "name": e["name"],
+               "product_line": e["product_line"], "category": e["category"],
+               "subtype": e["subtype"], "strain": e["strain"], "variant": e["variant"],
+               "attributes": e.get("attributes") or None,
+               "match_terms": e.get("match_terms") or [],
+               **{c: meta(e, c) for c in extra}}
+        cur = existing.get(e["external_id"])
+        if cur is None:
+            new_rows.append(row)
+            continue
+        back_inactive += not cur["is_active"]
+        change = {"match_terms": sorted(set(cur.get("match_terms") or []) | set(row["match_terms"])),
+                  "last_seen_at": now}
+        for c in ("product_key", "source"):
+            if c in extra:
+                change[c] = cur[c] if cur.get(c) is not None else row[c]
+        if "support" in extra:
+            change["support"] = row["support"]
+        refreshes.append((cur["id"], change))
+
+    retire = []
+    if catalog.get("source_method") != "listings_bootstrap":
+        seen = {e["external_id"] for e in catalog["entries"]}
+        retire = [str(r["id"]) for ext, r in existing.items() if r["is_active"] and ext not in seen]
+
+    if not dry_run:
+        for i in range(0, len(new_rows), 500):
+            db_http.insert("brand_catalog_entries", new_rows[i:i + 500])
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            list(pool.map(lambda r: db_http.update("brand_catalog_entries", f"id=eq.{r[0]}", r[1]),
+                          refreshes))
+        for i in range(0, len(retire), 100):
+            db_http.update("brand_catalog_entries", f"id=in.({','.join(retire[i:i + 100])})",
+                           {"is_active": False})
+    return {"inserted": len(new_rows), "refreshed": len(refreshes),
+            "listed_again_but_inactive": back_inactive, "deactivated": len(retire)}
 
 
 def main() -> None:
@@ -372,6 +491,8 @@ def main() -> None:
     pu = sub.add_parser("push", help="Upsert a saved catalog into Postgres")
     pu.add_argument("--brand", required=True)
     pu.add_argument("--dry-run", action="store_true")
+    pu.add_argument("--via-http", action="store_true",
+                    help="Write over Supabase's REST API instead of DATABASE_URL (DB_ACCESS.md)")
 
     f = sub.add_parser("fetch", help="Fetch a brand catalog (tier 1: Shopify)")
     f.add_argument("--brand", required=True, help="Brand name as it appears in listings")
@@ -395,7 +516,7 @@ def main() -> None:
             return
         print(f"wrote {save(cat)}")
     elif args.cmd == "push":
-        push(load(slugify(args.brand)), dry_run=args.dry_run)
+        push(load(slugify(args.brand)), dry_run=args.dry_run, via_http=args.via_http)
     else:
         cat = load(slugify(args.brand))
         print(f"{cat['brand_name']}  [{cat['source_method']}]  fetched {cat['fetched_at']}")
