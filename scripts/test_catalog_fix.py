@@ -219,7 +219,7 @@ def test_preflight_stops_a_plan_before_its_first_write(fresh_db, via_rest):
     row = {"catalog_id": catalog["id"], "external_id": "lb:flower:flower::gaslit:70g", "name": "Gas Lit"}
     held = cf.Plan({}, {}, writes=[("update", "brand_catalog_entries", "id=eq.x", {"is_active": False}),
                                    ("insert", "brand_catalog_entries", None, [row])])
-    with pytest.raises(cf.Refused, match="held by entry .* \\(inactive\\).*Nothing was written"):
+    with pytest.raises(cf.Refused, match="held by entry .* \\(inactive: reactivate.*Nothing was written"):
         cf.apply(held)
     fresh = cf.Plan({}, {}, writes=[("insert", "brand_catalog_entries", None,
                                      [{**row, "external_id": "lb:flower:flower::gaslit:14g"}])])
