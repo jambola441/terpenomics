@@ -1,6 +1,6 @@
 ---
 name: catalog-audit
-description: Spot-check brand catalogs (brand_catalogs / brand_catalog_entries) for irregular structure — product lines with one or two strains, strains, flavours or effects filed as lines, products that lost their line, two entries for one product, store-only copies of site products, odd sizes — then trace each to the step that caused it and recommend the fix there. Use whenever the user asks to spot check, audit, review, sanity check or look over a brand's catalog, says a catalog looks off or has duplicates, asks which catalogs need attention, or after a storefront recipe or bootstrap rebuild lands, even if they never say "audit".
+description: Spot-check brand catalogs (brand_catalogs / brand_catalog_entries) for irregular structure — product lines with one or two strains, lines that cross categories, strains, flavours or effects filed as lines, products that lost their line, two entries for one product, store-only copies of site products, one brand inside another's catalog, odd sizes — then trace each to the step that caused it and recommend the fix there. Use whenever the user asks to spot check, audit, review, sanity check or look over a brand's catalog, says a catalog looks off or has duplicates, asks which catalogs need attention, or after a storefront recipe or bootstrap rebuild lands, even if they never say "audit".
 ---
 
 # Catalog audit
@@ -16,31 +16,76 @@ The judgment is the work. `scripts/catalog_shape.py` does the reading — the la
 list of *leads*, places the shape looks unusual — but a lead is a pointer, not a finding.
 Confirm or dismiss each one with evidence.
 
-## What a well-shaped catalog looks like
+## Brand-shape rules
 
-Hold this model while you read. Each point says what breaking it usually means.
+These rules describe how brands really organise a range. Hold them while you read a
+catalog. Each one says what breaking it usually means, and which leads (step 3) catch
+it. They are rules of thumb, not laws: a break is a question, and evidence answers it.
 
-- **Lines have several members.** A brand sells named lines ("Live Resin Infused"
-  pre-rolls, "Sours" gummies, "40's"), each in several strains or flavours — three or four
-  is common, more is normal. A line with one or two members does happen (a collab, a
-  limited drop, a new line) but it is rare. *Many* thin lines in one category mean the
-  catalog is filing something else as the line: a strain, a flavour, an effect ("Sleep",
-  "Uplifting"), or a format.
-- **A line is a name the brand gave a family.** It is not a format word (cart, gummies,
-  chews), a strain type (indica), a size, or a potency. Extraction words (Live Resin,
-  Rosin, Distillate) often *are* real lines.
-- **No-line products are fine when the whole category has no lines.** Many brands sell a
-  core range as plain "Blue Dream 3.5g". A large group of line-less products *beside*
-  named lines is not fine: stores usually still write the line, and something dropped it.
-- **One concept, one model.** If a brand's vapes file effects as strains of an
-  "Effect-Based" line, its gummies should not file the same effects as lines.
-- **One product, one entry per size.** Two entries for one product split its listings and
-  make it appear twice. The causes are spelling variants, a line on one copy and not the
-  other, and a store-only copy of a site product.
-- **Sizes follow one form.** Weight categories (flower, preroll, vaporizers, concentrate)
-  use the package total in grams ("3.5g"). Dose categories (edible, tinctures, topical)
-  use the pack with the total mg ("10pk 100mg"). Within a line, the sizes should look
-  related.
+1. **Lines have several members.** A brand sells named lines ("Live Resin Infused"
+   pre-rolls, "Sours" gummies, "40's"), each in several strains or flavours. Three or
+   four is common, and more is normal. A line with one or two members happens (a collab,
+   a limited drop, a new line), but it is rare. *Many* thin lines in one category mean
+   the catalog is filing something else as the line: a strain, a flavour, an effect
+   ("Sleep", "Uplifting"), or a format.
+   - *Effect-named products* are the common case: Camino, Off Hours and Florist Farms
+     sell gummies by effect, one or two flavours each. Today they are filed with the
+     effect as the line, which makes many one-flavour lines. The other model puts the
+     effect in the member (strain "Calm Peach") under the brand's family name, or under
+     no line. Which model to use is the user's decision, not settled yet. Report the
+     group once, with both models and your recommendation; do not count each effect as
+     a separate irregularity.
+   Leads: `thin-lines`, `thin-line`, `line-is-strain`.
+2. **A line stays in its category.** "40's" are pre-rolls, "Sours" are gummies, and
+   "Liquid Diamonds" are vapes. When the same name is a line in two categories, it is
+   usually not a line at all, or some products are filed in the wrong category. Words
+   that cross categories this way include extraction words ("Live Resin", "Live
+   Rosin"), brand-wide names ("Classics") and effects. The category holding fewer of
+   them is the usual suspect.
+   - An extraction word may stay as the line when it is the brand's own naming and the
+     only thing that tells two products apart (a live resin cart versus a live rosin
+     cart). Say so in the report rather than calling it a fault.
+   Leads: `cross-category`.
+3. **A line is a name the brand gave a family.** It is not a format word (cart, gummies,
+   chews), a strain type (indica), a size or a potency. It is also not another brand:
+   Camino is its own brand, not a Kiva line.
+   Leads: `line-word`, `line-is-brand`.
+4. **No-line products are fine when the whole category has no lines.** Many brands sell
+   a core range as plain "Blue Dream 3.5g". A large group of line-less products *beside*
+   named lines is not fine: stores usually still write the line, and something dropped
+   it. A size can give the line away too: when every infused pre-roll is a 5-pack, a
+   line-less 5-pack is probably infused.
+   Leads: `mixed-lines` (bootstrap only), `stray`, `line-in-strain`, `size-of-other-line`.
+5. **One concept, one model.** If a brand's vapes file effects as strains of an
+   "Effect-Based" line, its gummies should not file the same effects as lines.
+   Leads: `line-is-strain` naming another category, `cross-category`.
+6. **One product, one entry per size.** Two entries for one product split its listings
+   and make it appear twice. The usual causes are spelling variants, a line on one copy
+   and not the other, a store-only copy of a site product, and the product sitting in
+   two brands' catalogs. A site can also rename a product the stores still sell under
+   the old name: Florist Farms' "GG4" vapes have no listings, while store-only "Gorilla
+   Glue" entries of the same format and size hold them.
+   Leads: `near-dup`, `similar-lines`, `stray`, `store-copy`, `orphan-site`, `line-is-brand`.
+7. **Sizes follow one form.** Weight categories (flower, preroll, vaporizers,
+   concentrate) use the package total in grams ("3.5g"). Dose categories (edible,
+   tinctures, topical) use the pack with the total mg ("10pk 100mg"). Within a line,
+   the sizes should look related.
+   Leads: `size`.
+8. **Names are clean.** A strain holds the strain or flavour, nothing else. No format
+   ("Gelato Cart"), no size, no line ("Calm Peach" when "Calm" is the line).
+   Leads: `strain-word`, `line-in-strain`.
+9. **One strain in several formats is several products.** Florist Farms sells every
+   classic vape strain as both a 1g cart and a 1g all-in-one. Those are two products
+   (subtype tells them apart), never duplicates, and lead names carry the format
+   ("Gorilla Glue" [cart]) for that reason. A range that sells most strains in a format
+   pair makes a strain with only one half of the pair stand out. The other half may be
+   filed under another name or line, or too few stores sell it for a bootstrap to keep.
+   Leads: `missing-pair`.
+
+**These rules grow.** When the user names another way brands do (or never do) things,
+or an audit turns up a pattern worth checking every time, add it here as a numbered
+rule. If it can be computed from the entries alone, also add it as a lead in
+`scripts/catalog_shape.py` `leads()`, with a test in `scripts/test_catalog_shape.py`.
 
 ## Where a catalog comes from
 
@@ -92,7 +137,9 @@ python3 scripts/catalog_shape.py show "<Brand>" --category edible
 ```
 
 Each product row shows its sizes, then the listings matched to it and the number of
-stores they come from. `[store-only n]` marks a gap fill kept from n stores.
+stores they come from. In a storefront catalog, a size marked `*` came only from the
+stores, and `[store-only n]` marks a whole product kept from n stores. Watch the counts:
+a site product at 0/0 beside a store-only product of the same shape is a rename to check.
 
 Before reading the leads, read the structure top to bottom. Write a sentence or two per
 category on how you think the brand organises its range: which lines are real, what the
@@ -104,16 +151,21 @@ is what you test. If you start from the leads you will only re-describe them.
 | lead | what it suggests | how to confirm |
 | --- | --- | --- |
 | `mixed-lines` | a big line-less group beside named lines; the line was lost for most products | look at their store names (`listings`); do stores write a line word? |
-| `stray` | line-less products whose strain is under a line, or whose store names mostly say a line | `listings "<Brand>" "<strain>"`: one product filed twice, or a genuinely separate product? |
+| `stray` | line-less products whose store names (for that size) mostly say a line | `listings "<Brand>" "<strain>"`: the same product as the lined one, or a separate plain product? |
+| `size-of-other-line` | a size rare in its own group but typical of another line (a line-less 5-pack where every infused pre-roll is a 5-pack) | store names for that size; the site's listing of that size |
 | `thin-lines` / `thin-line` | lines with 1-2 members; the "line" may be a strain, flavour or effect, or the line's other members are filed elsewhere | the brand's site: is it one product per name? For bootstrap, check single-store listings for the line's missing members |
 | `line-is-strain` | the line's name is a strain or flavour here (another category, swapped line and strain) or in other brands' catalogs | the brand's site and store names: which word is the family and which is the flavour? |
+| `cross-category` | one name is a line in two categories; it is likely not a line, or products sit in the wrong category | the products in the smaller category: misfiled? Is the name an extraction word or brand-wide name? |
 | `line-word` | the line is a format, strain type or size | almost always a misread; find the real line or set none |
+| `line-is-brand` | the line is another brand we keep a catalog for | `show` that brand: the same products listed under both? |
 | `similar-lines` | two spellings of one line ("Bagel Hole" / "BagelHole") | pick the brand's spelling; resin and rosin are different lines |
 | `near-dup` | two strain spellings in one line ("Skywalker" / "Skywalker OG") | the site's or most stores' spelling; check the sizes match |
 | `line-in-strain` | the line sits inside the strain ("Calm Peach" with no line next to line "Calm") | nearly always the same product as the lined entry |
 | `strain-word` | a format, type or size word inside a strain ("Gelato Cart") | a parsing leftover; the strain should lose the word |
 | `size` | missing, implausible, or written two ways in one line ("100mg" beside "10pk 100mg") | the site or the store variants; a bare total is often the same package |
-| `store-copy` | a store-only entry that looks like a site product | `entries` for both: same product and size → a `store_aliases` fix; a size the site lacks → a real gap fill, but check its line |
+| `store-copy` | a store-only size that looks like a site product of the same format and size | `entries` for both: the same product → a `store_aliases` fix |
+| `orphan-site` | a store-only size with listings beside site products of its shape that have none | is one of them the same product renamed on the site? Compare the site's handle and tags with the store names |
+| `missing-pair` | a range that pairs formats (cart + all-in-one) has strains with only one | coverage (bootstrap), or the other half filed under another name or line |
 
 Then look for what no lead catches:
 - the same concept modelled differently across categories;
@@ -139,11 +191,19 @@ flavour under that name. Use these sources, strongest first:
    ```
    python3 scripts/catalog_shape.py listings "<Brand>" "(?i)<regex>"
    ```
-   Each row groups the listings that share a name, variant, enrichment reading and
-   matched entry, and shows how many stores carry them. Many stores agreeing on a line
-   word is strong evidence. Enrichment's line/strain reading shows what the bootstrap
-   built from. Listings matched across several entries for one product are direct proof
-   of a split.
+   Each row groups the listings that share a name, variant, line/strain and matched
+   entry, and shows how many stores carry them.
+   - Only the store's own name is independent evidence. A matched listing's line and
+     strain are copied from its entry. That copying is also why a lost line stays lost:
+     the bootstrap and the gap fills are rebuilt from those copies.
+   - Many stores agreeing on a line word is strong evidence.
+   - Listings matched across several entries for one product are direct proof of a
+     split.
+   - `SIZE DIFFERS` marks a listing whose size disagrees with its entry's, such as a
+     7-pack matched to a single. That is a wrong match.
+   - `--unmatched` shows listings no entry caught. It mixes other brands' products
+     filed under this one, single-store products, and listings not matched yet (method
+     shown).
 3. **The entries themselves.**
    ```
    python3 scripts/catalog_shape.py entries "<Brand>" "(?i)<regex>"
@@ -154,7 +214,9 @@ flavour under that name. Use these sources, strongest first:
    ```
    python3 scripts/storefront.py check --brand "<Brand>" --via-http
    ```
-   It re-runs the recipe and lists the products that are only at stores.
+   It re-runs the recipe and lists the products that are only at stores. For how the
+   site titles a product, fetch the source itself: for Shopify, `<site>/products.json`.
+   A site entry's external id ends in the site's variant id, which joins the two.
 
 Every command here is read-only.
 
@@ -165,11 +227,13 @@ Fix at the source when three or more entries share a cause. Hand edits are for o
 | cause | fix |
 | --- | --- |
 | storefront: a title rule misreads line or strain (effect taken as line, format word kept) | the recipe's `title` rules; re-run `storefront.py check`, then `push` |
-| storefront: a store-only entry is a site product under the stores' name | `store_aliases` in the recipe (names or lines, confirmed aliases only), then `push` |
+| storefront: a store-only entry is a site product under the stores' name (or the site renamed it) | `store_aliases` in the recipe (names or lines, confirmed aliases only), then `push`. Aliases apply in every category; when one would misfire elsewhere (a "Kief Coated Gorilla Glue" pre-roll), use a `title` rule's `set` for that category instead |
 | storefront: a store-only entry is a real size the site omits but lost the line | admin edit of its line; if several, propose carrying the site product's naming onto same-name gap fills in `storefront.with_store_products` |
 | bootstrap: stores write the line but enrichment missed it | a few entries: admin edit; many: a storefront recipe if the brand's site is readable (`data/storefronts/README.md`), else a product-line rule for enrichment |
 | bootstrap: thin line from coverage (members sold at one store) | nothing to fix; say so |
 | any: two entries for one product | deactivate the wrong one in the admin UI (never delete: listings point at entries), add its store names to the survivor's match terms; the next `catalog_match` moves the listings |
+| any: one brand's products inside another brand's catalog | deactivate them in the parent's catalog, and propose a brand alias so stores' "Kiva Camino ..." listings resolve to the right brand |
+| any: products in the wrong category | admin edit of `category` (and subtype); if a recipe produced it, fix its `category` rule |
 | any: wrong size form | admin edit of `variant`; if a recipe produced it, fix the rule's size group |
 
 ### 6. Report

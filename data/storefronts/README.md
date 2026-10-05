@@ -79,7 +79,10 @@ with `^...$` for an exact value; `(?i)` for case).
 and `push` see them as the site's rather than as store-only products (which a push would
 add as duplicates): `{"lines": {"Up": "", "Down": ""}, "names": {"Big Apple": "Sour
 Apple"}}` — a store's line or strain on the left, the site's on the right, "" for none.
-Use it only for names you have confirmed are the same product.
+Use it only for names you have confirmed are the same product. An alias applies in every
+category: `{"Gorilla Glue": "GG4"}` for a site that renamed its vapes would also turn the
+stores' "Kief Coated Gorilla Glue" pre-roll into GG4. When that would be wrong, set the
+name with a `title` rule for the one category instead.
 
 **`title_case`: true** for a site that writes names in capitals ("UPLIFTING Pineapple"):
 capitalised words longer than three letters become Title case, shorter ones (OG, GSC,
