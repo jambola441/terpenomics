@@ -4,6 +4,7 @@ The feed is the portal's landing screen, so the properties worth pinning are the
 ones a shopper would notice immediately: it shows the stores they follow, in the
 order they followed them, and it shows nobody else's.
 """
+from services.consent import MARKETING_SMS_VERSION
 from uuid import uuid4
 
 import pytest
@@ -354,7 +355,9 @@ def test_each_rail_is_capped(world):
 
 def test_profile_edit_changes_name_and_opt_in(world):
     client = _client()
-    res = client.post("/me", json={"name": "Ada L.", "marketing_opt_in": True})
+    res = client.post("/me", json={
+        "name": "Ada L.", "marketing_opt_in": True, "marketing_sms_version": MARKETING_SMS_VERSION,
+    })
     assert res.status_code == 200
     assert res.json()["name"] == "Ada L."
     assert res.json()["marketing_opt_in"] is True
@@ -363,9 +366,18 @@ def test_profile_edit_changes_name_and_opt_in(world):
 
 def test_profile_edit_leaves_omitted_fields_alone(world):
     client = _client()
-    client.post("/me", json={"name": "Ada L.", "marketing_opt_in": True})
+    client.post("/me", json={
+        "name": "Ada L.", "marketing_opt_in": True, "marketing_sms_version": MARKETING_SMS_VERSION,
+    })
     res = client.post("/me", json={"name": "Ada Lovelace"})
     assert res.json()["marketing_opt_in"] is True
+
+
+def test_profile_opt_in_without_the_disclosure_is_refused(world):
+    client = _client()
+    res = client.post("/me", json={"marketing_opt_in": True})
+    assert res.status_code == 409
+    assert client.get("/me").json()["marketing_opt_in"] is False
 
 
 def test_profile_edit_cannot_change_identity(world):

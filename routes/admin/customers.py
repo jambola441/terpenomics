@@ -9,6 +9,7 @@ from sqlmodel import Session, select, or_, func
 from auth import SupabaseAuthUser
 from database import get_session
 from models import Customer, Listing, ListingTerpene, Purchase, PurchaseItem, Terpene
+from services import consent
 from services.phone import to_e164
 from .auth import require_admin
 from .serializers import serialize_customer, serialize_purchase_item
@@ -82,11 +83,13 @@ def create_customer(
         name=payload.name.strip() if payload.name else None,
         phone=_phone(payload.phone),
         email=payload.email.strip() if payload.email else None,
-        marketing_opt_in=payload.marketing_opt_in,
         created_at=datetime.now(timezone.utc),
         updated_at=datetime.now(timezone.utc),
     )
     session.add(c)
+    if payload.marketing_opt_in:
+        session.flush()
+        consent.record(session, c, consent.MARKETING_SMS, True, "admin", shown=False)
     session.commit()
     session.refresh(c)
 
@@ -201,8 +204,10 @@ def update_customer(
         c.phone = _phone(payload.phone)
     if payload.email is not None:
         c.email = payload.email.strip() or None
-    if payload.marketing_opt_in is not None:
-        c.marketing_opt_in = payload.marketing_opt_in
+    if payload.marketing_opt_in is not None and payload.marketing_opt_in != c.marketing_opt_in:
+        # Recorded as the admin's doing, with no wording claimed: whatever the
+        # customer agreed to (a paper form, at the counter) is outside this system.
+        consent.record(session, c, consent.MARKETING_SMS, payload.marketing_opt_in, "admin", shown=False)
 
     session.add(c)
     session.commit()

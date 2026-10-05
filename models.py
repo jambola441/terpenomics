@@ -42,10 +42,60 @@ class CustomerBase(SQLModel):
 
 
 class Customer(CustomerBase, TimestampMixin, table=True):
+    """A shopper.
+
+    `name` is the display string. Sign-up collects `first_name` (required) and
+    `last_name` (optional) and composes `name` from them; rows from before
+    sign-up existed may have only `name`.
+
+    The consent columns are the current state, kept for cheap reads; the
+    history behind them, with the wording each person saw, is `consent_events`.
+    Columns added by db/migrations/0008_customer_signup.sql.
+    """
+
     __tablename__ = "customers"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     purchases: list["Purchase"] = Relationship(back_populates="customer")
+
+    first_name: Optional[str] = Field(default=None, max_length=100)
+    last_name:  Optional[str] = Field(default=None, max_length=100)
+
+    age_confirmed_at:  Optional[datetime] = Field(default=None)
+    terms_version:     Optional[str]      = Field(default=None, max_length=32)
+    terms_accepted_at: Optional[datetime] = Field(default=None)
+    # Set the first time nothing required is missing; never cleared, so a terms
+    # change sends people back through sign-up without making them "new".
+    onboarded_at:      Optional[datetime] = Field(default=None)
+
+
+class ConsentEvent(SQLModel, table=True):
+    """One grant or withdrawal of consent. Append-only.
+
+    Kept because a boolean cannot prove anything: for marketing texts, what
+    matters is what the person was shown, when, and where. `text` is the exact
+    wording displayed; `version` names it. services/consent.py owns every write.
+    """
+
+    __tablename__ = "consent_events"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    customer_id: UUID = Field(foreign_key="customers.id", index=True, nullable=False)
+    kind:        str  = Field(max_length=32, index=True, nullable=False)  # terms | age_21 | marketing_sms
+    granted:     bool = Field(nullable=False)
+
+    version: Optional[str] = Field(default=None, max_length=32)
+    text:    Optional[str] = Field(default=None, sa_type=Text)
+    # Where it happened: onboarding:ios, profile:web, admin, migration, ...
+    source:  str           = Field(max_length=64, nullable=False)
+    # The number the consent covers, for marketing texts: consent follows the
+    # number, and numbers change hands.
+    phone:   Optional[str] = Field(default=None, max_length=32)
+
+    ip:         Optional[str] = Field(default=None, max_length=64)
+    user_agent: Optional[str] = Field(default=None, max_length=500)
+    created_at: datetime      = Field(default_factory=utcnow, index=True, nullable=False)
 
 
 # ---------------------------
