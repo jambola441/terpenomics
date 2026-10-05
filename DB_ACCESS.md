@@ -62,8 +62,14 @@ Catalog pushes use this path with `--via-http`
 (`python scripts/brand_catalog.py push --brand Ayrloom --via-http`,
 `python scripts/catalog_bootstrap.py --top 50 --push --via-http`). They follow the same
 rules as over `DATABASE_URL` but are not one transaction, so a push that fails part-way
-is safe to re-run. The importer stays on `DATABASE_URL`: it writes about 20,000 rows a
-run, one transaction per store, which PostgREST cannot do.
+is safe to re-run.
+
+The importer can use this path too: `import_listings.py --via-http`, or
+`scrape.py --via-http` for the whole pipeline. The rows come out the same, but a store
+is not imported in one transaction: new and changed listings are written first and
+stale ones retired last, so a failure part-way retires nothing and the next run
+finishes the job. Pair it with `ENRICH_CACHE=db`, so the enrich cache is kept in
+Postgres rather than in the sandbox's files.
 
 `check`, `select` and `count` are pre-approved in `.claude/settings.json`, as are
 read-only SQL through the Supabase connector (`.claude/hooks/readonly_sql.py`) and
@@ -103,13 +109,10 @@ Send a named `User-Agent` and it goes through.
 
 ### 3. Run the script where 5432 is reachable
 
-The right home for the long batch jobs — `enrich.py`, `import_listings.py`,
-`scrape.py`. They are chatty enough that a per-statement HTTP round trip would
-dominate their runtime, and `enrich.py` additionally needs the cache disk
-described in `SCRAPERS.md`. Render already has both the network path and the
-environment variables, so run them there (one-off job, or the
-`terpenomics-scraper` worker) and read the logs rather than re-plumbing them
-through HTTPS.
+Still the best home for the daily sweep (`scrape.py --all`): each store is imported
+in one transaction, with no per-request round trips. The Render cron job
+(`terpenomics-scraper`, PIPELINE.md) runs it there. From a sandbox, the same
+pipeline runs over HTTPS with `--via-http` (above).
 
 ## Picking between them
 

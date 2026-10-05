@@ -11,7 +11,8 @@ days old (last scrape 2026-08-29/30). And had one been deployed it would have fa
 in ways nobody would have seen: 20 of 25 stores could not start, the run would still
 have reported "ok", and the Dutchie stores that did run would have retired 48
 listings each. All of that is fixed and tested in this change. Row-level security,
-which was off, is now on in production (item 1). The rest is yours to run (below).
+which was off, is now on in production (item 1). One step is left: creating the
+daily cron job (item 5).
 
 ## Do these
 
@@ -48,29 +49,17 @@ which was off, is now on in production (item 1). The rest is yours to run (below
      11,425 rows of listing data, which is menu data the stores publish anyway.
      `ALTER VIEW public.products SET (security_invoker = true)` closes it.
    - Auth's leaked-password protection is off. It is a toggle in the dashboard.
-2. **Ignyte: fixed in this change; two first runs left.** Neither store changed.
-   Both Ignyte stores are open: Whitestone, at 145-18 14th Ave, Queens, and Red
-   Hook, at 387 Van Brunt St, Brooklyn. Our registry pointed Red Hook at Whitestone's
-   menu. Red Hook's own menu is `shop.ignyteny.com/brooklyn/` (Blaze store
-   `efcb37ae-…`, 246 products, scraped live: 246/246, every link under `/brooklyn/`),
-   and `dispensaries.json` now points there.
-
-   Today the database holds 654 active "Red Hook" listings from Whitestone's menu. 86 of
-   them are products Red Hook also carries; those will update in place. The other 568
-   should retire, but the importer's partial-scrape guard would protect them, because
-   246 is less than half of 654. So run that store's first import once with the guard
-   off:
-   ```bash
-   IMPORT_STALE_THRESHOLD=0 python scripts/scrape.py --slug ignyte-red-hook
-   ```
-   **Whitestone is now its own store** (`ignyte-whitestone`, added 2026-10-04): a
-   `dispensaries` row and a registry entry for Blaze store `29d186b2-…`. A live scrape
-   collected 632 of 632 products. It has no listings until its first import:
-   ```bash
-   python scripts/scrape.py --slug ignyte-whitestone
-   ```
-   Red Hook's own row also carried Whitestone's store id in `pos_tenant_id`; it now
-   holds Red Hook's (`efcb37ae-…`).
+2. **Ignyte: done 2026-10-05.** Neither store changed; our registry had pointed Red
+   Hook at Whitestone's menu. Red Hook (387 Van Brunt St) now scrapes its own menu,
+   `shop.ignyteny.com/brooklyn/`, and Whitestone (145-18 14th Ave, Queens) is its own
+   store, `ignyte-whitestone`. First imports, run over HTTPS from a sandbox:
+   - Red Hook: 244 listings, 85 of them updated in place, 159 new. The 587 Whitestone
+     listings stored under Red Hook were retired; this needed the partial-scrape
+     guard off (`IMPORT_STALE_THRESHOLD=0`), because 244 is less than half of what
+     was on file.
+   - Whitestone: 630 listings.
+   Red Hook's `pos_tenant_id` had also held Whitestone's Blaze store id; it now holds
+   its own.
 3. **Migrations: done 2026-10-04.** All four are applied and recorded in
    `schema_migrations`. The first two only codified what production had; the third
    added the catalog columns; the fourth is row-level security (item 1).
@@ -78,7 +67,10 @@ which was off, is now on in production (item 1). The rest is yours to run (below
    1,640 products, covering 72% of the top 50 brands' listings. Ayrloom's 172 entries
    got their product keys. Review them in the admin page; PAX "Plus Onyx" is a
    dry-herb kit filed as a vape and should be switched off.
-5. **Deploy the worker:** [PIPELINE.md → One-time setup](PIPELINE.md#one-time-setup).
+5. **Create the daily cron job: the one step left.** Render → New → Cron Job, with the
+   settings in [PIPELINE.md → One-time setup](PIPELINE.md#one-time-setup) step 3. It
+   needs no disk: the enrich cache now lives in Postgres. Until it runs, only the three
+   stores imported on 2026-10-05 (Twisted Vibration and both Ignytes) are fresh.
 
 ## Measured state (live database, read-only)
 

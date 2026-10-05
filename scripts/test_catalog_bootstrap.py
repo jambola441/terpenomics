@@ -1,12 +1,9 @@
 """Tests for catalog_bootstrap.py — unit tests offline; the push round-trip needs
 TEST_DATABASE_URL (a throwaway database, schema recreated per test)."""
 
-import json
 import os
 import sys
-import urllib.parse
 import uuid
-from pathlib import Path
 
 import pytest
 
@@ -130,108 +127,16 @@ def test_push_skips_an_empty_catalog_and_passes_via_http(monkeypatch, tmp_path):
 # --- push round trip -------------------------------------------------------
 #
 # Every push test runs twice: over DATABASE_URL, and over Supabase's REST API
-# (brand_catalog.push(via_http=True)), with the REST calls answered by RestOverPostgres
-# from the same test database. The same assertions must hold for both.
-
-TEST_DB = os.environ.get("TEST_DATABASE_URL")
-
-
-class RestOverPostgres:
-    """Stands in for Supabase's REST API: the PostgREST calls the HTTPS push makes
-    (db_http.select, .insert, .update; select_all pages through select), run as SQL
-    against the test database. Rows come back through JSON, as from PostgREST."""
-
-    def __init__(self, conn):
-        import psycopg2.extras
-        self.conn, self.extras = conn, psycopg2.extras
-
-    def _parse(self, query):
-        cols, conds, args, order, limit, offset = "*", [], [], "", "", ""
-        for part in filter(None, query.split("&")):
-            key, _, val = part.partition("=")
-            val = urllib.parse.unquote(val)
-            if key == "select":
-                cols = val
-            elif key == "order":
-                order = f" ORDER BY {val.replace('.desc', ' DESC').replace('.asc', '')}"
-            elif key == "limit":
-                limit = f" LIMIT {int(val)}"
-            elif key == "offset":
-                offset = f" OFFSET {int(val)}"
-            elif val.startswith("eq."):
-                conds.append(f"{key}::text = %s")
-                args.append(val[3:])
-            elif val.startswith("in.(") and val.endswith(")"):
-                conds.append(f"{key}::text = ANY(%s)")
-                args.append(val[4:-1].split(","))
-            else:
-                raise AssertionError(f"PostgREST filter not modelled here: {part}")
-        where = f" WHERE {' AND '.join(conds)}" if conds else ""
-        return cols, where, args, order + limit + offset
-
-    def _run(self, sql, args):
-        import db_http
-        import psycopg2
-        try:
-            with self.conn.cursor(cursor_factory=self.extras.RealDictCursor) as cur:
-                cur.execute(sql, args)
-                rows = cur.fetchall()
-        except psycopg2.errors.UndefinedColumn as exc:   # what PostgREST answers with
-            raise db_http.DbHttpError(f'-> 400: {{"code":"42703","message":"{exc}"}}') from exc
-        return json.loads(json.dumps(rows, default=str))
-
-    def _value(self, v):
-        return self.extras.Json(v) if isinstance(v, dict) else v
-
-    def select(self, table, query=""):
-        cols, where, args, tail = self._parse(query)
-        return self._run(f"SELECT {cols} FROM {table}{where}{tail}", args)
-
-    def insert(self, table, rows):
-        out = []
-        for row in rows if isinstance(rows, list) else [rows]:
-            out += self._run(f"INSERT INTO {table} ({', '.join(row)}) "
-                             f"VALUES ({', '.join(['%s'] * len(row))}) RETURNING *",
-                             [self._value(v) for v in row.values()])
-        return out
-
-    def update(self, table, query, changes):
-        assert query, "the REST client refuses an unfiltered update"
-        _, where, args, _ = self._parse(query)
-        sets = ", ".join(f"{c} = %s" for c in changes)
-        return self._run(f"UPDATE {table} SET {sets}{where} RETURNING *",
-                         [*map(self._value, changes.values()), *args])
-
-
-@pytest.fixture
-def fresh_db(monkeypatch):
-    if not TEST_DB:
-        pytest.skip("TEST_DATABASE_URL not set")
-    psycopg2 = pytest.importorskip("psycopg2")
-    import db_migrate
-
-    root = Path(__file__).resolve().parent.parent
-    conn = psycopg2.connect(TEST_DB)
-    conn.autocommit = True
-    cur = conn.cursor()
-    cur.execute("DROP SCHEMA public CASCADE; CREATE SCHEMA public;")
-    cur.execute((root / "db" / "schema" / "pipeline.sql").read_text())
-    monkeypatch.setenv("DATABASE_URL", TEST_DB)
-    assert db_migrate.main(["--run"]) == 0
-    yield conn
-    conn.close()
-
+# (brand_catalog.push(via_http=True)), with the REST calls answered from the same
+# test database (conftest.RestOverPostgres). The same assertions must hold for both.
 
 @pytest.fixture(params=["postgres", "http"])
-def push(request, fresh_db, monkeypatch):
+def push(request, fresh_db, via_rest):
     import brand_catalog
-    import db_http
 
     via_http = request.param == "http"
     if via_http:
-        rest = RestOverPostgres(fresh_db)
-        for name in ("select", "insert", "update"):
-            monkeypatch.setattr(db_http, name, getattr(rest, name))
+        via_rest(fresh_db)
     return lambda doc, **kw: brand_catalog.push(doc, via_http=via_http, **kw)
 
 

@@ -13,6 +13,7 @@ Usage
   python scripts/scrape.py --all --include-pending    # ... plus "pending" ones
   python scripts/scrape.py --all --import-only        # re-import the newest CSV per store
   python scripts/scrape.py --all --summary run.json   # per-store results for monitoring
+  python scripts/scrape.py --all --via-http           # from a sandbox: the database over HTTPS
 
 Exit code: 0 when every targeted store succeeded, 1 when any failed. A store fails
 when its scraper exits non-zero or times out, produces no CSV or an empty one, its
@@ -302,8 +303,16 @@ def main() -> None:
     parser.add_argument("--model",       default="haiku", help="Enrichment model id (see MODELS in scripts/enrich.py)")
     parser.add_argument("--passes",      type=int, default=50, help="Flowhub: max page sweeps until all reported products collected (default 50)")
     parser.add_argument("--summary",     help="Write a JSON summary of this run (per store) to this path")
+    parser.add_argument("--via-http",    action="store_true",
+                        help="Reach the database over Supabase's REST API instead of DATABASE_URL, "
+                             "for a machine that cannot open a Postgres connection (DB_ACCESS.md). "
+                             "Same as DB_VIA_HTTP=1")
     args = parser.parse_args()
     signal.signal(signal.SIGTERM, _on_sigterm)
+    if args.via_http:
+        # Every child reads it: the importer, and the scrapers' enrich cache when it
+        # lives in Postgres (ENRICH_CACHE=db).
+        os.environ["DB_VIA_HTTP"] = "1"
 
     registry = load_registry()
     targets = select_targets(registry, args.slug, args.include_pending)
