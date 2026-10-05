@@ -6,14 +6,15 @@ from typing import List, Literal, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from sqlalchemy import func
 from sqlmodel import Session, select
 
-from auth import SupabaseAuthUser, get_current_user
+from auth import SupabaseAuthUser, get_current_user, verified_email, verified_phone
 from database import get_session
 from models import Customer, Dispensary, Listing, PreferredDispensary, Purchase
 from services import feed as feed_rails
+from services.phone import to_e164
 from services.display_name import compose as compose_display_name
 from services.feed import RailItem
 from services.market import context_for, context_or_empty
@@ -52,8 +53,13 @@ def get_current_customer(
 # ---------------------------
 
 class LinkCustomerRequest(BaseModel):
-    phone: Optional[str] = None
-    email: Optional[EmailStr] = None
+    """Profile details to record when the link creates or claims a customer.
+
+    Deliberately no phone or email. Which customer a login is joined to is
+    decided only by what the token proves -- a verified phone or email -- never
+    by the request body, or anyone signed in could name someone else's number
+    and take over their purchases and points.
+    """
     name: Optional[str] = None
     marketing_opt_in: Optional[bool] = None
 
@@ -76,15 +82,18 @@ def link_customer(
     if existing_link:
         return {"customer_id": str(existing_link.id), "linked": True}
 
-    phone = (payload.phone or user.phone or "").strip() or None
-    email = (payload.email or user.email or "").strip().lower() or None
+    phone = verified_phone(user)
+    email = verified_email(user)
 
     if not phone and not email:
-        raise HTTPException(status_code=400, detail="Provide phone or email")
+        raise HTTPException(status_code=400, detail="Sign in with a verified phone number or email")
 
     customer = None
     if phone:
-        customer = session.exec(select(Customer).where(Customer.phone == phone)).first()
+        # Rows written before phones were normalized may lack the "+".
+        customer = session.exec(
+            select(Customer).where(Customer.phone.in_([phone, phone.lstrip("+")]))
+        ).first()
     if not customer and email:
         customer = session.exec(select(Customer).where(Customer.email == email)).first()
 
@@ -93,6 +102,9 @@ def link_customer(
             raise HTTPException(status_code=409, detail="Customer already linked")
 
         customer.auth_user_id = auth_user_id
+        # Respell the number the login proved; never replace a different one.
+        if phone and (not customer.phone or to_e164(customer.phone) == phone):
+            customer.phone = phone
         if payload.name and not customer.name:
             customer.name = payload.name
         if payload.marketing_opt_in is not None:

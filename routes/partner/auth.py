@@ -12,29 +12,18 @@ see services/supabase_admin.py); those never match.
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
-from typing import Optional
 from uuid import UUID
 
 from fastapi import Depends, HTTPException
 from sqlmodel import Session, and_, or_, select
 
-from auth import SupabaseAuthUser, get_current_user
+from auth import SupabaseAuthUser, get_current_user, verified_email
 from connectors.store import as_utc
 from database import get_session
 from models import Partner, PartnerMember
 
 # How often a request refreshes last_login_at; every request would be a write.
 _LOGIN_TOUCH = timedelta(hours=1)
-
-
-def verified_email(user: SupabaseAuthUser) -> Optional[str]:
-    email = (user.email or "").strip().lower()
-    if not email or email.endswith("@phone.invalid"):
-        return None
-    meta = user.raw_claims.get("user_metadata") or {}
-    if meta.get("email_verified") is False:
-        return None
-    return email
 
 
 def memberships(session: Session, user: SupabaseAuthUser) -> list[PartnerMember]:

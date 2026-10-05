@@ -9,10 +9,25 @@ from sqlmodel import Session, select, or_, func
 from auth import SupabaseAuthUser
 from database import get_session
 from models import Customer, Listing, ListingTerpene, Purchase, PurchaseItem, Terpene
+from services.phone import to_e164
 from .auth import require_admin
 from .serializers import serialize_customer, serialize_purchase_item
 
 router = APIRouter()
+
+
+def _phone(raw: Optional[str]) -> Optional[str]:
+    """Blank clears; anything else must parse, so every stored phone is E.164.
+
+    POS order matching and SMS login both key on E.164, and a number stored in
+    any other spelling silently matches nothing.
+    """
+    if not (raw or "").strip():
+        return None
+    e164 = to_e164(raw)
+    if not e164:
+        raise HTTPException(status_code=422, detail="phone is not a valid number")
+    return e164
 
 
 class CustomerCreate(BaseModel):
@@ -65,7 +80,7 @@ def create_customer(
     c = Customer(
         id=uuid4(),
         name=payload.name.strip() if payload.name else None,
-        phone=payload.phone.strip() if payload.phone else None,
+        phone=_phone(payload.phone),
         email=payload.email.strip() if payload.email else None,
         marketing_opt_in=payload.marketing_opt_in,
         created_at=datetime.now(timezone.utc),
@@ -183,7 +198,7 @@ def update_customer(
     if payload.name is not None:
         c.name = payload.name.strip() or None
     if payload.phone is not None:
-        c.phone = payload.phone.strip() or None
+        c.phone = _phone(payload.phone)
     if payload.email is not None:
         c.email = payload.email.strip() or None
     if payload.marketing_opt_in is not None:
