@@ -10,7 +10,7 @@ from sqlmodel import Session, select, or_
 from database import engine, get_session
 from models import (
     Customer, Dispensary, Listing, ListingTerpene, ListingCannabinoid,
-    Terpene, Cannabinoid, Purchase, PurchaseItem,
+    Terpene, Cannabinoid, Purchase, PurchaseItem, LISTING_PRODUCT_SIZE,
 )
 from routes.admin.serializers import serialize_purchase_item
 from services.display_name import compose as compose_display_name
@@ -130,7 +130,7 @@ def get_portal_brand(
             listing.subtype,
             listing.product_line,
             listing.strain,
-            listing.variant,
+            listing.product_size,
         )
         product = products.get(key)
         if product is None:
@@ -149,7 +149,7 @@ def get_portal_brand(
                 "subtype": listing.subtype,
                 "product_line": listing.product_line,
                 "strain": listing.strain,
-                "variant": listing.variant,
+                "variant": listing.product_size,
                 "image_url": listing.image_url,
                 "offerings": [],
             }
@@ -200,7 +200,7 @@ _PRODUCT_KEY_COLUMNS = (
     Listing.subtype,
     Listing.product_line,
     Listing.strain,
-    Listing.variant,
+    LISTING_PRODUCT_SIZE,
 )
 
 
@@ -281,7 +281,7 @@ def get_portal_product(
         "subtype": first_listing.subtype,
         "product_line": first_listing.product_line,
         "strain": first_listing.strain,
-        "variant": first_listing.variant,
+        "variant": first_listing.product_size,
         "image_url": image_url,
         "min_price_cents": min(prices) if prices else None,
         "dispensary_count": len({o["dispensary_id"] for o in offerings}),
@@ -334,7 +334,7 @@ def get_portal_category(
     stmt = (
         select(
             Listing.id, Listing.scraped_brand, Listing.scraped_category, Listing.subtype,
-            Listing.product_line, Listing.strain, Listing.variant, Listing.scraped_name,
+            Listing.product_line, Listing.strain, LISTING_PRODUCT_SIZE.label("variant"), Listing.scraped_name,
             Listing.image_url, Listing.price_cents, Listing.in_stock, Listing.url,
             Dispensary.id.label("d_id"), Dispensary.name.label("d_name"),
             Dispensary.slug.label("d_slug"), Dispensary.lat, Dispensary.lng,
@@ -474,14 +474,14 @@ def get_dispensary_filter_options(
     ).all()
 
     variants = session.exec(
-        select(Listing.variant)
+        select(LISTING_PRODUCT_SIZE)
         .where(Listing.dispensary_id == dispensary_id)
         .where(Listing.is_active == True)  # noqa: E712
         .where(Listing.in_stock == True)  # noqa: E712
-        .where(Listing.variant.isnot(None))
-        .where(Listing.variant != "")
+        .where(LISTING_PRODUCT_SIZE.isnot(None))
+        .where(LISTING_PRODUCT_SIZE != "")
         .distinct()
-        .order_by(Listing.variant)
+        .order_by(LISTING_PRODUCT_SIZE)
     ).all()
 
     return {
@@ -522,7 +522,7 @@ def get_dispensary_listings(
     if brand:
         stmt = stmt.where(Listing.scraped_brand == brand)
     if variant:
-        stmt = stmt.where(Listing.variant == variant)
+        stmt = stmt.where(LISTING_PRODUCT_SIZE == variant)
     if q:
         like = f"%{q.strip()}%"
         stmt = stmt.where(
@@ -586,7 +586,7 @@ def get_dispensary_listings(
             "strain": listing.strain,
             "product_line": listing.product_line,
             "price_cents": listing.price_cents,
-            "variant": listing.variant,
+            "variant": listing.product_size,
             "url": listing.url,
             "image_url": listing.image_url,
             "in_stock": listing.in_stock,
@@ -639,7 +639,7 @@ def _same_product_elsewhere(session: Session, listing: Listing) -> list[dict]:
         (Listing.subtype, listing.subtype),
         (Listing.product_line, listing.product_line),
         (Listing.strain, listing.strain),
-        (Listing.variant, listing.variant),
+        (LISTING_PRODUCT_SIZE, listing.product_size),
     ):
         stmt = stmt.where(column.is_(None) if value is None else column == value)
 
@@ -716,7 +716,7 @@ def _similar_at_dispensary(session: Session, listing: Listing, limit: int = 10) 
             "subtype": row.subtype,
             "strain": row.strain,
             "product_line": row.product_line,
-            "variant": row.variant,
+            "variant": row.product_size,
             "price_cents": row.price_cents,
             "image_url": row.image_url,
         }
@@ -791,7 +791,7 @@ def get_dispensary_listing(
         "product_line": listing.product_line,
         "classification": listing.classification,
         "price_cents": listing.price_cents,
-        "variant": listing.variant,
+        "variant": listing.product_size,
         "url": listing.url,
         "image_url": listing.image_url,
         "in_stock": listing.in_stock,
@@ -805,7 +805,7 @@ def get_dispensary_listing(
             "" if part is None else str(part)
             for part in (
                 listing.scraped_category, listing.subtype,
-                listing.product_line, listing.strain, listing.variant,
+                listing.product_line, listing.strain, listing.product_size,
             )
         ),
 

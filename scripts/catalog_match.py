@@ -368,6 +368,50 @@ def matched_subtype(entry: dict, name: str | None) -> str | None:
     return taxonomy.token_subtype(entry.get("category"), name) or entry.get("subtype")
 
 
+def catalog_size(variant: str | None, name: str | None, entry: dict,
+                 product_entries: list[dict], description: str | None = None) -> str | None:
+    """The size a mistyped listing really is, from its product's catalog sizes, written
+    the way stores write sizes (the package total: "100mg"). None when the store's own
+    size stands.
+
+    Only products sold by dose (edible, tincture, topical), where a store's figure is
+    often the CBD amount, a cannabinoid sum or a per-piece dose: Camino's 100mg 20-pack
+    listed as 50mg, Ayrloom's 150mg drops as 600mg (150mg THC + 450mg CBD). A weight
+    that disagrees is more often a real size the catalog lacks (a 14g bag matched to
+    its strain's 3.5g), so it stands. So does a size the product comes in, a listing
+    that names another pack count (Level's Protab 2-pack beside the catalog's 5-pack),
+    and one the product's sizes cannot settle (two sizes left after the pack count).
+
+    The listing has to back the catalog, because the catalog can lack a size too (Level
+    may sell a 50mg Protab 5-pack beside the 100mg one): its name or description states
+    the catalog's total ("100mg THC : 100mg CBD per package"), or its figure is that
+    size's per-piece dose ("10mg" on a 10-pack of 100mg). And a catalog size of 10mg or
+    less with no pack count is never the answer to a larger figure: that is usually a
+    per-piece dose recorded as the size (Eaton's "Daily Elevation 5mg" gummies).
+    """
+    category = entry.get("category")
+    if category not in sizes.DOSE_CATEGORIES:
+        return None
+    mine = sizes.parse(variant, name, category=category)
+    if mine.mg is None:
+        return None
+    own = [sizes.parse(e.get("variant"), category=category) for e in (product_entries or [entry])]
+    own = [s for s in own if s.mg is not None]
+    if not own or any(sizes.same_size(mine, s) is not False for s in own):
+        return None
+    if mine.pack:
+        own = [s for s in own if (s.pack or 1) == mine.pack]
+    if len({s.mg for s in own}) != 1:
+        return None
+    target = own[0]
+    if not target.pack and target.mg <= 10 < mine.mg:
+        return None
+    stated = any(abs(m - target.mg) <= 0.5 for m in sizes.mg_mentions(name, html.unescape(
+        re.sub(r"<[^>]+>", " ", description or ""))))
+    per_piece = bool(target.pack) and not mine.pack and abs(mine.mg * target.pack - target.mg) <= 0.5
+    return f"{target.mg:g}mg" if stated or per_piece else None
+
+
 # ---------------------------------------------------------------------------
 # The Jev question
 # ---------------------------------------------------------------------------
