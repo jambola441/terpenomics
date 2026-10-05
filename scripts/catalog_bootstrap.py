@@ -155,15 +155,18 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
 
     # A line the model folded into the strain at some stores ("Championship Cake
     # Powdered Donuts" beside line "Powdered Donuts" elsewhere). De-lined only against
-    # the brand's consensus vocabulary, and only for lines of two or more words that
-    # two or more stores recorded as a line — never against one listing's own guess,
-    # which is how "Blue Dream" with a model line of "Dream" would become "Blue".
+    # the brand's consensus vocabulary, lines two or more stores recorded as a line —
+    # never against one listing's own guess, which is how "Blue Dream" with a model line
+    # of "Dream" would become "Blue". A one-word line is too common a word to take out
+    # on that alone: it comes out only when what is left is a strain the brand's
+    # listings record in that line ("Calm Peach" beside line "Calm", strain "Peach").
     stores_per_line = defaultdict(set)
+    line_strains = set()
     for l in rows:
         if l.get("product_line"):
             stores_per_line[squash(l["product_line"])].add(l["dispensary_id"])
-    vocab = {k: line_spelling[k] for k, st in stores_per_line.items()
-             if len(st) >= 2 and len(line_spelling[k].split()) >= 2}
+            line_strains.add((squash(l["product_line"]), strain_key(l["strain"])))
+    vocab = {k: line_spelling[k] for k, st in stores_per_line.items() if len(st) >= 2}
     delined = 0
     for l in rows:
         if l.get("product_line"):
@@ -171,11 +174,12 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
         for key, line in vocab.items():
             pattern = re.compile(r"(?<![A-Za-z0-9])" + r"[\s\-_]*".join(
                 re.escape(w) for w in line.split()) + r"(?![A-Za-z0-9])", re.I)
-            if pattern.search(l["strain"]):
-                rest = re.sub(r"\s{2,}", " ", pattern.sub(" ", l["strain"])).strip(" -|,x")
-                if rest:
-                    l["strain"], l["product_line"] = rest, line
-                    delined += 1
+            if not pattern.search(l["strain"]):
+                continue
+            rest = re.sub(r"\s{2,}", " ", pattern.sub(" ", l["strain"])).strip(" -|,x")
+            if rest and (len(line.split()) >= 2 or (key, strain_key(rest)) in line_strains):
+                l["strain"], l["product_line"] = rest, line
+                delined += 1
                 break
 
     # Grouped on the package total only. Stores mention the pack count inconsistently

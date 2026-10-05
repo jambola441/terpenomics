@@ -115,6 +115,27 @@ def test_consensus_line_is_stripped_from_a_strain():
     assert (e["strain"], e["product_line"], e["support"]) == ("Championship Cake", "Powdered Donuts", 2)
 
 
+def test_a_one_word_line_comes_out_of_a_strain_the_brand_records_in_it():
+    def gummies(brand, rows):
+        return cb.propose(brand, [L(s, f"{brand} Gummies 10pk 100mg", strain, line, "10pk 100mg",
+                                    "edible", "gummy") for s, strain, line in rows])["catalog"]["entries"]
+
+    # Line first or last in the strain, it is the lined product.
+    calm = gummies("Florist Farms", [("s1", "Peach", "Calm"), ("s2", "Peach", "Calm"),
+                                     ("s3", "Calm Peach", None), ("s4", "Calm Peach", None)])
+    assert [(e["name"], e["product_line"], e["strain"], e["support"]) for e in calm] == \
+        [("Calm Peach", "Calm", "Peach", 4)]
+    belts = gummies("Flav", [("s1", "Watermelon", "Belts"), ("s2", "Watermelon", "Belts"),
+                             ("s3", "Watermelon Belts", None)])
+    assert [(e["product_line"], e["strain"], e["support"]) for e in belts] == [("Belts", "Watermelon", 3)]
+    # The line alone is not enough: "Blue Dream" beside line "Dream" stays whole, since
+    # no listing records "Blue" in that line.
+    dream = gummies("Acme", [("s1", "Sweet", "Dream"), ("s2", "Sweet", "Dream"),
+                             ("s3", "Blue Dream", None), ("s4", "Blue Dream", None)])
+    assert sorted((e["product_line"] or "", e["strain"]) for e in dream) == \
+        [("", "Blue Dream"), ("Dream", "Sweet")]
+
+
 def test_single_store_products_and_merch_are_left_out():
     names = set(by_name(cb.propose("Jetpacks", JETPACKS)))
     assert not any("One Store" in n for n in names)
