@@ -178,7 +178,8 @@ Re-measure after changing the question or upgrading the model:
    python scripts/db_migrate.py           # shows what would run
    python scripts/db_migrate.py --run
    ```
-2. **Seed catalogs** for the biggest brands, then review them in the admin page:
+2. **Seed catalogs** for the biggest brands, then review them in the admin page. Done
+   for the top 50 on 2026-10-05 (48 catalogs; RAW and Blazy Susan propose nothing):
    ```bash
    python scripts/catalog_bootstrap.py --top 50              # look first — prints the effect
    python scripts/catalog_bootstrap.py --top 50 --write --push
