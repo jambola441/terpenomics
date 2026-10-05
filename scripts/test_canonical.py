@@ -1,7 +1,7 @@
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from canonical import canonicalize, canonical_strain, find_format_category, find_product_line
+from canonical import _strip_line_from_strain, canonicalize, canonical_strain, find_format_category, find_product_line
 from scraper_common import normalize_variant
 
 
@@ -217,3 +217,33 @@ class TestLineFromDescription:
                  "product_line": None, "strain": "Gelato", "description": "Live Resin Liquid Diamonds"}]
         canonicalize(rows)
         assert rows[0]["product_line"] == "Original"
+
+
+class TestCategoryLines:
+    """A line that declares a category is that category's alone (2026-10-05): Heavy
+    Hitters' Live Rosin vapes sit beside its Live Rosin jars, and "Ultra" names its vapes
+    while its gummies, sold as "Ultra Gummies", carry no line."""
+
+    def test_a_category_line_is_not_assigned_in_another_category(self):
+        name = "Heavy Hitters | Grape Ape Live Rosin AIO Vape"
+        assert find_product_line("Heavy Hitters", name, "vaporizers") == "Live Rosin"
+        assert find_product_line("Heavy Hitters", "Heavy Hitters Live Rosin 2g - Gelato", "concentrate") is None
+        assert find_product_line("Heavy Hitters", "Strawberry Storm Ultra Gummies | 5pk 100mg", "edible") is None
+        assert find_product_line("Heavy Hitters", name) == "Live Rosin"      # no category given: as before
+
+    def test_canonicalize_reads_the_rows_category(self):
+        rows = [{"brand": "Heavy Hitters", "name": "Heavy Hitters Live Rosin 2g - Gelato", "category": "concentrate",
+                 "product_line": None, "strain": "Gelato"},
+                {"brand": "Heavy Hitters", "name": "Heavy Hitters | Gelato Live Rosin AIO", "category": "vaporizers",
+                 "product_line": None, "strain": "Gelato"}]
+        canonicalize(rows)
+        assert [r["product_line"] for r in rows] == [None, "Live Rosin"]
+
+    def test_a_line_stripped_from_a_pair_takes_its_joiner(self):
+        assert _strip_line_from_strain("Kush Mintz x Chopped Cheese", "Chopped Cheese") == "Kush Mintz"
+        assert _strip_line_from_strain("Chopped Cheese x Blue Haze", "Chopped Cheese") == "Blue Haze"
+        assert _strip_line_from_strain("X Bites Blueberry Squeeze", "Squeeze") == "X Bites Blueberry"   # a word
+        rows = [{"brand": "Bodega Boyz", "name": "Bodega Boyz - Kush Mintz x Chopped Cheese Bubble Hash Preroll",
+                 "category": "preroll", "product_line": None, "strain": "Kush Mints x Chopped Cheese"}]
+        canonicalize(rows)
+        assert (rows[0]["product_line"], rows[0]["strain"]) == ("Chopped Cheese", "Kush Mintz")

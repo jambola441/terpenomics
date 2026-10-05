@@ -105,7 +105,7 @@ class CategoryEnricher:
         return model_answer
 
     def product_line(self, brand: str, name: str, model_answer: str | None) -> str | None:
-        curated = find_product_line(brand or "", name or "")
+        curated = find_product_line(brand or "", name or "", self.category)
         return curated or model_answer
 
 

@@ -39,8 +39,19 @@
   ],
   "To The Moon": [
     "Essentials",
-    "Flight Pack",
-    "Spray Can"
+    {
+      "line": "Flight Pack",
+      "also": [
+        "Flight Variety Pack",
+        "Flight | Variety Pack"
+      ]
+    },
+    {
+      "line": "Stash Can V2",
+      "also": [
+        "Spray Can"
+      ]
+    }
   ],
   "RAW": [
     "Classic",
@@ -138,6 +149,67 @@
     "Big Bang",
     "Bigger Bang",
     "Biggest Bang",
-    "Jetfuel"
+    "Jetfuel",
+    "Powdered Donuts"
+  ],
+  "Bodega Boyz": [
+    "Deuces",
+    "Shorties",
+    "Loosie",
+    "Chopped Cheese"
+  ],
+  "RYTHM": [
+    "REMIX",
+    "Liquid Diamonds",
+    {
+      "line": "Live Resin",
+      "category": "vaporizers"
+    },
+    {
+      "line": "Live Rosin",
+      "category": "vaporizers"
+    }
+  ],
+  "PAX": [
+    {
+      "line": "Live Rosin",
+      "category": "vaporizers"
+    },
+    "Diamonds",
+    "High Purity"
+  ],
+  "Heavy Hitters": [
+    {
+      "line": "Ultra",
+      "category": "vaporizers"
+    },
+    "Slow Cured Resin",
+    {
+      "line": "Live Rosin",
+      "category": "vaporizers"
+    },
+    "Lights Out",
+    "Lights On"
+  ],
+  "Rove": [
+    {
+      "line": "Ice Packs",
+      "also": [
+        "Ice Pack",
+        "Triple Infused"
+      ]
+    },
+    {
+      "line": "Diamond Series",
+      "also": [
+        "Live Resin Diamonds",
+        "Live Resin Diamond",
+        "Melted Diamonds",
+        "Melted Diamond",
+        "Liquid Diamonds"
+      ]
+    },
+    "Premier",
+    "Classics"
   ]
 }
