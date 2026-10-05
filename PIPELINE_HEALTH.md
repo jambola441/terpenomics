@@ -71,9 +71,9 @@ which was off, is now on in production (item 1). The rest is yours to run (below
    ```
    Red Hook's own row also carried Whitestone's store id in `pos_tenant_id`; it now
    holds Red Hook's (`efcb37ae-…`).
-3. `python scripts/db_migrate.py --run` — four idempotent migrations; the first two are
-   no-ops on production (they codify drift), the third adds catalog columns, and the
-   fourth (row-level security) is already applied, so it re-runs as a no-op.
+3. **Migrations: done 2026-10-04.** All four are applied and recorded in
+   `schema_migrations`. The first two only codified what production had; the third
+   added the catalog columns; the fourth is row-level security (item 1).
 4. Push catalogs and deploy the worker — [PIPELINE.md → One-time setup](PIPELINE.md#one-time-setup).
 
 ## Measured state (live database, read-only)

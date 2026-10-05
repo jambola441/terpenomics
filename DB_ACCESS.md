@@ -58,6 +58,13 @@ should be 0 for every table:
 python scripts/db_http.py count customers orders listings --anon
 ```
 
+Catalog pushes use this path with `--via-http`
+(`python scripts/brand_catalog.py push --brand Ayrloom --via-http`,
+`python scripts/catalog_bootstrap.py --top 50 --push --via-http`). They follow the same
+rules as over `DATABASE_URL` but are not one transaction, so a push that fails part-way
+is safe to re-run. The importer stays on `DATABASE_URL`: it writes about 20,000 rows a
+run, one transaction per store, which PostgREST cannot do.
+
 `check`, `select` and `count` are pre-approved in `.claude/settings.json`, as are
 read-only SQL through the Supabase connector (`.claude/hooks/readonly_sql.py`) and
 the connectors' other read tools. Writes still ask first.
