@@ -198,12 +198,21 @@ class CatalogIndex:
         self.terms = sorted(self.by_term, key=len, reverse=True)
 
     # -- disambiguation and size resolution --------------------------------------
-    def _disambiguate(self, keys: list[str], category: str | None) -> str | None:
+    def _disambiguate(self, keys: list[str], category: str | None,
+                      name: str | None = None) -> str | None:
         """Several products matched. Resolve only when it is genuinely safe.
 
         Titles repeat across categories — Ayrloom sells 'honeycrisp' as a vape and as
         a beverage. Category separates them; failing that the unique longest title
         wins; failing that, None rather than a guess.
+
+        The longest title is a fair pick between one product's titles read short and
+        long ("Blue Lobster", "Hash Infused Blue Lobster"), not between unrelated ones.
+        A store name (`name`, from the exact tier) recorded for products whose titles
+        share no such reading is a slip on all but one of them: Wyld's "Raspberry Sativa
+        Enhanced Gummies" sat on Boysenberry as well as Raspberry, and Boysenberry's
+        longer title took it. It goes to the one product whose title's words it holds,
+        else to none.
         """
         keys = list(dict.fromkeys(keys))
         if len(keys) == 1:
@@ -214,12 +223,27 @@ class CatalogIndex:
                 return on_cat[0]
             if on_cat:
                 keys = on_cat
+        if name is not None and self.unrelated(keys):
+            named = self.named(keys, name)
+            return named[0] if len(named) == 1 else None
         longest = max(len(norm_name(self.products[k].title)) for k in keys)
         top = [k for k in keys if len(norm_name(self.products[k].title)) == longest]
         if len(top) == 1:
             return top[0]
         titled = [k for k in top if self.products[k].category]
         return titled[0] if len(titled) == 1 else None
+
+    def unrelated(self, keys: list[str]) -> bool:
+        """No product's title words sit inside another's: these are not one product's
+        titles read short and long ("Blue Lobster", "Hash Infused Blue Lobster")."""
+        words = {k: set(norm_name(self.products[k].title).split()) for k in keys}
+        return not any(a != b and words[a] and words[a] <= words[b] for a in keys for b in keys)
+
+    def named(self, keys: list[str], name: str) -> list[str]:
+        """The products whose title's words the (normalised) name holds."""
+        have = set(name.split())
+        return [k for k in keys
+                if (words := set(norm_name(self.products[k].title).split())) and words <= have]
 
     def pick_entry(self, key: str, listing_variant: str | None, category: str | None,
                    name: str = "") -> dict:
@@ -254,7 +278,7 @@ class CatalogIndex:
         """
         for ln in dict.fromkeys((norm_name(name), strip_brand(name, self.brand_name))):
             if ln and ln in self.by_term:
-                chosen = self._disambiguate(self.by_term[ln], category)
+                chosen = self._disambiguate(self.by_term[ln], category, name=ln)
                 return (chosen, "exact") if chosen else (None, "ambiguous")
         return None, "none"
 
@@ -366,6 +390,52 @@ def matched_subtype(entry: dict, name: str | None) -> str | None:
     if not taxonomy.keeps_subtype(entry.get("category")):
         return None
     return taxonomy.token_subtype(entry.get("category"), name) or entry.get("subtype")
+
+
+def catalog_size(variant: str | None, name: str | None, entry: dict,
+                 product_entries: list[dict], description: str | None = None) -> str | None:
+    """The size a mistyped listing really is, from its product's catalog sizes, written
+    the way stores write sizes (the package total: "100mg"). None when the store's own
+    size stands.
+
+    Only products sold by dose (edible, tincture, topical), where a store's figure is
+    often the CBD amount, a cannabinoid sum or a per-piece dose: Camino's 100mg 20-pack
+    listed as 50mg, Ayrloom's 150mg drops as 600mg (150mg THC + 450mg CBD). A weight
+    that disagrees is more often a real size the catalog lacks (a 14g bag matched to
+    its strain's 3.5g), so it stands. So does a size the product comes in, a listing
+    that names another pack count (Level's Protab 2-pack beside the catalog's 5-pack),
+    and one the product's sizes cannot settle (two sizes left after the pack count).
+
+    The listing has to back the catalog, because the catalog can lack a size too (Level
+    may sell a 50mg Protab 5-pack beside the 100mg one): its name or description states
+    the catalog's total ("100mg THC : 100mg CBD per package"), or its figure is that
+    size's per-piece dose ("10mg" on a 10-pack of 100mg). And a catalog size of 10mg or
+    less with no pack count is never the answer to a larger figure: that is usually a
+    per-piece dose recorded as the size (Eaton's "Daily Elevation 5mg" gummies).
+    """
+    category = entry.get("category")
+    if category not in sizes.DOSE_CATEGORIES:
+        return None
+    mine = sizes.parse(variant, name, category=category)
+    if mine.mg is None:
+        return None
+    own = [sizes.parse(e.get("variant"), category=category) for e in (product_entries or [entry])]
+    own = [s for s in own if s.mg is not None]
+    if not own or any(sizes.same_size(mine, s) is not False for s in own):
+        return None
+    if mine.pack:
+        own = [s for s in own if (s.pack or 1) == mine.pack]
+    if len({s.mg for s in own}) != 1:
+        return None
+    target = own[0]
+    if not target.pack and target.mg <= 10 < mine.mg:
+        return None
+    # A figure the text gives for another cannabinoid corroborates nothing: Wana's Fast
+    # Asleep is "20mg THC", and its "100mg CBD" must not move it to a 100mg entry.
+    stated = any(abs(m - target.mg) <= 0.5 for m in sizes.mg_mentions(name, html.unescape(
+        re.sub(r"<[^>]+>", " ", description or "")), non_thc=False))
+    per_piece = bool(target.pack) and not mine.pack and abs(mine.mg * target.pack - target.mg) <= 0.5
+    return f"{target.mg:g}mg" if stated or per_piece else None
 
 
 # ---------------------------------------------------------------------------

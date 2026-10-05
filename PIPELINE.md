@@ -64,6 +64,23 @@ it. Catalog matching and the bootstrap compare sizes as numbers parsed by
 [`scripts/sizes.py`](scripts/sizes.py) (`5pk x 0.6g` = `3g`, `1/8 oz` = `3.5g`), so
 two spellings of one size never split a product.
 
+**A listing's size** has two columns. `variant` is the store's own size field, kept as
+typed: it is part of the row's key, and orders, purchases and lab reports hang off the
+row. `size` is what product pages and price comparisons group on
+(`Listing.product_size`; NULL reads as `variant`). The importer sets it to the store's
+size, or to the catalog's when a dose product (edible, tincture, topical) matched by
+`exact`, `jev` or `manual` states a size it does not come in, and the listing backs the
+catalog: its name or description states the catalog's total, or its figure is that
+size's per-piece dose (`catalog_match.catalog_size`). A figure given for another
+cannabinoid backs nothing: Wana's Fast Asleep says "20mg THC" and "100mg CBD", and the
+catalog's 100mg is the CBD, so the store's 20mg stands. Camino's 100mg 20-pack listed as
+50mg ("100mg THC : 100mg CBD per package" in its description) and Ayrloom's 150mg drops
+listed as 600mg ("150mg THC : 450mg CBD" in the name) go back on their products' pages:
+67 listings on 2026-10-05, 31 of them a per-piece dose typed as the size. A weight that
+disagrees stays on its own page, because a 14g bag matched to its strain's 3.5g is more
+often a real size the catalog lacks. So does a listing that names another pack count (a
+2-pack beside the catalog's 5-pack).
+
 **Within enrichment**, each row is answered by the cheapest thing that can answer it
 ([`scripts/enrich.py`](scripts/enrich.py)):
 
@@ -143,6 +160,24 @@ overwrite a field you curated and never reactivate an entry you took out — a S
 re-fetch used to do both. Storefront products that vanish are deactivated; bootstrap
 entries are not, since one quiet week at the stores is not a discontinuation.
 
+**The daily audit.** Type `/audit-terpee-listings` in a new Claude Code conversation on
+this repo. Scripts detect and the agent judges:
+- `scripts/data_health.py report --save` runs the deterministic detectors: stores the
+  daily run missed, store names recorded on unrelated products, sizes 2+ stores sell
+  that the matched product lacks, review-only clusters, product-page sizes left
+  behind, and brandless listings named after a catalog brand.
+- Each finding has a stable key. A snapshot per day (`data_health_snapshots`) lets the
+  report mark what is new and how the numbers moved.
+- `dismiss` (`data_health_dismissals`) hides a judged false positive until its evidence
+  grows.
+- The agent investigates a few findings with the catalog-audit views, then proposes data
+  edits made with `scripts/catalog_fix.py`: `drop-term`, `add-term`, `add-size`,
+  `set-size`, `deactivate` and `size-sync`.
+- `--measure` runs the matcher before and after on the brand's listings (Jev on, two runs
+  per side, noise discounted). An edit is proposed only when it nets positive.
+- Nothing is written without your approval in the conversation. The procedure is
+  [.claude/skills/audit-terpee-listings/SKILL.md](.claude/skills/audit-terpee-listings/SKILL.md).
+
 **Auditing a catalog's structure.** A catalog built right looks like a brand's range:
 named lines, each in several strains or flavours. `python scripts/catalog_shape.py show
 "<Brand>"` lays a catalog out that way and lists the places it does not (a line with one
@@ -165,6 +200,14 @@ product a listing is.
 [`scripts/catalog_match.py`](scripts/catalog_match.py) resolves each listing:
 
 1. **exact** — its normalised name is a catalog title or a recorded store name. Free.
+   A name recorded for several products of the listing's category goes to the longest
+   title when the titles are one product's read short and long ("Blue Lobster", "Hash
+   Infused Blue Lobster"). Otherwise it goes to the one product whose title's words it
+   holds, or, when it names none or several, on to the shortlist and Jev. So a store's
+   slip recorded on an unrelated product beside the right one (Wyld's Raspberry name on
+   Boysenberry) does not move listings. A slip recorded on the wrong product alone still
+   does, as a recorded misspelling ("Mightnight Mint") must still match: the audit's
+   `STORE NAMES ON 2+ PRODUCTS` and `entries` views are where those show.
 2. **shortlist** — products ranked by token containment/overlap, filtered to the
    listing's category, softly to its subtype and size (a filter never empties the
    list on its own), with a hard veto when subtype *and* size both contradict.

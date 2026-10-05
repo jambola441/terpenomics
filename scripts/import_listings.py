@@ -65,7 +65,7 @@ except ImportError:      # only the DATABASE_URL path needs it; --via-http does 
 # Insert column order. Records are dicts keyed by column name and become tuples only
 # at the INSERT, so a field cannot silently land in its neighbour's slot.
 COLUMNS = [
-    "id", "dispensary_id", "sku", "batch_id", "price_cents", "variant", "url", "image_url",
+    "id", "dispensary_id", "sku", "batch_id", "price_cents", "variant", "size", "url", "image_url",
     "in_stock", "is_active", "scraped_at", "scraped_name", "scraped_brand", "scraped_category",
     "subtype", "strain", "classification", "description", "product_line", "attributes",
     "catalog_entry_id", "catalog_match_confidence", "catalog_match_method",
@@ -84,7 +84,7 @@ VERIFIED_COLUMN = {"category": "scraped_category", "subtype": "subtype",
 # unimported for five weeks (found 2026-10-05). The row is still worth keeping — its
 # SKU identifies it — so the value is cut to fit and the cut is reported.
 COLUMN_WIDTHS = {
-    "sku": 200, "batch_id": 200, "variant": 100, "url": 1000, "image_url": 1000,
+    "sku": 200, "batch_id": 200, "variant": 100, "size": 100, "url": 1000, "image_url": 1000,
     "scraped_name": 300, "scraped_brand": 200, "scraped_category": 100, "subtype": 100,
     "strain": 200, "classification": 50, "description": 5000, "product_line": 200,
 }
@@ -171,6 +171,7 @@ def build_record(row: dict, dispensary_id: str, now: datetime) -> dict | None:
         "batch_id": _clean(row, "batch_id"),
         "price_cents": parse_int(row.get("price_cents")),
         "variant": _clean(row, "variant"),
+        "size": None,                    # assign_sizes, once the catalog match is known
         "url": _clean(row, "product_url"),
         "image_url": _clean(row, "image_url"),
         "in_stock": parse_bool(row.get("in_stock", "true")),
@@ -379,6 +380,39 @@ def _overlay(rec: dict, entry: dict, stats: dict, is_masked) -> None:
     stats["overlaid"] += 1
 
 
+def assign_sizes(records: list[dict], catalogs: dict) -> int:
+    """Set each record's `size`, the size its product page groups on: the store's own
+    (`variant`, which stays as typed because it is part of the row's key), or for a
+    trusted match whose store mistyped it, the catalog's (catalog_match.catalog_size:
+    Camino's 100mg 20-pack listed as 50mg goes back on the 100mg page). Returns how
+    many it changed."""
+    import catalog_match
+    import catalog_store
+    by_id = catalog_store.entries_by_id(catalogs) if catalogs else {}
+
+    def product_of(catalog: dict, entry: dict) -> tuple:
+        return id(catalog), entry.get("product_key") or catalog_store._product_key(entry)
+
+    products: dict[tuple, list[dict]] = {}
+    for catalog, entry in by_id.values():
+        if entry.get("is_active", True):
+            products.setdefault(product_of(catalog, entry), []).append(entry)
+    fixed = 0
+    for rec in records:
+        rec["size"] = rec["variant"]
+        hit = by_id.get(str(rec["catalog_entry_id"]) if rec.get("catalog_entry_id") else "")
+        if not hit or rec.get("catalog_match_method") not in catalog_match.OVERLAY_METHODS:
+            continue
+        catalog, entry = hit
+        size = catalog_match.catalog_size(rec["variant"], rec["scraped_name"], entry,
+                                          products.get(product_of(catalog, entry), [entry]),
+                                          rec.get("description"))
+        if size:
+            fixed += size != rec["variant"]     # Ayrloom's "150mg" can come back as itself
+            rec["size"] = size
+    return fixed
+
+
 def apply_verification(records: list[dict], existing: dict[tuple, dict]) -> int:
     """Human-signed fields win over everything, bound to the incoming scraped name."""
     protected = 0
@@ -443,6 +477,7 @@ def _upsert_sql(with_catalog: bool) -> str:
             description      = EXCLUDED.description,
             product_line     = EXCLUDED.product_line,
             attributes       = EXCLUDED.attributes,
+            size             = EXCLUDED.size,
             {catalog}
             url              = EXCLUDED.url,
             scraped_at       = EXCLUDED.scraped_at,
@@ -734,6 +769,9 @@ def main(argv=None) -> int:
         if protected:
             print(f"  verified: kept {protected} human-signed row(s) from being overwritten")
         drop_unkept_subtypes(records)
+        fixed = assign_sizes(records, catalogs)
+        if fixed:
+            print(f"  size: {fixed} listing(s) take their catalog size; the store's was mistyped")
         cuts += fit_columns(records)        # values the catalog overlay brought in
         for cut in cuts:
             print(f"  [WARN] cut to fit its column: {cut}")

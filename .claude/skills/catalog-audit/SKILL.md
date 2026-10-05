@@ -92,9 +92,10 @@ it. They are rules of thumb, not laws: a break is a question, and evidence answe
    filed under another name or line, or too few stores sell it for a bootstrap to keep.
    Leads: `missing-pair`.
 10. **Stores mistype sizes** (the user's find, 2026-10-05). A listing's size is the
-    store's own field, copied as typed, and product pages group on it, so a typo shows
-    as a product of its own even when the match is right. A size no product of the line
-    comes in, at one store, is usually one of these:
+    store's own field (`variant`), copied as typed. For a dose product matched with
+    trust, the importer puts the catalog's size in `size`, which product pages group on.
+    Any other typo shows as a product of its own even when the match is right. A size no
+    product of the line comes in, at one store, is usually one of these:
     - a mistyped unit: The Spot's STIIIZY 40's "5 x 0.9g ... (2.5g Pre-Roll Pack)" showed
       as 4.5g, where 40's come in 1g and 2.5g;
     - a cannabinoid sum or the CBD figure: Ayrloom's 150mg Everyday drops listed as
@@ -206,6 +207,15 @@ row is the check.
   one store's typo for the 2.5g pack.
 - Camino's Gummies showed `20pk 72mg 5/1`: one store typing 72mg on five different
   gummies, a store habit no single listing reveals.
+
+`STORE NAMES ON 2+ PRODUCTS`, after the products, lists each store name recorded for more
+than one product of a category. Two readings of one product's title ("Blue Lobster",
+"Hash Infused Blue Lobster") are normal. A name on products with unrelated titles is a
+store's slip on all but one of them:
+- Wyld had "raspberry sativa enhanced gummies" on Boysenberry as well as Raspberry, and
+  eight Raspberry listings sat on Boysenberry's page until it was removed (2026-10-05).
+  The matcher now gives such a name to the product it names, so a slip like this no
+  longer moves listings, but it is still wrong data. Remove it.
 
 For a bootstrap catalog, `python3 scripts/catalog_shape.py preview "<Brand>"` shows
 what a rebuild would propose from today's fresh listings: entries it would add, and
@@ -331,10 +341,11 @@ Fix at the source when three or more entries share a cause. Hand edits are for o
 | storefront: a store-only size that is the site's package written another way (a CBD total, a cannabinoid sum) | deactivate it; if several brands show it, propose a rule in `split_store_products` for dose categories |
 | bootstrap: thin line from coverage (members sold at one store) | nothing to fix; say so |
 | any: two entries for one product | deactivate the wrong one in the admin UI (never delete: listings point at entries), add its store names to the survivor's match terms; the next `catalog_match` moves the listings |
+| any: a store name recorded on a product it does not name (`STORE NAMES ON 2+ PRODUCTS`) | remove it from that entry's match terms in the admin UI; it stays on the product it names |
 | any: one brand's products inside another brand's catalog | a skip rule in the parent's recipe (or deactivations), plus a proposed name-based sub-brand rule at import, so stores' "Kiva - Camino ..." listings resolve to the sub-brand. `brand_aliases.json` alone cannot: it maps brand strings, not names |
 | any: products in the wrong category | admin edit of `category` (and subtype); if a recipe produced it, fix its `category` rule |
 | any: wrong size form | admin edit of `variant`; if a recipe produced it, fix the rule's size group |
-| any: a store mistyped a size (rule 10) | nothing in the catalog, which is right. The listing keeps the store's size on its product page until product pages group on a catalog size. Report the store and the size |
+| any: a store mistyped a size (rule 10) | nothing in the catalog, which is right. A dose product matched with trust already shows on its product's page (`listings.size`, `catalog_match.catalog_size`). A weight typo, or a review-only match, keeps its own page: report the store and the size |
 | any: a size 2+ stores agree on that the catalog lacks | it arrives by itself: a store-only size at the next storefront push, an entry at the next bootstrap rebuild. One store's bundle ("2PK 1G Pods") stays out on purpose |
 
 ### 6. Report

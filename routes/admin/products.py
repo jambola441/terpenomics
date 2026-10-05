@@ -6,7 +6,7 @@ from sqlmodel import Session, select
 
 from auth import SupabaseAuthUser
 from database import engine, get_session
-from models import Dispensary, Listing
+from models import LISTING_PRODUCT_SIZE, Dispensary, Listing
 from .auth import require_admin
 
 router = APIRouter()
@@ -39,10 +39,12 @@ def _tuple_filter(stmt, brand, category, subtype, product_line, strain, variant)
     elif strain is not None:
         stmt = stmt.where(Listing.strain == strain)
 
+    # The products view's `variant` is the product's size (listings.size, else the
+    # store's own variant), so a product's listings are found by the same.
     if variant == _NULL:
-        stmt = stmt.where(Listing.variant.is_(None))
+        stmt = stmt.where(LISTING_PRODUCT_SIZE.is_(None))
     elif variant is not None:
-        stmt = stmt.where(Listing.variant == variant)
+        stmt = stmt.where(LISTING_PRODUCT_SIZE == variant)
 
     return stmt
 
@@ -203,7 +205,8 @@ def get_product_detail(
             "dispensary_slug":  dispensary.slug,
             "scraped_name":     listing.scraped_name,
             "price_cents":      listing.price_cents,
-            "variant":          listing.variant,
+            "variant":          listing.variant,         # as the store typed it
+            "size":             listing.product_size,    # the product's, which the page groups on
             "sku":              listing.sku,
             "url":              listing.url,
             "image_url":        listing.image_url,

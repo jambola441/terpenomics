@@ -26,6 +26,8 @@
       "Bash(python3 scripts/storefront.py check:*)",
       "Bash(python scripts/catalog_shape.py:*)",
       "Bash(python3 scripts/catalog_shape.py:*)",
+      "Bash(python scripts/data_health.py report:*)",
+      "Bash(python3 scripts/data_health.py report:*)",
       "mcp__Render__query_render_postgres",
       "mcp__Render__list_workspaces",
       "mcp__Render__get_selected_workspace",

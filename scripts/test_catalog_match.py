@@ -165,6 +165,23 @@ class TestDeterministic:
         assert idx.exact("Mood: Bliss", "vaporizers") == ("mood: bliss|vaporizers", "exact")
         assert idx.exact("Mood Bliss AIO", "vaporizers")[0] is None
 
+    def test_a_store_name_on_unrelated_products_goes_to_the_one_it_names(self):
+        """A store slip recorded Wyld's Raspberry name on Boysenberry too; the longer
+        title must not take it."""
+        def gummy(name, *terms):
+            return {"name": name, "category": "edible", "variant": "10pk 100mg",
+                    "match_terms": list(terms)}
+        idx = cm.CatalogIndex(catalog(
+            gummy("Raspberry", "raspberry sativa enhanced gummies"),
+            gummy("Boysenberry", "raspberry sativa enhanced gummies", "vape cartridge"),
+            gummy("Grapefruit", "vape cartridge"),
+            gummy("Blue Lobster", "hash infused blue lobster"),
+            gummy("Hash Infused Blue Lobster", "hash infused blue lobster")))
+        assert idx.exact("Raspberry Sativa Enhanced Gummies", "edible") == ("Raspberry|edible", "exact")
+        assert idx.exact("Vape Cartridge", "edible") == (None, "ambiguous")     # names neither
+        # One product's title read short and long: the longest still wins.
+        assert idx.exact("Hash Infused Blue Lobster", "edible")[0] == "Hash Infused Blue Lobster|edible"
+
 
 def fake_ask_many(answer_for):
     """answer_for(state, options) -> (label, p)"""
@@ -308,3 +325,48 @@ class TestDescribedLine:
         # cached answer is still found; one with a hint is a new question.
         assert cm._cache_key(plain, cands, idx) == cm._cache_key({**self.KLX, "description": None}, cands, idx)
         assert cm._cache_key(self.KLX, cands, idx) != cm._cache_key(plain, cands, idx)
+
+
+class TestCatalogSize:
+    """A store's size is its own field; for a dose product it is often the CBD figure,
+    a cannabinoid sum or a per-piece dose. Product pages take the catalog's then."""
+
+    def entries(self, *variants, category="edible"):
+        return [{"category": category, "variant": v} for v in variants]
+
+    def test_a_mistyped_dose_takes_the_catalog_size(self):
+        camino = self.entries("20pk 100mg")
+        assert cm.catalog_size("50mg", "Balance | Yuzu Lemon | 1:1 | 20pk", camino[0], camino,
+                               "5mg THC : 5mg CBD per piece - 100mg THC : 100mg CBD per package") == "100mg"
+        ayrloom = self.entries("150mg", category="tinctures")
+        assert cm.catalog_size("600mg", "Ayrloom Tincture Drops (150mg THC: 450mg CBD)",
+                               ayrloom[0], ayrloom) == "150mg"
+        wyld = self.entries("10pk 100mg")
+        assert cm.catalog_size("10mg", "Wyld Raspberry Gummies", wyld[0], wyld) == "100mg"   # per piece
+
+    def test_the_listing_has_to_back_the_catalog(self):
+        camino = self.entries("20pk 100mg")
+        assert cm.catalog_size("50mg", "Balance | Yuzu Lemon | 1:1 | 20pk", camino[0], camino) is None
+        level = self.entries("5pk 100mg")       # Level may sell a 50mg 5-pack the catalog lacks
+        assert cm.catalog_size("50mg", "Level - Protab THC Infused Pills - 5pk", level[0], level) is None
+        eaton = self.entries("5mg")             # a per-piece dose recorded as the size
+        assert cm.catalog_size("100mg", "Daily Elevation | Peach 5mg", eaton[0], eaton) is None
+        wana = self.entries("10pk 100mg")       # the catalog took the CBD total
+        assert cm.catalog_size("20mg", "Optimals Fast Asleep Gummies [10 pack] | 20mg", wana[0], wana,
+                               "Per Package: 100mg CBD, 20mg CBN, 20mg CBG, 20mg THC") is None
+        grön = self.entries("10pk 25mg")        # "OF" between the figure and the cannabinoid
+        assert cm.catalog_size("10mg", "10:1 Tart Cherry - CBN/THC - Nightly", grön[0], grön,
+                               "25MG OF CBN PER PEARL | 2.5MG OF THC PER PEARL") is None
+        assert cm.catalog_size("10mg", "10:1 Tart Cherry - CBN/THC - Nightly", grön[0], grön,
+                               "25MG OF THC PER PACKAGE | 250MG OF CBN PER PACKAGE") == "25mg"
+
+    def test_the_stores_size_stands_otherwise(self):
+        camino = self.entries("20pk 100mg")
+        assert cm.catalog_size("100mg", "Yuzu Lemon Gummies 20pk", camino[0], camino) is None   # it fits
+        assert cm.catalog_size(None, "Yuzu Lemon Gummies", camino[0], camino) is None          # states none
+        level = self.entries("5pk 100mg")
+        assert cm.catalog_size("352mg", "Level Protab 2pk", level[0], level) is None           # another pack
+        two = self.entries("10pk 100mg", "20pk 200mg")
+        assert cm.catalog_size("50mg", "Gummies 100mg", two[0], two) is None                   # two sizes left
+        flower = self.entries("3.5g", category="flower")
+        assert cm.catalog_size("14g", "Gelato Half Ounce", flower[0], flower) is None           # a real size

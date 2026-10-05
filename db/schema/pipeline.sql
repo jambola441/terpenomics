@@ -93,7 +93,8 @@ CREATE TABLE IF NOT EXISTS listings (
   attributes jsonb,
   catalog_entry_id uuid REFERENCES brand_catalog_entries(id),
   catalog_match_confidence real,
-  catalog_match_method text
+  catalog_match_method text,
+  size character varying(100)          -- db/migrations/0008_listing_size.sql
 );
 CREATE INDEX IF NOT EXISTS ix_listings_dispensary_id ON listings (dispensary_id);
 CREATE INDEX IF NOT EXISTS listings_catalog_entry_idx
