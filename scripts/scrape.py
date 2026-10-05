@@ -18,7 +18,9 @@ Usage
 Exit code: 0 when every targeted store succeeded, 1 when any failed. A store fails
 when its scraper exits non-zero or times out, produces no CSV or an empty one, its
 import fails, or enrichment answered fewer than half its rows. Before, this script
-exited 0 no matter what, so a run with every Dutchie store broken reported "ok".
+exited 0 no matter what, so a run with every Dutchie store broken reported "ok". A
+partial scrape (fewer products than the platform reported) is imported, retires
+nothing, and is reported as a warning rather than a failure.
 """
 
 import argparse
@@ -210,7 +212,7 @@ def run_one(d: dict, dry_run: bool, import_only: bool = False, scrape_only: bool
     slug = d["slug"]
     platform = d["platform"]
     result = {"slug": slug, "platform": platform, "ok": False, "stage": "", "detail": "",
-              "rows": 0, "usage": dict(EMPTY_USAGE), "seconds": 0.0}
+              "warning": None, "rows": 0, "usage": dict(EMPTY_USAGE), "seconds": 0.0}
     t0 = time.time()
 
     print(f"\n{'='*60}")
@@ -256,11 +258,16 @@ def run_one(d: dict, dry_run: bool, import_only: bool = False, scrape_only: bool
             return result
         degraded = (not no_enrich and usage.get("failed_rows", 0)
                     and usage["failed_rows"] > (1 - MIN_ENRICHED_SHARE) * rows)
+        meta = read_scrape_meta(str(out_path))
+        if meta.get("partial"):
+            # A short menu, not a broken store: what arrived is imported and nothing is
+            # retired. A warning, not a failure, so a chronic one (Flowhub stalls near
+            # 810 of 861) does not turn every run red and bury the real failures.
+            result["warning"] = (f"partial scrape {meta.get('collected')}/"
+                                 f"{meta.get('reported_total')} products (nothing retired)")
         if scrape_only:
-            partial = read_scrape_meta(str(out_path)).get("partial")
-            result.update(ok=not (degraded or partial), stage="scrape",
-                          detail=("enrichment mostly failed" if degraded else
-                                  "partial scrape" if partial else "scraped"))
+            result.update(ok=not degraded, stage="scrape",
+                          detail="enrichment mostly failed" if degraded else "scraped")
             return result
         # Import even when enrichment degraded: the importer keeps the stored identity
         # of every row marked enrich_failed, so prices and stock still refresh. The
@@ -268,10 +275,6 @@ def run_one(d: dict, dry_run: bool, import_only: bool = False, scrape_only: bool
         ok, detail = run_import(out_path, dry_run=False)
         if degraded:
             ok, detail = False, f"enrichment answered only {rows - usage['failed_rows']}/{rows} rows; {detail}"
-        meta = read_scrape_meta(str(out_path))
-        if meta.get("partial"):
-            ok, detail = False, (f"partial scrape {meta['collected']}/{meta['reported_total']} "
-                                 f"products (nothing retired); {detail}")
         result.update(ok=ok, stage="import", detail=detail)
         return result
     finally:
@@ -338,20 +341,26 @@ def main() -> None:
             print(f"  enrich: input={u.get('input_tokens',0):,}  output={u.get('output_tokens',0):,}  "
                   f"cost=${u.get('cost_usd',0.0):.4f}")
         status = "ok" if res["ok"] else "FAILED"
-        print(f"  -> {status} ({res['stage']}: {res['detail']}, {res['rows']} rows, {res['seconds']}s)")
+        print(f"  -> {status} ({res['stage']}: {res['detail']}, {res['rows']} rows, {res['seconds']}s)"
+              + (f"  WARN: {res['warning']}" if res.get("warning") else ""))
 
     failed = [r for r in results if not r["ok"]]
+    warned = [r for r in results if r["ok"] and r.get("warning")]
     cost = round(sum(r["usage"].get("cost_usd", 0.0) for r in results), 4)
     print(f"\n{'='*60}")
-    print(f"Done.  ok={len(results) - len(failed)}  failed={len(failed)}  enrich cost=${cost:.4f}")
+    print(f"Done.  ok={len(results) - len(failed)}  failed={len(failed)}  warned={len(warned)}  "
+          f"enrich cost=${cost:.4f}")
     for r in failed:
         print(f"  FAILED {r['slug']:34} {r['stage']}: {r['detail']}")
+    for r in warned:
+        print(f"  WARN   {r['slug']:34} {r['warning']}")
 
     if args.summary:
         Path(args.summary).parent.mkdir(parents=True, exist_ok=True)
         Path(args.summary).write_text(json.dumps({
             "finished_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-            "ok": len(results) - len(failed), "failed": len(failed), "cost_usd": cost,
+            "ok": len(results) - len(failed), "failed": len(failed), "warned": len(warned),
+            "cost_usd": cost,
             "stores": results,
         }, indent=2))
 

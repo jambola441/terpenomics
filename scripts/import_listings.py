@@ -78,6 +78,16 @@ IDENTITY = ("scraped_category", "subtype", "strain", "product_line")
 # with no claims was inserted and the verified one deactivated as stale.
 VERIFIED_COLUMN = {"category": "scraped_category", "subtype": "subtype",
                    "strain": "strain", "product_line": "product_line"}
+# Widths of the listings columns that have one (models.ListingBase max_length). A value
+# longer than its column used to fail the whole store's import: Hii NYC's menu carries a
+# product whose name is a 367-character promo paragraph, and both Hii stores went
+# unimported for five weeks (found 2026-10-05). The row is still worth keeping — its
+# SKU identifies it — so the value is cut to fit and the cut is reported.
+COLUMN_WIDTHS = {
+    "sku": 200, "batch_id": 200, "variant": 100, "url": 1000, "image_url": 1000,
+    "scraped_name": 300, "scraped_brand": 200, "scraped_category": 100, "subtype": 100,
+    "strain": 200, "classification": 50, "description": 5000, "product_line": 200,
+}
 
 
 def utcnow() -> datetime:
@@ -186,6 +196,18 @@ def build_record(row: dict, dispensary_id: str, now: datetime) -> dict | None:
         "last_seen_at": now,
         "_enrich_failed": parse_bool(row.get("enrich_failed", "")),
     }
+
+
+def fit_columns(records: list[dict]) -> list[str]:
+    """Cut every value to its column's width, in place. Returns one note per cut."""
+    cuts = []
+    for rec in records:
+        for col, width in COLUMN_WIDTHS.items():
+            value = rec.get(col)
+            if isinstance(value, str) and len(value) > width:
+                cuts.append(f"{rec.get('sku')}: {col} was {len(value)} chars")
+                rec[col] = value[:width].rstrip()
+    return cuts
 
 
 def fetch_existing(cur, dispensary_id: str, skus: list[str]) -> dict[tuple, dict]:
@@ -686,6 +708,8 @@ def main(argv=None) -> int:
             else:
                 records.append(rec)
 
+        # Cut to fit before the key is taken, so a cut sku or variant keys consistently.
+        cuts = fit_columns(records)
         # Last row wins on a duplicate key, as the upsert would require anyway.
         records = list({(r["sku"], r["variant"] or ""): r for r in records}.values())
         existing = store.existing(dispensary_id, [r["sku"] for r in records])
@@ -709,6 +733,9 @@ def main(argv=None) -> int:
         if protected:
             print(f"  verified: kept {protected} human-signed row(s) from being overwritten")
         drop_unkept_subtypes(records)
+        cuts += fit_columns(records)        # values the catalog overlay brought in
+        for cut in cuts:
+            print(f"  [WARN] cut to fit its column: {cut}")
 
         print_diff(slug, records, existing)
 

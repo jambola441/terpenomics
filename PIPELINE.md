@@ -250,10 +250,12 @@ Re-measure after changing the question or upgrading the model:
 match every active store. Results land in `data/enrich_cache/_last_run.json` (per
 store) and `_cron_status.json` (the run). On the cron job those files go with the
 container, so read the run's log in Render instead. A store counts as **failed** when its
-scraper errors or times out, it returns nothing, its import fails, enrichment
-answered fewer than half its rows, or the scrape was partial (fewer products than the
-platform reported). A partial scrape is still imported — prices and stock refresh —
-but retires nothing.
+scraper errors or times out, it returns nothing, its import fails, or enrichment
+answered fewer than half its rows; any failure makes the run exit non-zero. A
+**partial** scrape (fewer products than the platform reported) is a warning: it is
+still imported — prices and stock refresh — but retires nothing, and it does not fail
+the run, so a chronic one (Grow Together's Flowhub menu stalls near 810 of 861) cannot
+bury real failures.
 
 ### Weekly, or after editing catalogs
 

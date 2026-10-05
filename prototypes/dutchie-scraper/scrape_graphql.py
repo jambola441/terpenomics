@@ -189,6 +189,38 @@ def _gql_payload(dutchie_id: str, page: int) -> dict:
     }
 
 
+# The fingerprint tried when Dutchie refuses the first page. On 2026-10-05 Quality
+# Control and Milligrams answered 403 to the Render worker within half a second, while
+# the Dutchie stores scraped just before and after them from the same worker were
+# fine, and both scraped normally from a sandbox. One retry under another browser
+# shape is cheap; when it fails too, the error carries the response's own account.
+FALLBACK_IMPERSONATE = "chrome"
+
+
+def _refusal(resp) -> str:
+    """Who refused and how: Cloudflare (server, cf-ray, cf-mitigated) or Dutchie."""
+    h = resp.headers
+    body = " ".join((resp.text or "")[:200].split())
+    return (f"HTTP {resp.status_code} server={h.get('server')} cf-ray={h.get('cf-ray')} "
+            f"cf-mitigated={h.get('cf-mitigated')} body={body!r}")
+
+
+def _first_page(session, dutchie_id: str) -> dict:
+    resp = session.post(GQL_URL, json=_gql_payload(dutchie_id, 0), headers=HEADERS, timeout=30)
+    if resp.status_code == 403:
+        first = _refusal(resp)
+        print(f"  [WARN] page 0 refused ({first}); retrying as {FALLBACK_IMPERSONATE}")
+        time.sleep(5)
+        # No User-Agent of our own: it must match the fingerprint curl_cffi sends.
+        headers = {k: v for k, v in HEADERS.items() if k != "User-Agent"}
+        resp = cffi_req.Session(impersonate=FALLBACK_IMPERSONATE).post(
+            GQL_URL, json=_gql_payload(dutchie_id, 0), headers=headers, timeout=30)
+        if resp.status_code == 403:
+            raise RuntimeError(f"Dutchie refused page 0 twice: {first} / then {_refusal(resp)}")
+    resp.raise_for_status()
+    return resp.json()
+
+
 def _fetch_gql_page(dutchie_id: str, page: int, retries: int = 3) -> list[dict]:
     """Fetch one GQL page in an independent session (thread-safe). Retries on transient errors."""
     last_exc: Exception = Exception("no attempts made")
@@ -234,9 +266,7 @@ def scrape_store(
     # pages 0..totalPages inclusive (the extra page is empty on a 0-indexed API and is
     # the last page on a 1-indexed one), then check what arrived against totalCount
     # instead of trusting the page arithmetic.
-    resp = session.post(GQL_URL, json=_gql_payload(dutchie_id, 0), headers=HEADERS, timeout=30)
-    resp.raise_for_status()
-    body = resp.json()
+    body = _first_page(session, dutchie_id)
 
     if "errors" in body:
         print(f"  [ERROR] {body['errors'][0].get('message','?')}")

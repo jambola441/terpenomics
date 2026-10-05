@@ -14,6 +14,7 @@ with the REST calls answered from the same database (conftest.RestOverPostgres).
 
 import csv
 import os
+import re
 import sys
 import uuid
 from pathlib import Path
@@ -347,3 +348,31 @@ def test_partial_scrape_meta_refreshes_but_retires_nothing(db, tmp_path):
     got = {r["sku"]: r for r in listings(db)}
     assert set(got) == set("ABCDEF")            # nothing retired
     assert got["A"]["price_cents"] == 1         # what arrived was refreshed
+
+
+def test_column_widths_match_the_schema():
+    """COLUMN_WIDTHS mirrors the listings table; a widened column must widen it too."""
+    table = SCHEMA.read_text().split("CREATE TABLE IF NOT EXISTS listings (")[1].split(");")[0]
+    widths = {m.group(1): int(m.group(2))
+              for m in re.finditer(r"^\s*(\w+) character varying\((\d+)\)", table, re.M)}
+    assert widths == import_listings.COLUMN_WIDTHS
+
+
+def test_overlong_values_are_cut_to_fit():
+    promo = ("Get ready for a hauntingly delicious experience " * 8).strip()   # 383 chars
+    rec = import_listings.build_record(
+        {"name": promo, "sku": "S1", "variant": "10pk", "brand": "Camino"}, "d1",
+        import_listings.utcnow())
+    cuts = import_listings.fit_columns([rec])
+    assert len(rec["scraped_name"]) <= 300 and rec["scraped_name"] == promo[:300].rstrip()
+    assert cuts == ["S1: scraped_name was 383 chars"]
+    assert import_listings.fit_columns([rec]) == []                     # idempotent
+
+
+def test_an_overlong_name_no_longer_fails_the_store(db, tmp_path):
+    # Hii NYC, 2026-10-05: one promo paragraph in a name failed both stores' imports.
+    promo = "Get ready for a hauntingly delicious experience with Camino Sours " * 6
+    assert run(tmp_path, [row("A", promo, category="edible", variant="100mg"),
+                          row("B", "Acme OG Kush", strain="OG Kush")]) == 0
+    db.execute("SELECT sku, length(scraped_name) FROM listings ORDER BY sku")
+    assert db.fetchall() == [("A", 300), ("B", len("Acme OG Kush"))]
