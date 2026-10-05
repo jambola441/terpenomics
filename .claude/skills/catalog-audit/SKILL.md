@@ -103,8 +103,11 @@ it. They are rules of thumb, not laws: a break is a question, and evidence answe
 
     The listing's own name or description usually states the real size. A pack of a
     size the line sells ("2PK 1G Pods") is a bundle, not a typo. Two or more stores
-    agreeing on a size nothing contradicts is probably a size the catalog lacks.
-    Leads: `listing-size`.
+    agreeing on a size nothing contradicts is probably a size the catalog lacks. The
+    counts give it away before any single row does: `show` prints each line's sizes as
+    the stores write them, and a size on two listings beside sizes on dozens is the one
+    to open. This holds even when the catalog has an entry for that size.
+    Leads: `listing-size`; the `stores write` row in `show`.
 
 **These rules grow.** When the user names another way brands do (or never do) things,
 add it here as a numbered rule. When an audit turns up a pattern worth checking every
@@ -188,6 +191,15 @@ Each product row shows its sizes, then the listings matched to it and the number
 stores they come from. In a storefront catalog, a size marked `*` came only from the
 stores, and `[store-only n]` marks a whole product kept from n stores. Watch the counts:
 a site product at 0/0 beside a store-only product of the same shape is a rename to check.
+
+Under each line, `stores write` lists the sizes the line's listings state, as
+listings/stores, commonest first. `(no product)` marks a size no product of the line comes
+in. Compare the counts as you read: a size on a couple of listings beside sizes on dozens
+is worth opening, whether or not a lead flags it (rule 10).
+- STIIIZY's 40's read `1g 76/12 · 5pk 2.5g 49/12 · 2.5g 5/4 · 5pk 4.5g 2/1 (no product)`.
+  The 4.5g was one store's typo for the 2.5g pack.
+- Camino's Gummies showed `20pk 72mg 5/1`: one store typing 72mg on five different
+  gummies, a store habit no single listing reveals.
 
 For a bootstrap catalog, `python3 scripts/catalog_shape.py preview "<Brand>"` shows
 what a rebuild would propose from today's fresh listings: entries it would add, and
