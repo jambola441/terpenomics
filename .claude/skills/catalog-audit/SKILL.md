@@ -242,6 +242,12 @@ flavour under that name. Use these sources, strongest first:
    - `--photos` adds a package photo per row. The pack prints the dose, the count and
      the effect. It settled "Excite" against "Exhilarate", and a CBD total typed as a
      size.
+   - `--descriptions` adds the store's description. A store that leaves the line out of
+     the name often has it there: Hold Up Roll Up's "King Louis XIII - 1G Infused
+     Prerolls" says "Stiiizy 40s pre-rolls are..." (the user's find).
+     - A curated line with a `category` in `data/product_lines.json` is applied from the
+       description when the name has no line.
+     - The `lines` view counts such listings in its last column.
    - Many stores agreeing on a line word is strong evidence.
    - Listings matched across several entries for one product are direct proof of a
      split.

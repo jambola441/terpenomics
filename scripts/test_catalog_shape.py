@@ -300,10 +300,13 @@ def test_render_lines_counts_words_against_recorded_lines():
                  "product_line": None},
                 {"id": "l2", "dispensary_id": "d2", "scraped_name": "Gelato Original Pod",
                  "product_line": "Original"},
-                {"id": "l3", "dispensary_id": "d2", "scraped_name": "Gelato LIIIL Pen 0.5g", "product_line": None}]
+                {"id": "l3", "dispensary_id": "d2", "scraped_name": "Gelato LIIIL Pen 0.5g", "product_line": None},
+                {"id": "l4", "dispensary_id": "d3", "scraped_name": "Gelato - 1g POD", "product_line": None,
+                 "description": "<p>STIIIZY <b>Original</b> pods</p>"}]
     text = cs.render_lines(listings, entries, ["liiil", "ORIGINAL"])
     rows = {r.split()[0]: r.split()[1:] for r in text.splitlines()[1:]}
-    assert rows == {"Original": ["2", "/", "2", "1", "1"], "liiil": ["1", "/", "1", "0", "0"]}
+    # word: in names (listings / stores), recorded as the line, catalog products, only in the description
+    assert rows == {"Original": ["2", "/", "2", "1", "1", "1"], "liiil": ["1", "/", "1", "0", "0", "0"]}
     assert text.count("riginal") == 1                     # one row per word, the catalog's spelling
 
 
