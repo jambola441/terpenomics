@@ -22,6 +22,7 @@ Tables:
   pos_sync_runs       one row per sync, for the admin UI
   partner_members     who may sign in to a partner's /partner dashboard
   points_ledger       Terpee points earned from partner orders (append-only)
+  receipt_submissions receipt photos customers upload for review
 
 Idempotent — safe to re-run.
 
@@ -193,11 +194,34 @@ CREATE INDEX IF NOT EXISTS ix_points_ledger_customer_id ON points_ledger (custom
 CREATE INDEX IF NOT EXISTS ix_points_ledger_pos_order_id ON points_ledger (pos_order_id);
 CREATE INDEX IF NOT EXISTS ix_points_ledger_partner_id ON points_ledger (partner_id);
 CREATE INDEX IF NOT EXISTS ix_points_ledger_available_at ON points_ledger (available_at);
+
+-- Receipt photos customers upload to claim points; a person enters the subtotal.
+CREATE TABLE IF NOT EXISTS receipt_submissions (
+  id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  customer_id        uuid NOT NULL REFERENCES customers(id),
+  partner_id         uuid NOT NULL REFERENCES partners(id),
+  status             text NOT NULL DEFAULT 'pending',   -- pending | approved | rejected
+  image              bytea,
+  image_content_type text NOT NULL DEFAULT 'image/jpeg',
+  purchased_on       date,
+  customer_note      text,
+  subtotal_cents     integer,
+  points_entry_id    uuid REFERENCES points_ledger(id),
+  reviewed_by        text,
+  reviewed_at        timestamptz,
+  reject_reason      text,
+  created_at         timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS ix_receipt_submissions_customer_id ON receipt_submissions (customer_id);
+CREATE INDEX IF NOT EXISTS ix_receipt_submissions_partner_id ON receipt_submissions (partner_id);
+CREATE INDEX IF NOT EXISTS ix_receipt_submissions_status ON receipt_submissions (status);
+CREATE INDEX IF NOT EXISTS ix_receipt_submissions_created_at ON receipt_submissions (created_at);
 """
 
 TABLES = (
     "partners", "pos_connections", "partner_locations", "pos_orders",
     "pos_order_items", "pos_customer_links", "pos_sync_runs", "partner_members", "points_ledger",
+    "receipt_submissions",
 )
 
 

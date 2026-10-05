@@ -8,6 +8,7 @@ from .orders import router as orders_router
 from .partners import router as partners_router
 from .products import router as products_router
 from .purchases import router as purchases_router
+from .receipts import router as receipts_router
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 router.include_router(brand_catalogs_router)
@@ -19,3 +20,4 @@ router.include_router(orders_router)
 router.include_router(partners_router)
 router.include_router(products_router)
 router.include_router(purchases_router)
+router.include_router(receipts_router)

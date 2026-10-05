@@ -22,6 +22,7 @@ import Partners from './Partners'
 import PartnerDetail from './PartnerDetail'
 import PosOAuthForward from './PosOAuthForward'
 import PartnerPortal from './PartnerPortal'
+import Receipts from './Receipts'
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
@@ -51,6 +52,7 @@ function App() {
         <Route path="/admin/listings/:listingId" element={<AdminListingDetail />} />
         <Route path="/admin/partners" element={<Partners />} />
         <Route path="/admin/partners/:partnerId" element={<PartnerDetail />} />
+        <Route path="/admin/receipts" element={<Receipts />} />
         <Route path="/pos/oauth/:provider/callback" element={<PosOAuthForward />} />
         <Route path="/partner" element={<PartnerPortal />} />
         <Route path="/partner/:partnerId" element={<PartnerPortal />} />

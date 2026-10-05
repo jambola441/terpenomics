@@ -17,6 +17,7 @@ import type { Session } from '@supabase/supabase-js'
 import { t, radius, font, categoryColor, alpha } from '../theme'
 import { FeedState, ProductImage, Label } from './ui'
 import OrderCard from './OrderCard'
+import ReceiptUpload from './ReceiptUpload'
 import { formatDate, formatDollars } from '../utils/format'
 
 type Pane = 'orders' | 'points' | 'feedback' | 'profile'
@@ -162,7 +163,7 @@ function OrdersPane({ orders, loading, error, onCancelOrder, cancellingIds }: {
 
 /* ── Points ────────────────────────────────────────────────────────────────── */
 
-const POINTS_KIND: Record<string, string> = { earn: 'Earned', refund: 'Refunded', adjust: 'Adjusted' }
+const POINTS_KIND: Record<string, string> = { earn: 'Earned', receipt: 'Receipt', refund: 'Refunded', adjust: 'Adjusted' }
 
 /** Terpee points from shopping at partner stores. Earned points sit as pending
  *  for a week (so a return can cancel them) and then become available. */
@@ -201,6 +202,8 @@ function PointsPane() {
         (before tax and tip) when you shop at Terpee partner stores with your phone number on the
         receipt. Points become available {data.pending_days} days after your purchase.
       </div>
+
+      <ReceiptUpload />
 
       {data.entries.length === 0 ? (
         <FeedState

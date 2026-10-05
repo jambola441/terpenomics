@@ -788,3 +788,48 @@ export type PointsSummary = {
   pending_days: number
   entries: PointsEntry[]
 }
+
+/* ── Receipt uploads (connectors/receipts.py) ───────────────────────────────── */
+
+export type ReceiptStatus = 'pending' | 'approved' | 'rejected'
+
+/** A receipt as its customer sees it. */
+export type MyReceipt = {
+  id: string
+  partner_id: string
+  partner_name: string | null
+  status: ReceiptStatus
+  purchased_on: string | null
+  customer_note: string | null
+  subtotal_cents: number | null
+  points: number | null
+  reject_reason: string | null
+  created_at: string
+  reviewed_at: string | null
+}
+
+export type PartnerOption = { id: string; name: string; logo_url?: string | null }
+
+/** A receipt in the admin review queue. */
+export type AdminReceipt = MyReceipt & {
+  customer_id: string
+  customer_name: string | null
+  customer_phone: string | null
+  reviewed_by: string | null
+  image_content_type: string
+}
+
+export type AdminReceiptDetail = AdminReceipt & {
+  points_per_dollar: number
+  pending_days: number
+  /** Purchase date more than 30 days ago. Flagged, not refused. */
+  stale: boolean
+  partners: PartnerOption[]
+  duplicate_receipts: { id: string; status: ReceiptStatus; purchased_on: string | null; subtotal_cents: number | null; created_at: string }[]
+  nearby_orders: { id: string; ordered_at: string; total_cents: number; subtotal_cents: number; same_customer: boolean; matched: boolean }[]
+}
+
+export type AdminReceiptQueue = {
+  counts: Record<ReceiptStatus, number>
+  items: AdminReceipt[]
+}
