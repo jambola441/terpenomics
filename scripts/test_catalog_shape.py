@@ -114,6 +114,8 @@ def test_sizes_missing_implausible_or_written_two_ways():
     sized = texts(cs.leads(cs.products(entries)), "size")
     assert '"Core Kush": size \'?\' missing' in sized
     assert any("Core Haze" in t and "implausible" in t for t in sized)
+    big = cs.leads(cs.products([entry(None, s, "flower", "flower", "70g") for s in ("Gas Lit", "Slingria")]))
+    assert texts(big, "size") == []                       # 2.5 oz bags (Find.), not a misread
     assert any('line "Sours"' in t and "without: Peach" in t for t in sized)
 
 

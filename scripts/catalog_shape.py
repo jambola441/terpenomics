@@ -82,6 +82,9 @@ PLAUSIBLE = {  # category: (unit, low, high)
     "vaporizers": ("grams", 0.1, 2.5), "concentrate": ("grams", 0.25, 28),
     "edible": ("mg", 2, 1000), "tinctures": ("mg", 5, 3000), "topical": ("mg", 5, 3000),
 }
+# Bags sold by the ounce past 28g: 1.5, 2, 2.5 and 3 oz, New York's purchase limit (Find.
+# sells 70g bags, "2.5 OZ" on the label). A misread 3.5g reads 35g and is still flagged.
+PLAUSIBLE_TOO = {"flower": {42.0, 56.0, 70.0, 84.0, 85.0}}
 
 
 # --------------------------------------------------------------------------- shape
@@ -218,7 +221,7 @@ def _plausible(category: str, variant: str | None) -> bool | None:
         return None
     unit, lo, hi = rule
     value = getattr(sizes.parse(variant, category=category), unit)
-    return None if value is None else lo <= value <= hi
+    return None if value is None else lo <= value <= hi or value in PLAUSIBLE_TOO.get(category, ())
 
 
 def _tagged(ps: list[Product]) -> str:
