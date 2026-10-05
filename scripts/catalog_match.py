@@ -52,8 +52,10 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import html
 import json
 import os
+import re
 import sys
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
@@ -61,6 +63,7 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from brand_catalog import norm_name, strip_brand  # noqa: E402
+import canonical  # noqa: E402
 import catalog_store  # noqa: E402
 import jev  # noqa: E402
 import sizes  # noqa: E402
@@ -373,8 +376,9 @@ def jev_question(brand: str, listing: dict, index: CatalogIndex,
                  candidates: list[str]) -> tuple[dict, dict, dict[str, str]]:
     """(state, questions, label -> product key) for one listing.
 
-    The state is the listing and nothing else a decision does not need — no sales
-    copy: 'large irrelevant state costs accuracy' is the third documented jagged edge.
+    The state is the listing and nothing else a decision does not need — of the sales
+    copy, only a product line it names (described_line): 'large irrelevant state costs
+    accuracy' is the third documented jagged edge.
     """
     size = sizes.parse(listing.get("variant"), listing.get("name"),
                        category=listing.get("category"))
@@ -385,6 +389,9 @@ def jev_question(brand: str, listing: dict, index: CatalogIndex,
         "listing_subtype": listing.get("subtype") or "",
         "listing_size": size.label() or (listing.get("variant") or ""),
     }
+    line = described_line(listing, index)
+    if line:
+        state["product_line_in_description"] = line
     labels: dict[str, str] = {}
     criteria: dict[str, str] = {
         NONE: ("None of the products below is this listing — its flavor, strain or "
@@ -413,12 +420,37 @@ def jev_question(brand: str, listing: dict, index: CatalogIndex,
     return state, {"product": question}, labels
 
 
+def described_line(listing: dict, index: CatalogIndex) -> str | None:
+    """The curated product line the listing's description names, when its name names none.
+
+    Store copy often carries the line a name leaves out ("Stiiizy 40s pre-rolls are
+    setting the standard..." under "King Louis XIII - 1G Infused Prerolls"). The same
+    rule enrichment uses (canonical.line_from_description): only curated lines that
+    declare a category, and a description naming two of them settles nothing. Measured
+    2026-10-05 against wider hints, which did worse: the first 300 characters of the
+    copy (21 brands: trusted matches gained and lost about evenly, and more wrong picks
+    when the true product was missing, as copy is often pasted from another product),
+    and any line of the brand's catalog (generic line names such as "Infused" or
+    "Classic" turn up in copy about other products).
+    """
+    brand = index.brand_name
+    if not listing.get("description") or canonical.find_product_line(brand, listing.get("name") or ""):
+        return None
+    text = html.unescape(re.sub(r"<[^>]+>", " ", listing["description"]))
+    return canonical.line_from_description(brand, " ".join(text.split()), listing.get("category"))
+
+
 def _cache_key(listing: dict, candidates: list[str], index: CatalogIndex) -> str:
-    payload = json.dumps([
+    parts = [
         QUESTION_VERSION, jev.MODEL, norm_name(listing.get("name") or ""),
         listing.get("category") or "", listing.get("subtype") or "", listing.get("variant") or "",
         [(k, index.products[k].describe()) for k in candidates],
-    ], ensure_ascii=False)
+    ]
+    # Only when it is in the question, so answers cached without one stay valid.
+    line = described_line(listing, index)
+    if line:
+        parts.append(line)
+    payload = json.dumps(parts, ensure_ascii=False)
     return hashlib.sha1(payload.encode("utf-8")).hexdigest()
 
 
@@ -563,11 +595,11 @@ def fetch_listings() -> list[dict]:
     import db_http
     rows = db_http.select_all(
         "listings",
-        "select=id,scraped_name,scraped_brand,scraped_category,subtype,variant,catalog_entry_id,"
-        "catalog_match_method&is_active=is.true&order=id")
+        "select=id,scraped_name,scraped_brand,scraped_category,subtype,variant,description,"
+        "catalog_entry_id,catalog_match_method&is_active=is.true&order=id")
     return [{"id": r["id"], "name": r.get("scraped_name") or "", "brand": r.get("scraped_brand"),
              "category": r.get("scraped_category"), "subtype": r.get("subtype"),
-             "variant": r.get("variant"),
+             "variant": r.get("variant"), "description": r.get("description"),
              "catalog_entry_id": r.get("catalog_entry_id"),
              "catalog_match_method": r.get("catalog_match_method")} for r in rows]
 

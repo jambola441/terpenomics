@@ -303,7 +303,8 @@ def apply_catalog(records: list[dict], existing: dict[tuple, dict], catalogs: di
         listings = [{"id": str(i), "name": records[i]["scraped_name"],
                      "category": records[i]["scraped_category"],
                      "subtype": records[i]["subtype"],
-                     "variant": records[i]["variant"]} for i in idxs]
+                     "variant": records[i]["variant"],
+                     "description": records[i].get("description")} for i in idxs]
         cache = catalog_match.AnswerCache(catalog.get("brand_slug") or key)
         decisions = catalog_match.resolve(catalog, listings, use_jev=use_jev, cache=cache,
                                           usage=usage)

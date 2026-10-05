@@ -105,7 +105,8 @@ def _line_pattern(line: str) -> re.Pattern:
     """Word-boundary matcher tolerant of spacing/punctuation between words, so a
     curated "Little Pandas" matches "little-pandas" and "LittlePandas". Boundaries
     keep a short line like "UP" from matching inside "Syrup"."""
-    words = [re.escape(w) for w in re.split(r"[\s\-_]+", line.strip()) if w]
+    # A straight apostrophe in a spelling matches a curly one too: store copy says "40\u2019s".
+    words = [re.escape(w).replace("'", "['\u2019]") for w in re.split(r"[\s\-_]+", line.strip()) if w]
     if not words:
         return re.compile(r"(?!)")  # never matches
     return re.compile(

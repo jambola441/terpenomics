@@ -188,6 +188,13 @@ class TestLineFromDescription:
     """A store that leaves the line out of the name often has it in the description
     (Hold Up Roll Up's STIIIZY pre-rolls, found by the user 2026-10-05)."""
 
+    def test_a_curly_apostrophe_is_the_same_spelling(self):
+        rows = [{"brand": "STIIIZY", "name": "King Louis XIII - 5PK Infused Prerolls", "category": "preroll",
+                 "product_line": None, "strain": "King Louis XIII",
+                 "description": "STIIIZY 40\u2019s King Louis XIII \u2013 Infused Pre-Roll Multipack"}]
+        canonicalize(rows)
+        assert rows[0]["product_line"] == "40's"
+
     def test_a_name_without_a_line_takes_it_from_the_description(self):
         rows = [{"brand": "STIIIZY", "name": "King Louis XIII - 1G Infused Prerolls", "category": "preroll",
                  "product_line": None, "strain": "King Louis XIII",

@@ -192,6 +192,18 @@ answers are cached on local disk keyed by the listing *and its candidates*, so r
 runs on one machine are free and a catalog edit re-asks only the listings it affects.
 The cron job has no disk, so it re-asks each run; that costs cents.
 
+**What Jev sees** is the listing's name, category, subtype and size, plus one thing
+from its description: a curated product line it names when the name names none
+(`catalog_match.described_line`, the rule enrichment uses — `data/product_lines.json`
+lines that declare a category). Wider hints were measured on 2026-10-05 and did worse.
+With the description's first 300 characters, across 21 brands, 74 matches became
+trusted and 50 stopped being; with the true product held out, wrong picks rose from
+75 to 92, because store copy is often pasted from another product (an MFNY "Turbo
+Blueberry" pre-roll described as Honey Banana). Any line of the brand's catalog named
+in the description did as badly: generic line names like "Infused" turn up in copy
+about other products. Repeat runs with nothing changed moved 5 of 441 decisions, so
+those differences are real.
+
 A matched listing takes the entry's strain and product line; it takes the entry's
 subtype unless a format word in its own name says otherwise ("Cart", "AIO", "Starter
 Kit") — the name is a fact about the listing, the entry's subtype a claim about the

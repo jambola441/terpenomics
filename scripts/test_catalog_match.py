@@ -216,3 +216,58 @@ class TestResolve:
         # size — exactly what a catalog missing the 1g would look like.
         assert "lychee dream" in seen["options"]
         assert len(seen["options"]) == 2             # none + the one remaining product
+
+
+
+
+class TestDescribedLine:
+    """A store that leaves the line out of the name often has it in the description
+    (Hold Up Roll Up's "King Louis XIII - 1G Infused Prerolls", 2026-10-05). Only lines
+    curated with a category count — data/product_lines.json's STIIIZY entries here."""
+
+    STIIIZY = {"brand_name": "STIIIZY", "brand_slug": "stiiizy", "entries": [
+        {"id": "e0", "product_key": "40-klx", "name": "40's King Louis XIII", "category": "preroll",
+         "product_line": "40's", "strain": "King Louis XIII", "variant": "1g", "is_active": True},
+        {"id": "e1", "product_key": "og-klx", "name": "Original King Louis XIII", "category": "vaporizers",
+         "product_line": "Original", "strain": "King Louis XIII", "variant": "1g", "is_active": True},
+        {"id": "e2", "product_key": "lil-bd", "name": "LIIIL Blue Dream", "category": "vaporizers",
+         "product_line": "LIIIL", "strain": "Blue Dream", "variant": "0.5g", "is_active": True}]}
+    KLX = {"id": "1", "name": "King Louis XIII - 1G Infused Prerolls", "category": "preroll",
+           "variant": "1g", "description": "<p>Elevate your game. Stiiizy 40\u2019s pre-rolls are setting the standard</p>"}
+
+    def line(self, listing, catalog=None):
+        return cm.described_line(listing, cm.CatalogIndex(catalog or self.STIIIZY))
+
+    def test_the_one_line_the_description_names(self):
+        assert self.line(self.KLX) == "40's"      # curly apostrophe and HTML don't matter
+
+    def test_not_when_the_name_names_a_line(self):
+        assert self.line({**self.KLX, "name": "40s King Louis XIII 1g"}) is None
+        assert self.line({**self.KLX, "name": "Original King Louis XIII 1g"}) is None
+
+    def test_only_lines_of_the_listings_category_and_only_one(self):
+        vape = {"id": "2", "name": "Blue Dream 0.5g", "category": "vaporizers", "variant": "0.5g"}
+        assert self.line({**vape, "description": "A LIIIL disposable"}) == "LIIIL"
+        assert self.line({**vape, "description": "For fans of 40's pre-rolls"}) is None
+        assert self.line({**vape, "description": "Like our Liquid Diamonds pods, LIIIL is..."}) is None
+        assert self.line({**vape, "description": None}) is None
+
+    def test_uncurated_lines_never_count(self):
+        palms = {"brand_name": "Jaunty", "entries": [
+            {"id": "p0", "product_key": "palms-cb", "name": "Palms Cake Batter", "category": "vaporizers",
+             "product_line": "Palms", "variant": "1.5g", "is_active": True}]}
+        listing = {"id": "3", "name": "Cake Batter - 1.5G AIO Vape", "category": "vaporizers",
+                   "description": "Jaunty Palms all-in-one"}
+        assert self.line(listing, palms) is None
+
+    def test_it_goes_into_the_question_and_its_cache_key(self):
+        idx = cm.CatalogIndex(self.STIIIZY)
+        cands = idx.shortlist(self.KLX["name"], "preroll", "1g")
+        state, _, _ = cm.jev_question("STIIIZY", self.KLX, idx, cands)
+        assert state["product_line_in_description"] == "40's"
+        plain = {**self.KLX, "description": "Elevate your game."}
+        assert "product_line_in_description" not in cm.jev_question("STIIIZY", plain, idx, cands)[0]
+        # A listing without a hint keeps the key it had before hints existed, so its
+        # cached answer is still found; one with a hint is a new question.
+        assert cm._cache_key(plain, cands, idx) == cm._cache_key({**self.KLX, "description": None}, cands, idx)
+        assert cm._cache_key(self.KLX, cands, idx) != cm._cache_key(plain, cands, idx)
