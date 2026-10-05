@@ -4,6 +4,7 @@ TEST_DATABASE_URL (a throwaway database, schema recreated per test)."""
 import os
 import sys
 import uuid
+from pathlib import Path
 
 import pytest
 
@@ -314,3 +315,23 @@ def test_rebuild_reproposes_only_bootstrap_catalogs(monkeypatch, tmp_path):
     cb.main()
     assert pushed == [("Jetpacks", {"dry_run": True, "via_http": False, "replace": True})]
     assert saved == []                                   # a dry run writes no file either
+
+
+def test_migration_0006_relabels_only_bootstrap_weight_variants(fresh_db):
+    cur = fresh_db.cursor()
+    cur.execute("INSERT INTO brand_catalogs (brand_slug, brand_name, source_method) "
+                "VALUES ('r', 'R', 'listings_bootstrap') RETURNING id")
+    cid = cur.fetchone()[0]
+    for ext, category, variant, source in [("a", "preroll", "7pk 3.5g", "listings_bootstrap"),
+                                           ("b", "edible", "20pk 100mg", "listings_bootstrap"),
+                                           ("c", "preroll", "7pk 3.5g", "manual"),
+                                           ("d", "preroll", "3.5g, pack of 7", "listings_bootstrap")]:
+        cur.execute("INSERT INTO brand_catalog_entries (catalog_id, external_id, name, category, "
+                    "variant, source) VALUES (%s, %s, %s, %s, %s, %s)",
+                    (cid, ext, ext, category, variant, source))
+    migration = Path(__file__).resolve().parent.parent / "db/migrations/0006_catalog_weight_variants.sql"
+    cur.execute(migration.read_text())
+    cur.execute(migration.read_text())                   # idempotent
+    cur.execute("SELECT external_id, variant FROM brand_catalog_entries ORDER BY 1")
+    assert cur.fetchall() == [("a", "3.5g"), ("b", "20pk 100mg"), ("c", "7pk 3.5g"),
+                              ("d", "3.5g, pack of 7")]
