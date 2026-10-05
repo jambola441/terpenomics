@@ -6,6 +6,7 @@ conventions worked out by hand, written down once.
   python3 scripts/catalog_fix.py add-size ENTRY 2.5g               # a size the product comes in
   python3 scripts/catalog_fix.py set-size ENTRY "10pk 100mg"       # the entry's own size is wrong
   python3 scripts/catalog_fix.py deactivate ENTRY [--into ENTRY]   # a duplicate; its names move over
+  python3 scripts/catalog_fix.py reactivate ENTRY                  # an entry taken out that is sold again
   python3 scripts/catalog_fix.py add-product "Find." --category flower --subtype flower \
       --strain "Out Of Office" --size 3.5g --term "Out Of Office - 3.5G Flower"   # a product it lacks
   python3 scripts/catalog_fix.py plan curation.json                # many edits, measured as one
@@ -27,8 +28,10 @@ store-built catalog"): {"brand": ..., "edits": [{"op": ..., "why": ..., ...}]}, 
 being the commands above with their arguments as keys ("entry", "into", "size",
 "term", "name"; add-product: "category", "subtype", "line", "strain", "sizes", "terms").
 An entry is its id or a selector, {"strain", "category", "subtype", "line", "size"},
-that must name one active entry. Edits apply in order to one copy of the catalog, are
-measured together, and are written together; one refusal stops the whole plan.
+that must name one active entry (reactivate takes an id: catalog_shape.py entries lists
+inactive ones). Edits apply in order to one copy of the catalog, are measured together,
+and are written together; one refusal stops the whole plan, and an id the database
+already holds stops it before the first write.
 """
 from __future__ import annotations
 
@@ -230,6 +233,32 @@ def plan_deactivate(catalogs: dict, entry_id: str, into: str | None = None) -> P
     return plan
 
 
+def plan_reactivate(catalogs: dict, entry_id: str) -> Plan:
+    """An entry taken out that is sold again. Its external id is still its own, so a
+    product it was cannot be added anew; a push never reactivates on its own."""
+    catalog, entry = find(catalogs, entry_id)
+    if entry.get("is_active", True):
+        raise Refused(f"{_desc(entry)} is active")
+    plan = Plan(catalog, _copy_with(catalog, entry_id, is_active=True), entry.get("category"))
+    plan.writes.append(("update", TABLE, f"id=eq.{entry['id']}", {"is_active": True}))
+    plan.notes.append(f"reactivate {_desc(entry)}")
+    return plan
+
+
+def with_inactive(catalogs: dict) -> dict:
+    """The catalogs with their inactive entries too (catalog_store.load_all reads only
+    active ones), each marked is_active False. Every edit here skips them, but the
+    external ids they hold are taken: an insert that reuses one fails at the database,
+    after the plan's earlier writes went through."""
+    import db_http
+    by_id = {c["id"]: c for c in catalogs.values() if c.get("id")}
+    for r in db_http.select_all(TABLE, "select=*&is_active=is.false&order=catalog_id,id"):
+        catalog = by_id.get(r["catalog_id"])
+        if catalog is not None and not any(e.get("id") == r["id"] for e in catalog["entries"]):
+            catalog["entries"].append({**r, "is_active": False})
+    return catalogs
+
+
 def catalog_of(catalogs: dict, brand: str) -> dict:
     want = norm_name(brand)
     hits = [c for c in catalogs.values() if norm_name(c.get("brand_name") or "") == want]
@@ -345,7 +374,7 @@ def resolve_entry(catalogs: dict, brand: str, ref) -> str:
     return str(hits[0]["id"])
 
 
-OPS = ("add-product", "add-size", "set-size", "add-term", "drop-term", "deactivate")
+OPS = ("add-product", "add-size", "set-size", "add-term", "drop-term", "deactivate", "reactivate")
 
 
 def apply_plan(catalogs: dict, doc: dict) -> Plan:
@@ -375,6 +404,8 @@ def apply_plan(catalogs: dict, doc: dict) -> Plan:
                     step = plan_add_term(state, entry, edit.get("name") or edit.get("term"), force)
                 elif op == "drop-term":
                     step = plan_drop_term(state, entry, edit.get("term"), force)
+                elif op == "reactivate":
+                    step = plan_reactivate(state, entry)
                 else:
                     into = resolve_entry(state, brand, edit["into"]) if edit.get("into") else None
                     step = plan_deactivate(state, entry, into)
@@ -504,16 +535,46 @@ def measure(plan: Plan, runs: int = 2) -> None:
 
 
 def _names(plan: Plan, entry_id) -> str:
-    """An entry by name and size, from either side of the plan."""
+    """An entry by name, size and format, from either side of the plan: a cart and an
+    all-in-one of one strain differ only in subtype."""
     for catalog in (plan.changed, plan.catalog):
         for e in catalog["entries"]:
             if str(e["id"]) == str(entry_id):
-                return f"{e.get('name')} {e.get('variant') or ''} [{e.get('category')}]"
+                kind = "/".join(x for x in (e.get("category"), e.get("subtype")) if x)
+                return f"{e.get('name')} {e.get('variant') or ''} [{kind}]"
     return "none"
+
+
+def preflight(plan: Plan) -> None:
+    """Refuse, before the first write, a plan whose inserts reuse an external id the
+    database holds: (catalog_id, external_id) is unique, and a plan stopped partway
+    leaves its earlier edits in place."""
+    import db_http
+    wanted: dict[str, list[str]] = {}
+    for op, _, _, rows in plan.writes:
+        if op == "insert":
+            for row in rows if isinstance(rows, list) else [rows]:
+                if row.get("external_id"):
+                    wanted.setdefault(row["catalog_id"], []).append(row["external_id"])
+    for catalog_id, ids in wanted.items():
+        dupes = [i for i in ids if ids.count(i) > 1]
+        if dupes:
+            raise Refused(f"the plan inserts external id {dupes[0]} twice")
+        for i in range(0, len(ids), 50):
+            listed = ",".join('"' + x.replace('"', '') + '"' for x in ids[i:i + 50])
+            held = db_http.select(TABLE, f"select=id,external_id,is_active&catalog_id=eq.{catalog_id}"
+                                         f"&external_id=in.({urllib.parse.quote(listed, safe=',')})")
+            if held:
+                h = held[0]
+                raise Refused(f"external id {h['external_id']} is held by entry {h['id']} ("
+                              + ("active: the product has this size already" if h["is_active"]
+                                 else "inactive: reactivate it instead of adding it again")
+                              + "). Nothing was written")
 
 
 def apply(plan: Plan) -> None:
     import db_http
+    preflight(plan)
     for op, table, query, row in plan.writes:
         if op == "insert":
             print("  inserted", ", ".join(r["id"] for r in db_http.insert(table, row)))
@@ -526,14 +587,14 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     sub = ap.add_subparsers(dest="command", required=True)
     for name, extra in (("drop-term", "term"), ("add-term", "name"), ("add-size", "size"),
-                        ("set-size", "size"), ("deactivate", None)):
+                        ("set-size", "size"), ("deactivate", None), ("reactivate", None)):
         p = sub.add_parser(name)
         p.add_argument("entry")
         if extra:
             p.add_argument(extra)
         if name == "deactivate":
             p.add_argument("--into", help="the surviving entry, which takes the duplicate's store names")
-        else:
+        elif name != "reactivate":
             p.add_argument("--force", action="store_true", help="do it despite the refusal's reason")
         p.add_argument("--measure", action="store_true", help="run the matcher before and after first")
         p.add_argument("--write", action="store_true", help="write the edit (after the user approved it)")
@@ -566,6 +627,7 @@ def main(argv: list[str] | None = None) -> int:
                 db_http.update("listings", f"id=eq.{r['id']}", {"size": size})
         print(f"{len(todo)} listing(s)" + (" written" if args.write else " (dry run; --write writes)"))
         return 0
+    with_inactive(catalogs)
     try:
         if args.command == "plan":
             import json
@@ -581,6 +643,8 @@ def main(argv: list[str] | None = None) -> int:
             plan = plan_add_size(catalogs, args.entry, args.size, args.force)
         elif args.command == "set-size":
             plan = plan_set_size(catalogs, args.entry, args.size, args.force)
+        elif args.command == "reactivate":
+            plan = plan_reactivate(catalogs, args.entry)
         else:
             plan = plan_deactivate(catalogs, args.entry, args.into)
     except Refused as exc:
@@ -590,10 +654,15 @@ def main(argv: list[str] | None = None) -> int:
         print(note)
     if args.measure:
         measure(plan)
-    if args.write:
-        apply(plan)
-    else:
-        print("(dry run; --write writes it)")
+    try:
+        if args.write:
+            apply(plan)
+        else:
+            preflight(plan)
+            print("(dry run; --write writes it)")
+    except Refused as exc:
+        print(f"refused: {exc}", file=sys.stderr)
+        return 2
     return 0
 
 

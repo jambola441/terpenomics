@@ -185,3 +185,45 @@ def test_add_product_folds_one_size_written_twice_and_guards_its_store_names():
     with pytest.raises(cf.Refused, match="cross-wire"):
         cf.plan_add_product(find_catalogs(), "Find.", "flower", "Shock Mints", ["28g"], subtype="flower",
                             terms=["Find. - Mint Snacks 28g"])           # Mint Snacks' own store name
+
+
+def with_an_inactive_entry():
+    cats = find_catalogs()
+    cats["find"]["entries"].append({"id": "old70", "catalog_id": "c2", "name": "Gas Lit", "strain": "Gas Lit",
+                                    "product_line": None, "category": "flower", "subtype": "flower",
+                                    "variant": "70g", "product_key": "lb:flower:flower::gaslit",
+                                    "external_id": "lb:flower:flower::gaslit:70g", "is_active": False,
+                                    "match_terms": [], "source": "listings_bootstrap"})
+    return cats
+
+
+def test_an_inactive_entrys_id_is_taken_and_reactivate_brings_it_back():
+    """catalog_store.load_all reads active entries only; catalog_fix adds the inactive
+    ones (with_inactive) so a plan cannot insert an id the database already holds."""
+    with pytest.raises(cf.Refused, match="reactivate that one instead"):
+        cf.plan_add_size(with_an_inactive_entry(), "gl35", "70g")
+    plan = cf.apply_plan(with_an_inactive_entry(), {"brand": "Find.", "edits": [
+        {"op": "reactivate", "entry": "old70", "why": "sold again"}]})
+    assert plan.writes == [("update", "brand_catalog_entries", "id=eq.old70", {"is_active": True})]
+    with pytest.raises(cf.Refused, match="is active"):
+        cf.plan_reactivate(find_catalogs(), "gl35")
+
+
+def test_preflight_stops_a_plan_before_its_first_write(fresh_db, via_rest):
+    via_rest(fresh_db)
+    import db_http
+    catalog = db_http.insert("brand_catalogs", {"brand_slug": "find", "brand_name": "Find.",
+                                                "source_method": "listings_bootstrap"})[0]
+    db_http.insert("brand_catalog_entries", {"catalog_id": catalog["id"], "name": "Gas Lit",
+                                             "external_id": "lb:flower:flower::gaslit:70g", "is_active": False})
+    row = {"catalog_id": catalog["id"], "external_id": "lb:flower:flower::gaslit:70g", "name": "Gas Lit"}
+    held = cf.Plan({}, {}, writes=[("update", "brand_catalog_entries", "id=eq.x", {"is_active": False}),
+                                   ("insert", "brand_catalog_entries", None, [row])])
+    with pytest.raises(cf.Refused, match="held by entry .* \\(inactive\\).*Nothing was written"):
+        cf.apply(held)
+    fresh = cf.Plan({}, {}, writes=[("insert", "brand_catalog_entries", None,
+                                     [{**row, "external_id": "lb:flower:flower::gaslit:14g"}])])
+    cf.preflight(fresh)                                       # a new id passes
+    twice = cf.Plan({}, {}, writes=[("insert", "brand_catalog_entries", None, [fresh.writes[0][3][0]] * 2)])
+    with pytest.raises(cf.Refused, match="twice"):
+        cf.preflight(twice)
