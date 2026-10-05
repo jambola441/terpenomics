@@ -28,20 +28,21 @@ it. They are rules of thumb, not laws: a break is a question, and evidence answe
    a limited drop, a new line), but it is rare. *Many* thin lines in one category mean
    the catalog is filing something else as the line: a strain, a flavour, an effect
    ("Sleep", "Uplifting"), or a format.
-   - *Effect-named products* are the common case: Camino, Off Hours and Florist Farms
-     sell gummies by effect, one or two flavours each.
-     - Some brands print three names on every pack: family, effect and flavour. Camino's
-       are Gummies, Sours and Fruit Chews; "SOCIAL | Sparkling Pear". Lines named by
-       effect are then thin by design.
-     - Today the effect is filed as the line, which makes many one-flavour lines. The
-       other model puts the effect in the member (strain "Calm Peach") under the brand's
-       family name, or under no line.
-     - Which model to use is the user's decision, not settled yet. Report the group once,
-       with both models and your recommendation. Do not count each thin effect line as an
-       irregularity.
-     - Do check that the catalog uses one axis throughout. Gap fills and sibling
-       catalogs often use the other (store-only "Sours Orchard Peach" beside the site's
-       "Balance Orchard Peach"), and those are real duplicates.
+   - *Effect names* (the user's rule, 2026-10-05). An effect such as Calm, Bliss, Sleep,
+     Happy, Energize or Social is the line only when it is the only family name the brand
+     gives the product: Florist Farms' "Calm | Peach Gummies" is line Calm, flavour Peach.
+     When the brand names a family and puts effects under it, the family is the line and
+     the effect goes in the product name. Examples:
+     - Ayrloom "Mood – Bliss" vapes: Mood → Bliss.
+     - 1906 "Bliss Drops": Drops → Bliss.
+     - Level "Protab – Boost": Protab → Boost.
+     - PUFF "Uplift – Blended – Prerolls": Blended → Uplift.
+     - Papa & Barkley "Sleep Releaf": Releaf → Sleep.
+     - Camino "Sours 'Bliss' Raspberry Lemonade": Sours → Bliss Raspberry Lemonade.
+     - A tell that the effect is not the line: one effect spanning formats or families
+       (Camino's "Bliss" was a gummy, a sour and a chew).
+     - One-flavour effect lines under the first case are the brand's design, not a fault.
+       Report them once, not per line.
    Leads: `thin-lines`, `thin-line`, `line-is-strain`.
 2. **A line stays in its category.** "40's" are pre-rolls, "Sours" are gummies, and
    "Liquid Diamonds" are vapes. When the same name is a line in two categories, it is
@@ -52,6 +53,8 @@ it. They are rules of thumb, not laws: a break is a question, and evidence answe
    - An extraction word may stay as the line when it is the brand's own naming and the
      only thing that tells two products apart (a live resin cart versus a live rosin
      cart). Say so in the report rather than calling it a fault.
+   - So may a family the brand itself prints across formats: Papa & Barkley's Releaf
+     is a gummy, a tincture and a balm.
    Leads: `cross-category`.
 3. **A line is a name the brand gave a family.** It is not a format word (cart, gummies,
    chews), a strain type (indica), a size or a potency. It is also not another brand:

@@ -71,7 +71,9 @@ with `^...$` for an exact value; `(?i)` for case).
   tinctures, topical (merch and other are not catalogued); `set.subtype` where the site
   says one the title does not. Prefer format words in the title over a site's own type
   field when they disagree — sites mislabel.
-- `title`: `match` on the title with named groups `line`, `strain`, `size`, `size2`;
+- `title`: `match` on the title with named groups `line`, `strain`, `strain2` (joined after
+  `strain`, for a title that splits the product's name: "10mg 'Deep Sleep' Blackberry
+  Dream"), `size`, `size2`;
   `extract` adds groups found in other fields (`{"body": "SIZE:\\s*(?P<size>\\d+\\s*CT)"}`);
   `set` gives constants (`line`, `strain`, `size`, `subtype`) for what the site leaves out.
 
@@ -94,4 +96,6 @@ site that repeats a product (a lab-results list, one row per lot) keeps the firs
 the package total ("3.5g"; "1/2 Gram Pre-Rolls | 7pk" is 3.5g), doses with the pack
 ("10pk 100mg"). Subtype comes from format words in the title (Cart, AIO, Pod) unless a
 rule sets it; pre-rolls have none. A product line is the brand's named line ("Live
-Resin Infused", "Calm"), not a format word or a strain type.
+Resin Infused", "Calm"), not a format word or a strain type. An effect (Calm, Sleep, Bliss)
+is the line only when the brand names no family; when it does (Camino's Sours, Ayrloom's
+Mood), the family is the line and the effect goes into the product's name.
