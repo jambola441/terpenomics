@@ -33,9 +33,10 @@ data/catalogs/*.json
 # Secrets
 *.env
 
-# Claude Code: personal overrides stay local; shared settings, hooks and
-# commands are versioned so every session gets the same permission rules.
+# Claude Code: personal overrides stay local; shared settings, hooks, commands and
+# skills are versioned so every session gets the same rules and procedures.
 .claude/*
 !.claude/settings.json
 !.claude/hooks/
 !.claude/commands/
+!.claude/skills/
