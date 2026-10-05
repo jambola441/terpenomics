@@ -53,10 +53,16 @@ on its bootstrap catalog.
 | `html` | a listing page | `item`: CSS selector for one product (omit for one product per page); `fields`: our field -> selector (`"h3"`, `"a@href"`, `"@data-cat"`, `"."`); `pages`: `{"param": "page", "from": 1, "to": 15}`, or `urls`, or `sitemap`: `{"url": ".../sitemap.xml", "match": "/products/"}` |
 | `json` | an API, or a page that embeds JSON | `items`: dot path to the products (`data.allProducts.nodes`, `*` fans out); `fields`: our field -> dot path; `extract`: regex whose group 1 is the JSON in a page; `lenient`: true for a JS object literal |
 
-`post` (a form body) makes `html`/`json` requests POSTs, for an `admin-ajax.php` "load more".
+`post` (a form body) makes `html`/`json` requests POSTs, for an `admin-ajax.php` "load more";
+with `pages` and `"in_post": true` the page number goes into the body as `{page}`. A paged
+source ends at its first missing or empty page. `query` (`{"geocode": "us-ny"}`) adds
+parameters to every page of a `urls` or `sitemap` source, for a site that shows a state's
+sizes only in that state's view. One missing page of a list costs that product; most of
+them missing fails the fetch.
 
 **Fields** rules can test: `title`, `product_type`, `tags`, `vendor`, `url`, `body`,
-`variant`, `meta` — and in a title rule, `category`. Each is a regex (`re.search`; anchor
+`variant`, `meta`, `page` (the page an html/json item was read from) — and in a title
+rule, `category`. Each is a regex (`re.search`; anchor
 with `^...$` for an exact value; `(?i)` for case).
 
 **Rules.** Each list is tried in order; the first match wins.
@@ -69,7 +75,18 @@ with `^...$` for an exact value; `(?i)` for case).
   `extract` adds groups found in other fields (`{"body": "SIZE:\\s*(?P<size>\\d+\\s*CT)"}`);
   `set` gives constants (`line`, `strain`, `size`, `subtype`) for what the site leaves out.
 
-**What an entry gets.** Name is line + strain. Size is read by `scripts/sizes.py` from
+**`store_aliases`** for products stores name differently from the site, so `check`
+and `push` see them as the site's rather than as store-only products (which a push would
+add as duplicates): `{"lines": {"Up": "", "Down": ""}, "names": {"Big Apple": "Sour
+Apple"}}` — a store's line or strain on the left, the site's on the right, "" for none.
+Use it only for names you have confirmed are the same product.
+
+**`title_case`: true** for a site that writes names in capitals ("UPLIFTING Pineapple"):
+capitalised words longer than three letters become Title case, shorter ones (OG, GSC,
+MAC) stay.
+
+**What an entry gets.** Name is line + strain. Entries are one per product and size: a
+site that repeats a product (a lab-results list, one row per lot) keeps the first. Size is read by `scripts/sizes.py` from
 `size` (+ `size2`), else the variant, else the title: weight categories are written as
 the package total ("3.5g"; "1/2 Gram Pre-Rolls | 7pk" is 3.5g), doses with the pack
 ("10pk 100mg"). Subtype comes from format words in the title (Cart, AIO, Pod) unless a

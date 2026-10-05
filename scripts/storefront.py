@@ -98,11 +98,14 @@ RECIPE_DIR = ROOT / "data" / "storefronts"
 CATALOG_DIR = ROOT / "data" / "catalogs"
 TIMEOUT_SECONDS = 30
 USER_AGENT = "Mozilla/5.0 (compatible; terpenomics-catalog/1.0)"
-FIELDS = ("title", "product_type", "tags", "vendor", "url", "body", "variant", "meta")
+FIELDS = ("title", "product_type", "tags", "vendor", "url", "body", "variant", "meta", "page")
 GROUPS = {"line", "strain", "size", "size2"}
 TITLE_FIELDS = FIELDS + ("category",)
 SET_KEYS = {"category", "subtype", "line", "strain", "size"}
 MAX_UNPARSED = 0.10
+# Categories whose subtype is a format named in the listing ("Cart", "AIO", "Gummies")
+# and so can tell two store and site products apart (split_store_products).
+SUBTYPE_DECIDES = {"vaporizers", "edible"}
 # difflib ratio at which two names of one category and size are one product:
 # "mandarindog"/"mandarinedog" 0.96, "grandadypurp"/"grandadypurple" 0.92, while
 # "bluedream"/"bluedreamhaze" is 0.82 and "gelato33"/"gelato41" 0.75.
@@ -120,15 +123,33 @@ class Item:
 
 # --------------------------------------------------------------------------- sources
 
+RETRIES = 3
+
+
 def _get_text(url: str, post: str | None = None) -> str:
     """The body at `url` as text. Some hosts send gzip whether or not it was asked for
-    (Webflow's page data), so the magic bytes decide, not the headers."""
+    (Webflow's page data), so the magic bytes decide, not the headers. A dropped
+    connection, a 5xx or a 429 is retried with backoff (Presidential's host resets about
+    one request in twenty; Wix throttles back-to-back pages); any other 4xx is an
+    answer, not a hiccup, and is raised at once."""
     import gzip
+    import time
+    import urllib.error
     req = urllib.request.Request(url, data=post.encode() if post is not None else None, headers={
         "User-Agent": USER_AGENT, "Accept": "application/json, text/html;q=0.9, */*;q=0.8",
         **({"Content-Type": "application/x-www-form-urlencoded"} if post is not None else {})})
-    with urllib.request.urlopen(req, timeout=TIMEOUT_SECONDS) as r:
-        body = r.read()
+    for attempt in range(RETRIES + 1):
+        try:
+            with urllib.request.urlopen(req, timeout=TIMEOUT_SECONDS) as r:
+                body = r.read()
+            break
+        except urllib.error.HTTPError as e:
+            if (e.code < 500 and e.code != 429) or attempt == RETRIES:
+                raise
+        except (urllib.error.URLError, ConnectionError, TimeoutError):
+            if attempt == RETRIES:
+                raise
+        time.sleep(2 ** attempt)
     if body[:2] == b"\x1f\x8b":
         body = gzip.decompress(body)
     return body.decode("utf-8", errors="replace")
@@ -155,10 +176,11 @@ def _variant_label(label: str | None) -> str | None:
     return None if not label or label.lower() == "default title" else label
 
 
-def shopify(source: dict, get=_get_json) -> list[Item]:
+def shopify(source: dict, get=None) -> list[Item]:
     """A Shopify store's public /products.json, 250 products a page, one item per
     variant: the variant id is the entry's external id, as brand_catalog.py has
     always used for Shopify."""
+    get = get or _get_json
     items = []
     for page in range(1, 41):
         products = get(_page(source["url"], limit=250, page=page)).get("products") or []
@@ -179,9 +201,10 @@ def shopify(source: dict, get=_get_json) -> list[Item]:
     return items
 
 
-def woocommerce(source: dict, get=_get_json) -> list[Item]:
+def woocommerce(source: dict, get=None) -> list[Item]:
     """WooCommerce's public Store API (/wp-json/wc/store/v1/products), 100 a page, one
     item per variation where a product has them."""
+    get = get or _get_json
     items = []
     for page in range(1, 101):
         products = get(_page(source["url"], per_page=100, page=page)) or []
@@ -204,11 +227,12 @@ def woocommerce(source: dict, get=_get_json) -> list[Item]:
     return items
 
 
-def wordpress(source: dict, get=_get_json) -> list[Item]:
+def wordpress(source: dict, get=None) -> list[Item]:
     """A WordPress post type over the REST API (/wp-json/wp/v2/<type>), 100 a page, with
     `_embed` so each post's taxonomy terms come with their names (tags). class_list —
     the term slugs WordPress puts on the post — is product_type; custom fields (ACF)
     are meta."""
+    get = get or _get_json
     import urllib.error
     items = []
     for page in range(1, 101):
@@ -235,22 +259,54 @@ def wordpress(source: dict, get=_get_json) -> list[Item]:
     return items
 
 
-def _pages(source: dict, get_text=_get_text) -> list[tuple[str, str]]:
-    """(url, text) for every page a source names: `url` alone; `url` with `pages`
-    ({"param": "page", "from": 1, "to": 15}, stopping at the first empty page is the
-    caller's business); `urls`; or `sitemap` ({"url": ..., "match": regex}) for a site
-    whose products are each on their own page."""
+def _pages(source: dict, get_text=None):
+    """(url, text) for every page a source names, fetched as they are read, so a reader
+    that stops early (a paged listing at its first empty page) fetches no more.
+
+    `url` alone; `url` with `pages` ({"param": "page", "from": 1, "to": 15}), which ends
+    at the first page that is missing, and whose `post` body may carry the page number
+    as {page} (a WordPress "load more"); `urls`; or `sitemap` ({"url": ..., "match":
+    regex}) for a site with one product per page. `query` adds parameters to every
+    page of a list or sitemap (PAX shows New York's sizes at ?geocode=us-ny). One
+    product page gone from a list costs that product; most of them gone is the site,
+    and is raised."""
+    get_text = get_text or _get_text
+    import urllib.error
     post = source.get("post")
+    if source.get("pages"):
+        pg = source["pages"]
+        for n in range(pg.get("from", 1), pg["to"] + 1):
+            url = source["url"] if pg.get("in_post") else _page(source["url"], **{pg["param"]: n})
+            body = post.replace("{page}", str(n)) if post else None
+            try:
+                yield url, get_text(url, body)
+            except urllib.error.HTTPError as e:
+                if e.code in (404, 410) and n > pg.get("from", 1):
+                    return
+                raise
+        return
     if source.get("sitemap"):
         sm = source["sitemap"]
         urls = [u for u in re.findall(r"<loc>\s*([^<\s]+)\s*</loc>", get_text(sm["url"]))
                 if re.search(sm.get("match") or "", u)]
-    elif source.get("pages"):
-        pg = source["pages"]
-        urls = [_page(source["url"], **{pg["param"]: n}) for n in range(pg.get("from", 1), pg["to"] + 1)]
     else:
         urls = source.get("urls") or [source["url"]]
-    return [(u, get_text(u, post)) for u in urls]
+    urls = [_page(u, **source["query"]) for u in urls] if source.get("query") else urls
+    if len(urls) == 1:
+        yield urls[0], get_text(urls[0], post)
+        return
+    failed = []
+    for u in urls:
+        try:
+            text = get_text(u, post)
+        except Exception as e:  # noqa: BLE001 — any one page; the count decides
+            failed.append(f"{u}: {e}")
+            continue
+        yield u, text
+    if failed:
+        print(f"  {len(failed)} of {len(urls)} pages failed, e.g. {failed[0]}")
+        if len(failed) * 2 > len(urls):
+            raise RuntimeError(f"{len(failed)} of {len(urls)} pages failed")
 
 
 def _css(node, spec: str) -> str:
@@ -263,19 +319,23 @@ def _css(node, spec: str) -> str:
     return " | ".join(v.strip() for v in vals if v and v.strip())
 
 
-def html_cards(source: dict, get_text=_get_text) -> list[Item]:
+def html_cards(source: dict, get_text=None) -> list[Item]:
     """Product cards in a page's HTML: `item` is a CSS selector for one product (the
     whole page when absent, as on a sitemap of product pages), `fields` maps our
     fields to selectors within it. A paged listing stops at its first empty page."""
-    from bs4 import BeautifulSoup
+    get_text = get_text or _get_text
+    import warnings
+    from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
     items, spec = [], source["fields"]
     for url, text in _pages(source, get_text):
-        soup = BeautifulSoup(text, "html.parser")
+        with warnings.catch_warnings():     # an RSS feed read as HTML parses fine
+            warnings.simplefilter("ignore", XMLParsedAsHTMLWarning)
+            soup = BeautifulSoup(text, "html.parser")
         cards = soup.select(source["item"]) if source.get("item") else [soup]
         if not cards and source.get("pages"):
             break
         for card in cards:
-            f = {k: _css(card, sel) for k, sel in spec.items()}
+            f = {"page": url, **{k: _css(card, sel) for k, sel in spec.items()}}
             if f.get("url"):
                 f["url"] = urllib.parse.urljoin(url, f["url"])
             title = f.get("title") or ""
@@ -313,12 +373,13 @@ def _flat(values) -> str:
     return ", ".join(x for x in out if x)
 
 
-def json_items(source: dict, get_text=_get_text) -> list[Item]:
+def json_items(source: dict, get_text=None) -> list[Item]:
     """Products in JSON: an API (a Gatsby page-data file, a headless CMS query) or a
     blob a page embeds, pulled out by `extract` (a regex whose first group is the
     JSON). `lenient` parses a JavaScript object literal (unquoted keys) with json5.
     `items` is the dot path to the products; `fields` maps our fields to dot paths
     within one."""
+    get_text = get_text or _get_text
     items, spec = [], source["fields"]
     for url, text in _pages(source, get_text):
         if source.get("extract"):
@@ -332,7 +393,7 @@ def json_items(source: dict, get_text=_get_text) -> list[Item]:
         else:
             data = json.loads(text)
         for node in _at(data, source["items"]):
-            f = {k: _flat(_at(node, path)) for k, path in spec.items()}
+            f = {"page": url, **{k: _flat(_at(node, path)) for k, path in spec.items()}}
             if f.get("url"):
                 f["url"] = urllib.parse.urljoin(url, f["url"])
             title = f.get("title") or ""
@@ -380,9 +441,23 @@ def validate(recipe: dict, where: str = "recipe") -> dict:
     kind = (recipe.get("source") or {}).get("kind")
     if kind not in SOURCES:
         bad(f"source.kind {kind!r} is not one of {sorted(SOURCES)}")
+    for table in (recipe.get("store_aliases") or {}):
+        if table not in ("lines", "names"):
+            bad(f"store_aliases.{table}: only lines and names are mapped")
     src = recipe["source"]
-    if not (src.get("url") or src.get("urls") or src.get("sitemap")):
-        bad("source needs url, urls or sitemap")
+    if not (src.get("url") or src.get("urls") or src.get("sitemap") or src.get("discover")):
+        bad("source needs url, urls, sitemap or discover")
+    if src.get("discover"):
+        d = src["discover"]
+        try:
+            if not (d.get("url") and re.compile(d.get("match") or "").groups >= 1):
+                bad("source.discover needs url, and a match with a group for the data URL")
+        except re.error as e:
+            bad(f"source.discover.match: {e}")
+    for i, rule in enumerate(recipe.get("skip") or []):
+        old = rule.get("older_than")
+        if old is not None and (old.get("field") not in FIELDS or not isinstance(old.get("days"), int)):
+            bad(f"skip[{i}].older_than needs a field and whole days")
     if kind in ("html", "json") and not (src.get("fields") or {}).get("title"):
         bad(f"source.fields.title is required for {kind}")
     if kind == "json" and not src.get("items"):
@@ -423,8 +498,18 @@ def validate(recipe: dict, where: str = "recipe") -> dict:
 
 
 def fetch(recipe: dict) -> list[Item]:
-    reader, _ = SOURCES[recipe["source"]["kind"]]
-    return reader(recipe["source"])
+    """The site's items. A source with `discover` ({"url": page, "match": regex}) reads
+    that page first and takes the data URL from the regex's first group, for a site
+    whose data file is renamed on every upload (Dank By Definition's lab-results file)."""
+    source = dict(recipe["source"])
+    if source.get("discover"):
+        d = source["discover"]
+        m = re.search(d["match"], _get_text(d["url"]))
+        if not m:
+            raise ValueError(f"discover: {d['match']!r} found nothing on {d['url']}")
+        source["url"] = urllib.parse.urljoin(d["url"], m.group(1))
+    reader, _ = SOURCES[source["kind"]]
+    return reader(source)
 
 
 # --------------------------------------------------------------------------- build
@@ -433,9 +518,53 @@ def _when(rule: dict, fields: dict) -> bool:
     return all(re.search(p, fields.get(f) or "") for f, p in (rule.get("when") or {}).items())
 
 
+_DATE = re.compile(r"\b(20\d\d)[-/.](\d{1,2})[-/.](\d{1,2})\b")
+
+
+def _older(spec: dict, fields: dict, today=None) -> bool:
+    """A skip rule's `older_than` ({"field": "meta", "days": 365}): true when the field's
+    first date (YYYY-MM-DD) is more than `days` old, or when it has none — a lab-results
+    list hides undated and year-old batches, and the window should roll by itself
+    rather than wait for someone to move a date in a regex."""
+    from datetime import date, timedelta
+    m = _DATE.search(fields.get(spec["field"]) or "")
+    if not m:
+        return True
+    try:
+        when = date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+    except ValueError:
+        return True
+    return when < (today or date.today()) - timedelta(days=spec["days"])
+
+
 def _clean(s: str | None) -> str | None:
     s = re.sub(r"\s+", " ", s or "").strip(" -|,:")
     return s or None
+
+
+# Capitalised words that are acronyms in cannabis names, not shouting.
+ACRONYMS = {"OG", "GMO", "MAC", "GSC", "SFV", "GG", "GDP", "LA", "NYC", "NY", "THC",
+            "CBD", "CBN", "CBG", "CBC", "AIO", "XL", "XXL", "UK", "BHO", "RSO", "PB", "OZ",
+            "ATF", "OGKB", "ZKZ", "PCK", "DJ", "AK", "CA", "SR"}
+
+
+def _title_case(s: str | None) -> str | None:
+    """For a site that writes names in capitals ("UPLIFTING Pineapple", "KEY LIME PIE")
+    or all in lower case ("gmo funk"): a capitalised word becomes Title case unless it is
+    an acronym — ACRONYMS, two letters or fewer, or holding a digit ("SF16", "RS11"); an
+    all-lower-case name is capitalised word by word, ACRONYMS upper-cased."""
+    if not s:
+        return s
+    if s.islower():                                    # "gmo funk" -> "GMO Funk"
+        s = " ".join(w if w == "x" else w.upper() if w.upper() in ACRONYMS else w.capitalize()
+                     for w in s.split(" "))
+
+    def word(w: str) -> str:
+        core = w.strip("()[]-,.'\"")
+        if not core.isupper() or core in ACRONYMS or len(core) <= 2 or any(c.isdigit() for c in core):
+            return w
+        return w.replace(core, core.capitalize())
+    return " ".join(word(w) for w in s.split(" "))
 
 
 def _variant(size: sizes.Size, measure: str) -> str | None:
@@ -457,7 +586,8 @@ def build(recipe: dict, items: list[Item]) -> tuple[dict, dict]:
     _, method = SOURCES[recipe["source"]["kind"]]
     entries, skipped, unparsed = [], Counter(), []
     for it in items:
-        rule = next((r for r in recipe.get("skip") or [] if _when(r, it.fields)), None)
+        rule = next((r for r in recipe.get("skip") or [] if _when(r, it.fields)
+                     and (not r.get("older_than") or _older(r["older_than"], it.fields))), None)
         if rule is not None:
             skipped[rule.get("why") or "skip rule"] += 1
             continue
@@ -485,6 +615,8 @@ def build(recipe: dict, items: list[Item]) -> tuple[dict, dict]:
                 got = {**{k: v for k, v in em.groupdict().items() if v}, **got}
         line = _clean(got.get("line") or consts.get("line"))
         strain = _clean(got.get("strain") or consts.get("strain"))
+        if recipe.get("title_case"):
+            line, strain = _title_case(line), _title_case(strain)
         stated = " ".join(x for x in (got.get("size"), got.get("size2")) if x) or consts.get("size")
         spec = taxonomy.SPECS[category]
         size = sizes.parse(*([stated] if stated else [it.variant, it.title]), category=category)
@@ -508,10 +640,21 @@ def build(recipe: dict, items: list[Item]) -> tuple[dict, dict]:
             "match_terms": sorted({t for t in (strip_brand(it.title, brand), norm_name(it.title)) if t}),
             "source": method,
         })
+    # One entry per product and size. A lab-results list repeats a product once per lot
+    # (7 SEAZ: 198 rows, 142 products), and a store that lists a product twice would
+    # otherwise be two rows in the admin; the first keeps its id, all names are kept.
+    unique: dict[tuple, dict] = {}
+    for e in entries:
+        first = unique.setdefault((e["product_key"], e["variant"]), e)
+        if first is not e:
+            first["match_terms"] = sorted(set(first["match_terms"]) | set(e["match_terms"]))
+    collapsed = len(entries) - len(unique)
+    entries = list(unique.values())
+    src = recipe["source"]
     doc = {
         "brand_slug": slugify(brand),
         "brand_name": brand,
-        "source_url": recipe["source"]["url"],
+        "source_url": src.get("url") or (src.get("sitemap") or {}).get("url") or recipe.get("site"),
         "source_method": method,
         "fetched_at": datetime.now(timezone.utc).isoformat(),
         "product_count": len({e["product_key"] for e in entries}),
@@ -520,6 +663,7 @@ def build(recipe: dict, items: list[Item]) -> tuple[dict, dict]:
     report = {
         "brand": brand, "items": len(items), "entries": len(entries),
         "products": doc["product_count"], "skipped": dict(skipped), "unparsed": unparsed,
+        "duplicates_collapsed": collapsed,
         "by_category": dict(Counter(e["category"] for e in entries)),
         "size_incomplete": [f"{e['name']} ({e['category']}: {e['variant']})"
                             for e in entries if not _size_complete(e)],
@@ -539,45 +683,77 @@ def _names(entry: dict) -> dict:
     and Cream": the line, the strain, and both read together."""
     line = norm_name(entry.get("product_line") or "")
     strain = norm_name(entry.get("strain") or entry.get("name") or "")
+    strain = re.sub(r"^(.+) x \1$", r"\1", strain)    # "Hash Burger x Hash Burger" is Hash Burger
+    if " x " in strain:                                # a cross is the same either way round
+        strain = " x ".join(sorted(strain.split(" x ")))
     return {"line": strain_key(line), "strain": strain_key(strain), "full": strain_key(line + strain)}
 
 
-def _same_names(a: dict, b: dict) -> bool:
-    """One product's two names. Exactly the same with the line read in or left out (a
-    store that writes "Live Resin Jealousy" as the strain, or drops the line); or, where
-    the lines do not disagree, strains that differ only in spelling ("Mandarin Dog",
-    "Mandarine Dog"). Never a ratio over line and strain together: a shared line makes
-    "Live Resin Jealousy Haze" look like "Live Resin Jealousy"."""
+def _name_match(a: dict, b: dict) -> str | None:
+    """Whether two names are one product's: "exact" — the same with the line read in or
+    left out (a store that writes "Live Resin Jealousy" as the strain, or drops the
+    line); "similar" — where the lines do not disagree, strains that differ only in
+    spelling ("Mandarin Dog", "Mandarine Dog"); else None. Never a ratio over line and
+    strain together: a shared line makes "Live Resin Jealousy Haze" look like "Live
+    Resin Jealousy". A ratio also passes "Blue Cream" for "Blue Dream", which is why
+    only an exact match carries store names (split_store_products)."""
     if a["full"] in (b["full"], b["strain"]) or a["strain"] == b["full"]:
-        return True
+        return "exact"
     lines_agree = not a["line"] or not b["line"] or a["line"] == b["line"]
-    return lines_agree and SequenceMatcher(None, a["strain"], b["strain"]).ratio() >= SIMILAR
+    if lines_agree and SequenceMatcher(None, a["strain"], b["strain"]).ratio() >= SIMILAR:
+        return "similar"
+    return None
 
 
-def split_store_products(doc: dict, listings: list[dict]) -> tuple[list[dict], list[dict], dict]:
+def _aliased(entry: dict, aliases: dict) -> dict:
+    """A store product named the way the site names it, for comparing the two: the
+    recipe's `store_aliases` map a store's line ("Up" -> "", turn's effect labels in the
+    line field) and strain ("Big Apple" -> "Sour Apple") to the site's. Keys compare
+    by norm_name; an empty value means none."""
+    def look(table: dict, value: str | None) -> str | None:
+        hit = {norm_name(k): v for k, v in (table or {}).items()}.get(norm_name(value or ""))
+        return value if hit is None else (hit or None)
+    return {**entry, "product_line": look(aliases.get("lines"), entry.get("product_line")),
+            "strain": look(aliases.get("names"), entry.get("strain"))}
+
+
+def split_store_products(doc: dict, listings: list[dict],
+                         aliases: dict | None = None) -> tuple[list[dict], list[dict], dict]:
     """The products stores sell under the brand, as catalog_bootstrap.propose() builds
     them from our listings: those the site's catalog has, those only stores have, and
     the store names to add to site entries ({external_id: names}).
 
-    A store product that matches one site product unambiguously brings its store
-    names along, so those listings keep resolving `exact`, with no model call, as they
-    did against the bootstrap entry. One that matches two (stores' "Mule Fuel 1g"
-    against the site's plain and Live Resin Infused singles) brings none."""
+    A store product that matches one site product exactly brings its store names
+    along, so those listings keep resolving `exact`, with no model call, as they did
+    against the bootstrap entry. One that matches by spelling only, or matches two
+    (stores' "Mule Fuel 1g" against the site's plain and Live Resin Infused singles),
+    brings none: the model decides those listings one by one. For a vape or an edible,
+    subtype must agree where both say one — a store's "Candy Rain AIO" is not the site's
+    Candy Rain cart, and the format word is in the name. Elsewhere the stores' subtype
+    is too often enrichment's default to overrule a name (Spacebuds' moonrocks are
+    "infused" on the site and "flower" at the stores)."""
     proposed = catalog_bootstrap.propose(doc["brand_name"], listings)["catalog"]["entries"]
     site = defaultdict(list)
     for e in doc["entries"]:
         site[e["category"]].append((_total(e), _names(e), e))
     found, only_stores, terms = [], [], defaultdict(set)
     for p in proposed:
-        total, names = _total(p), _names(p)
-        hits = [e for t, n, e in site[p["category"]]
-                if catalog_bootstrap._same_total(total, t) and _same_names(names, n)]
+        total, names = _total(p), _names(_aliased(p, aliases or {}))
+        hits = []
+        for t, n, e in site[p["category"]]:
+            if not catalog_bootstrap._same_total(total, t):
+                continue
+            if p["category"] in SUBTYPE_DECIDES and p.get("subtype") and e.get("subtype") \
+                    and p["subtype"] != e["subtype"]:
+                continue
+            if (how := _name_match(names, n)):
+                hits.append((how, e))
         if not hits:
             only_stores.append(p)
             continue
         found.append(p)
-        if len({e["product_key"] for e in hits}) == 1:
-            for e in hits:
+        if len({e["product_key"] for _, e in hits}) == 1 and all(how == "exact" for how, _ in hits):
+            for _, e in hits:
                 terms[e["external_id"]].update(p.get("match_terms") or [])
     return found, only_stores, dict(terms)
 
@@ -632,7 +808,8 @@ def refusal(report: dict) -> str | None:
 
 def print_check(report: dict, found: list[dict] | None, only_stores: list[dict] | None) -> None:
     print(f"{report['brand']}: {report['items']} items -> {report['entries']} entries, "
-          f"{report['products']} products {report['by_category']}")
+          f"{report['products']} products {report['by_category']}"
+          + (f" ({report['duplicates_collapsed']} repeats collapsed)" if report["duplicates_collapsed"] else ""))
     if report["skipped"]:
         print("  skipped: " + ", ".join(f"{k} {v}" for k, v in report["skipped"].items()))
     for u in report["unparsed"]:
@@ -673,7 +850,7 @@ def main() -> None:
         found = only_stores = terms = None
         if not args.offline:
             found, only_stores, terms = split_store_products(
-                doc, store_listings(recipe["brand"], args.via_http))
+                doc, store_listings(recipe["brand"], args.via_http), recipe.get("store_aliases"))
         if args.command == "check":
             print_check(report, found, only_stores)
         elif args.command == "fetch":

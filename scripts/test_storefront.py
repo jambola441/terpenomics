@@ -151,9 +151,12 @@ def test_stores_fill_in_only_what_the_site_lacks():
     pushed = storefront.with_store_products(doc, only_stores, terms)
     assert len(pushed["entries"]) == len(doc["entries"]) + 3
     assert {e["source"] for e in pushed["entries"]} == {"shopify_products_json", "listings_bootstrap"}
-    # The stores' names for a site product travel with it, so those listings stay exact.
+    # Store names travel with an exact match only: "Mandarin Dog" is a spelling of the
+    # site's "Mandarine Dog" — or a different strain; the model decides those listings.
     dog = next(e for e in pushed["entries"] if e["strain"] == "Mandarine Dog")
-    assert "mandarin dog lri 5pk" in dog["match_terms"]
+    assert "mandarin dog lri 5pk" not in dog["match_terms"]
+    cream = next(e for e in pushed["entries"] if e["strain"] == "Strawberries and Cream")
+    assert "strawberries and cream 7pk" in cream["match_terms"]
 
 
 def test_a_store_product_matching_two_site_products_brings_no_names():
@@ -228,3 +231,149 @@ def test_extract_reads_a_size_from_the_description():
     doc, report = storefront.build(recipe, items)
     [e] = doc["entries"]
     assert (e["product_line"], e["strain"], e["variant"]) == ("Offline", "Grape Punch", "10pk 100mg")
+
+
+def test_repeats_collapse_and_capitals_can_be_title_cased():
+    recipe = storefront.validate({
+        "brand": "7 SEAZ", "title_case": True,
+        "source": {"kind": "shopify_json", "url": "https://s.example/products.json"},
+        "category": [{"set": {"category": "preroll"}}],
+        "title": [{"match": "^(?P<line>[A-Z ]+?) - (?P<strain>.+?) (?P<size>[\\d.]+G)"}]})
+    lots = [product(1, "TIDAL WAVES - SFV OG 3G Lot 1"), product(2, "TIDAL WAVES - SFV OG 3G Lot 2"),
+            product(3, "TIDAL WAVES - SFV OG 1.2G Lot 1")]
+    doc, report = storefront.build(recipe, storefront.shopify(recipe["source"], get=fake_get([{"products": lots}])))
+    assert sorted((e["name"], e["variant"]) for e in doc["entries"]) == \
+        [("Tidal Waves SFV OG", "1.2g"), ("Tidal Waves SFV OG", "3g")]
+    assert report["duplicates_collapsed"] == 1
+    three = next(e for e in doc["entries"] if e["variant"] == "3g")
+    assert {"tidal waves sfv og 3g lot 1", "tidal waves sfv og 3g lot 2"} <= set(three["match_terms"])
+
+
+def test_title_case_leaves_acronyms_and_codes():
+    assert storefront._title_case("KEY LIME PIE") == "Key Lime Pie"
+    assert storefront._title_case("SFV OG x MAC 1") == "SFV OG x MAC 1"
+    assert storefront._title_case("SF16 FUJI FIG (GMO)") == "SF16 Fuji Fig (GMO)"
+    assert storefront._title_case("Blue Dream") == "Blue Dream"
+
+
+def test_store_aliases_map_a_store_line_and_name_to_the_sites():
+    doc, _ = build()
+    stores = [*[listing(s, "Calm Peach Gummies 100mg", "Peach", "edible", "10pk 100mg", line="Chill",
+                        subtype="gummy") for s in ("a", "b")],
+              *[listing(s, "Cauldron Brew 5pk", "Cauldron Brew", "preroll", "2.5g", line="Live Resin Infused")
+                for s in ("a", "b")]]
+    found, only_stores, _ = storefront.split_store_products(doc, stores)
+    assert sorted(e["name"] for e in only_stores) == ["Chill Peach", "Live Resin Infused Cauldron Brew"]
+    aliases = {"lines": {"chill": "Calm"}, "names": {"Cauldron Brew": "Witches Brew"}}
+    found, only_stores, terms = storefront.split_store_products(doc, stores, aliases)
+    assert not only_stores and len(found) == 2
+    with pytest.raises(SystemExit, match="only lines and names"):
+        storefront.validate({**FLORIST, "store_aliases": {"sizes": {}}})
+
+
+def test_a_missing_page_costs_its_product_and_most_pages_missing_fails():
+    import urllib.error
+    pages = {"/p/1": "<h1>A | 1g</h1>", "/p/2": None, "/p/3": "<h1>C | 1g</h1>"}
+
+    def get(url, post=None):
+        if url.endswith("sitemap.xml"):
+            return "".join(f"<loc>https://s.example{p}</loc>" for p in pages)
+        text = pages[url.replace("https://s.example", "")]
+        if text is None:
+            raise urllib.error.HTTPError(url, 404, "gone", {}, None)
+        return text
+    src = {"kind": "html", "sitemap": {"url": "https://s.example/sitemap.xml", "match": "/p/"},
+           "fields": {"title": "h1"}}
+    items = storefront.html_cards(src, get_text=get)
+    assert [i.title for i in items] == ["A | 1g", "C | 1g"]
+    assert items[0].fields["page"] == "https://s.example/p/1"
+    pages["/p/3"] = None
+    with pytest.raises(RuntimeError, match="2 of 3 pages failed"):
+        storefront.html_cards(src, get_text=get)
+
+
+def test_a_dropped_connection_is_retried(monkeypatch):
+    import io
+    import urllib.error
+    calls = []
+
+    class Resp(io.BytesIO):
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+
+    def urlopen(req, timeout=None):
+        calls.append(1)
+        if len(calls) < 3:
+            raise urllib.error.URLError(ConnectionResetError("reset"))
+        return Resp(b'{"ok": true}')
+    monkeypatch.setattr(storefront.urllib.request, "urlopen", urlopen)
+    monkeypatch.setattr("time.sleep", lambda s: None)
+    assert storefront._get_json("https://flaky.example/x") == {"ok": True} and len(calls) == 3
+
+    def not_found(req, timeout=None):
+        calls.append(1)
+        raise urllib.error.HTTPError(req.full_url, 404, "no", {}, None)
+    calls.clear()
+    monkeypatch.setattr(storefront.urllib.request, "urlopen", not_found)
+    with pytest.raises(urllib.error.HTTPError):
+        storefront._get_json("https://flaky.example/x")
+    assert len(calls) == 1                                           # a 4xx is an answer
+
+
+def test_store_products_need_the_same_subtype_and_a_repeat_name_is_one():
+    doc, _ = build(SITE + [product(30, "Hash Burger x Hash Burger | 1 Gram Pre-Roll | Single", "Joint")])
+    stores = [*[listing(s, "Northern Lights AIO 1g", "Northern Lights", "vaporizers", "1g",
+                        subtype="all-in-one") for s in ("a", "b")],
+              *[listing(s, "Hash Burger 1g", "Hash Burger", "preroll", "1g") for s in ("a", "b")]]
+    found, only_stores, terms = storefront.split_store_products(doc, stores)
+    assert [e["name"] for e in only_stores] == ["Northern Lights"]     # the site's is a cart
+    assert [e["name"] for e in found] == ["Hash Burger"] and len(terms) == 1
+
+
+def test_paged_sources_stop_at_the_first_missing_page_and_can_post_the_page():
+    import urllib.error
+    seen = []
+
+    def get(url, post=None):
+        seen.append((url, post))
+        n = int(post.split("=")[-1])
+        if n > 2:
+            raise urllib.error.HTTPError(url, 404, "past the end", {}, None)
+        return f'<div class="p"><h3>Strain {n} | 1g</h3></div>'
+    src = {"kind": "html", "url": "https://r.example/wp-admin/admin-ajax.php",
+           "pages": {"param": "page", "from": 1, "to": 9, "in_post": True},
+           "post": "action=load_more_products&page={page}", "item": "div.p", "fields": {"title": "h3"}}
+    items = storefront.html_cards(src, get_text=get)
+    assert [i.title for i in items] == ["Strain 1 | 1g", "Strain 2 | 1g"]
+    assert [p for _, p in seen] == [f"action=load_more_products&page={n}" for n in (1, 2, 3)]
+
+
+def test_discover_reads_the_data_url_off_a_page(monkeypatch):
+    pages = {"https://d.example/coa": "<script>DATA = ['/s/1790_master.js'];</script>",
+             "https://d.example/s/1790_master.js": '{"rows": [{"name": "GELATO", "size": "3.5 GRAM BAGS"}]}'}
+    monkeypatch.setattr(storefront, "_get_text", lambda url, post=None: pages[url])
+    recipe = storefront.validate({
+        "brand": "Dank", "source": {"kind": "json", "items": "rows.*",
+                                    "discover": {"url": "https://d.example/coa", "match": "'(/s/\\d+_master\\.js)'"},
+                                    "fields": {"title": "name", "variant": "size"}},
+        "category": [{"set": {"category": "flower"}}], "title": [{"match": "^(?P<strain>.+)$"}]})
+    [item] = storefront.fetch(recipe)
+    assert (item.title, item.variant) == ("GELATO", "3.5 GRAM BAGS")
+
+
+def test_older_than_rolls_with_the_date():
+    from datetime import date
+    spec = {"field": "meta", "days": 365}
+    today = date(2026, 10, 5)
+    assert not storefront._older(spec, {"meta": "tested 2026-01-02"}, today)
+    assert storefront._older(spec, {"meta": "2025-10-04"}, today)
+    assert storefront._older(spec, {"meta": "no date"}, today)          # undated is hidden too
+
+
+def test_a_cross_is_the_same_either_way_round_and_gram_packs_read():
+    a = storefront._names({"strain": "Napa x Strawberry Lemonade"})
+    b = storefront._names({"strain": "Strawberry Lemonade x Napa"})
+    assert storefront._name_match(a, b) == "exact"
+    import sizes
+    assert sizes.parse("5 x 0.5 gram Pre-Rolls", category="preroll") == \
+        sizes.Size(grams=2.5, pack=5, unit_g=0.5)
