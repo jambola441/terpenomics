@@ -34,7 +34,10 @@ How a group is formed
   line fix   a group with no line folds into the one group that has the same
              category, strain and size *with* a line — the product_line split that is
              12% of the products view, removed by construction. A lined group too
-             small to be an entry does not count against that "one".
+             small to be an entry does not count against that "one". A group whose
+             strain is another's line and strain written together ("Calm Peach" vs
+             line "Calm", strain "Peach") merges with it, written the way more stores
+             write it.
   variant    for a category measured by weight (taxonomy.py), the package total
              alone: "3.5g", not "7pk 3.5g". Stores state the pack count unevenly, and
              a listing keeps its own label; the entry's size is what identifies it.
@@ -157,18 +160,15 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
 
     # A line the model folded into the strain at some stores ("Championship Cake
     # Powdered Donuts" beside line "Powdered Donuts" elsewhere). De-lined only against
-    # the brand's consensus vocabulary, lines two or more stores recorded as a line —
-    # never against one listing's own guess, which is how "Blue Dream" with a model line
-    # of "Dream" would become "Blue". A one-word line is too common a word to take out
-    # on that alone: it comes out only when what is left is a strain the brand's
-    # listings record in that line ("Calm Peach" beside line "Calm", strain "Peach").
+    # the brand's consensus vocabulary, and only for lines of two or more words that
+    # two or more stores recorded as a line — never against one listing's own guess,
+    # which is how "Blue Dream" with a model line of "Dream" would become "Blue".
     stores_per_line = defaultdict(set)
-    line_strains = set()
     for l in rows:
         if l.get("product_line"):
             stores_per_line[squash(l["product_line"])].add(l["dispensary_id"])
-            line_strains.add((squash(l["product_line"]), strain_key(l["strain"])))
-    vocab = {k: line_spelling[k] for k, st in stores_per_line.items() if len(st) >= 2}
+    vocab = {k: line_spelling[k] for k, st in stores_per_line.items()
+             if len(st) >= 2 and len(line_spelling[k].split()) >= 2}
     delined = 0
     for l in rows:
         if l.get("product_line"):
@@ -176,12 +176,11 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
         for key, line in vocab.items():
             pattern = re.compile(r"(?<![A-Za-z0-9])" + r"[\s\-_]*".join(
                 re.escape(w) for w in line.split()) + r"(?![A-Za-z0-9])", re.I)
-            if not pattern.search(l["strain"]):
-                continue
-            rest = re.sub(r"\s{2,}", " ", pattern.sub(" ", l["strain"])).strip(" -|,x")
-            if rest and (len(line.split()) >= 2 or (key, strain_key(rest)) in line_strains):
-                l["strain"], l["product_line"] = rest, line
-                delined += 1
+            if pattern.search(l["strain"]):
+                rest = re.sub(r"\s{2,}", " ", pattern.sub(" ", l["strain"])).strip(" -|,x")
+                if rest:
+                    l["strain"], l["product_line"] = rest, line
+                    delined += 1
                 break
 
     # Grouped on the package total only. Stores mention the pack count inconsistently
@@ -243,6 +242,36 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
             groups[targets[0]].listings.extend(groups.pop(key).listings)
             folded += 1
 
+    # A line written into the strain at some stores and recorded as a line at others:
+    # "Calm Peach" with no line beside line "Calm", strain "Peach". With category,
+    # subtype and size agreeing too, that is one product. The way more stores write it
+    # wins, the lined way on a tie. Never the text alone, which would let one store's
+    # line "Dream", strain "Blue" rewrite every other store's "Blue Dream".
+    by_text: dict[tuple, list[tuple]] = defaultdict(list)
+    for key in groups:
+        if key[3]:
+            for text in {strain_key(key[3] + key[2]), strain_key(key[2] + key[3])}:
+                by_text[(key[0], key[1], text)].append(key)
+    lines_in_strain = 0
+    for key in list(groups):
+        if key[3] or key not in groups:
+            continue
+        targets = [t for t in by_text.get(key[:3], []) if t in groups and _same_total(key[4], t[4])]
+        if len(targets) != 1:
+            continue
+        lined, plain = groups[targets[0]], groups[key]
+        if lined.stores >= plain.stores:
+            winner, loser = targets[0], key
+            strain = _mode([l["strain"] for l in lined.listings])
+            line = _mode([l.get("product_line") for l in lined.listings])
+        else:
+            winner, loser = key, targets[0]
+            strain, line = _mode([l["strain"] for l in plain.listings]), None
+        for l in groups[loser].listings:       # so the spelling vote below sees one name
+            l["strain"], l["product_line"] = strain, line
+        groups[winner].listings.extend(groups.pop(loser).listings)
+        lines_in_strain += 1
+
     # One spelling per product, across its sizes: the most common among its listings.
     # The key is built from it, so an entry that no spelling merge touched keeps the
     # external id it had.
@@ -291,6 +320,7 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
     report = {
         "brand": brand, "listings": len(listings), "eligible": len(rows),
         "groups": len(groups), "line_splits_folded": folded, "strains_delined": delined,
+        "lines_in_strain_merged": lines_in_strain,
         "sizes_merged": sizes_merged,
         "entries": len(entries), "listings_covered": kept_listings,
         "product_rows_before": before, "product_rows_after": after,
