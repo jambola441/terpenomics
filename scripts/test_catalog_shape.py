@@ -335,8 +335,11 @@ def test_show_prints_the_sizes_stores_write_per_line():
     listings = ([{"id": f"a{i}", "dispensary_id": f"d{i}", "catalog_entry_id": one["id"], "variant": "1g",
                   "scraped_name": "Biscotti 1g"} for i in range(3)]
                 + [{"id": f"b{i}", "dispensary_id": f"d{i}", "catalog_entry_id": pack["id"], "variant": "2.5g",
-                    "scraped_name": "Biscotti 5pk"} for i in range(2)]
-                + [{"id": "c0", "dispensary_id": "d9", "catalog_entry_id": pack["id"], "variant": "4.5g",
-                    "scraped_name": "Biscotti 5 x 0.9g"}])
+                    "scraped_name": name} for i, name in enumerate(("Biscotti 0.5g 5-pack", "Biscotti Multi-Pack"))]
+                + [{"id": f"c{i}", "dispensary_id": "d9", "catalog_entry_id": pack["id"], "variant": v,
+                    "scraped_name": name} for i, (v, name) in enumerate((("4.5g", "Biscotti 5 x 0.9g"),
+                                                                          ("4.5g", "Biscotti")))])
     text = cs.render_show(catalog, [one, pack], listings, {})
-    assert "stores write: 1g 3/3 · 5pk 2.5g 2/2 · 5pk 4.5g 1/1 (no product)" in text
+    # One package written two ways is one size: under the catalog's label when it has
+    # one, under the first one seen when it has none.
+    assert "stores write: 1g 3/3 · 2.5g 2/2 · 5pk 4.5g 2/1 (no product)" in text

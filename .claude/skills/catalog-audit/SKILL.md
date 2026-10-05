@@ -198,10 +198,12 @@ a site product at 0/0 beside a store-only product of the same shape is a rename 
 
 Under each line, `stores write` lists the sizes the line's listings state, as
 listings/stores, commonest first. `(no product)` marks a size no product of the line comes
-in. Compare the counts as you read: a size on a couple of listings beside sizes on dozens
-is worth opening (rule 10). No lead does this for you; the row is the check.
-- STIIIZY's 40's read `1g 76/12 · 5pk 2.5g 49/12 · 2.5g 5/4 · 5pk 4.5g 2/1 (no product)`.
-  The 4.5g was one store's typo for the 2.5g pack.
+in. One package written two ways ("0.5g 5-pack | 2.5g", "Multi-Pack | 2.5g") is counted
+once, under the catalog's size. Compare the counts as you read: a size on a couple of
+listings beside sizes on dozens is worth opening (rule 10). No lead does this for you; the
+row is the check.
+- STIIIZY's 40's read `1g 76/12 · 2.5g 54/12 · 5pk 4.5g 2/1 (no product)`. The 4.5g was
+  one store's typo for the 2.5g pack.
 - Camino's Gummies showed `20pk 72mg 5/1`: one store typing 72mg on five different
   gummies, a store habit no single listing reveals.
 

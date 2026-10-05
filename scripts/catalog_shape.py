@@ -506,17 +506,28 @@ def _store_only_leads(cat: str, everything: list[Product]) -> list[Lead]:
 def store_sizes(prods: list[Product], listings: list[dict]) -> dict[tuple, list[tuple[str, int, int]]]:
     """(category, line) -> [(size, listings, stores)]: the sizes the stores' own listings
     of the line state, commonest first. The counts are the tell no single row gives:
-    STIIIZY's 40's read 1g and 2.5g on dozens of listings and 4.5g on two at one store."""
+    STIIIZY's 40's read 1g and 2.5g on dozens of listings and 4.5g on two at one store.
+
+    One package written two ways is one size: "0.5g 5-pack | 2.5g" and "Multi-Pack |
+    2.5g" are both the catalog's 2.5g, so a listing is counted under the catalog size it
+    is, and under the first equivalent size seen when the catalog has none."""
     owner = {e["id"]: p for p in prods for e in p.entries}
+    catalog: dict[tuple, list[str]] = defaultdict(list)
+    for p in prods:
+        catalog[(p.category, p.line)] += [v for v in p.sizes if v != "?" and v not in catalog[(p.category, p.line)]]
     counts: dict[tuple, Counter] = defaultdict(Counter)
     stores: dict[tuple, dict[str, set]] = defaultdict(lambda: defaultdict(set))
     for l in listings:
         p = owner.get(l.get("catalog_entry_id"))
         if not p or not is_fresh(l):
             continue
-        size = sizes.parse(l.get("variant"), l.get("scraped_name"), category=p.category).label() or "unstated"
-        counts[(p.category, p.line)][size] += 1
-        stores[(p.category, p.line)][size].add(l.get("dispensary_id"))
+        key = (p.category, p.line)
+        size = sizes.parse(l.get("variant"), l.get("scraped_name"), category=p.category)
+        label = "unstated" if size.is_empty() else next(
+            (v for v in catalog[key] + [c for c in counts[key] if c != "unstated"]
+             if sizes.same_size(size, sizes.parse(v, category=p.category)) is True), size.label())
+        counts[key][label] += 1
+        stores[key][label].add(l.get("dispensary_id"))
     return {key: [(v, n, len(stores[key][v])) for v, n in c.most_common()] for key, c in counts.items()}
 
 
