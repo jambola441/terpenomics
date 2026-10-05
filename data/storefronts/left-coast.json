@@ -1,0 +1,153 @@
+{
+  "brand": "Left Coast",
+  "site": "https://www.leftcoastextracts.info",
+  "source": {
+    "kind": "html",
+    "urls": [
+      "https://www.leftcoastextracts.info/pages/new-york-lab-results",
+      "https://www.leftcoastextracts.info/pages/new-york-lab-results-page-3",
+      "https://www.leftcoastextracts.info/pages/new-york-lab-results-vapes",
+      "https://www.leftcoastextracts.info/pages/new-york-lab-results-page-2"
+    ],
+    "item": "div.image-with-text__text-container",
+    "fields": {
+      "id": "h2.image-with-text__heading",
+      "title": "h2.image-with-text__heading",
+      "body": "a@href"
+    }
+  },
+  "title_case": true,
+  "learned": "2026-10-05, agent pass: 4 hand-made 'New York Lab Results' Shopify pages, 64 product headings each with a COA link. Cannabis products are not Shopify products here (/products.json has only batteries and shirts).",
+  "notes": [
+    "The NY catalog is the chain of four lab-result pages (each ends with a 'To See More Reports Click Below' button to the next, in this order: new-york-lab-results, -page-3, -vapes, -page-2). One product per div.image-with-text__text-container: the h2 heading is the name, the button links its COA PDF. The heading is also the id, since the COA link changes with every new lot.",
+    "Headings carry strain, format and size ('Sunny Diesel Lil Lefty's Infused Prerolls 3.75g', 'Grape Cookie 2g Blunt', 'Blue Dream 1g Cart', 'Divorce Cake Infused Shake 7G'). Where the heading does not say the format, the COA file name does: gummies are bare flavours ('PINEAPPLE', 'Watermelon') whose COA says 'Gummies' or '10pk', the dual-chamber vapes are 'Cherry Pie x Pineapple Express 2g' with a '2g_Dual' COA, and the plain prerolls ('Blue Dream Preroll') have a 1g non-infused COA ('Non_1G', 'Non_Infused_1g', '1g_preroll'). Some headings are in capitals, hence title_case.",
+    "Lines are what the headings name: Lil Lefty's Infused (5 x 0.75g = 3.75g), Lil Lefty's Mini Blunts (6.5g), Infused for the 1g infused singles, Infused Shake (7g). The 2g blunts and the plain 1g prerolls name none; stores call the blunts 'Infused Blunt', which the site does not say.",
+    "Gummy size: /pages/gummies says '100mg gummies (10 pieces x 10mg each)', 'Only Available in New York'. The dual-chamber pen is one device with two tanks (/pages/dual-chamber-vape), so all-in-one.",
+    "Stores also sell 3g three-strain vapes ('Sunny Diesel x Berry Gelato x Maui Pineapple') and 'Amherst Sour Diesel' flower that the lab pages do not list (2026-10-05)."
+  ],
+  "skip": [
+    {
+      "when": {
+        "title": "(?i)^To See More Reports"
+      },
+      "why": "link to the next page"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "body": "(?i)gumm|[_\\-]10pk[_\\-]"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "gummy"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\bcart\\b"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "cart"
+      }
+    },
+    {
+      "when": {
+        "body": "(?i)[_\\-]Dual[_\\-]"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "all-in-one"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\bpre-?rolls?\\b|\\bblunts?\\b"
+      },
+      "set": {
+        "category": "preroll"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\bflower\\b|\\bshake\\b"
+      },
+      "set": {
+        "category": "flower"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^(?P<strain>.+?)\\s+Lil\\s+Lefty'?s\\s+Infused\\s+Pre-?rolls\\s+(?P<size>\\d+(?:\\.\\d+)?g)$",
+      "set": {
+        "line": "Lil Lefty's Infused"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^(?P<strain>.+?)\\s+Lil\\s+Lefty'?s\\s+Mini\\s+Blunts\\s+(?P<size>\\d+(?:\\.\\d+)?g)$",
+      "set": {
+        "line": "Lil Lefty's Mini Blunts"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^(?P<strain>.+?)\\s+(?P<size>\\d+(?:\\.\\d+)?g)\\s+Blunt$"
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^(?P<strain>.+?)\\s+(?P<size>\\d+(?:\\.\\d+)?g)\\s+Infused\\s+Pre-?roll$",
+      "set": {
+        "line": "Infused"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$",
+        "body": "(?i)[_\\-]1g[_\\-]"
+      },
+      "match": "(?i)^(?P<strain>.+?)\\s+Pre-?roll$",
+      "set": {
+        "size": "1g"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$"
+      },
+      "match": "(?i)^(?P<strain>.+?)\\s+(?P<size>\\d+(?:\\.\\d+)?g)(?:\\s+Cart)?$"
+    },
+    {
+      "when": {
+        "category": "^flower$"
+      },
+      "match": "(?i)^(?P<strain>.+?)\\s+(?P<size>\\d+(?:\\.\\d+)?g)\\s+Flower$"
+    },
+    {
+      "when": {
+        "category": "^flower$"
+      },
+      "match": "(?i)^(?P<strain>.+?)\\s+(?P<line>Infused Shake)\\s+(?P<size>\\d+(?:\\.\\d+)?g)$"
+    },
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "^(?P<strain>.+)$",
+      "set": {
+        "size": "10pk 100mg"
+      }
+    }
+  ]
+}

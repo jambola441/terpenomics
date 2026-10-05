@@ -1,0 +1,219 @@
+{
+  "brand": "Off Hours",
+  "site": "https://offhoursbrand.com",
+  "source": {
+    "kind": "shopify_json",
+    "url": "https://offhoursbrand.com/products.json"
+  },
+  "learned": "2026-10-05, by agent pass: 73 products (69 cannabis, 4 merch tees with size variants), all 'Default Title' variants, prices 0.00. offhours.com is a parked domain; use offhoursbrand.com.",
+  "notes": [
+    "NY only: the site is New York's (NY OCM processor license in the footer), so no state filter is needed.",
+    "Titles are short and product_type carries the line and format: 'Originals (Cartridge)', 'Originals (AIO)', 'Off-box', 'Live Rosin AIO', 'Effect-Based AIO', 'Live Rosin' (gummies), 'Gummy Rope', 'Gummies' (effect gummies), 'Low THC', 'Syrup'. The same strain is both an Originals cart and AIO, so product_type decides the subtype.",
+    "Size is only in body_html: 'SIZE: 10CT STRENGTH: 100MG THC (10MG/SERVING)' for edibles, 'Size: 0.5g' for the newer vapes, a '1G CARTRIDGE' / '1G ALL-IN-ONE VAPE PEN' header for Originals. The Effect-Based AIO bodies open with '1G ALL-IN-ONE VAPE PEN' but say 'Size: 0.5g', and NY stores sell them as 0.5g, so their rule reads 'Size:'.",
+    "Effect products follow the stores' split: the effect name is the line and the FLAVOR field is the strain ('Awaken' + 'Orange Punch', 'Livewire' rope + 'Razz Lemonade'). Numbered Live Rosin drops are '#025 Cultivar “Flavor”'; the quoted flavor is the strain, as stores write it. Ropes are named by cultivar (Gelonade, Berry Pie, and 'Galactic Guava “Passionfruit Mango Guava”', which stores sell as Galactic Guava); that rope's title and type name no line, so it has none. Effect-Based AIOs ('Unwind. (Calm) All-In-One Vape') have no flavor: the name before the dot is the strain.",
+    "Daydream's FLAVOR field repeats Jelly RNTZ's ('Strawberry Acai with Coconut'); its description calls it 'Pink Berries' and 13 stores sell it as 'Daydream Pink Berry' (same 10:2:2 THC:CBG:CBC blend). A rule guarded on that description sets the strain; if the description changes, the generic FLAVOR rule takes over.",
+    "Stores still sell the old Awaken 'Orangeade' (10:2 THC:THCV); the site's Awaken is now 'Orange Punch' (10:4:2 THC:CBG:THCV), a different product.",
+    "Low THC gummies state CBD/CBG/CBN first ('Qty: 20 Gummies Potency: 500mg CBD ... + 20mg THC'). An edible's size is its THC, so Unwind is 20mg; Lights Out and Utopia have no THC and are skipped."
+  ],
+  "skip": [
+    {
+      "when": {
+        "product_type": "^Merch$"
+      },
+      "why": "apparel"
+    },
+    {
+      "when": {
+        "tags": "(?i)\\bapparel\\b"
+      },
+      "why": "apparel"
+    },
+    {
+      "when": {
+        "product_type": "^Low THC$",
+        "body": "(?i)^(?![\\s\\S]*\\d+\\s*mg\\s*THC)"
+      },
+      "why": "no THC (CBD, CBG and CBN only), so no THC dose to size it by"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "product_type": "^Originals \\(Cartridge\\)$"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "cart"
+      }
+    },
+    {
+      "when": {
+        "product_type": "(?i)\\bAIO\\b|^Off-box$"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "all-in-one"
+      }
+    },
+    {
+      "when": {
+        "product_type": "^(Live Rosin|Gummy Rope|Gummies|Low THC)$"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "gummy"
+      }
+    },
+    {
+      "when": {
+        "product_type": "^Syrup$"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "other"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "product_type": "^Effect-Based AIO$"
+      },
+      "match": "^(?P<strain>[^.(]+?)\\.?\\s*\\(",
+      "extract": {
+        "body": "(?i)\\bSize:\\s*(?P<size>\\d*\\.?\\d+\\s*g)\\b"
+      },
+      "set": {
+        "line": "Effect-Based"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "product_type": "^Originals"
+      },
+      "match": "^(?P<strain>.+?)\\s*$",
+      "extract": {
+        "body": "^(?P<size>\\d*\\.?\\d+\\s*G)\\s+(?:CARTRIDGE|ALL-IN-ONE)"
+      },
+      "set": {
+        "line": "Originals"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "product_type": "^Live Rosin AIO$"
+      },
+      "match": "^(?P<strain>.+?)\\s*$",
+      "extract": {
+        "body": "(?i)\\bSize:\\s*(?P<size>\\d*\\.?\\d+\\s*g)\\b"
+      },
+      "set": {
+        "line": "Live Rosin"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "product_type": "^Off-box$"
+      },
+      "match": "^(?P<strain>.+?)\\s*$",
+      "extract": {
+        "body": "(?i)\\bSize:\\s*(?P<size>\\d*\\.?\\d+\\s*g)\\b"
+      },
+      "set": {
+        "line": "Off-box"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "product_type": "^Live Rosin$"
+      },
+      "match": "^(?:#\\d+\\s+)?[^“\"]+?\\s*[“\"](?P<strain>[^”\"]+)[”\"]\\s*$",
+      "extract": {
+        "body": "(?i)\\bSIZE:\\s*(?P<size>\\d+\\s*CT)\\b.*?STRENGTH:\\s*(?P<size2>\\d+(?:\\.\\d+)?\\s*MG)"
+      },
+      "set": {
+        "line": "Live Rosin"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "product_type": "^Gummy Rope$"
+      },
+      "match": "^(?P<strain>[^“\"]+?)\\s*[“\"][^”\"]+[”\"]\\s*$",
+      "extract": {
+        "body": "(?i)\\bSIZE:\\s*(?P<size>\\d+\\s*CT)\\b.*?STRENGTH:\\s*(?P<size2>\\d+(?:\\.\\d+)?\\s*MG)"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "title": "^Daydream$",
+        "body": "Off Hours Pink Berries Daydream"
+      },
+      "match": "^(?P<line>Daydream)$",
+      "extract": {
+        "body": "(?i)\\bSIZE:\\s*(?P<size>\\d+\\s*CT)\\b.*?STRENGTH:\\s*(?P<size2>\\d+(?:\\.\\d+)?\\s*MG)"
+      },
+      "set": {
+        "strain": "Pink Berry"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "^(?P<strain>.+?)\\s+Live Resin Infused Rope$",
+      "extract": {
+        "body": "(?i)\\bSIZE:\\s*(?P<size>\\d+\\s*CT)\\b.*?STRENGTH:\\s*(?P<size2>\\d+(?:\\.\\d+)?\\s*MG)"
+      },
+      "set": {
+        "line": "Live Resin"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "^(?P<line>.+?)\\s+Effect-Based Rope$",
+      "extract": {
+        "body": "(?i)\\bFLAVOR:\\s*(?P<strain>.+?)\\s*(?:\\(sour\\)\\s*)?(?:TERPENES:.*?)?\\bSIZE:\\s*(?P<size>\\d+\\s*CT)\\b.*?STRENGTH:\\s*(?P<size2>\\d+(?:\\.\\d+)?\\s*MG)"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "product_type": "^Gummies$"
+      },
+      "match": "^(?P<line>\\S+)",
+      "extract": {
+        "body": "(?i)\\bFLAVOR:\\s*(?P<strain>.+?)\\s*(?:\\(sour\\)\\s*)?(?:TERPENES:.*?)?\\bSIZE:\\s*(?P<size>\\d+\\s*CT)\\b.*?STRENGTH:\\s*(?P<size2>\\d+(?:\\.\\d+)?\\s*MG)"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "product_type": "^Low THC$"
+      },
+      "match": "^(?P<line>.+?)\\s*$",
+      "extract": {
+        "body": "(?i)\\bFLAVOR:\\s*(?P<strain>.+?)\\s*(?:TERPENES:.*?)?\\bQty:\\s*\\d+\\s*Gummies\\s*Potency:.*?(?P<size>\\d+(?:\\.\\d+)?\\s*mg)\\s*THC"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "product_type": "^Syrup$"
+      },
+      "match": "^(?P<strain>.+?)\\s*$",
+      "extract": {
+        "body": "(?i)\\bSTRENGTH:\\s*(?P<size>\\d+(?:\\.\\d+)?\\s*MG)"
+      }
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "brand": "Heady Tree",
+  "site": "https://headytree.com",
+  "source": {
+    "kind": "html",
+    "url": "https://headytree.com/coa/",
+    "item": "table tr",
+    "fields": {
+      "title": "td:nth-of-type(1)",
+      "body": "td:nth-of-type(2)"
+    }
+  },
+  "learned": "2026-10-05, agent pass: the COA page is the only product list (the Catalog page is empty; no WooCommerce, no product post type). 216 rows, one per tested batch, uploads from 2025/03 to 2026/06. Check: all 22 products NY stores sell are on the site.",
+  "notes": [
+    "A lab-results table, one row per batch: 'Product Name | COA Link'. Later batches repeat the name with ' 2nd Run' ... ' 7th Run'; the title rules drop the suffix and the build keeps the first row of each product and size. Old batches stay listed, so discontinued strains linger.",
+    "Names carry size, strain and format in no fixed order: '1G Blue Lobster Infused Pre Roll', '1G Pre Roll Oreoz', '1G Candy Fumez 1G', '3.5G Mylar El Jefe', '3.5G Blue Zushi Jar', '14G Dante Inferno Ground Flower', '1G AIO Gas Leak Disposable', 'Mango Smoothie Infused Shorty's'. A bare '1G <strain>' row is a pre-roll (vapes say AIO, blunts say Blunt; flower is never 1G here).",
+    "Shorty's rows give no size. NY stores sell every Shorty's as a 7-pack of 0.5g (3.5g): 'Blue Nerdz Hash Infused Prerolls 7pk 3.5g', 'Fried Ice Cream Prerolls 7pk 3.5g', 'Hawaiian Snow Cone 0.5g Infused Pre Rolls 7pk'. Pre Pak rows (four 2025 batches) give no size and no store sells one, so they are skipped.",
+    "The brand spells one strain both ways: pre-roll rows say 'Cap Junky', jars and the newer COA file names say 'Cap Junkie', as stores do. The pre-rolls are written 'Cap Junkie' so they do not split from the jar's spelling and the stores'.",
+    "Blunts keep no line (format words are not lines); no strain has both a 1G blunt and a 1G pre-roll today, which would collapse into one entry."
+  ],
+  "skip": [
+    {
+      "when": {
+        "title": "(?i)^(1G Pre-?Roll|3\\.5G Mylar)$"
+      },
+      "why": "a format's generic COA, no strain"
+    },
+    {
+      "when": {
+        "title": "(?i)\\bpre[\\s-]?pak\\b"
+      },
+      "why": "Pre Pak: no size on the site"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "title": "(?i)\\bAIO\\b|\\bdisposable\\b|\\bvape\\b"
+      },
+      "set": {
+        "category": "vaporizers"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)pre[\\s-]?roll|shorty|\\bblunt\\b"
+      },
+      "set": {
+        "category": "preroll"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\b(jar|mylar|ground flower)\\b"
+      },
+      "set": {
+        "category": "flower"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)^(3\\.5|7|14|28)\\s*G\\b"
+      },
+      "set": {
+        "category": "flower"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)^1\\s*G\\b"
+      },
+      "set": {
+        "category": "preroll"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "^(?P<strain>.+?)\\s+(?:(?P<line>Infused)\\s+)?Shorty['’]?s(?:\\s+\\d+(?:st|nd|rd|th)\\s+Run)?$",
+      "set": {
+        "size": "7pk 0.5g"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$",
+        "title": "(?i)\\bcap junky\\b"
+      },
+      "match": "^(?P<size>\\d+(?:\\.\\d+)?G)\\s+Cap Junky\\s+Pre[\\s-]?Roll(?:\\s+\\d+(?:st|nd|rd|th)\\s+Run)?$",
+      "set": {
+        "strain": "Cap Junkie"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "^(?P<size>\\d+(?:\\.\\d+)?G)\\s+Pre[\\s-]?Roll\\s+(?P<strain>.+?)(?:\\s+\\d+(?:st|nd|rd|th)\\s+Run)?$"
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "^(?P<size>\\d+(?:\\.\\d+)?G)\\s+(?P<strain>.+?)\\s+(?P<line>Infused)\\s+Pre[\\s-]?Roll(?:\\s+\\d+(?:st|nd|rd|th)\\s+Run)?$"
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "^(?P<size>\\d+(?:\\.\\d+)?G)\\s+(?P<strain>.+?)(?:\\s+(?:Pre[\\s-]?Roll|Blunt|1G))?(?:\\s+\\d+(?:st|nd|rd|th)\\s+Run)?$"
+    },
+    {
+      "when": {
+        "category": "^vaporizers$"
+      },
+      "match": "^(?P<size>\\d+(?:\\.\\d+)?G)\\s+AIO\\s+(?P<strain>.+?)(?:\\s+(?:Disposable|Vape))?(?:\\s+\\d+(?:st|nd|rd|th)\\s+Run)?$"
+    },
+    {
+      "when": {
+        "category": "^flower$"
+      },
+      "match": "^(?P<size>\\d+(?:\\.\\d+)?G)\\s+Mylar\\s+(?P<strain>.+?)(?:\\s+\\d+(?:st|nd|rd|th)\\s+Run)?$"
+    },
+    {
+      "when": {
+        "category": "^flower$"
+      },
+      "match": "^(?P<size>\\d+(?:\\.\\d+)?G)\\s+(?P<strain>.+?)(?:\\s+(?:Jar|Mylar|Ground Flower))?(?:\\s+\\d+(?:st|nd|rd|th)\\s+Run)?$"
+    }
+  ]
+}

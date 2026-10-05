@@ -36,7 +36,7 @@ _GRAMS = re.compile(rf"{_NUM}\s*(?:g|gr|gram|grams)\b", re.I)
 _MG = re.compile(rf"{_NUM}\s*(?:mg|milligrams?)\b", re.I)
 # "5pk", "5 pack", "5-pack", "5ct", "10 count", "2 pcs", "5 x" (when followed by a size)
 _PACK = re.compile(r"\b(\d+)\s*[-\s]?(?:pk|pack|packs|ct|count|pcs|pieces|pc)\b", re.I)
-_PACK_X = re.compile(rf"\b(\d+)\s*(?:pk\s*)?x\s*{_NUM}\s*(g|mg)\b", re.I)
+_PACK_X = re.compile(rf"\b(\d+)\s*(?:pk\s*)?x\s*{_NUM}\s*(g|gr|grams?|mg)\b", re.I)
 _EACH = re.compile(rf"{_NUM}\s*(g|mg)\s*(?:each|ea\.?|per\s+\w+)\b", re.I)
 _OZ_FRAC = re.compile(r"\b(\d+)\s*/\s*(\d+)\s*(?:oz|ounce)\b", re.I)
 # "1/2 Gram Joints" is 0.5g a joint, not the "2 Gram" _GRAMS would read inside it;
@@ -105,7 +105,7 @@ def parse(*texts: str | None, category: str | None = None) -> Size:
     if m:
         pack = int(m.group(1))
         val = float(m.group(2))
-        if m.group(3).lower() == "g":
+        if not m.group(3).lower().startswith("m"):
             unit_g = val
         else:
             unit_mg = val

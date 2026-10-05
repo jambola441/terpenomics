@@ -1,0 +1,375 @@
+{
+  "brand": "Nanticoke",
+  "site": "https://nanticoke.co",
+  "source": {
+    "kind": "html",
+    "url": "https://nanticoke.co/index.php?route=product/category&path=20&limit=500",
+    "item": "div.product-thumb",
+    "fields": {
+      "title": "h4 a",
+      "url": "h4 a@href",
+      "body": "p.desc",
+      "meta": "img@src"
+    }
+  },
+  "title_case": true,
+  "learned": "2026-10-05, by agent pass: OpenCart store, 234 products on one page with limit=500 ('Showing 1 to 234 of 234'). Cards carry title, a truncated description and the image; no prices, no stock flag.",
+  "notes": [
+    "NY only: Nanticoke Hemp Inc., Endicott NY (OCM-PROC-24-000002); the catalog is New York's.",
+    "The site lists its sub-brands as subcategories. 5Boro (path=20_61), Back Home Cannabis (20_71) and MILKWEED (20_74) are brands of their own in our data, so they are skipped here; a card's image folder tells them apart (catalog/product/2100/5Boro, 5 Boro, Back Home, Back Home Cannabis, MILKWEED) because the titles do not. 5Boro has its own recipe on the same page. Alibi, Ready 2 Roll, oHHo and Gentlemen Smugglers have no brand of their own in our data and are kept as lines (Gentlemen Smugglers by its image folder, since its titles do not name it).",
+    "Category is read from format words in the title. Sizes are in titles in many spellings ('1/8 oz', '7G', '.7 g', '4 x 1 Gram', '2 x .5 gram'); '4 x 1 Gram' only reads as a pack when the size group stops before 'ram'. '1 oz' is not read by sizes.py, so that rule states 28g.",
+    "Titles without a weight: 'X Pre-Roll Joints' are 0.5g singles (their images are single tubes, eleven of the strains sell at 0.5g at NY stores, and our listings say '0.5g (Pre-Roll) Joint'); 'Sour Diesel 5 pack Pre-Roll Tin' gives no unit weight, and its image is in the series of the 0.7g five-packs while the site's other tin is 5 x 0.5g, so it is skipped (stores sell it as 2.5g; their consensus keeps it). 'Amnesia Haze Vape' states no size on the card or its product page and is skipped too.",
+    "Vapes: 'Gold Vape' is Nanti Nitro Gold (1g AIO; stores write 'Nanti Nitro Gold AIO'). The 2 Gram AIOs and .5 Gram carts are Nanti Nitro: their images are in the Nanti Nitro folder or named NN_. 'Ceramic' or 'Cart' is a 1g cart ('1G Ceramic Vape' included); any other '1G Vape' / '1 Gram Vape' is the 1g AIO pen.",
+    "Edible doses are in the card description: '10 x 10mg' gummies, '100mg THC Makes 20 Drinks' shots, '5 - 10MG Flavored Stick Packs' Hiistix with the pack in the title. '20 – 5MG Tablets', '20 - 5MG Mint tablets' and the unflavored '2 - 10MG' / '2 - 50MG' Hiistix give a count without a pack word sizes.py reads, so those rules are guarded on that text and state it as '20pk 5mg' etc. Chocolates (bars and mini coins) give no dose on the card; all seven product pages say 'Total THC: 100mg' (2026-10-05).",
+    "Some titles are in capitals ('ALIBI - PERMANENT MARKER X PRIZMATIC ...', 'STRAWBERRY LEMONADE SHOT ...'), so title_case is on; no strain here has a capitalised acronym longer than three letters."
+  ],
+  "skip": [
+    {
+      "when": {
+        "meta": "(?i)/5(?:%20| )?Boro/"
+      },
+      "why": "5Boro, its own brand (data/storefronts/5boro.json)"
+    },
+    {
+      "when": {
+        "meta": "(?i)/Back(?:%20| )Home"
+      },
+      "why": "Back Home Cannabis Co., its own brand"
+    },
+    {
+      "when": {
+        "meta": "(?i)/MILKWEED/"
+      },
+      "why": "Milkweed, its own brand"
+    },
+    {
+      "when": {
+        "title": "^Amnesia Haze Vape$"
+      },
+      "why": "no size on the card or product page"
+    },
+    {
+      "when": {
+        "title": "(?i)\\b5 pack Pre-Roll Tin$"
+      },
+      "why": "no unit weight in the title or on the product page"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "title": "(?i)\\bpre-?rolls?\\b|\\bjoints?\\b|\\bblunt\\b"
+      },
+      "set": {
+        "category": "preroll"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\bvape\\b|\\bcart\\b"
+      },
+      "set": {
+        "category": "vaporizers"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\bgummies\\b"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "gummy"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\bchocolate\\b"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "chocolate"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\btablets\\b|\\bmints\\b"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "tablet"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\bhiistix\\b|\\bshot with\\b"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "beverage"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\bflower\\b|\\bpouch\\b"
+      },
+      "set": {
+        "category": "flower"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^Alibi\\s*-\\s*(?:Indica|Sativa|Hybrid)/(?:Indica|Sativa|Hybrid)\\s*-\\s*(?P<strain>.+?)\\s+(?P<size>\\d+\\s*x\\s*\\d+\\s*G)ram\\s+Whole Flower Preroll Pack$",
+      "set": {
+        "line": "Alibi"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^Alibi\\s*-?\\s*(?P<strain>.+?)\\s+(?P<size>\\d*\\.?\\d+\\s*G)(?:ram)?\\s+Live Rosin Infused\\b",
+      "set": {
+        "line": "Alibi"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^Alibi\\s+(?P<strain>.+?)\\s+(?P<size>\\d+\\s*x\\s*\\.?\\d+\\s*g)ram\\s+Infused Prerolls$",
+      "set": {
+        "line": "Alibi"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^The Kingpin\\s+(?P<strain>.+?)\\s+Cured Resin Infused\\s+(?P<size>\\d*\\.?\\d+\\s*G)\\s+Preroll$",
+      "set": {
+        "line": "The Kingpin"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$",
+        "meta": "(?i)/Gentlemen(?:%20| )Smugglers/"
+      },
+      "match": "(?i)^(?P<strain>.+?)\\s+(?P<size>\\d*\\.?\\d+\\s*Gram)\\s+Pre-Roll Joint$",
+      "set": {
+        "line": "Gentlemen Smugglers"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "^oHHo\\s+(?P<strain>.+?)\\s+\\.5g\\b",
+      "set": {
+        "line": "oHHo"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$",
+        "title": "(?i)\\binfused\\b"
+      },
+      "match": "(?i)^(?P<strain>.+?)\\s+(?:Infused\\b|\\d|\\.\\d)",
+      "set": {
+        "line": "Infused"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^(?P<strain>.+?)\\s+\\d+\\s+pack\\s+of\\b"
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^(?P<strain>.+?)\\s+Pre-Roll Joints$",
+      "set": {
+        "size": "0.5g"
+      }
+    },
+    {
+      "when": {
+        "category": "^flower$"
+      },
+      "match": "(?i)^(?P<strain>.+?)(?:\\s+Flower)?\\s+1 oz Flower$",
+      "set": {
+        "size": "28g"
+      }
+    },
+    {
+      "when": {
+        "category": "^flower$"
+      },
+      "match": "(?i)^(?P<strain>.+?)(?:\\s+Flower)?\\s+(?P<size>\\d+/\\d+\\s*oz)\\s+Flower$"
+    },
+    {
+      "when": {
+        "category": "^flower$"
+      },
+      "match": "(?i)^(?P<strain>Hybrid|Indica|Sativa)\\s+(?P<size>\\d+\\s*G)\\s+Ground Flower Pouch$",
+      "set": {
+        "line": "Ready 2 Roll"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$"
+      },
+      "match": "(?i)^Alibi\\s*-\\s*(?P<strain>.+?)\\s+(?P<size>\\d*\\.?\\d+\\s*gram)\\s+AIO Vape Pen$",
+      "set": {
+        "line": "Alibi"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$"
+      },
+      "match": "(?i)^X[- ]Series\\s+(?P<strain>.+?)\\s+(?P<size>\\d*\\.?\\d+\\s*Gram)\\s+(?:AIO|Ceramic|Vape)\\b",
+      "set": {
+        "line": "X-Series"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$"
+      },
+      "match": "(?i)^(?P<strain>.+?)\\s+(?P<size>\\d*\\.?\\d+\\s*Gram)\\s+Gold Vape$",
+      "set": {
+        "line": "Nanti Nitro Gold",
+        "subtype": "all-in-one"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$"
+      },
+      "match": "(?i)^(?P<strain>.+?)\\s+(?P<size>2\\s*Gram)\\s+Vape$",
+      "set": {
+        "line": "Nanti Nitro",
+        "subtype": "all-in-one"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$"
+      },
+      "match": "(?i)^(?P<strain>.+?)\\s+(?P<size>0?\\.5\\s*Gram)\\s+(?:Vape\\s+)?(?:Cart|Vape)$",
+      "set": {
+        "line": "Nanti Nitro",
+        "subtype": "cart"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "title": "(?i)\\b(ceramic|cart)\\b"
+      },
+      "match": "(?i)^(?P<strain>.+?)\\s+(?P<size>\\d*\\.?\\d+\\s*G)(?:ram)?\\s+(?:Ceramic\\s+)?(?:Vape\\s+)?(?:Cart|Vape)$",
+      "set": {
+        "subtype": "cart"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$"
+      },
+      "match": "(?i)^(?P<strain>.+?)\\s+(?P<size>\\d*\\.?\\d+\\s*G)(?:ram)?\\s+(?:AIO\\s+)?Vape(?:\\s+Pen)?$",
+      "set": {
+        "subtype": "all-in-one"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "(?i)^(?P<strain>.+?)\\s+Shot with Live Resin\\b",
+      "extract": {
+        "body": "(?i)(?P<size>\\d+\\s*mg)\\s*THC"
+      },
+      "set": {
+        "line": "Live Resin"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "^(?P<strain>.+?)\\s+Gummies(?:\\s*-\\s*(?P<line>.+?))?\\s*$",
+      "extract": {
+        "body": "(?i)(?P<size>\\d+\\s*x\\s*\\d+\\s*mg)"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "title": "(?i)\\bchocolate\\b"
+      },
+      "match": "^(?P<strain>.+?)\\s*$",
+      "set": {
+        "size": "100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "body": "^20\\s*[-–]\\s*5\\s*MG\\b"
+      },
+      "match": "^(?P<line>Entourage)\\s+(?P<strain>.+?)\\s+Tablets$",
+      "set": {
+        "size": "20pk 5mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "body": "^20\\s*[-–]\\s*5\\s*MG\\b"
+      },
+      "match": "^Nanticoke\\s+(?P<strain>Mints)$",
+      "set": {
+        "size": "20pk 5mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "(?i)^(?P<strain>.+?)\\s+(?P<line>Hiistix)\\s+(?P<size>\\d+-Pack)$",
+      "extract": {
+        "body": "(?i)^\\d+\\s*[-–]\\s*(?P<size2>\\d+\\s*MG)\\s+Flavored"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "body": "(?is)^2\\s*[-–]\\s*10\\s*MG Stick Packs.*\\bunflavored\\b"
+      },
+      "match": "^(?P<line>Hiistix) Pack$",
+      "set": {
+        "strain": "Unflavored",
+        "size": "2pk 10mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "body": "(?is)^2\\s*[-–]\\s*50\\s*MG Stick Packs.*\\bunflavored\\b"
+      },
+      "match": "^(?P<line>Hiistix) Pack 100 MG$",
+      "set": {
+        "strain": "Unflavored",
+        "size": "2pk 50mg"
+      }
+    }
+  ]
+}

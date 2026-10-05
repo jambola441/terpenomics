@@ -1,0 +1,130 @@
+{
+  "brand": "Kiva",
+  "site": "https://www.kivaconfections.com",
+  "source": {
+    "kind": "html",
+    "url": "https://www.kivaconfections.com/products",
+    "sitemap": {
+      "url": "https://www.kivaconfections.com/sitemap.xml",
+      "match": "/flavor/"
+    },
+    "fields": {
+      "title": "h1.kv-h1",
+      "product_type": ".kv-pdp-crumb",
+      "tags": ".kv-pdp-market",
+      "body": ".kv-pdp-stats",
+      "meta": ".kv-pdp-stats, .kv-pdp-panel li",
+      "url": "link[rel=canonical]@href"
+    }
+  },
+  "learned": "2026-10-05, agent pass: the sitemap lists 195 /flavor/<slug> detail pages for all of Kiva Confections' brands (Kiva, Camino, Lost Farm, Petra, Terra, KIVA CBN Dream Team); 34 list NY: 18 Camino, 8 Kiva chocolate bars, 8 Lost Farm gummies.",
+  "notes": [
+    "Stores list the whole Kiva Confections family under 'Kiva' ('KIVA LOST FARM - Gummies - ...', 'Edible Gummies | Camino | Watermelon Spritz Sours'), so this catalog takes every NY detail page: Kiva's chocolate bars, Camino and Lost Farm. Camino also has its own recipe (camino.json) for listings branded Camino.",
+    "One product per detail page (/flavor/<slug>). New York is the 'Available in:' market list (.kv-pdp-market); the cards on /products cap that list at five codes and hide NY, so they cannot be the source. The breadcrumb ('Products | Camino | Sour Gummies') gives the sub-brand and format.",
+    "Line is the sub-brand for Camino, the way stores write it ('Camino Blackberry Dream'). Camino titles read \"10mg : 10mg CBD : 10mg CBN 'Deep Sleep' Blackberry Dream\"; the quoted effect is dropped except 'Exhilarate', whose Wild Cherry would otherwise be the same product as the 'Excite' Wild Cherry, so it is line 'Camino Exhilarate'. Lost Farm titles read '10mg Raspberry x Wedding Cake Live Resin Gummies' and get no line: stores spell the sub-brand 'Lost Farms' as often as 'Lost Farm', a line that disagrees blocks the match, and the flavour x strain pairings are unique.",
+    "Kiva's own bars are named flavour + chocolate base ('Churro Milk Chocolate', 'Midnight Mint Dark Chocolate CBN', plain 'Dark Chocolate'): the base is the line and the flavour the strain, so stores' 'Churro' and 'Milk Chocolate Churro' both find it. 'Limited Edition' and the cannabinoid suffix (CBN, CBD 1:1) are dropped.",
+    "Size: the stats give THC per serving and usually per pack, the Product Information list gives servings per package. Each size rule needs the per-serving dose plus a matching per-pack figure or servings count: 5mg -> 20pk 100mg, 10mg -> 10pk 100mg, Camino's 2mg Sparkling Pear 20pk 40mg. Forest Berry's page says 200mg per pack but 10 servings of 10mg, and NY caps a package at 100mg; NY stores sell it as 10pk 100mg. Any other dose falls through to unparsed on purpose.",
+    "'High Dose' pages are skipped: Camino's Blackberry Dream High Dose is 200mg a pack, over NY's cap, and 'High Dose Blackberry Dark Chocolate' is a Michigan page (slug ...-mi) that lists NY while the regular Blackberry bar lists only CA and IL."
+  ],
+  "skip": [
+    {
+      "when": {
+        "tags": "^(?!.*\\bNY\\b)"
+      },
+      "why": "not sold in New York"
+    },
+    {
+      "when": {
+        "title": "(?i)\\bhigh dose\\b"
+      },
+      "why": "high dose: over New York's 100mg package cap, or another state's page"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "product_type": "\\|\\s*Chocolate Bars$"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "chocolate"
+      }
+    },
+    {
+      "when": {
+        "product_type": "\\|\\s*(?:Sour Gummies|Gummies|Fruit Chews|Chews)$"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "gummy"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "product_type": "\\|\\s*Kiva\\s*\\|\\s*Chocolate Bars$",
+        "meta": "(?=.*THC per serving 5mg\\b)(?=.*(?:THC per pack 100mg\\b|Servings Per Package:\\s*20\\b))"
+      },
+      "match": "^(?:Limited Edition\\s+)?(?:(?P<strain>.+?)\\s+)?(?P<line>(?:Dark|Milk) Chocolate)\\b",
+      "set": {
+        "size": "20pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "product_type": "\\|\\s*Lost Farm\\s*\\|",
+        "meta": "(?=.*THC per serving 10mg\\b)(?=.*(?:THC per pack 100mg\\b|Servings Per Package:\\s*10\\b))"
+      },
+      "match": "^10mg\\s+(?P<strain>.+?)\\s+Live\\s+(?:Resin|Rosin)\\s+Gummies$",
+      "set": {
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "product_type": "\\|\\s*Camino\\s*\\|",
+        "title": "['‘’]Exhilarate['‘’]",
+        "meta": "(?=.*THC per serving 5mg\\b)(?=.*(?:THC per pack 100mg\\b|Servings Per Package:\\s*20\\b))"
+      },
+      "match": "^5mg\\b[^'‘’]*['‘’][^'‘’]+['‘’]\\s+(?P<strain>.+?)(?:\\s+(?:Fruit\\s+Chews|Gummies|Chews))?$",
+      "set": {
+        "line": "Camino Exhilarate",
+        "size": "20pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "product_type": "\\|\\s*Camino\\s*\\|",
+        "meta": "(?=.*THC per serving 5mg\\b)(?=.*(?:THC per pack 100mg\\b|Servings Per Package:\\s*20\\b))"
+      },
+      "match": "^5mg\\b[^'‘’]*['‘’][^'‘’]+['‘’]\\s+(?P<strain>.+?)(?:\\s+(?:Fruit\\s+Chews|Gummies|Chews))?$",
+      "set": {
+        "line": "Camino",
+        "size": "20pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "product_type": "\\|\\s*Camino\\s*\\|",
+        "meta": "(?=.*THC per serving 10mg\\b)(?=.*(?:THC per pack 100mg\\b|Servings Per Package:\\s*10\\b))"
+      },
+      "match": "^10mg\\b[^'‘’]*['‘’][^'‘’]+['‘’]\\s+(?P<strain>.+?)(?:\\s+(?:Fruit\\s+Chews|Gummies|Chews))?$",
+      "set": {
+        "line": "Camino",
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "product_type": "\\|\\s*Camino\\s*\\|",
+        "meta": "(?=.*THC per serving 2mg\\b)(?=.*THC per pack 40mg\\b)"
+      },
+      "match": "^2mg\\b[^'‘’]*['‘’][^'‘’]+['‘’]\\s+(?P<strain>.+?)(?:\\s+(?:Fruit\\s+Chews|Gummies|Chews))?$",
+      "set": {
+        "line": "Camino",
+        "size": "20pk 40mg"
+      }
+    }
+  ]
+}

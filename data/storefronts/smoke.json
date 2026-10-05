@@ -1,0 +1,35 @@
+{
+  "brand": "Smoke",
+  "site": "https://www.smokewrld.com",
+  "title_case": true,
+  "source": {
+    "kind": "html",
+    "url": "https://www.smokewrld.com/all-in-one-strains",
+    "urls": [
+      "https://www.smokewrld.com/all-in-one-strains",
+      "https://www.smokewrld.com/all-in-one-strains-1"
+    ],
+    "item": "li.list-item p:has(> strong)",
+    "fields": {
+      "title": "strong",
+      "product_type": "body:has(h1:-soup-contains(\"liquid diamond\")) strong",
+      "tags": "body:has(h1:-soup-contains(\"SMOKE vape\")) strong"
+    }
+  },
+  "learned": "2026-10-05, agent pass: Squarespace strain pages, one per format: /all-in-one-strains (9 AIO strains), /all-in-one-strains-1 (11 Live Resin Liquid Diamond AIO strains), /flower-strains (12).",
+  "notes": [
+    "SMOKE WRLD (New York). Each strain page has three list items (Sativa, Hybrid, Indica), each a run of <p><strong>STRAIN</strong></p> then a blurb paragraph; an item is one strain's paragraph. ?format=json is empty for these pages.",
+    "The format is the page, which an item cannot see, so two fields mark it with a selector that reaches the page's h1 as an ancestor: product_type is the strain name only on the page whose h1 says 'live resin liquid diamond', tags only on the page whose h1 says 'SMOKE vape STRAINS'. An item on neither (a heading reworded) is unparsed, not miscategorised.",
+    "Sizes are per format on the home page: 'Our Live Resin Liquid Diamond 1g Disposables', 'Our ALL IN ONE 1g Disposables'. Flower is left out: the home page gives 3.5G, 14G and 28G bags, and the flower page does not say which strain comes in which.",
+    "Strain names are in capitals on the site; title_case writes them as 'Island Jack', keeping NYC and PB (and, being three letters, POP and PIE).",
+    "The strain lists rotate. On 2026-10-05 stores sold 3 products at 2+ stores, none on the site: Daybreak Fuel and Grape Sorbet vapes (on no page) and Red Zprite flower (flower is left out; the flower page has 'Zprite'). The site's strains Orange Biscotti, Kush Mintz and Lemon Zlushie were each at one store. NY listings also use the brand name 'Smoke WRLD'."
+  ],
+  "category": [
+    {"when": {"product_type": "."}, "set": {"category": "vaporizers", "subtype": "all-in-one"}},
+    {"when": {"tags": "."}, "set": {"category": "vaporizers", "subtype": "all-in-one"}}
+  ],
+  "title": [
+    {"when": {"product_type": "."}, "match": "^(?P<strain>.+)$", "set": {"line": "Live Resin Liquid Diamond", "size": "1g"}},
+    {"when": {"tags": "."}, "match": "^(?P<strain>.+)$", "set": {"size": "1g"}}
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "brand": "turn",
+  "site": "https://turn.me",
+  "source": {
+    "kind": "html",
+    "url": "https://turn.me/sitemap.xml",
+    "sitemap": {
+      "url": "https://turn.me/sitemap.xml",
+      "match": "^(?!.*/the-mandarin-dispo-ny$)(?i:https://turn\\.me/flavors/[^/]+/[^/]*-ny(?:-[a-z0-9]+)?)$"
+    },
+    "fields": {
+      "title": "title",
+      "body": "script"
+    }
+  },
+  "learned": "2026-10-05, by an agent pass: 295 sitemap URLs, 68 New York flavor pages (slug ending -NY or -ny, sometimes with a random suffix), 67 after dropping a case-twin. Botanica blends and live resin only; no NY pages for solventless or straincraft.",
+  "notes": [
+    "turn.me is a Next.js site over a Strapi CMS with no public API. The flavor listing pages render a default California list (the state is picked client-side), so the New York pages are read one by one from the sitemap.",
+    "Some pages (the newer ones, with a random slug suffix such as atomic-purple-dispo-NY-0lumvy) are rendered client-side: the body is empty and the product is only in the React flight payload in <script> tags. Every page has that payload, so line, format and size are read from the script text, and the name from <title> ('<name> turn disposable flavor', '<name> turn podpak flavor'), which is server-rendered on both kinds. The canonical link and og:url point to the home page, so there is no per-page URL to read.",
+    "Payload fields: 'oil type: ' then the line ('botanica blends' or 'live resin'); 'device type: ' then 'ready-to-vape pen' (an all-in-one) or 'podpak podpen' (a pod), then ', 1.0g' (the retrovision disposables say 2.0g).",
+    "The sitemap lists the-mandarin-dispo-NY and the-mandarin-dispo-ny, the same page; the match drops the lowercase twin. A new case-twin would be collapsed by the script (one entry per product and size).",
+    "Names on the site are lowercase ('gdp', 'pb & j', 'dragon fruit açaí'); '(21+)' after 'unicorn party' is dropped.",
+    "NY stores often record turn's 'Up' and 'Down' effect labels as the product line ('Up GMO Funk', 'Down Banana OG'), which the site never uses; those store products show as only at stores although the site has them under Live Resin or Botanica Blends.",
+    "Stores put turn's Up/Down effect labels in the line field; store_aliases drops them, so those products are the site's (confirmed: GMO Funk, Banana OG, GDP, Cherry Bomb, Mango x Guava)."
+  ],
+  "category": [
+    {
+      "when": {
+        "body": "device type:[\\s\\S]{0,200}?ready-to-vape pen"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "all-in-one"
+      }
+    },
+    {
+      "when": {
+        "body": "device type:[\\s\\S]{0,200}?podpak"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "pod"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "body": "oil type:[^a-z]{0,40}live resin"
+      },
+      "match": "^(?P<strain>.+?)(?:\\s*\\(21\\+\\))?\\s+turn\\s+\\w+\\s+flavor$",
+      "extract": {
+        "body": "device type:[\\s\\S]{0,250}?,\\s*(?P<size>\\d+(?:\\.\\d+)?\\s*g)\\b"
+      },
+      "set": {
+        "line": "Live Resin"
+      }
+    },
+    {
+      "when": {
+        "body": "oil type:[^a-z]{0,40}botanica blends"
+      },
+      "match": "^(?P<strain>.+?)(?:\\s*\\(21\\+\\))?\\s+turn\\s+\\w+\\s+flavor$",
+      "extract": {
+        "body": "device type:[\\s\\S]{0,250}?,\\s*(?P<size>\\d+(?:\\.\\d+)?\\s*g)\\b"
+      },
+      "set": {
+        "line": "Botanica Blends"
+      }
+    }
+  ],
+  "store_aliases": {
+    "lines": {
+      "Up": "",
+      "Down": ""
+    }
+  },
+  "title_case": true
+}

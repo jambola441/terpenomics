@@ -1,0 +1,55 @@
+{
+  "brand": "Tune",
+  "site": "https://www.tuneseltzer.com",
+  "source": {
+    "kind": "shopify_json",
+    "url": "https://www.tuneseltzer.com/products.json"
+  },
+  "learned": "2026-10-05, by an agent pass: 7 products, one variant each ('Default Title'): 4 seltzers from 2023 at $20 and 3 single cans from 2026-08 at $5. NY dispensary brand (Head & Heal x Saranac).",
+  "notes": [
+    "product_type and tags are empty and vendor is 'tuneseltzer', so the title decides the format and the body the dose.",
+    "The single cans say '1 can. 10mg THC.' in the body (SKU ends -SNGL, handle ends -10mg-thc-single-can).",
+    "The 2023 seltzers never state a pack: three have no body at all and Black Cherry says '10mg THC per can'. The $20 price suggests a 4-pack, but NY stores sell all four seltzers as 10mg (2 to 4 stores each, 2026-10-05), so a seltzer is the 10mg can unless its body states another per-can dose.",
+    "Stores write 'Peach Tea' for Peach Iced Tea and misspell 'Scillian'.",
+    "Stores call Peach Iced Tea 'Peach Tea' (store_aliases)."
+  ],
+  "category": [
+    {
+      "when": {
+        "title": "(?i)\\b(seltzer|lemonade|iced tea|tea|soda)\\b"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "beverage"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "body": "(?i)\\b1 can\\.\\s*\\d+\\s*mg THC"
+      },
+      "match": "^(?P<strain>.+?)$",
+      "extract": {
+        "body": "(?i)\\b1 can\\.\\s*(?P<size>\\d+\\s*mg)\\s*THC"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\bseltzer$"
+      },
+      "match": "^(?P<strain>.+?)\\s+Seltzer$",
+      "extract": {
+        "body": "(?i)(?P<size>\\d+\\s*mg)\\s*THC\\s+per\\s+can"
+      },
+      "set": {
+        "size": "10mg"
+      }
+    }
+  ],
+  "store_aliases": {
+    "names": {
+      "Peach Tea": "Peach Iced Tea"
+    }
+  }
+}

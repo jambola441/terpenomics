@@ -1,0 +1,83 @@
+{
+  "brand": "Lost Farm",
+  "site": "https://www.kivaconfections.com/brand/lost-farm",
+  "source": {
+    "kind": "html",
+    "url": "https://www.kivaconfections.com/products",
+    "pages": {
+      "param": "b07b7560_page",
+      "from": 1,
+      "to": 6
+    },
+    "item": "div.kv-pcell",
+    "fields": {
+      "title": "h3.kv-pcard-name",
+      "url": "a.kv-pcard@href",
+      "vendor": "a.kv-pcard@data-brand",
+      "product_type": "a.kv-pcard@data-type",
+      "tags": ".kv-mkt"
+    }
+  },
+  "learned": "2026-10-05, by an agent pass: kivaconfections.com/products holds 121 Kiva-family cards over two Webflow pages; 56 are Lost Farm, 6 of them with the NY market code.",
+  "notes": [
+    "Lost Farm is a Kiva brand with no site of its own (lostfarm.com is unrelated). Kiva's /products grid holds every Kiva brand and state: each card's a.kv-pcard has data-brand (lost-farm, camino, kiva, petra, terra) and data-type (gummies, chews, vape), and a nested list of .kv-mkt market codes (NY, CA, MA...). The skip rules keep data-brand lost-farm with an NY code. The same title exists per state under different slugs, so the url is the id.",
+    "Titles are '<dose per piece> <Fruit> x <Strain> Live Resin|Live Rosin Gummies|Chews', with typos ('Gumies') and double spaces elsewhere. The line is Live Resin or Live Rosin and the strain is the 'Fruit x Strain' pair, as NY stores write them ('Lost Farm 'Dragonfruit x Frose' Live Resin Gummies [10pk]').",
+    "The card gives the dose per piece only. The flavor page gives the pack: 'THC per serving 10mg THC per pack 100mg Available in: NY' (lf-tropical-lemonade-do-si-dos-ny), and NY stores sell them as 10pk / 100mg, so a 10mg NY gummy is 10pk 100mg. Any other dose or a CBN/CBG ratio falls through to unparsed on purpose.",
+    "The NY card and flavor page still say 'Citrus Spritz x Napa', but Kiva has renamed that flavor Strawberry Lemonade (the AZ card 'Strawberry Lemonade x Joel's Lemonade' is slug lf-citrus-spritz-az, the OH 'Strawberry Lemonade x Lemon Slushee' is lf-citrus-splash-...), and NY stores sell it only as Strawberry Lemonade x Napa (four spellings, nine listings). The entry takes the current name; the site's is kept in its match terms.",
+    "NY stores also sell Lost Farm flavors the site does not tag NY (Thorny Berry x OG Kush 10mg THC:10mg CBN, Tropical Lemonade x Ztrawberry Guava live rosin on 2026-10-05); they come from the stores' consensus."
+  ],
+  "skip": [
+    {
+      "when": {
+        "vendor": "^(?!lost-farm$)"
+      },
+      "why": "another Kiva brand"
+    },
+    {
+      "when": {
+        "tags": "^(?!.*\\bNY\\b)"
+      },
+      "why": "Lost Farm, not sold in NY"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "product_type": "^(gummies|chews)$"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "gummy"
+      }
+    },
+    {
+      "when": {
+        "product_type": "^vape$"
+      },
+      "set": {
+        "category": "vaporizers"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "^10\\s*mg\\s+Citrus Spritz x Napa\\s+(?P<line>Live Resin|Live Rosin)\\s+(?:Gumm?ies|Chews)\\s*$",
+      "set": {
+        "strain": "Strawberry Lemonade x Napa",
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "^10\\s*mg\\s+(?P<strain>[^:]+?\\sx\\s.+?)\\s+(?P<line>Live Resin|Live Rosin)\\s+(?:Gumm?ies|Chews)\\s*$",
+      "set": {
+        "size": "10pk 100mg"
+      }
+    }
+  ]
+}

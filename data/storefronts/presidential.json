@@ -1,0 +1,36 @@
+{
+  "brand": "Presidential",
+  "site": "https://presidentialmoonrocks.com",
+  "source": {
+    "kind": "html",
+    "url": "https://presidentialmoonrocks.com/blunts",
+    "urls": [
+      "https://presidentialmoonrocks.com/blunts",
+      "https://presidentialmoonrocks.com/pre-rolls"
+    ],
+    "item": "article",
+    "fields": {
+      "title": "h3",
+      "product_type": "article > div > span",
+      "body": ".",
+      "url": "a@href"
+    }
+  },
+  "learned": "2026-10-05, by hand: /blunts has 33 product cards and /pre-rolls 24, each 'series / name / spec line / description', the spec line starting with the size ('1.5g infused blunt · Flower · Live resin · Diamonds', '1g infused pre-roll · ...').",
+  "notes": [
+    "One national catalog: the site says 'The same catalog, coast to coast', and /find-us/ny gives the formats with 'weights fixed across every market' (blunt 1.5g, pre-roll 1g, loose Moon Rocks 2g, mini blunts 3 x 0.7g, mini pre-rolls 3 x 0.5g). There is no NY filter or NY product list; presidentialthcnewyork.com is an SEO guide without SKUs.",
+    "Next.js on Vercel with CSS-module class names (preroll-experience-module__<hash>__artCardSquare), so the selectors use element structure only: article > div holds p (series), h3 (name), span (spec line, plus a 'gold' badge span on a few) and p (description).",
+    "No product line: the series labels (Silver Flavor, Gold Strain, Rose Gold Connoisseur, Presidential Line) appear on /pre-rolls only, /blunts labels every card 'Presidential Moon Rock Blunts', and stores never name a series. A strain's blunt (1.5g) and pre-roll (1g) are two sizes of one product, as the stores' consensus has them.",
+    "Not read on purpose: sitemap.xml lists 28 more product pages that the two listing pages do not show (blunts 24k, gods-gift, white-walker; pre-rolls 24k, crescendo, gods-gift, waui, white-walker, xj-13, xxx; nine mini-blunts and nine mini-pre-rolls), each a prose page with an h1 and a size in a sentence. The host resets about one connection in twenty (seen 2026-10-05, also by discovery with curl), and storefront.py does not retry, so a 30-page sitemap read would fail most runs. XXX and Waui 1g pre-rolls therefore come from the stores' consensus.",
+    "/products.json and /wp-json answer 403 from Vercel; the /presidential-art/* galleries render client-side and are empty in the HTML."
+  ],
+  "skip": [],
+  "category": [
+    {"when": {"product_type": "(?i)\\binfused (blunt|pre-roll)\\b"}, "set": {"category": "preroll"}}
+  ],
+  "title": [
+    {"when": {"category": "^preroll$"},
+     "match": "^(?P<strain>.+)$",
+     "extract": {"product_type": "(?i)(?P<size>\\d*\\.?\\d+\\s*g) infused (?:blunt|pre-roll)\\b"}}
+  ]
+}

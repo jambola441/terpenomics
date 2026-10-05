@@ -1,0 +1,26 @@
+{
+  "brand": "Head Space",
+  "site": "https://www.headspaceprerolls.com",
+  "source": {"kind": "shopify_json", "url": "https://ai1ny.com/products.json"},
+  "learned": "2026-10-05, by hand: the brand site is a one-page Squarespace with no products; its manufacturer, All In One Extracting & Product Manufacturing (NY license OCM-AUCP-22-000001, linked from the brand site's footer), runs this wholesale Shopify. 41 products, 12 with vendor 'Head Space'.",
+  "notes": [
+    "A wholesale store: the other vendors (Mind Melters, Dealer Cannabis Co., Pure Vibe, Hysteria) are the manufacturer's other brands and are skipped by vendor. Prices are wholesale, and a 1g single's variant is the order terms ('1g Singles (25 unit minimum - order in increments of 5)'), so the size is read from the title.",
+    "Titles are pipe-delimited: 'Head Space Prerolls | <Strain> | 5 x 0.5g (<Type>)', 'Head Space Preroll | <Strain> | 1g (<Type>)', 'Head Space | 1.1g Infused Preroll | <Strain> (<Type>)', 'Head Space | 4g Whole Infused Flower | <Strain> (<Type>)', with spacing slips ('Flower|'). The parenthesized strain type is dropped.",
+    "Strains rotate and sold-through SKUs drop out of a wholesale list, so store products missing here (an older strain, the 2.5g infused blunt) are expected and stay as the stores' consensus."
+  ],
+  "skip": [
+    {"when": {"vendor": "^(?!Head Space$)"}, "why": "another brand of the same manufacturer"}
+  ],
+  "category": [
+    {"when": {"title": "(?i)\\bpre-?rolls?\\b"}, "set": {"category": "preroll"}},
+    {"when": {"title": "(?i)\\binfused flower\\b"}, "set": {"category": "flower", "subtype": "infused"}}
+  ],
+  "title": [
+    {"when": {"category": "^preroll$"},
+     "match": "^Head Space Pre-?rolls?\\s*\\|\\s*(?P<strain>[^|]+?)\\s*\\|\\s*(?P<size>\\d+\\s*x\\s*\\d*\\.?\\d+\\s*g|\\d*\\.?\\d+\\s*g)\\s*\\("},
+    {"when": {"category": "^preroll$"},
+     "match": "^Head Space\\s*\\|\\s*(?P<size>\\d*\\.?\\d+\\s*g) Infused Pre-?roll\\s*\\|\\s*(?P<strain>[^|(]+?)\\s*\\("},
+    {"when": {"category": "^flower$"},
+     "match": "^Head Space\\s*\\|\\s*(?P<size>\\d*\\.?\\d+\\s*g) Whole Infused Flower\\s*\\|\\s*(?P<strain>[^|(]+?)\\s*\\("}
+  ]
+}

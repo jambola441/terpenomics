@@ -1,0 +1,30 @@
+{
+  "brand": "Sluggers",
+  "site": "https://sluggers.com",
+  "source": {"kind": "shopify_json", "url": "https://sluggers.com/products.json"},
+  "learned": "2026-10-05, by an agent pass: one Shopify catalog for every market (449 products: CA, AZ, MA, NY, hemp THCA, merch, sister brands Spritz/Dee/ICED/Lola). No state tags or collections; New York's products are the 18 whose handle starts with 'ny-' (created 2025-07-01): nine 1.5g infused singles, four Juiced 5-packs, five Juiced mini blunt 5-packs.",
+  "notes": [
+    "Market is in the handle: ny-, ma-, az-, hmp- (hemp); unprefixed products are California, hemp THCA ('Hemp'/'thca' tags) or newer 'Sluggers THC' items with no state at all. Only ny- handles are read. /pages/newyork lists the NY lineup by format only ('JUICED* 5-PACK 9 STRAINS', 'JUICED Miniblunt 5-packs', '1.5G JUICED* SINGLE', '2G VAPES', 'JUICED* 0.7g 1pk'), without strains or product links.",
+    "The ny- set is incomplete against that lineup: no vapes, no 0.7g singles, and Juiced 5-packs for only Trainwreck, Jet Fuel OG, Euphoria and NYC Diesel. Stores' Fire OG 5-pack and 0.7g single, Watermelon Zkittles Juiced 5-pack and Temptation 5-pack (2026-10-05) exist on the site only as ma-/az-/hemp products, so they come from the stores' consensus. If the brand starts listing NY products without the prefix, this filter will miss them.",
+    "Titles are 'Strain Type Format Size'. The handle names the format more reliably than the title: two Juiced 5-packs (ny-sluggers-infused-preroll-0-7g-5pk-sativa-euphoria / -nyc-diesel) are titled 'Mini Blunts 5pk', copied from the real mini blunt products beside them (handles with -mini-blunts-). Stores sell the NYC Diesel one as 'Juiced NYC Diesel 3.5g'. So the handle decides the line.",
+    "5-pack titles give no weight; both handle patterns say 0-7g-5pk, the NY page says '.7G 5PK JUICED* PREROLLS | 3.5G TOTAL WEIGHT', and stores list the mini blunts at 3.5g. Both are set to 5pk 3.5g. The mini blunts get the line 'Juiced Mini Blunt' (the NY page's 'JUICED Miniblunt', stores' 'Juiced Infused Mini Blunt') so they do not share a product with the Juiced joints of the same strain and weight; pre-rolls keep no subtype.",
+    "Stores often write both 5-packs as 'Juiced <strain> 3.5g', so a store product of that name matches the Juiced joints entry."
+  ],
+  "skip": [
+    {"when": {"url": "^(?!.*/products/ny-)"}, "why": "not a New York product (NY handles start with ny-)"}
+  ],
+  "category": [
+    {"when": {"title": "(?i)\\b(mini blunts?|juiced|pre-?roll|blunt)\\b"}, "set": {"category": "preroll"}},
+    {"when": {"title": "(?i)\\bvape\\b"}, "set": {"category": "vaporizers"}}
+  ],
+  "title": [
+    {"when": {"category": "^preroll$", "url": "/products/ny-sluggers-infused-preroll-0-7g-5pk-mini-blunts-"},
+     "match": "^(?P<strain>.+?)\\s+(?:Indica|Sativa|Hybrid)\\s+Mini Blunts?\\s+5pk$",
+     "set": {"line": "Juiced Mini Blunt", "size": "5pk 3.5g"}},
+    {"when": {"category": "^preroll$", "url": "/products/ny-sluggers-infused-preroll-0-7g-5pk-(?:indica|sativa|hybrid)-"},
+     "match": "^(?P<strain>.+?)\\s+(?:Indica|Sativa|Hybrid)\\s+(?:Juiced|Mini Blunts?)\\s+5pk$",
+     "set": {"line": "Juiced", "size": "5pk 3.5g"}},
+    {"when": {"category": "^preroll$"},
+     "match": "^(?P<strain>.+?)\\s+(?:Indica|Sativa|Hybrid)\\s+Infused Preroll\\s+(?P<size>1\\.5g)$"}
+  ]
+}

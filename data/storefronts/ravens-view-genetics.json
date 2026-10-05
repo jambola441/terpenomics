@@ -1,0 +1,148 @@
+{
+  "brand": "Ravens View Genetics",
+  "site": "https://ravensviewgenetics.com",
+  "source": {
+    "kind": "html",
+    "url": "https://ravensviewgenetics.com/feed/?post_type=products",
+    "item": "item",
+    "fields": {
+      "title": "title",
+      "product_type": "category",
+      "id": "guid"
+    },
+    "pages": {
+      "param": "paged",
+      "from": 1,
+      "to": 6
+    }
+  },
+  "learned": "2026-10-05, by an agent pass: the products post type's RSS feed, 51 items on 6 pages of 10. /our-products/ renders 4 cards a section and pages the rest through admin-ajax.php with the page number in the POST body, which a recipe cannot vary; the post type is not in the REST API and not in the sitemap.",
+  "notes": [
+    "The feed 404s past its last page, and a 404 fails the whole fetch: if check says 'fetch failed: HTTP Error 404', lower pages.to; if the last page has 10 items, raise it. It is newest first, so a short pages.to drops the oldest products.",
+    "Each feed item has title, category (Flower, Pre-Rolls, Variety Packs, Concentrates, Edibles; 'Featured' rides along) and guid; description and content are empty. The product cards' COA links name the format and size ('3.5G-Whole-Flower-Pine-Sap-OG.pdf', '...-1G-Pre-roll-_-Sold-1-per-pack-Nutter-Budder.pdf'), but the feed has no COA.",
+    "Sizes: from the title when it has one (Dime Bag 1g, Upstate Retreat 7g, packs '5-pk of .6g', 'Cousin's Walk .35g ... 5pk'); otherwise flower is 3.5g and a pre-roll is a 1g single, as every sized COA on the product cards says.",
+    "Skipped: edibles (Awaken, Inspire, Serenity: no dose in the feed), infused singles with no size in the title, and two uncategorised posts ('Topical Test', 'NEW: DISCO SNOWMAN').",
+    "The same strain is a flower and a pre-roll product (Pine Sap OG, Ghost Train Haze); the category tells them apart. 'Jelly Dounutz' is the site's spelling.",
+    "'“Cousin’s Walk” .35g Infused Pre-Roll – 5pk' is read as the line Cousin’s Walk with no strain: the site never names the strain, while stores sell it as 'Cousin Walkers Tangerine Cream' (1.75g). The concentrate two-pack (0.5g Sister’s Cheese & 0.5g Apricot Scone) is named after its first strain.",
+    "Check on 2026-10-05: 44 entries; stores sell 14 products, 13 found; the one store-only is that Cousin Walkers Tangerine Cream pack."
+  ],
+  "skip": [
+    {
+      "when": {
+        "product_type": "^$"
+      },
+      "why": "uncategorised post (a test, a teaser)"
+    },
+    {
+      "when": {
+        "product_type": "Edibles"
+      },
+      "why": "edible: no dose in the feed"
+    },
+    {
+      "when": {
+        "product_type": "Pre-Rolls",
+        "title": "(?i)^(?!.*\\d).*infused"
+      },
+      "why": "infused pre-roll: size not in the feed"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "product_type": "Variety Packs|Pre-Rolls"
+      },
+      "set": {
+        "category": "preroll"
+      }
+    },
+    {
+      "when": {
+        "product_type": "Flower"
+      },
+      "set": {
+        "category": "flower"
+      }
+    },
+    {
+      "when": {
+        "product_type": "Concentrates",
+        "title": "(?i)live resin"
+      },
+      "set": {
+        "category": "concentrate",
+        "subtype": "resin"
+      }
+    },
+    {
+      "when": {
+        "product_type": "Concentrates"
+      },
+      "set": {
+        "category": "concentrate"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "^(?P<size>\\d+\\s*-?\\s*pk)\\.?\\s+(?:of\\s+)?(?P<size2>\\d*\\.?\\d+\\s*g)\\s+(?i:pre-?rolls?)\\s+(?P<strain>(?:Indica|Sativa|Hybrid)\\s+Variety\\s+(?:Pack|Tin))\\b"
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "^(?P<size>\\d+\\s*-?\\s*pk)\\.?\\s+(?:of\\s+)?(?P<size2>\\d*\\.?\\d+\\s*g)\\s+(?i:pre-?rolls?)\\s+(?P<strain>Variety\\s+(?:Pack|Tin).*)$"
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "^(?P<size>\\d+\\s*pk)\\s*[–-]\\s*(?P<size2>\\d*\\.?\\d+\\s*g)\\s+(?P<strain>.+?)\\s+(?P<line>Infused\\s+PhenoPack)\\s+Pre-?rolls?$"
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "^[“\"](?P<line>[^“”\"]+)[”\"]\\s+(?P<size>\\d*\\.?\\d+\\s*g)\\s+Infused\\s+Pre-?Roll\\s*[–-]\\s*(?P<size2>\\d+\\s*pk)$"
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "^(?P<strain>[^\\d–]+?)$",
+      "set": {
+        "size": "1g"
+      }
+    },
+    {
+      "when": {
+        "category": "^flower$"
+      },
+      "match": "^(?P<strain>.+?)\\s+Dime\\s+Bag\\s*[–-]\\s*(?P<size>\\d*\\.?\\d+\\s*g)$"
+    },
+    {
+      "when": {
+        "category": "^flower$"
+      },
+      "match": "^(?P<line>Upstate Retreat):\\s*(?P<strain>.+?)\\s+(?P<size>\\d*\\.?\\d+\\s*g)\\b"
+    },
+    {
+      "when": {
+        "category": "^flower$"
+      },
+      "match": "^(?P<strain>[^\\d–]+?)$",
+      "set": {
+        "size": "3.5g"
+      }
+    },
+    {
+      "when": {
+        "category": "^concentrate$"
+      },
+      "match": "^(?P<size>\\d+\\s*pk)\\s*[–-]\\s*(?P<size2>\\d*\\.?\\d+\\s*g)\\s+(?P<line>Live\\s+Resin)\\s+(?P<strain>[^&]+?)\\s*&"
+    }
+  ]
+}

@@ -1,0 +1,131 @@
+{
+  "brand": "7 SEAZ",
+  "site": "https://www.7seazco.com",
+  "source": {
+    "kind": "html",
+    "url": "https://www.7seazco.com/coas",
+    "item": "li",
+    "fields": {
+      "title": "a"
+    }
+  },
+  "learned": "2026-10-05, by an agent pass: 198 COA links (one per lot): 156 distinct product-and-size titles, 142 products, lots from 2024 to 2026. The Squarespace shop (/shop) is merch only; the COA page is the only product list. Footer: '7 SEAZ PRODUCTS ARE MANUFACTURED & DISTRIBUTED BY A NYS LICENSED OPERATOR'; one catalog, New York only.",
+  "notes": [
+    "Each <li> is one lab-tested lot: 'NAME - [LINE -] SIZE FORMAT - LOT#: 7SIF-022526-106'. The lot code's middle digits are a MMDDYY date. A product made in several lots is listed once per lot, so it becomes several entries under one product key; the matcher groups a product's entries, so that is harmless. The page keeps every lot since October 2024, so it includes products long sold through.",
+    "Text is mostly upper case, so strains come out upper case ('CHEESE QUAKE'); lines are set as constants. Separators vary ('LOT #:', 'LOT#:', 'LOT #', or no 'LOT' at all on the Tidal Waves multi-packs), so the rules anchor on the format words and never on the lot.",
+    "Lines: Mini Tsunami 0.6g and Tsunami 1.2g infused singles (read as one line, Tsunami, told apart by size: the stores' consensus has the minis as line Tsunami at 0.6g, and a separate Mini Tsunami line would not match it), Tidal Waves 5-pack (3.0G on its lots until the 2026 'PRE-ROLL MULTI-PACK' lots dropped the size; stores sell it at 3g), Wave Rider 1g disposables, Golden Sand kief (3.5g jars), High/Low/Night Tide tinctures, Beach Relief roll-on.",
+    "Tinctures and the roll-on name two cannabinoids ('1000MG CBD : 500MG THC'); the size is the THC figure, as stores list it."
+  ],
+  "category": [
+    {
+      "when": {
+        "title": "(?i)\\bpre[- ]?rolls?\\b"
+      },
+      "set": {
+        "category": "preroll"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\bdisposable vape\\b"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "all-in-one"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\btincture\\b"
+      },
+      "set": {
+        "category": "tinctures"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\broll-?on\\b"
+      },
+      "set": {
+        "category": "topical"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\b(kief|golden sand)\\b"
+      },
+      "set": {
+        "category": "concentrate",
+        "subtype": "hash"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\bflower\\b"
+      },
+      "set": {
+        "category": "flower"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^flower$"
+      },
+      "match": "(?i)^(?P<strain>.+?)\\s*-\\s*(?P<size>\\d+(?:\\.\\d+)?\\s*G)\\s+FLOWER\\b"
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^(?P<strain>.+?)\\s*-\\s*(?:MINI\\s+)?TSUNAMI\\s*-\\s*INFUSED PRE[- ]?ROLLS?\\s*-\\s*(?P<size>\\d+(?:\\.\\d+)?\\s*G)\\b",
+      "set": {
+        "line": "Tsunami"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^(?P<strain>.+?)\\s*-\\s*TIDAL WAVES\\s*-\\s*INFUSED PRE[- ]?ROLLS?\\s*-\\s*(?P<size>\\d+(?:\\.\\d+)?\\s*G)\\b",
+      "set": {
+        "line": "Tidal Waves"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^(?P<strain>.+?)\\s*-\\s*TIDAL WAVES\\s+PRE-?ROLL MULTI-?PACK\\b",
+      "set": {
+        "line": "Tidal Waves",
+        "size": "3g"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$"
+      },
+      "match": "(?i)^(?P<strain>.+?)\\s*-\\s*WAVE RIDER\\s*-\\s*(?P<size>\\d+(?:\\.\\d+)?\\s*G)\\s+DISPOSABLE VAPE\\b",
+      "set": {
+        "line": "Wave Rider"
+      }
+    },
+    {
+      "when": {
+        "category": "^concentrate$"
+      },
+      "match": "(?i)^(?P<strain>.+?)\\s*-\\s*GOLDEN SAND\\s*-\\s*(?:KIEF\\s*-\\s*)?(?P<size>\\d+(?:\\.\\d+)?\\s*G)\\b",
+      "set": {
+        "line": "Golden Sand"
+      }
+    },
+    {
+      "when": {
+        "category": "^(tinctures|topical)$"
+      },
+      "match": "(?i)^(?P<strain>[A-Z ]+?)\\s+(?:TINCTURE|ROLL-?ON)\\b.*?(?P<size>\\d+\\s*MG)\\s*THC\\b"
+    }
+  ]
+}

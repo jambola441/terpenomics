@@ -1,0 +1,137 @@
+{
+  "brand": "Flamer",
+  "site": "https://www.heyflamer.com",
+  "source": {
+    "kind": "html",
+    "url": "https://www.heyflamer.com/coas",
+    "item": "li.accordion-item p",
+    "fields": {
+      "title": "."
+    }
+  },
+  "learned": "2026-10-05, agent pass: no shop or product page; the COA page is the only product index. 4 pre-roll strains in two formats (single 0.75g, 5-pack minis) and 3 whole-flower strains, each an accordion of lot lines. Check: 9 of the 9 products NY stores sell are on the site.",
+  "notes": [
+    "One item per lot line, so a strain's two pre-roll formats come out separately. The line does not repeat the strain (the accordion header does, which a line cannot reach), so the strain is read from the lot code: SG Silly Goofy, LB Lobotomy, PNC P.N.C. (the header's 'POST NUT CLARITY (P.N.C.)'; stores write PNC), SCK Sasha Colby Kush ('lot #SG-FPR25003', 'lot #CR-HF-5pk-SG-1'). Early lots have bare numbers ('lot #010010001', '#FPR24003'); every product also has coded lots, so those are skipped. A new strain code falls through to unparsed on purpose.",
+    "Flower lines name the strain: 'He He / Ha Ha lot #HH-FFA26004', 'Hehe Haha Lot# CR-HF-FL-HH-1'.",
+    "Sizes: the singles say 0.75g. The 5-packs and the flower state no weight; NY stores sell the 5-pack minis as 5 x 0.5g ('Silly Goofy | Pre-Rolls | 5 x .5g | 5pk') and the flower as 3.5g ('Flamer - Revelation - 3.5g'), so those are constants."
+  ],
+  "skip": [
+    {
+      "when": {
+        "title": "(?i)\\bdye\\b"
+      },
+      "why": "the red dye's COA, not a product"
+    },
+    {
+      "when": {
+        "title": "(?i)pre-?rolls?:\\s*lot\\s*#\\s*(?:\\d{6,}|FM?PR\\d+)\\s*$"
+      },
+      "why": "an early lot with no strain code (the product's coded lots are listed too)"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "title": "(?i)pre-?rolls?"
+      },
+      "set": {
+        "category": "preroll"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)#"
+      },
+      "set": {
+        "category": "flower"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^5-pack mini pre-?rolls?:.*\\bSG\\b",
+      "set": {
+        "strain": "Silly Goofy",
+        "size": "5pk 0.5g"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^5-pack mini pre-?rolls?:.*\\bLB\\b",
+      "set": {
+        "strain": "Lobotomy",
+        "size": "5pk 0.5g"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^5-pack mini pre-?rolls?:.*\\bPNC\\b",
+      "set": {
+        "strain": "P.N.C.",
+        "size": "5pk 0.5g"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^5-pack mini pre-?rolls?:.*\\bSCK\\b",
+      "set": {
+        "strain": "Sasha Colby Kush",
+        "size": "5pk 0.5g"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^single (?P<size>0?\\.75\\s*g) pre-?roll:.*\\bSG\\b",
+      "set": {
+        "strain": "Silly Goofy"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^single (?P<size>0?\\.75\\s*g) pre-?roll:.*\\bLB\\b",
+      "set": {
+        "strain": "Lobotomy"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^single (?P<size>0?\\.75\\s*g) pre-?roll:.*\\bPNC\\b",
+      "set": {
+        "strain": "P.N.C."
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^single (?P<size>0?\\.75\\s*g) pre-?roll:.*\\bSCK\\b",
+      "set": {
+        "strain": "Sasha Colby Kush"
+      }
+    },
+    {
+      "when": {
+        "category": "^flower$"
+      },
+      "match": "^(?P<strain>[A-Za-z][^#]*?)\\s*(?:[Ll]ot\\s*)?#",
+      "set": {
+        "size": "3.5g"
+      }
+    }
+  ]
+}

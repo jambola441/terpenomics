@@ -1,0 +1,73 @@
+{
+  "brand": "MyHi",
+  "site": "https://www.getmyhi.com",
+  "source": {
+    "kind": "html",
+    "url": "https://www.getmyhi.com/",
+    "item": "section#thc figure._productcard",
+    "fields": {
+      "title": "h4",
+      "variant": "h5",
+      "tags": "ul li@class"
+    }
+  },
+  "learned": "2026-10-05, by an agent pass: 13 dispensary cards in the homepage's section#thc, 12 tagged ny (5 Stir STIK, 4 gummy, 4 vape cards; Tranquili-Tea is MA).",
+  "notes": [
+    "WordPress site with no product post type; the dispensary products are the cards in the homepage's section#thc: figure._productcard with h4 'Line<br>Flavor', h5 dose and format, and a state list ul li.ny / li.ma. The hemp D9 Stir STIKs sold online elsewhere on the page are outside section#thc and are not read.",
+    "h4 reads 'Social Tangerine', 'Relax Blue Raz', 'Flavor Forward Berry', 'Strain Series OG Kush': the effect lines are listed in the title rules, so a new line falls through to unparsed.",
+    "Gummy cards give the per-piece dose ('10mg THC, 5mg CBD, +THCv/CBC Gummies') but not the pack; NY stores sell them as 10pk 100mg ('MyHi - Tangie 2:1 THC:CBD Live Rosin Gummies 10pk - 100mg'), so a 10mg gummy is 10pk 100mg. Vapes are '1g Vape'; the site does not name the hardware (stores write 'Live Rosin Disposable'), so no subtype is set.",
+    "Stir STIK cards are skipped: three of the four NY cards cover two strengths ('5mg, 10mg Stir STIK') and none gives the pack (stores sell '3 x 10MG'). They come from the stores' consensus.",
+    "Stores write Social Tangerine as 'Tangie' (2026-10-05), too far from 'Tangerine' for the name match, so that store product also stays in the stores' consensus."
+  ],
+  "skip": [
+    {
+      "when": {
+        "tags": "^(?!.*\\bny\\b)"
+      },
+      "why": "not sold in NY"
+    },
+    {
+      "when": {
+        "variant": "(?i)stir\\s*stik"
+      },
+      "why": "Stir STIK: a card covers several strengths and gives no pack count"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "variant": "(?i)\\bgumm"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "gummy"
+      }
+    },
+    {
+      "when": {
+        "variant": "(?i)\\bvape\\b"
+      },
+      "set": {
+        "category": "vaporizers"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^edible$",
+        "variant": "^10mg THC\\b"
+      },
+      "match": "^(?P<line>Social|Relax)\\s+(?P<strain>.+)$",
+      "set": {
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$"
+      },
+      "match": "^(?P<line>Flavor Forward|Strain Series)\\s+(?P<strain>.+)$"
+    }
+  ]
+}

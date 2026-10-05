@@ -1,0 +1,26 @@
+{
+  "brand": "Layup",
+  "site": "https://www.drinklayup.com",
+  "source": {
+    "kind": "html",
+    "url": "https://www.drinklayup.com/products",
+    "item": "div:has(> div[data-framer-name=\"1:1 Product Image\"])",
+    "fields": {
+      "title": "@data-framer-name",
+      "body": "."
+    }
+  },
+  "learned": "2026-10-05, agent pass: /products holds 9 flavour cards (Framer); no size or dose anywhere on the site.",
+  "notes": [
+    "A Framer site. layup.nyc redirects here; the root is an age gate linking to ./fullhome, and /products answers directly. Each flavour card is the div whose child layer is named '1:1 Product Image'; the card's own layer name (data-framer-name) is the flavour. Framer's class names are generated, so the recipe keys on layer names, not classes.",
+    "The site gives no size or dose. Every LayUp is one 10mg can, which is how NY stores list every flavour ('LayUp | Peach Tea | 10mg'), so the size is a constant. A new format (a multipack, another dose) would need its own rule.",
+    "Category is implicit: all are THC beverages.",
+    "On 2026-10-05 stores also sold Futbol Punch, Playoff Punch and Rocket Pop (all 10mg), which no page of the site mentions: limited flavours, kept from the stores' consensus."
+  ],
+  "category": [
+    {"when": {"title": "."}, "set": {"category": "edible", "subtype": "beverage"}}
+  ],
+  "title": [
+    {"when": {"category": "^edible$"}, "match": "^(?P<strain>.+)$", "set": {"size": "10mg"}}
+  ]
+}

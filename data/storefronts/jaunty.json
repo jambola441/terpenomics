@@ -1,0 +1,208 @@
+{
+  "brand": "Jaunty",
+  "site": "https://jaunty.com",
+  "source": {
+    "kind": "html",
+    "url": "https://jaunty.com/product-sitemap.xml",
+    "sitemap": {
+      "url": "https://jaunty.com/product-sitemap.xml",
+      "match": "/product/[^/]+/$"
+    },
+    "fields": {
+      "title": "h1",
+      "product_type": ".elementor-location-single@class",
+      "body": ".elementor-location-single",
+      "url": "link[rel=canonical]@href"
+    }
+  },
+  "learned": "2026-10-05, by hand: 99 product pages in the Yoast product sitemap (65 vapes, 14 gummies, 11 dabs, 5 tinctures, 4 pre-rolls). NY-only brand (OCM-PROC-24-000091, Naturae LLC). jauntyvapes.com is a grey-market reseller, not the brand.",
+  "notes": [
+    "Read from the product pages, not /wp-json/wp/v2/product: that post type has titles and taxonomy classes but no content, and sizes are only on the pages. The div.elementor-location-single carries the taxonomy slugs as classes (product-type-*, vape-type-*, gummy-type-*), which the category rules read.",
+    "Lines are Jaunty's own vape-type and gummy-type terms: Classic, Live Resin, Live Rosin, Palms, All-Stars, Liquid Diamonds; Hash, Fast-Acting, Live Rosin. Three old Classic carts are titled with the strain alone ('LSD', 'White Widow', 'Strawberry Cough').",
+    "Sizes the pages state are read from them: Palms 'Available In 1.5 grams', All-Stars and Liquid Diamonds '1 GRAM / 1.5 GRAM ALL-IN-ONE VAPE', gummies the THC mg (per gummy or per package) plus 'Available In 10 Pack', tinctures 'NNNmg THC per bottle'.",
+    "Cart and badder pages state no size, so those are constants checked against NY store listings on 2026-10-05: Classic and Live Resin carts 1g, Live Rosin carts 0.5g, Cold Cure badder 1g (three badder slugs also end in -1g). A new size in one of those lines would be read wrong; recheck if stores show one.",
+    "Hash Hole pre-rolls are '.8 grams of <flower> paired with .2 grams of <rosin> solventless live rosin', so 1g; the rule requires that sentence. The strain is the flower strain, the way stores name it ('Live Rosin Hash Hole Velvet Lushers'); the rosin strain is in the title.",
+    "Hash gummies Dreamberry and Orange Swirl and every Fast-Acting gummy also come in a '2 Pack trial size'. One page is one item, so only the 10-pack is an entry; the 2-packs stay as the stores' consensus.",
+    "Sold-out products stay in the sitemap (the page says SOLD OUT); they are kept, since stores sell through old stock. Merch is on merch.jaunty.com, not here."
+  ],
+  "skip": [],
+  "category": [
+    {
+      "when": {
+        "product_type": "\\bvape-type-classic\\b"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "cart"
+      }
+    },
+    {
+      "when": {
+        "product_type": "\\bvape-type-live-resin\\b"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "cart"
+      }
+    },
+    {
+      "when": {
+        "product_type": "\\bvape-type-live-rosin\\b"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "cart"
+      }
+    },
+    {
+      "when": {
+        "product_type": "\\bvape-type-(palms|all-stars|liquid-diamonds)\\b"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "all-in-one"
+      }
+    },
+    {
+      "when": {
+        "product_type": "\\bproduct-type-gummies\\b"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "gummy"
+      }
+    },
+    {
+      "when": {
+        "product_type": "\\bproduct-type-dabs\\b"
+      },
+      "set": {
+        "category": "concentrate",
+        "subtype": "rosin"
+      }
+    },
+    {
+      "when": {
+        "product_type": "\\bproduct-type-pre-rolls\\b"
+      },
+      "set": {
+        "category": "preroll"
+      }
+    },
+    {
+      "when": {
+        "product_type": "\\bproduct-type-tinctures\\b"
+      },
+      "set": {
+        "category": "tinctures"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "product_type": "\\bvape-type-classic\\b"
+      },
+      "match": "^(?P<strain>.+?)(?:\\s+Classic Cartridge)?$",
+      "set": {
+        "line": "Classic",
+        "size": "1g"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "product_type": "\\bvape-type-live-resin\\b"
+      },
+      "match": "^(?P<strain>.+?)\\s+(?P<line>Live Resin) Cartridge$",
+      "set": {
+        "size": "1g"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "product_type": "\\bvape-type-live-rosin\\b"
+      },
+      "match": "^(?P<strain>.+?)\\s+(?P<line>Live Rosin) Cartridge$",
+      "set": {
+        "size": "0.5g"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "product_type": "\\bvape-type-palms\\b"
+      },
+      "match": "^(?P<strain>.+?)\\s+All-In-One Palm$",
+      "extract": {
+        "body": "Available In\\s+(?P<size>\\d*\\.?\\d+\\s*grams?)\\b"
+      },
+      "set": {
+        "line": "Palms"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "product_type": "\\bvape-type-all-stars\\b"
+      },
+      "match": "^(?P<strain>.+?)\\s+All-Star All-In-One$",
+      "extract": {
+        "body": "(?P<size>\\d*\\.?\\d+\\s*GRAMS?)\\s+ALL-IN-ONE VAPE"
+      },
+      "set": {
+        "line": "All-Stars"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "product_type": "\\bvape-type-liquid-diamonds\\b"
+      },
+      "match": "^(?P<strain>.+?)\\s+(?P<line>Liquid Diamonds)$",
+      "extract": {
+        "body": "(?P<size>\\d*\\.?\\d+\\s*GRAMS?)\\s+ALL-IN-ONE VAPE"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "^(?P<strain>.+?)\\s+(?:Solventless )?(?P<line>Hash|Fast-Acting|Live Rosin) Gummies$",
+      "extract": {
+        "body": "(?i)(?P<size>\\d+\\s*mg) THC.*?Available In\\s+(?P<size2>\\d+\\s*Packs?)\\b"
+      }
+    },
+    {
+      "when": {
+        "category": "^concentrate$"
+      },
+      "match": "^(?P<strain>.+?)\\s+(?P<line>Cold Cure) Live Rosin Badder$",
+      "set": {
+        "size": "1g"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$",
+        "body": "\\.8 grams? of .+ paired with \\.2 grams? of .+ solventless live rosin"
+      },
+      "match": "^(?P<strain>.+?)\\s+\\+\\s+.+?\\s+Hash Hole Pre-Roll$",
+      "set": {
+        "line": "Live Rosin Hash Hole",
+        "size": "1g"
+      }
+    },
+    {
+      "when": {
+        "category": "^tinctures$"
+      },
+      "match": "^(?P<strain>[A-Z]+) Drops Cannabis Oil Tincture$",
+      "extract": {
+        "body": "(?P<size>\\d+\\s*mg) THC per bottle"
+      }
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "brand": "Edie Parker",
+  "site": "https://edieparkerflower.com",
+  "source": {
+    "kind": "shopify_json",
+    "url": "https://edieparkerflower.com/products.json"
+  },
+  "learned": "2026-10-05, agent pass: 66 Shopify products (display only, prices 0.00), state availability in tags; 21 carry NY, 14 with a stated size. Check: 2 of the 7 products NY stores sell are on the site; the other 5 name a batch strain or flavour the site does not list.",
+  "notes": [
+    "New York is the 'NY' tag. /collections/new-york is misconfigured (13 items, most tagged only OH), so the whole feed is read and filtered.",
+    "Titles are the product line only ('Vape Cartridge', 'Petal Puffer', 'Blossoms', 'Best Buds', 'Flower Pot'); the flavour or effect blend is in the variant SKU after the line ('Vape Cartridge-Le Freak - Golden Yuzu', 'Flower Pot MAP-Nightcap'). product_type is the strain type, not a category.",
+    "Sizes are in the description: '1g Terpene-rich Distillate Vape Cartridge', 'Blossoms | 7-pack | 0.5g Pre-Rolls', 'Best Buds | Twin Pack | 0.5g Pre-Rolls', '1/8oz Premium indoor whole flower'.",
+    "The proxy sometimes resets the connection to this host; a retry works.",
+    "Petal Puffers (and the Lemon Watermelon cart) say 'Available in 0.5g and 1g (varies by state)' and never which is New York's; NY stores list a 0.5g Lemon Watermelon, so they are skipped rather than guessed.",
+    "Limited-edition flavours are 'Edition - Flavour' in the SKU ('Le Freak - Golden Yuzu'); the strain is the edition name, as stores write it ('Edie Parker - Le Freak Cartridge - 1g').",
+    "Blossoms, Best Buds and Flower Pot come in three effect blends (Nightcap = indica, Happiest Hour = hybrid, Early Bird = sativa) and the site never names the strain in a batch, while NY stores add it ('Early Bird Sour Jack', 'Happiest Hour Sugar Breath 2 Pack'); those stay as store-consensus products."
+  ],
+  "skip": [
+    {
+      "when": {
+        "tags": "^(?!.*\\bNY\\b)"
+      },
+      "why": "not sold in New York"
+    },
+    {
+      "when": {
+        "body": "(?i)varies by state"
+      },
+      "why": "size varies by state and the site does not say New York's"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "title": "(?i)petal puffer|all-in-one"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "all-in-one"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)cartridge"
+      },
+      "set": {
+        "category": "vaporizers"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)blossoms|best buds|pre-?roll"
+      },
+      "set": {
+        "category": "preroll"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)flower pot"
+      },
+      "set": {
+        "category": "flower"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^vaporizers$"
+      },
+      "match": "^Vape Cartridge$",
+      "extract": {
+        "meta": "\"sku\": \"Vape Cartridge-(?P<strain>[^\"]+?)(?: - [^\"]*)?\"",
+        "body": "^(?P<size>\\d+(?:\\.\\d+)?\\s*g)\\b"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "^(?P<line>Blossoms)$",
+      "extract": {
+        "meta": "\"sku\": \"Blossoms-(?P<strain>[^\"]+)\"",
+        "body": "(?P<size>\\d+-pack\\s*\\|\\s*\\d*\\.?\\d+\\s*g)"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$",
+        "body": "Twin Pack\\s*\\|\\s*0\\.5\\s*g"
+      },
+      "match": "^(?P<line>Best Buds)$",
+      "extract": {
+        "meta": "\"sku\": \"Best Buds-(?P<strain>[^\"]+)\""
+      },
+      "set": {
+        "size": "2pk 0.5g"
+      }
+    },
+    {
+      "when": {
+        "category": "^flower$"
+      },
+      "match": "^(?P<line>Flower Pot)$",
+      "extract": {
+        "meta": "\"sku\": \"Flower Pot(?: MAP)?-(?P<strain>[^\"]+)\"",
+        "body": "^(?P<size>\\d+/\\d+\\s*oz)\\b"
+      }
+    }
+  ]
+}

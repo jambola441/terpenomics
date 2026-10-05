@@ -1,0 +1,113 @@
+{
+  "brand": "Pot & Head",
+  "site": "https://www.veteranschoicecreations.com/potandhead",
+  "source": {
+    "kind": "json",
+    "url": "https://www.veteranschoicecreations.com/potandhead?page=8",
+    "extract": "<script type=\"application/json\" id=\"wix-warmup-data\"[^>]*>(.*?)</script>",
+    "items": "appsWarmupData.1380b703-ce81-ff05-f115-39571d94dfcd.*.catalog.category.productsWithMetaData.list.*",
+    "fields": {
+      "id": "id",
+      "title": "name",
+      "product_type": "options.*.key"
+    }
+  },
+  "learned": "2026-10-05, by an agent pass: 83 products in the Wix Stores category 'POT and HEAD' on Veterans Choice Creations' site (potandhead.com redirects there). NY-only processor in Gloversville.",
+  "notes": [
+    "A Wix Stores gallery: the page embeds <script id=wix-warmup-data>, and appsWarmupData['1380b703-ce81-ff05-f115-39571d94dfcd'] (the Wix Stores app) holds the category's productsWithMetaData under a key that names the page ('initialData_default_TPASection_m02t1907_page=8'), hence the '*'. ?page=N renders items 1..N*20 at once: page 8 covers 160, and the category had 83 (totalCount). Raise it if totalCount passes 160. Prices are all 0 (catalog only).",
+    "Names are '<SIZE> | <LINE> | <STRAIN>' in capitals, so title_case is on. Not quite consistent: '1G  NON INFUSED PRE-ROLL | VANILLA KUSH' lacks a pipe, 'PRE- ROLL', 'NON INFUSED' vs 'NON-INFUSED', some flower skips the line ('28G | GELATO 41'), and '14G | TUXEDO | FLOWER | GARLIC BUTTER' has an extra segment. One urlPart contradicts its name (pot-head-tuxedo-zello-28g is '14G | TUXEDO | ZELLO'); the name is used.",
+    "The option keys (FLOWERS, PRE-ROLLS, CONCENTRATES, VAPE, FUEL TANKS) are the site's filters; one hash cube has none, and Fuel Tanks are filed under CONCENTRATES. A Fuel Tank is a 'portable dab vape', 'a 0.5g All-In-One' (its product page), and a Live Rosin Stone is an all-in-one (its urlPart says aio), so both are vaporizers. Format words in the name decide; FLOWERS decides only for flower names, which have none.",
+    "Plain pre-rolls ('NON-INFUSED PRE-ROLL', 'PRE ROLL') have no line; Tuxedo and Tuxedo Edition are separate flower lines (the site has an Animal Face in each).",
+    "The same site carries Veterans Choice Creations' other brands (New York Honey, Spacebuds, Mildly Moronic) under other categories; our listings attribute some New York Honey products to Pot & Head."
+  ],
+  "title_case": true,
+  "category": [
+    {
+      "when": {
+        "title": "(?i)fuel tank|\\bstone\\b"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "all-in-one"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\bpre[-\\s]*rolls?\\b|\\bblunt\\b"
+      },
+      "set": {
+        "category": "preroll"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\bhash cube\\b"
+      },
+      "set": {
+        "category": "concentrate",
+        "subtype": "hash"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\brosin\\b"
+      },
+      "set": {
+        "category": "concentrate",
+        "subtype": "rosin"
+      }
+    },
+    {
+      "when": {
+        "product_type": "\\bFLOWERS\\b"
+      },
+      "set": {
+        "category": "flower"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^(vaporizers|concentrate)$"
+      },
+      "match": "(?i)^(?P<size>\\d*\\.?\\d+\\s*G)\\s*\\|\\s*(?P<line>[^|]+?)\\s*\\|\\s*(?P<strain>[^|]+)$"
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^(?P<size>\\d+\\s*PK)\\s*\\|\\s*(?P<size2>\\d*\\.?\\d+\\s*G)\\s+(?P<line>DIAMOND INFUSED)\\s+PRE[-\\s]*ROLLS?\\s*\\|\\s*(?P<strain>[^|]+)$"
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^(?P<size>\\d*\\.?\\d+\\s*G)\\s*\\|\\s*(?P<line>HASH INFUSED)\\s+PRE[-\\s]*ROLL\\s*\\|\\s*(?P<strain>[^|]+)$"
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^(?P<size>\\d*\\.?\\d+\\s*G)\\s*\\|\\s*(?P<line>HASH HOLE)(?:\\s+HANDROLLED)?\\s+BLUNT\\s*\\|\\s*(?P<strain>[^|]+)$"
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^(?P<size>\\d*\\.?\\d+\\s*G)\\s*\\|?\\s*(?:NON[-\\s]*INFUSED\\s+)?PRE[-\\s]*ROLL\\s*\\|\\s*(?P<strain>[^|]+)$"
+    },
+    {
+      "when": {
+        "category": "^flower$"
+      },
+      "match": "(?i)^(?P<size>\\d*\\.?\\d+\\s*G)\\s*\\|\\s*(?P<line>TUXEDO EDITION|TUXEDO|GREENHOUSE)\\s*\\|\\s*(?:FLOWER\\s*\\|\\s*)?(?P<strain>[^|]+?)(?:\\s*\\(SMALLS\\))?$"
+    },
+    {
+      "when": {
+        "category": "^flower$"
+      },
+      "match": "(?i)^(?P<size>\\d*\\.?\\d+\\s*G)\\s*\\|\\s*(?P<strain>[^|]+?)(?:\\s*\\(SMALLS\\))?$"
+    }
+  ]
+}
