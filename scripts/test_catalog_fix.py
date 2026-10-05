@@ -91,3 +91,97 @@ def test_measuring_counts_only_changes_both_runs_agree_on():
     stable, noise = cf.compare(old, new)
     assert stable == {"y": (review, b)} and noise == 1
     assert cf.summarize(stable) == {"trusted gained": 1, "page size changed": 1}
+
+
+def find_catalogs(method="listings_bootstrap"):
+    def e(id, strain, variant, category="flower", subtype="flower", terms=()):
+        pk = f"lb:{category}:{subtype or ''}::{strain.lower().replace(' ', '')}"
+        return {"id": id, "catalog_id": "c2", "name": strain, "strain": strain, "product_line": None,
+                "category": category, "subtype": subtype, "variant": variant, "product_key": pk,
+                "external_id": f"{pk}:{variant}", "is_active": True, "match_terms": list(terms),
+                "source": "listings_bootstrap"}
+    return {"find": {"id": "c2", "brand_name": "Find.", "brand_slug": "find", "source_method": method,
+                     "entries": [e("gl35", "Gas Lit", "3.5g"), e("gl28", "Gas Lit", "28g"),
+                                 e("ms28", "Mint Snacks", "28g", terms=["mint snacks 28g"]),
+                                 e("mz28", "Mint Snackz", "28g"),
+                                 e("mz1", "Mint Snackz", "1g", category="preroll", subtype=None),
+                                 e("mzz10", "Mintz Snackz", "10g", category="preroll", subtype=None,
+                                   terms=["mintz snackz prerolls 10pk 10g"])]}}
+
+
+def test_a_new_product_takes_the_bootstraps_keys_and_is_curated():
+    plan = cf.plan_add_product(find_catalogs(), "Find.", "flower", "Out Of Office", ["3.5g", "28g"],
+                               subtype="flower", terms=["Find. | Out Of Office | Hybrid", "Out Of Office - 3.5G Flower"])
+    (op, _, _, rows), = plan.writes
+    assert op == "insert" and [r["variant"] for r in rows] == ["3.5g", "28g"]
+    assert {r["product_key"] for r in rows} == {"lb:flower:flower::outofoffice"}       # one product
+    assert [r["external_id"] for r in rows] == ["lb:flower:flower::outofoffice:3.5g",
+                                                "lb:flower:flower::outofoffice:28g"]
+    assert {r["source"] for r in rows} == {"curated"}       # a --replace rebuild keeps it
+    assert rows[0]["match_terms"] == ["out of office 3 5g flower", "out of office hybrid"]   # brand-less
+    assert rows[1]["match_terms"] == []
+
+
+def test_a_storefront_product_gets_no_id_and_its_own_key():
+    (_, _, _, rows), = cf.plan_add_product(find_catalogs("storefront_html"), "Find.", "preroll",
+                                           "Icy Pine", ["10g"]).writes
+    assert rows[0]["external_id"] is None and rows[0]["product_key"] == "cur:preroll:::icypine"
+
+
+def test_add_product_refuses_a_product_the_catalog_has_and_a_wrong_subtype():
+    with pytest.raises(cf.Refused, match="add-size it instead"):
+        cf.plan_add_product(find_catalogs(), "Find.", "flower", "gas lit", ["14g"], subtype="flower")
+    assert cf.plan_add_product(find_catalogs(), "Find.", "flower", "Gas Lit", ["14g"], subtype="preground").writes
+    with pytest.raises(cf.Refused, match="keeps a subtype"):
+        cf.plan_add_product(find_catalogs(), "Find.", "flower", "Zangria", ["3.5g"])
+    with pytest.raises(cf.Refused, match="keeps no subtype"):
+        cf.plan_add_product(find_catalogs(), "Find.", "preroll", "Zangria", ["1g"], subtype="flower")
+
+
+def test_an_added_size_is_curated_too():
+    (_, _, _, row), = cf.plan_add_size(find_catalogs(), "gl35", "70g").writes
+    assert row["source"] == "curated" and row["external_id"] == "lb:flower:flower::gaslit:70g"
+
+
+def test_a_selector_names_one_active_entry():
+    cats = find_catalogs()
+    assert cf.resolve_entry(cats, "Find.", {"strain": "gas lit", "size": "28g"}) == "gl28"
+    assert cf.resolve_entry(cats, "Find.", "gl35") == "gl35"
+    with pytest.raises(cf.Refused, match="names 2 active entries"):
+        cf.resolve_entry(cats, "Find.", {"strain": "Gas Lit"})
+    with pytest.raises(cf.Refused, match="names 0"):
+        cf.resolve_entry(cats, "Find.", {"strain": "Gas Lit", "category": "preroll"})
+
+
+def test_a_plan_applies_its_edits_in_order_and_stops_at_a_refusal():
+    doc = {"brand": "Find.", "edits": [
+        {"op": "deactivate", "entry": {"strain": "Mint Snacks"}, "into": {"strain": "Mint Snackz", "size": "28g"},
+         "why": "one strain"},
+        {"op": "add-size", "entry": {"strain": "Mint Snackz", "category": "preroll"}, "size": "10g"},
+        {"op": "deactivate", "entry": {"strain": "Mintz Snackz"}, "into": {"strain": "Mint Snackz", "size": "1g"}},
+        {"op": "add-product", "category": "preroll", "strain": "Icy Pine", "sizes": ["10g"],
+         "terms": ["Pre-Rolls | Find | Icy Pine - 10pk"]}]}
+    plan = cf.apply_plan(find_catalogs(), doc)
+    assert plan.notes[0].startswith("1. deactivate Mint Snacks") and plan.notes[0].endswith("[one strain]")
+    active = {(e["strain"], e["variant"]) for e in plan.changed["entries"] if e["is_active"]}
+    assert ("Mint Snacks", "28g") not in active and ("Mintz Snackz", "10g") not in active
+    assert {("Mint Snackz", "10g"), ("Icy Pine", "10g")} <= active
+    survivor = next(e for e in plan.changed["entries"] if e["id"] == "mz28")
+    assert survivor["match_terms"] == ["mint snacks 28g"]                       # names moved over
+    assert [w[0] for w in plan.writes] == ["update", "update", "insert", "update", "update", "insert"]
+    assert plan.category is None                                                 # flower and preroll
+    assert all(e["is_active"] for e in find_catalogs()["find"]["entries"])       # input untouched
+
+    bad = {"brand": "Find.", "edits": [doc["edits"][3], {"op": "add-size", "entry": {"strain": "Icy Pine"},
+                                                          "size": "1g"}]}
+    with pytest.raises(cf.Refused, match=r"edit 2 \(add-size\).*names 0"):       # new entries: not selectable
+        cf.apply_plan(find_catalogs(), bad)
+
+
+def test_add_product_folds_one_size_written_twice_and_guards_its_store_names():
+    (_, _, _, rows), = cf.plan_add_product(find_catalogs(), "Find.", "flower", "Zangria",
+                                           ["28g", "1 ounce", "3.5g"], subtype="flower").writes
+    assert [(r["variant"], r["external_id"].rsplit(":", 1)[1]) for r in rows] == [("28g", "28g"), ("3.5g", "3.5g")]
+    with pytest.raises(cf.Refused, match="cross-wire"):
+        cf.plan_add_product(find_catalogs(), "Find.", "flower", "Shock Mints", ["28g"], subtype="flower",
+                            terms=["Find. - Mint Snacks 28g"])           # Mint Snacks' own store name

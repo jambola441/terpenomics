@@ -320,6 +320,20 @@ def test_render_preview_diffs_a_rebuild_against_the_catalog():
     assert "  + Blue Dream 3.5g  (2 stores)" in text
 
 
+def test_preview_counts_a_curated_entry_as_held_and_never_as_retired():
+    """catalog_fix.py gives curated entries the bootstrap's ids: a rebuild that proposes
+    one updates it, and one that does not leaves it alone."""
+    catalog = {"id": "c1", "brand_name": "Acme", "source_method": "listings_bootstrap"}
+    listings = [{"id": f"l{i}", "dispensary_id": f"d{i}", "scraped_name": "Acme Blue Dream 3.5g",
+                 "scraped_brand": "Acme", "scraped_category": "flower", "subtype": "flower",
+                 "strain": "Blue Dream", "product_line": None, "variant": "3.5g"} for i in range(2)]
+    curated = [{**entry(None, s, "flower", "flower", "3.5g", source="curated"), "external_id": x}
+               for s, x in (("Blue Dream", "lb:flower:flower::bluedream:3.5g"),
+                            ("Zangria", "lb:flower:flower::zangria:3.5g"))]   # one store: never proposed
+    text = cs.render_preview(catalog, curated, listings, fresh_only=True)
+    assert "+0 new, -0 no longer proposed" in text
+
+
 def test_no_split_size_where_the_lineless_products_are_a_range_of_their_own():
     # Florist Farms: plain 7-packs (3.5g, a size no line uses) beside infused singles.
     entries = [entry("Live Resin Infused", s, "preroll", None, v)

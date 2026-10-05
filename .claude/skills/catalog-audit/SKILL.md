@@ -371,13 +371,70 @@ beats twenty admin edits. Name the entries, quote store names, and give counts. 
 'Sleep' has one flavour; the site sells Midnight Blueberry as the Sleep gummy" is useful;
 "some lines look thin" is not.
 
+## Curating a store-built catalog
+
+An audit finds what is wrong with a catalog. Curation rebuilds one: for a brand with no
+readable site, it turns the bootstrap's draft into the brand's range. The bootstrap is a
+rule. It keeps a product only when two stores sell it, and it takes line and strain from
+whatever enrichment read. Curation is the judgment that rule stands in for. You read
+every listing of the brand and decide what the brand makes. Do it when the user asks, or
+propose it when a store-built catalog matches under 60% of its brand's listings with
+trust.
+
+Find. (2026-10-05) is the worked example. Its plan takes the catalog from 40 products to
+77, 30 of them admitted on one store's listings. Measured with the matcher, trusted
+matches go from 130 to 215 of its 216 listings, and none is lost.
+
+1. **Read everything.** Run `show`, then `listings "<Brand>"`, which lists every
+   listing, matched or not. Add `--descriptions --photos` for anything you cannot settle
+   from the name. Stores often paste the brand's own blurb into descriptions. Find.'s
+   reads "Available in whole flower, popcorn buds, pre-ground shake, and pre-rolls".
+2. **Write the brand's format model.** Per category: the formats (subtypes), the sizes
+   each comes in, and whether the brand uses lines. Find. has no lines. Whole flower
+   comes in 3.5, 14, 28 and 70g; stores print "2.5 OZ Flower", so the `size` lead's
+   "implausible 70g" was a false alarm. Pre-ground comes in 7 and 14g. Pre-rolls are 1g
+   singles and 10 × 1g packs.
+3. **Decide each product.** A product is one category, subtype, line and strain.
+   - Admit a product on one store's listing when the name is clean: a strain, not a
+     format word, merch or another brand. Its format and size must be ones the brand
+     sells.
+   - Fold spellings to the one most stores write, and merge entries the catalog split
+     (Find.'s "Mint Snacks", "Mint Snackz" and "Mintz Snackz").
+   - Leave out other brands' products filed under this one (a Select vape sat under
+     Find.); report the store. Leave out sizes the brand does not sell in that format:
+     they are typos or bundles (rule 10).
+4. **Write the plan file** for `python3 scripts/catalog_fix.py plan FILE`. Its docstring
+   gives the format. Each edit carries a `why` with its evidence.
+   - `add-product`, with the store names it is sold under as `terms`, so those listings
+     match exactly.
+   - `add-size` for each size a product lacks.
+   - `deactivate` with `into` for a split spelling. Give the survivor any size it lacks
+     first.
+   - `add-term` and `drop-term` as needed.
+
+   Entries made this way are marked "curated". A `--replace` rebuild never retires them,
+   and one that proposes the same product updates them in place. Pair the plan with the
+   rule files that stop drift: `data/strain_aliases.json` for every folded spelling, and
+   `data/product_lines.json` for lines enrichment missed. Rule files are repo changes and
+   go through a PR.
+5. **Measure:** `catalog_fix.py plan FILE --measure`. It runs the matcher before and
+   after over the brand's listings, prints trusted before → after, and lists in full
+   every trusted match the plan loses or moves to another product. Explain each one as a
+   correction (a pre-roll that had matched the flower product) or drop the edit behind
+   it.
+6. **Present and wait.** Show the format model, the products added with their store
+   counts, the merges and sizes, what you left out and why, and the measurement. Write
+   only after the user approves, with `catalog_fix.py plan FILE --write`. Listings move
+   at the next import (13:00 UTC).
+
 ## Ground rules
 
 - **An audit is read-only.** Do not write to the database, edit entries, push catalogs,
   or edit repo files (recipes, rule files, this skill) while auditing. Recommend instead,
   and test a recipe change on a scratch copy with `check --recipe`. Apply fixes only
   when the user asks: the recipe plus `storefront.py push` for storefront fixes, rule
-  files plus a rebuild for bootstrap ones, the admin UI or API for single entries.
+  files plus a rebuild for bootstrap ones, `catalog_fix.py` (one edit, or a curation
+  plan) for entries.
 - **Never delete catalog entries.** Deactivate them.
 - **Stay with the evidence.** When you cannot reach the site or the evidence is split,
   say so, give the readings, and mark the finding low confidence. Do not guess.
