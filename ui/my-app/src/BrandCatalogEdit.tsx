@@ -350,12 +350,11 @@ export default function BrandCatalogEdit() {
   const columns: Column<BrandCatalogEntry>[] = [
     {
       key: 'name', header: 'Name', td: { color: '#f1f5f9', fontWeight: 500 },
-      render: e => (
-        <span style={{ opacity: e.is_active ? 1 : 0.45 }}>
-          {e.name}
-          {e.product_line && <span style={{ color: '#a5b4fc', fontWeight: 400 }}> · {e.product_line}</span>}
-        </span>
-      ),
+      render: e => <span style={{ opacity: e.is_active ? 1 : 0.45 }}>{e.name}</span>,
+    },
+    {
+      key: 'product_line', header: 'Product line', td: { color: '#a5b4fc' },
+      render: e => e.product_line ?? <Dash />,
     },
     {
       key: 'category', header: 'Category',

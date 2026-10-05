@@ -262,7 +262,8 @@ def _entry_meta(catalog: dict):
     return meta
 
 
-def push(catalog: dict, dry_run: bool = False, via_http: bool = False) -> dict:
+def push(catalog: dict, dry_run: bool = False, via_http: bool = False,
+         replace: bool = False) -> dict:
     """Upsert a catalog into Postgres, the system of record — additively.
 
     A catalog is curated after it lands: the admin page edits sizes and strains and
@@ -284,11 +285,16 @@ def push(catalog: dict, dry_run: bool = False, via_http: bool = False) -> dict:
 
     first_seen_at and the verified_* columns are never written by an update.
 
+    replace=True is for re-proposing a bootstrap catalog: its earlier bootstrap
+    entries that this proposal no longer contains are deactivated too, except any a
+    person verified. Storefront catalogs already retire what their source dropped.
+
     Over DATABASE_URL by default. via_http=True applies the same rules over Supabase's
     REST API, for a machine that cannot open a Postgres connection (DB_ACCESS.md).
     Returns counts; prints them.
     """
-    counts = _push_http(catalog, dry_run) if via_http else _push_postgres(catalog, dry_run)
+    counts = (_push_http(catalog, dry_run, replace) if via_http
+              else _push_postgres(catalog, dry_run, replace))
     if dry_run:
         print(f"[dry run] would push: {counts}")
     else:
@@ -307,7 +313,7 @@ def _warn_unmigrated() -> None:
           "run scripts/db_migrate.py --run to record them")
 
 
-def _push_postgres(catalog: dict, dry_run: bool) -> dict:
+def _push_postgres(catalog: dict, dry_run: bool, replace: bool = False) -> dict:
     """push() as one transaction over DATABASE_URL; a dry run rolls it back."""
     import psycopg2.extras
     conn = _connect()
@@ -372,12 +378,22 @@ def _push_postgres(catalog: dict, dry_run: bool) -> dict:
     back_inactive = sum(1 for ins, active in returned if not ins and not active)
 
     deactivated = 0
+    seen = [e["external_id"] for e in catalog["entries"]]
     if catalog.get("source_method") != "listings_bootstrap":
-        seen = [e["external_id"] for e in catalog["entries"]]
         cur.execute(
             """
             UPDATE brand_catalog_entries SET is_active = FALSE
             WHERE catalog_id = %s AND is_active AND external_id <> ALL(%s)
+            """,
+            (catalog_id, seen),
+        )
+        deactivated = cur.rowcount
+    elif replace and "source" in extra:
+        cur.execute(
+            """
+            UPDATE brand_catalog_entries SET is_active = FALSE
+            WHERE catalog_id = %s AND is_active AND external_id <> ALL(%s)
+              AND source = 'listings_bootstrap' AND verified_fields IS NULL
             """,
             (catalog_id, seen),
         )
@@ -391,7 +407,7 @@ def _push_postgres(catalog: dict, dry_run: bool) -> dict:
             "listed_again_but_inactive": back_inactive, "deactivated": deactivated}
 
 
-def _push_http(catalog: dict, dry_run: bool) -> dict:
+def _push_http(catalog: dict, dry_run: bool, replace: bool = False) -> dict:
     """push() over Supabase's REST API (scripts/db_http.py), for a machine that can
     reach the database only over HTTPS: a sandbox whose proxy carries no Postgres
     connections (DB_ACCESS.md).
@@ -436,7 +452,7 @@ def _push_http(catalog: dict, dry_run: bool) -> dict:
 
     existing: dict[str, dict] = {}
     if catalog_id:
-        cols = ["id", "external_id", "match_terms", "is_active",
+        cols = ["id", "external_id", "match_terms", "is_active", "verified_fields",
                 *[c for c in extra if c != "support"]]
         for r in db_http.select_all("brand_catalog_entries",
                                     f"select={','.join(cols)}&catalog_id=eq.{catalog_id}"
@@ -467,9 +483,13 @@ def _push_http(catalog: dict, dry_run: bool) -> dict:
         refreshes.append((cur["id"], change))
 
     retire = []
+    seen = {e["external_id"] for e in catalog["entries"]}
     if catalog.get("source_method") != "listings_bootstrap":
-        seen = {e["external_id"] for e in catalog["entries"]}
         retire = [str(r["id"]) for ext, r in existing.items() if r["is_active"] and ext not in seen]
+    elif replace and "source" in extra:
+        retire = [str(r["id"]) for ext, r in existing.items()
+                  if r["is_active"] and ext not in seen and r.get("source") == "listings_bootstrap"
+                  and r.get("verified_fields") is None]
 
     if not dry_run:
         for i in range(0, len(new_rows), 500):
