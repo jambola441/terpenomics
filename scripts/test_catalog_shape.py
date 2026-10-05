@@ -328,40 +328,6 @@ def test_no_split_size_where_the_lineless_products_are_a_range_of_their_own():
     assert texts(cs.leads(cs.products(entries)), "split-size") == []
 
 
-def test_a_listing_size_no_product_of_the_line_comes_in():
-    """The Spot's STIIIZY 40's showed as 4.5g; 40's come in 1g and 2.5g (2026-10-05)."""
-    biscotti = [entry("40's", "Biscotti", "preroll", None, v) for v in ("1g", "5pk 2.5g")]
-    sunset = entry("40's", "Orange Sunset", "preroll", None, "1g")
-    pods = [entry("Original", "Blue Dream", "vaporizers", "pod", v) for v in ("0.5g", "1g")]
-    flower = [entry(None, s, "flower", None, "3.5g") for s in ("Gelato", "Runtz")]
-
-    def listing(e, variant, name, store="d1", description=None, seen=None):
-        return {"id": f"l{next(_ids)}", "dispensary_id": store, "catalog_entry_id": e["id"],
-                "variant": variant, "scraped_name": name, "description": description,
-                "last_seen_at": seen}
-
-    entries = biscotti + [sunset] + pods + flower
-    listings = [
-        listing(sunset, "4.5g", "Orange Sunset 40'S | 5 x 0.9g Premium Infused (2.5g Pre-Roll Pack)",
-                description="Size: 0.5g each / 2.5g total"),
-        listing(pods[1], "2g", "STIIIZY - 2PK 1G Pods - Blue Dream"),
-        listing(flower[0], "14g", "Gelato Half Ounce", "d1"),
-        listing(flower[0], "14g", "Gelato 14g", "d2"),
-        listing(flower[1], "28g", "Runtz Ounce", "d1"),
-        listing(sunset, "5pk 2.5g", "Orange Sunset 40's 5pk"),      # a size the line sells
-        listing(biscotti[0], "1g", "Biscotti 40's 1g"),
-        listing(flower[1], "28g", "Runtz Ounce", "d3", seen="2026-01-01T00:00:00Z"),   # stale
-    ]
-    found = cs.listing_size_leads(cs.products(entries, listings), listings)
-    said = {l.text.split('"')[1]: l.text for l in found}
-    assert len(found) == 4
-    assert "says 5pk 4.5g" in said["40's Orange Sunset"] and "says 5pk 2.5g: a store typo" in said["40's Orange Sunset"]
-    assert "A pack of the line's 1g: a bundle" in said["Original Blue Dream"]
-    assert "2 listings at 2 stores say 14g" in said["Gelato"] and "Stores agree" in said["Gelato"]
-    assert "1 listing at 1 store says 28g" in said["Runtz"] and "One store" in said["Runtz"]
-    assert {l.weight for l in found if "typo" in l.text} == {2}
-
-
 def test_show_prints_the_sizes_stores_write_per_line():
     catalog = {"id": "c1", "brand_name": "Acme", "brand_slug": "acme", "source_method": "listings_bootstrap",
                "fetched_at": "2026-10-05T05:00:00Z", "source_url": None}

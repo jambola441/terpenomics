@@ -520,81 +520,6 @@ def store_sizes(prods: list[Product], listings: list[dict]) -> dict[tuple, list[
     return {key: [(v, n, len(stores[key][v])) for v, n in c.most_common()] for key, c in counts.items()}
 
 
-def _states(text: str, label: str, category: str) -> bool:
-    """Whether `text` names the package size `label` (its total weight or dose)."""
-    want = sizes.parse(label, category=category)
-    if want.grams is not None:
-        return any(abs(g - want.grams) <= 0.02 for g in sizes.weight_mentions(text))
-    if want.mg is not None:
-        return any(abs(m - want.mg) <= 0.5 for m in sizes.mg_mentions(text))
-    return False
-
-
-def _unit_sold(size: sizes.Size, line_sizes: list[str], category: str) -> str | None:
-    """The line's single size that each unit of a pack is ("2pk 2g" of 1g pods), if any."""
-    if not size.pack or size.pack < 2:
-        return None
-    unit = (sizes.Size(grams=size.grams / size.pack) if size.grams is not None
-            else sizes.Size(mg=size.mg / size.pack) if size.mg is not None else None)
-    for v in line_sizes:
-        single = sizes.parse(v, category=category)
-        if unit and not single.pack and sizes.same_size(unit, single):
-            return v
-    return None
-
-
-def listing_size_leads(prods: list[Product], listings: list[dict]) -> list[Lead]:
-    """Store sizes that no product of the line comes in.
-
-    A listing's size is the store's own field, copied as typed, and product pages group
-    on it, so a typo makes a product of its own: The Spot's "5 x 0.9g ... (2.5g Pre-Roll
-    Pack)" STIIIZY 40's showed as 4.5g, where 40's come in 1g and 2.5g. When the
-    listing's own name or description states a size the line sells, the store mistyped;
-    when two stores agree and nothing contradicts them, the catalog may lack the size. A
-    pack of a size the line sells ("2PK 1G Pods") is a bundle, and its "1G" proves no
-    typo. Sizes the line sells but one product lacks are a coverage gap, not this lead.
-    """
-    owner = {e["id"]: p for p in prods for e in p.entries}
-    sold: dict[tuple, set] = defaultdict(set)            # (category, line) -> sizes
-    for p in prods:
-        sold[(p.category, p.line)].update(v for v in p.sizes if v != "?")
-    groups: dict[tuple, dict] = {}
-    for l in listings:
-        p = owner.get(l.get("catalog_entry_id"))
-        if not p or not is_fresh(l):
-            continue
-        cat, line_sizes = p.category, sorted(sold[(p.category, p.line)], key=_size_order)
-        mine = sizes.parse(l.get("variant"), l.get("scraped_name"), category=cat)
-        if mine.is_empty() or not line_sizes or any(
-                sizes.same_size(mine, sizes.parse(v, category=cat)) is not False for v in line_sizes):
-            continue
-        g = groups.setdefault((id(p), mine.label()), {"p": p, "size": mine.label(), "sold": line_sizes,
-                                                       "listings": 0, "stores": set(), "said": set(),
-                                                       "unit": _unit_sold(mine, line_sizes, cat)})
-        g["listings"] += 1
-        g["stores"].add(l.get("dispensary_id"))
-        text = " | ".join(t for t in (l.get("scraped_name"), _plain(l.get("description"))) if t)
-        g["said"].update(v for v in line_sizes if _states(text, v, cat))
-    out = []
-    for g in groups.values():
-        p, n, k = g["p"], g["listings"], len(g["stores"])
-        kind = f"{p.line} {p.category}" if p.line else f"line-less {p.category}"
-        head = (f'"{p.name}"' + (f" [{p.subtype}]" if p.subtype else "")
-                + f': {n} listing{"s" if n > 1 else ""} at {k} store{"s" if k > 1 else ""} '
-                + f'say{"" if n > 1 else "s"} {g["size"]}; {kind} products come in {", ".join(g["sold"])}')
-        if g["unit"]:
-            out.append(Lead("listing-size", p.category, head + f'. A pack of the line\'s {g["unit"]}: '
-                            "a bundle the catalog lacks?"))
-        elif g["said"]:
-            out.append(Lead("listing-size", p.category, head + ". Its own name or description says "
-                            + ", ".join(sorted(g["said"], key=_size_order)) + ": a store typo, not a size", 2))
-        elif k > 1:
-            out.append(Lead("listing-size", p.category, head + ". Stores agree: a size the catalog lacks?"))
-        else:
-            out.append(Lead("listing-size", p.category, head + ". One store: check its name and photo"))
-    return out
-
-
 def render_show(catalog: dict, entries: list[dict], listings: list[dict],
                 strain_vocab: dict[str, int], category: str | None = None,
                 other_brands: dict[str, str] | None = None,
@@ -659,7 +584,6 @@ def render_show(catalog: dict, entries: list[dict], listings: list[dict],
                 out.append(f"      {p.label + tag:<40} {marked:<22} {p.listings}/{p.stores}{extra}")
 
     found = [l for l in leads(prods, strain_vocab, storefront, other_brands, listings_known=True)
-             + listing_size_leads(prods, listings)
              if not category or l.category == category]
     for brand, n in sorted((filed_elsewhere or {}).items()):
         found.append(Lead("inside-other-catalog", "*", f'{brand}\'s catalog has a line "{catalog["brand_name"]}" '
