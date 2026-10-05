@@ -173,13 +173,33 @@ Partner orders turn into points at the end of every sync (`reconcile_points`).
   and the points next to each matched order on the partner page.
 - **Not built:** redeeming points.
 
+## Receipt uploads (`connectors/receipts.py`)
+
+For partner purchases the sync can't match: the shopper didn't give their
+phone number, or the partner's POS isn't connected.
+
+- **Customer** (portal → You → Points → Upload a receipt): picks the store and
+  purchase date and takes a photo. The browser shrinks the photo to about
+  1600px JPEG before upload. The customer sees each receipt as In review,
+  +N points, or Not approved with the reason.
+- **Reviewer** (`/admin/receipts`): the queue is oldest first. The reviewer
+  sees the photo, enters the subtotal before tax and tip, confirms or corrects
+  the store and date, and approves it, or rejects it with a reason. The next
+  pending receipt opens automatically.
+- **Duplicate flags (not blocks):** the same customer's other receipts at that
+  store within 2 days; synced orders at that store around the date,
+  highlighted when already matched to this customer; purchase dates over 30
+  days old.
+- **Points:** the subtotal × `POINTS_PER_DOLLAR`, rounded down, pending until
+  7 days after the purchase date. Recorded as one `points_ledger` entry of
+  kind `receipt` with no `pos_order_id`, so `reconcile_points` never touches
+  it. Voiding an approved receipt appends the opposite entry.
+- **Limits:** 10 MB per image; JPEG, PNG, WebP or HEIC; at most 10 receipts
+  awaiting review per customer. Images are stored in the row, as lab-report
+  PDFs are.
+
 ## Not built yet
 
-- **Receipt upload.** A customer uploads a photo of a receipt. We read the
-  store, time and total from it (the lab-report parser is a model for this), find
-  the matching `pos_orders` row, and call `matching.claim_order`, which already
-  enforces the rules: sales only, inside 30 days, never steal another customer's
-  order.
 - **Square webhooks** (`order.updated`), to cut latency. Polling stays as the backstop.
 - **Unconfirmed: how Square reports a refund on the original sale.** Square's
   docs don't say whether the original sale order is edited when it's refunded, so

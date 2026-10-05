@@ -1,5 +1,5 @@
 # models.py
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from enum import Enum
 from typing import Optional
 from uuid import UUID, uuid4
@@ -932,3 +932,50 @@ class PointsEntry(SQLModel, table=True):
     available_at: datetime = Field(sa_column=_tz_column("available_at", nullable=False, index=True))
     created_at:   datetime = Field(default_factory=utcnow_tz, sa_column=_tz_column("created_at", nullable=False))
     note: Optional[str] = Field(default=None, sa_type=Text)
+
+
+class ReceiptStatus(str, Enum):
+    pending  = "pending"    # uploaded, waiting for a person to read it
+    approved = "approved"   # subtotal entered, points awarded
+    rejected = "rejected"   # not a valid receipt (or voided after approval)
+
+
+class ReceiptSubmission(SQLModel, table=True):
+    """A receipt photo a customer uploaded to claim points at a partner store.
+
+    For purchases the POS sync can't match: no phone number given at checkout,
+    or a partner whose POS isn't connected. A person reads the photo in the
+    admin Receipts queue and enters the subtotal (before tax and tip). That
+    amount earns points at the usual rate, as one `points_ledger` entry of kind
+    "receipt" (`points_entry_id`). Those entries have no pos_order_id, so
+    connectors/points.py's reconcile never touches them.
+
+    The image is stored in the row, as lab reports store their PDFs. The portal
+    shrinks photos before upload, so a receipt is typically a few hundred KB.
+
+    Created by scripts/migrate_add_pos_connectors.py.
+    """
+
+    __tablename__ = "receipt_submissions"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    customer_id: UUID = Field(foreign_key="customers.id", index=True, nullable=False)
+    partner_id:  UUID = Field(foreign_key="partners.id", index=True, nullable=False)
+    status:      str  = Field(default=ReceiptStatus.pending.value, nullable=False, sa_type=Text, index=True)
+
+    image:              Optional[bytes] = Field(default=None, sa_column=Column("image", LargeBinary, nullable=True))
+    image_content_type: str             = Field(default="image/jpeg", nullable=False, sa_type=Text)
+
+    # What the customer says; the reviewer confirms or corrects both.
+    purchased_on:  Optional[date] = Field(default=None)
+    customer_note: Optional[str]  = Field(default=None, sa_type=Text)
+
+    # Filled in on review.
+    subtotal_cents:  Optional[int]      = Field(default=None)
+    points_entry_id: Optional[UUID]     = Field(default=None, foreign_key="points_ledger.id")
+    reviewed_by:     Optional[str]      = Field(default=None, sa_type=Text)
+    reviewed_at:     Optional[datetime] = Field(default=None, sa_column=_tz_column("reviewed_at"))
+    reject_reason:   Optional[str]      = Field(default=None, sa_type=Text)
+
+    created_at: datetime = Field(default_factory=utcnow_tz, sa_column=_tz_column("created_at", nullable=False, index=True))

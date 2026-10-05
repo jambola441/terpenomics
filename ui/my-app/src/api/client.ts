@@ -51,6 +51,11 @@ import type {
   PartnerPortalDetail,
   PartnerPosOrder,
   PointsSummary,
+  MyReceipt,
+  PartnerOption,
+  AdminReceiptQueue,
+  AdminReceiptDetail,
+  ReceiptStatus,
 } from '../types'
 
 // Get API base URL from environment variable or use default
@@ -118,6 +123,23 @@ async function authenticatedFetch<T>(
     throw new Error(text || `Request failed with status ${res.status}`)
   }
 
+  return res.json()
+}
+
+// Multipart upload with the session token. Content-Type is left to the
+// browser so it can add the multipart boundary. FastAPI's `detail` string is
+// surfaced as the error message, since these errors go straight on screen.
+async function authenticatedUpload<T>(path: string, form: FormData): Promise<T> {
+  const headers = await getAuthHeaders()
+  const res = await fetch(`${API_BASE}${path}`, { method: 'POST', headers, body: form })
+  if (!res.ok) {
+    let message = `Upload failed (${res.status})`
+    try {
+      const body = await res.json()
+      if (typeof body?.detail === 'string') message = body.detail
+    } catch { /* keep the generic message */ }
+    throw new Error(message)
+  }
   return res.json()
 }
 
@@ -496,6 +518,41 @@ export const api = {
       authenticatedFetch<PointsSummary>(`/admin/customers/${customerId}/points`),
   },
 
+  /** Admin review queue for customer receipt uploads. */
+  receipts: {
+    list: (status: ReceiptStatus | 'all' = 'pending') =>
+      authenticatedFetch<AdminReceiptQueue>(`/admin/receipts${buildQueryString({ status })}`),
+
+    get: (id: string) =>
+      authenticatedFetch<AdminReceiptDetail>(`/admin/receipts/${id}`),
+
+    /** The photo as an object URL (it needs the bearer token, so an <img src> can't fetch it). */
+    imageUrl: async (id: string) => {
+      const headers = await getAuthHeaders()
+      const res = await fetch(`${API_BASE}/admin/receipts/${id}/image`, { headers })
+      if (!res.ok) throw new Error(`Image failed to load (${res.status})`)
+      return URL.createObjectURL(await res.blob())
+    },
+
+    approve: (id: string, data: { subtotal_cents: number; purchased_on: string; partner_id?: string }) =>
+      authenticatedFetch<AdminReceiptDetail>(`/admin/receipts/${id}/approve`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    reject: (id: string, reason: string) =>
+      authenticatedFetch<AdminReceiptDetail>(`/admin/receipts/${id}/reject`, {
+        method: 'POST',
+        body: JSON.stringify({ reason }),
+      }),
+
+    void: (id: string, reason: string) =>
+      authenticatedFetch<AdminReceiptDetail>(`/admin/receipts/${id}/void`, {
+        method: 'POST',
+        body: JSON.stringify({ reason }),
+      }),
+  },
+
   /**
    * The partner's own portal (/partner). Same signed-in Supabase session as
    * everything else; the API only answers for partners this person was invited to.
@@ -576,6 +633,23 @@ export const api = {
   },
 
   me: {
+    /** Stores where purchases earn Terpee points. */
+    getPartners: () =>
+      authenticatedFetch<PartnerOption[]>(`/me/partners`),
+
+    /** Upload a receipt photo for review. */
+    uploadReceipt: (data: { partnerId: string; purchasedOn: string; note?: string; image: Blob; filename?: string }) => {
+      const form = new FormData()
+      form.append('partner_id', data.partnerId)
+      form.append('purchased_on', data.purchasedOn)
+      if (data.note) form.append('note', data.note)
+      form.append('image', data.image, data.filename ?? 'receipt.jpg')
+      return authenticatedUpload<MyReceipt>(`/me/receipts`, form)
+    },
+
+    getReceipts: () =>
+      authenticatedFetch<MyReceipt[]>(`/me/receipts`),
+
     /** Terpee points earned at partner stores. */
     getPoints: () =>
       authenticatedFetch<PointsSummary>(`/me/points`),
