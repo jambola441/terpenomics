@@ -1,8 +1,9 @@
 -- Sign-up: what a customer is asked for after their first verified login.
 --
 -- customers gains the current state (first/last name, 21+ confirmation, which
--- terms version they accepted, when they first finished sign-up); consent_events
--- keeps the history behind it, with the exact wording each person was shown.
+-- terms version they accepted, when they first finished sign-up, when they
+-- deleted their account); consent_events keeps the history behind it, with the
+-- exact wording each person was shown.
 -- models.py (Customer, ConsentEvent) maps onto these. Timestamps are naive UTC,
 -- like the rest of customers.
 --
@@ -21,6 +22,8 @@ ALTER TABLE customers ADD COLUMN IF NOT EXISTS age_confirmed_at  timestamp;
 ALTER TABLE customers ADD COLUMN IF NOT EXISTS terms_version     varchar(32);
 ALTER TABLE customers ADD COLUMN IF NOT EXISTS terms_accepted_at timestamp;
 ALTER TABLE customers ADD COLUMN IF NOT EXISTS onboarded_at      timestamp;
+-- Account deletion scrubs the row rather than removing it (services/account_deletion.py).
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS deleted_at        timestamp;
 
 CREATE TABLE IF NOT EXISTS consent_events (
   id          uuid PRIMARY KEY,

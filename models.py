@@ -67,6 +67,10 @@ class Customer(CustomerBase, TimestampMixin, table=True):
     # Set the first time nothing required is missing; never cleared, so a terms
     # change sends people back through sign-up without making them "new".
     onboarded_at:      Optional[datetime] = Field(default=None)
+    # Set when the customer deletes their account. The row stays, scrubbed of
+    # everything that identifies them, so past purchases and the points ledger
+    # still add up (services/account_deletion.py).
+    deleted_at:        Optional[datetime] = Field(default=None)
 
 
 class ConsentEvent(SQLModel, table=True):

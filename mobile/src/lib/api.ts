@@ -100,6 +100,9 @@ export const api = {
     updateProfile: (payload: ProfileUpdate) =>
       authed<CustomerProfile>(`/me`, post(payload)),
 
+    /** Deletes the login and scrubs the account (services/account_deletion.py). */
+    deleteAccount: () => authed<null>(`/me`, { method: 'DELETE' }),
+
     completeOnboarding: (payload: OnboardingPayload) =>
       authed<CustomerProfile>(`/me/onboarding`, post(payload)),
 

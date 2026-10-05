@@ -425,6 +425,7 @@ function ProfilePane({ profile, session, onSaved, onSignOut }: {
   const [last, setLast] = useState('')
   const [optIn, setOptIn] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [status, setStatus] = useState<string | null>(null)
   const [stores, setStores] = useState<PortalDispensary[] | null>(null)
 
@@ -442,6 +443,22 @@ function ProfilePane({ profile, session, onSaved, onSignOut }: {
   const namesChanged = profile != null
     && (first.trim() !== (profile.first_name ?? '') || last.trim() !== (profile.last_name ?? ''))
   const dirty = profile != null && (namesChanged || optIn !== profile.marketing_opt_in)
+
+  async function deleteAccount() {
+    const ok = confirm(
+      'Delete your account?\n\nThis signs you out everywhere, cancels open pickup orders, and forfeits '
+      + 'your points. Your name, phone number and receipt photos are erased. This cannot be undone.',
+    )
+    if (!ok) return
+    setDeleting(true)
+    try {
+      await api.me.deleteAccount()
+      onSignOut()
+    } catch (err) {
+      setStatus(err instanceof Error && err.message ? err.message : 'Could not delete your account. Try again.')
+      setDeleting(false)
+    }
+  }
 
   async function save() {
     setSaving(true)
@@ -565,6 +582,18 @@ function ProfilePane({ profile, session, onSaved, onSignOut }: {
         }}
       >
         Sign out
+      </button>
+
+      <button
+        onClick={deleteAccount}
+        disabled={deleting}
+        style={{
+          margin: '0 auto', background: 'transparent', border: 'none',
+          color: t.text3, fontSize: font.size.small, textDecoration: 'underline',
+          padding: 8, cursor: deleting ? 'default' : 'pointer',
+        }}
+      >
+        {deleting ? 'Deleting…' : 'Delete account'}
       </button>
     </div>
   )

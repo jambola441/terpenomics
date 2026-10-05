@@ -1,4 +1,4 @@
-import { Platform, ScrollView, Switch, Text, View } from 'react-native'
+import { Alert, Platform, ScrollView, Switch, Text, View } from 'react-native'
 import { api } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import { formatE164ForDisplay } from '@/lib/phone'
@@ -33,6 +33,29 @@ export default function Profile() {
     }
   }
 
+  function confirmDelete() {
+    Alert.alert(
+      'Delete your account?',
+      'This signs you out everywhere, cancels open pickup orders, and forfeits your points. '
+        + 'Your name, phone number and receipt photos are erased. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete account',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await api.me.deleteAccount()
+              await signOut()
+            } catch (err) {
+              Alert.alert('Could not delete your account', err instanceof Error ? err.message : String(err))
+            }
+          },
+        },
+      ],
+    )
+  }
+
   return (
     <ScrollView style={styles.screen} contentContainerStyle={{ paddingBottom: space[8] }}>
       <View style={{ padding: space[4], gap: space[1] }}>
@@ -63,6 +86,7 @@ export default function Profile() {
       </View>
 
       <Button title="Sign out" variant="ghost" onPress={signOut} style={{ margin: space[4], marginTop: space[7] }} />
+      <Button title="Delete account" variant="ghost" onPress={confirmDelete} style={{ marginHorizontal: space[4] }} />
     </ScrollView>
   )
 }

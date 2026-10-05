@@ -13,7 +13,7 @@ from sqlmodel import Session, select
 from auth import SupabaseAuthUser, get_current_user, verified_email, verified_phone
 from database import get_session
 from models import Customer, Dispensary, Listing, PreferredDispensary, Purchase
-from services import consent
+from services import account_deletion, consent, supabase_admin
 from services import feed as feed_rails
 from services.phone import to_e164
 from services.display_name import compose as compose_display_name
@@ -136,6 +136,12 @@ def link_customer(
         session.commit()
         session.refresh(customer)
         return {"customer_id": str(customer.id), "linked": True, "created": False}
+
+    # Customers sign up by phone: it is what points and order matching key on.
+    # A verified email can claim a customer a staff member already created, but
+    # never starts a new one.
+    if not phone:
+        raise HTTPException(status_code=400, detail="Sign up with your phone number")
 
     new_customer = Customer(
         name=payload.name,
@@ -327,6 +333,23 @@ def update_me(
     session.commit()
     session.refresh(customer)
     return _serialize_customer(customer)
+
+
+@router.delete("", status_code=204)
+def delete_me(
+    request: Request,
+    customer: Customer = Depends(get_current_customer),
+    session: Session = Depends(get_session),
+):
+    """Delete the account: the login goes, the customer row is scrubbed.
+
+    See services/account_deletion.py for what is kept and why. The client
+    signs out afterwards; the session it holds can no longer refresh.
+    """
+    try:
+        account_deletion.delete_account(session, customer, request)
+    except supabase_admin.SupabaseAdminError:
+        raise HTTPException(status_code=502, detail="Could not delete your account right now. Try again in a minute.")
 
 
 # ---------------------------

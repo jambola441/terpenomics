@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import supabase from './utils/supabase'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { toE164, formatPhoneInput, formatE164ForDisplay } from './utils/phone'
 import api from './api/client'
 import { safeNext, rememberNext } from './utils/redirect'
@@ -400,6 +400,12 @@ export default function Login() {
             {msg}
           </p>
         )}
+
+        <p style={{ marginTop: 24, marginBottom: 0, fontSize: 12, color: '#6b7280', textAlign: 'center' }}>
+          <Link to="/terms" style={{ color: 'inherit' }}>Terms</Link>
+          {' · '}
+          <Link to="/privacy" style={{ color: 'inherit' }}>Privacy</Link>
+        </p>
       </div>
     </div>
   )

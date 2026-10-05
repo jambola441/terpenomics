@@ -137,3 +137,9 @@ def test_admin_customer_phone_is_stored_e164():
 def test_admin_rejects_unparseable_phone():
     resp = _client().post("/admin/customers", json={"phone": "12345"})
     assert resp.status_code == 422
+
+
+def test_verified_email_alone_cannot_start_a_new_customer():
+    resp = _client(email="new@example.com", meta={"email_verified": True}).post("/me/link-customer", json={})
+    assert resp.status_code == 400
+    assert _get_all_linked() == []

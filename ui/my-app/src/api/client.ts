@@ -84,6 +84,20 @@ async function getAuthHeaders() {
   return { Authorization: `Bearer ${token}` }
 }
 
+/** FastAPI's `detail` as text: a string, or a structured detail's `message`
+ *  (e.g. onboarding_required). Anything else falls back to the raw body. */
+async function errorMessage(res: Response): Promise<string> {
+  const text = await res.text()
+  try {
+    const detail = JSON.parse(text)?.detail
+    if (typeof detail === 'string') return detail
+    if (typeof detail?.message === 'string') return detail.message
+  } catch {
+    // Not JSON (proxy timeout, HTML error page).
+  }
+  return text || `Request failed with status ${res.status}`
+}
+
 // Unauthenticated fetch for customer portal (no Supabase session needed)
 async function portalFetch<T>(
   path: string,
@@ -98,10 +112,11 @@ async function portalFetch<T>(
   })
 
   if (!res.ok) {
-    const text = await res.text()
-    throw new Error(text || `Request failed with status ${res.status}`)
+    throw new Error(await errorMessage(res))
   }
 
+  // DELETE /me and other no-content responses have no body to parse.
+  if (res.status === 204) return null as T
   return res.json()
 }
 
@@ -121,10 +136,11 @@ async function authenticatedFetch<T>(
   })
 
   if (!res.ok) {
-    const text = await res.text()
-    throw new Error(text || `Request failed with status ${res.status}`)
+    throw new Error(await errorMessage(res))
   }
 
+  // DELETE /me and other no-content responses have no body to parse.
+  if (res.status === 204) return null as T
   return res.json()
 }
 
@@ -669,6 +685,10 @@ export const api = {
         method: 'POST',
         body: JSON.stringify(payload),
       }),
+
+    /** Deletes the login and scrubs the account (services/account_deletion.py). */
+    deleteAccount: () =>
+      authenticatedFetch<null>(`/me`, { method: 'DELETE' }),
 
     /** Sign-up, and catching up after a terms change. */
     completeOnboarding: (payload: OnboardingPayload) =>
