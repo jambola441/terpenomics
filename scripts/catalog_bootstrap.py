@@ -22,12 +22,22 @@ list that no single store's text — and no single model answer — defines:
 
 How a group is formed
 ---------------------
-  key        (category, strain, product line, size) — strain and line compared
-             squashed ("FJ Mini" == "FJ-Mini" == "fj-mini"), size compared as numbers
-             (sizes.py: "5pk x 0.6g" == "3g").
+  key        (category, subtype, strain, product line, size) — strain and line
+             compared squashed ("FJ Mini" == "FJ-Mini" == "fj-mini"), a strain also
+             with doubled letters collapsed ("Grand Daddy" == "Granddaddy" ==
+             "Grandaddy"), size compared as the package total (sizes.py:
+             "5pk x 0.6g" == "3g"). A pre-roll that comes more than one to a package
+             is a pack, never a single.
+  sizes      groups of one product whose totals sizes.same_size calls equal merge:
+             "7pk 4.9g" (7 x 0.7g) is the "7pk 5g" stores write.
   line fix   a group with no line folds into the one group that has the same
              category, strain and size *with* a line — the product_line split that is
-             12% of the products view, removed by construction.
+             12% of the products view, removed by construction. A lined group too
+             small to be an entry does not count against that "one".
+  variant    for a category measured by weight (taxonomy.py), the package total
+             alone: "3.5g", not "7pk 3.5g", since the subtype already says pack.
+             Dosed categories keep their pack ("20pk 100mg"): 10 x 10mg and 20 x 5mg
+             gummies are different products with one total.
   support    distinct stores. Groups seen at fewer than --min-stores (default 2) are
              left out: they are either products only one store carries, or a split
              the next match run will absorb — and either way one store's opinion is
@@ -56,6 +66,8 @@ Usage
   python scripts/catalog_bootstrap.py --top 50 --write              # top brands without a catalog
   python scripts/catalog_bootstrap.py --top 50 --write --push       # ...and into Postgres
   python scripts/catalog_bootstrap.py --top 50 --push --via-http    # ...from a sandbox
+  python scripts/catalog_bootstrap.py --rebuild --push --dry-run    # re-propose every bootstrap
+  python scripts/catalog_bootstrap.py --rebuild --push --replace    # catalog; retire what it drops
 """
 
 from __future__ import annotations
@@ -84,6 +96,18 @@ MAX_MATCH_TERMS = 12
 
 def squash(s: str | None) -> str:
     return re.sub(r"[^a-z0-9]", "", (s or "").lower())
+
+
+def strain_key(s: str | None) -> str:
+    """squash(), with doubled letters collapsed: stores spell one strain "Grand Daddy
+    Purple", "Granddaddy Purple" and "Grandaddy Purple". Digits are left alone —
+    "RS11" is not "RS1"."""
+    return re.sub(r"([a-z])\1+", r"\1", squash(s))
+
+
+def _same_total(a: str, b: str) -> bool:
+    """Two group totals ("4.9g", "5g") that sizes.same_size calls one size."""
+    return a == b or bool(a and b and sizes.same_size(sizes.parse(a), sizes.parse(b)) is True)
 
 
 def _mode(values, default=None):
@@ -166,14 +190,37 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
     # format word in the name beats the model's subtype here, as it does wherever a
     # catalog is applied (catalog_match.matched_subtype).
     groups: dict[tuple, Group] = {}
+    packs_relabeled = 0
     for l in rows:
         size = sizes.parse(l.get("variant"), l.get("name"), category=l.get("category"))
         l["_size_label"] = size.label()
         total = (f"{size.grams:g}g" if size.grams is not None
                  else f"{size.mg:g}mg" if size.mg is not None else "")
         subtype = taxonomy.token_subtype(l["category"], l.get("name")) or l.get("subtype") or ""
-        key = (l["category"], subtype, squash(l["strain"]), squash(l.get("product_line")), total)
+        # More than one to a package is a pack: a "2 count" the model called a single
+        # is the same product as the "2pk" next to it.
+        if l["category"] == "preroll" and subtype == "single" and (size.pack or 0) > 1:
+            subtype = "pack"
+            packs_relabeled += 1
+        key = (l["category"], subtype, strain_key(l["strain"]), squash(l.get("product_line")), total)
         groups.setdefault(key, Group(*key)).listings.append(l)
+
+    # Totals that are one size to sizes.same_size are one product: 7 x 0.7g is 4.9g,
+    # and stores print it as 5g. The smaller group joins the better-supported one.
+    sizes_merged = 0
+    by_product: dict[tuple, list[tuple]] = defaultdict(list)
+    for key in groups:
+        by_product[key[:4]].append(key)
+    for keys in by_product.values():
+        keys.sort(key=lambda k: (-groups[k].stores, -len(groups[k].listings), k[4]))
+        kept: list[tuple] = []
+        for k in keys:
+            into = next((t for t in kept if _same_total(k[4], t[4])), None)
+            if into is None:
+                kept.append(k)
+            else:
+                groups[into].listings.extend(groups.pop(k).listings)
+                sizes_merged += 1
 
     # The product_line split: fold a line-less group into the single lined group that
     # matches it on everything else. Two candidate lines means it is ambiguous which
@@ -181,15 +228,27 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
     lined: dict[tuple, list[tuple]] = defaultdict(list)
     for key in groups:
         if key[3]:
-            lined[(key[0], key[1], key[2], key[4])].append(key)
+            lined[key[:3]].append(key)
     folded = 0
     for key in list(groups):
         if key[3]:
             continue
-        targets = lined.get((key[0], key[1], key[2], key[4]), [])
+        targets = [t for t in lined.get(key[:3], []) if _same_total(key[4], t[4])]
+        if len(targets) > 1:
+            # A lined group too small to become an entry (one store's own line
+            # spelling) does not make the choice ambiguous.
+            targets = [t for t in targets if groups[t].stores >= min_stores]
         if len(targets) == 1:
             groups[targets[0]].listings.extend(groups.pop(key).listings)
             folded += 1
+
+    # One spelling per product, across its sizes: the most common among its listings.
+    # The key is built from it, so an entry that no spelling merge touched keeps the
+    # external id it had.
+    spellings: dict[tuple, Counter] = defaultdict(Counter)
+    for g in groups.values():
+        spellings[(g.category, g.subtype, g.line_key, g.strain_key)].update(
+            l["strain"].strip() for l in g.listings)
 
     entries = []
     kept_listings = 0
@@ -197,9 +256,15 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
         if g.stores < min_stores:
             continue
         kept_listings += len(g.listings)
-        strain = _mode([l["strain"].strip() for l in g.listings])
+        strain = spellings[(g.category, g.subtype, g.line_key, g.strain_key)].most_common(1)[0][0]
         line = line_spelling.get(g.line_key) if g.line_key else None
-        product_key = f"lb:{g.category}:{g.subtype}:{g.line_key}:{g.strain_key}"
+        product_key = f"lb:{g.category}:{g.subtype}:{g.line_key}:{squash(strain)}"
+        spec = taxonomy.SPECS.get(g.category)
+        if spec is not None and spec.measure == "weight" and g.size_key:
+            variant = g.size_key                # the package total; the subtype says pack
+        else:
+            variant = (_mode([l["_size_label"] for l in g.listings])
+                       or _mode([l.get("variant") for l in g.listings]))
         terms = Counter(strip_brand(l["name"], brand) for l in g.listings)
         entries.append({
             "external_id": f"{product_key}:{g.size_key or 'nosize'}",
@@ -209,7 +274,7 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
             "category": g.category,
             "subtype": g.subtype or None,
             "strain": strain,
-            "variant": _mode([l["_size_label"] for l in g.listings]) or _mode([l.get("variant") for l in g.listings]),
+            "variant": variant,
             "attributes": None,
             "match_terms": [t for t, _ in terms.most_common(MAX_MATCH_TERMS) if t],
             "source": "listings_bootstrap",
@@ -225,6 +290,7 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
     report = {
         "brand": brand, "listings": len(listings), "eligible": len(rows),
         "groups": len(groups), "line_splits_folded": folded, "strains_delined": delined,
+        "sizes_merged": sizes_merged, "packs_relabeled": packs_relabeled,
         "entries": len(entries), "listings_covered": kept_listings,
         "product_rows_before": before, "product_rows_after": after,
     }
@@ -257,11 +323,18 @@ def main() -> None:
     g = ap.add_mutually_exclusive_group(required=True)
     g.add_argument("--brand", help="One brand, as written in listings")
     g.add_argument("--top", type=int, help="The N largest brands that have no catalog yet")
+    g.add_argument("--rebuild", action="store_true",
+                   help="Re-propose every catalog this script made, from today's listings")
     ap.add_argument("--min-stores", type=int, default=2,
                     help="Keep products carried by at least this many stores (default 2)")
     ap.add_argument("--write", action="store_true", help="Write data/catalogs/<brand>.json")
     ap.add_argument("--push", action="store_true",
                     help="Write the file and upsert into Postgres (DATABASE_URL, or --via-http)")
+    ap.add_argument("--replace", action="store_true",
+                    help="With --push: also deactivate the catalog's earlier bootstrap entries "
+                         "this proposal no longer contains (never ones a person verified)")
+    ap.add_argument("--dry-run", action="store_true",
+                    help="With --push: print what the push would change; write nothing")
     ap.add_argument("--via-http", action="store_true",
                     help="Push over Supabase's REST API, for a machine that cannot open a "
                          "Postgres connection (DB_ACCESS.md)")
@@ -280,6 +353,8 @@ def main() -> None:
 
     if args.brand:
         keys = [catalog_store.brand_key(args.brand)]
+    elif args.rebuild:
+        keys = sorted(k for k, c in catalogs.items() if c.get("source_method") == "listings_bootstrap")
     else:
         keys = [k for k, _ in sorted(by_brand.items(), key=lambda kv: -len(kv[1]))
                 if k not in catalogs][:args.top]
@@ -290,7 +365,8 @@ def main() -> None:
             print(f"{catalogs[key]['brand_name']}: has a {catalogs[key]['source_method']} "
                   f"catalog — not overwriting it with a bootstrap")
             continue
-        brand = spelled[key].most_common(1)[0][0] if spelled.get(key) else args.brand
+        brand = (spelled[key].most_common(1)[0][0] if spelled.get(key)
+                 else catalogs.get(key, {}).get("brand_name") or args.brand)
         out = propose(brand, by_brand.get(key, []), args.min_stores)
         r = out["report"]
         totals.update({k: v for k, v in r.items() if isinstance(v, int)})
@@ -305,11 +381,16 @@ def main() -> None:
             # An empty catalog would still mark the brand as having one, so later --top
             # runs would skip it.
             print(f"    nothing to write: no product reaches support>={args.min_stores}")
+        elif args.dry_run:
+            if args.push:
+                import brand_catalog
+                brand_catalog.push(out["catalog"], dry_run=True, via_http=args.via_http,
+                                   replace=args.replace)
         elif args.write or args.push:
             import brand_catalog
             path = brand_catalog.save(out["catalog"])
             if args.push:
-                brand_catalog.push(out["catalog"], via_http=args.via_http)
+                brand_catalog.push(out["catalog"], via_http=args.via_http, replace=args.replace)
             print(f"    wrote {path.relative_to(brand_catalog.ROOT)}{' and pushed' if args.push else ''}")
 
     if len(keys) > 1:

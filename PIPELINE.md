@@ -231,7 +231,8 @@ but retires nothing.
 
 ```bash
 python scripts/catalog_match.py --all --jev --write     # re-match every listing to current catalogs
-python scripts/catalog_bootstrap.py --top 50 --write --push   # refresh bootstrap catalogs
+python scripts/catalog_bootstrap.py --rebuild --push       # refresh bootstrap catalogs (additive)
+python scripts/catalog_bootstrap.py --top 50 --push        # propose catalogs for the next brands
 python evals/enrich/audit.py --db                         # suspects per store
 ```
 

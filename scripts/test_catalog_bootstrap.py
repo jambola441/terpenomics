@@ -51,7 +51,61 @@ def test_line_spellings_converge_and_line_less_rows_fold_in():
 
 def test_pack_sizes_are_their_own_product():
     e = by_name(cb.propose("Jetpacks", JETPACKS))["FJ-3 Afghani"]
-    assert e["variant"] == "5pk 3g" and e["support"] == 2
+    # A weight's variant is the package total; "5pk" is the subtype's business.
+    assert e["variant"] == "3g" and e["support"] == 2
+
+
+def test_a_counted_preroll_is_a_pack_not_a_single():
+    rows = [L("s1", "Doobies Blue Dream 2pk 1g", "Blue Dream", "Doobies", "2pk 1g", subtype="pack"),
+            L("s2", "Doobies | Blue Dream | 2pk", "Blue Dream", "Doobies", "2pk 1g", subtype="pack"),
+            L("s3", "x doobies blue dream 2 count net 1g", "Blue Dream", "Doobies", "2pk 1g",
+              subtype="single")]
+    out = cb.propose("Ruby Farms", rows)
+    assert [(e["subtype"], e["variant"], e["support"]) for e in out["catalog"]["entries"]] == \
+        [("pack", "1g", 3)]
+    assert out["report"]["packs_relabeled"] == 1
+
+
+def test_totals_that_are_one_size_are_one_product():
+    # 7 x 0.7g is 4.9g; stores print the same tin as 5g.
+    rows = [L(s, "Classics Trop Cherry 7pk 5g", "Trop Cherry", "Classics", "7pk 5g", subtype="pack")
+            for s in ("s1", "s2", "s3")]
+    rows += [L(s, "Trop Cherry Classics Tin", "Trop Cherry", "Classics", "4.9g", subtype="pack")
+             for s in ("s4", "s5")]
+    out = cb.propose("Ruby Farms", rows)
+    assert [(e["variant"], e["support"]) for e in out["catalog"]["entries"]] == [("5g", 5)]
+    assert out["report"]["sizes_merged"] == 1
+
+
+def test_strain_spellings_with_doubled_letters_are_one_strain():
+    rows = [L("s1", "GDP 7pk", "Grand Daddy Purple", None, "7pk 3.5g", subtype="pack"),
+            L("s2", "GDP 7pk", "Granddaddy Purple", None, "7pk 3.5g", subtype="pack"),
+            L("s3", "GDP 7pk", "Granddaddy Purple", None, "7pk 3.5g", subtype="pack"),
+            L("s4", "GDP 7pk", "Grandaddy Purple", None, "7pk 3.5g", subtype="pack"),
+            L("s1", "RS11 7pk", "RS11", None, "7pk 3.5g", subtype="pack"),
+            L("s2", "RS11 7pk", "RS11", None, "7pk 3.5g", subtype="pack"),
+            L("s3", "RS1 7pk", "RS1", None, "7pk 3.5g", subtype="pack"),
+            L("s4", "RS1 7pk", "RS1", None, "7pk 3.5g", subtype="pack")]
+    entries = cb.propose("Ruby Farms", rows)["catalog"]["entries"]
+    assert sorted((e["strain"], e["support"]) for e in entries) == \
+        [("Granddaddy Purple", 4), ("RS1", 2), ("RS11", 2)]     # digits are not collapsed
+
+
+def test_a_one_store_line_spelling_does_not_block_the_line_fold():
+    rows = [L("s1", "Doobies Sour Tangie 7pk", "Sour Tangie", "Doobies", "7pk 3.5g", subtype="pack"),
+            L("s2", "Doobies Sour Tangie 7pk", "Sour Tangie", "Doobies", "7pk 3.5g", subtype="pack"),
+            L("s3", "Ruby Doobies Sour Tangie", "Sour Tangie", "Ruby Doobies", "7pk 3.5g",
+              subtype="pack"),
+            L("s4", "Sour Tangie Pre Rolls 7pk", "Sour Tangie", None, "7pk 3.5g", subtype="pack"),
+            L("s5", "Sour Tangie 7pk", "Sour Tangie", None, "7pk 3.5g", subtype="pack")]
+    entries = cb.propose("Ruby Farms", rows)["catalog"]["entries"]
+    assert [(e["name"], e["support"]) for e in entries] == [("Doobies Sour Tangie", 4)]
+
+
+def test_dosed_categories_keep_their_pack():
+    rows = [L(s, "Electric Love Mandarin Rose 20pk 100mg", "Mandarin Rose", "Electric Love",
+              "20pk 100mg", "edible", "gummy") for s in ("s1", "s2")]
+    assert cb.propose("Ruby Farms", rows)["catalog"]["entries"][0]["variant"] == "20pk 100mg"
 
 
 def test_consensus_line_is_stripped_from_a_strain():
@@ -121,7 +175,7 @@ def test_push_skips_an_empty_catalog_and_passes_via_http(monkeypatch, tmp_path):
     monkeypatch.setattr(brand_catalog, "push", lambda cat, **kw: pushed.append((cat["brand_name"], kw)))
     monkeypatch.setattr(sys, "argv", ["catalog_bootstrap.py", "--top", "5", "--push", "--via-http"])
     cb.main()
-    assert pushed == [("Jetpacks", {"via_http": True})]     # RAW: nothing to write
+    assert pushed == [("Jetpacks", {"via_http": True, "replace": False})]   # RAW: nothing to write
 
 
 # --- push round trip -------------------------------------------------------
@@ -221,3 +275,42 @@ def test_push_before_migration_0003_skips_its_columns(push, fresh_db, capsys):
     assert push(doc)["inserted"] == len(doc["entries"])
     assert push(doc)["refreshed"] == len(doc["entries"])
     assert "lacks product_key/source/support" in capsys.readouterr().out
+
+
+def test_replace_retires_bootstrap_entries_the_new_proposal_drops(push, fresh_db):
+    cur = fresh_db.cursor()
+    doc = cb.propose("Jetpacks", JETPACKS)["catalog"]
+    push(doc)
+    first, second = doc["entries"][0]["external_id"], doc["entries"][1]["external_id"]
+    cur.execute("UPDATE brand_catalog_entries SET verified_fields = '{\"strain\": \"Afghani\"}' "
+                "WHERE external_id = %s", (first,))
+    doc["entries"] = doc["entries"][2:]                  # the next proposal drops both
+
+    assert push(doc)["deactivated"] == 0                 # additive unless asked
+    cur.execute("SELECT count(*) FROM brand_catalog_entries WHERE is_active")
+    before = cur.fetchone()[0]
+    assert push(doc, replace=True, dry_run=True)["deactivated"] == 1
+    cur.execute("SELECT count(*) FROM brand_catalog_entries WHERE is_active")
+    assert cur.fetchone()[0] == before                   # a dry run writes nothing
+    assert push(doc, replace=True)["deactivated"] == 1   # the verified one stays
+    cur.execute("SELECT external_id, is_active FROM brand_catalog_entries")
+    active = dict(cur.fetchall())
+    assert active[first] is True and active[second] is False
+
+
+def test_rebuild_reproposes_only_bootstrap_catalogs(monkeypatch, tmp_path):
+    import brand_catalog
+    import catalog_store
+
+    monkeypatch.setattr(cb, "fetch_listings", lambda: JETPACKS)
+    monkeypatch.setattr(catalog_store, "load_all", lambda *a, **k: {
+        "jetpacks": {"brand_name": "Jetpacks", "source_method": "listings_bootstrap"},
+        "ayrloom": {"brand_name": "Ayrloom", "source_method": "shopify_products_json"}})
+    saved, pushed = [], []
+    monkeypatch.setattr(brand_catalog, "save", lambda cat: saved.append(cat))
+    monkeypatch.setattr(brand_catalog, "push", lambda cat, **kw: pushed.append((cat["brand_name"], kw)))
+    monkeypatch.setattr(sys, "argv", ["catalog_bootstrap.py", "--rebuild", "--push", "--replace",
+                                      "--dry-run"])
+    cb.main()
+    assert pushed == [("Jetpacks", {"dry_run": True, "via_http": False, "replace": True})]
+    assert saved == []                                   # a dry run writes no file either
