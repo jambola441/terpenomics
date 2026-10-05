@@ -21,6 +21,11 @@ travel_agency_listings.csv
 # Enrich cache — large, machine-local, regeneratable
 data/enrich_cache/
 
+# Catalog exports — Postgres is the system of record (PIPELINE.md, "Brand
+# catalogs"); catalog_bootstrap.py and storefront.py rewrite these on every run.
+data/catalogs/*.json
+!data/catalogs/ayrloom.json
+
 # Editor / OS
 .vscode/
 .DS_Store
