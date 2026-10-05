@@ -20,7 +20,8 @@ dispensaries.json ──► scrape (per store) ──► enrich ──► CSV + 
 `scripts/scrape.py --all` runs that for every store marked `active` in
 `dispensaries.json`. `scripts/run_scrape_cron.py` wraps one sweep with a lock, a hard
 timeout that kills the whole process tree, a heartbeat, and an optional alert.
-`scripts/scrape_worker.py` runs that daily (09:00 ET by default).
+A Render cron job runs that daily. The enrich cache lives in Postgres
+(`ENRICH_CACHE=db`), so the job needs no disk.
 
 ## Where a listing's attributes come from
 
@@ -151,8 +152,9 @@ lexical tiers — which also turned out to have matched 7 gummies to a beverage.
 twice, no listing changed product. With the true product deliberately removed
 (the case that produces wrong matches), Jev picked a wrong product 0% of the time at
 p ≥ 0.90 and 3.4% at p ≥ 0.85. A full pass over the brand cost $0.013 and took 47s;
-answers are cached on the persistent disk keyed by the listing *and its candidates*,
-so repeat runs are free and a catalog edit re-asks only the listings it affects.
+answers are cached on local disk keyed by the listing *and its candidates*, so repeat
+runs on one machine are free and a catalog edit re-asks only the listings it affects.
+The cron job has no disk, so it re-asks each run; that costs cents.
 
 A matched listing takes the entry's strain and product line; it takes the entry's
 subtype unless a format word in its own name says otherwise ("Cart", "AIO", "Starter
@@ -189,22 +191,37 @@ Re-measure after changing the question or upgrading the model:
    Pushes write over `DATABASE_URL`. From a sandbox that cannot open a Postgres
    connection, add `--via-http` to either command: the same rules, over Supabase's REST
    API ([DB_ACCESS.md](DB_ACCESS.md)).
-3. **Deploy the worker** — Render → New → Background Worker → this repo, Docker, command
-   `python scripts/scrape_worker.py`, a 1 GB disk at `/app/data/enrich_cache`, env
-   vars from [`scripts/render.yaml`](scripts/render.yaml). Set `ALERT_WEBHOOK_URL` to
-   hear about failed mornings. (Or move `scripts/render.yaml` to the repo root and
-   create a Blueprint.)
+3. **Create the daily cron job.** Render → New → Cron Job → this repo, Docker runtime:
+   - name `terpenomics-scraper`, region Oregon, plan Starter;
+   - command `python scripts/run_scrape_cron.py`, schedule `0 13 * * *` (13:00 UTC:
+     9am in New York in summer, 8am in winter);
+   - secrets: `DATABASE_URL`, `OPENROUTER_API_KEY`, `ALLEAVES_USER`, `ALLEAVES_PASS`
+     (the `terpenomics` service has the first; this repo's Claude Code cloud
+     environment has all four);
+   - settings: `SCRAPE_ARGS=--all --parallel --model haiku-or`, `ENRICH_CACHE=db`,
+     `SCRAPE_TIMEOUT_SEC=9000`, `PYTHONUNBUFFERED=1`;
+   - optional: `ALERT_WEBHOOK_URL`, to hear about failed mornings. Render also emails
+     on a failed run.
+
+   The same settings are in [`scripts/render.yaml`](scripts/render.yaml). There's no
+   disk to attach. The first run enriches every listing (about an hour and a few
+   dollars); after that, only new or changed listings go to a model.
 4. **Rehearse once** from a shell with a real `DATABASE_URL`:
    ```bash
    python scripts/scrape.py --slug twisted-vibration-wburg     # smallest store, end to end
    python scripts/scrape.py --all --dry-run
    ```
+   Or from a sandbox, over HTTPS (done for this store on 2026-10-05):
+   ```bash
+   ENRICH_CACHE=db python scripts/scrape.py --slug twisted-vibration-wburg --model haiku-or --via-http
+   ```
 
-### Daily (the worker does this)
+### Daily (the cron job does this)
 
 `scripts/scrape.py --all --parallel --model haiku-or` — scrape, enrich, import and
 match every active store. Results land in `data/enrich_cache/_last_run.json` (per
-store) and `_cron_status.json` (the run). A store counts as **failed** when its
+store) and `_cron_status.json` (the run). On the cron job those files go with the
+container, so read the run's log in Render instead. A store counts as **failed** when its
 scraper errors or times out, it returns nothing, its import fails, enrichment
 answered fewer than half its rows, or the scrape was partial (fewer products than the
 platform reported). A partial scrape is still imported — prices and stock refresh —
@@ -225,6 +242,7 @@ python evals/enrich/audit.py --db                         # suspects per store
 | one store, end to end | `python scripts/scrape.py --slug <slug>` |
 | re-import the newest CSVs | `python scripts/scrape.py --all --import-only` |
 | scrape without touching the DB | `python scripts/scrape.py --all --scrape-only` |
+| the whole pipeline from a sandbox | `ENRICH_CACHE=db python scripts/scrape.py --all --model haiku-or --via-http` |
 | include `pending` stores | `python scripts/scrape.py --all --include-pending` |
 | catalog coverage for a brand | `python scripts/catalog_match.py --brand X --jev --misses` |
 | propose a catalog | `python scripts/catalog_bootstrap.py --brand X --show 20` |
@@ -237,4 +255,6 @@ Knobs: `SCRAPER_TIMEOUT_SEC` (1200), `IMPORT_TIMEOUT_SEC` (900),
 `ENRICH_MAX_WORKERS` (8), `ENRICH_CLASSIFIER` (`jev`; `llm` is the rollback),
 `ENRICH_JEV_MIN_CONFIDENCE` (0.80), `ENRICH_JEV_TEXT` (1), `ENRICH_JEV_TEXT_MIN` (0.90),
 `ENRICH_JEV_LINE_MIN` (0.80), `ENRICH_JEV_NO_LINE_MIN` (0.50), `ENRICH_CATALOG_FIRST` (1),
-`JEV_MODEL`, `JEV_TIMEOUT`.
+`JEV_MODEL`, `JEV_TIMEOUT`, `DB_VIA_HTTP` (off; `1` reaches the database over
+Supabase's REST API instead of `DATABASE_URL`), `ENRICH_CACHE` (files; `db` keeps the
+enrich cache in Postgres).

@@ -1,67 +1,65 @@
-# Render Blueprint — daily dispensary scrape worker.
+# Render Blueprint reference: the daily dispensary scrape, and partner POS sync.
 #
-# This file defines ONLY the scraper worker. The existing `terpenomics` (Docker
-# web service) and `terpenomics-ui` (static site) were created from the Render
-# dashboard and are NOT managed here — adding this blueprint does not touch them.
+# This file defines ONLY these two jobs. The existing `terpenomics` (Docker web
+# service) and `terpenomics-ui` (static site) were created from the Render dashboard
+# and are NOT managed here; adding this blueprint does not touch them.
 #
-# Why a worker and not a cron job: Render cron jobs cannot mount a persistent
-# disk, and the per-SKU enrich cache (data/enrich_cache) is what keeps Haiku
-# spend low. A background worker can hold the disk; scrape_worker.py provides the
-# daily schedule internally. See scripts/scrape_worker.py and SCRAPERS.md.
+# The scraper is a cron job. It used to need a background worker with a disk, because
+# the per-SKU enrich cache that keeps model spend low lived in files there. With
+# ENRICH_CACHE=db that cache lives in Postgres (db/migrations/0005), so a plain cron
+# job keeps it across runs. (scripts/scrape_worker.py still works on a worker with a
+# disk.)
 #
-# NOTE: Render auto-detects Blueprints only from a render.yaml at the REPO ROOT.
-# This file lives in scripts/, so it is reference, not auto-synced. Create the
-# worker manually: Render Dashboard -> New -> Background Worker -> this repo,
-# Docker runtime, then transcribe the command / disk / env vars below. (To use
-# Blueprint auto-sync instead, move this file back to the repo root.)
+# NOTE: Render auto-detects Blueprints only from a render.yaml at the REPO ROOT. This
+# file lives in scripts/, so it is reference, not auto-synced. Create each job from the
+# dashboard (New -> Cron Job -> this repo, Docker runtime) and transcribe the settings
+# below, or move this file to the repo root to use it as a Blueprint.
 #
-# Either way, fill the sync:false env vars from the terpenomics web service's
-# Environment tab.
+# The sync:false env vars are secrets: set them in the dashboard. DATABASE_URL is on
+# the terpenomics web service; all four scraper secrets are in this repo's Claude Code
+# cloud environment.
 services:
-  - type: worker
+  - type: cron
     name: terpenomics-scraper
     runtime: docker
     dockerfilePath: ./Dockerfile
     dockerContext: .
-    dockerCommand: python scripts/scrape_worker.py
-    plan: starter          # smallest paid instance; disks require a paid plan
-    region: oregon         # TODO: match the region of the existing services
-    # Redeploy on every push to main. A deploy mid-run kills that day's run; caches
-    # are written atomically and the lock self-expires, so tomorrow's run is clean.
+    dockerCommand: python scripts/run_scrape_cron.py
+    schedule: "0 13 * * *"     # 13:00 UTC: 9am in New York in summer, 8am in winter
+    plan: starter
+    region: oregon             # where the other terpenomics services run
+    # Redeploy on every push to main. A deploy only rebuilds the image; a run already
+    # going finishes on the old one.
     autoDeploy: true
-    disk:
-      name: enrich-cache
-      mountPath: /app/data/enrich_cache   # exactly where enrich.py reads/writes
-      sizeGB: 1
     envVars:
-      # --- secrets: set these in the dashboard (copy from the web service) ---
+      # --- secrets ---
       - key: DATABASE_URL
         sync: false
-      - key: ANTHROPIC_API_KEY
+      # Enrichment (--model haiku-or) and catalog matching (Jev, typesafe/jev-1.13)
+      # both go through OpenRouter on this key.
+      - key: OPENROUTER_API_KEY
         sync: false
+      # Brooklyn Organic Buds' menu (Alleaves) needs a login.
       - key: ALLEAVES_USER
         sync: false
       - key: ALLEAVES_PASS
         sync: false
-      # Enrichment with --model haiku-or, and catalog matching with Jev
-      # (typesafe/jev-1.13), both go through OpenRouter on this key.
-      - key: OPENROUTER_API_KEY
-        sync: false
       # Optional: a Slack/Discord-style incoming webhook; failed runs POST here.
+      # Render also emails the owner when a run fails.
       - key: ALERT_WEBHOOK_URL
         sync: false
-      # --- schedule / behavior knobs (safe defaults, edit freely) ---
-      # Only stores marked "active" in dispensaries.json are run. Drop --model to use
-      # native Haiku (needs ANTHROPIC_API_KEY) — note the cache is namespaced per
-      # model, so switching models starts the enrich cache cold (~$11).
+      # --- behavior (safe defaults, edit freely) ---
+      # Only stores marked "active" in dispensaries.json are run. The enrich cache is
+      # namespaced per model, so switching models starts it cold.
       - key: SCRAPE_ARGS
         value: "--all --parallel --model haiku-or"
-      - key: SCRAPE_RUN_AT_ET
-        value: "09:00"      # daily run time, America/New_York
-      - key: SCRAPE_RUN_ON_START
-        value: "false"      # set "true" to also scrape immediately on deploy
+      - key: ENRICH_CACHE
+        value: db              # the enrich cache in Postgres: no disk needed
+      # The first run enriches every listing (about an hour); later runs take minutes.
+      - key: SCRAPE_TIMEOUT_SEC
+        value: "9000"
       - key: PYTHONUNBUFFERED
-        value: "1"          # stream logs in real time to Render
+        value: "1"             # stream logs in real time to Render
 
   # Partner POS order sync — see POS_CONNECTORS.md. A cron job, not a worker:
   # unlike the scraper it needs no disk, and every run is independent (the

@@ -5,6 +5,9 @@ Skipped unless TEST_DATABASE_URL points at a throwaway database — every test d
 and recreates the public schema from db/schema/pipeline.sql. Never point it at
 anything you care about. Jev is always faked here; nothing touches the network.
 
+Every test runs twice: over DATABASE_URL, and over Supabase's REST API (--via-http),
+with the REST calls answered from the same database (conftest.RestOverPostgres).
+
     TEST_DATABASE_URL=postgresql://postgres@localhost:5432/terp_test \\
         python -m pytest scripts/test_import_listings.py -q
 """
@@ -33,8 +36,8 @@ SCHEMA = Path(__file__).resolve().parent.parent / "db" / "schema" / "pipeline.sq
 STORE = "test-store"
 
 
-@pytest.fixture
-def db(monkeypatch, tmp_path):
+@pytest.fixture(params=["postgres", "rest"])
+def db(request, monkeypatch, tmp_path, via_rest):
     conn = psycopg2.connect(TEST_DB)
     conn.autocommit = True
     cur = conn.cursor()
@@ -44,6 +47,15 @@ def db(monkeypatch, tmp_path):
         "INSERT INTO dispensaries (id, name, slug, pos_type, created_at, updated_at) "
         "VALUES (%s, 'Test Store', %s, 'none', now(), now())", (str(uuid.uuid4()), STORE))
     monkeypatch.setenv("DATABASE_URL", TEST_DB)
+    if request.param == "rest":
+        via_rest(conn)
+        monkeypatch.setenv("DB_VIA_HTTP", "1")
+
+        def no_postgres(url):
+            raise AssertionError("the REST run opened a Postgres connection")
+        monkeypatch.setattr(import_listings, "PostgresStore", no_postgres)
+    else:
+        monkeypatch.delenv("DB_VIA_HTTP", raising=False)
     monkeypatch.setattr(catalog_match, "CACHE_DIR", tmp_path / "match_cache")
     # No real Jev: a test that wants it installs a fake.
     monkeypatch.setattr(jev, "available", lambda: False)

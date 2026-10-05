@@ -15,7 +15,8 @@ Each row is answered by the cheapest thing that can answer it, in this order:
   6. rows Jev is unsure of (below ENRICH_JEV_MIN_CONFIDENCE): Haiku's two calls —
      pass A classifies and sizes, pass B extracts strain and product line
 ENRICH_CLASSIFIER=llm sends every model-bound row down 6, as before Jev.
-Answers are cached per store in data/enrich_cache/<slug>.json.
+Answers are cached per store in data/enrich_cache/<slug>.json, or in Postgres with
+ENRICH_CACHE=db (enrich_cache_db.py) where there is no persistent disk.
 
     from enrich import enrich
     usage = enrich(rows)
@@ -170,6 +171,12 @@ def _slug_for_rows(rows: list[dict]) -> str | None:
     return None
 
 
+def _cache_in_db() -> bool:
+    """ENRICH_CACHE=db keeps the cache in Postgres instead of data/enrich_cache/, for
+    runs with no persistent disk: a Render cron job, a sandbox (enrich_cache_db.py)."""
+    return os.environ.get("ENRICH_CACHE", "").strip().lower() == "db"
+
+
 def _load_cache(slug: str) -> dict:
     """The store's cache, or {} — never an exception.
 
@@ -178,6 +185,9 @@ def _load_cache(slug: str) -> dict:
     raising every day until someone deleted the file. It is set aside instead, so the
     run re-enriches that store once and the evidence is kept for a look.
     """
+    if _cache_in_db():
+        import enrich_cache_db
+        return enrich_cache_db.load(slug)
     path = _CACHE_DIR / f"{slug}.json"
     if not path.exists():
         return {}
@@ -197,6 +207,10 @@ def _load_cache(slug: str) -> dict:
 def _save_cache(cache: dict, slug: str) -> None:
     """Write via a temp file and rename, so a kill mid-write leaves the old cache
     intact rather than a truncated one."""
+    if _cache_in_db():
+        import enrich_cache_db
+        enrich_cache_db.save(cache, slug)
+        return
     _CACHE_DIR.mkdir(parents=True, exist_ok=True)
     path = _CACHE_DIR / f"{slug}.json"
     tmp = path.with_name(f"{path.name}.tmp")

@@ -30,8 +30,12 @@ made (method "manual") is never overwritten.
 
 Usage:
   python scripts/import_listings.py --csv data/scrapes/<slug>_<stamp>.csv [--dry-run]
+  python scripts/import_listings.py --csv ... --via-http      # from a sandbox
 
-  DATABASE_URL must be set in the environment or in .env at the project root.
+  DATABASE_URL must be set in the environment or in .env at the project root. With
+  --via-http (or DB_VIA_HTTP=1) the import goes over Supabase's REST API instead, on
+  SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY: for a machine that cannot open a Postgres
+  connection (DB_ACCESS.md). Same result, not one transaction (see RestStore).
 
 Exit codes: 0 ok · 1 error · 2 no rows could be imported (unknown dispensary)
             3 the CSV had no rows (a scrape that returned nothing is a failure)
@@ -42,6 +46,7 @@ import csv
 import hashlib
 import os
 import sys
+import urllib.parse
 import uuid
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -53,9 +58,8 @@ try:
     import psycopg2
     import psycopg2.extras
     from psycopg2.extras import Json
-except ImportError:
-    print("psycopg2-binary required: pip install psycopg2-binary", file=sys.stderr)
-    sys.exit(1)
+except ImportError:      # only the DATABASE_URL path needs it; --via-http does not
+    psycopg2 = None
 
 # Insert column order. Records are dicts keyed by column name and become tuples only
 # at the INSERT, so a field cannot silently land in its neighbour's slot.
@@ -95,6 +99,11 @@ def parse_args(argv=None):
                    help="Skip catalog matching; leave catalog columns as they are")
     p.add_argument("--no-jev", action="store_true",
                    help="Catalog matching without the Jev tier (exact matches only)")
+    p.add_argument("--via-http", action="store_true",
+                   default=os.environ.get("DB_VIA_HTTP", "").lower() in ("1", "true", "yes"),
+                   help="Use Supabase's REST API instead of DATABASE_URL (default: "
+                        "$DB_VIA_HTTP). For a machine that cannot open a Postgres "
+                        "connection; see DB_ACCESS.md")
     return p.parse_args(argv)
 
 
@@ -410,6 +419,156 @@ def _as_tuple(rec: dict) -> tuple:
     return tuple(Json(rec[c]) if c == "attributes" and rec[c] else rec[c] for c in COLUMNS)
 
 
+class PostgresStore:
+    """Listing reads and writes over DATABASE_URL: one connection, and one transaction
+    for the whole CSV, committed at the end of a real run."""
+
+    def __init__(self, url: str):
+        if psycopg2 is None:
+            sys.exit("psycopg2-binary required: pip install psycopg2-binary (or use --via-http)")
+        self.conn = psycopg2.connect(url)
+        self.cur = self.conn.cursor()
+
+    def dispensary_ids(self, slugs: set[str]) -> dict[str, str]:
+        self.cur.execute("SELECT id, slug FROM dispensaries WHERE slug = ANY(%s)", (list(slugs),))
+        return {slug: str(did) for did, slug in self.cur.fetchall()}
+
+    def catalogs(self) -> dict:
+        import catalog_store
+        return catalog_store.load_from_cursor(self.cur)
+
+    def existing(self, dispensary_id: str, skus: list[str]) -> dict[tuple, dict]:
+        return fetch_existing(self.cur, dispensary_id, skus)
+
+    def active_count(self, dispensary_id: str) -> int:
+        self.cur.execute("SELECT COUNT(*) FROM listings WHERE dispensary_id = %s "
+                         "AND sku IS NOT NULL AND is_active", (dispensary_id,))
+        return self.cur.fetchone()[0]
+
+    def upsert(self, records: list[dict], existing: dict[tuple, dict], with_catalog: bool) -> None:
+        psycopg2.extras.execute_values(self.cur, _upsert_sql(with_catalog),
+                                       [_as_tuple(r) for r in records], page_size=500)
+
+    def stale(self, dispensary_id: str, keys: list[str]) -> list[tuple]:
+        self.cur.execute(
+            """
+            SELECT sku, variant, scraped_name FROM listings
+            WHERE dispensary_id = %s AND sku IS NOT NULL AND is_active
+              AND sku || '|' || COALESCE(variant, '') != ALL(%s)
+            """,
+            (dispensary_id, keys),
+        )
+        return self.cur.fetchall()
+
+    def retire(self, dispensary_id: str, keys: list[str], now: datetime) -> None:
+        self.cur.execute(
+            """
+            UPDATE listings SET is_active = FALSE, in_stock = FALSE, updated_at = %s
+            WHERE dispensary_id = %s AND sku IS NOT NULL AND is_active
+              AND sku || '|' || COALESCE(variant, '') != ALL(%s)
+            """,
+            (now, dispensary_id, keys),
+        )
+
+    def close(self, commit: bool = False) -> None:
+        if commit:
+            self.conn.commit()
+        self.conn.close()
+
+
+class RestStore:
+    """The same reads and writes over Supabase's REST API (scripts/db_http.py), for a
+    machine that can reach the database only over HTTPS (DB_ACCESS.md).
+
+    It leaves the same rows behind as PostgresStore, but not in one transaction. A
+    store's listings are read once, up front; new listings are inserted and known ones
+    updated before anything is retired, so a run that fails part-way retires nothing,
+    and the next run finishes the job."""
+
+    COLUMNS_READ = ("id,sku,variant,in_stock,price_cents,image_url,scraped_name,"
+                    "scraped_brand,scraped_category,subtype,strain,url,product_line,"
+                    "verified_fields,catalog_entry_id,catalog_match_confidence,"
+                    "catalog_match_method,is_active,created_at")
+    CATALOG = ("catalog_entry_id", "catalog_match_confidence", "catalog_match_method")
+
+    def __init__(self):
+        import db_http
+        self.db = db_http
+        self._listings: dict[str, list[dict]] = {}
+        self._stale_ids: dict[str, list[str]] = {}
+
+    def dispensary_ids(self, slugs: set[str]) -> dict[str, str]:
+        if not slugs:
+            return {}
+        wanted = ",".join(urllib.parse.quote(s, safe="") for s in sorted(slugs))
+        rows = self.db.select("dispensaries", f"select=id,slug&slug=in.({wanted})")
+        return {r["slug"]: str(r["id"]) for r in rows}
+
+    def catalogs(self) -> dict:
+        import catalog_store
+        return catalog_store._from_db()
+
+    def _store(self, dispensary_id: str) -> list[dict]:
+        if dispensary_id not in self._listings:
+            self._listings[dispensary_id] = self.db.select_all(
+                "listings", f"select={self.COLUMNS_READ}&dispensary_id=eq.{dispensary_id}"
+                            f"&order=id")
+        return self._listings[dispensary_id]
+
+    def existing(self, dispensary_id: str, skus: list[str]) -> dict[tuple, dict]:
+        wanted = set(skus)
+        return {(r["sku"], r["variant"] or ""): {**r, "variant_key": r["variant"] or ""}
+                for r in self._store(dispensary_id) if r["sku"] is not None and r["sku"] in wanted}
+
+    def active_count(self, dispensary_id: str) -> int:
+        return sum(1 for r in self._store(dispensary_id) if r["sku"] is not None and r["is_active"])
+
+    def upsert(self, records: list[dict], existing: dict[tuple, dict], with_catalog: bool) -> None:
+        new, known = [], []
+        for rec in records:
+            row = {c: rec[c].isoformat() if isinstance(rec[c], datetime) else rec[c]
+                   for c in COLUMNS}
+            row["attributes"] = rec["attributes"] or None
+            stored = existing.get((rec["sku"], rec["variant"] or ""))
+            if stored is None:
+                new.append(row)
+                continue
+            # _upsert_sql's ON CONFLICT ... DO UPDATE, as an upsert on the row's id: the
+            # key columns and created_at keep their stored values, the listing turns
+            # active, and a match a human made is never overwritten.
+            row.update(id=stored["id"], variant=stored["variant"],
+                       created_at=stored["created_at"], is_active=True)
+            if not with_catalog or stored.get("catalog_match_method") == "manual":
+                row.update({c: stored[c] for c in self.CATALOG})
+            known.append(row)
+        for i in range(0, len(new), 500):
+            self.db.insert("listings", new[i:i + 500])
+        for i in range(0, len(known), 500):
+            self.db.upsert("listings", known[i:i + 500], on_conflict="id")
+
+    def stale(self, dispensary_id: str, keys: list[str]) -> list[tuple]:
+        # From the listings as they were before this import. That is the same set the
+        # SQL path finds after its upsert: a listing this scrape carries is in `keys`
+        # either way, and one it does not carry was not touched.
+        keyset = set(keys)
+        rows = [r for r in self._store(dispensary_id)
+                if r["sku"] is not None and r["is_active"]
+                and f"{r['sku']}|{r['variant'] or ''}" not in keyset]
+        self._stale_ids[dispensary_id] = [str(r["id"]) for r in rows]
+        return [(r["sku"], r["variant"], r["scraped_name"]) for r in rows]
+
+    def retire(self, dispensary_id: str, keys: list[str], now: datetime) -> None:
+        if dispensary_id not in self._stale_ids:
+            self.stale(dispensary_id, keys)
+        ids = self._stale_ids[dispensary_id]
+        for i in range(0, len(ids), 100):
+            self.db.update("listings", f"id=in.({','.join(ids[i:i + 100])})",
+                           {"is_active": False, "in_stock": False, "updated_at": now.isoformat()})
+
+    def close(self, commit: bool = False) -> None:
+        pass
+
+
 TRACKED = [("in_stock", "in_stock"), ("price_cents", "price_cents"), ("image_url", "image_url"),
            ("scraped_name", "scraped_name"), ("scraped_brand", "scraped_brand"),
            ("scraped_cat", "scraped_category"), ("subtype", "subtype"), ("strain", "strain"),
@@ -449,8 +608,8 @@ def main(argv=None) -> int:
     args = parse_args(argv)
 
     db_url = os.environ.get("DATABASE_URL")
-    if not db_url:
-        print("Error: DATABASE_URL not set", file=sys.stderr)
+    if not db_url and not args.via_http:
+        print("Error: DATABASE_URL not set (or pass --via-http)", file=sys.stderr)
         return 1
     if not os.path.isfile(args.csv):
         print(f"Error: CSV not found: {args.csv}", file=sys.stderr)
@@ -476,27 +635,24 @@ def main(argv=None) -> int:
 
     print(f"{'[DRY RUN] ' if args.dry_run else ''}Processing {len(rows)} rows from {args.csv}")
 
-    conn = psycopg2.connect(db_url)
-    cur = conn.cursor()
+    store = RestStore() if args.via_http else PostgresStore(db_url)
 
     slugs = {r["dispensary_slug"].strip() for r in rows if r.get("dispensary_slug")}
-    cur.execute("SELECT id, slug FROM dispensaries WHERE slug = ANY(%s)", (list(slugs),))
-    dispensary_map: dict[str, str] = {slug: str(did) for did, slug in cur.fetchall()}
+    dispensary_map: dict[str, str] = store.dispensary_ids(slugs)
     missing = slugs - set(dispensary_map)
     if missing:
         print(f"  [WARN] Dispensaries not found (rows will be skipped): {missing} — "
               f"run scripts/import_dispensaries.py", file=sys.stderr)
     if not dispensary_map:
-        conn.close()
+        store.close()
         return 2
 
     catalogs: dict = {}
     use_jev = False
     usage = None
     if not args.no_catalog:
-        import catalog_store
         import jev
-        catalogs = catalog_store.load_from_cursor(cur)
+        catalogs = store.catalogs()
         use_jev = not args.no_jev and jev.available()
         usage = jev.Usage()
         if catalogs:
@@ -519,13 +675,11 @@ def main(argv=None) -> int:
 
         # Last row wins on a duplicate key, as the upsert would require anyway.
         records = list({(r["sku"], r["variant"] or ""): r for r in records}.values())
-        existing = fetch_existing(cur, dispensary_id, [r["sku"] for r in records])
+        existing = store.existing(dispensary_id, [r["sku"] for r in records])
 
         # Counted before anything is written, so a dry run predicts the real run and
         # brand-new SKUs cannot inflate the denominator of the partial-scrape guard.
-        cur.execute("SELECT COUNT(*) FROM listings WHERE dispensary_id = %s "
-                    "AND sku IS NOT NULL AND is_active", (dispensary_id,))
-        active_before = cur.fetchone()[0]
+        active_before = store.active_count(dispensary_id)
 
         kept = protect_failed_enrichment(records, existing)
         if kept:
@@ -545,8 +699,7 @@ def main(argv=None) -> int:
         print_diff(slug, records, existing)
 
         if not args.dry_run and records:
-            psycopg2.extras.execute_values(cur, _upsert_sql(not args.no_catalog),
-                                           [_as_tuple(r) for r in records], page_size=500)
+            store.upsert(records, existing, not args.no_catalog)
 
         # Stale marking — listings on file but absent from this scrape. Guarded: a
         # partial scrape (pagination break, bot wall, API change) must not retire the
@@ -561,15 +714,7 @@ def main(argv=None) -> int:
             print(f"  [WARN] scrape carried {len(keys)} rows vs {active_before} active "
                   f"(< {args.stale_threshold:.0%}); looks partial — skipping stale-marking")
         else:
-            cur.execute(
-                """
-                SELECT sku, variant, scraped_name FROM listings
-                WHERE dispensary_id = %s AND sku IS NOT NULL AND is_active
-                  AND sku || '|' || COALESCE(variant, '') != ALL(%s)
-                """,
-                (dispensary_id, keys),
-            )
-            stale = cur.fetchall()
+            stale = store.stale(dispensary_id, keys)
             if stale:
                 print(f"  marking {len(stale)} stale listings inactive:")
                 for sku, variant, name in stale[:5]:
@@ -577,21 +722,12 @@ def main(argv=None) -> int:
                 if len(stale) > 5:
                     print(f"    ... and {len(stale) - 5} more")
                 if not args.dry_run:
-                    cur.execute(
-                        """
-                        UPDATE listings SET is_active = FALSE, in_stock = FALSE, updated_at = %s
-                        WHERE dispensary_id = %s AND sku IS NOT NULL AND is_active
-                          AND sku || '|' || COALESCE(variant, '') != ALL(%s)
-                        """,
-                        (now, dispensary_id, keys),
-                    )
+                    store.retire(dispensary_id, keys, now)
 
         total_upserted += len(records)
         print(f"  {slug}: {len(records)} upserted")
 
-    if not args.dry_run:
-        conn.commit()
-    conn.close()
+    store.close(commit=not args.dry_run)
 
     if usage is not None and (usage.requests or usage.failures):
         print("  " + usage.summary())
