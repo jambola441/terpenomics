@@ -609,7 +609,8 @@ def render_lines(listings: list[dict], entries: list[dict], words: list[str]) ->
     fresh = [l for l in listings if is_fresh(l)]
     lines = Counter((e.get("product_line") or "") for e in entries if e["is_active"])
     out = [f"{len(fresh)} fresh listings · word · in store names (listings / stores) · "
-           "recorded as the listing's line · catalog products in that line"]
+           "recorded as the listing's line · catalog products in that line · only in the "
+           "description (a store that leaves the line out of the name)"]
     seen = {l.lower(): l for l in words}
     seen.update({l.lower(): l for l in lines if l})       # the catalog's spelling wins
     for word in sorted(seen.values(), key=str.lower):
@@ -618,8 +619,10 @@ def render_lines(listings: list[dict], entries: list[dict], words: list[str]) ->
         recorded = sum(1 for l in named if _contains(norm_name(l.get("product_line") or ""), w))
         prods = len({(e.get("category"), e.get("subtype"), e.get("strain")) for e in entries
                      if e["is_active"] and e.get("product_line") == word})
+        described = sum(1 for l in fresh if l not in named
+                        and _contains(norm_name(_plain(l.get("description"))), w))
         out.append(f"  {word:<26} {len(named):>5} / {len({l['dispensary_id'] for l in named}):<4} "
-                   f"{recorded:>6}   {prods:>4}")
+                   f"{recorded:>6}   {prods:>4}   {described:>5}")
     return "\n".join(out)
 
 
@@ -652,14 +655,20 @@ def _entry_label(e: dict) -> str:
     return e["name"] + (f" {e['variant']}" if e.get("variant") else "") + sub
 
 
+def _plain(html_text: str | None) -> str:
+    """A description as text: menus send HTML."""
+    return " ".join(re.sub(r"<[^>]+>", " ", html_text or "").split())
+
+
 def render_listings(listings: list[dict], entries: list[dict], pattern: str | None,
-                    unmatched: bool = False, photos: bool = False) -> str:
+                    unmatched: bool = False, photos: bool = False, descriptions: bool = False) -> str:
     rx = re.compile(pattern) if pattern else None
     by_id = {e["id"]: e for e in entries}
     rows = [l for l in listings if (not rx or rx.search(l.get("scraped_name") or ""))
             and (not unmatched or l.get("catalog_entry_id") not in by_id)]
     groups: dict[tuple, set] = defaultdict(set)
     images: dict[tuple, str] = {}
+    blurbs: dict[tuple, str] = {}
     for l in rows:
         e = by_id.get(l.get("catalog_entry_id"))
         if e:
@@ -680,6 +689,8 @@ def render_listings(listings: list[dict], entries: list[dict], pattern: str | No
         groups[key].add(l["dispensary_id"])
         if l.get("image_url"):
             images.setdefault(key, l["image_url"])
+        if l.get("description"):
+            blurbs.setdefault(key, _plain(l["description"]))
     out = [f"{len(rows)} listings at {len({l['dispensary_id'] for l in rows})} stores"
            + (f" matching /{pattern}/" if rx else "") + (", not matched to the catalog" if unmatched else ""),
            "  stores · name as the store writes it · category · variant · line / strain on the listing "
@@ -692,6 +703,9 @@ def render_listings(listings: list[dict], entries: list[dict], pattern: str | No
                    + (f" ({method})" if method else ""))
         if photos and (name, cat, variant, read, entry, method) in images:
             out.append(f"         photo: {images[(name, cat, variant, read, entry, method)]}")
+        if descriptions and (name, cat, variant, read, entry, method) in blurbs:
+            text = blurbs[(name, cat, variant, read, entry, method)]
+            out.append(f"         description: {text[:220]}{'...' if len(text) > 220 else ''}")
     return "\n".join(out)
 
 
@@ -723,7 +737,8 @@ def render_triage(catalogs: list[dict], entries: list[dict], strain_vocab_by: di
 ENTRY_COLS = ("id,catalog_id,name,product_line,category,subtype,strain,variant,source,support,"
               "is_active,external_id,verified_fields,match_terms")
 LISTING_COLS = ("id,dispensary_id,scraped_name,scraped_brand,scraped_category,subtype,variant,"
-                "product_line,strain,catalog_entry_id,catalog_match_method,last_seen_at,image_url")
+                "product_line,strain,catalog_entry_id,catalog_match_method,last_seen_at,image_url,"
+                "description")
 
 
 def _db():
@@ -796,6 +811,8 @@ def main() -> None:
     lst.add_argument("--unmatched", action="store_true", help="only listings no catalog entry matched")
     lst.add_argument("--photos", action="store_true", help="a package photo URL per row (the pack settles "
                      "dose, pack count and the printed effect)")
+    lst.add_argument("--descriptions", action="store_true", help="the store's description per row (it can "
+                     "name a line the product name leaves out)")
     lns = sub.add_parser("lines", help="line words in store names against what enrichment recorded")
     lns.add_argument("brand")
     lns.add_argument("--word", action="append", default=[], help="another candidate line word (repeatable)")
@@ -831,7 +848,8 @@ def main() -> None:
     elif args.command == "preview":
         print(render_preview(catalog, entries, listings, fresh_only=not args.all_listings))
     else:
-        print(render_listings(listings, entries, args.pattern, args.unmatched, args.photos))
+        print(render_listings(listings, entries, args.pattern, args.unmatched, args.photos,
+                              args.descriptions))
 
 
 if __name__ == "__main__":

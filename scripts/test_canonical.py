@@ -182,3 +182,31 @@ class TestLineSpellings:
         canonicalize(rows)
         assert (rows[0]["product_line"], rows[0]["strain"]) == ("Liquid Diamonds", "Tahoe OG")
         assert (rows[1]["product_line"], rows[1]["strain"]) == ("Original", "Skywalker OG")
+
+
+class TestLineFromDescription:
+    """A store that leaves the line out of the name often has it in the description
+    (Hold Up Roll Up's STIIIZY pre-rolls, found by the user 2026-10-05)."""
+
+    def test_a_name_without_a_line_takes_it_from_the_description(self):
+        rows = [{"brand": "STIIIZY", "name": "King Louis XIII - 1G Infused Prerolls", "category": "preroll",
+                 "product_line": None, "strain": "King Louis XIII",
+                 "description": "Elevate your pre-roll game. Stiiizy 40s pre-rolls are setting the standard"}]
+        stats = canonicalize(rows)
+        assert rows[0]["product_line"] == "40's" and stats["product_line_from_description"] == 1
+
+    def test_only_lines_of_the_listings_category_and_only_one_of_them(self):
+        rows = [{"brand": "STIIIZY", "name": "Gelato - 1g AIO", "category": "vaporizers", "product_line": None,
+                 "strain": "Gelato", "description": "Try our LIIIL pens or Liquid Diamonds pods"},
+                {"brand": "STIIIZY", "name": "Gelato - 1g AIO", "category": "vaporizers", "product_line": None,
+                 "strain": "Gelato", "description": "Pairs well with our 40's pre-rolls"},
+                {"brand": "STIIIZY", "name": "Gelato - 1g Pod", "category": "vaporizers", "product_line": None,
+                 "strain": "Gelato", "description": "Our Original pods"}]       # Original has no category
+        canonicalize(rows)
+        assert [r["product_line"] for r in rows] == [None, None, None]
+
+    def test_a_line_the_name_or_the_model_gave_is_kept(self):
+        rows = [{"brand": "STIIIZY", "name": "Gelato Original THC Pod | 1g", "category": "vaporizers",
+                 "product_line": None, "strain": "Gelato", "description": "Live Resin Liquid Diamonds"}]
+        canonicalize(rows)
+        assert rows[0]["product_line"] == "Original"

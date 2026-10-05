@@ -12,7 +12,11 @@ model the right subtype rails to answer within.
                   name (word-boundary match, punctuation/spacing insensitive), so
                   the assignment is a fact about the string, not a judgment. An
                   entry may instead be {"line": "Liquid Diamonds", "also": ["Liquid
-                  Diamond"]}: every spelling stores print assigns the one line. This
+                  Diamond"]}: every spelling stores print assigns the one line. With
+                  "category" too, a name that carries no line is given it when the
+                  store's description names it and no other line of that category:
+                  "King Louis XIII - 1G Infused Prerolls", whose description says
+                  "Stiiizy 40s pre-rolls are...", is a 40's. This
                   is what the model is least reliable at: in the gold eval it found
                   lines for some brands and missed them for others (Flyers, Quicks,
                   Little Pandas), which splits one product family into several
@@ -136,6 +140,19 @@ def _find_line(brand: str, name: str) -> tuple[str, str] | None:
     return max(hits, key=lambda h: len(h[1])) if hits else None
 
 
+def line_from_description(brand: str, description: str, category: str | None) -> str | None:
+    """The one curated line of `category` the description names, else None. Weaker
+    evidence than the name, so only lines that declare a category take part, and a
+    description naming two of them settles nothing."""
+    if not description or not category:
+        return None
+    own, shared = _for_brand(_load(_LINES_PATH, "lines"), brand)
+    hits = {entry["line"] for entry in list(own or []) + list(shared or [])
+            if isinstance(entry, dict) and entry.get("category") == category
+            for spelling in _spellings(entry)[1] if _pattern(spelling).search(description)}
+    return hits.pop() if len(hits) == 1 else None
+
+
 def find_product_line(brand: str, name: str) -> str | None:
     """The curated line for this brand whose text appears in `name`, else None."""
     hit = _find_line(brand, name)
@@ -185,7 +202,7 @@ def canonicalize(rows: list[dict]) -> dict:
     when no curated entry matches, so uncurated brands keep whatever the model found.
     """
     stats = {"product_line_set": 0, "product_line_corrected": 0,
-             "strain_delined": 0, "strain_aliased": 0}
+             "product_line_from_description": 0, "strain_delined": 0, "strain_aliased": 0}
     for row in rows:
         brand = row.get("brand") or row.get("scraped_brand") or ""
         name = row.get("name") or row.get("scraped_name") or ""
@@ -203,6 +220,12 @@ def canonicalize(rows: list[dict]) -> dict:
                     strain = _strip_line_from_strain(strain, sp)
                     row["strain"] = strain
                     stats["strain_delined"] += 1
+        elif not (row.get("product_line") or "").strip():
+            line = line_from_description(brand, row.get("description") or "",
+                                         row.get("category") or row.get("scraped_category"))
+            if line:
+                row["product_line"] = line
+                stats["product_line_from_description"] += 1
 
         canon = canonical_strain(brand, row.get("strain") or "")
         if canon is not None and canon != (row.get("strain") or ""):
