@@ -3,6 +3,8 @@
 // web-only. Response types come from the web app so the two can't drift.
 import type {
   CustomerProfile,
+  OnboardingPayload,
+  ProfileUpdate,
   Feed,
   FeedView,
   ListingDetail,
@@ -62,7 +64,10 @@ async function request<T>(path: string, init: RequestInit = {}, auth = false): P
   }
 
   if (!res.ok) {
-    const detail = typeof payload?.detail === 'string' ? payload.detail : null
+    // detail is usually a string; structured ones (e.g. onboarding_required)
+    // carry their human-readable text in `message`.
+    const detail = typeof payload?.detail === 'string' ? payload.detail
+      : typeof payload?.detail?.message === 'string' ? payload.detail.message : null
     const retryAfter = Number(res.headers.get('Retry-After'))
     throw new ApiError(
       detail || text || `Request failed with status ${res.status}`,
@@ -92,8 +97,14 @@ export const api = {
   me: {
     getProfile: () => authed<CustomerProfile>(`/me`),
 
-    updateProfile: (payload: { name?: string; marketing_opt_in?: boolean }) =>
+    updateProfile: (payload: ProfileUpdate) =>
       authed<CustomerProfile>(`/me`, post(payload)),
+
+    /** Deletes the login and scrubs the account (services/account_deletion.py). */
+    deleteAccount: () => authed<null>(`/me`, { method: 'DELETE' }),
+
+    completeOnboarding: (payload: OnboardingPayload) =>
+      authed<CustomerProfile>(`/me/onboarding`, post(payload)),
 
     linkCustomer: () =>
       authed<{ customer_id: string; linked: boolean; created?: boolean }>(`/me/link-customer`, post({})),

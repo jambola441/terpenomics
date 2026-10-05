@@ -26,7 +26,8 @@ import SearchView from './components/SearchView'
 import ListingDetailView from './components/ListingDetail'
 import ProfileView from './components/ProfileView'
 import CartDrawer from './components/CartDrawer'
-import type { CartItem, Order } from './types'
+import OnboardingScreen from './components/OnboardingScreen'
+import type { CartItem, CustomerProfile, Order } from './types'
 import type { Session } from '@supabase/supabase-js'
 import { t, radius, font } from './theme'
 import { FeedState } from './components/ui'
@@ -57,7 +58,7 @@ const SECTION_OF: Record<string, Tab> = {
   home: 'home',
 }
 
-function NotLinkedScreen() {
+function NotLinkedScreen({ message, onSignOut }: { message: string; onSignOut: () => void }) {
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -68,11 +69,23 @@ function NotLinkedScreen() {
         color: t.text1, fontWeight: font.weight.heavy, fontSize: font.size.heading,
         marginBottom: 12, letterSpacing: '-0.01em',
       }}>
-        Account not linked
+        Couldn't open your account
       </div>
       <div style={{ color: t.text3, fontSize: font.size.body, lineHeight: 1.6, maxWidth: 300 }}>
-        Your email isn't connected to a customer account yet. Ask a staff member to link your account.
+        {message === 'not_linked'
+          ? "Your sign-in isn't connected to a customer account yet."
+          : message}
+        {' '}Customers sign in with their phone number.
       </div>
+      <button
+        onClick={onSignOut}
+        style={{
+          marginTop: 20, background: 'none', border: `1px solid ${t.border}`, borderRadius: 999,
+          color: t.text2, fontSize: font.size.body, padding: '10px 18px', cursor: 'pointer',
+        }}
+      >
+        Sign out
+      </button>
     </div>
   )
 }
@@ -113,8 +126,9 @@ export default function CustomerPortal() {
   const activeTab: Tab = SECTION_OF[section] ?? 'home'
 
   const [session, setSession] = useState<Session | null | undefined>(undefined)
-  const [customerId, setCustomerId] = useState<string | null>(null)
+  const [profile, setProfile] = useState<CustomerProfile | null>(null)
   const [profileError, setProfileError] = useState<string | null>(null)
+  const customerId = profile?.id ?? null
 
   const [cart, setCart] = useState<CartItem[]>([])
   const [cartOpen, setCartOpen] = useState(false)
@@ -135,11 +149,11 @@ export default function CustomerPortal() {
   useEffect(() => {
     if (!session) return
     api.me.getProfile()
-      .then(profile => setCustomerId(profile.id))
+      .then(setProfile)
       .catch(() =>
         api.me.linkCustomer()
           .then(() => api.me.getProfile())
-          .then(profile => setCustomerId(profile.id))
+          .then(setProfile)
           .catch(err => setProfileError(err.message ?? 'not_linked'))
       )
   }, [session])
@@ -236,9 +250,14 @@ export default function CustomerPortal() {
   if (!session) {
     return <Navigate to="/" replace state={{ from: location.pathname + location.search }} />
   }
-  if (profileError) return <NotLinkedScreen />
-  if (!customerId) {
+  if (profileError) return <NotLinkedScreen message={profileError} onSignOut={handleSignOut} />
+  if (!profile || !customerId) {
     return <div style={{ height: '100dvh', background: t.bg }}><FeedState kind="loading" message="Loading…" style={{ height: '100%' }} /></div>
+  }
+  // Sign-up is server state: the API refuses orders until it is done, and a
+  // terms change can send a signed-up customer back through it.
+  if (!profile.onboarding.complete) {
+    return <OnboardingScreen profile={profile} onDone={setProfile} onSignOut={handleSignOut} />
   }
 
   // "Account" was this section's name before Profile absorbed feedback and the

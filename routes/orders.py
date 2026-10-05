@@ -30,7 +30,7 @@ from models import (
     OrderStatus,
     utcnow,
 )
-from routes_me import get_current_customer
+from routes_me import get_current_customer, get_onboarded_customer
 from services.display_name import compose as compose_display_name
 
 
@@ -139,7 +139,7 @@ class OrderCreate(BaseModel):
 @router.post("", status_code=201)
 def create_order(
     payload: OrderCreate,
-    customer: Customer = Depends(get_current_customer),
+    customer: Customer = Depends(get_onboarded_customer),
     session: Session = Depends(get_session),
 ):
     dispensary = session.get(Dispensary, payload.dispensary_id)

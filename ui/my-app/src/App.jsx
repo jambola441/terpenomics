@@ -23,6 +23,7 @@ import PartnerDetail from './PartnerDetail'
 import PosOAuthForward from './PosOAuthForward'
 import PartnerPortal from './PartnerPortal'
 import Receipts from './Receipts'
+import { TermsPage, PrivacyPage } from './Legal'
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
@@ -57,6 +58,8 @@ function App() {
         <Route path="/partner" element={<PartnerPortal />} />
         <Route path="/partner/:partnerId" element={<PartnerPortal />} />
         <Route path="/portal/*" element={<CustomerPortal />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
       </Routes>
       </BrowserRouter>
   </>

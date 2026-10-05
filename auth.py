@@ -12,6 +12,8 @@ import os
 import jwt
 from fastapi import HTTPException, Request as FastAPIRequest, status
 
+from services.phone import to_e164
+
 SUPABASE_URL = os.getenv("SUPABASE_URL")  # https://<project-ref>.supabase.co
 if not SUPABASE_URL:
     raise RuntimeError("SUPABASE_URL is required")
@@ -106,6 +108,33 @@ def verify_supabase_jwt(token: str) -> SupabaseAuthUser:
         raise HTTPException(status_code=401, detail="Token expired")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
+
+
+def verified_email(user: SupabaseAuthUser) -> Optional[str]:
+    """The token's email, if it is a real address Supabase has verified.
+
+    Phone logins carry a synthetic @phone.invalid address (see
+    services/supabase_admin.py), which identifies no one.
+    """
+    email = (user.email or "").strip().lower()
+    if not email or email.endswith("@phone.invalid"):
+        return None
+    meta = user.raw_claims.get("user_metadata") or {}
+    if meta.get("email_verified") is False:
+        return None
+    return email
+
+
+def verified_phone(user: SupabaseAuthUser) -> Optional[str]:
+    """The token's phone in E.164, or None.
+
+    Supabase only puts a confirmed number in the claim, and writes it without
+    the "+" ("16462606799"), so it is re-prefixed rather than parsed as national.
+    """
+    raw = (user.phone or "").strip()
+    if not raw:
+        return None
+    return to_e164(raw if raw.startswith("+") else f"+{raw}")
 
 
 def get_current_user(request: FastAPIRequest) -> SupabaseAuthUser:

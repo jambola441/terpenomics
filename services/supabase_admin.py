@@ -218,3 +218,15 @@ def issue_session(user_id: UUID, e164: str) -> dict[str, Any]:
     raise SupabaseAdminError(
         f"Supabase refused to issue a session for {mask(e164)} (status {resp.status_code})"
     )
+
+
+def delete_user(user_id: UUID) -> None:
+    """Delete the Supabase user, ending every login it has. Already gone is fine."""
+    base_url, service_key, _ = _config()
+    resp = _request(
+        "DELETE",
+        f"{base_url}/auth/v1/admin/users/{user_id}",
+        headers=_admin_headers(service_key),
+    )
+    if resp.status_code not in (200, 204, 404):
+        raise SupabaseAdminError(f"Deleting the Supabase user returned {resp.status_code}")
