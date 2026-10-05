@@ -115,25 +115,38 @@ def test_consensus_line_is_stripped_from_a_strain():
     assert (e["strain"], e["product_line"], e["support"]) == ("Championship Cake", "Powdered Donuts", 2)
 
 
-def test_a_one_word_line_comes_out_of_a_strain_the_brand_records_in_it():
+def test_a_line_written_into_the_strain_is_one_product_written_the_majority_way():
     def gummies(brand, rows):
-        return cb.propose(brand, [L(s, f"{brand} Gummies 10pk 100mg", strain, line, "10pk 100mg",
-                                    "edible", "gummy") for s, strain, line in rows])["catalog"]["entries"]
+        return cb.propose(brand, [L(s, f"{brand} Gummies {v}", strain, line, v, "edible", "gummy")
+                                  for s, strain, line, v in rows])["catalog"]["entries"]
 
-    # Line first or last in the strain, it is the lined product.
-    calm = gummies("Florist Farms", [("s1", "Peach", "Calm"), ("s2", "Peach", "Calm"),
-                                     ("s3", "Calm Peach", None), ("s4", "Calm Peach", None)])
-    assert [(e["name"], e["product_line"], e["strain"], e["support"]) for e in calm] == \
-        [("Calm Peach", "Calm", "Peach", 4)]
-    belts = gummies("Flav", [("s1", "Watermelon", "Belts"), ("s2", "Watermelon", "Belts"),
-                             ("s3", "Watermelon Belts", None)])
-    assert [(e["product_line"], e["strain"], e["support"]) for e in belts] == [("Belts", "Watermelon", 3)]
-    # The line alone is not enough: "Blue Dream" beside line "Dream" stays whole, since
-    # no listing records "Blue" in that line.
-    dream = gummies("Acme", [("s1", "Sweet", "Dream"), ("s2", "Sweet", "Dream"),
-                             ("s3", "Blue Dream", None), ("s4", "Blue Dream", None)])
-    assert sorted((e["product_line"] or "", e["strain"]) for e in dream) == \
-        [("", "Blue Dream"), ("Dream", "Sweet")]
+    def got(entries):
+        return [(e["product_line"], e["strain"], e["variant"], e["support"]) for e in entries]
+
+    # Florist Farms on 2026-10-05: one store records line "Calm", one writes only
+    # "Peach" (the line fold puts it with the lined group), two write "Calm Peach".
+    # Two stores each way: the lined way wins the tie.
+    calm = gummies("Florist Farms", [("s1", "Peach", "Calm", "10pk 100mg"),
+                                     ("s2", "Peach", None, "10pk 100mg"),
+                                     ("s3", "Calm Peach", None, "10pk 100mg"),
+                                     ("s4", "Calm Peach", None, "10pk 100mg")])
+    assert got(calm) == [("Calm", "Peach", "10pk 100mg", 4)]
+    # The line can come last in the strain.
+    belts = gummies("Flav", [("s1", "Watermelon", "Belts", "100mg"),
+                             ("s2", "Watermelon", "Belts", "100mg"),
+                             ("s3", "Watermelon Belts", None, "100mg")])
+    assert got(belts) == [("Belts", "Watermelon", "100mg", 3)]
+    # One store's model splitting a strain does not rewrite three stores' name for it.
+    dream = gummies("Acme", [("s1", "Blue", "Dream", "100mg"),
+                             ("s2", "Blue Dream", None, "100mg"),
+                             ("s3", "Blue Dream", None, "100mg"),
+                             ("s4", "Blue Dream", None, "100mg")])
+    assert got(dream) == [(None, "Blue Dream", "100mg", 4)]
+    # A different size is a different product.
+    sizes_apart = gummies("Acme", [("s1", "Peach", "Calm", "100mg"), ("s2", "Peach", "Calm", "100mg"),
+                                   ("s3", "Calm Peach", None, "50mg"), ("s4", "Calm Peach", None, "50mg")])
+    assert sorted(got(sizes_apart), key=str) == [("Calm", "Peach", "100mg", 2),
+                                                 (None, "Calm Peach", "50mg", 2)]
 
 
 def test_single_store_products_and_merch_are_left_out():
