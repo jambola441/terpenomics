@@ -377,3 +377,25 @@ def test_a_cross_is_the_same_either_way_round_and_gram_packs_read():
     import sizes
     assert sizes.parse("5 x 0.5 gram Pre-Rolls", category="preroll") == \
         sizes.Size(grams=2.5, pack=5, unit_g=0.5)
+
+
+def test_store_listings_leave_out_stale_menus(monkeypatch):
+    import db_http
+    asked = []
+    monkeypatch.setattr(db_http, "select_all", lambda table, query: asked.append(query) or [])
+    storefront.store_listings("Florist Farms", via_http=True)
+    assert "&or=(last_seen_at.gte." in asked[0]
+
+
+def test_the_fake_rest_api_models_the_freshness_filter():
+    from conftest import RestOverPostgres
+    cols, where, args, _ = RestOverPostgres._parse(
+        "select=id&is_active=is.true&or=(last_seen_at.gte.2026-09-14T13:00:00Z,last_seen_at.is.null)")
+    assert where == " WHERE is_active IS TRUE AND (last_seen_at >= %s OR last_seen_at IS NULL)"
+    assert args == ["2026-09-14T13:00:00Z"]
+
+
+def test_a_draft_recipe_can_be_checked_but_not_pushed(monkeypatch):
+    monkeypatch.setattr(sys, "argv", ["storefront.py", "push", "--recipe", "draft.json"])
+    with pytest.raises(SystemExit, match="--recipe is for check"):
+        storefront.main()

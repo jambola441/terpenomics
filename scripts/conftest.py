@@ -47,6 +47,18 @@ class RestOverPostgres:
                 args.append([v.strip('"') for v in val[4:-1].split(",")])
             elif val in ("is.true", "is.false", "is.null"):
                 conds.append(f"{key} IS {val[3:].upper()}")
+            elif key == "or" and val.startswith("(") and val.endswith(")"):
+                terms = []
+                for term in val[1:-1].split(","):
+                    col, op, rest = term.split(".", 2)
+                    if op == "gte":
+                        terms.append(f"{col} >= %s")
+                        args.append(rest)
+                    elif op == "is" and rest == "null":
+                        terms.append(f"{col} IS NULL")
+                    else:
+                        raise AssertionError(f"PostgREST filter not modelled here: {part}")
+                conds.append("(" + " OR ".join(terms) + ")")
             else:
                 raise AssertionError(f"PostgREST filter not modelled here: {part}")
         where = f" WHERE {' AND '.join(conds)}" if conds else ""

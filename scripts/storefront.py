@@ -771,21 +771,24 @@ def with_store_products(doc: dict, only_stores: list[dict], terms: dict | None =
 
 
 def store_listings(brand: str, via_http: bool) -> list[dict]:
-    """Our active listings of the brand, in the shape catalog_bootstrap reads: over
-    Supabase's REST API from a sandbox, over DATABASE_URL on the worker."""
+    """Our active listings of the brand seen in the last catalog_bootstrap.FRESH_DAYS, in
+    the shape catalog_bootstrap reads: over Supabase's REST API from a sandbox, over
+    DATABASE_URL on the worker."""
     cols = ("id", "dispensary_id", "scraped_name", "scraped_brand", "scraped_category", "subtype",
             "strain", "product_line", "variant")
     if via_http:
         import db_http
         rows = db_http.select_all(
             "listings", f"select={','.join(cols)}&is_active=is.true"
+                        f"&or=(last_seen_at.gte.{catalog_bootstrap.fresh_since()},last_seen_at.is.null)"
                         f"&scraped_brand=eq.{urllib.parse.quote(brand)}&order=id")
     else:
         import brand_catalog
         conn = brand_catalog._connect()
         cur = conn.cursor()
         cur.execute(f"SELECT {', '.join(cols)} FROM listings WHERE is_active AND scraped_brand = %s "
-                    "ORDER BY id", (brand,))
+                    "AND (last_seen_at >= %s OR last_seen_at IS NULL) ORDER BY id",
+                    (brand, catalog_bootstrap.fresh_since()))
         rows = [dict(zip(cols, r)) for r in cur.fetchall()]
         conn.close()
     return [{"id": str(r["id"]), "dispensary_id": str(r["dispensary_id"]),
@@ -831,6 +834,8 @@ def main() -> None:
     who = ap.add_mutually_exclusive_group(required=True)
     who.add_argument("--brand")
     who.add_argument("--all", action="store_true", help="every recipe in data/storefronts/")
+    who.add_argument("--recipe", help="check a recipe file outside data/storefronts/ (a draft of a "
+                                      "change, so an audit can test it without editing the real one)")
     ap.add_argument("--via-http", action="store_true", default=os.environ.get("DB_VIA_HTTP") == "1",
                     help="push over Supabase's REST API (a sandbox; DB_ACCESS.md)")
     ap.add_argument("--dry-run", action="store_true", help="push: report the effect, write nothing")
@@ -838,7 +843,13 @@ def main() -> None:
                     help="skip our listings: check without the comparison, push the site alone")
     args = ap.parse_args()
 
-    recipes = all_recipes() if args.all else [load_recipe(args.brand)]
+    if args.recipe:
+        if args.command != "check":
+            raise SystemExit("--recipe is for check: push a recipe from data/storefronts/")
+        path = Path(args.recipe)
+        recipes = [validate(json.loads(path.read_text(encoding="utf-8")), str(path))]
+    else:
+        recipes = all_recipes() if args.all else [load_recipe(args.brand)]
     failed = 0
     for recipe in recipes:
         try:
