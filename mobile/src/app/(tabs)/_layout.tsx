@@ -34,6 +34,7 @@ export default function TabsLayout() {
         options={{ title: 'Shop', headerShown: false, tabBarIcon: icon({ ios: 'square.grid.2x2.fill', android: 'grid_view' }) }}
       />
       <Tabs.Screen name="orders" options={{ title: 'Orders', tabBarIcon: icon({ ios: 'bag.fill', android: 'shopping_bag' }) }} />
+      <Tabs.Screen name="points" options={{ title: 'Points', tabBarIcon: icon({ ios: 'star.fill', android: 'star' }) }} />
       <Tabs.Screen name="profile" options={{ title: 'You', tabBarIcon: icon({ ios: 'person.fill', android: 'person' }) }} />
     </Tabs>
   )

@@ -341,7 +341,7 @@ export default function CustomerPortal() {
           setCart([])
           setOrders(prev => [order, ...prev])
         }}
-        onViewOrders={() => { setCartOpen(false); navigate('/portal/profile') }}
+        onViewOrders={() => { setCartOpen(false); navigate('/portal/profile/orders') }}
       />
 
       {/* Cart bar — above the nav, and only once there is something in it. Six

@@ -33,6 +33,14 @@
         {
           "locationWhenInUsePermission": "Terpenomics checks that you are in New York, where reserving cannabis for pickup is legal, before placing an order."
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Terpenomics uses your photos so you can upload a receipt from a partner store and get your Terpee points.",
+          "cameraPermission": "Terpenomics uses the camera so you can photograph a receipt from a partner store and get your Terpee points.",
+          "microphonePermission": false
+        }
       ]
     ],
     "scheme": "terpenomics",
