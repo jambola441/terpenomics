@@ -29,12 +29,19 @@ it. They are rules of thumb, not laws: a break is a question, and evidence answe
    the catalog is filing something else as the line: a strain, a flavour, an effect
    ("Sleep", "Uplifting"), or a format.
    - *Effect-named products* are the common case: Camino, Off Hours and Florist Farms
-     sell gummies by effect, one or two flavours each. Today they are filed with the
-     effect as the line, which makes many one-flavour lines. The other model puts the
-     effect in the member (strain "Calm Peach") under the brand's family name, or under
-     no line. Which model to use is the user's decision, not settled yet. Report the
-     group once, with both models and your recommendation; do not count each effect as
-     a separate irregularity.
+     sell gummies by effect, one or two flavours each.
+     - Some brands print three names on every pack: family, effect and flavour. Camino's
+       are Gummies, Sours and Fruit Chews; "SOCIAL | Sparkling Pear". Lines named by
+       effect are then thin by design.
+     - Today the effect is filed as the line, which makes many one-flavour lines. The
+       other model puts the effect in the member (strain "Calm Peach") under the brand's
+       family name, or under no line.
+     - Which model to use is the user's decision, not settled yet. Report the group once,
+       with both models and your recommendation. Do not count each thin effect line as an
+       irregularity.
+     - Do check that the catalog uses one axis throughout. Gap fills and sibling
+       catalogs often use the other (store-only "Sours Orchard Peach" beside the site's
+       "Balance Orchard Peach"), and those are real duplicates.
    Leads: `thin-lines`, `thin-line`, `line-is-strain`.
 2. **A line stays in its category.** "40's" are pre-rolls, "Sours" are gummies, and
    "Liquid Diamonds" are vapes. When the same name is a line in two categories, it is
@@ -83,8 +90,9 @@ it. They are rules of thumb, not laws: a break is a question, and evidence answe
    Leads: `missing-pair`.
 
 **These rules grow.** When the user names another way brands do (or never do) things,
-or an audit turns up a pattern worth checking every time, add it here as a numbered
-rule. If it can be computed from the entries alone, also add it as a lead in
+add it here as a numbered rule. When an audit turns up a pattern worth checking every
+time, propose the rule in the report: an audit edits nothing, this file included. If a
+rule can be computed from the entries alone, it also belongs as a lead in
 `scripts/catalog_shape.py` `leads()`, with a test in `scripts/test_catalog_shape.py`.
 
 ## Where a catalog comes from
@@ -105,8 +113,31 @@ first line.
   product.
   - Line and strain are whatever enrichment read from listing names (`listings.product_line`
     and `listings.strain`), so a line enrichment missed is missing here too.
+  - Curated lines in `data/product_lines.json` fix that for a brand. A line is set
+    wherever its exact text is in the name, which brings three limits:
+    - singular and plural are different texts ("Liquid Diamond", "Liquid Diamonds");
+    - it never clears a line the model invented;
+    - it applies at a listing's next enrichment, so the catalog needs a rebuild after.
+
+    `data/strain_aliases.json` folds a brand's strain spellings the same way.
   - A product only one store carries is absent. A thin line can therefore be a coverage
     gap, not an error.
+  - Support counts listings seen in the last 21 days (`BOOTSTRAP_FRESH_DAYS`), since a
+    store that stops scraping leaves its menu active. The storefront gap fill uses the
+    same window.
+- **Listings echo their entry.** A matched listing takes its entry's line and strain, and
+  the bootstrap and the gap fill are rebuilt from listings. So a duplicate's own listings
+  vote for it at every rebuild, and a lost line stays lost until something outside the
+  loop changes: a rule, an alias, an edit or a deactivation.
+- **Match methods.** Every listing's match records how it was made:
+  - `exact`: the name is an entry's name or one of its recorded store names.
+  - `jev`: the model picked the entry with p ≥ 0.85, or ≥ 0.90 in a bootstrap catalog.
+    Trusted.
+  - `jev_review`: p ≥ 0.50. Recorded, not trusted.
+  - `none`: the model abstained.
+- **Brand names.** `data/brand_aliases.json` maps scraped brand strings only. A
+  sub-brand that stores file under its parent ("KIVA - Camino ...") lands in the parent's
+  catalog, which then holds a second copy of the sub-brand.
 - **Edits survive.** A re-push never rewrites the name, line, category, subtype, strain or
   variant of an existing entry (`brand_catalog.push`), so an admin edit sticks. A fixed
   recipe or rule creates entries with new external ids, and the next push retires the old
@@ -141,6 +172,11 @@ stores they come from. In a storefront catalog, a size marked `*` came only from
 stores, and `[store-only n]` marks a whole product kept from n stores. Watch the counts:
 a site product at 0/0 beside a store-only product of the same shape is a rename to check.
 
+For a bootstrap catalog, `python3 scripts/catalog_shape.py preview "<Brand>"` shows
+what a rebuild would propose from today's fresh listings: entries it would add, and
+entries it no longer would. It writes nothing. A catalog that drifted from its listings
+is a finding of its own.
+
 Before reading the leads, read the structure top to bottom. Write a sentence or two per
 category on how you think the brand organises its range: which lines are real, what the
 members of each are, and whether the brand uses lines in that category at all. That model
@@ -153,6 +189,7 @@ is what you test. If you start from the leads you will only re-describe them.
 | `mixed-lines` | a big line-less group beside named lines; the line was lost for most products | look at their store names (`listings`); do stores write a line word? |
 | `stray` | line-less products whose store names (for that size) mostly say a line | `listings "<Brand>" "<strain>"`: the same product as the lined one, or a separate plain product? |
 | `size-of-other-line` | a size rare in its own group but typical of another line (a line-less 5-pack where every infused pre-roll is a 5-pack) | store names for that size; the site's listing of that size |
+| `split-size` | a line-less product whose strain is in one line, in sizes that line lacks (line-less Biscotti 1g beside 40's Biscotti 2.5g) | store names: do they say the line? A line defined by its size (a 0.5g-only pen) makes this a false alarm |
 | `thin-lines` / `thin-line` | lines with 1-2 members; the "line" may be a strain, flavour or effect, or the line's other members are filed elsewhere | the brand's site: is it one product per name? For bootstrap, check single-store listings for the line's missing members |
 | `line-is-strain` | the line's name is a strain or flavour here (another category, swapped line and strain) or in other brands' catalogs | the brand's site and store names: which word is the family and which is the flavour? |
 | `cross-category` | one name is a line in two categories; it is likely not a line, or products sit in the wrong category | the products in the smaller category: misfiled? Is the name an extraction word or brand-wide name? |
@@ -166,6 +203,9 @@ is what you test. If you start from the leads you will only re-describe them.
 | `store-copy` | a store-only size that looks like a site product of the same format and size | `entries` for both: the same product → a `store_aliases` fix |
 | `orphan-site` | a store-only size with listings beside site products of its shape that have none | is one of them the same product renamed on the site? Compare the site's handle and tags with the store names |
 | `missing-pair` | a range that pairs formats (cart + all-in-one) has strains with only one | coverage (bootstrap), or the other half filed under another name or line |
+| `rare-format` | a format with 1-3 products beside a main format of 10+ (3 carts beside 37 pods) | does the brand sell it? Usually a format word misread from a menu |
+| `idle` | bootstrap entries no listing matches now | their support was stale, or their listings moved to another entry |
+| `inside-other-catalog` | another brand's catalog has a line named like this brand | `show` that brand: the same products under both? |
 
 Then look for what no lead catches:
 - the same concept modelled differently across categories;
@@ -194,8 +234,11 @@ flavour under that name. Use these sources, strongest first:
    Each row groups the listings that share a name, variant, line/strain and matched
    entry, and shows how many stores carry them.
    - Only the store's own name is independent evidence. A matched listing's line and
-     strain are copied from its entry. That copying is also why a lost line stays lost:
-     the bootstrap and the gap fills are rebuilt from those copies.
+     strain are copied from its entry, so only unmatched and `jev_review` rows show what
+     enrichment itself read.
+   - `--photos` adds a package photo per row. The pack prints the dose, the count and
+     the effect. It settled "Excite" against "Exhilarate", and a CBD total typed as a
+     size.
    - Many stores agreeing on a line word is strong evidence.
    - Listings matched across several entries for one product are direct proof of a
      split.
@@ -209,14 +252,26 @@ flavour under that name. Use these sources, strongest first:
    python3 scripts/catalog_shape.py entries "<Brand>" "(?i)<regex>"
    ```
    This shows every field: source, support, external id, listings matched, and the store
-   names recorded as match terms. Inactive entries are included and marked.
-4. **A fresh read of the site** (storefront only):
+   names recorded as match terms. Inactive entries are included and marked. Store names
+   are stored normalised ("40's" as "40 s", ".5g" as "5g"), so write the regex for that
+   form.
+4. **Line words against what was recorded.**
+   ```
+   python3 scripts/catalog_shape.py lines "<Brand>" --word "Liquid Diamond" --word LIIIL
+   ```
+   For each of the catalog's lines plus any `--word`, this counts the store names that
+   print it and how many of those listings have it recorded as their line. STIIIZY's
+   "Original" was printed on 73 listings and recorded on 8: a line enrichment misses.
+5. **A fresh read of the site** (storefront only):
    ```
    python3 scripts/storefront.py check --brand "<Brand>" --via-http
+   python3 scripts/storefront.py check --recipe <scratch>/draft.json --via-http
    ```
-   It re-runs the recipe and lists the products that are only at stores. For how the
-   site titles a product, fetch the source itself: for Shopify, `<site>/products.json`.
-   A site entry's external id ends in the site's variant id, which joins the two.
+   It re-runs the recipe and lists the products that are only at stores. With
+   `--recipe`, it runs a draft copy, so a proposed recipe change can be tested without
+   editing the real file. For how the site titles a product, fetch the source itself:
+   for Shopify, `<site>/products.json`. A site entry's external id ends in the site's
+   variant id, which joins the two.
 
 Every command here is read-only.
 
@@ -229,14 +284,20 @@ Fix at the source when three or more entries share a cause. Hand edits are for o
 | storefront: a title rule misreads line or strain (effect taken as line, format word kept) | the recipe's `title` rules; re-run `storefront.py check`, then `push` |
 | storefront: a store-only entry is a site product under the stores' name (or the site renamed it) | `store_aliases` in the recipe (names or lines, confirmed aliases only), then `push`. Aliases apply in every category; when one would misfire elsewhere (a "Kief Coated Gorilla Glue" pre-roll), use a `title` rule's `set` for that category instead |
 | storefront: a store-only entry is a real size the site omits but lost the line | admin edit of its line; if several, propose carrying the site product's naming onto same-name gap fills in `storefront.with_store_products` |
-| bootstrap: stores write the line but enrichment missed it | a few entries: admin edit; many: a storefront recipe if the brand's site is readable (`data/storefronts/README.md`), else a product-line rule for enrichment |
+| bootstrap: stores write the line but enrichment missed it | a few entries: admin edit. Many: a storefront recipe if the brand's site is readable (`data/storefronts/README.md`), else the brand's lines in `data/product_lines.json`. List each spelling stores print (singular, plural, "40's" and "40s"), then preview and rebuild the catalog after the next run |
+| bootstrap: one strain spelled two ways ("Skywalker" / "Skywalker OG") | `data/strain_aliases.json` for the brand; for the entries already split, deactivate one and move its store names |
+| storefront: two store-only copies of one product | `store_aliases` cannot merge them: aliases change only the comparison with the site. Deactivate all but one, or make the product a site product by exempting its page from a skip rule |
+| storefront: a store-only size that is the site's package written another way (a CBD total, a cannabinoid sum) | deactivate it; if several brands show it, propose a rule in `split_store_products` for dose categories |
 | bootstrap: thin line from coverage (members sold at one store) | nothing to fix; say so |
 | any: two entries for one product | deactivate the wrong one in the admin UI (never delete: listings point at entries), add its store names to the survivor's match terms; the next `catalog_match` moves the listings |
-| any: one brand's products inside another brand's catalog | deactivate them in the parent's catalog, and propose a brand alias so stores' "Kiva Camino ..." listings resolve to the right brand |
+| any: one brand's products inside another brand's catalog | a skip rule in the parent's recipe (or deactivations), plus a proposed name-based sub-brand rule at import, so stores' "Kiva - Camino ..." listings resolve to the sub-brand. `brand_aliases.json` alone cannot: it maps brand strings, not names |
 | any: products in the wrong category | admin edit of `category` (and subtype); if a recipe produced it, fix its `category` rule |
 | any: wrong size form | admin edit of `variant`; if a recipe produced it, fix the rule's size group |
 
 ### 6. Report
+
+Imports and `catalog_match` keep running while you audit, so counts move. Re-run `show`
+just before writing, and give the time your counts are from.
 
 Use this shape for each catalog:
 
@@ -258,10 +319,11 @@ beats twenty admin edits. Name the entries, quote store names, and give counts. 
 
 ## Ground rules
 
-- **An audit is read-only.** Do not write to the database, edit entries, or push catalogs
-  while auditing. Recommend instead. Apply fixes only when the user asks. Use the recipe
-  plus `storefront.py push` for storefront fixes, and the admin UI or API for single
-  entries.
+- **An audit is read-only.** Do not write to the database, edit entries, push catalogs,
+  or edit repo files (recipes, rule files, this skill) while auditing. Recommend instead,
+  and test a recipe change on a scratch copy with `check --recipe`. Apply fixes only
+  when the user asks: the recipe plus `storefront.py push` for storefront fixes, rule
+  files plus a rebuild for bootstrap ones, the admin UI or API for single entries.
 - **Never delete catalog entries.** Deactivate them.
 - **Stay with the evidence.** When you cannot reach the site or the evidence is split,
   say so, give the readings, and mark the finding low confidence. Do not guess.
