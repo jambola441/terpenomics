@@ -223,17 +223,27 @@ class CatalogIndex:
                 return on_cat[0]
             if on_cat:
                 keys = on_cat
-        if name is not None:
-            words = {k: set(norm_name(self.products[k].title).split()) for k in keys}
-            if not any(a != b and words[a] and words[a] <= words[b] for a in keys for b in keys):
-                named = [k for k in keys if words[k] and words[k] <= set(name.split())]
-                return named[0] if len(named) == 1 else None
+        if name is not None and self.unrelated(keys):
+            named = self.named(keys, name)
+            return named[0] if len(named) == 1 else None
         longest = max(len(norm_name(self.products[k].title)) for k in keys)
         top = [k for k in keys if len(norm_name(self.products[k].title)) == longest]
         if len(top) == 1:
             return top[0]
         titled = [k for k in top if self.products[k].category]
         return titled[0] if len(titled) == 1 else None
+
+    def unrelated(self, keys: list[str]) -> bool:
+        """No product's title words sit inside another's: these are not one product's
+        titles read short and long ("Blue Lobster", "Hash Infused Blue Lobster")."""
+        words = {k: set(norm_name(self.products[k].title).split()) for k in keys}
+        return not any(a != b and words[a] and words[a] <= words[b] for a in keys for b in keys)
+
+    def named(self, keys: list[str], name: str) -> list[str]:
+        """The products whose title's words the (normalised) name holds."""
+        have = set(name.split())
+        return [k for k in keys
+                if (words := set(norm_name(self.products[k].title).split())) and words <= have]
 
     def pick_entry(self, key: str, listing_variant: str | None, category: str | None,
                    name: str = "") -> dict:
