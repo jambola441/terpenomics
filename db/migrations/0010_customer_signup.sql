@@ -14,48 +14,60 @@
 -- so they are not treated as consent: the flag is cleared (with a consent_events
 -- row saying so) and those customers are asked again at sign-up.
 --
+-- Skipped where customers does not exist yet (a fresh database built from
+-- db/schema/pipeline.sql, as in CI): the API's create_all then makes customers
+-- and consent_events whole from models.py, these columns included.
+--
 -- Idempotent.
 
-ALTER TABLE customers ADD COLUMN IF NOT EXISTS first_name        varchar(100);
-ALTER TABLE customers ADD COLUMN IF NOT EXISTS last_name         varchar(100);
-ALTER TABLE customers ADD COLUMN IF NOT EXISTS age_confirmed_at  timestamp;
-ALTER TABLE customers ADD COLUMN IF NOT EXISTS terms_version     varchar(32);
-ALTER TABLE customers ADD COLUMN IF NOT EXISTS terms_accepted_at timestamp;
-ALTER TABLE customers ADD COLUMN IF NOT EXISTS onboarded_at      timestamp;
--- Account deletion scrubs the row rather than removing it (services/account_deletion.py).
-ALTER TABLE customers ADD COLUMN IF NOT EXISTS deleted_at        timestamp;
+DO $migration$
+BEGIN
+  IF to_regclass('public.customers') IS NULL THEN
+    RETURN;
+  END IF;
 
-CREATE TABLE IF NOT EXISTS consent_events (
-  id          uuid PRIMARY KEY,
-  customer_id uuid NOT NULL REFERENCES customers(id),
-  kind        varchar(32) NOT NULL,
-  granted     boolean NOT NULL,
-  version     varchar(32),
-  text        text,
-  source      varchar(64) NOT NULL,
-  phone       varchar(32),
-  ip          varchar(64),
-  user_agent  varchar(500),
-  created_at  timestamp NOT NULL DEFAULT (now() AT TIME ZONE 'utc')
-);
-CREATE INDEX IF NOT EXISTS ix_consent_events_customer_id ON consent_events (customer_id);
-CREATE INDEX IF NOT EXISTS ix_consent_events_kind        ON consent_events (kind);
-CREATE INDEX IF NOT EXISTS ix_consent_events_created_at  ON consent_events (created_at);
+  ALTER TABLE customers ADD COLUMN IF NOT EXISTS first_name        varchar(100);
+  ALTER TABLE customers ADD COLUMN IF NOT EXISTS last_name         varchar(100);
+  ALTER TABLE customers ADD COLUMN IF NOT EXISTS age_confirmed_at  timestamp;
+  ALTER TABLE customers ADD COLUMN IF NOT EXISTS terms_version     varchar(32);
+  ALTER TABLE customers ADD COLUMN IF NOT EXISTS terms_accepted_at timestamp;
+  ALTER TABLE customers ADD COLUMN IF NOT EXISTS onboarded_at      timestamp;
+  -- Account deletion scrubs the row rather than removing it (services/account_deletion.py).
+  ALTER TABLE customers ADD COLUMN IF NOT EXISTS deleted_at        timestamp;
 
-INSERT INTO consent_events (id, customer_id, kind, granted, source, phone, text)
-SELECT gen_random_uuid(), c.id, 'marketing_sms', false, 'migration', c.phone,
-       'Cleared by 0010_customer_signup: opt-in predates consent records.'
-FROM customers c
-WHERE c.marketing_opt_in
-  AND NOT EXISTS (
-    SELECT 1 FROM consent_events e
-    WHERE e.customer_id = c.id AND e.kind = 'marketing_sms' AND e.granted
+  CREATE TABLE IF NOT EXISTS consent_events (
+    id          uuid PRIMARY KEY,
+    customer_id uuid NOT NULL REFERENCES customers(id),
+    kind        varchar(32) NOT NULL,
+    granted     boolean NOT NULL,
+    version     varchar(32),
+    text        text,
+    source      varchar(64) NOT NULL,
+    phone       varchar(32),
+    ip          varchar(64),
+    user_agent  varchar(500),
+    created_at  timestamp NOT NULL DEFAULT (now() AT TIME ZONE 'utc')
   );
+  CREATE INDEX IF NOT EXISTS ix_consent_events_customer_id ON consent_events (customer_id);
+  CREATE INDEX IF NOT EXISTS ix_consent_events_kind        ON consent_events (kind);
+  CREATE INDEX IF NOT EXISTS ix_consent_events_created_at  ON consent_events (created_at);
 
-UPDATE customers c
-SET marketing_opt_in = false
-WHERE c.marketing_opt_in
-  AND NOT EXISTS (
-    SELECT 1 FROM consent_events e
-    WHERE e.customer_id = c.id AND e.kind = 'marketing_sms' AND e.granted
-  );
+  INSERT INTO consent_events (id, customer_id, kind, granted, source, phone, text)
+  SELECT gen_random_uuid(), c.id, 'marketing_sms', false, 'migration', c.phone,
+         'Cleared by 0010_customer_signup: opt-in predates consent records.'
+  FROM customers c
+  WHERE c.marketing_opt_in
+    AND NOT EXISTS (
+      SELECT 1 FROM consent_events e
+      WHERE e.customer_id = c.id AND e.kind = 'marketing_sms' AND e.granted
+    );
+
+  UPDATE customers c
+  SET marketing_opt_in = false
+  WHERE c.marketing_opt_in
+    AND NOT EXISTS (
+      SELECT 1 FROM consent_events e
+      WHERE e.customer_id = c.id AND e.kind = 'marketing_sms' AND e.granted
+    );
+END
+$migration$;
