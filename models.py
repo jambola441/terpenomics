@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Optional
 from uuid import UUID, uuid4
 
-from sqlalchemy import JSON, Column, DateTime, Index, LargeBinary, Text, UniqueConstraint, text
+from sqlalchemy import JSON, Column, DateTime, Index, LargeBinary, Text, UniqueConstraint, func, text
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, REAL
 
 # Postgres in production, SQLite in the test suite (tests/conftest.py). SQLite
@@ -291,6 +291,11 @@ class ListingBase(SQLModel):
     batch_id:         Optional[str] = Field(default=None, max_length=200)
     price_cents:      Optional[int] = Field(default=None, ge=0)
     variant:          Optional[str] = Field(default=None, max_length=100)
+    # The size product pages group on. `variant` is the store's own size, kept as typed
+    # (it is part of the row's key); `size` is that, or the catalog's when the store
+    # mistyped it (scripts/import_listings.py, assign_sizes). NULL reads as `variant`:
+    # use Listing.product_size, or LISTING_PRODUCT_SIZE in a query.
+    size:             Optional[str] = Field(default=None, max_length=100)
     url:              Optional[str] = Field(default=None, max_length=1000)
     image_url:        Optional[str] = Field(default=None, max_length=1000)
     in_stock:         bool          = Field(default=True, nullable=False)
@@ -360,6 +365,15 @@ class Listing(ListingBase, TimestampMixin, table=True):
     purchase_items: list["PurchaseItem"]    = Relationship(back_populates="listing")
     terpene_links:  list["ListingTerpene"]  = Relationship(back_populates="listing")
     cannab_links:   list["ListingCannabinoid"] = Relationship(back_populates="listing")
+
+    @property
+    def product_size(self) -> Optional[str]:
+        """The size this listing's product page shows and groups on (see `size`)."""
+        return self.size if self.size is not None else self.variant
+
+
+# Listing.product_size in SQL, for grouping and filtering on product identity.
+LISTING_PRODUCT_SIZE = func.coalesce(Listing.size, Listing.variant)
 
 
 class ListingTerpene(SQLModel, table=True):

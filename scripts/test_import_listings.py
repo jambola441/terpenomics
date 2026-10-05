@@ -201,6 +201,35 @@ def test_exact_catalog_match_overlays_identity(db, tmp_path):
     assert (r["strain"], r["product_line"]) == ("Blue Dream", "Gold")
 
 
+def test_a_mistyped_dose_is_stored_with_its_catalog_size(db, tmp_path):
+    """`variant` stays as the store typed it (it is part of the row's key); `size`,
+    which product pages group on, takes the catalog's when the store's is a typo."""
+    add_catalog(db, [{"name": "balance yuzu lemon", "category": "edible", "subtype": "gummy",
+                      "strain": "Balance Yuzu Lemon", "product_line": "Gummies",
+                      "variant": "20pk 100mg"}], brand="Camino")
+    gummy = {"brand": "Camino", "category": "edible", "subtype": "gummy"}
+    run(tmp_path, [row("A", "Balance Yuzu Lemon", variant="50mg",
+                       description="5mg THC : 5mg CBD per piece - 100mg THC per package", **gummy),
+                   row("B", "Balance Yuzu Lemon", variant="100mg", **gummy),
+                   row("C", "Acme Blue Dream", strain="Blue Dream")])
+    db.execute("SELECT sku, variant, size FROM listings ORDER BY sku")
+    assert db.fetchall() == [("A", "50mg", "100mg"), ("B", "100mg", "100mg"), ("C", "3.5g", "3.5g")]
+
+
+def test_only_a_trusted_match_corrects_a_size():
+    entry = {"id": "e1", "category": "edible", "variant": "20pk 100mg", "product_key": "k1",
+             "is_active": True}
+    catalogs = {"camino": {"brand_name": "Camino", "entries": [entry]}}
+    typo = {"variant": "50mg", "scraped_name": "Balance | Yuzu Lemon | 20pk", "catalog_entry_id": "e1",
+            "description": "100mg THC : 100mg CBD per package"}
+    recs = [{**typo, "catalog_match_method": "exact"},
+            {**typo, "catalog_match_method": "jev_review"},
+            {"variant": "3.5g", "scraped_name": "Kush", "catalog_entry_id": None, "catalog_match_method": None}]
+    assert import_listings.assign_sizes(recs, catalogs) == 1
+    assert [r["size"] for r in recs] == ["100mg", "50mg", "3.5g"]
+    assert import_listings.assign_sizes([dict(recs[0])], {}) == 0      # --no-catalog: the store's size
+
+
 def test_substring_without_jev_is_recorded_but_not_overlaid(db, tmp_path):
     add_catalog(db, [{"name": "blue dream", "category": "flower", "strain": "Blue Dream",
                       "product_line": "Gold"}])

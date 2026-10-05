@@ -64,6 +64,21 @@ it. Catalog matching and the bootstrap compare sizes as numbers parsed by
 [`scripts/sizes.py`](scripts/sizes.py) (`5pk x 0.6g` = `3g`, `1/8 oz` = `3.5g`), so
 two spellings of one size never split a product.
 
+**A listing's size** has two columns. `variant` is the store's own size field, kept as
+typed: it is part of the row's key, and orders, purchases and lab reports hang off the
+row. `size` is what product pages and price comparisons group on
+(`Listing.product_size`; NULL reads as `variant`). The importer sets it to the store's
+size, or to the catalog's when a dose product (edible, tincture, topical) matched by
+`exact`, `jev` or `manual` states a size it does not come in, and the listing backs the
+catalog: its name or description states the catalog's total, or its figure is that
+size's per-piece dose (`catalog_match.catalog_size`). Camino's 100mg 20-pack listed as
+50mg ("100mg THC : 100mg CBD per package" in its description) and Ayrloom's 150mg drops
+listed as 600mg ("150mg THC : 450mg CBD" in the name) go back on their products' pages:
+68 listings on 2026-10-05, 31 of them a per-piece dose typed as the size. A weight that
+disagrees stays on its own page, because a 14g bag matched to its strain's 3.5g is more
+often a real size the catalog lacks. So does a listing that names another pack count (a
+2-pack beside the catalog's 5-pack).
+
 **Within enrichment**, each row is answered by the cheapest thing that can answer it
 ([`scripts/enrich.py`](scripts/enrich.py)):
 

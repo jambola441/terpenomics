@@ -26,9 +26,17 @@ from models import Dispensary, Listing
 
 # A product's identity, as the portal keys it everywhere else -- the five-part
 # key the product page is addressed by, plus the brand. Two rows matching on
-# all six are the same thing on two shelves.
-KEY_COLUMNS = ("scraped_category", "subtype", "product_line", "strain", "variant")
+# all six are the same thing on two shelves. The size is the product's size
+# (Listing.product_size), not the store's own `variant`: a store that typed 50mg
+# for Camino's 100mg 20-pack is still selling the 100mg 20-pack.
+KEY_COLUMNS = ("scraped_category", "subtype", "product_line", "strain", "size")
 IDENTITY_COLUMNS = KEY_COLUMNS + ("scraped_brand",)
+
+
+def _identity(listing, column):
+    if column == "size":
+        return func.coalesce(listing.size, listing.variant)
+    return getattr(listing, column)
 
 
 def same_product(mine, other) -> list:
@@ -40,7 +48,7 @@ def same_product(mine, other) -> list:
     to every other row including its own twin across town.
     """
     return [
-        func.coalesce(getattr(mine, column), "") == func.coalesce(getattr(other, column), "")
+        func.coalesce(_identity(mine, column), "") == func.coalesce(_identity(other, column), "")
         for column in IDENTITY_COLUMNS
     ]
 

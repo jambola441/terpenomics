@@ -50,6 +50,7 @@ def _serialize(listing: Listing, dispensary: Dispensary) -> dict:
         "product_line":     listing.product_line,
         "price_cents":      listing.price_cents,
         "variant":          listing.variant,
+        "size":             listing.product_size,
         "sku":              listing.sku,
         "url":              listing.url,
         "image_url":        listing.image_url,

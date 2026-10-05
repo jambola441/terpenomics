@@ -92,9 +92,10 @@ it. They are rules of thumb, not laws: a break is a question, and evidence answe
    filed under another name or line, or too few stores sell it for a bootstrap to keep.
    Leads: `missing-pair`.
 10. **Stores mistype sizes** (the user's find, 2026-10-05). A listing's size is the
-    store's own field, copied as typed, and product pages group on it, so a typo shows
-    as a product of its own even when the match is right. A size no product of the line
-    comes in, at one store, is usually one of these:
+    store's own field (`variant`), copied as typed. For a dose product matched with
+    trust, the importer puts the catalog's size in `size`, which product pages group on.
+    Any other typo shows as a product of its own even when the match is right. A size no
+    product of the line comes in, at one store, is usually one of these:
     - a mistyped unit: The Spot's STIIIZY 40's "5 x 0.9g ... (2.5g Pre-Roll Pack)" showed
       as 4.5g, where 40's come in 1g and 2.5g;
     - a cannabinoid sum or the CBD figure: Ayrloom's 150mg Everyday drops listed as
@@ -334,7 +335,7 @@ Fix at the source when three or more entries share a cause. Hand edits are for o
 | any: one brand's products inside another brand's catalog | a skip rule in the parent's recipe (or deactivations), plus a proposed name-based sub-brand rule at import, so stores' "Kiva - Camino ..." listings resolve to the sub-brand. `brand_aliases.json` alone cannot: it maps brand strings, not names |
 | any: products in the wrong category | admin edit of `category` (and subtype); if a recipe produced it, fix its `category` rule |
 | any: wrong size form | admin edit of `variant`; if a recipe produced it, fix the rule's size group |
-| any: a store mistyped a size (rule 10) | nothing in the catalog, which is right. The listing keeps the store's size on its product page until product pages group on a catalog size. Report the store and the size |
+| any: a store mistyped a size (rule 10) | nothing in the catalog, which is right. A dose product matched with trust already shows on its product's page (`listings.size`, `catalog_match.catalog_size`). A weight typo, or a review-only match, keeps its own page: report the store and the size |
 | any: a size 2+ stores agree on that the catalog lacks | it arrives by itself: a store-only size at the next storefront push, an entry at the next bootstrap rebuild. One store's bundle ("2PK 1G Pods") stays out on purpose |
 
 ### 6. Report
