@@ -948,7 +948,9 @@ class ReceiptSubmission(SQLModel, table=True):
     admin Receipts queue and enters the subtotal (before tax and tip). That
     amount earns points at the usual rate, as one `points_ledger` entry of kind
     "receipt" (`points_entry_id`). Those entries have no pos_order_id, so
-    connectors/points.py's reconcile never touches them.
+    connectors/points.py's reconcile never touches them. When the store's POS is
+    connected, the reviewer can instead approve by picking the matching synced
+    order (`pos_order_id`), which then earns like any matched order.
 
     The image is stored in the row, as lab reports store their PDFs. The portal
     shrinks photos before upload, so a receipt is typically a few hundred KB.
@@ -977,5 +979,18 @@ class ReceiptSubmission(SQLModel, table=True):
     reviewed_by:     Optional[str]      = Field(default=None, sa_type=Text)
     reviewed_at:     Optional[datetime] = Field(default=None, sa_column=_tz_column("reviewed_at"))
     reject_reason:   Optional[str]      = Field(default=None, sa_type=Text)
+    # Approved by matching a synced POS order: the order is claimed for the
+    # customer and earns through reconcile_points like any matched order, so
+    # there is no points_entry_id and no typed subtotal.
+    pos_order_id:    Optional[UUID]     = Field(default=None, foreign_key="pos_orders.id", index=True)
+
+    # Filled in by the receipt reader (connectors/receipt_reader.py, run from
+    # scripts/pos_sync.py): what Claude read off the photo, as suggestions.
+    image_sha256:  Optional[str]      = Field(default=None, sa_type=Text, index=True)
+    read_result:   Optional[dict]     = Field(default=None, sa_column=Column("read_result", _JSON, nullable=True))
+    read_model:    Optional[str]      = Field(default=None, sa_type=Text)
+    read_at:       Optional[datetime] = Field(default=None, sa_column=_tz_column("read_at"))
+    read_error:    Optional[str]      = Field(default=None, sa_type=Text)
+    read_attempts: int                = Field(default=0, nullable=False)
 
     created_at: datetime = Field(default_factory=utcnow_tz, sa_column=_tz_column("created_at", nullable=False, index=True))

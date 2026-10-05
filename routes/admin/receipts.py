@@ -1,9 +1,11 @@
 """Admin review queue for customer receipt uploads.
 
-A reviewer opens a pending receipt, reads the subtotal (before tax and tip)
-off the photo, confirms the store and date, and approves it, which awards
-points. Or rejects it with a reason the customer sees. Possible duplicates
-come with each receipt. See connectors/receipts.py.
+A reviewer opens a pending receipt and approves it, either by picking the
+synced POS order it matches (the order earns the points) or by confirming the
+subtotal (before tax and tip), store and date. Or rejects it with a reason the
+customer sees. Each receipt comes with what the receipt reader found (Claude's
+reading, matching POS orders, flags). See connectors/receipts.py and
+connectors/receipt_reader.py.
 """
 from __future__ import annotations
 
@@ -16,10 +18,10 @@ from pydantic import BaseModel, Field as PydField
 from sqlmodel import Session, func, select
 
 from auth import SupabaseAuthUser
-from connectors import receipts as svc
+from connectors import receipt_reader, receipts as svc
 from connectors.points import PENDING_DAYS, points_per_dollar
 from database import get_session
-from models import Customer, Partner, PointsEntry, ReceiptSubmission
+from models import Customer, Partner, ReceiptSubmission
 from routes.pos_common import iso
 from .auth import require_admin
 
@@ -43,6 +45,8 @@ def _summary(r: ReceiptSubmission, customer: Optional[Customer], partner: Option
         "reject_reason": r.reject_reason, "reviewed_by": r.reviewed_by,
         "reviewed_at": iso(r.reviewed_at), "created_at": iso(r.created_at),
         "image_content_type": r.image_content_type,
+        "pos_order_id": str(r.pos_order_id) if r.pos_order_id else None,
+        "read_status": "read" if r.read_result is not None else ("failed" if r.read_error else "pending"),
     }
 
 
@@ -65,19 +69,46 @@ def list_receipts(
         select(ReceiptSubmission.status, func.count()).group_by(ReceiptSubmission.status)
     ).all())
     stmt = (
-        select(ReceiptSubmission, Customer, Partner, PointsEntry.points)
+        select(ReceiptSubmission, Customer, Partner)
         .join(Customer, Customer.id == ReceiptSubmission.customer_id)
         .join(Partner, Partner.id == ReceiptSubmission.partner_id)
-        .join(PointsEntry, PointsEntry.id == ReceiptSubmission.points_entry_id, isouter=True)
     )
     if status != "all":
         stmt = stmt.where(ReceiptSubmission.status == status)
     # Oldest first while reviewing, so nobody waits longest; newest first otherwise.
     order = ReceiptSubmission.created_at.asc() if status == "pending" else ReceiptSubmission.created_at.desc()
     rows = session.exec(stmt.order_by(order).offset(offset).limit(limit)).all()
+    points = svc.receipt_points(session, [r for r, _, _ in rows])
     return {
         "counts": {k: counts.get(k, 0) for k in ("pending", "approved", "rejected")},
-        "items": [_summary(r, c, p, pts) for r, c, p, pts in rows],
+        "items": [_summary(r, c, p, points[r.id]) for r, c, p in rows],
+    }
+
+
+def _order_json(o) -> dict:
+    tenders = (o.raw or {}).get("tenders") or []
+    cards = [((t.get("card_details") or {}).get("card") or {}) for t in tenders if isinstance(t, dict)]
+    return {
+        "id": str(o.id), "ordered_at": iso(o.ordered_at), "total_cents": o.total_cents,
+        "tax_cents": o.tax_cents, "tip_cents": o.tip_cents,
+        "subtotal_cents": o.total_cents - o.tax_cents - o.tip_cents,
+        "cards": [f"{c.get('card_brand') or 'CARD'} {c.get('last_4')}" for c in cards if c.get("last_4")],
+    }
+
+
+def _candidate_json(c: dict) -> dict:
+    return {**_order_json(c["order"]), "score": c["score"], "signals": c["signals"],
+            "strength": c["strength"], "claimed": c["claimed"]}
+
+
+def _reading_json(session: Session, r: ReceiptSubmission) -> dict:
+    rv = receipt_reader.review(session, r)
+    return {
+        "read": rv["read"], "read_model": rv["read_model"], "read_at": iso(rv["read_at"]),
+        "read_error": rv["read_error"], "has_pos": rv["has_pos"],
+        "candidates": [_candidate_json(c) for c in rv["candidates"]],
+        "best_order_id": str(rv["best"]["order"].id) if rv["best"] else None,
+        "flags": rv["flags"], "suggestion": rv["suggestion"],
     }
 
 
@@ -88,7 +119,7 @@ def get_receipt(
     _: SupabaseAuthUser = Depends(require_admin),
 ):
     r = _get(session, receipt_id)
-    points = session.get(PointsEntry, r.points_entry_id).points if r.points_entry_id else None
+    points = svc.receipt_points(session, [r])[r.id]
     dupes = svc.possible_duplicates(session, r)
     partners = session.exec(select(Partner).order_by(Partner.name)).all()
     return {
@@ -109,6 +140,7 @@ def get_receipt(
              "same_customer": o.customer_id == r.customer_id, "matched": o.customer_id is not None}
             for o in dupes["orders"]
         ],
+        "reading": _reading_json(session, r),
     }
 
 
@@ -126,8 +158,10 @@ def receipt_image(
 
 
 class ApproveBody(BaseModel):
-    subtotal_cents: int = PydField(gt=0)
-    purchased_on: date
+    """Either the synced order the receipt matches, or a subtotal and date."""
+    pos_order_id: Optional[UUID] = None
+    subtotal_cents: Optional[int] = PydField(default=None, gt=0)
+    purchased_on: Optional[date] = None
     partner_id: Optional[UUID] = None
 
 
@@ -139,7 +173,8 @@ def _act(fn):
     try:
         return fn()
     except svc.ReceiptError as e:
-        raise HTTPException(409 if "already" in str(e) or "only an approved" in str(e) else 422, str(e))
+        msg = str(e)
+        raise HTTPException(409 if "already" in msg or "only an approved" in msg or "another customer" in msg else 422, msg)
 
 
 @router.post("/receipts/{receipt_id}/approve")
@@ -150,7 +185,12 @@ def approve_receipt(
     user: SupabaseAuthUser = Depends(require_admin),
 ):
     r = _get(session, receipt_id)
-    _act(lambda: svc.approve(session, r, body.subtotal_cents, body.purchased_on, body.partner_id, _reviewer(user)))
+    if body.pos_order_id:
+        _act(lambda: svc.approve_order(session, r, body.pos_order_id, _reviewer(user)))
+    elif body.subtotal_cents and body.purchased_on:
+        _act(lambda: svc.approve(session, r, body.subtotal_cents, body.purchased_on, body.partner_id, _reviewer(user)))
+    else:
+        raise HTTPException(422, "give the matching order, or the subtotal and purchase date")
     return get_receipt(receipt_id, session, user)
 
 

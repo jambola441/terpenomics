@@ -7,6 +7,8 @@ Runs every connection that is `active`, then the global passes:
     signed up after buying gets matched now)
   * purge contact details from orders unclaimed past the window
   * reconcile Terpee points with the orders (connectors/points.py)
+  * read newly uploaded receipts with Claude, as suggestions for the reviewer
+    (connectors/receipt_reader.py; skipped when ANTHROPIC_API_KEY is unset)
 
 Scheduled as a Render cron job (see scripts/render.yaml); safe to run by hand at
 the same time, since a connection that is already syncing is skipped.
@@ -15,6 +17,7 @@ Usage:
   python scripts/pos_sync.py                     # all active connections
   python scripts/pos_sync.py --connection <id>   # one connection
   python scripts/pos_sync.py --no-global         # skip re-match + purge
+  python scripts/pos_sync.py --no-receipts       # skip reading receipts
 
 Exit status is 1 if any connection failed, so the cron run shows red.
 """
@@ -32,6 +35,7 @@ from sqlmodel import Session  # noqa: E402
 
 from connectors.matching import purge_expired_contacts, rematch_window  # noqa: E402
 from connectors.points import reconcile_points  # noqa: E402
+from connectors.receipt_reader import read_pending  # noqa: E402
 from connectors.registry import get_connector  # noqa: E402
 from connectors.sync import active_connections, sync_connection  # noqa: E402
 from database import engine  # noqa: E402
@@ -44,6 +48,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="Sync partner POS orders")
     ap.add_argument("--connection", type=UUID, help="sync only this connection id")
     ap.add_argument("--no-global", action="store_true", help="skip the re-match, purge and points passes")
+    ap.add_argument("--no-receipts", action="store_true", help="skip reading uploaded receipts")
     args = ap.parse_args()
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -89,6 +94,14 @@ def main() -> int:
             entries = reconcile_points(session)
             session.commit()
             log.info("points: wrote %d ledger entr%s", entries, "y" if entries == 1 else "ies")
+
+        if not args.no_receipts:
+            if os.environ.get("ANTHROPIC_API_KEY"):
+                # Failures stay on the receipt for a person; they don't fail the run.
+                counts = read_pending(session)
+                log.info("receipts: read %(read)d, failed %(failed)d, skipped %(skipped)d", counts)
+            else:
+                log.info("receipts: not read (ANTHROPIC_API_KEY is not set)")
 
     return 1 if failed else 0
 

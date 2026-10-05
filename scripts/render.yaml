@@ -86,5 +86,7 @@ services:
         sync: false
       - key: SQUARE_ENVIRONMENT
         value: production
+      - key: ANTHROPIC_API_KEY
+        sync: false            # reads uploaded receipts; without it they're reviewed by hand
       - key: PYTHONUNBUFFERED
         value: "1"

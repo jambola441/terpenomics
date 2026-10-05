@@ -186,14 +186,43 @@ phone number, or the partner's POS isn't connected.
   before upload. The customer sees each receipt as In review,
   +N points, or Not approved with the reason.
 - **Reviewer** (`/admin/receipts`): the queue is oldest first. The reviewer
-  sees the photo, enters the subtotal before tax and tip, confirms or corrects
-  the store and date, and approves it, or rejects it with a reason. The next
-  pending receipt opens automatically.
+  sees the photo with what the reader found, and either approves it with the
+  matching Square sale, approves it by subtotal (pre-filled from the photo,
+  before tax and tip), or rejects it with a reason. The next pending receipt
+  opens automatically.
+- **Receipt reader** (`connectors/receipt_reader.py`, the last step of
+  `scripts/pos_sync.py`): Claude reads each new pending receipt once (store,
+  date, time, subtotal, tax, tip, total, card brand and last 4, receipt
+  number) and the reading is stored on the row. It only suggests; nothing is
+  approved automatically. Failures are recorded and retried up to 3 times;
+  HEIC photos and runs without `ANTHROPIC_API_KEY` are left for a person.
+  Text on a receipt is treated as data: the model fills a fixed schema, the
+  checks run in code, and a person approves.
+- **Matching against the POS** (computed each time the receipt is opened,
+  since the sale may sync after the receipt is read): the store's synced
+  sales around the purchase are scored on total (to the cent), card last 4,
+  printed time (in the store's timezone), subtotal, tax, and the printed
+  receipt number. The receipt number only supports a match: Square documents
+  it as up to 4 characters but not how it relates to the payment id (it is
+  commonly the id's first 4), so it never proves one alone. Flags: not a
+  receipt, illegible, wrong store, date differs from the customer's,
+  amounts don't add up, same photo uploaded before, no matching sale in
+  Square (or Square not synced that far yet), the sale already earned for
+  this customer (suggests rejecting) or for someone else.
+- **Approve with the sale** (`receipts.approve_order`): claims the order for
+  the customer (`claim_order`, `matched_via = receipt`) and records
+  `pos_order_id` on the receipt. Points then come from the order through
+  `reconcile_points`, from the POS's own amounts, so refunds and returns
+  adjust them, and a sale can only earn once (a second receipt, or a later
+  phone match, finds it taken). If the order has a Square customer, that
+  shopper's later orders at the store match automatically, like a phone
+  match. Voiding gives the order back and removes a link the receipt
+  created.
 - **Duplicate flags (not blocks):** the same customer's other receipts at that
   store within 2 days; synced orders at that store around the date,
   highlighted when already matched to this customer; purchase dates over 30
   days old.
-- **Points:** the subtotal × `POINTS_PER_DOLLAR`, rounded down, pending until
+- **Points (approved by subtotal):** the subtotal × `POINTS_PER_DOLLAR`, rounded down, pending until
   7 days after the purchase date. Recorded as one `points_ledger` entry of
   kind `receipt` with no `pos_order_id`, so `reconcile_points` never touches
   it. Voiding an approved receipt appends the opposite entry.
