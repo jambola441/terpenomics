@@ -355,8 +355,10 @@ def matched_subtype(entry: dict, name: str | None) -> str | None:
     this listing; the entry's subtype is a claim about the product, and a bootstrap
     built from model answers can get a format wrong. Used wherever a catalog identity
     is applied — enrichment's catalog-first step and the importer's overlay — so the
-    two never disagree.
+    two never disagree. None for a category that keeps no subtype (pre-roll).
     """
+    if not taxonomy.keeps_subtype(entry.get("category")):
+        return None
     return taxonomy.token_subtype(entry.get("category"), name) or entry.get("subtype")
 
 

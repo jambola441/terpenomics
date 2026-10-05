@@ -56,15 +56,15 @@ def test_pack_sizes_are_their_own_product():
     assert e["variant"] == "3g" and e["support"] == 2
 
 
-def test_a_counted_preroll_is_a_pack_not_a_single():
+def test_a_preroll_keeps_no_subtype():
+    # Pack, infused and single were three stores' opinions about one product.
     rows = [L("s1", "Doobies Blue Dream 2pk 1g", "Blue Dream", "Doobies", "2pk 1g", subtype="pack"),
-            L("s2", "Doobies | Blue Dream | 2pk", "Blue Dream", "Doobies", "2pk 1g", subtype="pack"),
+            L("s2", "Doobies | Blue Dream | 2pk | Infused", "Blue Dream", "Doobies", "2pk 1g"),
             L("s3", "x doobies blue dream 2 count net 1g", "Blue Dream", "Doobies", "2pk 1g",
               subtype="single")]
-    out = cb.propose("Ruby Farms", rows)
-    assert [(e["subtype"], e["variant"], e["support"]) for e in out["catalog"]["entries"]] == \
-        [("pack", "1g", 3)]
-    assert out["report"]["packs_relabeled"] == 1
+    [e] = cb.propose("Ruby Farms", rows)["catalog"]["entries"]
+    assert (e["subtype"], e["variant"], e["support"]) == (None, "1g", 3)
+    assert e["external_id"] == "lb:preroll::doobies:bluedream:1g"
 
 
 def test_totals_that_are_one_size_are_one_product():

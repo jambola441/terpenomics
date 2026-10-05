@@ -65,3 +65,17 @@ def test_one_answer_to_dose_versus_weight():
 
 def test_catalogs_cover_every_product_category():
     assert taxonomy.catalogable() == set(taxonomy.SPECS) - {"merch", "other"}
+
+
+def test_a_preroll_keeps_no_subtype():
+    import catalog_match
+    assert not taxonomy.keeps_subtype("preroll") and not taxonomy.keeps_subtype(" Preroll ")
+    assert all(taxonomy.keeps_subtype(c) for c in taxonomy.SPECS if c != "preroll")
+    assert taxonomy.keeps_subtype(None) and taxonomy.keeps_subtype("unknown")
+    # A format word in the name settles nothing for it either.
+    assert catalog_match.matched_subtype({"category": "preroll", "subtype": "pack"},
+                                         "Acme Blue Dream Infused 5pk") is None
+    assert catalog_match.matched_subtype({"category": "vaporizers", "subtype": "pod"},
+                                         "Acme Blue Dream Cart") == "cart"
+    # The classify prompt's rail is unchanged: a rail edit is a prompt edit.
+    assert taxonomy.rails()["preroll"] == ["single", "infused", "pack"]

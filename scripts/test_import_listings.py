@@ -255,6 +255,41 @@ def test_a_format_word_in_the_name_beats_the_entrys_subtype(db, tmp_path):
     assert r["catalog_match_method"] == "exact" and r["subtype"] == "cart"
 
 
+def test_a_preroll_keeps_no_subtype(db, tmp_path):
+    """Pass A still answers one, and an entry or a person may have given one before the
+    rule; none of them is written."""
+    import verification
+    add_catalog(db, [{"name": "acme blue dream 2pk", "category": "preroll", "subtype": "pack",
+                      "strain": "Blue Dream", "variant": "1g"}])
+    rows = [row("A", "Acme Blue Dream 2pk", category="preroll", subtype="infused", variant="1g",
+                strain="Blue Dream"),
+            row("B", "Acme OG Kush Infused", category="preroll", subtype="infused", variant="1g",
+                strain="OG Kush"),
+            row("C", "Acme OG Kush", strain="OG Kush")]
+    run(tmp_path, rows)
+    got = {r["sku"]: r for r in listings(db)}
+    assert got["A"]["catalog_match_method"] == "exact"
+    assert [got[k]["subtype"] for k in "ABC"] == [None, None, "flower"]
+    claim = verification.claim({"subtype": "infused"}, "Acme OG Kush Infused", "tester")
+    db.execute("UPDATE listings SET verified_fields=%s WHERE sku='B'", (psycopg2.extras.Json(claim),))
+    run(tmp_path, rows, name="2.csv")
+    assert {r["sku"]: r["subtype"] for r in listings(db)}["B"] is None
+
+
+def test_migration_0007_clears_stored_preroll_subtypes(db, tmp_path):
+    add_catalog(db, [{"name": "acme blue dream 2pk", "category": "preroll", "subtype": "pack"},
+                     {"name": "acme blue dream cart", "category": "vaporizers", "subtype": "cart"}])
+    run(tmp_path, [row("A", "Acme OG Kush Infused", category="preroll", variant="1g"),
+                   row("C", "Acme OG Kush")])
+    db.execute("UPDATE listings SET subtype = 'infused' WHERE sku = 'A'")   # stored before the rule
+    migration = Path(__file__).resolve().parent.parent / "db/migrations/0007_preroll_no_subtype.sql"
+    db.execute(migration.read_text())
+    db.execute(migration.read_text())                                       # idempotent
+    assert {r["sku"]: r["subtype"] for r in listings(db)} == {"A": None, "C": "flower"}
+    db.execute("SELECT category, subtype FROM brand_catalog_entries ORDER BY 1")
+    assert db.fetchall() == [("preroll", None), ("vaporizers", "cart")]
+
+
 def test_catalogs_load_over_database_url_when_rest_is_not_configured(db, monkeypatch):
     """The scrape worker has DATABASE_URL and no Supabase REST credentials."""
     import catalog_store

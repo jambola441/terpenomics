@@ -26,8 +26,9 @@ How a group is formed
              compared squashed ("FJ Mini" == "FJ-Mini" == "fj-mini"), a strain also
              with doubled letters collapsed ("Grand Daddy" == "Granddaddy" ==
              "Grandaddy"), size compared as the package total (sizes.py:
-             "5pk x 0.6g" == "3g"). A pre-roll that comes more than one to a package
-             is a pack, never a single.
+             "5pk x 0.6g" == "3g"). Subtype only where the category keeps one: a
+             pre-roll has none (taxonomy.keeps_subtype), so its single, pack and
+             infused listings of one strain and total are one product.
   sizes      groups of one product whose totals sizes.same_size calls equal merge:
              "7pk 4.9g" (7 x 0.7g) is the "7pk 5g" stores write.
   line fix   a group with no line folds into the one group that has the same
@@ -35,7 +36,8 @@ How a group is formed
              12% of the products view, removed by construction. A lined group too
              small to be an entry does not count against that "one".
   variant    for a category measured by weight (taxonomy.py), the package total
-             alone: "3.5g", not "7pk 3.5g", since the subtype already says pack.
+             alone: "3.5g", not "7pk 3.5g". Stores state the pack count unevenly, and
+             a listing keeps its own label; the entry's size is what identifies it.
              Dosed categories keep their pack ("20pk 100mg"): 10 x 10mg and 20 x 5mg
              gummies are different products with one total.
   support    distinct stores. Groups seen at fewer than --min-stores (default 2) are
@@ -194,18 +196,13 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
     # format word in the name beats the model's subtype here, as it does wherever a
     # catalog is applied (catalog_match.matched_subtype).
     groups: dict[tuple, Group] = {}
-    packs_relabeled = 0
     for l in rows:
         size = sizes.parse(l.get("variant"), l.get("name"), category=l.get("category"))
         l["_size_label"] = size.label()
         total = (f"{size.grams:g}g" if size.grams is not None
                  else f"{size.mg:g}mg" if size.mg is not None else "")
-        subtype = taxonomy.token_subtype(l["category"], l.get("name")) or l.get("subtype") or ""
-        # More than one to a package is a pack: a "2 count" the model called a single
-        # is the same product as the "2pk" next to it.
-        if l["category"] == "preroll" and subtype == "single" and (size.pack or 0) > 1:
-            subtype = "pack"
-            packs_relabeled += 1
+        subtype = ((taxonomy.token_subtype(l["category"], l.get("name")) or l.get("subtype") or "")
+                   if taxonomy.keeps_subtype(l["category"]) else "")
         key = (l["category"], subtype, strain_key(l["strain"]), squash(l.get("product_line")), total)
         groups.setdefault(key, Group(*key)).listings.append(l)
 
@@ -294,7 +291,7 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
     report = {
         "brand": brand, "listings": len(listings), "eligible": len(rows),
         "groups": len(groups), "line_splits_folded": folded, "strains_delined": delined,
-        "sizes_merged": sizes_merged, "packs_relabeled": packs_relabeled,
+        "sizes_merged": sizes_merged,
         "entries": len(entries), "listings_covered": kept_listings,
         "product_rows_before": before, "product_rows_after": after,
     }
