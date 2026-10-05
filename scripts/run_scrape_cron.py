@@ -13,9 +13,12 @@ needs but the orchestrator itself doesn't care about:
   * a non-zero exit code on failure, and an optional POST to ALERT_WEBHOOK_URL
     (Slack/Discord-style {"text": ...}) so a failed morning run is noticed the same
     morning rather than weeks later
+  * a pause switch: with PIPELINE_PAUSED set, a run logs, alerts and exits 0
+    without scraping
 
 One-off:        python scripts/run_scrape_cron.py
 Custom sweep:   SCRAPE_ARGS="--all --parallel --no-enrich" python scripts/run_scrape_cron.py
+Paused:         PIPELINE_PAUSED=1 python scripts/run_scrape_cron.py   (skips the run)
 
 The worker (scrape_worker.py) imports run_pipeline() and calls it on a schedule.
 """
@@ -49,6 +52,10 @@ DEFAULT_TIMEOUT_SEC = int(os.environ.get("SCRAPE_TIMEOUT_SEC", str(90 * 60)))
 
 # What to hand scrape.py. Override via env for a one-off (e.g. drop --parallel).
 SCRAPE_ARGS = os.environ.get("SCRAPE_ARGS", "--all --parallel")
+
+# The pause switch: set to anything but "", "0", "false" or "no" and runs are skipped.
+# Each skipped run still logs and alerts, so a pause that outlives its reason is noticed.
+PAUSE_ENV = "PIPELINE_PAUSED"
 
 log = logging.getLogger("scrape-cron")
 
@@ -115,12 +122,21 @@ def _read_summary() -> dict:
         return {}
 
 
+def paused() -> bool:
+    return os.environ.get(PAUSE_ENV, "").strip().lower() not in ("", "0", "false", "no")
+
+
 def run_pipeline(timeout: int = DEFAULT_TIMEOUT_SEC) -> int:
     """Run one full scrape -> enrich -> import sweep.
 
-    Returns a process-style exit code: 0 ok, 124 timeout, 75 lock contention
-    (transient — not recorded as a real run), non-zero otherwise.
+    Returns a process-style exit code: 0 ok (or paused), 124 timeout, 75 lock
+    contention (transient — not recorded as a real run), non-zero otherwise.
     """
+    if paused():
+        # Before the lock and the heartbeat: a skipped run leaves both as they were.
+        log.warning("%s=%s — run skipped; unset it to resume", PAUSE_ENV, os.environ[PAUSE_ENV])
+        _alert(f"terpenomics scrape skipped: {PAUSE_ENV} is set on the cron job")
+        return 0
     started = datetime.now(timezone.utc)
     cmd = [sys.executable, str(SCRIPTS / "scrape.py"), *shlex.split(SCRAPE_ARGS),
            "--summary", str(SUMMARY_FILE)]

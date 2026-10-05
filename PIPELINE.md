@@ -265,6 +265,11 @@ still imported — prices and stock refresh — but retires nothing, and it does
 the run, so a chronic one (Grow Together's Flowhub menu stalls near 810 of 861) cannot
 bury real failures.
 
+**Pausing.** Set `PIPELINE_PAUSED=1` on the cron job (Render → Environment) and each
+run logs, alerts and exits without scraping; set it to `0` to resume. Render's Suspend
+button works too, but the switch alerts on every skipped run, so a pause that outlives
+its reason gets noticed.
+
 ### Weekly, or after editing catalogs
 
 ```bash

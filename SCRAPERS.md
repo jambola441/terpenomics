@@ -130,7 +130,7 @@ for setup, what runs daily, what counts as a failure, and alerting.
 | File | Role |
 |---|---|
 | `scripts/scrape_worker.py` | Long-running loop for a background worker with a disk: sleeps until `SCRAPE_RUN_AT_ET` (default 09:00 ET), runs one sweep, repeats. The cron job does not use it. |
-| `scripts/run_scrape_cron.py` | One sweep: wraps `scrape.py` with an overlap lock, a whole-tree timeout, a heartbeat (`_cron_status.json`), a per-store summary (`_last_run.json`) and an optional `ALERT_WEBHOOK_URL`. |
+| `scripts/run_scrape_cron.py` | One sweep: wraps `scrape.py` with an overlap lock, a whole-tree timeout, a heartbeat (`_cron_status.json`), a per-store summary (`_last_run.json`), an optional `ALERT_WEBHOOK_URL` and a pause switch (`PIPELINE_PAUSED`). |
 | `scripts/render.yaml` | Reference spec for the cron job. No disk: the enrich cache lives in Postgres (`ENRICH_CACHE=db`). |
 
 ## Adding a new dispensary
