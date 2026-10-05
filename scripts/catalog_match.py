@@ -198,12 +198,21 @@ class CatalogIndex:
         self.terms = sorted(self.by_term, key=len, reverse=True)
 
     # -- disambiguation and size resolution --------------------------------------
-    def _disambiguate(self, keys: list[str], category: str | None) -> str | None:
+    def _disambiguate(self, keys: list[str], category: str | None,
+                      name: str | None = None) -> str | None:
         """Several products matched. Resolve only when it is genuinely safe.
 
         Titles repeat across categories — Ayrloom sells 'honeycrisp' as a vape and as
         a beverage. Category separates them; failing that the unique longest title
         wins; failing that, None rather than a guess.
+
+        The longest title is a fair pick between one product's titles read short and
+        long ("Blue Lobster", "Hash Infused Blue Lobster"), not between unrelated ones.
+        A store name (`name`, from the exact tier) recorded for products whose titles
+        share no such reading is a slip on all but one of them: Wyld's "Raspberry Sativa
+        Enhanced Gummies" sat on Boysenberry as well as Raspberry, and Boysenberry's
+        longer title took it. It goes to the one product whose title's words it holds,
+        else to none.
         """
         keys = list(dict.fromkeys(keys))
         if len(keys) == 1:
@@ -214,6 +223,11 @@ class CatalogIndex:
                 return on_cat[0]
             if on_cat:
                 keys = on_cat
+        if name is not None:
+            words = {k: set(norm_name(self.products[k].title).split()) for k in keys}
+            if not any(a != b and words[a] and words[a] <= words[b] for a in keys for b in keys):
+                named = [k for k in keys if words[k] and words[k] <= set(name.split())]
+                return named[0] if len(named) == 1 else None
         longest = max(len(norm_name(self.products[k].title)) for k in keys)
         top = [k for k in keys if len(norm_name(self.products[k].title)) == longest]
         if len(top) == 1:
@@ -254,7 +268,7 @@ class CatalogIndex:
         """
         for ln in dict.fromkeys((norm_name(name), strip_brand(name, self.brand_name))):
             if ln and ln in self.by_term:
-                chosen = self._disambiguate(self.by_term[ln], category)
+                chosen = self._disambiguate(self.by_term[ln], category, name=ln)
                 return (chosen, "exact") if chosen else (None, "ambiguous")
         return None, "none"
 

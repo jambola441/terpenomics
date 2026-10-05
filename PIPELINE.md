@@ -182,6 +182,14 @@ product a listing is.
 [`scripts/catalog_match.py`](scripts/catalog_match.py) resolves each listing:
 
 1. **exact** — its normalised name is a catalog title or a recorded store name. Free.
+   A name recorded for several products of the listing's category goes to the longest
+   title when the titles are one product's read short and long ("Blue Lobster", "Hash
+   Infused Blue Lobster"). Otherwise it goes to the one product whose title's words it
+   holds, or, when it names none or several, on to the shortlist and Jev. So a store's
+   slip recorded on an unrelated product beside the right one (Wyld's Raspberry name on
+   Boysenberry) does not move listings. A slip recorded on the wrong product alone still
+   does, as a recorded misspelling ("Mightnight Mint") must still match: the audit's
+   `STORE NAMES ON 2+ PRODUCTS` and `entries` views are where those show.
 2. **shortlist** — products ranked by token containment/overlap, filtered to the
    listing's category, softly to its subtype and size (a filter never empties the
    list on its own), with a hard veto when subtype *and* size both contradict.
