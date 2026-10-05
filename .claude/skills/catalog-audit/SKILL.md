@@ -91,6 +91,20 @@ it. They are rules of thumb, not laws: a break is a question, and evidence answe
    pair makes a strain with only one half of the pair stand out. The other half may be
    filed under another name or line, or too few stores sell it for a bootstrap to keep.
    Leads: `missing-pair`.
+10. **Stores mistype sizes** (the user's find, 2026-10-05). A listing's size is the
+    store's own field, copied as typed, and product pages group on it, so a typo shows
+    as a product of its own even when the match is right. A size no product of the line
+    comes in, at one store, is usually one of these:
+    - a mistyped unit: The Spot's STIIIZY 40's "5 x 0.9g ... (2.5g Pre-Roll Pack)" showed
+      as 4.5g, where 40's come in 1g and 2.5g;
+    - a cannabinoid sum or the CBD figure: Ayrloom's 150mg Everyday drops listed as
+      600mg (150mg THC + 450mg CBD) or 450mg;
+    - a per-piece dose typed as the size.
+
+    The listing's own name or description usually states the real size. A pack of a
+    size the line sells ("2PK 1G Pods") is a bundle, not a typo. Two or more stores
+    agreeing on a size nothing contradicts is probably a size the catalog lacks.
+    Leads: `listing-size`.
 
 **These rules grow.** When the user names another way brands do (or never do) things,
 add it here as a numbered rule. When an audit turns up a pattern worth checking every
@@ -209,6 +223,7 @@ is what you test. If you start from the leads you will only re-describe them.
 | `rare-format` | a format with 1-3 products beside a main format of 10+ (3 carts beside 37 pods) | does the brand sell it? Usually a format word misread from a menu |
 | `idle` | bootstrap entries no listing matches now | their support was stale, or their listings moved to another entry |
 | `inside-other-catalog` | another brand's catalog has a line named like this brand | `show` that brand: the same products under both? |
+| `listing-size` | listings whose size no product of the line comes in. "A store typo" when the listing's own name or description states a size the line sells; "a bundle" for a pack of a line size; "stores agree" when 2+ stores say it | `listings "<Brand>" "<strain>" --photos --descriptions`: the pack and the copy give the real size |
 
 Then look for what no lead catches:
 - the same concept modelled differently across categories;
@@ -302,6 +317,8 @@ Fix at the source when three or more entries share a cause. Hand edits are for o
 | any: one brand's products inside another brand's catalog | a skip rule in the parent's recipe (or deactivations), plus a proposed name-based sub-brand rule at import, so stores' "Kiva - Camino ..." listings resolve to the sub-brand. `brand_aliases.json` alone cannot: it maps brand strings, not names |
 | any: products in the wrong category | admin edit of `category` (and subtype); if a recipe produced it, fix its `category` rule |
 | any: wrong size form | admin edit of `variant`; if a recipe produced it, fix the rule's size group |
+| any: a store mistyped a size (`listing-size`, "a store typo") | nothing in the catalog, which is right. The listing keeps the store's size on its product page until product pages group on a catalog size. Report the store and the size |
+| any: a size 2+ stores agree on that the catalog lacks | it arrives by itself: a store-only size at the next storefront push, an entry at the next bootstrap rebuild. One store's bundle ("2PK 1G Pods") stays out on purpose |
 
 ### 6. Report
 
