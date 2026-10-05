@@ -12,7 +12,8 @@ recipe is written once — by an agent pass that studies the site, or by hand �
 from then on this script runs it with no model involved:
 
   source     where the products are (SOURCES): a Shopify store's /products.json, a
-             WooCommerce Store API
+             WooCommerce Store API, a WordPress post type, product cards in a page's
+             HTML (CSS selectors), or JSON — an API, or a blob a page embeds
   skip       what is not a product we model: apparel, gift cards, bundles
   category   the site's own fields (product_type, tags, title...) -> our category,
              and a subtype where the site says one the title does not
@@ -22,8 +23,11 @@ from then on this script runs it with no model involved:
 
 Each list is tried in order and the first rule that matches wins. A rule's `when`
 holds regexes (re.search) over the product's fields: title, product_type, tags,
-vendor, url, body, variant — and, for a title rule, the category just decided. A
-title rule's `match` is tried against the title.
+vendor, url, body, variant, meta (a source's structured extras as JSON text: SKU,
+options, custom fields) — and, for a title rule, the category just decided. A title
+rule's `match` is tried against the title; its `extract` adds groups found in other
+fields, for a site that keeps the size in the description ("SIZE: 10CT STRENGTH:
+100MG"). Groups: line, strain, size, size2 (read together with size).
 
 Size and subtype come from the shared readers (sizes.py, taxonomy.token_subtype)
 unless a rule sets them, so a storefront entry is written the way a bootstrap entry
@@ -94,7 +98,8 @@ RECIPE_DIR = ROOT / "data" / "storefronts"
 CATALOG_DIR = ROOT / "data" / "catalogs"
 TIMEOUT_SECONDS = 30
 USER_AGENT = "Mozilla/5.0 (compatible; terpenomics-catalog/1.0)"
-FIELDS = ("title", "product_type", "tags", "vendor", "url", "body", "variant")
+FIELDS = ("title", "product_type", "tags", "vendor", "url", "body", "variant", "meta")
+GROUPS = {"line", "strain", "size", "size2"}
 TITLE_FIELDS = FIELDS + ("category",)
 SET_KEYS = {"category", "subtype", "line", "strain", "size"}
 MAX_UNPARSED = 0.10
@@ -115,11 +120,22 @@ class Item:
 
 # --------------------------------------------------------------------------- sources
 
-def _get_json(url: str):
-    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT,
-                                               "Accept": "application/json"})
+def _get_text(url: str, post: str | None = None) -> str:
+    """The body at `url` as text. Some hosts send gzip whether or not it was asked for
+    (Webflow's page data), so the magic bytes decide, not the headers."""
+    import gzip
+    req = urllib.request.Request(url, data=post.encode() if post is not None else None, headers={
+        "User-Agent": USER_AGENT, "Accept": "application/json, text/html;q=0.9, */*;q=0.8",
+        **({"Content-Type": "application/x-www-form-urlencoded"} if post is not None else {})})
     with urllib.request.urlopen(req, timeout=TIMEOUT_SECONDS) as r:
-        return json.loads(r.read().decode("utf-8"))
+        body = r.read()
+    if body[:2] == b"\x1f\x8b":
+        body = gzip.decompress(body)
+    return body.decode("utf-8", errors="replace")
+
+
+def _get_json(url: str):
+    return json.loads(_get_text(url))
 
 
 def _text(fragment: str | None) -> str:
@@ -155,8 +171,9 @@ def shopify(source: dict, get=_get_json) -> list[Item]:
                     "body": _text(p.get("body_html"))[:2000]}
             for v in p.get("variants") or [{"id": p.get("id")}]:
                 label = _variant_label(v.get("title"))
+                meta = json.dumps({"sku": v.get("sku"), "options": [v.get(f"option{i}") for i in (1, 2, 3)]})
                 items.append(Item(str(v.get("id")), base["title"], label,
-                                  {**base, "variant": label or ""}))
+                                  {**base, "variant": label or "", "meta": meta}))
         if len(products) < 250:
             break
     return items
@@ -174,7 +191,8 @@ def woocommerce(source: dict, get=_get_json) -> list[Item]:
                     "tags": ", ".join(_text(t.get("name")) for t in p.get("tags") or []),
                     "vendor": "",
                     "url": p.get("permalink") or "",
-                    "body": _text(f"{p.get('short_description') or ''} {p.get('description') or ''}")[:2000]}
+                    "body": _text(f"{p.get('short_description') or ''} {p.get('description') or ''}")[:2000],
+                    "meta": json.dumps({"sku": p.get("sku"), "attributes": p.get("attributes")})}
             variations = p.get("variations") or []
             for v in variations:
                 label = " / ".join(a.get("value") or "" for a in v.get("attributes") or []) or None
@@ -186,10 +204,151 @@ def woocommerce(source: dict, get=_get_json) -> list[Item]:
     return items
 
 
+def wordpress(source: dict, get=_get_json) -> list[Item]:
+    """A WordPress post type over the REST API (/wp-json/wp/v2/<type>), 100 a page, with
+    `_embed` so each post's taxonomy terms come with their names (tags). class_list —
+    the term slugs WordPress puts on the post — is product_type; custom fields (ACF)
+    are meta."""
+    import urllib.error
+    items = []
+    for page in range(1, 101):
+        try:
+            posts = get(_page(source["url"], per_page=100, page=page, _embed=1)) or []
+        except urllib.error.HTTPError as e:
+            if e.code == 400 and page > 1:     # past the last page
+                break
+            raise
+        for p in posts:
+            classes = p.get("class_list") or []
+            classes = list(classes.values()) if isinstance(classes, dict) else classes
+            terms = [t.get("name") or "" for group in (p.get("_embedded") or {}).get("wp:term") or []
+                     for t in group or []]
+            title = _text((p.get("title") or {}).get("rendered"))
+            items.append(Item(str(p.get("id")), title, None, {
+                "title": title, "product_type": " ".join(classes),
+                "tags": ", ".join(_text(t) for t in terms if t), "vendor": "", "url": p.get("link") or "",
+                "body": _text(f"{(p.get('content') or {}).get('rendered') or ''} "
+                              f"{(p.get('excerpt') or {}).get('rendered') or ''}")[:2000],
+                "variant": "", "meta": json.dumps(p.get("acf") or p.get("meta") or {})}))
+        if len(posts) < 100:
+            break
+    return items
+
+
+def _pages(source: dict, get_text=_get_text) -> list[tuple[str, str]]:
+    """(url, text) for every page a source names: `url` alone; `url` with `pages`
+    ({"param": "page", "from": 1, "to": 15}, stopping at the first empty page is the
+    caller's business); `urls`; or `sitemap` ({"url": ..., "match": regex}) for a site
+    whose products are each on their own page."""
+    post = source.get("post")
+    if source.get("sitemap"):
+        sm = source["sitemap"]
+        urls = [u for u in re.findall(r"<loc>\s*([^<\s]+)\s*</loc>", get_text(sm["url"]))
+                if re.search(sm.get("match") or "", u)]
+    elif source.get("pages"):
+        pg = source["pages"]
+        urls = [_page(source["url"], **{pg["param"]: n}) for n in range(pg.get("from", 1), pg["to"] + 1)]
+    else:
+        urls = source.get("urls") or [source["url"]]
+    return [(u, get_text(u, post)) for u in urls]
+
+
+def _css(node, spec: str) -> str:
+    """One field from a node: "h3", "a@href", "@data-category", "." for the node's own
+    text. Several matches are joined with " | "."""
+    sel, _, attr = spec.partition("@")
+    found = [node] if sel.strip() in ("", ".") else node.select(sel)
+    vals = [(n.get(attr) or "") if attr else n.get_text(" ", strip=True) for n in found]
+    vals = [" ".join(v) if isinstance(v, list) else v for v in vals]
+    return " | ".join(v.strip() for v in vals if v and v.strip())
+
+
+def html_cards(source: dict, get_text=_get_text) -> list[Item]:
+    """Product cards in a page's HTML: `item` is a CSS selector for one product (the
+    whole page when absent, as on a sitemap of product pages), `fields` maps our
+    fields to selectors within it. A paged listing stops at its first empty page."""
+    from bs4 import BeautifulSoup
+    items, spec = [], source["fields"]
+    for url, text in _pages(source, get_text):
+        soup = BeautifulSoup(text, "html.parser")
+        cards = soup.select(source["item"]) if source.get("item") else [soup]
+        if not cards and source.get("pages"):
+            break
+        for card in cards:
+            f = {k: _css(card, sel) for k, sel in spec.items()}
+            if f.get("url"):
+                f["url"] = urllib.parse.urljoin(url, f["url"])
+            title = f.get("title") or ""
+            if title:
+                items.append(Item(f.get("id") or f.get("url") or squash(title), title,
+                                  f.get("variant") or None, {**{k: "" for k in FIELDS}, **f}))
+    return items
+
+
+def _at(node, path: str):
+    """A dot path into parsed JSON; "*" fans out over a list or a dict's values."""
+    nodes = [node]
+    for key in [k for k in path.split(".") if k]:
+        nxt = []
+        for n in nodes:
+            if key == "*":
+                nxt += list(n.values()) if isinstance(n, dict) else list(n) if isinstance(n, list) else []
+            elif isinstance(n, dict) and key in n:
+                nxt.append(n[key])
+            elif isinstance(n, list) and key.isdigit() and int(key) < len(n):
+                nxt.append(n[int(key)])
+        nodes = nxt
+    return nodes
+
+
+def _flat(values) -> str:
+    out = []
+    for v in values:
+        if isinstance(v, list):
+            out.append(_flat(v))
+        elif isinstance(v, dict):
+            out.append(json.dumps(v))
+        elif v is not None:
+            out.append(_text(str(v)))
+    return ", ".join(x for x in out if x)
+
+
+def json_items(source: dict, get_text=_get_text) -> list[Item]:
+    """Products in JSON: an API (a Gatsby page-data file, a headless CMS query) or a
+    blob a page embeds, pulled out by `extract` (a regex whose first group is the
+    JSON). `lenient` parses a JavaScript object literal (unquoted keys) with json5.
+    `items` is the dot path to the products; `fields` maps our fields to dot paths
+    within one."""
+    items, spec = [], source["fields"]
+    for url, text in _pages(source, get_text):
+        if source.get("extract"):
+            m = re.search(source["extract"], text, re.S)
+            if not m:
+                raise ValueError(f"{url}: extract pattern found nothing")
+            text = m.group(1)
+        if source.get("lenient"):
+            import json5
+            data = json5.loads(text)
+        else:
+            data = json.loads(text)
+        for node in _at(data, source["items"]):
+            f = {k: _flat(_at(node, path)) for k, path in spec.items()}
+            if f.get("url"):
+                f["url"] = urllib.parse.urljoin(url, f["url"])
+            title = f.get("title") or ""
+            if title:
+                items.append(Item(f.get("id") or f.get("url") or squash(title), title,
+                                  f.get("variant") or None, {**{k: "" for k in FIELDS}, **f}))
+    return items
+
+
 # kind -> (reader, the catalog's source_method)
 SOURCES = {
     "shopify_json": (shopify, "shopify_products_json"),
     "wc_store_api": (woocommerce, "wc_store_api"),
+    "wp_json": (wordpress, "wp_json"),
+    "html": (html_cards, "storefront_html"),
+    "json": (json_items, "storefront_json"),
 }
 
 
@@ -221,8 +380,16 @@ def validate(recipe: dict, where: str = "recipe") -> dict:
     kind = (recipe.get("source") or {}).get("kind")
     if kind not in SOURCES:
         bad(f"source.kind {kind!r} is not one of {sorted(SOURCES)}")
-    if not recipe["source"].get("url"):
-        bad("source.url missing")
+    src = recipe["source"]
+    if not (src.get("url") or src.get("urls") or src.get("sitemap")):
+        bad("source needs url, urls or sitemap")
+    if kind in ("html", "json") and not (src.get("fields") or {}).get("title"):
+        bad(f"source.fields.title is required for {kind}")
+    if kind == "json" and not src.get("items"):
+        bad("source.items (the dot path to the products) is required for json")
+    unknown = set(src.get("fields") or {}) - set(FIELDS) - {"id"}
+    if unknown:
+        bad(f"source.fields: unknown fields {sorted(unknown)} (fields: id, {', '.join(FIELDS)})")
     for section in ("skip", "category", "title"):
         fields = TITLE_FIELDS if section == "title" else FIELDS
         for i, rule in enumerate(recipe.get(section) or []):
@@ -241,12 +408,17 @@ def validate(recipe: dict, where: str = "recipe") -> dict:
         if cat not in taxonomy.SPECS:
             bad(f"category[{i}]: category {cat!r} is not one of {sorted(taxonomy.SPECS)}")
     for i, rule in enumerate(recipe.get("title") or []):
-        try:
-            names = set(re.compile(rule.get("match") or "").groupindex)
-        except re.error as e:
-            bad(f"title[{i}].match: {e}")
-        if names - {"line", "strain", "size"}:
-            bad(f"title[{i}].match: groups other than line/strain/size: {sorted(names)}")
+        patterns = {"match": rule.get("match") or "",
+                    **{f"extract.{f}": p for f, p in (rule.get("extract") or {}).items()}}
+        for where_, pattern in patterns.items():
+            if where_.startswith("extract.") and where_[8:] not in FIELDS:
+                bad(f"title[{i}].{where_}: unknown field")
+            try:
+                names = set(re.compile(pattern).groupindex)
+            except re.error as e:
+                bad(f"title[{i}].{where_}: {e}")
+            if names - GROUPS:
+                bad(f"title[{i}].{where_}: groups other than {'/'.join(sorted(GROUPS))}: {sorted(names)}")
     return recipe
 
 
@@ -308,9 +480,12 @@ def build(recipe: dict, items: list[Item]) -> tuple[dict, dict]:
             continue
         consts = {**crule.get("set", {}), **trule.get("set", {})}
         got = {k: v for k, v in m.groupdict().items() if v}
+        for f, pattern in (trule.get("extract") or {}).items():
+            if (em := re.search(pattern, fields.get(f) or "")):
+                got = {**{k: v for k, v in em.groupdict().items() if v}, **got}
         line = _clean(got.get("line") or consts.get("line"))
         strain = _clean(got.get("strain") or consts.get("strain"))
-        stated = got.get("size") or consts.get("size")
+        stated = " ".join(x for x in (got.get("size"), got.get("size2")) if x) or consts.get("size")
         spec = taxonomy.SPECS[category]
         size = sizes.parse(*([stated] if stated else [it.variant, it.title]), category=category)
         subtype = consts.get("subtype") or taxonomy.token_subtype(category, it.title) \

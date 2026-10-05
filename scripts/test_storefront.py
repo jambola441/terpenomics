@@ -180,3 +180,51 @@ def test_every_recipe_in_the_repo_loads():
     assert {storefront.recipe_path(r["brand"]).name for r in recipes} == \
         {p.name for p in storefront.RECIPE_DIR.glob("*.json")}
     json.dumps(recipes)                                              # plain data throughout
+
+
+def test_wordpress_posts_with_embedded_terms():
+    page = [{"id": 7, "title": {"rendered": "Mango Haze &#8211; 2G Palm"}, "link": "https://hk.example/p/7",
+             "content": {"rendered": "<p>WEIGHT: 2g</p>"}, "excerpt": {"rendered": ""},
+             "class_list": ["post-7", "product_cat-palms"], "acf": {"weight": "2g"},
+             "_embedded": {"wp:term": [[{"name": "Palms"}], [{"name": "Sativa"}]]}}]
+    items = storefront.wordpress({"url": "https://hk.example/wp-json/wp/v2/product"}, get=lambda u: page if "page=1" in u else [])
+    [it] = items
+    assert it.title == "Mango Haze – 2G Palm" and it.fields["tags"] == "Palms, Sativa"
+    assert it.fields["product_type"] == "post-7 product_cat-palms" and json.loads(it.fields["meta"]) == {"weight": "2g"}
+
+
+def test_html_cards_across_pages_stop_at_the_first_empty_one():
+    card = '<div class="card"><a href="/p/{n}"><h3>{t}</h3></a><span class="cat">Pre-Roll</span></div>'
+    pages = {"page=1": "".join(card.format(n=i, t=f"Strain {i} | 1g") for i in range(3)),
+             "page=2": card.format(n=9, t="Strain 9 | 1g"),
+             "page=3": "<p>nothing</p>"}
+    src = {"kind": "html", "url": "https://x.example/products", "pages": {"param": "page", "from": 1, "to": 5},
+           "item": "div.card", "fields": {"title": "h3", "url": "a@href", "product_type": ".cat"}}
+    items = storefront.html_cards(src, get_text=lambda url, post=None: next(
+        (t for k, t in pages.items() if k in url), ""))
+    assert [i.title for i in items] == ["Strain 0 | 1g", "Strain 1 | 1g", "Strain 2 | 1g", "Strain 9 | 1g"]
+    assert items[0].id == "https://x.example/p/0" and items[0].fields["product_type"] == "Pre-Roll"
+
+
+def test_json_from_a_blob_a_page_embeds_lenient():
+    page = '<script>window.catalog = {products: [{name: "Afghani", line: "FJ-Mini", size: "0.6g"},' \
+           ' {name: "", line: "x"}]};</script>'
+    src = {"kind": "json", "url": "https://j.example/", "extract": r"window\.catalog = (\{.*?\});",
+           "lenient": True, "items": "products.*",
+           "fields": {"title": "name", "product_type": "line", "variant": "size"}}
+    pytest.importorskip("json5")
+    [it] = storefront.json_items(src, get_text=lambda url, post=None: page)
+    assert (it.title, it.variant, it.fields["product_type"]) == ("Afghani", "0.6g", "FJ-Mini")
+
+
+def test_extract_reads_a_size_from_the_description():
+    recipe = storefront.validate({
+        "brand": "Off Hours", "source": {"kind": "shopify_json", "url": "https://oh.example/products.json"},
+        "category": [{"set": {"category": "edible", "subtype": "gummy"}}],
+        "title": [{"match": "^(?P<line>\\w+) (?P<strain>.+) Gummies$",
+                   "extract": {"body": "SIZE:\\s*(?P<size>\\d+\\s*CT)\\s+STRENGTH:\\s*(?P<size2>\\d+\\s*MG)"}}]})
+    items = storefront.shopify(recipe["source"], get=fake_get([{"products": [
+        dict(product(1, "Offline Grape Punch Gummies"), body_html="<p>SIZE: 10CT STRENGTH: 100MG THC</p>")]}]))
+    doc, report = storefront.build(recipe, items)
+    [e] = doc["entries"]
+    assert (e["product_line"], e["strain"], e["variant"]) == ("Offline", "Grape Punch", "10pk 100mg")
