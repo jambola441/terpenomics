@@ -150,8 +150,12 @@ assert set(CATEGORY_ORDER) == set(SPECS) == set(RAIL_ORDER) == set(RULES_ORDER)
 SUBTYPE_TOKENS: dict[str, dict[str, re.Pattern]] = {
     "vaporizers": {
         "all-in-one": re.compile(r"\ball[\s-]*in[\s-]*one\b|\baio\b|\bdisposable\b", re.I),
+        # Before cart: a pod is the specific word, and menus add the generic one beside
+        # it ("Liquid Diamonds Pod (Vape Cartridge)", Rove's "Reload Pod", Select's "Cliq
+        # Pod Cartridge"). 31 such listings read as carts, and 50 more saying "Pods"
+        # read as nothing, until 2026-10-05.
+        "pod": re.compile(r"\bpods?\b", re.I),
         "cart": re.compile(r"\b(cart|510|cartridge|preload|reload)\b", re.I),
-        "pod": re.compile(r"\bpod\b", re.I),
         "battery": re.compile(r"\b(battery|starter\s*kit)\b", re.I),
     },
     "edible": {

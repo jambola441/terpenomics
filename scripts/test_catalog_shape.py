@@ -66,10 +66,12 @@ def test_lineless_products_beside_lines():
                 entry(None, "Live Resin Haze", "vaporizers", "cart", "1g")]
     found = cs.leads(cs.products(entries))
     assert "mixed-lines" in kinds(found)
-    strays = texts(found, "stray")
-    assert any('same strain as a product in "Live Resin": Gelato' in t for t in strays)
-    assert any('say "Live Resin": Mimosa 2/3' in t for t in strays)
-    assert any("Live Resin Haze" in t for t in texts(found, "line-in-strain"))
+    # A strain sold plain and in a line is two products, not a stray; store names decide.
+    assert texts(found, "stray") == ['no line, but most of their store names say "Live Resin": Mimosa 1g 2/3']
+    assert texts(found, "line-in-strain") == ['"Live Resin Haze" has no line but its strain contains '
+                                              'line "Live Resin"']
+    # A storefront's unnamed range is the site's own naming.
+    assert "mixed-lines" not in kinds(cs.leads(cs.products(entries), storefront=True))
 
 
 def test_line_words_similar_lines_but_not_resin_and_rosin():
@@ -98,8 +100,9 @@ def test_near_duplicates_only_within_a_line():
                          "Go", "On", "Gelato 33", "Gelato 41")]
     entries += [entry("Live Resin", "Skywalker", "vaporizers", "pod", "1g")]
     dups = texts(cs.leads(cs.products(entries)), "near-dup")
-    assert sorted(dups) == ['"Original Grand Daddy Purple" and "Original Granddaddy Purple" may be one product',
-                            '"Original Skywalker" and "Original Skywalker OG" may be one product']
+    assert sorted(dups) == [
+        '"Original Grand Daddy Purple" [pod] and "Original Granddaddy Purple" [pod] may be one product',
+        '"Original Skywalker" [pod] and "Original Skywalker OG" [pod] may be one product']
 
 
 def test_sizes_missing_implausible_or_written_two_ways():
@@ -157,7 +160,8 @@ def test_render_listings_groups_by_name_and_filters_unmatched():
          "catalog_match_method": None},
     ]
     text = cs.render_listings(listings, [e], "(?i)peach")
-    assert "    2  Sours Peach 10pk  · edible · 100mg · Sours / Peach → Sours Peach 10pk 100mg (exact)" in text
+    assert ("    2  Sours Peach 10pk  · edible · 100mg · Sours / Peach → Sours Peach 10pk 100mg [gummy] "
+            "(exact)") in text
     unmatched = cs.render_listings(listings, [e], None, unmatched=True)
     assert "Peach Rings" in unmatched and "Sours Peach 10pk" not in unmatched
 
@@ -172,3 +176,150 @@ def test_render_triage_ranks_catalogs_by_leads():
     rows = text.splitlines()[1:]
     assert rows[0].split()[1] == "Messy" and rows[1].split()[1] == "Tidy"
     assert rows[1].split()[0] == "0"
+
+
+def test_a_line_in_two_categories_is_flagged_where_it_is_smaller():
+    entries = [entry("Live Rosin", s) for s in ("Peach", "Lime", "Kiwi", "Plum")]
+    entries += [entry("Live Rosin", "Guava", "vaporizers", "all-in-one", "0.5g")]
+    entries += [entry("Sours", s) for s in ("Cherry", "Grape", "Mango")]
+    found = cs.leads(cs.products(entries))
+    crossing = [(l.category, l.text) for l in found if l.kind == "cross-category"]
+    assert crossing == [("vaporizers", 'line "Live Rosin" (Guava) is also a line in edible (4)')]
+
+
+def test_a_line_named_like_another_brand():
+    entries = [entry("Camino", s) for s in ("Peach", "Lime", "Kiwi")]
+    found = cs.leads(cs.products(entries), other_brands={"camino": "Camino"})
+    assert any("Camino, a brand with its own catalog" in t for t in texts(found, "line-is-brand"))
+    catalogs = [{"id": "k", "brand_name": "Kiva"}, {"id": "c", "brand_name": "Camino"},
+                {"id": "f", "brand_name": "Flav"}]
+    assert cs.brands_but(catalogs, catalogs[0]) == {"camino": "Camino", "flav": "Flav"}
+
+
+def test_a_line_inside_a_strain_is_one_lead_and_not_strain_noise():
+    entries = [entry("Live Resin Infused", s, "preroll", None, "2.5g") for s in ("Kush", "Haze", "Runtz")]
+    entries += [entry("Live Resin", s, "vaporizers", "cart", "1g") for s in ("Kush", "Haze", "Runtz")]
+    entries += [entry(None, "Live Resin Infused Super Bud", "preroll", None, "2.5g")]
+    found = cs.leads(cs.products(entries))
+    assert texts(found, "line-in-strain") == ['"Live Resin Infused Super Bud" has no line but its strain '
+                                              'contains line "Live Resin Infused"']
+    assert texts(found, "strain-word") == []
+
+
+def test_a_size_that_belongs_to_another_line():
+    entries = [entry("Live Resin Infused", s, "preroll", None, v)
+               for s in ("Kush", "Haze", "Runtz", "Mints") for v in ("1g", "2.5g")]
+    entries += [entry(None, s, "preroll", None, v)
+                for s in ("Kush", "Haze", "Runtz", "Mints", "Zkittlez", "Gelato", "Diesel", "Cookies",
+                          "Mango", "Lemon") for v in ("1g", "3.5g")]
+    entries += [entry(None, "Biscotti", "preroll", None, "2.5g")]
+    found = texts(cs.leads(cs.products(entries)), "size-of-other-line")
+    assert found == ['Biscotti (no line) 2.5g: the size of "Live Resin Infused" (4 of 4), rare in the '
+                     'line-less group (1 of 11)']
+
+
+def test_a_store_only_size_beside_an_idle_site_product_may_be_a_rename():
+    site = [entry(None, s, "vaporizers", "cart", "1g", source="shopify_products_json")
+            for s in ("GG4", "Blue Dream", "Gelato")]
+    store = [entry(None, "Gorilla Glue", "vaporizers", "cart", "1g", support=3)]
+    listings = [{"catalog_entry_id": e["id"], "dispensary_id": f"d{i}"}
+                for i, e in enumerate([site[1], site[2], store[0], store[0]])]
+    found = cs.leads(cs.products(site + store, listings), storefront=True)
+    assert texts(found, "orphan-site") == [
+        'store-only "Gorilla Glue" [cart] 1g (2 listings) sits beside site products of its shape that '
+        'no listing matched: GG4; renamed on the site?']
+
+
+def test_store_only_sizes_are_marked_in_show():
+    catalog = {"id": "c1", "brand_name": "Acme", "brand_slug": "acme", "source_method": "shopify_products_json",
+               "fetched_at": "2026-10-05T05:00:00Z", "source_url": "https://acme.example"}
+    entries = [entry(None, "Biscotti", "preroll", None, "1g", source="shopify_products_json"),
+               entry(None, "Biscotti", "preroll", None, "2.5g")]
+    text = cs.render_show(catalog, entries, [], {})
+    assert "1g 2.5g*" in text
+
+
+def test_listings_flag_a_size_that_differs_from_the_entry():
+    e = entry("Core", "Kush", "preroll", None, "1g")
+    listing = {"id": "l1", "dispensary_id": "d1", "scraped_name": "Kush Pre-Roll Pack 7pk",
+               "scraped_category": "preroll", "variant": "3.5g", "product_line": "Core", "strain": "Kush",
+               "catalog_entry_id": e["id"], "catalog_match_method": "jev_review"}
+    assert "(jev_review, SIZE DIFFERS)" in cs.render_listings([listing], [e], None)
+
+
+def test_a_strain_with_half_of_a_format_pair():
+    # Florist Farms sells each classic vape strain as a 1g cart and a 1g all-in-one.
+    entries = [entry(None, st, "vaporizers", sub, "1g")
+               for st in ("Blue Dream", "Gelato", "Jack Herer", "Green Crack") for sub in ("cart", "all-in-one")]
+    entries += [entry(None, "GG4", "vaporizers", "cart", "1g")]
+    found = cs.leads(cs.products(entries))
+    assert texts(found, "missing-pair") == [
+        "line-less range sells 4 of 5 strains as all-in-one + cart; only one of the pair: GG4 [cart]"]
+    assert "near-dup" not in kinds(found) and "store-copy" not in kinds(found)
+
+
+def test_a_lines_other_size_filed_without_it():
+    entries = [entry("40's", s, "preroll", None, v) for s, v in
+               (("Biscotti", "2.5g"), ("Gelato", "1g"), ("Gelato", "2.5g"), ("Runtz", "1g"))]
+    entries += [entry(None, "Biscotti", "preroll", None, "1g"),     # 40's has only its 2.5g
+                entry(None, "Runtz", "preroll", None, "1g")]        # same size as 40's Runtz: two products
+    found = texts(cs.leads(cs.products(entries)), "split-size")
+    assert found == ['"Biscotti" 1g has no line; "40\'s Biscotti" comes only in 2.5g. The line\'s other size?']
+
+
+def test_store_names_are_compared_normalised():
+    # Match terms are stored normalised: "40's" arrives as "40 s".
+    entries = [entry("40's", s, "preroll", None, "1g") for s in ("Gelato", "Runtz", "Zkittlez")]
+    entries += [entry(None, "Orange Sunset", "preroll", None, "1g",
+                      terms=("orange sunset 40 s infused pre roll 1g", "40 s orange sunset", "orange sunset"))]
+    assert texts(cs.leads(cs.products(entries)), "stray") == [
+        'no line, but most of their store names say "40\'s": Orange Sunset 1g 2/3']
+
+
+def test_mixed_lines_per_format_rare_format_and_idle():
+    pods = [entry("Original" if i < 2 else None, f"Strain {i}", "vaporizers", "pod", "1g") for i in range(12)]
+    carts = [entry(None, "Tahoe OG", "vaporizers", "cart", "1g")]
+    prods = cs.products(pods + carts, [{"catalog_entry_id": pods[0]["id"], "dispensary_id": "d1"}])
+    found = cs.leads(prods, listings_known=True)
+    assert texts(found, "mixed-lines") == ["10 of 12 pod products have no line, beside named lines Original"]
+    assert texts(found, "rare-format")[0].startswith("1 cart product(s) beside 12 of the brand's main format")
+    assert texts(found, "idle")[0].startswith("12 product(s) no listing matches now")
+    assert "idle" not in kinds(cs.leads(prods))           # triage has no listing counts
+
+
+def test_freshness():
+    now = cs.datetime(2026, 10, 5, tzinfo=cs.timezone.utc)
+    assert cs.is_fresh({"last_seen_at": "2026-10-01T10:00:00+00:00"}, now)
+    assert not cs.is_fresh({"last_seen_at": "2026-08-29T17:54:09+00:00"}, now)
+    assert cs.is_fresh({}, now)
+
+
+def test_render_lines_counts_words_against_recorded_lines():
+    entries = [entry("Original", "Gelato", "vaporizers", "pod", "1g")]
+    listings = [{"id": "l1", "dispensary_id": "d1", "scraped_name": "Gelato Original THC Pod | 1g",
+                 "product_line": None},
+                {"id": "l2", "dispensary_id": "d2", "scraped_name": "Gelato Original Pod",
+                 "product_line": "Original"},
+                {"id": "l3", "dispensary_id": "d2", "scraped_name": "Gelato LIIIL Pen 0.5g", "product_line": None}]
+    text = cs.render_lines(listings, entries, ["liiil", "ORIGINAL"])
+    rows = {r.split()[0]: r.split()[1:] for r in text.splitlines()[1:]}
+    assert rows == {"Original": ["2", "/", "2", "1", "1"], "liiil": ["1", "/", "1", "0", "0"]}
+    assert text.count("riginal") == 1                     # one row per word, the catalog's spelling
+
+
+def test_render_preview_diffs_a_rebuild_against_the_catalog():
+    catalog = {"id": "c1", "brand_name": "Acme", "source_method": "listings_bootstrap"}
+    listings = [{"id": f"l{i}", "dispensary_id": f"d{i}", "scraped_name": "Acme Blue Dream 3.5g",
+                 "scraped_brand": "Acme", "scraped_category": "flower", "subtype": "flower",
+                 "strain": "Blue Dream", "product_line": None, "variant": "3.5g"} for i in range(2)]
+    text = cs.render_preview(catalog, [], listings, fresh_only=True)
+    assert "proposes 1 entries; 0 bootstrap entries are active now. +1 new, -0" in text
+    assert "  + Blue Dream 3.5g  (2 stores)" in text
+
+
+def test_no_split_size_where_the_lineless_products_are_a_range_of_their_own():
+    # Florist Farms: plain 7-packs (3.5g, a size no line uses) beside infused singles.
+    entries = [entry("Live Resin Infused", s, "preroll", None, v)
+               for s in ("Apple Fritter", "Gelato", "Runtz") for v in ("1g",)]
+    entries += [entry(None, s, "preroll", None, "3.5g") for s in ("Apple Fritter", "Kush", "Haze", "Mints")]
+    assert texts(cs.leads(cs.products(entries)), "split-size") == []

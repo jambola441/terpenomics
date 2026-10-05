@@ -79,3 +79,12 @@ def test_a_preroll_keeps_no_subtype():
                                          "Acme Blue Dream Cart") == "cart"
     # The classify prompt's rail is unchanged: a rail edit is a prompt edit.
     assert taxonomy.rails()["preroll"] == ["single", "infused", "pack"]
+
+
+def test_a_pod_is_a_pod_even_when_the_menu_adds_cartridge():
+    # STIIIZY, Rove, Select and Eureka menus name the pod and then the generic word.
+    for name in ("1G Live Resin Liquid Diamonds Pod (Vape Cartridge)", "Premium THC Pods",
+                 "Rove - Garlic Gelato Ice Hash Live Rosin Reload Pod - .5g", "GMO | 1g (Cliq Pod Cartridge)"):
+        assert taxonomy.token_subtype("vaporizers", name) == "pod", name
+    assert taxonomy.token_subtype("vaporizers", "Live Resin 510 Cart 1g") == "cart"
+    assert taxonomy.token_subtype("vaporizers", "Disposable Pod 1g") == "all-in-one"

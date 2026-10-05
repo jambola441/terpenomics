@@ -369,3 +369,13 @@ def test_migration_0006_relabels_only_bootstrap_weight_variants(fresh_db):
     cur.execute("SELECT external_id, variant FROM brand_catalog_entries ORDER BY 1")
     assert cur.fetchall() == [("a", "3.5g"), ("b", "20pk 100mg"), ("c", "7pk 3.5g"),
                               ("d", "3.5g, pack of 7")]
+
+
+def test_support_counts_only_listings_seen_recently(monkeypatch):
+    import db_http
+    asked = []
+    monkeypatch.setattr(db_http, "select_all", lambda table, query: asked.append(query) or [])
+    now = cb.datetime(2026, 10, 5, 13, 0, tzinfo=cb.timezone.utc)
+    assert cb.fresh_since(now) == "2026-09-14T13:00:00Z"            # no "+": it would arrive as a space
+    cb.fetch_listings()
+    assert "&or=(last_seen_at.gte." in asked[0] and "last_seen_at.is.null)" in asked[0]

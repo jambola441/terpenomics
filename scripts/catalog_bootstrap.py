@@ -83,7 +83,7 @@ import re
 import sys
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import catalog_store  # noqa: E402
@@ -337,12 +337,25 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
     return {"catalog": doc, "report": report}
 
 
+# A store that stops scraping leaves its listings active, so an active listing can be a
+# five-week-old menu: STIIIZY's catalog (2026-10-05) had 59 of 116 entries reach two
+# stores only through listings last seen in August. Support counts recent sightings only.
+FRESH_DAYS = int(os.environ.get("BOOTSTRAP_FRESH_DAYS", "21"))
+
+
+def fresh_since(now: datetime | None = None) -> str:
+    """The oldest last_seen_at that still counts as a store selling the product."""
+    # "Z", not "+00:00": a "+" in a query string arrives as a space.
+    return ((now or datetime.now(timezone.utc)) - timedelta(days=FRESH_DAYS)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
 def fetch_listings() -> list[dict]:
     import db_http
     rows = db_http.select_all(
         "listings",
         "select=id,dispensary_id,scraped_name,scraped_brand,scraped_category,subtype,strain,"
-        "product_line,variant&is_active=is.true&order=id")
+        f"product_line,variant&is_active=is.true&or=(last_seen_at.gte.{fresh_since()},"
+        "last_seen_at.is.null)&order=id")
     return [{"id": r["id"], "dispensary_id": r["dispensary_id"], "name": r.get("scraped_name") or "",
              "brand": r.get("scraped_brand"), "category": r.get("scraped_category"),
              "subtype": r.get("subtype"), "strain": r.get("strain"),
