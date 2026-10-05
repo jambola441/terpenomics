@@ -103,9 +103,30 @@ products view instead of three spellings of it.
 
 | source | how | when to use |
 | --- | --- | --- |
-| `shopify_products_json` | `python scripts/brand_catalog.py fetch --brand X --domain x.com` then `push` | brand runs a Shopify store (Ayrloom, STIIIZY) |
+| `shopify_products_json`, `wc_store_api` | `python scripts/storefront.py push --brand X` with a recipe in `data/storefronts/` | the brand's site lists its products (Florist Farms) |
+| `shopify_products_json` (legacy) | `python scripts/brand_catalog.py fetch --brand X --domain x.com` then `push` | Ayrloom, until it has a recipe |
 | `listings_bootstrap` | `python scripts/catalog_bootstrap.py --brand X --write --push` | everyone else — built from the consensus of stores that carry the brand |
 | `manual` | admin → Brand catalogs | fixes, additions |
+
+**Storefront catalogs** take the brand's own word for what it sells. Each brand has a
+recipe, `data/storefronts/<brand-slug>.json`: where the products are (a Shopify
+store's `/products.json`, a WooCommerce Store API), what to skip (apparel), how the
+site's fields map to our categories, and regexes that split the site's titles into
+line, strain and size. A recipe is written once — by an agent pass that studies the
+site, or by hand — and runs with no model from then on. Size and subtype come from
+the shared readers (`sizes.py`, `taxonomy.py`), so storefront and bootstrap entries
+are written the same way.
+
+`storefront.py check --brand X` is the recipe's test: it lists every site item no
+rule handled, and the products stores sell that the site does not. A push is the
+site's entries plus the stores' consensus for those products only (Florist Farms'
+site does not list the Gorilla Glue vapes four stores carry), with spelling allowed
+for ("Mandarin Dog" at the stores is the site's "Mandarine Dog"). Store names that
+resolve to a site product travel with it, so those listings stay `exact`. The push
+retires everything else, the brand's old bootstrap entries included, and records the
+site as the source, so `catalog_bootstrap.py --rebuild` leaves the brand alone. A
+recipe that leaves more than 10% of the site unhandled is not pushed: the site has
+changed shape, and the recipe needs another pass.
 
 The bootstrap groups a brand's listings across stores by (category, subtype, strain,
 line, size) — a strain's cart, pod and all-in-one are three products, and a format
@@ -238,6 +259,7 @@ but retires nothing.
 
 ```bash
 python scripts/catalog_match.py --all --jev --write     # re-match every listing to current catalogs
+python scripts/storefront.py push --all                   # refresh storefront catalogs
 python scripts/catalog_bootstrap.py --rebuild --push       # refresh bootstrap catalogs (additive)
 python scripts/catalog_bootstrap.py --top 50 --push        # propose catalogs for the next brands
 python evals/enrich/audit.py --db                         # suspects per store
@@ -254,6 +276,7 @@ python evals/enrich/audit.py --db                         # suspects per store
 | include `pending` stores | `python scripts/scrape.py --all --include-pending` |
 | catalog coverage for a brand | `python scripts/catalog_match.py --brand X --jev --misses` |
 | propose a catalog | `python scripts/catalog_bootstrap.py --brand X --show 20` |
+| test a storefront recipe | `python scripts/storefront.py check --brand X` |
 | list catalogs (DB) | `python scripts/catalog_store.py` |
 | schema state | `python scripts/db_migrate.py --status` |
 | tests | `pytest` (add `TEST_DATABASE_URL=...` for the importer integration tests) |
