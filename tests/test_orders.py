@@ -5,6 +5,7 @@ that would be expensive to get wrong: an order is bound to the caller's token
 rather than a client-supplied id, and totals come from the listing rather than
 the request body.
 """
+from datetime import datetime
 from uuid import UUID, uuid4
 
 import pytest
@@ -26,6 +27,7 @@ from models import (
 from routes.admin.auth import require_admin
 from routes.admin.orders import router as admin_orders_router
 from routes.orders import MAX_OPEN_ORDERS, router as orders_router
+from services.consent import TERMS_VERSION
 
 AUTH_UID = uuid4()
 OTHER_UID = uuid4()
@@ -42,12 +44,21 @@ def fresh_db():
     yield
 
 
+def _signed_up(first_name):
+    return {
+        "first_name": first_name,
+        "age_confirmed_at": datetime.utcnow(),
+        "terms_version": TERMS_VERSION,
+        "terms_accepted_at": datetime.utcnow(),
+    }
+
+
 @pytest.fixture
 def world():
     """A pickup-enabled store with two listings, plus a second store that is not."""
     with Session(engine) as session:
-        customer = Customer(name="Ada", phone="+15552010001", auth_user_id=AUTH_UID)
-        other = Customer(name="Grace", phone="+15552010002", auth_user_id=OTHER_UID)
+        customer = Customer(name="Ada", phone="+15552010001", auth_user_id=AUTH_UID, **_signed_up("Ada"))
+        other = Customer(name="Grace", phone="+15552010002", auth_user_id=OTHER_UID, **_signed_up("Grace"))
         shop = Dispensary(
             name="Brooklyn Organic Buds", slug="bob", accepts_pickup=True,
             pos_type=PosType.alleaves, address="623 Bergen St",
@@ -109,6 +120,26 @@ def _order_body(world, qty=1):
 # ---------------------------
 # Creating an order
 # ---------------------------
+
+@pytest.mark.parametrize("unset,missing", [
+    ({"age_confirmed_at": None}, ["age_21"]),
+    ({"terms_version": "2001-01-01"}, ["terms"]),
+    ({"first_name": None}, ["first_name"]),
+])
+def test_ordering_requires_finished_sign_up(client, world, unset, missing):
+    with Session(engine) as session:
+        c = session.get(Customer, world["customer_id"])
+        for k, v in unset.items():
+            setattr(c, k, v)
+        session.add(c)
+        session.commit()
+    resp = client.post("/me/orders", json=_order_body(world))
+    assert resp.status_code == 403
+    assert resp.json()["detail"]["code"] == "onboarding_required"
+    assert resp.json()["detail"]["missing"] == missing
+    with Session(engine) as session:
+        assert session.exec(select(Order)).all() == []
+
 
 def test_submitting_a_cart_creates_an_order(client, world):
     resp = client.post("/me/orders", json={

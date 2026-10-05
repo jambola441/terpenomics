@@ -174,7 +174,10 @@ async function authFetch<T>(path: string, body: unknown): Promise<T> {
   }
 
   if (!res.ok) {
-    const detail = typeof payload?.detail === 'string' ? payload.detail : null
+    // detail is usually a string; structured ones (e.g. onboarding_required)
+    // carry their human-readable text in `message`.
+    const detail = typeof payload?.detail === 'string' ? payload.detail
+      : typeof payload?.detail?.message === 'string' ? payload.detail.message : null
     const retryAfter = Number(res.headers.get('Retry-After'))
     throw new ApiError(
       detail || text || `Request failed with status ${res.status}`,

@@ -49,6 +49,25 @@ def get_current_customer(
     return customer
 
 
+def get_onboarded_customer(
+    customer: Customer = Depends(get_current_customer),
+) -> Customer:
+    """A customer who has finished sign-up, for anything that sells cannabis.
+
+    The 21+ confirmation and terms acceptance are enforced here, not just by
+    the apps' screens: a client that skips them gets a 403 naming what is
+    missing, which is the same list GET /me reports.
+    """
+    missing = consent.missing(customer)
+    if missing:
+        raise HTTPException(
+            status_code=403,
+            detail={"code": "onboarding_required", "missing": missing,
+                    "message": "Finish signing up to place an order."},
+        )
+    return customer
+
+
 # ---------------------------
 # Link customer endpoint
 # ---------------------------
