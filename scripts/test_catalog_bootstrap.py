@@ -110,6 +110,23 @@ def test_a_line_that_is_only_the_brand_is_no_line():
     assert cb.propose("PAX", pax)["catalog"]["entries"][0]["product_line"] == "PAX ERA"
 
 
+def test_push_skips_an_empty_catalog_and_passes_via_http(monkeypatch, tmp_path):
+    import brand_catalog
+    import catalog_store
+
+    papers = [dict(L(s, "Rolling Papers", "", None, "", "merch", "papers"), brand="RAW")
+              for s in ("s1", "s2")]
+    monkeypatch.setattr(cb, "fetch_listings", lambda: JETPACKS + papers)
+    monkeypatch.setattr(catalog_store, "load_all", lambda *a, **k: {})
+    monkeypatch.setattr(brand_catalog, "save", lambda cat: tmp_path / f"{cat['brand_slug']}.json")
+    monkeypatch.setattr(brand_catalog, "ROOT", tmp_path)
+    pushed = []
+    monkeypatch.setattr(brand_catalog, "push", lambda cat, **kw: pushed.append((cat["brand_name"], kw)))
+    monkeypatch.setattr(sys, "argv", ["catalog_bootstrap.py", "--top", "5", "--push", "--via-http"])
+    cb.main()
+    assert pushed == [("Jetpacks", {"via_http": True})]     # RAW: nothing to write
+
+
 # --- push round trip -------------------------------------------------------
 #
 # Every push test runs twice: over DATABASE_URL, and over Supabase's REST API

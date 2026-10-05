@@ -301,7 +301,11 @@ def main() -> None:
         for e in out["catalog"]["entries"][:args.show]:
             print(f"    [{e['support']}] {e['category']:10} {e['name'][:40]:40} {e['variant'] or '':10} "
                   f"line={e['product_line']!r}")
-        if args.write or args.push:
+        if (args.write or args.push) and not out["catalog"]["entries"]:
+            # An empty catalog would still mark the brand as having one, so later --top
+            # runs would skip it.
+            print(f"    nothing to write: no product reaches support>={args.min_stores}")
+        elif args.write or args.push:
             import brand_catalog
             path = brand_catalog.save(out["catalog"])
             if args.push:
