@@ -31,10 +31,17 @@ the rules the model is told, and which fields identify a product:
 
 | category | variant measures | strain means | identity |
 | --- | --- | --- | --- |
-| flower, preroll, vaporizers, concentrate | weight (g, package total) | cultivar (vapes: or flavour) | subtype, line, strain, size |
+| flower, vaporizers, concentrate | weight (g, package total) | cultivar (vapes: or flavour) | subtype, line, strain, size |
+| preroll | weight (g, package total) | cultivar | line, strain, size — no subtype |
 | edible | dose (total mg; NY caps a package at 100mg) | flavour | subtype, line, strain, size |
 | tinctures, topical | dose (total mg) | flavour / scent or blend | subtype, line, strain, size |
 | merch | size + pack | — | subtype, attributes (colour/flavour), size |
+
+A pre-roll keeps no subtype. Single or pack is the size's pack count, and infused is
+the product line where the brand names one ("Live Resin Infused"). As a subtype,
+infused took the slot from pack on 834 listings, and 87 products sat under two
+subtypes, splitting them in catalogs and price comparisons. The classify prompt still
+asks for one (a rail edit is a prompt edit); the importer drops the answer.
 
 Everything that used to declare these for itself — enrich's rails and prompts, the
 brand prompt, the catalog importer, the merch enricher, both size normalisers — now

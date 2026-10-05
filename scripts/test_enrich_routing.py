@@ -56,7 +56,8 @@ def row(key, variant, category="preroll", brand="Jetpacks", **kw):
 
 def test_a_listing_that_names_a_catalog_product_takes_its_identity():
     hit = enrich.catalog_answer(row("fj3", "5pk x 0.6g"), INDEXES)
-    assert hit == {"category": "preroll", "subtype": "infused", "strain": "Afghani",
+    # A pre-roll keeps no subtype (taxonomy.keeps_subtype), whatever the entry says.
+    assert hit == {"category": "preroll", "subtype": None, "strain": "Afghani",
                    "product_line": "FJ-3", "variant": "3g"}
 
 

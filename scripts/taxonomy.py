@@ -24,7 +24,8 @@ Per category
   variant_rule /  how the model is told to write variant and strain — the text the
   strain_rule     brand-scoped prompt sends, so the two prompts cannot drift apart
   identity        the fields that make two listings the same product. A catalog
-                  entry carries these; a listing resolved to one takes them.
+                  entry carries these; a listing resolved to one takes them. A
+                  category whose identity has no subtype keeps none (keeps_subtype).
   title_is_strain a brand's catalog title names the strain/flavour (a vape called
                   "honeycrisp"); false where it names the product ("restore balm")
   catalogable     whether brand catalogs model this category (merch identity is
@@ -79,8 +80,13 @@ SPECS: dict[str, CategorySpec] = {s.name: s for s in (
     CategorySpec(
         "preroll", ("single", "infused", "pack"), "single", "weight",
         "cultivar", _WEIGHT_RULE.format("1g, 0.5g"), "cultivar",
-        _CULTIVAR_IDENTITY, title_is_strain=True,
-        notes="A pack's size is the package total: 5 x 0.6g is 3g (sizes.py)."),
+        ("product_line", "strain", "size"), title_is_strain=True,
+        notes="A pack's size is the package total: 5 x 0.6g is 3g (sizes.py). No "
+              "subtype is kept: single or pack is the size's pack count, and infused "
+              "is the product line where the brand names one ('Live Resin Infused'). "
+              "As a subtype, infused took the slot from pack on 834 listings, and 87 "
+              "products sat under two subtypes (2026-10-05). The rail is still in the "
+              "classify prompt, since a rail edit is a prompt edit; its answer is dropped."),
     CategorySpec(
         "vaporizers", ("cart", "all-in-one", "pod", "battery", "other"), None, "weight",
         "cultivar or flavour", _WEIGHT_RULE.format("1g, 0.5g, 2g"), "cultivar or flavour",
@@ -137,9 +143,10 @@ assert set(CATEGORY_ORDER) == set(SPECS) == set(RAIL_ORDER) == set(RULES_ORDER)
 
 
 # Format words that settle a subtype from the name alone — string facts about the
-# listing ("Cart", "AIO", "Starter Kit"). Order matters: the first match wins, so an
-# infused 5-pack is infused. Enrichment sends the result to the model as its hint;
-# the catalog paths let it beat a catalog entry's subtype (catalog_match.py).
+# listing ("Cart", "AIO", "Starter Kit"). Order matters: the first match wins.
+# Enrichment sends the result to the model as its hint; the catalog paths let it beat
+# a catalog entry's subtype (catalog_match.py). Pre-rolls keep no subtype
+# (keeps_subtype), so theirs is only ever the classify prompt's hint.
 SUBTYPE_TOKENS: dict[str, dict[str, re.Pattern]] = {
     "vaporizers": {
         "all-in-one": re.compile(r"\ball[\s-]*in[\s-]*one\b|\baio\b|\bdisposable\b", re.I),
@@ -175,6 +182,14 @@ def token_subtype(category: str | None, name: str | None) -> str | None:
 
 def spec(category: str | None) -> CategorySpec | None:
     return SPECS.get((category or "").strip().lower())
+
+
+def keeps_subtype(category: str | None) -> bool:
+    """Whether a listing or catalog entry of this category keeps a subtype: only where
+    the subtype is part of the product's identity. A pre-roll's is not (its spec's
+    notes say why). An unknown category keeps what it has."""
+    s = spec(category)
+    return s is None or "subtype" in s.identity
 
 
 def rails() -> dict[str, list[str]]:

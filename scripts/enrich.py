@@ -589,7 +589,8 @@ def catalog_answer(row: dict, indexes: dict) -> dict | None:
     for that product (catalog_match's `exact` tier, the one that needs no model), and
     only when the entry settles every field the way the importer would:
       - category from the entry; subtype from it too unless a format word in the
-        name says otherwise (catalog_match.matched_subtype, as the importer does)
+        name says otherwise (catalog_match.matched_subtype, as the importer does),
+        and none for a pre-roll (taxonomy.keeps_subtype)
       - strain from the entry — never a self-censored spelling, never blank
       - product_line as the entry has it, blank included (import_listings._overlay)
       - size: the listing's own, read the way pass A reads it, which must agree with
@@ -619,7 +620,8 @@ def catalog_answer(row: dict, indexes: dict) -> dict | None:
     entry = index.pick_entry(key, row.get("variant"), cat, name)
     subtype = catalog_match.matched_subtype(entry, name)
     strain = entry.get("strain") or product.strain
-    if subtype not in SUBTYPES[cat] or not strain or _is_masked(strain):
+    if (taxonomy.keeps_subtype(cat) and subtype not in SUBTYPES[cat]) \
+            or not strain or _is_masked(strain):
         return None
     size = stated_size(row, cat)
     if size is None or sizes.same_size(sizes.parse(size, category=cat),

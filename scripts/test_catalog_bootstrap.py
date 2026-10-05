@@ -56,15 +56,15 @@ def test_pack_sizes_are_their_own_product():
     assert e["variant"] == "3g" and e["support"] == 2
 
 
-def test_a_counted_preroll_is_a_pack_not_a_single():
+def test_a_preroll_keeps_no_subtype():
+    # Pack, infused and single were three stores' opinions about one product.
     rows = [L("s1", "Doobies Blue Dream 2pk 1g", "Blue Dream", "Doobies", "2pk 1g", subtype="pack"),
-            L("s2", "Doobies | Blue Dream | 2pk", "Blue Dream", "Doobies", "2pk 1g", subtype="pack"),
+            L("s2", "Doobies | Blue Dream | 2pk | Infused", "Blue Dream", "Doobies", "2pk 1g"),
             L("s3", "x doobies blue dream 2 count net 1g", "Blue Dream", "Doobies", "2pk 1g",
               subtype="single")]
-    out = cb.propose("Ruby Farms", rows)
-    assert [(e["subtype"], e["variant"], e["support"]) for e in out["catalog"]["entries"]] == \
-        [("pack", "1g", 3)]
-    assert out["report"]["packs_relabeled"] == 1
+    [e] = cb.propose("Ruby Farms", rows)["catalog"]["entries"]
+    assert (e["subtype"], e["variant"], e["support"]) == (None, "1g", 3)
+    assert e["external_id"] == "lb:preroll::doobies:bluedream:1g"
 
 
 def test_totals_that_are_one_size_are_one_product():
@@ -113,6 +113,27 @@ def test_consensus_line_is_stripped_from_a_strain():
     entries = by_name(cb.propose("Jetpacks", JETPACKS))
     e = entries["Powdered Donuts Championship Cake"]
     assert (e["strain"], e["product_line"], e["support"]) == ("Championship Cake", "Powdered Donuts", 2)
+
+
+def test_a_one_word_line_comes_out_of_a_strain_the_brand_records_in_it():
+    def gummies(brand, rows):
+        return cb.propose(brand, [L(s, f"{brand} Gummies 10pk 100mg", strain, line, "10pk 100mg",
+                                    "edible", "gummy") for s, strain, line in rows])["catalog"]["entries"]
+
+    # Line first or last in the strain, it is the lined product.
+    calm = gummies("Florist Farms", [("s1", "Peach", "Calm"), ("s2", "Peach", "Calm"),
+                                     ("s3", "Calm Peach", None), ("s4", "Calm Peach", None)])
+    assert [(e["name"], e["product_line"], e["strain"], e["support"]) for e in calm] == \
+        [("Calm Peach", "Calm", "Peach", 4)]
+    belts = gummies("Flav", [("s1", "Watermelon", "Belts"), ("s2", "Watermelon", "Belts"),
+                             ("s3", "Watermelon Belts", None)])
+    assert [(e["product_line"], e["strain"], e["support"]) for e in belts] == [("Belts", "Watermelon", 3)]
+    # The line alone is not enough: "Blue Dream" beside line "Dream" stays whole, since
+    # no listing records "Blue" in that line.
+    dream = gummies("Acme", [("s1", "Sweet", "Dream"), ("s2", "Sweet", "Dream"),
+                             ("s3", "Blue Dream", None), ("s4", "Blue Dream", None)])
+    assert sorted((e["product_line"] or "", e["strain"]) for e in dream) == \
+        [("", "Blue Dream"), ("Dream", "Sweet")]
 
 
 def test_single_store_products_and_merch_are_left_out():

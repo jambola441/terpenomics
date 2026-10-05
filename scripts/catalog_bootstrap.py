@@ -26,8 +26,9 @@ How a group is formed
              compared squashed ("FJ Mini" == "FJ-Mini" == "fj-mini"), a strain also
              with doubled letters collapsed ("Grand Daddy" == "Granddaddy" ==
              "Grandaddy"), size compared as the package total (sizes.py:
-             "5pk x 0.6g" == "3g"). A pre-roll that comes more than one to a package
-             is a pack, never a single.
+             "5pk x 0.6g" == "3g"). Subtype only where the category keeps one: a
+             pre-roll has none (taxonomy.keeps_subtype), so its single, pack and
+             infused listings of one strain and total are one product.
   sizes      groups of one product whose totals sizes.same_size calls equal merge:
              "7pk 4.9g" (7 x 0.7g) is the "7pk 5g" stores write.
   line fix   a group with no line folds into the one group that has the same
@@ -35,7 +36,8 @@ How a group is formed
              12% of the products view, removed by construction. A lined group too
              small to be an entry does not count against that "one".
   variant    for a category measured by weight (taxonomy.py), the package total
-             alone: "3.5g", not "7pk 3.5g", since the subtype already says pack.
+             alone: "3.5g", not "7pk 3.5g". Stores state the pack count unevenly, and
+             a listing keeps its own label; the entry's size is what identifies it.
              Dosed categories keep their pack ("20pk 100mg"): 10 x 10mg and 20 x 5mg
              gummies are different products with one total.
   support    distinct stores. Groups seen at fewer than --min-stores (default 2) are
@@ -155,15 +157,18 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
 
     # A line the model folded into the strain at some stores ("Championship Cake
     # Powdered Donuts" beside line "Powdered Donuts" elsewhere). De-lined only against
-    # the brand's consensus vocabulary, and only for lines of two or more words that
-    # two or more stores recorded as a line — never against one listing's own guess,
-    # which is how "Blue Dream" with a model line of "Dream" would become "Blue".
+    # the brand's consensus vocabulary, lines two or more stores recorded as a line —
+    # never against one listing's own guess, which is how "Blue Dream" with a model line
+    # of "Dream" would become "Blue". A one-word line is too common a word to take out
+    # on that alone: it comes out only when what is left is a strain the brand's
+    # listings record in that line ("Calm Peach" beside line "Calm", strain "Peach").
     stores_per_line = defaultdict(set)
+    line_strains = set()
     for l in rows:
         if l.get("product_line"):
             stores_per_line[squash(l["product_line"])].add(l["dispensary_id"])
-    vocab = {k: line_spelling[k] for k, st in stores_per_line.items()
-             if len(st) >= 2 and len(line_spelling[k].split()) >= 2}
+            line_strains.add((squash(l["product_line"]), strain_key(l["strain"])))
+    vocab = {k: line_spelling[k] for k, st in stores_per_line.items() if len(st) >= 2}
     delined = 0
     for l in rows:
         if l.get("product_line"):
@@ -171,11 +176,12 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
         for key, line in vocab.items():
             pattern = re.compile(r"(?<![A-Za-z0-9])" + r"[\s\-_]*".join(
                 re.escape(w) for w in line.split()) + r"(?![A-Za-z0-9])", re.I)
-            if pattern.search(l["strain"]):
-                rest = re.sub(r"\s{2,}", " ", pattern.sub(" ", l["strain"])).strip(" -|,x")
-                if rest:
-                    l["strain"], l["product_line"] = rest, line
-                    delined += 1
+            if not pattern.search(l["strain"]):
+                continue
+            rest = re.sub(r"\s{2,}", " ", pattern.sub(" ", l["strain"])).strip(" -|,x")
+            if rest and (len(line.split()) >= 2 or (key, strain_key(rest)) in line_strains):
+                l["strain"], l["product_line"] = rest, line
+                delined += 1
                 break
 
     # Grouped on the package total only. Stores mention the pack count inconsistently
@@ -190,18 +196,13 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
     # format word in the name beats the model's subtype here, as it does wherever a
     # catalog is applied (catalog_match.matched_subtype).
     groups: dict[tuple, Group] = {}
-    packs_relabeled = 0
     for l in rows:
         size = sizes.parse(l.get("variant"), l.get("name"), category=l.get("category"))
         l["_size_label"] = size.label()
         total = (f"{size.grams:g}g" if size.grams is not None
                  else f"{size.mg:g}mg" if size.mg is not None else "")
-        subtype = taxonomy.token_subtype(l["category"], l.get("name")) or l.get("subtype") or ""
-        # More than one to a package is a pack: a "2 count" the model called a single
-        # is the same product as the "2pk" next to it.
-        if l["category"] == "preroll" and subtype == "single" and (size.pack or 0) > 1:
-            subtype = "pack"
-            packs_relabeled += 1
+        subtype = ((taxonomy.token_subtype(l["category"], l.get("name")) or l.get("subtype") or "")
+                   if taxonomy.keeps_subtype(l["category"]) else "")
         key = (l["category"], subtype, strain_key(l["strain"]), squash(l.get("product_line")), total)
         groups.setdefault(key, Group(*key)).listings.append(l)
 
@@ -290,7 +291,7 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
     report = {
         "brand": brand, "listings": len(listings), "eligible": len(rows),
         "groups": len(groups), "line_splits_folded": folded, "strains_delined": delined,
-        "sizes_merged": sizes_merged, "packs_relabeled": packs_relabeled,
+        "sizes_merged": sizes_merged,
         "entries": len(entries), "listings_covered": kept_listings,
         "product_rows_before": before, "product_rows_after": after,
     }

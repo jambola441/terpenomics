@@ -52,6 +52,7 @@ import uuid
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import verification  # noqa: E402
 import attributes  # noqa: E402
+import taxonomy  # noqa: E402
 from datetime import datetime, timezone
 
 try:
@@ -372,6 +373,18 @@ def apply_verification(records: list[dict], existing: dict[tuple, dict]) -> int:
                 touched = True
         protected += touched
     return protected
+
+
+def drop_unkept_subtypes(records: list[dict]) -> int:
+    """A pre-roll keeps no subtype (taxonomy.keeps_subtype), whichever step set one:
+    pass A, a stored identity kept over a failed enrichment, or a field a person
+    signed before the rule. Runs after all of them."""
+    dropped = 0
+    for rec in records:
+        if rec["subtype"] is not None and not taxonomy.keeps_subtype(rec["scraped_category"]):
+            rec["subtype"] = None
+            dropped += 1
+    return dropped
 
 
 # ---------------------------------------------------------------------------
@@ -695,6 +708,7 @@ def main(argv=None) -> int:
         protected = apply_verification(records, existing)
         if protected:
             print(f"  verified: kept {protected} human-signed row(s) from being overwritten")
+        drop_unkept_subtypes(records)
 
         print_diff(slug, records, existing)
 
