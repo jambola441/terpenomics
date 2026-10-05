@@ -242,7 +242,9 @@ The cron job has no disk, so it re-asks each run; that costs cents.
 **What Jev sees** is the listing's name, category, subtype and size, plus one thing
 from its description: a curated product line it names when the name names none
 (`catalog_match.described_line`, the rule enrichment uses — `data/product_lines.json`
-lines that declare a category). Wider hints were measured on 2026-10-05 and did worse.
+lines that declare a category). A line that declares a category is assigned only in
+it, from the name as from the description: Heavy Hitters' "Live Rosin" vapes sit beside
+its Live Rosin jars. Wider hints were measured on 2026-10-05 and did worse.
 With the description's first 300 characters, across 21 brands, 74 matches became
 trusted and 50 stopped being; with the true product held out, wrong picks rose from
 75 to 92, because store copy is often pasted from another product (an MFNY "Turbo

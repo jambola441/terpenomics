@@ -41,12 +41,57 @@
     "Sherbert": "Sherbet",
     "Half Gelato": "Gelato",
     "Half Sour Jack": "Sour Jack",
-    "Blue Dream x Strawberry Cough": "Dream"
+    "Blue Dream x Strawberry Cough": "Dream",
+    "Creamsicle Ice Hash": "Creamsicle",
+    "Garlic Gelato Ice Hash": "Garlic Gelato",
+    "Orange Kush Ice Hash": "Orange Kush"
   },
   "Jetpacks": {
     "Apples and Bananas": "Apples & Bananas",
     "GSC": "Girl Scout Cookies",
     "New York City Diesel": "NYC Diesel",
     "Passionfruit": "Passion Fruit"
+  },
+  "Wizard Trees": {
+    "Zang Banger": "Zangbanger",
+    "Tide Banger": "Tidebanger",
+    "Lime Light": "Limelight",
+    "Bluebanger": "Blue Banger",
+    "Cream": "C.R.E.A.M.",
+    "C.R.E.A.M": "C.R.E.A.M.",
+    "Sunset Sherbert x Pink Guava #11": "RS11",
+    "Dark Matter 2.0": "Dark Matter"
+  },
+  "Bodega Boyz": {
+    "Kush Mints": "Kush Mintz",
+    "Kush Mintz x Chopped Cheese": "Kush Mintz",
+    "Kush Mints x Chopped Cheese": "Kush Mintz",
+    "Blue Haze x Chopped Cheese": "Blue Haze",
+    "Bananas & Honey": "Banana & Honey",
+    "Peach Gasoline": "Peach Gasolina",
+    "Flower Sugar Berry": "Sugar Berry",
+    "Pink Guava x Blueberry Certz": "Pink Guava Runtz x Blueberry Certz",
+    "Bubble Gum Gelato x Cotton Candy": "Bubble Gum Gelato x Cotton Candy Breath",
+    "Candie Funk x Peach Sherbert": "Candy Funk x Peach Sherbert"
+  },
+  "RYTHM": {
+    "Afternoon Delight": "Afternoon Delight #4",
+    "Mai Tai REMIX": "Mai Tai",
+    "Blue Zkittles": "Blue Z",
+    "Cheddar Cheeze x Swamp Water Fumez": "Cheddar Cheeze x Swamp Fumez",
+    "L Orange": "L'Orange"
+  },
+  "PAX": {
+    "Super Boof": "Superboof",
+    "Guavo Gelato": "Guava Gelato",
+    "Sweet Berry": "Sweet Berry Sleep"
+  },
+  "Heavy Hitters": {
+    "Alaskan Thunder Fuck": "Alaskan Thunder F",
+    "Alaskan Thunderfuck": "Alaskan Thunder F",
+    "Alaskan Thunder F*": "Alaskan Thunder F",
+    "God Gift": "God's Gift",
+    "Gods Gift": "God's Gift",
+    "God’s Gift": "God's Gift"
   }
 }

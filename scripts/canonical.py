@@ -13,7 +13,9 @@ model the right subtype rails to answer within.
                   the assignment is a fact about the string, not a judgment. An
                   entry may instead be {"line": "Liquid Diamonds", "also": ["Liquid
                   Diamond"]}: every spelling stores print assigns the one line. With
-                  "category" too, a name that carries no line is given it when the
+                  "category" too, the line is that category's alone (a brand's "Live
+                  Rosin" vapes beside its Live Rosin jars), and a name that carries
+                  no line is given it when the
                   store's description names it and no other line of that category:
                   "King Louis XIII - 1G Infused Prerolls", whose description says
                   "Stiiizy 40s pre-rolls are...", is a 40's. This
@@ -131,11 +133,15 @@ def _spellings(entry) -> tuple[str, list[str]]:
     return entry, [entry]
 
 
-def _find_line(brand: str, name: str) -> tuple[str, str] | None:
+def _find_line(brand: str, name: str, category: str | None = None) -> tuple[str, str] | None:
     """(curated line, the spelling of it found in `name`). The longest spelling wins,
-    so "Flyers Blends" beats "Flyers" when both are curated."""
+    so "Flyers Blends" beats "Flyers" when both are curated. A line that declares a
+    category belongs to it: given the listing's category, it is not assigned in
+    another. Heavy Hitters' "Live Rosin" is a vape line, and its rosin jars say Live
+    Rosin too."""
     own, shared = _for_brand(_load(_LINES_PATH, "lines"), brand)
     hits = [(line, spelling) for entry in list(own or []) + list(shared or [])
+            if not (category and isinstance(entry, dict) and entry.get("category") not in (None, category))
             for line, spellings in [_spellings(entry)] for spelling in spellings
             if _pattern(spelling).search(name or "")]
     return max(hits, key=lambda h: len(h[1])) if hits else None
@@ -154,9 +160,10 @@ def line_from_description(brand: str, description: str, category: str | None) ->
     return hits.pop() if len(hits) == 1 else None
 
 
-def find_product_line(brand: str, name: str) -> str | None:
-    """The curated line for this brand whose text appears in `name`, else None."""
-    hit = _find_line(brand, name)
+def find_product_line(brand: str, name: str, category: str | None = None) -> str | None:
+    """The curated line for this brand whose text appears in `name`, else None (a line
+    of another category than the listing's is not this listing's)."""
+    hit = _find_line(brand, name, category)
     return hit[0] if hit else None
 
 
@@ -188,10 +195,13 @@ def find_format_category(brand: str, name: str) -> str | None:
 
 def _strip_line_from_strain(strain: str, line: str) -> str:
     """Remove the product line from a strain that swallowed it ("Night Cap
-    Elderberry Sage" -> "Elderberry Sage"). Returns strain unchanged if removing
-    the line would leave nothing."""
+    Elderberry Sage" -> "Elderberry Sage"), with the pair joiner that tied it on
+    ("Kush Mintz x Chopped Cheese" -> "Kush Mintz": a lowercase "x" at either end, as
+    stores write a pair; an "X" in a name is a word). Returns strain unchanged if
+    removing the line would leave nothing."""
     stripped = _pattern(line).sub(" ", strain)
     stripped = re.sub(r"\s{2,}", " ", stripped).strip(" -|,")
+    stripped = re.sub(r"^x\s+|\s+x$", "", stripped).strip(" -|,")
     return stripped or strain
 
 
@@ -208,7 +218,7 @@ def canonicalize(rows: list[dict]) -> dict:
         brand = row.get("brand") or row.get("scraped_brand") or ""
         name = row.get("name") or row.get("scraped_name") or ""
 
-        hit = _find_line(brand, name)
+        hit = _find_line(brand, name, row.get("category") or row.get("scraped_category"))
         if hit:
             line, spelling = hit
             before = (row.get("product_line") or "").strip()

@@ -507,7 +507,8 @@ def described_line(listing: dict, index: CatalogIndex) -> str | None:
     "Classic" turn up in copy about other products).
     """
     brand = index.brand_name
-    if not listing.get("description") or canonical.find_product_line(brand, listing.get("name") or ""):
+    if not listing.get("description") or canonical.find_product_line(brand, listing.get("name") or "",
+                                                                     listing.get("category")):
         return None
     text = html.unescape(re.sub(r"<[^>]+>", " ", listing["description"]))
     return canonical.line_from_description(brand, " ".join(text.split()), listing.get("category"))
