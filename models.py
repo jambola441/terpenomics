@@ -50,7 +50,7 @@ class Customer(CustomerBase, TimestampMixin, table=True):
 
     The consent columns are the current state, kept for cheap reads; the
     history behind them, with the wording each person saw, is `consent_events`.
-    Columns added by db/migrations/0008_customer_signup.sql.
+    Columns added by db/migrations/0010_customer_signup.sql.
     """
 
     __tablename__ = "customers"

@@ -44,7 +44,7 @@ CREATE INDEX IF NOT EXISTS ix_consent_events_created_at  ON consent_events (crea
 
 INSERT INTO consent_events (id, customer_id, kind, granted, source, phone, text)
 SELECT gen_random_uuid(), c.id, 'marketing_sms', false, 'migration', c.phone,
-       'Cleared by 0008_customer_signup: opt-in predates consent records.'
+       'Cleared by 0010_customer_signup: opt-in predates consent records.'
 FROM customers c
 WHERE c.marketing_opt_in
   AND NOT EXISTS (
