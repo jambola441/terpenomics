@@ -16,15 +16,17 @@
       "url": "link[rel=canonical]@href"
     }
   },
-  "learned": "2026-10-05, agent pass: Camino is Kiva Confections' gummy brand. The sitemap lists 195 /flavor/<slug> detail pages for all five Kiva brands; 89 survive the match, 45 are Camino and 18 of those list NY (17 entries plus one skipped High Dose page). Check: 17 of the 33 products NY stores sell are on the site.",
+  "learned": "2026-10-05, agent pass: Camino is Kiva Confections' gummy brand. The sitemap lists 195 /flavor/<slug> detail pages for all five Kiva brands; 89 survive the match, 45 are Camino and 18 of those list NY (17 entries plus one skipped High Dose page). Check: 17 of the 33 products NY stores sell are on the site. Restructured 2026-10-05: family as line, effect + flavour as the product.",
   "notes": [
     "One product per detail page (/flavor/<slug>). The sitemap match drops the 106 Lost Farm pages (slugs start 'lf-'); the breadcrumb ('Products / Camino / Gummies') drops the remaining Kiva, Petra and Terra pages.",
     "New York is the 'Available in:' market list on the detail page (div.kv-pdp-market). The cards on /products carry the same list capped at five codes, which hides NY on half the NY products (Wild Berry shows CA CT FL IL MA), so the cards cannot be the source.",
     "Each market has its own page for one flavour (tropical-burst for AZ/CA/MO/NY, tropical-burst-200mg for MI/OH), so the NY filter also picks the NY formulation.",
-    "Titles lead with the per-gummy dose, then cannabinoid ratios, then the effect in quotes, which is the product line ('Chill', 'Energy'), then the flavour: \"10mg : 5mg THCV 'Energy' Tropical Burst\", \"10mg 'Energy' Forest Berry Fruit Chews\".",
     "Size: the pages' own pack figures disagree with each other (Forest Berry chews say 10 servings and 200mg per pack; Strawberry Sunset says 20 servings and 100mg per pack). New York caps a package at 100mg and NY stores sell every 5mg Camino as a 20-pack (100mg) and every 10mg one as a 10-pack (100mg), which is also what most NY pages say; the 2mg Sparkling Pear is 20 x 2mg = 40mg ('THC per pack 40mg'). So the dose in the title picks the pack; any other dose falls through to unparsed on purpose.",
     "'High Dose' pages are skipped: the one that lists NY (blackberry-dream-high-dose, 200mg per pack) copies the regular Blackberry Dream's market list and is over New York's 100mg package cap.",
-    "Not tagged NY on the site though NY stores carry them (2026-10-05): 'Recover' Freshly Squeezed, 'Bliss' Raspberry Lemonade, 'Uplifting' Watermelon Spritz (10mg), Boysenberry Sleep fruit chews. They stay as store-consensus products."
+    "Line is the family, from the breadcrumb: Gummies, Sours (Kiva's 'Sour Gummies'; packs and stores say 'Camino Sours') and Fruit Chews. The product is the effect and the flavour together, as every pack prints them ('SOCIAL | Sparkling Pear'): 10mg 'Deep Sleep' Blackberry Dream is Sours / Deep Sleep Blackberry Dream. Until 2026-10-05 the effect was the line, which made 16 lines of one or two products, each mixing families ('Bliss' held a 20-pack gummy, a sour 10-pack and a fruit chew). The rule (catalog-audit skill): an effect is the line only when the brand gives the product no family name.",
+    "Two pages that do not list NY are kept, because NY stores sell exactly that formulation (10mg, 10pk 100mg) and the stores' consensus split each three ways: raspberry-lemonade ('Bliss' Raspberry Lemonade) and watermelon-spritz-10 ('Uplifting' Watermelon Spritz).",
+    "store_aliases: stores often write a Camino flavour without its effect ('Camino Sours Blackberry Dream'), and listings matched under the old model carry the effect as their line. Each flavour has one effect per family, so `names` maps a bare flavour to effect + flavour and `lines` drops an effect line. Wild Cherry is left out: Excite and Exhilarate are two Wild Cherry gummies.",
+    "Store-only and not on Kiva's site for NY (2026-10-05): 'Recover' Freshly Squeezed gummies, 'Soothing Sleep' Boysenberry fruit chews (the NY pouch; 'Boysenberry Sleep' is the Michigan name) and the Halloween 'Spirited' Blood Orange sours."
   ],
   "skip": [
     {
@@ -35,7 +37,8 @@
     },
     {
       "when": {
-        "tags": "^(?!.*\\bNY\\b)"
+        "tags": "^(?!.*\\bNY\\b)",
+        "url": "^(?!.*/flavor/(?:raspberry-lemonade|watermelon-spritz-10)$)"
       },
       "why": "not sold in New York"
     },
@@ -60,31 +63,143 @@
   "title": [
     {
       "when": {
-        "category": "^edible$"
+        "category": "^edible$",
+        "product_type": "\\|\\s*Sour Gummies$"
       },
-      "match": "^5\\s*mg\\b[^']*'(?P<line>[^']+)'\\s*(?P<strain>.+?)(?:\\s+(?:Fruit\\s+Chews|Gummies))?$",
+      "match": "^5\\s*mg\\b[^'‘’]*['‘’](?P<strain>[^'‘’]+)['‘’]\\s*(?P<strain2>.+?)(?:\\s+(?:Fruit\\s+Chews|Gummies))?$",
       "set": {
+        "line": "Sours",
         "size": "20pk 100mg"
       }
     },
     {
       "when": {
-        "category": "^edible$"
+        "category": "^edible$",
+        "product_type": "\\|\\s*Sour Gummies$"
       },
-      "match": "^10\\s*mg\\b[^']*'(?P<line>[^']+)'\\s*(?P<strain>.+?)(?:\\s+(?:Fruit\\s+Chews|Gummies))?$",
+      "match": "^10\\s*mg\\b[^'‘’]*['‘’](?P<strain>[^'‘’]+)['‘’]\\s*(?P<strain2>.+?)(?:\\s+(?:Fruit\\s+Chews|Gummies))?$",
       "set": {
+        "line": "Sours",
         "size": "10pk 100mg"
       }
     },
     {
       "when": {
         "category": "^edible$",
+        "product_type": "\\|\\s*Sour Gummies$",
         "body": "THC per pack 40\\s*mg"
       },
-      "match": "^2\\s*mg\\b[^']*'(?P<line>[^']+)'\\s*(?P<strain>.+?)(?:\\s+(?:Fruit\\s+Chews|Gummies))?$",
+      "match": "^2\\s*mg\\b[^'‘’]*['‘’](?P<strain>[^'‘’]+)['‘’]\\s*(?P<strain2>.+?)(?:\\s+(?:Fruit\\s+Chews|Gummies))?$",
       "set": {
+        "line": "Sours",
+        "size": "20pk 40mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "product_type": "\\|\\s*Gummies$"
+      },
+      "match": "^5\\s*mg\\b[^'‘’]*['‘’](?P<strain>[^'‘’]+)['‘’]\\s*(?P<strain2>.+?)(?:\\s+(?:Fruit\\s+Chews|Gummies))?$",
+      "set": {
+        "line": "Gummies",
+        "size": "20pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "product_type": "\\|\\s*Gummies$"
+      },
+      "match": "^10\\s*mg\\b[^'‘’]*['‘’](?P<strain>[^'‘’]+)['‘’]\\s*(?P<strain2>.+?)(?:\\s+(?:Fruit\\s+Chews|Gummies))?$",
+      "set": {
+        "line": "Gummies",
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "product_type": "\\|\\s*Gummies$",
+        "body": "THC per pack 40\\s*mg"
+      },
+      "match": "^2\\s*mg\\b[^'‘’]*['‘’](?P<strain>[^'‘’]+)['‘’]\\s*(?P<strain2>.+?)(?:\\s+(?:Fruit\\s+Chews|Gummies))?$",
+      "set": {
+        "line": "Gummies",
+        "size": "20pk 40mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "product_type": "\\|\\s*Fruit Chews$"
+      },
+      "match": "^5\\s*mg\\b[^'‘’]*['‘’](?P<strain>[^'‘’]+)['‘’]\\s*(?P<strain2>.+?)(?:\\s+(?:Fruit\\s+Chews|Gummies))?$",
+      "set": {
+        "line": "Fruit Chews",
+        "size": "20pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "product_type": "\\|\\s*Fruit Chews$"
+      },
+      "match": "^10\\s*mg\\b[^'‘’]*['‘’](?P<strain>[^'‘’]+)['‘’]\\s*(?P<strain2>.+?)(?:\\s+(?:Fruit\\s+Chews|Gummies))?$",
+      "set": {
+        "line": "Fruit Chews",
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "product_type": "\\|\\s*Fruit Chews$",
+        "body": "THC per pack 40\\s*mg"
+      },
+      "match": "^2\\s*mg\\b[^'‘’]*['‘’](?P<strain>[^'‘’]+)['‘’]\\s*(?P<strain2>.+?)(?:\\s+(?:Fruit\\s+Chews|Gummies))?$",
+      "set": {
+        "line": "Fruit Chews",
         "size": "20pk 40mg"
       }
     }
-  ]
+  ],
+  "store_aliases": {
+    "lines": {
+      "Balance": "",
+      "Bliss": "",
+      "Chill": "",
+      "Deep Sleep": "",
+      "Energy": "",
+      "Festive": "",
+      "Pride": "",
+      "Recover": "",
+      "Sleep": "",
+      "Social": "",
+      "Soothing Sleep": "",
+      "Uplifting": "",
+      "Chews": "Fruit Chews",
+      "Sour": "Sours"
+    },
+    "names": {
+      "Blackberry Dream": "Deep Sleep Blackberry Dream",
+      "Orchard Peach": "Balance Orchard Peach",
+      "Strawberry Sunset": "Chill Strawberry Sunset",
+      "Tropical Burst": "Energy Tropical Burst",
+      "Raspberry Lemonade": "Bliss Raspberry Lemonade",
+      "Sour Raspberry Lemonade": "Bliss Raspberry Lemonade",
+      "Watermelon Spritz": "Uplifting Watermelon Spritz",
+      "Holiday Punch": "Festive Holiday Punch",
+      "Midnight Blueberry": "Sleep Midnight Blueberry",
+      "Passionfruit Punch": "Pride Passionfruit Punch",
+      "Pineapple Habanero": "Uplifting Pineapple Habanero",
+      "Sparkling Pear": "Social Sparkling Pear",
+      "Watermelon Lemonade": "Bliss Watermelon Lemonade",
+      "Wild Berry": "Chill Wild Berry",
+      "Yuzu Lemon": "Balance Yuzu Lemon",
+      "Forest Berry": "Energy Forest Berry",
+      "Golden Peach": "Recover Golden Peach",
+      "Pineapple Paradise": "Bliss Pineapple Paradise"
+    }
+  }
 }

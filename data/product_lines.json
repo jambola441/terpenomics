@@ -81,5 +81,16 @@
   ],
   "Vibes": [
     "Organic Hemp"
+  ],
+  "_comment_stiiizy": "From the STIIIZY catalog audit (2026-10-05): stores print these on most listings, enrichment recorded them on under 1 in 10 (\"Original\" 8 of 73, \"Liquid Diamonds\" 2 of 68, \"LIIIL\" 3 of 28). The plain 1g all-in-one has no line name. 32 names say \"Liquid Diamond\".",
+  "STIIIZY": [
+    "Original",
+    {"line": "Liquid Diamonds", "also": ["Liquid Diamond"]},
+    "LIIIL",
+    {"line": "40's", "also": ["40s"]}
+  ],
+  "_comment_1906": "1906 sells its tablets as Drops in effects (Bliss, Boost, Chill, Genius, Go, Love, Sleep): the family is the line, the effect is the product. Stores write \"1906 - Bliss Drops 2pk\".",
+  "1906": [
+    "Drops"
   ]
 }

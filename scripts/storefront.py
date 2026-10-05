@@ -27,7 +27,8 @@ vendor, url, body, variant, meta (a source's structured extras as JSON text: SKU
 options, custom fields) — and, for a title rule, the category just decided. A title
 rule's `match` is tried against the title; its `extract` adds groups found in other
 fields, for a site that keeps the size in the description ("SIZE: 10CT STRENGTH:
-100MG"). Groups: line, strain, size, size2 (read together with size).
+100MG"). Groups: line, strain, strain2 (read after strain), size, size2 (read
+together with size).
 
 Size and subtype come from the shared readers (sizes.py, taxonomy.token_subtype)
 unless a rule sets them, so a storefront entry is written the way a bootstrap entry
@@ -89,6 +90,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import sizes  # noqa: E402
 import taxonomy  # noqa: E402
 from brand_catalog import norm_name, strip_brand  # noqa: E402
+from scraper_common import apply_brand_aliases  # noqa: E402
 import catalog_bootstrap  # noqa: E402
 from catalog_bootstrap import squash, strain_key  # noqa: E402
 from scraper_common import slugify  # noqa: E402
@@ -99,7 +101,7 @@ CATALOG_DIR = ROOT / "data" / "catalogs"
 TIMEOUT_SECONDS = 30
 USER_AGENT = "Mozilla/5.0 (compatible; terpenomics-catalog/1.0)"
 FIELDS = ("title", "product_type", "tags", "vendor", "url", "body", "variant", "meta", "page")
-GROUPS = {"line", "strain", "size", "size2"}
+GROUPS = {"line", "strain", "strain2", "size", "size2"}
 TITLE_FIELDS = FIELDS + ("category",)
 SET_KEYS = {"category", "subtype", "line", "strain", "size"}
 MAX_UNPARSED = 0.10
@@ -614,7 +616,10 @@ def build(recipe: dict, items: list[Item]) -> tuple[dict, dict]:
             if (em := re.search(pattern, fields.get(f) or "")):
                 got = {**{k: v for k, v in em.groupdict().items() if v}, **got}
         line = _clean(got.get("line") or consts.get("line"))
-        strain = _clean(got.get("strain") or consts.get("strain"))
+        # strain2 is read after strain, for a title that splits the product's name:
+        # Camino's "10mg 'Deep Sleep' Blackberry Dream" is the product Deep Sleep Blackberry Dream.
+        strain = _clean(" ".join(x for x in (got.get("strain"), got.get("strain2")) if x)
+                        or consts.get("strain"))
         if recipe.get("title_case"):
             line, strain = _title_case(line), _title_case(strain)
         stated = " ".join(x for x in (got.get("size"), got.get("size2")) if x) or consts.get("size")
@@ -791,11 +796,15 @@ def store_listings(brand: str, via_http: bool) -> list[dict]:
                     (brand, catalog_bootstrap.fresh_since()))
         rows = [dict(zip(cols, r)) for r in cur.fetchall()]
         conn.close()
-    return [{"id": str(r["id"]), "dispensary_id": str(r["dispensary_id"]),
-             "name": r.get("scraped_name") or "", "brand": r.get("scraped_brand"),
-             "category": r.get("scraped_category"), "subtype": r.get("subtype"),
-             "strain": r.get("strain"), "product_line": r.get("product_line"),
-             "variant": r.get("variant")} for r in rows]
+    out = [{"id": str(r["id"]), "dispensary_id": str(r["dispensary_id"]),
+            "name": r.get("scraped_name") or "", "brand": r.get("scraped_brand"),
+            "category": r.get("scraped_category"), "subtype": r.get("subtype"),
+            "strain": r.get("strain"), "product_line": r.get("product_line"),
+            "variant": r.get("variant")} for r in rows]
+    # A sub-brand filed under this brand ("KIVA Camino ...") belongs to the sub-brand's
+    # catalog, as import will file it; it is no store-only product of this one.
+    apply_brand_aliases(out)
+    return [r for r in out if r["brand"] == brand]
 
 
 def refusal(report: dict) -> str | None:

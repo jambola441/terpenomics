@@ -55,3 +55,15 @@ class TestCanonicalBrands:
 
     def test_empty_set(self):
         assert canonical_brands(set()) == {}
+
+
+class TestSubBrands:
+    def test_a_sub_brand_filed_under_its_parent_moves_to_the_sub_brand(self):
+        from scraper_common import apply_brand_aliases
+        rows = [{"brand": "KIVA", "name": "KIVA Camino - Chews - Boysenberry - Soothing Sleep - 100mg - 10ct"},
+                {"brand": "Kiva", "name": "Kiva Bar - Dark Chocolate 100mg"},
+                {"brand": "KIVA LOST FARM", "name": "Gummies - Raspberry x Wedding Cake"},
+                {"brand": "Kiva", "name": "Lost Farm - Juicy Peach x Wedding Cake Gummies"},
+                {"brand": "Camino", "name": "Camino Sours 'Uplifting' Watermelon Spritz"}]
+        apply_brand_aliases(rows)
+        assert [r["brand"] for r in rows] == ["Camino", "Kiva", "Lost Farm", "Lost Farm", "Camino"]

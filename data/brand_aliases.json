@@ -1,6 +1,11 @@
 {
   "_comment": "Maps raw scraped brand name -> canonical brand name. Add new aliases here; scrapers and import will apply them automatically.",
 
+  "_comment_sub_brands": "A sub-brand stores file under its parent (brand \"Kiva\", name \"Camino - Sour Gummies - ...\"): the sub-brand's name in the product name moves the listing to the sub-brand, which keeps its own catalog. Only for sub-brands with a catalog of their own.",
+  "_sub_brands": {
+    "Kiva": ["Camino", "Lost Farm"]
+  },
+
   "ayrloom":            "Ayrloom",
   "Aryloom":            "Ayrloom",
   "Ayrloom Mood":       "Ayrloom",
@@ -82,7 +87,7 @@
 
   "KIVA":               "Kiva",
   "Kiva Confections":   "Kiva",
-  "KIVA LOST FARM":     "Kiva",
+  "KIVA LOST FARM":     "Lost Farm",
 
   "LEVEL":              "Level",
 

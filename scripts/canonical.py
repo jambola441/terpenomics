@@ -10,7 +10,9 @@ model the right subtype rails to answer within.
   product_lines   data/product_lines.json — {brand: [line, ...]}
                   A line is assigned when its text actually appears in the product
                   name (word-boundary match, punctuation/spacing insensitive), so
-                  the assignment is a fact about the string, not a judgment. This
+                  the assignment is a fact about the string, not a judgment. An
+                  entry may instead be {"line": "Liquid Diamonds", "also": ["Liquid
+                  Diamond"]}: every spelling stores print assigns the one line. This
                   is what the model is least reliable at: in the gold eval it found
                   lines for some brands and missed them for others (Flyers, Quicks,
                   Little Pandas), which splits one product family into several
@@ -116,13 +118,28 @@ def _pattern(line: str) -> re.Pattern:
     return _pattern_cache[line]
 
 
-def find_product_line(brand: str, name: str) -> str | None:
-    """The curated line for this brand whose text appears in `name`, else None.
-    Longest match wins so "Flyers Blends" beats "Flyers" when both are curated."""
+def _spellings(entry) -> tuple[str, list[str]]:
+    """A curated line and every spelling that assigns it: "Liquid Diamonds" for a name
+    that says "Liquid Diamond", "40's" for one that says "40s"."""
+    if isinstance(entry, dict):
+        return entry["line"], [entry["line"], *entry.get("also", [])]
+    return entry, [entry]
+
+
+def _find_line(brand: str, name: str) -> tuple[str, str] | None:
+    """(curated line, the spelling of it found in `name`). The longest spelling wins,
+    so "Flyers Blends" beats "Flyers" when both are curated."""
     own, shared = _for_brand(_load(_LINES_PATH, "lines"), brand)
-    candidates = list(own or []) + list(shared or [])
-    hits = [line for line in candidates if _pattern(line).search(name or "")]
-    return max(hits, key=len) if hits else None
+    hits = [(line, spelling) for entry in list(own or []) + list(shared or [])
+            for line, spellings in [_spellings(entry)] for spelling in spellings
+            if _pattern(spelling).search(name or "")]
+    return max(hits, key=lambda h: len(h[1])) if hits else None
+
+
+def find_product_line(brand: str, name: str) -> str | None:
+    """The curated line for this brand whose text appears in `name`, else None."""
+    hit = _find_line(brand, name)
+    return hit[0] if hit else None
 
 
 def canonical_strain(brand: str, strain: str) -> str | None:
@@ -173,16 +190,19 @@ def canonicalize(rows: list[dict]) -> dict:
         brand = row.get("brand") or row.get("scraped_brand") or ""
         name = row.get("name") or row.get("scraped_name") or ""
 
-        line = find_product_line(brand, name)
-        if line:
+        hit = _find_line(brand, name)
+        if hit:
+            line, spelling = hit
             before = (row.get("product_line") or "").strip()
             if before != line:
                 stats["product_line_corrected" if before else "product_line_set"] += 1
                 row["product_line"] = line
             strain = (row.get("strain") or "").strip()
-            if strain and _pattern(line).search(strain):
-                row["strain"] = _strip_line_from_strain(strain, line)
-                stats["strain_delined"] += 1
+            for sp in {line, spelling}:
+                if strain and _pattern(sp).search(strain):
+                    strain = _strip_line_from_strain(strain, sp)
+                    row["strain"] = strain
+                    stats["strain_delined"] += 1
 
         canon = canonical_strain(brand, row.get("strain") or "")
         if canon is not None and canon != (row.get("strain") or ""):
