@@ -334,6 +334,14 @@ class TestCatalogSize:
         assert cm.catalog_size("50mg", "Level - Protab THC Infused Pills - 5pk", level[0], level) is None
         eaton = self.entries("5mg")             # a per-piece dose recorded as the size
         assert cm.catalog_size("100mg", "Daily Elevation | Peach 5mg", eaton[0], eaton) is None
+        wana = self.entries("10pk 100mg")       # the catalog took the CBD total
+        assert cm.catalog_size("20mg", "Optimals Fast Asleep Gummies [10 pack] | 20mg", wana[0], wana,
+                               "Per Package: 100mg CBD, 20mg CBN, 20mg CBG, 20mg THC") is None
+        grön = self.entries("10pk 25mg")        # "OF" between the figure and the cannabinoid
+        assert cm.catalog_size("10mg", "10:1 Tart Cherry - CBN/THC - Nightly", grön[0], grön,
+                               "25MG OF CBN PER PEARL | 2.5MG OF THC PER PEARL") is None
+        assert cm.catalog_size("10mg", "10:1 Tart Cherry - CBN/THC - Nightly", grön[0], grön,
+                               "25MG OF THC PER PACKAGE | 250MG OF CBN PER PACKAGE") == "25mg"
 
     def test_the_stores_size_stands_otherwise(self):
         camino = self.entries("20pk 100mg")

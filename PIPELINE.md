@@ -71,10 +71,12 @@ row. `size` is what product pages and price comparisons group on
 size, or to the catalog's when a dose product (edible, tincture, topical) matched by
 `exact`, `jev` or `manual` states a size it does not come in, and the listing backs the
 catalog: its name or description states the catalog's total, or its figure is that
-size's per-piece dose (`catalog_match.catalog_size`). Camino's 100mg 20-pack listed as
+size's per-piece dose (`catalog_match.catalog_size`). A figure given for another
+cannabinoid backs nothing: Wana's Fast Asleep says "20mg THC" and "100mg CBD", and the
+catalog's 100mg is the CBD, so the store's 20mg stands. Camino's 100mg 20-pack listed as
 50mg ("100mg THC : 100mg CBD per package" in its description) and Ayrloom's 150mg drops
 listed as 600mg ("150mg THC : 450mg CBD" in the name) go back on their products' pages:
-68 listings on 2026-10-05, 31 of them a per-piece dose typed as the size. A weight that
+67 listings on 2026-10-05, 31 of them a per-piece dose typed as the size. A weight that
 disagrees stays on its own page, because a 14g bag matched to its strain's 3.5g is more
 often a real size the catalog lacks. So does a listing that names another pack count (a
 2-pack beside the catalog's 5-pack).
