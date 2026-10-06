@@ -106,3 +106,28 @@ def test_every_dutchie_store_template_is_well_formed():
         t = s.get("product_url_template")
         if t:
             assert s["platform"] == "dutchie_graphql" and t.startswith("https://") and t.count("{cname}") == 1, s["slug"]
+
+
+# ── Flowhub product links ────────────────────────────────────────────────────
+
+def _flowhub():
+    path = Path(__file__).resolve().parent.parent / "prototypes" / "dutchie-scraper" / "scrape.py"
+    pytest.importorskip("httpx")
+    spec = importlib.util.spec_from_file_location("scrape_flowhub_mod", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_flowhub_product_url_addresses_the_variant():
+    fh = _flowhub()
+    p = {"name": "Jennys Cured Resin AIO Vape .5g Hella Good", "variant_id": "6549fa4f-eae9-4b7f-8247-ffe4b75df094"}
+    assert fh.fh_product_url("https://x.dispensary.shop/rec/search", p) == (
+        "https://x.dispensary.shop/rec/all-products/pdp/jennys-cured-resin-aio-vape-.5g-hella-good"
+        "/v/6549fa4f-eae9-4b7f-8247-ffe4b75df094")
+
+
+def test_flowhub_product_url_is_blank_without_a_variant_or_a_site():
+    fh = _flowhub()
+    assert fh.fh_product_url("https://x.dispensary.shop/rec/search", {"name": "A"}) == ""
+    assert fh.fh_product_url("", {"name": "A", "variant_id": "v"}) == ""

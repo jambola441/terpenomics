@@ -38,6 +38,7 @@ import os
 import re
 import sys
 import time
+from urllib.parse import urlsplit
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../scripts"))
 from scraper_common import apply_brand_aliases, canonical_brands, map_category, normalize_variant, now_iso, stamped_path, write_csv, write_scrape_meta  # noqa: E402
@@ -254,7 +255,22 @@ _UOM_MAP = {
 }
 
 
-def normalise_fh(p: dict, dispensary_slug: str, scraped_at: str) -> dict:
+def fh_product_url(menu_url: str, p: dict) -> str:
+    """The product page on the store's Flowhub site, or "" without a variant id.
+
+    The page is addressed by the variant id: checked on a live store, the category and
+    name segments are decoration (any value serves the same page) and an unknown id is
+    a 404. The name is kept in the path anyway so the link reads as the product.
+    """
+    variant_id = str(p.get("variant_id") or "").strip()
+    parts = urlsplit(menu_url)
+    if not variant_id or not parts.netloc:
+        return ""
+    slug = re.sub(r"[^a-z0-9.]+", "-", str(p.get("name") or "").lower()).strip("-") or "product"
+    return f"{parts.scheme}://{parts.netloc}/rec/all-products/pdp/{slug}/v/{variant_id}"
+
+
+def normalise_fh(p: dict, dispensary_slug: str, scraped_at: str, menu_url: str = "") -> dict:
     """Flowhub — one row per product (single price point)."""
     name   = str(p.get("name") or "").strip()
     brand  = str(p.get("brand") or "").strip()
@@ -297,7 +313,7 @@ def normalise_fh(p: dict, dispensary_slug: str, scraped_at: str) -> dict:
         "cbd_percent":     cbd,
         "classification":  strain,
         "in_stock":        "TRUE" if (p.get("quantity") or 0) > 0 else "FALSE",
-        "product_url":     "",
+        "product_url":     fh_product_url(menu_url, p),
         "image_url":       image,
         "scraped_at":      scraped_at,
         "description":     desc,
@@ -353,7 +369,7 @@ def scrape_flowhub(client: httpx.Client, url: str, dispensary_slug: str,
             for p in pages_products[pg]:
                 pid = str(p.get("variant_id") or p.get("product_id") or "")
                 if pid and pid not in collected:
-                    collected[pid] = normalise_fh(p, dispensary_slug, scraped_at)
+                    collected[pid] = normalise_fh(p, dispensary_slug, scraped_at, url)
                     new_this_pass += 1
         return new_this_pass
 

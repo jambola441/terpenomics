@@ -140,7 +140,6 @@
     "blaze_id": null,
     "alleaves_tenant": null,
     "menu_url": "https://thegardenclubbk.com/menu/",
-    "product_url_template": "https://thegardenclubbk.com/menu/?dtche%5Bproduct%5D={cname}",
     "store_url": "https://thegardenclubbk.com",
     "neighborhood": "Carroll Gardens",
     "address": {
@@ -162,7 +161,7 @@
     "blaze_id": null,
     "alleaves_tenant": null,
     "menu_url": "https://herbologynyc.com/shop/",
-    "product_url_template": "https://herbologynyc.com/shop/?dtche%5Bproduct%5D={cname}",
+    "product_url_template": "https://herbologynyc.com/shop/product/{cname}/",
     "store_url": "https://herbologynyc.com",
     "neighborhood": "Bed-Stuy",
     "address": {
@@ -271,7 +270,8 @@
     "dutchie_id": "67858280fe520b9bfe00be96",
     "blaze_id": null,
     "alleaves_tenant": null,
-    "menu_url": "https://kayablissnyc.com/location/brooklyn-ny/shop/",
+    "menu_url": "https://kayablissnyc.com/stores/kayabliss-bayridge",
+    "product_url_template": "https://kayablissnyc.com/stores/kayabliss-bayridge/product/{cname}",
     "store_url": "https://kayablissnyc.com",
     "neighborhood": "Bay Ridge",
     "address": {
@@ -292,7 +292,8 @@
     "dutchie_id": "685ab00e8b39ac2c590a9be5",
     "blaze_id": null,
     "alleaves_tenant": null,
-    "menu_url": "https://kayablissnyc.com",
+    "menu_url": "https://kayablissnyc.com/stores/kayabliss-brooklynheights",
+    "product_url_template": "https://kayablissnyc.com/stores/kayabliss-brooklynheights/product/{cname}",
     "store_url": "https://kayablissnyc.com",
     "neighborhood": "Brooklyn Heights",
     "address": {
