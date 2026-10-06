@@ -56,7 +56,10 @@ _SIZE_TEXT = re.compile(
 @dataclass
 class Item:
     """One listing, as the chooser needs it. product_sizes: the matched catalog product's
-    sizes, as {"value", "variant", "typical"} ("typical" a price string or None)."""
+    sizes, as {"value", "variant", "typical"} ("typical" a price string or None). held:
+    the size of the catalog entry the listing is filed under now, if any — code alone
+    does not move it off that ("20-Pack" with "20mg" in the size field, filed under
+    1906's "20pk 100mg", goes to Jev with both sizes and their prices)."""
     name: str
     category: str
     variant: str | None = None
@@ -64,6 +67,7 @@ class Item:
     brand: str | None = None
     price_cents: int | None = None
     product_sizes: list[dict] = field(default_factory=list)
+    held: float | None = None
 
     @property
     def unit(self) -> str | None:
@@ -269,7 +273,9 @@ def decide_or_ask(item: Item, prices: PriceBook, price: str = "both"):
                "scraped_category": item.category}
     a = sc.assess(listing, [{"variant": p["variant"], "category": item.category} for p in item.product_sizes])
     if a.status in ("settled", "silent"):
-        return Pick(a.values[0] if a.values else None, "code"), None
+        settled = a.values[0] if a.values else None
+        if settled is None or item.held is None or sc.same(settled, item.held, unit):
+            return Pick(settled, "code"), None
     reads = [c for c in a.candidates if c.likely or c.source == "catalog"] or a.candidates
     values = sc.distinct_values(reads)
     if price in ("both", "code"):

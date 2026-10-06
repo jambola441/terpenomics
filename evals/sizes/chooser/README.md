@@ -52,6 +52,32 @@ What is still wrong:
 - **A size field that is count × a figure already the total, where the price cannot tell them apart.** Amedicanna's "2pk (1.3g)" listed at 2.6g.
 - **Store copy pasted from another pack size.** MyHi's 3-pack carries its 10-pack's 100mg.
 
+## At import (2026-10-06)
+
+`import_listings.choose_sizes` runs the chooser on trusted matches. A match's options are its own readings plus its product's catalog sizes, each with the price that size typically sells for. Turn it off with `IMPORT_SIZE_CHOICE=0`.
+
+It was measured read-only on the 22,038 active listings: 12,194 matched, about 11,600 of them in a category with a size unit.
+- **Letting the chooser decide outright: 142 changes, with systematic errors.**
+  - About 30 pre-roll 2-packs were doubled. Runtz's "2pk" at 1.5g became 3g, though 1.5g is the catalog's size and fits the $17.50 price.
+  - Eaton's 20-packs became their per-piece "5mg".
+  - 1906's $29 "Sleep 20-Pack" moved to the $5 2-pack entry.
+
+  Two causes:
+  - stores that write a piece's dose make the small sizes' typical prices look like the pack's;
+  - Jev overrules the matched entry's size about 70% of the time on these questions.
+- **What shipped: Jev only confirms.** A size Jev picks is used only when it is the size of the entry the match chose; then the page size follows that entry. Two things can still move a listing to another of its product's entries:
+  - the per-gram price check (Herb's $150 "32PK 1G" goes to its 32g entry);
+  - code alone, when the current entry records no size.
+
+  Code never moves a listing off a sized entry on its own (`Item.held`); that disagreement goes to Jev, which can only confirm.
+
+  This version makes 61 changes:
+  - about 45 right: 5-packs at 2.5g, 7-packs at 5g, balms at their 1,000mg of THC, typos (11g, 261mg), and Herb's pack;
+  - 9 neutral: MFNY listings move from a "10pk" entry to the same product's "10pk 100mg";
+  - 1 wrong: Eaton's Daily Elevation becomes 5mg, because its catalog entry records the per-piece dose;
+  - about 6 unsure.
+- **Cost:** about 1,070 Jev questions over all listings, $0.03.
+
 ## Run
 
 ```bash

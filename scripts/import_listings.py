@@ -413,6 +413,86 @@ def assign_sizes(records: list[dict], catalogs: dict) -> int:
     return fixed
 
 
+def size_choice_on() -> bool:
+    """choose_sizes runs unless IMPORT_SIZE_CHOICE=0."""
+    return os.environ.get("IMPORT_SIZE_CHOICE", "1").strip() != "0"
+
+
+def choose_sizes(records: list[dict], catalogs: dict, prices=None, *, use_jev: bool = True,
+                 usage=None) -> dict:
+    """For a trusted match, the size the listing sells, chosen among its own readings and
+    its product's catalog sizes by size_choice: code, the price check, then Jev, told
+    what each size typically sells for. That size picks the record's entry (the
+    product's entry of that size) and sets `size`; a size the product does not come in
+    sets `size` alone. Code alone never moves a listing off the entry it is filed under
+    (Item.held): that disagreement goes to Jev. Runs after assign_sizes, which sizes
+    every record the chooser leaves to the store's field. Returns counts."""
+    import catalog_match
+    import catalog_store
+    import size_candidates
+    import size_choice
+    import sizes
+    prices = prices if prices is not None else size_choice.prices_for_run()
+    by_id = catalog_store.entries_by_id(catalogs) if catalogs else {}
+    products: dict[tuple, list[dict]] = {}
+    for catalog, entry in by_id.values():
+        if entry.get("is_active", True):
+            products.setdefault((id(catalog), catalog_store._product_key(entry)), []).append(entry)
+
+    def value(text, category, unit):
+        s = sizes.parse(text, category=category)
+        return s.mg if unit == "mg" else s.grams
+
+    jobs = []
+    for rec in records:
+        hit = by_id.get(str(rec["catalog_entry_id"]) if rec.get("catalog_entry_id") else "")
+        category = rec.get("scraped_category")
+        unit = size_candidates.unit_of(category)
+        if not hit or not unit or rec.get("catalog_match_method") not in catalog_match.OVERLAY_METHODS:
+            continue
+        catalog, entry = hit
+        siblings = products.get((id(catalog), catalog_store._product_key(entry)), [entry])
+        item = size_choice.Item(
+            name=rec.get("scraped_name") or "", category=category, variant=rec.get("variant"),
+            description=rec.get("description"), brand=rec.get("scraped_brand"),
+            price_cents=rec.get("price_cents"),
+            product_sizes=prices.product_sizes(str(entry.get("catalog_id") or ""),
+                                               str(entry.get("product_key") or entry["id"]),
+                                               siblings, category),
+            held=value(entry.get("variant"), entry.get("category") or category, unit))
+        jobs.append((rec, item, siblings))
+    if use_jev:
+        picks = size_choice.choose([it for _, it, _ in jobs], prices, usage=usage)
+    else:
+        picks = [size_choice.decide_or_ask(it, prices)[0] or size_choice.Pick(None, "field", 0.0)
+                 for _, it, _ in jobs]
+
+    stats = {"entry": 0, "size": 0, "asked": sum(p.by in ("jev", "field") for p in picks)}
+    for (rec, item, siblings), pick in zip(jobs, picks):
+        if pick.by == "field" or pick.value is None:
+            continue
+        unit = item.unit
+        moves = item.held is None or not size_candidates.same(pick.value, item.held, unit)
+        # Jev only confirms the size of the entry the match chose. Measured on the live
+        # listings, it moves them off it wrongly as often as rightly: Runtz's 2-pack at
+        # 1.5g to 3g, Eaton's 20-pack to "5mg", where stores' per-piece doses make the
+        # typical prices of the small sizes look like the pack's.
+        if moves and pick.by == "jev":
+            continue
+        sizes_of = [(e, v) for e in siblings
+                    if (v := value(e.get("variant"), e.get("category") or item.category, unit)) is not None
+                    and size_candidates.same(v, pick.value, unit)]
+        chosen = sizes_of[0][1] if sizes_of else pick.value       # as the catalog writes it
+        if sizes_of and moves and str(sizes_of[0][0]["id"]) != str(rec["catalog_entry_id"]):
+            rec["catalog_entry_id"] = sizes_of[0][0]["id"]
+            stats["entry"] += 1
+        written = value(rec.get("size"), item.category, unit)
+        if written is None or not size_candidates.same(written, chosen, unit):
+            rec["size"] = f"{chosen:g}{unit}"
+            stats["size"] += 1
+    return stats
+
+
 def apply_verification(records: list[dict], existing: dict[tuple, dict]) -> int:
     """Human-signed fields win over everything, bound to the incoming scraped name."""
     protected = 0
@@ -775,6 +855,11 @@ def main(argv=None) -> int:
         fixed = assign_sizes(records, catalogs)
         if fixed:
             print(f"  size: {fixed} listing(s) take their catalog size; the store's was mistyped")
+        if size_choice_on() and not args.no_catalog:
+            chosen = choose_sizes(records, catalogs, use_jev=use_jev, usage=usage)
+            if chosen["entry"] or chosen["size"]:
+                print(f"  size choice: {chosen['entry']} listing(s) moved to their size's entry, "
+                      f"{chosen['size']} size(s) set ({chosen['asked']} asked of Jev)")
         cuts += fit_columns(records)        # values the catalog overlay brought in
         for cut in cuts:
             print(f"  [WARN] cut to fit its column: {cut}")
