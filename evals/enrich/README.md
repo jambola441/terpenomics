@@ -833,6 +833,42 @@ done
 python evals/enrich/compare_runs.py /tmp/runs/run_* --models haiku-or,luna
 ```
 
+## Jev only, no LLM (2026-10-06)
+
+Can Jev and code do all of enrichment, with no LLM? With `ENRICH_LLM=0`
+(`enrich._run_without_llm`):
+- Jev classifies;
+- code sizes, or `size_choice` chooses among `size_candidates`' readings;
+- Jev picks strain and line from the name's phrases.
+
+Two settings for what happens when Jev is unsure:
+- **store value:** below the usual bars the store's value stands (no strain, no line);
+- **any confidence:** Jev's pick is taken whatever its probability (all `ENRICH_JEV_*_MIN` at 0).
+
+All nine case files, three interleaved runs each, against the production path:
+
+| | today (Jev, then Haiku) | Jev only, store value | Jev only, any confidence |
+| --- | ---: | ---: | ---: |
+| cases passed (of 302) | 286.3 (285–288) | 227.7 (226–230) | 274.7 (274–275) |
+| category / subtype | 281 / 248.3 | 273.7 / 244.0 | 281 / 246.7 |
+| strain (of 247) / line (of 20) | 240.7 / 19.3 | 196.0 / 18.7 | 234.0 / 20.0 |
+| size (of 243) | 239 | 239 | 239 |
+| listings changed across the 3 runs | 28 | 21 | 15 |
+| $/run, s/run | $0.086, 48 s | $0.033, 34 s | $0.033, 34 s |
+
+- **Abstaining is the wrong fallback.** Keeping the store's value when Jev is unsure leaves 51 strains empty. Jev's best guess, even when unsure, beats no answer.
+- **Sizes need no LLM.** `size_choice` matches Haiku's 239 of 243, and changes no size between runs (Haiku changed 12).
+- **The gap is strain phrases.** At any confidence, Jev only passes fewer runs than today on 18 cases, and more on 8. Ten of the 18 are strains where Jev keeps a word the phrase cutter left attached:
+  - format words: "Black Cherry Sparkling Water", "Cookies N Cream Cones";
+  - a classification: "Strawberry Sativa";
+  - the brand's line: "Watermelon Lemonade Bliss";
+  - a store's sort number: "10 Honey Banana", "12 Candy Rain";
+  - a strain where there is none: "Unscented" on a lotion.
+
+  Haiku got these because Jev was under 0.90 on them and they went to it. The right sub-phrase was among the options; so was the longer one.
+- **Size misses (2):** Camino's 20pk filed as "72g", and Papa & Barkley's "THC1000" with no unit.
+- **Where Jev only is better:** Ayrloom's "150MG THC : 450MG CBD" is 150mg, where Haiku sums it to 600mg. The others are tea sachets' 50mg, "Lemon Candy Runtz" whole, and Camino's 'Sleep' line.
+
 ## Fleet report — all 24 live stores (2026-08-25)
 
 `dispensary_report.py` runs the audit checks **per store** and normalizes to
