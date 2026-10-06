@@ -94,6 +94,18 @@ def test_a_size_field_holding_thc_plus_other_cannabinoids_is_not_the_thc():
     assert a.values == [5.0, 50.0]                               # not 10 x the 10mg sum
 
 
+def test_a_figure_stated_beside_the_cannabinoids_it_adds_up_is_not_the_thc():
+    """Ayrloom's Pillow Talk drops: "1800mg per package/300mg THC per serving/1500mg CBN
+    per serving". A pack's total that only happens to equal one piece's sum stays: a
+    2-pack of "10mg THC + 10mg CBN/gummy" holds 20mg of THC."""
+    a = sc.assess(listing("Pillow Talk Sleep Drops - 300MG THC:1500MG CBN", category="tinctures",
+                          description="1:5 THC:CBN. 1800mg per package/300mg THC per serving/1500mg CBN per serving."))
+    assert (a.status, a.values) == ("settled", [300.0])
+    a = sc.assess(listing("Dreamberry | Hash-Infused Gummies | 20mg | 2pk", "20mg", category="edible",
+                          description="Sweet dreams, Jaunty. 10mg THC + 10mg CBN/gummy"))
+    assert 20.0 in a.values
+
+
 def test_a_cart_stated_in_mg_reads_in_grams():
     assert sc.assess(listing("Jetty Alien OG Cart", "1000mg", category="vaporizers")).values == [1.0]
 

@@ -338,6 +338,18 @@ def test_without_the_llm_jev_answers_everything_and_the_answers_are_cached(fakes
     assert cache["c|10mg"]["p"]["category"] == 0.4
 
 
+def test_without_the_llm_a_size_field_in_another_unit_is_not_kept(fakes, monkeypatch):
+    """Camino's 20-gummy pack filed as "72g", its net weight: nothing reads a dose and the
+    field holds none, so the size is left blank rather than 72g."""
+    monkeypatch.setenv("ENRICH_LLM", "0")
+    monkeypatch.setenv("ENRICH_CLASSIFIER", "jev")
+    monkeypatch.setattr(enrich.jev_classify, "classify", jev_answers((0.97, 0.93)))
+    monkeypatch.setattr(enrich.jev_extract, "extract", text_answers(("Midnight Blueberry", 0.95, None, 0.90)))
+    rows = [dict(gummy("Camino - Sleep | Midnight Blueberry 5:1 CBN 20pk", "a"), variant="72g")]
+    enrich.enrich(rows, model="haiku-or", brand_examples={}, catalog_first=False)
+    assert rows[0]["variant"] == "" and rows[0]["strain"] == "Midnight Blueberry"
+
+
 @pytest.mark.parametrize("name,brand,category,first,never", [
     ("Cookies N Cream Cones 100mg Ice Cream", "Lake Effect", "edible", "Cookies N Cream", "Cookies N Cream Cones"),
     ("Black Cherry Sparkling Water 5mg", "Ayrloom", "edible", "Black Cherry", "Black Cherry Sparkling Water"),
@@ -346,6 +358,9 @@ def test_without_the_llm_jev_answers_everything_and_the_answers_are_cached(fakes
      "Watermelon Lemonade Bliss"),
     ("Grape Soda Pre-Roll 1g", "Boutiq", "preroll", "Grape Soda", "Grape Soda Pre-Roll"),   # a strain, not a drink
     ("Sugar Cookie 3.5g", "Jaunty", "flower", "Sugar Cookie", None),
+    ("Genius for Brain-Power - 10mg 2PK Pills", "1906", "edible", "Genius", "Genius Brain-Power"),
+    ("BOOST For Everything - 5mg 2Pk Pills", "1906", "edible", "BOOST", "BOOST For Everything"),
+    ("Balm Revive 1000mg", "Ayrloom", "topical", "Revive", "Balm Revive"),
 ])
 def test_strain_options_end_before_the_categorys_own_format_and_stay_apart(name, brand, category, first, never):
     got = jev_extract.strain_phrases(name, brand, category)
@@ -354,4 +369,5 @@ def test_strain_options_end_before_the_categorys_own_format_and_stay_apart(name,
 
 def test_neither_the_brand_nor_its_line_is_offered_as_a_strain():
     assert jev_extract.strain_phrases("Papa & Barkley 1:3 Releaf Balm 50ml", "Papa & Barkley", "topical") == []
+    assert jev_extract.strain_phrases("Unscented CBD Lotion - 300mg", "Heady Tree", "topical") == []
     assert "Releaf" in jev_extract.phrases("Papa & Barkley 1:3 Releaf Balm 50ml", "Papa & Barkley")

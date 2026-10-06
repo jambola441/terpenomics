@@ -58,7 +58,8 @@ _NUM = sizes._NUM
 _UNITS = ("pre-roll", "preroll", "joint", "blunt", "cone", "dog", "mini", "gumm(?:y|ie)",
           "chew", "piece", "tablet", "tab", "pill", "capsule", "softgel", "drop", "mint", "bite",
           "chocolate", "square", "cookie", "brownie", "pearl", "lozenge", "can", "cup", "shot",
-          "sachet", "packet", "pod", "cart", "cartridge", "stick", "unit", "serving", "dose")
+          "sachet", "packet", "pod", "cart", "cartridge", "stick", "serving", "dose")
+# Not "unit": REMZzz's "100 mg/unit – 2.5mg THC Hash, 2.5mg THC/piece" is the package.
 _UNIT_NOUN = "(?:" + "|".join(u.replace("-", r"[-\s]?") for u in _UNITS) + ")"     # "Pre Rolls" too
 # A count takes the plural: "Gelato 33 Pre-Roll" is a strain, "5 Pre-Rolls" a pack.
 _UNIT_NOUNS = "(?:" + "|".join(u.replace("-", r"[-\s]?").replace("gumm(?:y|ie)", "gummie") + "s"
@@ -85,6 +86,8 @@ _PER_UNIT = re.compile(rf"{_NUM}\s*(g|gr|grams?|mg)\s*(?:thc\s*)?(?:each|ea\b\.?
 _COUNT_SIZE_NOUN = re.compile(rf"\b(\d+|{_WORD})\s+{_NUM}\s*(g|gr|grams?|mg)\s+(?:[\w'-]+\s+){{0,2}}?{_UNIT_NOUNS}\b", re.I)
 # A dose with no unit beside THC: "100THC:40CBG", Papa & Barkley's "THC1000".
 _BARE_THC = re.compile(r"\b(\d+(?:\.\d+)?)\s*thc\b|\bthc\s*(\d+(?:\.\d+)?)\b(?!\s*(?:%|mg|g\b))", re.I)
+# A dose missing its g: "Tiki Fruit Punch Rings - 100M Hash Rosin Nano Gummies".
+_MG_TYPO = re.compile(r"\b(\d+(?:\.\d+)?)M\b")
 # A bare standard weight as a whole segment ("X| Flamer | Hehe Haha | 3.5", "Runtz- 3.5- Flower").
 _STANDARD_G = {0.5, 1.0, 2.0, 3.5, 7.0, 14.0, 28.0}
 _SEGMENT = re.compile(r"\s*\|\s*|\s*[-–]\s+|\s+[-–]\s*")
@@ -200,7 +203,7 @@ def _totals(t: str, unit: str) -> tuple[list[float], bool]:
         return _distinct(found), True
     thc_only = sizes._NON_THC_MG.sub(" ", t)
     found = sizes._floats(sizes._MG, thc_only) or [
-        float(a or b) for a, b in _BARE_THC.findall(thc_only)]
+        float(a or b) for a, b in _BARE_THC.findall(thc_only)] or sizes._floats(_MG_TYPO, thc_only)
     if found:
         return _distinct(found), True
     return _distinct(sizes._floats(sizes._MG, t)), False
@@ -317,11 +320,14 @@ def _candidates(listing: dict, product_entries=None) -> tuple[list[Candidate], s
     def summed(v):
         return any(same(v, total, unit) and not same(v, thc, unit) for thc, total in sums)
 
-    for c in list(reads["field"].candidates):
-        if c.reading == "as written" and summed(c.value):
-            reads["field"].candidates.remove(c)
-            reads["field"].candidates.append(dataclasses.replace(
-                c, likely=False, reading="as written: THC and the other cannabinoids added together"))
+    # Nor is a figure the name or description states beside them: Ayrloom's "Pillow Talk"
+    # drops say "1800mg per package/300mg THC per serving/1500mg CBN per serving".
+    for r in reads.values():
+        for c in list(r.candidates):
+            if c.reading == "as written" and summed(c.value):
+                r.candidates.remove(c)
+                r.candidates.append(dataclasses.replace(
+                    c, likely=False, reading="as written: THC and the other cannabinoids added together"))
     out = [c for r in reads.values() for c in r.candidates]
     for src, r in reads.items():
         for other, o in reads.items():

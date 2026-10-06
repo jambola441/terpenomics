@@ -1048,6 +1048,10 @@ def _run_without_llm(pending: list[tuple[int, dict]], cache: dict, slug: str, ca
         if pick.by != "field" and pick.value is not None:
             size = normalize_variant(f"{pick.value:g}{size_candidates.unit_of(cat)}", cat)
             variants[oi] = enrichers.for_category(cat).variant(row.get("name", ""), size) or size
+        elif pick.value is None:
+            # No size, and the store's field is none in the category's unit either:
+            # Camino's 20-gummy pack filed as "72g", its net weight. Blank, not that.
+            variants[oi] = ""
 
     xu = jev.Usage()
     answers = jev_extract.extract([(row, category(oi, row), subtypes[oi]) for oi, row in pending], usage=xu)

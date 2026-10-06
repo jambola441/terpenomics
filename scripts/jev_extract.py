@@ -57,6 +57,9 @@ _CUT_RE = re.compile("|".join(f"(?:{c})" for c in (
 )), re.I)
 _SEPARATOR_RE = re.compile(
     r"\s+[-–—]\s+|[|()\[\]{},/;]|\s-|-\s|[\"“”]|''|(?<!\w)'|'(?!\w)|\s+:\s+|:\s|\s+\+\s+")
+# What follows "for" is what the product is for, never part of its name: 1906's "Genius
+# for Brain-Power" is Genius and "BOOST For Everything" is BOOST. No phrase crosses it.
+_FOR_RE = re.compile(r"\s+(?i:for)\s+(?=[A-Z])")
 _QUOTED_RE = re.compile(r"(?:''|\"|“|(?<!\w)')\s*([^'\"“”]{1,40}?)\s*(?:''|\"|”|'(?!\w))")
 _EDGE = " -–—_.,:;!*#'\"&+"
 # Words that alone are never a strain: a phrase is only offered whole, never cut down
@@ -71,7 +74,8 @@ tablets capsule capsules tincture tinctures drops oil oils balm balms lotion top
 topicals cream salve roll-on diamond diamonds rosin resin live cured badder budder sugar
 sauce hash rso concentrate concentrates wax shatter crumble jar tin can cans pack packs
 multipack variety the and with w/ of thc cbd cbn cbg thca hemp spectrum cone cones tips
-palm unit rechargeable rechargable vaporizer vaporizers
+palm unit rechargeable rechargable vaporizer vaporizers unscented unflavored dablicator
+applicator feco scrub bomb bath pill pills
 """.split())
 MAX_WORDS = 6
 MAX_PHRASES = 60
@@ -89,12 +93,15 @@ FORMAT_TAILS = {
                    "concentrate concentrates",
     "edible": "gummy gummies chew chews chocolate chocolates bar bars bites mint mints tablet "
               "tablets capsule capsules drops beverage beverages drink drinks soda sodas seltzer "
-              "seltzers sparkling water tea shot shots cone cones lozenge lozenges syrup",
+              "seltzers sparkling-water shot shots cone cones lozenge lozenges syrup",
     "tinctures": "tincture tinctures drops oil oils",
     "topical": "balm balms lotion lotions cream creams salve salves roll-on topical topicals rub "
-               "spray soak",
+               "spray soak stick sticks scrub oil",
 }
-FORMAT_TAILS = {cat: frozenset(words.split()) for cat, words in FORMAT_TAILS.items()}
+FORMAT_TAILS = {cat: [tuple(w.split("-")) if w == "sparkling-water" else (w,) for w in words.split()]
+                for cat, words in FORMAT_TAILS.items()}
+# A topical's format also leads its name: Ayrloom's "Balm Revive" is Revive.
+FORMAT_HEADS = {"topical": frozenset("balm lotion cream salve scrub stick oil soak spray rub".split())}
 
 STRAIN_QUESTION = (
     "Which of these is this product's strain or flavor: the name that tells it apart from "
@@ -168,7 +175,8 @@ def phrases(name: str, brand: str | None = "") -> list[str]:
             seen.add(key)
             out.append(phrase)
 
-    stretches = [s.split() for s in _segments(name)]
+    chunks = [[s.split() for s in _segments(chunk)] for chunk in _FOR_RE.split(name or "")]
+    stretches = [words for chunk in chunks for words in chunk]
     for words in stretches:
         add(list(words), whole=True)
     for words in stretches:
@@ -187,9 +195,10 @@ def phrases(name: str, brand: str | None = "") -> list[str]:
                 or not re.search(r"[a-z]", text, re.I)
                 or canonical.find_product_line(brand or "", text) is not None)
 
-    for a, b in zip(stretches, stretches[1:]):
-        if len(a) + len(b) <= MAX_WORDS and not apart(a) and not apart(b):
-            add(a + b)
+    for chunk in chunks:
+        for a, b in zip(chunk, chunk[1:]):
+            if len(a) + len(b) <= MAX_WORDS and not apart(a) and not apart(b):
+                add(a + b)
     return out[:MAX_PHRASES]
 
 
@@ -198,12 +207,20 @@ def strain_phrases(name: str, brand: str | None = "", category: str | None = Non
     is offered without it ("Cookies N Cream Cones" on an edible is Cookies N Cream), and
     the brand's curated product lines are left to the line question ("Releaf" is Papa &
     Barkley's line, not a strain)."""
-    tails = FORMAT_TAILS.get((category or "").lower(), frozenset())
+    tails = FORMAT_TAILS.get((category or "").lower(), [])
+    heads = FORMAT_HEADS.get((category or "").lower(), frozenset())
     out: list[str] = []
     for phrase in phrases(name, brand):
         words = phrase.split()
-        while len(words) > 1 and _bare(words[-1]) in tails:
-            words = words[:-1]
+        trimmed_one = True
+        while trimmed_one:
+            trimmed_one = False
+            for tail in tails:
+                if len(words) > len(tail) and tuple(_bare(w) for w in words[-len(tail):]) == tail:
+                    words, trimmed_one = words[:-len(tail)], True
+                    break
+        while len(words) > 1 and _bare(words[0]) in heads:
+            words = words[1:]
         trimmed = " ".join(words).strip(_EDGE)
         line = canonical.find_product_line(brand or "", trimmed, category)
         if line and line.lower() == trimmed.lower():
@@ -218,7 +235,8 @@ def tidy(phrase: str) -> str:
     phrase the store wrote all in one case, crosses joined by a lowercase "x".
     Mixed-case phrases keep the store's spelling, as the LLM is told to."""
     if phrase.isupper() or phrase.islower():
-        keep = {"OG", "AK", "RSO", "CBD", "THC", "BC", "NYC", "LA", "GSC", "GMO", "MAC", "UK"}
+        keep = {"OG", "AK", "RSO", "CBD", "THC", "BC", "NYC", "LA", "GSC", "GMO", "MAC", "UK",
+                "ATF", "OGKB", "ZKZ", "PCK", "GDP", "SFV", "GG", "DJ"}     # storefront.ACRONYMS
         words = []
         for w in phrase.split():
             words.append(w.upper() if w.upper() in keep or re.search(r"\d", w)
