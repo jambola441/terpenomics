@@ -892,6 +892,48 @@ Both paths were re-run, since today's path uses the same options for the rows Je
   - a Blue Dream eighth whose fourth listing Jev calls smalls.
 - **The overall gap is within the run-to-run spread.** Jev only ranges 281–285 against today's 284–285.
 
+**A dry run on one store, then fixes, then both paths again (same day).** Hold Up Roll Up's raw scrape (846 rows) went through both paths, local caches only. 439 rows reached the models; the rest came from the catalog or the name. The dry run turned up fixes for both paths:
+- no phrase crosses " for " (1906's "Genius for Brain-Power");
+- a figure equal to THC plus the cannabinoids beside it is unlikely in any text (Pillow Talk's "1800mg per package");
+- "100 mg/unit" is the package;
+- a store field that is no size in the category's unit is blanked, not kept (Camino's 20-gummy pack filed as "72g").
+
+The gold suites after them:
+
+| | today (Jev, then Haiku) | Jev only, any confidence |
+| --- | ---: | ---: |
+| cases passed (of 302) | 286.3 (286–287) | 283.0 (281–285) |
+| category / subtype | 281 / 248.0 | 281 / 247.7 |
+| strain (of 247) / line (of 20) | 240.3 / 20 | 239.3 / 20 |
+| size (of 243) | 239.7 | 241.0 |
+| listings changed across the 3 runs | 30 | 13 |
+| $/run | $0.082 | $0.032 |
+
+The two paths get the same number of fields right (1,029 each). Jev only's misses fall on more cases, so it passes three fewer.
+
+On the store, Jev only differs from today's path on 50 of the 846 rows:
+- **Better on about 15:**
+  - THC instead of a cannabinoid sum: Ayrloom's Everyday drops are 150mg, not 600mg, and its Pillow Talk drops are 300mg, not 1800mg;
+  - blend names Haiku left empty: Focus, Relax, Unwind;
+  - format words dropped: "Recovery Stick" becomes Recovery;
+  - turn's Botanica Blends line;
+  - the flavors of variety packs;
+  - chocolate bars whose only name is their format, which the gold labels give no strain.
+- **Worse on about 22:**
+  - **A product named once, with nothing else in the name.** Jev answers "none", or calls the name a line: Pinnacle (two brands), Lip Smacker, Jokerz Candy 5, Permanent Marker, and 1906's Genius, Love and BOOST pills. Its probabilities there are 0.3–0.45 for the right phrase; "none" gets 0.4–0.9. Today's path sends these rows to Haiku.
+  - **REMZzz's 20-packs:** "2.5mg THC Hash, 2.5mg THC/piece" is 5mg a piece and 100mg a pack. Jev is under the bar between 50mg and 100mg; the field is empty, so the size is blank or 50mg.
+  - **One category:** a 3.5g Singapore Sling flower filed as a pre-roll.
+  - **Line words kept on strains:** PIXLZ, Supah, Rings.
+- **The rest are arguable:**
+  - Harney's "Spicy Pound Town" or "Cinnamon Spiced";
+  - "ATF" or "Alaskan Thunder Fuck";
+  - "Dreamweavers" or "Dreamweaver".
+
+**Where that leaves Jev only.** It is a percent or so behind today's path, and the misses are concentrated on names Jev does not take for strains. In exchange it is cheaper and more stable:
+- it costs about 40% as much;
+- it changes half as many answers between runs;
+- it never changes a size between runs.
+
 ## Fleet report — all 24 live stores (2026-08-25)
 
 `dispensary_report.py` runs the audit checks **per store** and normalizes to
