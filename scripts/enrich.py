@@ -242,13 +242,18 @@ def _load_key(env_name: str) -> str | None:
 #   provider "openrouter" → OpenAI-compatible gateway (Claude, MiMo, Gemini, ...)
 #                           needs OPENROUTER_API_KEY and `pip install openai`
 #
-# cost is USD per token. Cache costs only apply to the anthropic provider.
+# cost is USD per token. cache_write/cache_read apply wherever a call reports cache
+# tokens — always on the anthropic path, on openrouter only for a model the gateway
+# caches by itself — and an entry that gives no rate for them bills them as plain input.
 # Find exact OpenRouter slugs + live pricing at https://openrouter.ai/models
 # ---------------------------------------------------------------------------
 
 DEFAULT_MODEL = "haiku"
 
-# Per-request defaults; a model entry may override "timeout"/"max_tokens".
+# Per-request defaults; a model entry may override "timeout"/"max_tokens". It may also
+# carry "params": extra chat-completions parameters sent on every request to that model
+# (openrouter provider only), for a model whose request needs more than the defaults —
+# a reasoning model's "reasoning_effort", say. Nothing is sent unless an entry names it.
 _DEFAULT_TIMEOUT = 90      # seconds — a stalled batch fails fast instead of hanging
 _DEFAULT_MAX_TOKENS = 4096
 
@@ -263,8 +268,8 @@ MODELS: dict[str, dict] = {
     # OPENROUTER_API_KEY but no ANTHROPIC_API_KEY. Scores from this entry are
     # comparable to "haiku" on accuracy but NOT on cost: OpenRouter's rate is
     # $1.00/$5.00 per M vs Anthropic's $0.80/$4.00, ~25% higher. There is also
-    # no prompt-cache accounting on this path (a no-op today either way, since
-    # the system prompts sit under the minimum cacheable length).
+    # nothing to cache-account on this path (no cache_control is sent, and the
+    # system prompts sit under the minimum cacheable length anyway).
     "haiku-or": {
         "provider":  "openrouter",
         "api_model": "anthropic/claude-haiku-4.5",
@@ -282,8 +287,8 @@ MODELS: dict[str, dict] = {
     "mimo": {
         "provider":  "openrouter",
         "api_model": "xiaomi/mimo-v2.5",        # non-reasoning MiMo on OpenRouter
-        # OpenRouter pricing. cache_read is tracked only on the anthropic path,
-        # so the $0.0036/M cached-input rate doesn't apply to this OpenAI-style call.
+        # OpenRouter pricing. No cache_read rate is given here, so cached input
+        # bills as plain input rather than at the $0.0036/M cached-input rate.
         "cost": {"input": 0.14 / 1e6, "output": 0.28 / 1e6},
         # MiMo returned empty/truncated JSON on 50-item batches, nulling most fields.
         # Use a SMALL batch_size (fewer items per call → shorter, complete output)
@@ -310,6 +315,39 @@ MODELS: dict[str, dict] = {
         # that stabilized mimo).
         "batch_size": 15, "max_tokens": 8192,
     },
+    # OpenAI GPT-6 Luna — a CANDIDATE, not the default. MEASURED 2026-10-06 against
+    # haiku-or, all nine case files (302 cases), the production path (--classifier jev),
+    # three runs each, interleaved:
+    #   cases passed  286.7 (284-290) vs 287.7 (287-289): level. On the llm path, where
+    #                 the model answers every row: 273.0 (272-274) vs 279.7 (278-281)
+    #   $/run         $0.035 vs $0.086 (Jev is $0.031 of both; the model alone is $0.005
+    #                 vs $0.056). s/run 46 vs 51. Failed rows 0 vs 0
+    #   stability     rows whose answer changed across the 3 runs, any field: 44 vs 26
+    #                 of 333 (product_line 13 vs 0, variant 22 vs 12)
+    # Cheaper, not better, and less steady; no request knob fixes that (seed and
+    # temperature leave identical requests answering differently). evals/enrich/README.md.
+    "luna": {
+        "provider":  "openrouter",
+        # Pinned; resolves to openai/gpt-6-luna-20260922. Never ~openai/gpt-luna-latest.
+        "api_model": "openai/gpt-6-luna",
+        # OpenRouter bills this model's prompt cache too — $0.125/M to write, $0.01/M to
+        # read — and reports both counts, so both are priced.
+        "cost": {"input": 0.10 / 1e6, "output": 0.50 / 1e6,
+                 "cache_write": 0.125 / 1e6, "cache_read": 0.01 / 1e6},
+        # A reasoning model: its thinking is billed as output (completion_tokens already
+        # counts it) and it takes no temperature. Left alone it reasons about as much as
+        # "medium" does, ~4x the reasoning tokens of "low" and 1.5-2x the wall clock, for
+        # no better score; "low" was picked on the Plug suite (evals/enrich/README.md).
+        "params": {"reasoning_effort": "low"},
+        # Reasoning counts against max_tokens. The longest 50-row call at "low" used
+        # 1,196 of it; the rest is headroom for a long think, and is a cap, not a charge.
+        "max_tokens": 8192,
+    },
+    # NOTE: openai/gpt-6-luna:batch is half price ($0.05/$0.25 per M) and is the SAME
+    # weights, but, like the Haiku :batch above, it is not reachable from here: OpenRouter
+    # answers a /chat/completions request with 404 "cannot be used with the
+    # chat/completions endpoint (adapter OpenAIBatchAdapter)". Adopting it would be a
+    # submit-poll-retrieve rewrite, not a MODELS entry.
 }
 
 
@@ -478,7 +516,12 @@ _EXTRACT_PROMPT_SIZED = (
 )
 
 
-_ZERO_USAGE = {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0}
+# input_tokens is the UNCACHED prompt; cache_write/cache_read are billed at their own
+# rates. output_tokens is everything billed as output, a reasoning model's hidden
+# reasoning included; reasoning_tokens is the share of it that was reasoning, reported
+# for visibility and never added to the cost a second time.
+_ZERO_USAGE = {"input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0,
+               "cache_read_tokens": 0, "reasoning_tokens": 0}
 
 
 # When Jev has settled some of a store's rows (jev_extract.py), the LLM sees only the
@@ -753,14 +796,14 @@ def _valid_subtype(answer: str | None, category: str, hint: str | None) -> str:
 def _call_llm(
     client, provider: str, api_model: str, system_prompt: str,
     payload: list[dict], timeout: float, max_tokens: int,
-    label: str, print_lock,
+    label: str, print_lock, params: dict | None = None,
 ) -> tuple[dict | None, dict]:
     """Returns (items_by_local_id, usage_dict). items is None on any failure —
     callers must treat those rows as unanswered (fall back to hints, do NOT cache)."""
     for attempt in range(_MAX_ATTEMPTS):
         items, usage, retry_after = _call_llm_once(
             client, provider, api_model, system_prompt, payload,
-            timeout, max_tokens, label, print_lock)
+            timeout, max_tokens, label, print_lock, params)
         if items is not None or retry_after is None:
             return items, usage
         # Transient: the gateway told us to wait (rate limit / in-flight budget).
@@ -805,12 +848,38 @@ def _retry_delay(exc: Exception) -> float | None:
     return min(hinted, _MAX_RETRY_AFTER)
 
 
+def _openai_usage(u) -> dict:
+    """An OpenAI-style usage block, as the counters the anthropic branch reports.
+
+    `prompt_tokens` includes the cached and cache-written tokens, which are billed at
+    their own rates, so they are split out of input_tokens. `completion_tokens`
+    already includes a reasoning model's reasoning tokens (checked against the
+    gateway's own billed cost: output rate x completion_tokens, nothing on top), so
+    reasoning is reported beside it and not added to it. Gateways that report no
+    details leave every extra counter at 0.
+    """
+    def count(details, name: str) -> int:
+        return getattr(details, name, 0) or 0
+
+    prompt = getattr(u, "prompt_tokens_details", None)
+    cached, written = count(prompt, "cached_tokens"), count(prompt, "cache_write_tokens")
+    return {
+        "input_tokens":       max(0, u.prompt_tokens - cached - written),
+        "output_tokens":      u.completion_tokens,
+        "cache_write_tokens": written,
+        "cache_read_tokens":  cached,
+        "reasoning_tokens":   count(getattr(u, "completion_tokens_details", None),
+                                    "reasoning_tokens"),
+    }
+
+
 def _call_llm_once(
     client, provider: str, api_model: str, system_prompt: str,
     payload: list[dict], timeout: float, max_tokens: int,
-    label: str, print_lock,
+    label: str, print_lock, params: dict | None = None,
 ) -> tuple[dict | None, dict, float | None]:
     """One attempt. Third element is the retry delay when the failure is transient."""
+    finish = None
     try:
         if provider == "anthropic":
             resp = client.messages.create(
@@ -825,6 +894,7 @@ def _call_llm_once(
                 "output_tokens":      u.output_tokens,
                 "cache_write_tokens": getattr(u, "cache_creation_input_tokens", 0) or 0,
                 "cache_read_tokens":  getattr(u, "cache_read_input_tokens", 0) or 0,
+                "reasoning_tokens":   0,
             }
         else:  # openrouter — OpenAI-compatible chat completions
             resp = client.chat.completions.create(
@@ -833,15 +903,11 @@ def _call_llm_once(
                     {"role": "system", "content": system_prompt},
                     {"role": "user",   "content": json.dumps(payload)},
                 ],
+                **(params or {}),       # the model entry's own knobs (MODELS "params")
             )
+            finish = resp.choices[0].finish_reason
             text = (resp.choices[0].message.content or "").strip()
-            u = resp.usage
-            usage = {
-                "input_tokens":       u.prompt_tokens,
-                "output_tokens":      u.completion_tokens,
-                "cache_write_tokens": 0,
-                "cache_read_tokens":  0,
-            }
+            usage = _openai_usage(resp.usage)
         if text.startswith("```"):
             text = text.split("\n", 1)[1].rsplit("```", 1)[0].strip()
         parsed = json.loads(text)
@@ -851,8 +917,11 @@ def _call_llm_once(
         items = {str(item["id"]): item for item in parsed if isinstance(item, dict) and "id" in item}
     except Exception as exc:
         delay = _retry_delay(exc)
+        # A reply cut off at max_tokens fails as bad JSON, or as no JSON at all when a
+        # reasoning model spent the whole budget thinking; say which it was.
+        cut = f" (cut off at max_tokens={max_tokens})" if finish == "length" else ""
         with print_lock:
-            print(f"  [model error] {label}: {str(exc)[:200]}", file=sys.stderr)
+            print(f"  [model error] {label}: {str(exc)[:200]}{cut}", file=sys.stderr)
         return None, dict(_ZERO_USAGE), delay
 
     with print_lock:
@@ -962,6 +1031,7 @@ def _run_enrich(
     provider, api_model = model_cfg["provider"], model_cfg["api_model"]
     timeout    = model_cfg.get("timeout", _DEFAULT_TIMEOUT)
     max_tokens = model_cfg.get("max_tokens", _DEFAULT_MAX_TOKENS)
+    params     = model_cfg.get("params")        # extra request parameters, if the model needs any
     batch_size = model_cfg.get("batch_size", batch_size)  # per-model override (small for flaky models)
     print_lock = threading.Lock()
     usage = dict(_ZERO_USAGE)
@@ -980,7 +1050,8 @@ def _run_enrich(
             _workers = 8
         with ThreadPoolExecutor(max_workers=min(len(tasks), _workers)) as ex:
             futs = {
-                ex.submit(_call_llm, client, provider, api_model, sp, pl, timeout, max_tokens, label, print_lock): onr
+                ex.submit(_call_llm, client, provider, api_model, sp, pl, timeout, max_tokens, label,
+                          print_lock, params): onr
                 for (label, sp, pl, onr) in tasks
             }
             for fut in as_completed(futs):
@@ -1245,8 +1316,10 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
     consistency. The nudge is OFF by default; when brand_examples is None it auto-loads from
     the DB only if ENRICH_BRAND_NUDGE=1. Pass an explicit dict to force-use it, or {} to disable.
 
-    Returns a token usage dict: {input_tokens, output_tokens, cache_write_tokens,
-    cache_read_tokens, cost_usd}. All zeros when everything was cached.
+    Returns a token usage dict: {input_tokens (uncached), output_tokens (a reasoning
+    model's reasoning included), cache_write_tokens, cache_read_tokens, reasoning_tokens
+    (the share of output_tokens that was reasoning), cost_usd}. All zeros when everything
+    was cached.
     """
     # The marker describes this run. A row read back from an earlier CSV may still
     # carry "True" from a run that failed; left in place, an answered row would look
@@ -1403,11 +1476,14 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
               f"(marked enrich_failed; the importer keeps their stored identity)", file=sys.stderr)
 
     c = model_cfg["cost"]
+    # A cached or cache-written token the entry gives no rate for is billed as plain
+    # input, which is what every gateway-routed model was charged before cache tokens
+    # were split out of input_tokens. output_tokens already holds any reasoning.
     cost = (
         usage["input_tokens"]         * c.get("input", 0)
         + usage["output_tokens"]      * c.get("output", 0)
-        + usage["cache_write_tokens"] * c.get("cache_write", 0)
-        + usage["cache_read_tokens"]  * c.get("cache_read", 0)
+        + usage["cache_write_tokens"] * c.get("cache_write", c.get("input", 0))
+        + usage["cache_read_tokens"]  * c.get("cache_read", c.get("input", 0))
     )
     usage["cost_usd"] = round(cost + usage.get("jev_cost_usd", 0.0), 4)
     return usage

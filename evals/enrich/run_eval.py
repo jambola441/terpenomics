@@ -230,9 +230,11 @@ def write_summary(results: list[dict], suites: list[dict], out_dir: Path,
              f"classifier: **{classifier}** (jev = Jev decides category/subtype, Haiku the "
              "rest; llm = Haiku's pass A for every row)\n",
              "Score = passing cases / total (clusters: groups converged + canonical-matched).\n",
-             "| model | api_model | time s | in tok | out tok | cost $ | "
+             # in tok is the whole prompt, cached or not; out tok is everything billed as
+             # output, a reasoning model's reasoning (the next column) included.
+             "| model | api_model | time s | in tok | out tok | of which reasoning | cost $ | "
              + " | ".join(s["eval_type"] for s in suites) + " | note |",
-             "|" + "---|" * (7 + len(suites))]
+             "|" + "---|" * (8 + len(suites))]
     for r in results:
         u = r["usage"]
         per = []
@@ -244,11 +246,14 @@ def write_summary(results: list[dict], suites: list[dict], out_dir: Path,
                 per.append(f"{canon}/{len(sc)} ({conv} conv)")
             else:
                 per.append(f"{sum(x['passed'] for x in sc)}/{len(sc)}")
+        prompt = sum(u.get(k, 0) for k in ("input_tokens", "cache_write_tokens", "cache_read_tokens"))
         note = r["error"] or ("no tokens — bad slug?" if not (u.get("input_tokens") or u.get("output_tokens")) else "")
+        if not note and u.get("failed_rows"):
+            note = f"{u['failed_rows']} row(s) unenriched (model error)"
         lines.append(
             f"| {r['model']} | {enrich.MODELS[r['model']]['api_model']} | {r['secs']:.0f} | "
-            f"{u.get('input_tokens',0):,} | {u.get('output_tokens',0):,} | {u.get('cost_usd',0):.4f} | "
-            + " | ".join(per) + f" | {note} |"
+            f"{prompt:,} | {u.get('output_tokens',0):,} | {u.get('reasoning_tokens',0):,} | "
+            f"{u.get('cost_usd',0):.4f} | " + " | ".join(per) + f" | {note} |"
         )
     (out_dir / "summary.md").write_text("\n".join(lines) + "\n")
 
