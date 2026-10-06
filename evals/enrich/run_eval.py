@@ -116,7 +116,7 @@ def enrich_with_model(model: str, suites: list[dict], brand_nudge: bool = False,
     # A run that burned no tokens never reached the model — a bad OpenRouter slug or a
     # missing key. Without this the fallback hints still score (~10%), which reads like a
     # terrible model rather than a broken config. Fail loudly instead.
-    if err is None and rows and not any(
+    if err is None and rows and enrich._llm_enabled() and not any(
         usage.get(k, 0) for k in ("input_tokens", "output_tokens", "cache_read_tokens")
     ):
         err = (f"no tokens used — the model was never called. Check the api_model slug "

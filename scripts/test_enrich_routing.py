@@ -295,3 +295,36 @@ def test_tidy_keeps_mixed_case_and_title_cases_one_case_phrases():
     assert jev_extract.tidy("og kush") == "OG Kush"
     assert jev_extract.tidy("Cherry Lime X RZ-11") == "Cherry Lime x RZ-11"
     assert jev_extract.tidy("McFlurry Kush") == "McFlurry Kush"
+
+
+# --- ENRICH_LLM=0: Jev and code only -------------------------------------------------
+
+def test_without_the_llm_unsure_fields_keep_the_stores_values(fakes, monkeypatch):
+    import size_choice
+    monkeypatch.setenv("ENRICH_LLM", "0")
+    monkeypatch.setenv("ENRICH_CLASSIFIER", "jev")
+    monkeypatch.setattr(enrich.jev_classify, "classify",
+                        jev_answers((0.97, 0.93), (0.97, 0.93), (0.40, 0.93)))
+    monkeypatch.setattr(enrich.jev_extract, "extract", text_answers(
+        ("Lychee", 0.95, "Bliss", 0.90),          # both sure
+        ("Mango", 0.60, None, 0.90),              # strain unsure: none
+        ("Kiwi", 0.95, None, 0.90),
+    ))
+    asked = []
+
+    def fake_choose(items, prices=None, **kw):
+        asked.extend(i.name for i in items)
+        return [size_choice.Pick(20.0, "jev", 0.9)]
+    monkeypatch.setattr(size_choice, "choose", fake_choose)
+    rows = [gummy("Gummies a 10pk", "a"),                                   # code: 10 x 10mg
+            dict(gummy("Gummies b 5mg THC 2.5mg CBN", "b"), variant=""),    # two doses: chooser
+            dict(gummy("Mystery c 10pk", "c"), category="other")]           # Jev unsure of category
+    usage = enrich.enrich(rows, model="haiku-or", brand_examples={}, catalog_first=False)
+
+    assert not any(fakes[k] for k in ("classify", "extract", "extract_sized"))   # no LLM call
+    assert [(r["category"], r["strain"], r["product_line"]) for r in rows] == [
+        ("edible", "Lychee", "Bliss"), ("edible", "", None), ("other", "Kiwi", None)]
+    assert [r["variant"] for r in rows] == ["100mg", "20mg", "10mg"]
+    assert asked == ["Gummies b 5mg THC 2.5mg CBN"]
+    assert usage["jev_classified"] == 2
+    assert not (enrich._CACHE_DIR / "test-store.haiku-or.json").exists()         # nothing cached

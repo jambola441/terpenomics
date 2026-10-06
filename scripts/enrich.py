@@ -703,6 +703,13 @@ def _jev_text() -> bool:
     return os.environ.get("ENRICH_JEV_TEXT", "1").strip() != "0"
 
 
+# ENRICH_LLM=0 sends nothing to an LLM: Jev and code answer what they can, and a field
+# they leave open keeps the store's value (_run_without_llm). A switch for measuring that
+# pipeline against this one (evals/enrich/README.md), not a production setting.
+def _llm_enabled() -> bool:
+    return os.environ.get("ENRICH_LLM", "1").strip() != "0"
+
+
 JEV_TEXT_MIN = float(os.environ.get("ENRICH_JEV_TEXT_MIN", "0.90"))
 JEV_LINE_MIN = float(os.environ.get("ENRICH_JEV_LINE_MIN", "0.80"))
 JEV_NO_LINE_MIN = float(os.environ.get("ENRICH_JEV_NO_LINE_MIN", "0.50"))
@@ -989,6 +996,69 @@ def _squash(s: str) -> str:
     return re.sub(r"[^a-z0-9]", "", (s or "").lower())
 
 
+def _run_without_llm(pending: list[tuple[int, dict]], categories: list, subtypes: list,
+                     strains: list, product_lines: list, variants: list) -> dict:
+    """Jev and code only (ENRICH_LLM=0).
+
+      category, subtype  Jev (jev_classify) at JEV_MIN_CONFIDENCE; below it the store's
+                         category and the rule-based subtype stand
+      size               code where it reads the size without guessing (stated_size), else
+                         size_choice: size_candidates' readings, the price, then Jev; below
+                         Jev's bar the store's size field stands
+      strain, line       Jev from the name's phrases (jev_extract), each at its own bar;
+                         below it, none
+
+    Nothing is cached: a field left at the store's value is not an answer to keep.
+    """
+    import size_candidates
+    import size_choice
+
+    usage = dict(_ZERO_USAGE)
+    by_jev, rest, cu = _classify_with_jev(pending, categories, subtypes)
+    print(f"    jev only: classified {len(by_jev)} of {len(pending)}; {len(rest)} keep the store's category")
+
+    def category(oi, row):
+        return categories[oi] or _hint_category(row)
+
+    items, open_rows = [], []
+    for oi, row in pending:
+        cat = category(oi, row)
+        size = stated_size(row, cat)
+        if size is not None:
+            variants[oi] = enrichers.for_category(cat).variant(row.get("name", ""), size) or size
+        elif size_candidates.unit_of(cat):
+            items.append(size_choice.Item(
+                name=row.get("name", ""), category=cat, variant=row.get("variant"),
+                description=row.get("description"), brand=row.get("brand"),
+                price_cents=int(row["price_cents"]) if str(row.get("price_cents") or "").isdigit() else None))
+            open_rows.append((oi, row, cat))
+    su = jev.Usage()
+    picks = size_choice.choose(items, usage=su)
+    for (oi, row, cat), pick in zip(open_rows, picks):
+        if pick.by != "field" and pick.value is not None:
+            size = normalize_variant(f"{pick.value:g}{size_candidates.unit_of(cat)}", cat)
+            variants[oi] = enrichers.for_category(cat).variant(row.get("name", ""), size) or size
+    print(f"    jev only: code sized {len(pending) - len(items)}, the chooser {len(items)} "
+          f"({sum(p.by != 'field' for p in picks)} answered)")
+
+    xu = jev.Usage()
+    answers = jev_extract.extract([(row, category(oi, row), subtypes[oi]) for oi, row in pending], usage=xu)
+    for (oi, row), a in zip(pending, answers):
+        if a is None:
+            continue
+        same = a.strain and a.line and a.line.lower() == a.strain.lower()
+        if a.strain and a.p_strain >= JEV_TEXT_MIN:
+            strains[oi] = enrichers.for_category(category(oi, row)).strain(
+                row.get("name", ""), jev_extract.tidy(a.strain))
+        if a.line and not same and a.p_line >= JEV_LINE_MIN:
+            product_lines[oi] = a.line
+
+    usage["jev_requests"] = cu.requests + su.requests + xu.requests
+    usage["jev_cost_usd"] = cu.cost_usd + su.cost_usd + xu.cost_usd
+    usage["jev_classified"] = len(by_jev)
+    return usage
+
+
 def _run_enrich(
     pending: list[tuple[int, dict]],
     cache: dict,
@@ -1011,6 +1081,9 @@ def _run_enrich(
     """
     from concurrent.futures import ThreadPoolExecutor, as_completed
     import threading
+
+    if not _llm_enabled():
+        return _run_without_llm(pending, categories, subtypes, strains, product_lines, variants)
 
     client = _make_client(model_cfg)
     if client is None:
