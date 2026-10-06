@@ -74,3 +74,35 @@ def test_refused_twice_says_who_refused(fallback):
     msg = str(err.value)
     assert "server=cloudflare cf-ray=abc-SEA cf-mitigated=challenge" in msg
     assert "server=nginx" in msg and "forbidden" in msg
+
+
+# ── product links ────────────────────────────────────────────────────────────
+
+def test_product_url_fills_the_slug_into_the_stores_template():
+    t = "https://hiinyc.com/stores/hii-williamsburg/product/{cname}"
+    assert dutchie.product_url(t, "elements-papers") == "https://hiinyc.com/stores/hii-williamsburg/product/elements-papers"
+
+
+def test_product_url_is_blank_without_a_template_or_a_slug():
+    assert dutchie.product_url("", "elements-papers") == ""
+    assert dutchie.product_url("https://x.test/product/{cname}", "") == ""
+
+
+def test_product_url_escapes_what_a_slug_should_never_hold():
+    assert dutchie.product_url("https://x.test/?p={cname}", "a b/c") == "https://x.test/?p=a%20b%2Fc"
+
+
+def test_rows_carry_the_product_url():
+    p = {"_id": "1", "Name": "Pipe", "cName": "pipe", "Options": ["N/A", "1g"], "Prices": [5, 9], "type": "Accessories"}
+    rows = dutchie.normalise_gql(p, "store", "now", "https://x.test/product/{cname}")
+    assert [r["product_url"] for r in rows] == ["https://x.test/product/pipe"] * 2
+    assert dutchie.normalise_gql(p, "store", "now")[0]["product_url"] == ""
+
+
+def test_every_dutchie_store_template_is_well_formed():
+    import json
+    stores = json.loads((Path(__file__).resolve().parent.parent / "dispensaries.json").read_text())
+    for s in stores:
+        t = s.get("product_url_template")
+        if t:
+            assert s["platform"] == "dutchie_graphql" and t.startswith("https://") and t.count("{cname}") == 1, s["slug"]

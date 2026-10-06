@@ -26,6 +26,7 @@ import os
 import re
 import sys
 import time
+from urllib.parse import quote
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../scripts"))
 from scraper_common import apply_brand_aliases, canonical_brands, map_category, normalize_variant, now_iso, stamped_path, write_csv, write_scrape_meta  # noqa: E402
@@ -79,6 +80,7 @@ query FilteredProducts(
     products {
       _id
       Name
+      cName
       brand { name }
       Options
       Prices
@@ -122,7 +124,19 @@ def _parse_potency(content: dict | None) -> str:
     return f"{val:g}"
 
 
-def normalise_gql(p: dict, dispensary_slug: str, scraped_at: str) -> list[dict]:
+def product_url(template: str, cname: str) -> str:
+    """The product's page on the store's own site, or "" when we cannot build one.
+
+    `template` is the store's `product_url_template` from dispensaries.json, with a
+    `{cname}` placeholder for Dutchie's product slug. A store without a template, or a
+    product without a slug, gets no link rather than a guess.
+    """
+    if not template or not cname:
+        return ""
+    return template.replace("{cname}", quote(cname, safe=""))
+
+
+def normalise_gql(p: dict, dispensary_slug: str, scraped_at: str, url_template: str = "") -> list[dict]:
     """One row per option/variant tier in the product."""
     name   = str(p.get("Name") or "").strip()
     brand  = str((p.get("brand") or {}).get("name") or "").strip()
@@ -137,6 +151,7 @@ def normalise_gql(p: dict, dispensary_slug: str, scraped_at: str) -> list[dict]:
     cbd   = _parse_potency(p.get("CBDContent"))
     sku   = str(p.get("_id") or "").strip()
     image = str(p.get("Image") or "").strip()
+    url   = product_url(url_template, str(p.get("cName") or "").strip())
 
     options = p.get("Options") or ["N/A"]
     prices  = p.get("recPrices") or p.get("Prices") or []
@@ -160,7 +175,7 @@ def normalise_gql(p: dict, dispensary_slug: str, scraped_at: str) -> list[dict]:
             "cbd_percent":     cbd,
             "classification":  strain,
             "in_stock":        "TRUE",
-            "product_url":     "",
+            "product_url":     url,
             "image_url":       image,
             "scraped_at":      scraped_at,
             "description":     desc,
@@ -250,6 +265,7 @@ def scrape_store(
     parallel: bool = False,
     no_enrich: bool = False,
     model: str = "haiku",
+    url_template: str = "",
 ) -> int:
     print(f"\n{'='*60}")
     print(f"Scraping: {dispensary_name}")
@@ -284,7 +300,7 @@ def scrape_store(
         pid = str(p.get("_id") or "")
         if pid not in seen_ids:
             seen_ids.add(pid)
-            all_rows.extend(normalise_gql(p, dispensary_slug, scraped_at))
+            all_rows.extend(normalise_gql(p, dispensary_slug, scraped_at, url_template))
     print(f"  page=  0  unique products: {len(seen_ids)}")
 
     remaining = list(range(1, total_pages + 1))
@@ -303,7 +319,7 @@ def scrape_store(
                 pid = str(p.get("_id") or "")
                 if pid not in seen_ids:
                     seen_ids.add(pid)
-                    all_rows.extend(normalise_gql(p, dispensary_slug, scraped_at))
+                    all_rows.extend(normalise_gql(p, dispensary_slug, scraped_at, url_template))
     elif remaining:
         for page in remaining:
             time.sleep(DELAY_SECS)
@@ -319,7 +335,7 @@ def scrape_store(
                 pid = str(p.get("_id") or "")
                 if pid not in seen_ids:
                     seen_ids.add(pid)
-                    all_rows.extend(normalise_gql(p, dispensary_slug, scraped_at))
+                    all_rows.extend(normalise_gql(p, dispensary_slug, scraped_at, url_template))
             print(f"  page={page:3d}  unique products: {len(seen_ids)}")
 
     if not all_rows:
@@ -371,6 +387,15 @@ def parse_args():
     return p.parse_args()
 
 
+def url_template_for(slug: str) -> str:
+    """The store's `product_url_template` from dispensaries.json, "" when it has none."""
+    with open(STORES_JSON) as f:
+        for s in json.load(f):
+            if s.get("slug") == slug:
+                return s.get("product_url_template") or ""
+    return ""
+
+
 def load_stores() -> list[dict]:
     with open(STORES_JSON) as f:
         all_stores = json.load(f)
@@ -408,6 +433,7 @@ def main():
                 parallel=args.parallel,
                 no_enrich=args.no_enrich,
                 model=args.model,
+                url_template=s.get("product_url_template") or "",
             )
             total_rows += n
             if n == 0:
@@ -429,7 +455,8 @@ def main():
             or args.dutchie_id
         )
         out_path = args.out or stamped_path(os.path.join(HERE, f"{disp_slug}_listings.csv"))
-        n = scrape_store(session, args.dutchie_id, disp_slug, args.name or args.dutchie_id, out_path, parallel=args.parallel, no_enrich=args.no_enrich, model=args.model)
+        n = scrape_store(session, args.dutchie_id, disp_slug, args.name or args.dutchie_id, out_path, parallel=args.parallel, no_enrich=args.no_enrich, model=args.model,
+                        url_template=url_template_for(disp_slug))
         # Exit status is how scripts/scrape.py learns a store produced nothing.
         sys.exit(0 if n > 0 else 1)
 
