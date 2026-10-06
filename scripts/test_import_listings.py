@@ -411,3 +411,15 @@ def test_an_overlong_name_no_longer_fails_the_store(db, tmp_path):
                           row("B", "Acme OG Kush", strain="OG Kush")]) == 0
     db.execute("SELECT sku, length(scraped_name) FROM listings ORDER BY sku")
     assert db.fetchall() == [("A", 300), ("B", len("Acme OG Kush"))]
+
+
+def test_a_rescrape_without_a_url_keeps_the_stored_one(db, tmp_path):
+    link = "https://shop.example/product/a"
+    assert run(tmp_path, [row("A", "Acme Blue Dream", product_url=link)]) == 0
+    assert run(tmp_path, [row("A", "Acme Blue Dream", price_cents="3500")], name="2.csv") == 0
+    db.execute("SELECT url, price_cents FROM listings WHERE sku = 'A'")
+    assert db.fetchone() == (link, 3500)
+    # A new link still replaces the old one.
+    assert run(tmp_path, [row("A", "Acme Blue Dream", product_url=link + "-v2")], name="3.csv") == 0
+    db.execute("SELECT url FROM listings WHERE sku = 'A'")
+    assert db.fetchone()[0] == link + "-v2"
