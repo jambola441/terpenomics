@@ -61,7 +61,7 @@ from sqlmodel import Session, col, or_, select
 
 from auth import SupabaseAuthUser
 from database import get_session
-from models import BrandCatalog, BrandCatalogEntry, Listing, utcnow_tz
+from models import BrandCatalog, BrandCatalogEntry, Dispensary, Listing, utcnow_tz
 from .auth import require_admin
 
 # scripts/ is not a package; everything in the repo reaches it by path. Imported
@@ -237,6 +237,27 @@ def _serialize_entry(e: BrandCatalogEntry, listing_count: Optional[int] = None) 
         "verified_fields": verification.verified_fields(row),
         "lapsed_fields": sorted(verification.lapsed_fields(row)),
         "listing_count": listing_count,
+    }
+
+
+def _serialize_entry_listing(listing: Listing, store: Dispensary) -> dict:
+    """A listing as the entry's accordion shows it: what the store calls the product,
+    the size its page groups on, and how the match was made."""
+    return {
+        "id": str(listing.id),
+        "dispensary": {"id": str(store.id), "name": store.name, "slug": store.slug},
+        "scraped_name": listing.scraped_name,
+        "variant": listing.variant,
+        # The size product pages group on; the store's own when it typed it right.
+        "size": listing.product_size,
+        "price_cents": listing.price_cents,
+        "in_stock": listing.in_stock,
+        "is_active": listing.is_active,
+        "url": listing.url,
+        "image_url": listing.image_url,
+        "match_method": listing.catalog_match_method,
+        "match_confidence": listing.catalog_match_confidence,
+        "last_seen_at": _iso(listing.last_seen_at),
     }
 
 
@@ -814,6 +835,31 @@ def get_catalog_entry(
 ):
     entry = _get_entry(session, catalog_id, entry_id)
     return _serialize_entry(entry, _entry_listing_counts(session, [entry.id]).get(entry.id, 0))
+
+
+@router.get("/brand-catalogs/{catalog_id}/entries/{entry_id}/listings")
+def list_entry_listings(
+    catalog_id: UUID,
+    entry_id: UUID,
+    session: Session = Depends(get_session),
+    _: SupabaseAuthUser = Depends(require_admin),
+    limit: int = Query(default=200, ge=1, le=500),
+):
+    """The listings that resolve to this entry, at every store, active ones first.
+    `total` counts them all, inactive included, as the entry's listing_count does."""
+    entry = _get_entry(session, catalog_id, entry_id)
+    rows = session.exec(
+        select(Listing, Dispensary)
+        .join(Dispensary, col(Dispensary.id) == col(Listing.dispensary_id))
+        .where(Listing.catalog_entry_id == entry.id)
+        .order_by(col(Listing.is_active).desc(), col(Dispensary.name), col(Listing.scraped_name))
+        .limit(limit)
+    ).all()
+    total = session.exec(
+        select(func.count()).select_from(Listing).where(Listing.catalog_entry_id == entry.id)
+    ).one()
+    return {"entry_id": str(entry.id), "total": total,
+            "listings": [_serialize_entry_listing(listing, store) for listing, store in rows]}
 
 
 @router.post("/brand-catalogs/{catalog_id}/entries/{entry_id}")

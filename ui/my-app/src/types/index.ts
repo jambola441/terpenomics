@@ -564,6 +564,33 @@ export type BrandCatalogEntryPage = {
   entries: BrandCatalogEntry[]
 }
 
+/** A listing that resolves to a catalog entry, as the entry's accordion shows it. */
+export type CatalogEntryListing = {
+  id: string
+  dispensary: { id: string; name: string; slug: string }
+  scraped_name: string | null
+  /** The store's own size, kept as typed. */
+  variant: string | null
+  /** The size the product page groups on: the store's, or the catalog's when the store mistyped it. */
+  size: string | null
+  price_cents: number | null
+  in_stock: boolean
+  is_active: boolean
+  url: string | null
+  image_url: string | null
+  /** exact, jev or manual is trusted; jev_review is a suggestion the listing does not take. */
+  match_method: string | null
+  match_confidence: number | null
+  last_seen_at: string | null
+}
+
+export type CatalogEntryListings = {
+  entry_id: string
+  /** Every listing that resolves here, inactive ones included (the entry's listing_count). */
+  total: number
+  listings: CatalogEntryListing[]
+}
+
 /** A store as the portal sees it — the shape both `/customer/dispensaries` and
  *  `/me/preferred-dispensaries` return. */
 export type PortalDispensary = {

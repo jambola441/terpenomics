@@ -13,8 +13,13 @@
    onToggleAll }}` and a leading checkbox column appears. The table owns the checkbox
    chrome (header state, shift-click reporting, not letting a checkbox click count as
    a row click); the page owns the selected set and whatever it does with it.
+
+   Expanding works the same way: pass `expansion={{ expanded, render }}` and a row
+   whose key is in `expanded` gets a full-width row beneath it with whatever `render`
+   returns. The page owns which rows are open and loads what they show.
    ========================================================================== */
 
+import { Fragment } from 'react'
 import type { CSSProperties, ReactNode, Key } from 'react'
 
 /* ── Shared admin style tokens (previously copy-pasted into every page) ─────── */
@@ -70,6 +75,13 @@ export type SelectionState<T> = {
   onToggleAll: (checked: boolean) => void
 }
 
+export type ExpansionState<T> = {
+  /** keys (as returned by `rowKey`) of the rows shown open */
+  expanded: Set<Key>
+  /** what opens beneath an open row, across the table's full width */
+  render: (row: T) => ReactNode
+}
+
 export type Column<T> = {
   /** stable key; also the value passed to onSort when this column is sortable */
   key: string
@@ -96,6 +108,7 @@ export function AdminTable<T>({
   onRowClick,
   sorting,
   selection,
+  expansion,
 }: {
   columns: Column<T>[]
   rows: T[]
@@ -103,6 +116,7 @@ export function AdminTable<T>({
   onRowClick?: (row: T) => void
   sorting?: SortState
   selection?: SelectionState<T>
+  expansion?: ExpansionState<T>
 }) {
   const selectedHere = selection ? rows.filter((r, i) => selection.selected.has(rowKey(r, i))).length : 0
   const allSelected = selectedHere > 0 && selectedHere === rows.length
@@ -154,8 +168,8 @@ export function AdminTable<T>({
           const isSelected = selection?.selected.has(key) ?? false
           const restingBg = isSelected ? '#111c33' : 'transparent'
           return (
+          <Fragment key={key}>
           <tr
-            key={key}
             style={{ borderBottom: '1px solid #0f172a', cursor: onRowClick ? 'pointer' : 'default', background: restingBg }}
             onClick={onRowClick ? () => onRowClick(row) : undefined}
             onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#0f172a'}
@@ -189,6 +203,15 @@ export function AdminTable<T>({
               </td>
             ))}
           </tr>
+          {expansion?.expanded.has(key) && (
+            <tr>
+              <td colSpan={columns.length + (selection ? 1 : 0)}
+                  style={{ padding: 0, borderBottom: '1px solid #0f172a' }}>
+                {expansion.render(row)}
+              </td>
+            </tr>
+          )}
+          </Fragment>
           )
         })}
       </tbody>
