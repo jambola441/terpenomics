@@ -31,6 +31,7 @@
     "blaze_id": null,
     "alleaves_tenant": null,
     "menu_url": "https://dutchie.com/dispensary/the-plug-brooklyn",
+    "product_url_template": "https://dutchie.com/dispensary/the-plug-brooklyn/product/{cname}",
     "store_url": "https://theplugny.online",
     "neighborhood": "Crown Heights",
     "address": {
@@ -73,6 +74,7 @@
     "blaze_id": null,
     "alleaves_tenant": null,
     "menu_url": "https://theemeralddispensary.com/shop/",
+    "product_url_template": "https://theemeralddispensary.com/shop/?dtche%5Bproduct%5D={cname}",
     "store_url": "https://theemeralddispensary.com",
     "neighborhood": "Bushwick",
     "address": {
@@ -94,6 +96,7 @@
     "blaze_id": null,
     "alleaves_tenant": null,
     "menu_url": "https://hiinyc.com/stores/hii-williamsburg",
+    "product_url_template": "https://hiinyc.com/stores/hii-williamsburg/product/{cname}",
     "store_url": "https://hiinyc.com",
     "neighborhood": "Williamsburg",
     "address": {
@@ -115,6 +118,7 @@
     "blaze_id": null,
     "alleaves_tenant": null,
     "menu_url": "https://hiinyc.com/stores/hii-3rd-ave",
+    "product_url_template": "https://hiinyc.com/stores/hii-3rd-ave/product/{cname}",
     "store_url": "https://hiinyc.com",
     "neighborhood": "Bay Ridge",
     "address": {
@@ -136,6 +140,7 @@
     "blaze_id": null,
     "alleaves_tenant": null,
     "menu_url": "https://thegardenclubbk.com/menu/",
+    "product_url_source": {"type": "sitemap", "sitemap": "https://thegardenclubbk.com/sitemap.xml", "template": "https://thegardenclubbk.com/product/{brand_slug}-{name_slug}-for-sale-new-york-ny"},
     "store_url": "https://thegardenclubbk.com",
     "neighborhood": "Carroll Gardens",
     "address": {
@@ -157,6 +162,7 @@
     "blaze_id": null,
     "alleaves_tenant": null,
     "menu_url": "https://herbologynyc.com/shop/",
+    "product_url_template": "https://herbologynyc.com/shop/product/{cname}/",
     "store_url": "https://herbologynyc.com",
     "neighborhood": "Bed-Stuy",
     "address": {
@@ -178,6 +184,7 @@
     "blaze_id": null,
     "alleaves_tenant": null,
     "menu_url": "https://fireleaf.com/shop/",
+    "product_url_template": "https://fireleaf.com/shop/?dtche%5Bproduct%5D={cname}",
     "store_url": "https://fireleaf.com",
     "neighborhood": "Canarsie",
     "address": {
@@ -199,6 +206,7 @@
     "blaze_id": null,
     "alleaves_tenant": null,
     "menu_url": "https://twistedvibration.com/shop-menu/",
+    "product_url_template": "https://twistedvibration.com/shop-menu/?dtche%5Bproduct%5D={cname}",
     "store_url": "https://twistedvibration.com",
     "neighborhood": "Williamsburg",
     "address": {
@@ -220,6 +228,7 @@
     "blaze_id": null,
     "alleaves_tenant": null,
     "menu_url": "https://byanyothernamebk.com/shop/",
+    "product_url_template": "https://byanyothernamebk.com/shop/?dtche%5Bproduct%5D={cname}",
     "store_url": "https://byanyothernamebk.com",
     "neighborhood": null,
     "address": {
@@ -241,6 +250,7 @@
     "blaze_id": null,
     "alleaves_tenant": null,
     "menu_url": "https://stashmasternyc.com/shop/",
+    "product_url_template": "https://stashmasternyc.com/shop/?dtche%5Bproduct%5D={cname}",
     "store_url": "https://stashmasternyc.com",
     "neighborhood": null,
     "address": {
@@ -261,7 +271,8 @@
     "dutchie_id": "67858280fe520b9bfe00be96",
     "blaze_id": null,
     "alleaves_tenant": null,
-    "menu_url": "https://kayablissnyc.com/location/brooklyn-ny/shop/",
+    "menu_url": "https://kayablissnyc.com/stores/kayabliss-bayridge",
+    "product_url_template": "https://kayablissnyc.com/stores/kayabliss-bayridge/product/{cname}",
     "store_url": "https://kayablissnyc.com",
     "neighborhood": "Bay Ridge",
     "address": {
@@ -282,7 +293,8 @@
     "dutchie_id": "685ab00e8b39ac2c590a9be5",
     "blaze_id": null,
     "alleaves_tenant": null,
-    "menu_url": "https://kayablissnyc.com",
+    "menu_url": "https://kayablissnyc.com/stores/kayabliss-brooklynheights",
+    "product_url_template": "https://kayablissnyc.com/stores/kayabliss-brooklynheights/product/{cname}",
     "store_url": "https://kayablissnyc.com",
     "neighborhood": "Brooklyn Heights",
     "address": {
@@ -304,6 +316,7 @@
     "blaze_id": null,
     "alleaves_tenant": null,
     "menu_url": "https://store.rnrdispensary.com/stores/rnr-dispensary",
+    "product_url_template": "https://store.rnrdispensary.com/stores/rnr-dispensary/product/{cname}",
     "store_url": "https://store.rnrdispensary.com",
     "neighborhood": null,
     "address": {
@@ -325,6 +338,7 @@
     "blaze_id": null,
     "alleaves_tenant": null,
     "menu_url": "https://dutchie.com/dispensary/oc-dispensary",
+    "product_url_template": "https://dutchie.com/dispensary/oc-dispensary/product/{cname}",
     "store_url": "https://dutchie.com/dispensary/oc-dispensary",
     "neighborhood": null,
     "address": {
@@ -346,6 +360,7 @@
     "blaze_id": null,
     "alleaves_tenant": null,
     "menu_url": "https://soulmatebk.com/shop/",
+    "product_url_template": "https://soulmatebk.com/shop/?dtche%5Bproduct%5D={cname}",
     "store_url": "https://soulmatebk.com",
     "neighborhood": "Fort Greene",
     "address": {
@@ -367,6 +382,7 @@
     "blaze_id": null,
     "alleaves_tenant": null,
     "menu_url": "https://qualitycontroldispensary.com/shop-brooklyn",
+    "product_url_template": "https://qualitycontroldispensary.com/shop-brooklyn/?dtche%5Bproduct%5D={cname}",
     "store_url": "https://qualitycontroldispensary.com",
     "neighborhood": "Brighton Beach",
     "address": {
@@ -388,6 +404,7 @@
     "blaze_id": null,
     "alleaves_tenant": null,
     "menu_url": "https://milligrams.co/stores/brooklyn-greenpoint-ny",
+    "product_url_template": "https://milligrams.co/stores/brooklyn-greenpoint-ny/product/{cname}",
     "store_url": "https://milligrams.co",
     "neighborhood": "Greenpoint",
     "address": {
@@ -409,6 +426,7 @@
     "blaze_id": null,
     "alleaves_tenant": null,
     "menu_url": "https://dagmarcannabis.com",
+    "product_url_source": {"type": "joint", "site": "https://dagmarcannabis.com", "business_id": "6163"},
     "store_url": "https://dagmarcannabis.com",
     "neighborhood": "Williamsburg",
     "address": {
@@ -430,6 +448,7 @@
     "blaze_id": null,
     "alleaves_tenant": null,
     "menu_url": "https://dutchie.com/dispensary/green-street-brooklyn",
+    "product_url_template": "https://dutchie.com/dispensary/green-street-brooklyn/product/{cname}",
     "store_url": "https://dutchie.com/dispensary/green-street-brooklyn",
     "neighborhood": "Sheepshead Bay",
     "address": {
@@ -451,6 +470,7 @@
     "blaze_id": null,
     "alleaves_tenant": null,
     "menu_url": "https://dutchie.com/dispensary/emerald-dispensary-carroll-gardens",
+    "product_url_template": "https://dutchie.com/dispensary/emerald-dispensary-carroll-gardens/product/{cname}",
     "store_url": "https://dutchie.com/dispensary/emerald-dispensary-carroll-gardens",
     "neighborhood": "Carroll Gardens",
     "address": {

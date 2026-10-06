@@ -479,7 +479,9 @@ def _upsert_sql(with_catalog: bool) -> str:
             attributes       = EXCLUDED.attributes,
             size             = EXCLUDED.size,
             {catalog}
-            url              = EXCLUDED.url,
+            -- A scrape that found no link (a store without one, a lookup that failed)
+            -- must not blank one an earlier run recorded.
+            url              = COALESCE(EXCLUDED.url, listings.url),
             scraped_at       = EXCLUDED.scraped_at,
             last_seen_at     = EXCLUDED.last_seen_at,
             updated_at       = EXCLUDED.updated_at
@@ -609,6 +611,7 @@ class RestStore:
             # active, and a match a human made is never overwritten.
             row.update(id=stored["id"], variant=stored["variant"],
                        created_at=stored["created_at"], is_active=True)
+            row["url"] = row["url"] or stored.get("url")  # as _upsert_sql: keep a recorded link
             if not with_catalog or stored.get("catalog_match_method") == "manual":
                 row.update({c: stored[c] for c in self.CATALOG})
             known.append(row)
