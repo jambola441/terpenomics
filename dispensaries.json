@@ -140,6 +140,7 @@
     "blaze_id": null,
     "alleaves_tenant": null,
     "menu_url": "https://thegardenclubbk.com/menu/",
+    "product_url_source": {"type": "sitemap", "sitemap": "https://thegardenclubbk.com/sitemap.xml", "template": "https://thegardenclubbk.com/product/{brand_slug}-{name_slug}-for-sale-new-york-ny"},
     "store_url": "https://thegardenclubbk.com",
     "neighborhood": "Carroll Gardens",
     "address": {
@@ -425,6 +426,7 @@
     "blaze_id": null,
     "alleaves_tenant": null,
     "menu_url": "https://dagmarcannabis.com",
+    "product_url_source": {"type": "joint", "site": "https://dagmarcannabis.com", "business_id": "6163"},
     "store_url": "https://dagmarcannabis.com",
     "neighborhood": "Williamsburg",
     "address": {

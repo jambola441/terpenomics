@@ -92,6 +92,12 @@ def test_product_url_escapes_what_a_slug_should_never_hold():
     assert dutchie.product_url("https://x.test/?p={cname}", "a b/c") == "https://x.test/?p=a%20b%2Fc"
 
 
+def test_rows_take_their_url_from_a_resolver():
+    p = {"_id": "1", "Name": "Pipe", "cName": "pipe", "Options": ["N/A"], "Prices": [5], "type": "Accessories"}
+    rows = dutchie.normalise_gql(p, "store", "now", lambda prod: "https://x.test/" + prod["_id"])
+    assert rows[0]["product_url"] == "https://x.test/1"
+
+
 def test_rows_carry_the_product_url():
     p = {"_id": "1", "Name": "Pipe", "cName": "pipe", "Options": ["N/A", "1g"], "Prices": [5, 9], "type": "Accessories"}
     rows = dutchie.normalise_gql(p, "store", "now", "https://x.test/product/{cname}")
