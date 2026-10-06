@@ -22,7 +22,7 @@ stay among the options; they only stop counting as a disagreement.
 
 evals/sizes/ checks it against model readers who saw only the name and description of
 1,000 listings: the size they believe is among the options for 597 of 598, and the code
-settles on another size by itself for 1.
+settles on another size by itself for 2.
 
     from size_candidates import assess
     a = assess({"variant": "1g", "scraped_name": "Sour Diesel - 32PK 1G Prerolls",
@@ -35,6 +35,7 @@ settles on another size by itself for 1.
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import html
 import json
 import re
@@ -58,9 +59,9 @@ _UNITS = ("pre-roll", "preroll", "joint", "blunt", "cone", "dog", "mini", "gumm(
           "chew", "piece", "tablet", "tab", "pill", "capsule", "softgel", "drop", "mint", "bite",
           "chocolate", "square", "cookie", "brownie", "pearl", "lozenge", "can", "cup", "shot",
           "sachet", "packet", "pod", "cart", "cartridge", "stick", "unit", "serving", "dose")
-_UNIT_NOUN = "(?:" + "|".join(u.replace("-", "-?") for u in _UNITS) + ")"
+_UNIT_NOUN = "(?:" + "|".join(u.replace("-", r"[-\s]?") for u in _UNITS) + ")"     # "Pre Rolls" too
 # A count takes the plural: "Gelato 33 Pre-Roll" is a strain, "5 Pre-Rolls" a pack.
-_UNIT_NOUNS = "(?:" + "|".join(u.replace("-", "-?").replace("gumm(?:y|ie)", "gummie") + "s"
+_UNIT_NOUNS = "(?:" + "|".join(u.replace("-", r"[-\s]?").replace("gumm(?:y|ie)", "gummie") + "s"
                                for u in _UNITS) + ")"
 _WORDS = {"two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8,
           "nine": 9, "ten": 10, "eleven": 11, "twelve": 12, "fourteen": 14, "fifteen": 15,
@@ -261,14 +262,21 @@ def _read(text: str | None, category: str | None, source: str) -> _Read:
                     add(big, f"as {n} x {small:g}{unit}")
                     totals = [v for v in totals if v not in (small, big)]
                     r.sizes.append(small)
+    # New York caps an edible package at 100mg of THC, so a stated figure above it is
+    # not this package's (LEVEL's "98.1 mg | 2pk" with 196.2mg in the size field).
+    capped = thc and unit == "mg" and (category or "").lower() == "edible"
+
+    def under_cap(v):
+        return not (capped and v > sizes.EDIBLE_PACKAGE_CAP_MG + 0.5)
+
     if r.packs and not done:
         for v in totals:
-            add(v, "as the pack total", any(unit_exists(v / n, unit, category) for n in r.packs))
+            add(v, "as the pack total", any(unit_exists(v / n, unit, category) for n in r.packs) and under_cap(v))
             for n in r.packs:
                 add(n * v, f"as {n} x {v:g}{unit}", _times_likely(n, v, unit, category, thc), False)
     else:
         for v in totals:
-            add(v, "as written")
+            add(v, "as written", under_cap(v))
     r.sizes = _distinct(r.sizes + totals + r.per_unit + [v for _, v in settled])
     if not r.packs and not done:
         for v in r.per_unit:
@@ -302,8 +310,18 @@ def _candidates(listing: dict, product_entries=None) -> tuple[list[Candidate], s
              "name": listing.get("scraped_name") or listing.get("name"),
              "description": listing.get("description")}
     reads = {src: _read(text, category, src) for src, text in texts.items()}
-    out = [c for r in reads.values() for c in r.candidates]
     unit = unit_of(category)
+    sums = _cannabinoid_sums(texts["name"], texts["description"]) if unit == "mg" else []
+
+    def summed(v):
+        return any(same(v, total, unit) and not same(v, thc, unit) for thc, total in sums)
+
+    for c in list(reads["field"].candidates):
+        if c.reading == "as written" and summed(c.value):
+            reads["field"].candidates.remove(c)
+            reads["field"].candidates.append(dataclasses.replace(
+                c, likely=False, reading="as written: THC and the other cannabinoids added together"))
+    out = [c for r in reads.values() for c in r.candidates]
     for src, r in reads.items():
         for other, o in reads.items():
             if other == src:
@@ -314,9 +332,34 @@ def _candidates(listing: dict, product_entries=None) -> tuple[list[Candidate], s
                 for v in r.sizes:
                     out.append(Candidate(round(n * v, 3), unit, f"{other}+{src}",
                                          f"as {n} x {v:g}{unit} ({other}'s count, {src}'s size)",
-                                         _times_likely(n, v, unit, category, r.thc), False))
+                                         _times_likely(n, v, unit, category, r.thc)
+                                         and not (src == "field" and summed(v)), False))
     counts = {n for r in reads.values() for n in r.packs}
     return out + catalog_candidates(product_entries, category), counts
+
+
+_CANNABINOID = r"(thcv|thc|cbd|cbn|cbg|cbc)a?"
+_AMOUNT_AFTER = re.compile(rf"{_NUM}\s*(?:mg|milligrams?)\s*(?:of\s+)?{_CANNABINOID}\b", re.I)     # "150MG THC"
+_AMOUNT_BEFORE = re.compile(rf"\b{_CANNABINOID}\s*:?\s*{_NUM}\s*(?:mg|milligrams?)\b", re.I)    # "THC 100mg"
+
+
+def _cannabinoid_sums(*texts) -> list[tuple[float, float]]:
+    """(THC, THC + the other cannabinoids) for each text that names one THC amount beside
+    others. A size field holding the sum is not the THC: Ayrloom's "150MG THC : 450MG CBD"
+    drops are listed as 600mg, and its "5MG THC : 5MG CBN 10 Pack" as 10mg."""
+    out = []
+    for text in texts:
+        t = _clean(text)
+        amounts: dict[str, set[float]] = {}
+        for m in _AMOUNT_AFTER.finditer(t):
+            amounts.setdefault(m.group(2).lower(), set()).add(float(m.group(1)))
+        for m in _AMOUNT_BEFORE.finditer(_AMOUNT_AFTER.sub(" ", t)):
+            amounts.setdefault(m.group(1).lower(), set()).add(float(m.group(2)))
+        thc = amounts.pop("thc", set())
+        if len(thc) == 1 and amounts:
+            (t_mg,) = thc
+            out.append((t_mg, t_mg + sum(max(v) for v in amounts.values())))
+    return out
 
 
 def distinct_values(cands, unit: str | None = None) -> list[float]:

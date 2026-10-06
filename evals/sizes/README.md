@@ -44,20 +44,26 @@ Treat `best` as a silver label.
 
 The gaps found in both splits were then fixed: hyphenated units, "1oz", count nouns, and the dose floor for 20:1 gummies. So the numbers below are on data the generator has now seen.
 
+Two rules added later, from the chooser cases in `chooser/`:
+- a size field that adds THC to the other cannabinoids ("150MG THC : 450MG CBD" as 600mg) is not the size;
+- an edible figure above New York's 100mg cap counts only when nothing under it does.
+
 ## Results
 
 | | All | Holdout |
 | --- | --- | --- |
 | Reader's size among the code's options | 597/598 (99.8%) | 335/335 |
 | ... among the name and description readings | 591/598 (98.8%) | 332/335 |
-| Code settles on a size the reader does not | 1/598 (0.2%) | 1/335 |
-| Reader sees 2+ readings, code flags a conflict | 82/100 | 50/63 |
-| Reader sees 1 reading, code flags a conflict | 164/498 | 94/272 |
+| Code settles on a size the reader does not | 2/598 (0.3%) | 2/335 |
+| Reader sees 2+ readings, code flags a conflict | 76/100 | 47/63 |
+| Reader sees 1 reading, code flags a conflict | 141/498 | 83/272 |
 
 Notes on the misses:
 - **The one size outside the options:** "F Strength 100" mints, which give no unit.
 - **The text misses:** store typos where the size field has the right figure ("(5 x .05g)", a "5g" 510 cart).
-- **The one false agreement:** a CBG capsule bottle, read as 30 x 50mg of CBG.
+- **The two false agreements:**
+  - a CBG capsule bottle, read as 30 x 50mg of CBG;
+  - Ruby Farms' "100MG CBN 300MG CBD 200MG" gummies. The reader's low-confidence 200mg is over the edible cap; the size field and the catalog say 100mg.
 
 "Reader sees 1 reading, code flags a conflict" overstates over-flagging. Most of those conflicts are the store's size field against the text, and the readers never saw the field.
 

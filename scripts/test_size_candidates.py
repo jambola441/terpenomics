@@ -38,6 +38,8 @@ def test_a_stated_unit_size_settles_the_pack():
     assert sc.assess(listing("Lychee Dream", "5 x 0.6g")).values == [3.0]
     assert sc.assess(listing("Mini Dogs 5-pack",
                              description="five 0.35g mini joints, 0.35g each")).values == [1.75]
+    a = sc.assess(listing("Be Bright | Infused | 6pk", "4.5g", description="6 .75g Infused Pre Rolls | Sativa"))
+    assert (a.status, a.values) == ("settled", [4.5])
 
 
 def test_a_reading_implying_a_unit_that_does_not_exist_is_an_option_not_a_disagreement():
@@ -49,14 +51,21 @@ def test_a_reading_implying_a_unit_that_does_not_exist_is_an_option_not_a_disagr
     assert (a.status, a.values) == ("settled", [2.5])            # 2.5g pre-rolls do not exist
 
 
+def test_an_edible_figure_over_the_package_cap_does_not_count_against_one_under_it():
+    a = sc.assess(listing("Level | Protab Max Indica Tablets 98.1 mg | 2pk", "196.2mg", category="edible"))
+    assert (a.status, a.values) == ("settled", [98.1])
+    a = sc.assess(listing("Drops | Blueberry Lullaby 20pc | 20mg", "400mg", category="edible"))
+    assert (a.status, a.values) == ("settled", [20.0])
+
+
 def test_when_every_reading_is_unlikely_they_all_count():
     """1906's pills come 30 to a pack at 5mg each: 150mg, over the edible cap, or 5mg
-    for the pack, 0.17mg a pill. Neither unit exists, so both are asked about; a store
-    field stating one settles it."""
+    for the pack, 0.17mg a pill. Neither unit exists, so both are asked about, and a
+    store field stating 150mg is over the cap as well."""
     a = sc.assess(listing("1906 | Genius | 5MG THC , 5MG CBD , 5MG CBG | 30 pk", category="edible"))
     assert (a.status, a.values) == ("conflict", [5.0, 150.0])
     a = sc.assess(listing("1906 | Genius | 5MG THC , 5MG CBD , 5MG CBG | 30 pk", "150mg", category="edible"))
-    assert (a.status, a.values) == ("settled", [150.0])
+    assert a.status == "conflict" and {5.0, 150.0} <= set(a.values)
 
 
 def test_a_number_in_a_strain_is_not_a_count():
@@ -69,6 +78,20 @@ def test_a_dose_reading_is_thc_unless_nothing_else_is_stated():
     a = sc.assess(listing("Wana Fast Asleep Gummies 20mg THC 100mg CBD", category="edible"))
     assert a.values == [20.0]
     assert sc.assess(listing("Calm Balm 500mg CBD", category="topical")).values == [500.0]
+
+
+def test_a_size_field_holding_thc_plus_other_cannabinoids_is_not_the_thc():
+    a = sc.assess(listing("Ayrloom | Low Dose Everyday Drops | 1:3 | 150MG THC : 450MG CBD", "600mg",
+                          category="tinctures"))
+    assert (a.status, a.values) == ("settled", [150.0])
+    assert a.options() == [150.0, 600.0]
+    a = sc.assess(listing("ayrloom | Restore 1:1 Topical | 1000MG THC : 1000MG CBD", "2000mg", category="topical"))
+    assert (a.status, a.values) == ("settled", [1000.0])
+    a = sc.assess(listing("X| Drops | Black Currant | THC 100mg | CBD 100mg | CBN 100mg | 20pc", "300mg",
+                          category="edible"))
+    assert 300.0 not in a.values
+    a = sc.assess(listing('Ayrloom | "Pillow Talk" | 1:1 | 5MG THC : 5MG CBN 10 Pack', "10mg", category="edible"))
+    assert a.values == [5.0, 50.0]                               # not 10 x the 10mg sum
 
 
 def test_a_cart_stated_in_mg_reads_in_grams():
@@ -120,7 +143,7 @@ def test_a_blind_reader_s_size_is_among_the_options_and_rarely_overruled():
     """evals/sizes: a model read 1,000 listings' names and descriptions without seeing
     this code, the store's size field or the catalog. The size it believes must be among
     the options a chooser would get, and the code must almost never settle on its own
-    on a different one. The gate is what was measured on 2026-10-06 (597/598, 1/598)."""
+    on a different one. The gate is what was measured on 2026-10-06 (597/598, 2/598)."""
     spec = importlib.util.spec_from_file_location("size_eval", EVAL)
     size_eval = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(size_eval)
