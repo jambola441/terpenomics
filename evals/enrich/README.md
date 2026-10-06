@@ -619,6 +619,321 @@ output rate. For output-light work the pin is cheaper. More importantly, a float
 alias changes weights without notice, which silently invalidates a frozen gold
 suite. Pin models in the eval path.
 
+## Model comparison — GPT-6 Luna vs Haiku 4.5 (2026-10-06)
+
+A candidate enrichment model, measured against `haiku-or`, which is what the cron runs
+(`SCRAPE_ARGS=--all --parallel --model haiku-or`). **Not adopted**: `DEFAULT_MODEL` stays
+`haiku`, and the `luna` entry in `MODELS` (`openai/gpt-6-luna`, pinned) is there so the
+result can be reproduced.
+
+All nine case files (302 cases, 333 listings), catalogs off, three runs per arm with the
+arms interleaved. The first table is the **production path**, `--classifier jev`: it is
+the default and the cron overrides neither the flag nor `ENRICH_CLASSIFIER`. Jev
+classifies, code sizes, Jev picks the strain and line it is sure of, and the model gets
+what is left, which is 7% of the rows for classification and about half for strain and
+line. The Jev calls are the same in both arms. Production also answers a listing from its
+brand's catalog before any of this (`ENRICH_CATALOG_FIRST`, on by default); the harness
+turns that off to measure the model, so the model's share of production is smaller still.
+
+| production path, 3 runs each | haiku-or | luna |
+| --- | ---: | ---: |
+| cases passed, of 302 | 287.7 (287–289) | 286.7 (284–290) |
+| gold suites, of 268 | 257.7 = 96.1% (257–259) | 256.7 = 95.8% (254–260) |
+| the four type suites, of 34 | 30 every run | 30 every run |
+| `gold_the_plug`, of 108 | 104.7 (104–105) | 103.7 (101–106) |
+| `gold_the_spot_bk`, of 50 | 49.7 (49–50) | 49.3 (49–50) |
+| `gold_hold_up_roll_up`, of 48 | 44.0 (44–44) | 44.0 (43–45) |
+| `gold_coney_island`, of 56 | 54.7 (54–55) | 55.7 (55–56) |
+| `gold_cross_dispensary`, of 6 | 4.7 (4–5) | 4.0 (4–4) |
+| $ per run | $0.0859 | $0.0350 |
+| — of which Jev | $0.0305 | $0.0305 |
+| — of which the model | $0.0555 | $0.0046 |
+| seconds per run | 51 (40–71) | 46 (39–57) |
+| failed rows / model errors (empty or invalid JSON, timeout, cut off) | 0 / 0 | 0 / 0 |
+| rows whose answer changed across the 3 runs, any field (of 333) | **26** | **44** |
+| — by field: strain / line / size / subtype | 12 / 0 / 12 / 2 | 13 / 13 / 22 / 2 |
+| rows that change between two runs (mean of the 3 pairs) | 17.3 | 33.3 |
+
+Means, with the range over the three runs. On this path the four type suites score the
+same in every run of both arms (categorization 10 of 12, variant_fix 9 of 10,
+common_error 7 of 7, identity_cluster 4 of 5), and miss the same four cases: two
+categorization labels that still expect the single `merch` subtype, a tincture labelled
+`30ml`, and the Night Cap cluster. That is not the model.
+
+`--classifier llm`, the rollback, where the model answers every row:
+
+| llm path, 3 runs each | haiku-or | luna |
+| --- | ---: | ---: |
+| cases passed, of 302 | 279.7 (278–281) | 273.0 (272–274) |
+| gold suites, of 268 | 250.7 = 93.5% (249–252) | 243.3 = 90.8% (242–244) |
+| `gold_the_plug` / `spot_bk` / `hold_up` / `coney` | 105.7 / 49.0 / 41.0 / 50.0 | 103.7 / 46.7 / 40.0 / 49.0 |
+| $ per run | $0.1639 | $0.0103 ($0.0152 cold, $0.0077 and $0.0080 on the repeats) |
+| seconds per run | 17 (16–18) | 31 (26–36) |
+| failed rows / model errors | 0 / 0 | 0 / 0 |
+| rows changed across the 3 runs (of 333): total / line / size | 32 / 2 / 22 | 50 / 22 / 15 |
+| expected fields left empty, per run | 9, 7, 11 | 13, 13, 12 |
+
+### What the numbers say
+
+- **Level on accuracy where it counts, behind when it has to do everything.** On the
+  production path the totals differ by one case and the ranges overlap, which is inside
+  the run-to-run spread of either arm. On the llm path Luna is 6.7 cases (2.2 points)
+  behind and the ranges do not overlap: the model alone is not better than Haiku.
+- **The model's cost fell 12×, but a run's only by 59%.** Jev is $0.0305 of every run,
+  so $0.0555 → $0.0046 for the model is $0.0859 → $0.0350 for the run. Scaled by rows
+  to the 19,106-listing fleet that is about $4.9 → $2.0 per full re-enrichment. A normal
+  night only enriches new or changed listings: at $0.00026 a row all-in with Haiku, a
+  thousand of them is $0.26, so the saving is cents. The earlier baseline stands:
+  accuracy and consistency bind, not cost. Wall clock is the same on the production
+  path (Jev's one request per listing sets it) and 1.8× slower on the llm path.
+- **It is less steady, and in one field specifically.** 44 rows changed across three
+  runs against 26 (33.3 against 17.3 between two runs); on the llm path 50 against 32.
+  Three runs is thin for a count of rows, and both counts include Jev's own noise (see
+  the floor below), but the excess is not spread evenly. Luna flips `product_line` on 13
+  rows where Haiku flips none (22 against 2 on the llm path): `Reserve`, `Mega Dose` and
+  `Fusion` come and go, `Bliss` appeared once on a Camino Chews whose name does not
+  contain it, and `1:1` became the line of a tincture once. Its sizes flip more on the
+  production path too (22 rows against 12).
+- **Nothing broke.** No failed batch, empty reply, invalid JSON or timeout in any
+  measured run of either arm, probes included.
+
+### What a live call showed, and what changed in `enrich.py`
+
+Checked with one raw call before any run (8 pass-B rows, the request path as it stood):
+
+- **The request sends** `model`, `max_tokens` (4096 by default) and the two messages.
+  No `temperature`, `response_format`, `seed` or reasoning setting, which is also how
+  every other entry is called. `temperature` is not in Luna's supported parameters; a
+  request with `temperature: 0` was accepted and the model reasoned just the same.
+- **Reasoning is spent and billed by default**: 386 of the call's 514 completion
+  tokens. `completion_tokens` already includes them: OpenRouter's own `usage.cost`
+  priced the completion at exactly 514 × $0.50/M. Adding `reasoning_tokens` on top
+  would bill them twice, so `reasoning_tokens` is now reported beside `output_tokens`
+  (and in `summary.md`) and the cost still comes from `output_tokens` alone.
+- **The prompt cache is billed too.** 1,493 of the call's 1,496 prompt tokens were a
+  cache *write* at $0.125/M, 25% over input; reads cost $0.01/M. Treating them as plain
+  input put that call 8% low. They are now split out of `input_tokens` and priced from
+  the entry's `cache_write`/`cache_read`; an entry with no cache rate bills them as plain
+  input, so no other model's cost moved. Re-running an eval sends byte-identical
+  requests, which the cache then serves: $0.0152 on the first llm-path run, $0.0077 on
+  the repeats. Plan on the cold figure, since production payloads differ every night.
+- **A new per-model knob**, `params`, in the style of `batch_size`/`timeout`/
+  `max_tokens`: extra chat-completions parameters sent on every request to that model.
+  Luna's is `{"reasoning_effort": "low"}`; no entry sends anything it does not name.
+- A reply cut off at `max_tokens` now says so in the `[model error]` line. A reasoning
+  model can spend the whole budget thinking and return nothing, which used to read as
+  "Expecting value: line 1 column 1". It never happened here.
+
+### Choosing the reasoning setting
+
+One suite (`gold_the_plug`, 108 cases), two runs per setting, `max_tokens` 16384 so a
+cap could not decide it, on both paths. The unset default reasons about as much as
+`medium` (3–5k reasoning tokens a run against 1k at `low`).
+
+| `reasoning_effort` | production path: passed | llm path: passed | llm path: reasoning tok / run | llm path: s / run, longest call | llm path: rows changed r1→r2 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `none` | 105, 104 | 101, 104 | 0 | 15 s, 8 s | 15 |
+| `minimal` | 104, 106 | 106, 105 | 754 | 19 s, 12 s | 6 |
+| **`low`** | 105, 102 | 105, 105 | 1,082 | 20 s, 12 s | 6 |
+| unset | 105, 106 | 104, 105 | 4,152 | 31 s, 20 s | 11 |
+| `medium` | 105, 105 | 104, 104 | 5,164 | 47 s, 34 s | 8 |
+| `high` | 105, 104 | 104, 102 | 8,259 | 61 s, 42 s | 6 |
+
+On the production path the model sees too few rows for any setting to show (103.5 to
+105.5, and the same three cases fail in every arm). On the llm path `none` is the least
+steady and its extra misses are scattered (`20MG x 2PK` left at `20mg`, two subtype
+slips, an empty size, an invented strain); more thinking than `low` buys nothing (`high`
+is no better, and its longest production-path call took 69 s against the 90 s timeout);
+and `minimal` and `low` cannot be told apart at two runs. `low` it is: the same score and
+steadiness as `minimal` with a little more room to think, at the cheap end of the cost
+range, and the longest call at it took 12 s.
+
+### Where Luna and Haiku differ
+
+Cases where Luna passed fewer runs than Haiku: 9 on the production path, 18 on the llm
+path. Classified by the field it got wrong:
+
+| Luna's miss | production path (9 cases) | llm path (18 cases) | example |
+| --- | ---: | ---: | --- |
+| writes the store's size where a dose is wanted | 4 | 4 | `Camino - Sleep … 5:1 CBN 20pk`, store size `72g`: Luna `72g` (1 run in 3; every run on the llm path), want `100mg`. `gold-020` the same; `gold-023` `50.2g`; `coney-054/055`, 1000mg topicals, filed `1g` |
+| trusts the store's size over the name | 1 | 1 | `Runtz - 28G Flower`, store `1/8 oz`: Luna `3.5g` (2 runs in 3), want `28g` |
+| leaves the size empty | 0 | 3 | `Nordic Blueberry - 100MG Gummies`: no size (2 runs in 3) |
+| strain trimmed or dropped | 2 | 3 | `Sour Orchard Peach 'Balance'` → `Orchard Peach` (2 runs in 3); `Apple-A-Day` → `Apple` |
+| strain invented | 1 | 0 | `Old Pal x Babish - THC Infused Sugar` → `Infused Sugar` (1 run in 3), want none |
+| product line missed or invented | 0 | 4 | Camino's quoted `'Balance'`, `"Bliss"`, `'Energy'` dropped on 1–2 runs in 3 |
+| identity cluster splits | 1 | 2 | the Honeycrisp cluster's strain, three spellings |
+| pack math | 0 | 1 | `Pineapple Float - 100MG 20pk` → `2000mg` on 2 runs in 3 |
+| **category** | **0** | **0** | Luna never misses a category, as Haiku never does |
+
+The shape is one habit: **Luna takes the escape hatch.** The size rules end "if unsure,
+return hint_variant unchanged" (pass B's sized prompt says it in other words), and Luna
+returns the store's figure (`72g`, `1g`, `30`) far more readily than Haiku writes the
+dose from the name, and leaves the size empty where Haiku reads it. It is not weaker at
+the arithmetic itself. Luna also passed more runs than Haiku in 6 cases on the
+production path and 8 on the llm path, among them `coney-053` (`150MG THC : 450MG CBD`
+drops, which Haiku sums to `600mg` every time), `holdup-023` (10mg tea sachets, `50mg`)
+and `gold-018` (a Camino gummy Haiku calls `other`), and that is why the totals are
+level. Both models fail the same nine cases in every production-path run: the two
+`merch` labels, `var-tincture-ml`, `holdup-016`, `holdup-017`, `holdup-044`, `gold-013`,
+and the `x-camino` and Night Cap clusters.
+
+### No request knob makes it repeat itself
+
+Haiku's run-to-run noise is why this repo calls consistency binding, so the levers were
+tried: eight identical 50-row pass-B requests per setting, compared row by row.
+
+| setting | distinct replies of 8 | rows (of 50) with more than one answer |
+| --- | ---: | ---: |
+| luna `low` | 8 | 8 |
+| luna `low` + `seed: 0` | 5 | 7 |
+| luna `low` + `temperature: 0` | 7 | 7 |
+| luna `low` + both | 5 | 7 |
+| luna `none` / `none` + `seed` / `none` + `temperature` | 6 / 5 / 6 | 8 / 6 / 10 |
+| haiku-or, as the cron calls it | 5 | 6 |
+| haiku-or + `temperature: 0` | **1** | **0** |
+
+`seed` and `temperature` do nothing useful for Luna. Haiku, given `temperature: 0`,
+repeated itself exactly: a one-line `"params": {"temperature": 0}` on `haiku-or` (the knob
+now exists) is the cheapest consistency lever this comparison found. It is **not
+applied**, because `haiku-or` is production. On the production path it moved the full
+eval from 26 changed rows to 21 (288.3 cases passed, 287–290; three runs), and no
+further: Jev's own probabilities move by about ±0.02 between runs, so it settles 149–158
+of the 245 rows it is offered one run and a different set the next, and every row it
+hands to the model in one run and keeps in another can differ whichever model answers.
+That sets a floor of roughly 20 changed rows (the temperature-0 arm's 21) that no model
+choice removes. Roughly, then, 5 of Haiku's 26 changed rows are its own sampling and
+23 of Luna's 44; one three-run arm sets the floor, so read that as an estimate.
+
+### Verdict
+
+Do not replace Haiku. Luna is level on the production path and cheaper by pennies a
+night, but not more accurate (2.2 points behind where it works alone), measurably less
+steady (44 rows against 26, and a field Haiku never flips), and it offers no request
+setting that would fix that. The first things to test, in order: `temperature: 0` on
+`haiku-or`, over several nights rather than three runs, because it costs nothing and
+bears on the property that binds; then, only if cost ever binds, Luna with the size
+rule's escape hatch removed, as its own measured prompt change.
+
+`openai/gpt-6-luna:batch` is half price ($0.05/$0.25 per M) and the same weights, and,
+like the Haiku batch above, OpenRouter refuses it on `/chat/completions`
+(`404 … cannot be used with the chat/completions endpoint (adapter OpenAIBatchAdapter)`,
+checked 2026-10-06). It would be a submit → poll → retrieve rewrite, not an entry. Not
+built.
+
+Reproduce: three runs, copied aside because each run overwrites `results/` (which now
+holds run 3 of the production-path comparison), then summarised by `compare_runs.py`,
+which gives the pass counts, cost, seconds, failed rows and changed-row counts above.
+`luna` needs `OPENROUTER_API_KEY` and the `openai` package:
+
+```bash
+for i in 1 2 3; do
+    python evals/enrich/run_eval.py --models haiku-or,luna        # add --classifier llm for the rollback path
+    mkdir -p /tmp/runs/run_$i && cp evals/enrich/results/{haiku-or,luna}.json /tmp/runs/run_$i/
+done
+python evals/enrich/compare_runs.py /tmp/runs/run_* --models haiku-or,luna
+```
+
+## Jev only, no LLM (2026-10-06)
+
+Can Jev and code do all of enrichment, with no LLM? With `ENRICH_LLM=0`
+(`enrich._run_without_llm`):
+- Jev classifies;
+- code sizes, or `size_choice` chooses among `size_candidates`' readings;
+- Jev picks strain and line from the name's phrases.
+
+Two settings for what happens when Jev is unsure:
+- **store value:** below the usual bars the store's value stands (no strain, no line);
+- **any confidence:** Jev's pick is taken whatever its probability (all `ENRICH_JEV_*_MIN` at 0).
+
+All nine case files, three interleaved runs each, against the production path:
+
+| | today (Jev, then Haiku) | Jev only, store value | Jev only, any confidence |
+| --- | ---: | ---: | ---: |
+| cases passed (of 302) | 286.3 (285–288) | 227.7 (226–230) | 274.7 (274–275) |
+| category / subtype | 281 / 248.3 | 273.7 / 244.0 | 281 / 246.7 |
+| strain (of 247) / line (of 20) | 240.7 / 19.3 | 196.0 / 18.7 | 234.0 / 20.0 |
+| size (of 243) | 239 | 239 | 239 |
+| listings changed across the 3 runs | 28 | 21 | 15 |
+| $/run, s/run | $0.086, 48 s | $0.033, 34 s | $0.033, 34 s |
+
+- **Abstaining is the wrong fallback.** Keeping the store's value when Jev is unsure leaves 51 strains empty. Jev's best guess, even when unsure, beats no answer.
+- **Sizes need no LLM.** `size_choice` matches Haiku's 239 of 243, and changes no size between runs (Haiku changed 12).
+- **The gap is strain phrases.** At any confidence, Jev only passes fewer runs than today on 18 cases, and more on 8. Ten of the 18 are strains where Jev keeps a word the phrase cutter left attached:
+  - format words: "Black Cherry Sparkling Water", "Cookies N Cream Cones";
+  - a classification: "Strawberry Sativa";
+  - the brand's line: "Watermelon Lemonade Bliss";
+  - a store's sort number: "10 Honey Banana", "12 Candy Rain";
+  - a strain where there is none: "Unscented" on a lotion.
+
+  Haiku got these because Jev was under 0.90 on them and they went to it. The right sub-phrase was among the options; so was the longer one.
+- **Size misses (2):** Camino's 20pk filed as "72g", and Papa & Barkley's "THC1000" with no unit.
+- **Where Jev only is better:** Ayrloom's "150MG THC : 450MG CBD" is 150mg, where Haiku sums it to 600mg. The others are tea sachets' 50mg, "Lemon Candy Runtz" whole, and Camino's 'Sleep' line.
+
+**After fixing the strain options (same day).** `jev_extract.strain_phrases` changes the strain options:
+- a strain option ends before a word naming the category's own format;
+- stretches the store set apart (a lineage, a quoted word, the brand's line, the brand) are no longer rejoined;
+- the brand's lines are no longer offered as strains.
+
+Both paths were re-run, since today's path uses the same options for the rows Jev settles:
+
+| | today (Jev, then Haiku) | Jev only, any confidence |
+| --- | ---: | ---: |
+| cases passed (of 302) | 284.3 (284–285) | 282.3 (281–285) |
+| category / subtype | 281 / 248.0 | 281 / 248.0 |
+| strain (of 247) / line (of 20) | 238.3 / 20 | 239.3 / 20 |
+| size (of 243) | 239.7 | 240.0 |
+| listings changed across the 3 runs | 28 | 12 |
+| listings changed between two runs | 21.0 | 8.0 |
+| $/run, s/run | $0.082, 43 s | $0.032, 34 s |
+
+- **Field by field, Jev only now equals or beats today.**
+- **The two cases left are convergence cases:**
+  - an Ayrloom balm whose three store listings come back "Revive", "Balm Revive" and no strain;
+  - a Blue Dream eighth whose fourth listing Jev calls smalls.
+- **The overall gap is within the run-to-run spread.** Jev only ranges 281–285 against today's 284–285.
+
+**A dry run on one store, then fixes, then both paths again (same day).** Hold Up Roll Up's raw scrape (846 rows) went through both paths, local caches only. 439 rows reached the models; the rest came from the catalog or the name. The dry run turned up fixes for both paths:
+- no phrase crosses " for " (1906's "Genius for Brain-Power");
+- a figure equal to THC plus the cannabinoids beside it is unlikely in any text (Pillow Talk's "1800mg per package");
+- "100 mg/unit" is the package;
+- a store field that is no size in the category's unit is blanked, not kept (Camino's 20-gummy pack filed as "72g").
+
+The gold suites after them:
+
+| | today (Jev, then Haiku) | Jev only, any confidence |
+| --- | ---: | ---: |
+| cases passed (of 302) | 286.3 (286–287) | 283.0 (281–285) |
+| category / subtype | 281 / 248.0 | 281 / 247.7 |
+| strain (of 247) / line (of 20) | 240.3 / 20 | 239.3 / 20 |
+| size (of 243) | 239.7 | 241.0 |
+| listings changed across the 3 runs | 30 | 13 |
+| $/run | $0.082 | $0.032 |
+
+The two paths get the same number of fields right (1,029 each). Jev only's misses fall on more cases, so it passes three fewer.
+
+On the store, Jev only differs from today's path on 50 of the 846 rows:
+- **Better on about 15:**
+  - THC instead of a cannabinoid sum: Ayrloom's Everyday drops are 150mg, not 600mg, and its Pillow Talk drops are 300mg, not 1800mg;
+  - blend names Haiku left empty: Focus, Relax, Unwind;
+  - format words dropped: "Recovery Stick" becomes Recovery;
+  - turn's Botanica Blends line;
+  - the flavors of variety packs;
+  - chocolate bars whose only name is their format, which the gold labels give no strain.
+- **Worse on about 22:**
+  - **A product named once, with nothing else in the name.** Jev answers "none", or calls the name a line: Pinnacle (two brands), Lip Smacker, Jokerz Candy 5, Permanent Marker, and 1906's Genius, Love and BOOST pills. Its probabilities there are 0.3–0.45 for the right phrase; "none" gets 0.4–0.9. Today's path sends these rows to Haiku.
+  - **REMZzz's 20-packs:** "2.5mg THC Hash, 2.5mg THC/piece" is 5mg a piece and 100mg a pack. Jev is under the bar between 50mg and 100mg; the field is empty, so the size is blank or 50mg.
+  - **One category:** a 3.5g Singapore Sling flower filed as a pre-roll.
+  - **Line words kept on strains:** PIXLZ, Supah, Rings.
+- **The rest are arguable:**
+  - Harney's "Spicy Pound Town" or "Cinnamon Spiced";
+  - "ATF" or "Alaskan Thunder Fuck";
+  - "Dreamweavers" or "Dreamweaver".
+
+**Where that leaves Jev only.** It is a percent or so behind today's path, and the misses are concentrated on names Jev does not take for strains. In exchange it is cheaper and more stable:
+- it costs about 40% as much;
+- it changes half as many answers between runs;
+- it never changes a size between runs.
+
 ## Fleet report — all 24 live stores (2026-08-25)
 
 `dispensary_report.py` runs the audit checks **per store** and normalizes to

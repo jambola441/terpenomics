@@ -295,3 +295,79 @@ def test_tidy_keeps_mixed_case_and_title_cases_one_case_phrases():
     assert jev_extract.tidy("og kush") == "OG Kush"
     assert jev_extract.tidy("Cherry Lime X RZ-11") == "Cherry Lime x RZ-11"
     assert jev_extract.tidy("McFlurry Kush") == "McFlurry Kush"
+
+
+# --- ENRICH_LLM=0: Jev and code only -------------------------------------------------
+
+def test_without_the_llm_jev_answers_everything_and_the_answers_are_cached(fakes, monkeypatch):
+    import size_choice
+    monkeypatch.setenv("ENRICH_LLM", "0")
+    monkeypatch.setenv("ENRICH_CLASSIFIER", "jev")
+    monkeypatch.setattr(enrich.jev_classify, "classify",
+                        jev_answers((0.97, 0.93), (0.97, 0.93), (0.40, 0.93), None))
+    monkeypatch.setattr(enrich.jev_extract, "extract", text_answers(
+        ("Lychee", 0.95, "Bliss", 0.90),
+        ("Mango", 0.60, None, 0.90),              # unsure, and taken: its best guess beats none
+        ("Kiwi", 0.95, None, 0.90),
+        ("Plum", 0.95, None, 0.90),
+    ))
+    asked = []
+
+    def fake_choose(items, prices=None, **kw):
+        asked.extend(i.name for i in items)
+        return [size_choice.Pick(20.0, "jev", 0.9)]
+    monkeypatch.setattr(size_choice, "choose", fake_choose)
+    rows = [gummy("Gummies a 10pk", "a"),                                   # code: 10 x 10mg
+            dict(gummy("Gummies b 5mg THC 2.5mg CBN", "b"), variant=""),    # two doses: the chooser
+            dict(gummy("Mystery c 10pk", "c"), category="other"),           # Jev unsure, and taken
+            gummy("Failed d 10pk", "d")]                                    # Jev's call failed
+    usage = enrich.enrich(rows, model="haiku-or", brand_examples={}, catalog_first=False)
+
+    assert not any(fakes[k] for k in ("classify", "extract", "extract_sized"))   # no LLM call
+    assert [(r["category"], r["strain"], r["product_line"]) for r in rows[:3]] == [
+        ("edible", "Lychee", "Bliss"), ("edible", "Mango", None), ("edible", "Kiwi", None)]
+    assert [r["variant"] for r in rows[:3]] == ["100mg", "20mg", "100mg"]
+    assert asked == ["Gummies b 5mg THC 2.5mg CBN"]
+    assert rows[3].get("enrich_failed") and usage["jev_classified"] == 3
+
+    cache = json.loads((enrich._CACHE_DIR / "test-store.haiku-or.json").read_text())
+    assert sorted(cache) == ["a|10mg", "b|", "c|10mg"]                         # the failed row is not
+    assert cache["b|"]["src"] == "jev" and cache["b|"]["size_by"] == "jev"
+    assert cache["b|"]["p"] == {"category": 0.97, "subtype": 0.93, "strain": 0.6,
+                                "product_line": 0.9, "size": 0.9}
+    assert cache["c|10mg"]["p"]["category"] == 0.4
+
+
+def test_without_the_llm_a_size_field_in_another_unit_is_not_kept(fakes, monkeypatch):
+    """Camino's 20-gummy pack filed as "72g", its net weight: nothing reads a dose and the
+    field holds none, so the size is left blank rather than 72g."""
+    monkeypatch.setenv("ENRICH_LLM", "0")
+    monkeypatch.setenv("ENRICH_CLASSIFIER", "jev")
+    monkeypatch.setattr(enrich.jev_classify, "classify", jev_answers((0.97, 0.93)))
+    monkeypatch.setattr(enrich.jev_extract, "extract", text_answers(("Midnight Blueberry", 0.95, None, 0.90)))
+    rows = [dict(gummy("Camino - Sleep | Midnight Blueberry 5:1 CBN 20pk", "a"), variant="72g")]
+    enrich.enrich(rows, model="haiku-or", brand_examples={}, catalog_first=False)
+    assert rows[0]["variant"] == "" and rows[0]["strain"] == "Midnight Blueberry"
+
+
+@pytest.mark.parametrize("name,brand,category,first,never", [
+    ("Cookies N Cream Cones 100mg Ice Cream", "Lake Effect", "edible", "Cookies N Cream", "Cookies N Cream Cones"),
+    ("Black Cherry Sparkling Water 5mg", "Ayrloom", "edible", "Black Cherry", "Black Cherry Sparkling Water"),
+    ("Strawberry Sativa 100mg THC 10 pcs Live Rosin Gummies", "Nyce", "edible", "Strawberry", "Strawberry Sativa"),
+    ("Camino | Watermelon Lemonade 'Bliss' Gummies [20pk]", "Camino", "edible", "Watermelon Lemonade",
+     "Watermelon Lemonade Bliss"),
+    ("Grape Soda Pre-Roll 1g", "Boutiq", "preroll", "Grape Soda", "Grape Soda Pre-Roll"),   # a strain, not a drink
+    ("Sugar Cookie 3.5g", "Jaunty", "flower", "Sugar Cookie", None),
+    ("Genius for Brain-Power - 10mg 2PK Pills", "1906", "edible", "Genius", "Genius Brain-Power"),
+    ("BOOST For Everything - 5mg 2Pk Pills", "1906", "edible", "BOOST", "BOOST For Everything"),
+    ("Balm Revive 1000mg", "Ayrloom", "topical", "Revive", "Balm Revive"),
+])
+def test_strain_options_end_before_the_categorys_own_format_and_stay_apart(name, brand, category, first, never):
+    got = jev_extract.strain_phrases(name, brand, category)
+    assert got[0] == first and never not in got
+
+
+def test_neither_the_brand_nor_its_line_is_offered_as_a_strain():
+    assert jev_extract.strain_phrases("Papa & Barkley 1:3 Releaf Balm 50ml", "Papa & Barkley", "topical") == []
+    assert jev_extract.strain_phrases("Unscented CBD Lotion - 300mg", "Heady Tree", "topical") == []
+    assert "Releaf" in jev_extract.phrases("Papa & Barkley 1:3 Releaf Balm 50ml", "Papa & Barkley")

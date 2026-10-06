@@ -291,6 +291,28 @@ def select_targets(registry: list[dict], slug: str | None, include_pending: bool
     return [d for d in registry if d.get("status", "active") in wanted]
 
 
+def _snapshot_size_prices() -> None:
+    """Typical prices for size_choice, read once per run and handed to every store's
+    scraper and importer through SIZE_PRICES, so they all choose sizes against the same
+    prices (and the database is read once, not once per store). Without it, sizes are
+    chosen without prices; the run goes on either way."""
+    if os.environ.get("SIZE_PRICES"):
+        return
+    try:
+        import tempfile
+        import size_choice
+        book = size_choice.PriceBook.from_db()
+        fd, path = tempfile.mkstemp(prefix="size_prices_", suffix=".json")
+        os.close(fd)
+        book.save(path)
+        os.environ["SIZE_PRICES"] = path
+        print(f"size prices: {len(book.category)} category sizes, {len(book.brand_per_g)} brand "
+              f"price-per-gram, {len(book.product)} catalog product sizes -> {path}")
+    except Exception as exc:  # noqa: BLE001 — prices sharpen a choice; a run never fails for them
+        print(f"  [warn] size prices not read ({exc}); sizes will be chosen without them",
+              file=sys.stderr)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Scrape dispensary menus and import into DB")
     group  = parser.add_mutually_exclusive_group(required=True)
@@ -329,6 +351,9 @@ def main() -> None:
         skipped = [d["slug"] for d in registry if d not in targets]
         if skipped:
             print(f"Skipping {len(skipped)} store(s) not marked active: {', '.join(skipped)}")
+
+    if not args.dry_run and not args.no_enrich:
+        _snapshot_size_prices()
 
     results = []
     for d in targets:

@@ -1,0 +1,2462 @@
+{
+ "category": {
+  "vaporizers|1": {
+   "median": 5000.0,
+   "n": 2900,
+   "p25": 4500.0,
+   "p75": 6000.0
+  },
+  "edible|100": {
+   "median": 2500.0,
+   "n": 2440,
+   "p25": 2200.0,
+   "p75": 3000.0
+  },
+  "flower|3.5": {
+   "median": 4500.0,
+   "n": 2794,
+   "p25": 3500.0,
+   "p75": 5200.0
+  },
+  "vaporizers|1.5": {
+   "median": 6000,
+   "n": 163,
+   "p25": 5500.0,
+   "p75": 6991.0
+  },
+  "preroll|1": {
+   "median": 1430.0,
+   "n": 1686,
+   "p25": 1200.0,
+   "p75": 2000.0
+  },
+  "preroll|1.5": {
+   "median": 3200.0,
+   "n": 228,
+   "p25": 2500.0,
+   "p75": 3500.0
+  },
+  "edible|10": {
+   "median": 500,
+   "n": 513,
+   "p25": 500.0,
+   "p75": 600.0
+  },
+  "preroll|2": {
+   "median": 4200.0,
+   "n": 60,
+   "p25": 3510.5,
+   "p75": 5750.0
+  },
+  "preroll|2.5": {
+   "median": 4300,
+   "n": 593,
+   "p25": 3800.0,
+   "p75": 5000.0
+  },
+  "concentrate|1": {
+   "median": 6000.0,
+   "n": 590,
+   "p25": 4800.0,
+   "p75": 6800.0
+  },
+  "flower|2": {
+   "median": 1800.0,
+   "n": 18,
+   "p25": 1770.0,
+   "p75": 2600.75
+  },
+  "vaporizers|0.5": {
+   "median": 3500,
+   "n": 593,
+   "p25": 2700.0,
+   "p75": 4500.0
+  },
+  "vaporizers|2": {
+   "median": 8000,
+   "n": 715,
+   "p25": 7000.0,
+   "p75": 8500.0
+  },
+  "flower|7": {
+   "median": 5000,
+   "n": 277,
+   "p25": 4000.0,
+   "p75": 7000.0
+  },
+  "flower|14": {
+   "median": 9000.0,
+   "n": 430,
+   "p25": 7910.0,
+   "p75": 10000.0
+  },
+  "flower|1": {
+   "median": 1096,
+   "n": 37,
+   "p25": 1000.0,
+   "p75": 1400.0
+  },
+  "edible|750": {
+   "median": 3400,
+   "n": 3,
+   "p25": 3400,
+   "p75": 4000
+  },
+  "preroll|0.8": {
+   "median": 1800,
+   "n": 5,
+   "p25": 1800.0,
+   "p75": 1900.0
+  },
+  "edible|40": {
+   "median": 2500,
+   "n": 13,
+   "p25": 900.0,
+   "p75": 3445.0
+  },
+  "preroll|10": {
+   "median": 8500,
+   "n": 39,
+   "p25": 6780.0,
+   "p75": 9000.0
+  },
+  "tinctures|100": {
+   "median": 2500.0,
+   "n": 8,
+   "p25": 1875.5,
+   "p75": 2950.0
+  },
+  "preroll|3.5": {
+   "median": 4000.0,
+   "n": 610,
+   "p25": 3800.0,
+   "p75": 5000.0
+  },
+  "preroll|0.5": {
+   "median": 885,
+   "n": 223,
+   "p25": 800.0,
+   "p75": 1017.0
+  },
+  "preroll|3.75": {
+   "median": 4200.0,
+   "n": 22,
+   "p25": 3500.0,
+   "p75": 4800.0
+  },
+  "preroll|2.75": {
+   "median": 4000.0,
+   "n": 16,
+   "p25": 3250.0,
+   "p75": 5000.0
+  },
+  "tinctures|1000": {
+   "median": 6640.0,
+   "n": 44,
+   "p25": 5000.0,
+   "p75": 9150.0
+  },
+  "edible|50": {
+   "median": 2180.0,
+   "n": 26,
+   "p25": 1875.0,
+   "p75": 2650.0
+  },
+  "preroll|5": {
+   "median": 5375.0,
+   "n": 144,
+   "p25": 5000.0,
+   "p75": 5800.0
+  },
+  "preroll|0.75": {
+   "median": 1450.0,
+   "n": 88,
+   "p25": 1400.0,
+   "p75": 1600.0
+  },
+  "concentrate|3.5": {
+   "median": 12000,
+   "n": 13,
+   "p25": 5825.0,
+   "p75": 12600.0
+  },
+  "preroll|3": {
+   "median": 4500,
+   "n": 265,
+   "p25": 3500.0,
+   "p75": 5000.0
+  },
+  "flower|28": {
+   "median": 15000,
+   "n": 313,
+   "p25": 12500.0,
+   "p75": 17699.0
+  },
+  "topical|1000": {
+   "median": 5500,
+   "n": 53,
+   "p25": 5500.0,
+   "p75": 6200.0
+  },
+  "preroll|4.9": {
+   "median": 5000.0,
+   "n": 14,
+   "p25": 5000.0,
+   "p75": 5000.0
+  },
+  "preroll|4": {
+   "median": 4633,
+   "n": 31,
+   "p25": 4000.0,
+   "p75": 6500.0
+  },
+  "flower|4": {
+   "median": 6000.0,
+   "n": 52,
+   "p25": 5085.0,
+   "p75": 6000.0
+  },
+  "flower|70": {
+   "median": 35000,
+   "n": 19,
+   "p25": 30000.0,
+   "p75": 37000.0
+  },
+  "preroll|6.5": {
+   "median": 5000.0,
+   "n": 4,
+   "p25": 5000.0,
+   "p75": 5000.0
+  },
+  "preroll|1.75": {
+   "median": 2400,
+   "n": 11,
+   "p25": 1800.0,
+   "p75": 2700.0
+  },
+  "tinctures|300": {
+   "median": 5000,
+   "n": 35,
+   "p25": 5000.0,
+   "p75": 5700.0
+  },
+  "tinctures|3000": {
+   "median": 9300,
+   "n": 9,
+   "p25": 5500.0,
+   "p75": 10649.5
+  },
+  "concentrate|2": {
+   "median": 10000.0,
+   "n": 52,
+   "p25": 7000.0,
+   "p75": 12750.0
+  },
+  "preroll|4.5": {
+   "median": 4520,
+   "n": 19,
+   "p25": 4000.0,
+   "p75": 5000.0
+  },
+  "flower|5": {
+   "median": 4972,
+   "n": 9,
+   "p25": 4400.0,
+   "p75": 5000.0
+  },
+  "vaporizers|0.3": {
+   "median": 2500.0,
+   "n": 4,
+   "p25": 2500.0,
+   "p75": 2800.0
+  },
+  "preroll|1.25": {
+   "median": 1800,
+   "n": 67,
+   "p25": 1600.0,
+   "p75": 2000.0
+  },
+  "preroll|7": {
+   "median": 5000,
+   "n": 45,
+   "p25": 5000.0,
+   "p75": 7550.0
+  },
+  "vaporizers|1.1": {
+   "median": 4159,
+   "n": 7,
+   "p25": 4071.0,
+   "p75": 4500.0
+  },
+  "preroll|1.2": {
+   "median": 2000.0,
+   "n": 32,
+   "p25": 1500.0,
+   "p75": 2000.0
+  },
+  "preroll|0.6": {
+   "median": 1350.0,
+   "n": 58,
+   "p25": 1256.0,
+   "p75": 1500.0
+  },
+  "concentrate|0.25": {
+   "median": 2486,
+   "n": 9,
+   "p25": 2000.0,
+   "p75": 2486.0
+  },
+  "preroll|0.4": {
+   "median": 700,
+   "n": 7,
+   "p25": 700.0,
+   "p75": 900.0
+  },
+  "tinctures|150": {
+   "median": 3390,
+   "n": 21,
+   "p25": 3000.0,
+   "p75": 6212.0
+  },
+  "preroll|0.7": {
+   "median": 1000.0,
+   "n": 18,
+   "p25": 900.0,
+   "p75": 1400.0
+  },
+  "tinctures|250": {
+   "median": 4400,
+   "n": 3,
+   "p25": 3500,
+   "p75": 4800
+  },
+  "edible|1000": {
+   "median": 3854.0,
+   "n": 10,
+   "p25": 2800.0,
+   "p75": 4300.75
+  },
+  "edible|90": {
+   "median": 950.0,
+   "n": 4,
+   "p25": 900.0,
+   "p75": 2350.0
+  },
+  "preroll|3.6": {
+   "median": 4000,
+   "n": 21,
+   "p25": 4000.0,
+   "p75": 4500.0
+  },
+  "preroll|6": {
+   "median": 4972,
+   "n": 5,
+   "p25": 4972.0,
+   "p75": 10285.5
+  },
+  "tinctures|1500": {
+   "median": 5400.0,
+   "n": 8,
+   "p25": 4801.0,
+   "p75": 7875.0
+  },
+  "edible|5": {
+   "median": 500,
+   "n": 15,
+   "p25": 400.0,
+   "p75": 3164.0
+  },
+  "edible|250": {
+   "median": 2200.0,
+   "n": 6,
+   "p25": 2200.0,
+   "p75": 2500.0
+  },
+  "flower|0.7": {
+   "median": 900,
+   "n": 43,
+   "p25": 900.0,
+   "p75": 1000.0
+  },
+  "topical|200": {
+   "median": 2400,
+   "n": 7,
+   "p25": 2000.0,
+   "p75": 3000.0
+  },
+  "edible|25": {
+   "median": 2200,
+   "n": 11,
+   "p25": 2100.0,
+   "p75": 2500.0
+  },
+  "topical|300": {
+   "median": 3400.0,
+   "n": 6,
+   "p25": 3092.5,
+   "p75": 4325.0
+  },
+  "vaporizers|1.2": {
+   "median": 5500,
+   "n": 5,
+   "p25": 4750.0,
+   "p75": 5500.0
+  },
+  "vaporizers|6": {
+   "median": 12000.0,
+   "n": 12,
+   "p25": 8761.0,
+   "p75": 12000.0
+  },
+  "preroll|28": {
+   "median": 15000.0,
+   "n": 14,
+   "p25": 14922.5,
+   "p75": 16000.0
+  },
+  "concentrate|4": {
+   "median": 6500.0,
+   "n": 6,
+   "p25": 6500.0,
+   "p75": 6500.0
+  },
+  "edible|150": {
+   "median": 3600,
+   "n": 7,
+   "p25": 3404.0,
+   "p75": 3600.0
+  },
+  "tinctures|400": {
+   "median": 4779,
+   "n": 5,
+   "p25": 4779.0,
+   "p75": 4867.5
+  },
+  "edible|20": {
+   "median": 2900,
+   "n": 11,
+   "p25": 2900.0,
+   "p75": 3000.0
+  },
+  "flower|0.5": {
+   "median": 1466.0,
+   "n": 8,
+   "p25": 1460.0,
+   "p75": 1472.0
+  },
+  "flower|1.5": {
+   "median": 2600,
+   "n": 5,
+   "p25": 1195.0,
+   "p75": 3000.0
+  },
+  "vaporizers|0.35": {
+   "median": 4000,
+   "n": 3,
+   "p25": 2000,
+   "p75": 4000
+  },
+  "preroll|1.1": {
+   "median": 2400.0,
+   "n": 6,
+   "p25": 1800.0,
+   "p75": 2400.0
+  },
+  "edible|80": {
+   "median": 1800.0,
+   "n": 6,
+   "p25": 1695.0,
+   "p75": 3625.0
+  },
+  "preroll|2.8": {
+   "median": 4400.0,
+   "n": 6,
+   "p25": 4400.0,
+   "p75": 4406.0
+  },
+  "preroll|1.3": {
+   "median": 3350.0,
+   "n": 8,
+   "p25": 1100.0,
+   "p75": 3616.0
+  },
+  "vaporizers|4": {
+   "median": 14000,
+   "n": 3,
+   "p25": 14000,
+   "p75": 14000
+  },
+  "topical|100": {
+   "median": 6200.0,
+   "n": 4,
+   "p25": 3400.0,
+   "p75": 9000.0
+  },
+  "preroll|2.25": {
+   "median": 4500.0,
+   "n": 6,
+   "p25": 3750.0,
+   "p75": 4540.0
+  },
+  "edible|240": {
+   "median": 3000,
+   "n": 3,
+   "p25": 3000,
+   "p75": 3000
+  },
+  "preroll|14": {
+   "median": 8800,
+   "n": 9,
+   "p25": 8800.0,
+   "p75": 10000.0
+  },
+  "tinctures|500": {
+   "median": 4850.0,
+   "n": 6,
+   "p25": 4150.0,
+   "p75": 6150.0
+  },
+  "edible|75": {
+   "median": 2900,
+   "n": 7,
+   "p25": 2900.0,
+   "p75": 2900.0
+  },
+  "flower|0.75": {
+   "median": 1300.0,
+   "n": 4,
+   "p25": 1300.0,
+   "p75": 1300.0
+  },
+  "vaporizers|3": {
+   "median": 9500.0,
+   "n": 4,
+   "p25": 9000.0,
+   "p75": 12250.0
+  },
+  "flower|1.2": {
+   "median": 1500.0,
+   "n": 4,
+   "p25": 1125.0,
+   "p75": 1500.0
+  },
+  "preroll|4.2": {
+   "median": 6000.0,
+   "n": 6,
+   "p25": 5375.0,
+   "p75": 6875.0
+  },
+  "concentrate|5": {
+   "median": 7700,
+   "n": 3,
+   "p25": 7700,
+   "p75": 9000
+  },
+  "flower|3": {
+   "median": 3000,
+   "n": 3,
+   "p25": 2800,
+   "p75": 3000
+  }
+ },
+ "brand_size": {
+  "jaunty|edible|100": {
+   "median": 2260,
+   "n": 51
+  },
+  "bouket|flower|3.5": {
+   "median": 4500.0,
+   "n": 52
+  },
+  "jaunty|vaporizers|1.5": {
+   "median": 6000,
+   "n": 163
+  },
+  "stiiizy|preroll|1": {
+   "median": 2000,
+   "n": 77
+  },
+  "high peaks|preroll|1.5": {
+   "median": 2034.0,
+   "n": 2
+  },
+  "harney brothers|edible|10": {
+   "median": 600,
+   "n": 77
+  },
+  "jetpacks|preroll|2": {
+   "median": 4400,
+   "n": 7
+  },
+  "gr\u00f6n|edible|100": {
+   "median": 2200,
+   "n": 385
+  },
+  "stiiizy|vaporizers|1": {
+   "median": 4500,
+   "n": 317
+  },
+  "runtz|flower|3.5": {
+   "median": 5300.0,
+   "n": 134
+  },
+  "mini mart|flower|3.5": {
+   "median": 2625.0,
+   "n": 56
+  },
+  "to the moon|flower|1": {
+   "median": 1400.0,
+   "n": 12
+  },
+  "florist farms|flower|3.5": {
+   "median": 4000.0,
+   "n": 32
+  },
+  "stiiizy|vaporizers|0.5": {
+   "median": 2700.0,
+   "n": 120
+  },
+  "cannabals|vaporizers|1": {
+   "median": 4212.5,
+   "n": 76
+  },
+  "off hours|edible|100": {
+   "median": 3000.0,
+   "n": 184
+  },
+  "ruby farms|vaporizers|1": {
+   "median": 5650,
+   "n": 31
+  },
+  "new york honey|edible|10": {
+   "median": 500.0,
+   "n": 4
+  },
+  "drops|edible|100": {
+   "median": 2100.0,
+   "n": 116
+  },
+  "edie parker|vaporizers|1": {
+   "median": 5500.0,
+   "n": 44
+  },
+  "ayrloom|vaporizers|2": {
+   "median": 8400,
+   "n": 53
+  },
+  "high 5's|preroll|0.8": {
+   "median": 1800.0,
+   "n": 4
+  },
+  "camino|edible|40": {
+   "median": 3445.0,
+   "n": 6
+  },
+  "eaton botanicals|edible|100": {
+   "median": 3300.0,
+   "n": 28
+  },
+  "soft power sweets|edible|100": {
+   "median": 1921,
+   "n": 3
+  },
+  "miss grass|preroll|1": {
+   "median": 2400,
+   "n": 15
+  },
+  "wana|edible|100": {
+   "median": 2800,
+   "n": 53
+  },
+  "mfny|edible|100": {
+   "median": 2400,
+   "n": 119
+  },
+  "pax|vaporizers|2": {
+   "median": 8500,
+   "n": 19
+  },
+  "ayrloom|vaporizers|1": {
+   "median": 5000.0,
+   "n": 142
+  },
+  "revert|preroll|10": {
+   "median": 7522.0,
+   "n": 20
+  },
+  "florist farms|preroll|2.5": {
+   "median": 4000,
+   "n": 61
+  },
+  "rythm|vaporizers|2": {
+   "median": 8500,
+   "n": 11
+  },
+  "nyce|concentrate|1": {
+   "median": 6000.0,
+   "n": 34
+  },
+  "mfny|vaporizers|0.5": {
+   "median": 3800.0,
+   "n": 68
+  },
+  "camino|edible|100": {
+   "median": 3000,
+   "n": 201
+  },
+  "jaunty|vaporizers|1": {
+   "median": 4500.0,
+   "n": 190
+  },
+  "rythm|concentrate|1": {
+   "median": 7000,
+   "n": 27
+  },
+  "revert|flower|14": {
+   "median": 7900,
+   "n": 103
+  },
+  "florist farms|vaporizers|1": {
+   "median": 4500.0,
+   "n": 68
+  },
+  "jetpacks|concentrate|1": {
+   "median": 4520.0,
+   "n": 72
+  },
+  "bodega boyz|vaporizers|1": {
+   "median": 5000,
+   "n": 33
+  },
+  "new york honey|vaporizers|1": {
+   "median": 3500,
+   "n": 23
+  },
+  "cannabals|preroll|3.5": {
+   "median": 4500,
+   "n": 17
+  },
+  "cannabals|edible|100": {
+   "median": 2500.0,
+   "n": 154
+  },
+  "rove|preroll|2.5": {
+   "median": 6097.0,
+   "n": 14
+  },
+  "ayrloom|edible|10": {
+   "median": 500,
+   "n": 187
+  },
+  "off hours|vaporizers|1": {
+   "median": 3500.0,
+   "n": 34
+  },
+  "runtz|preroll|3.75": {
+   "median": 4200.0,
+   "n": 10
+  },
+  "florist farms|preroll|3.5": {
+   "median": 4000.0,
+   "n": 76
+  },
+  "stiiizy|preroll|2.5": {
+   "median": 4500,
+   "n": 57
+  },
+  "grassroots|flower|3.5": {
+   "median": 4200,
+   "n": 59
+  },
+  "pax|vaporizers|1": {
+   "median": 7500,
+   "n": 141
+  },
+  "papa & barkley|tinctures|1000": {
+   "median": 10000.0,
+   "n": 4
+  },
+  "the ladies|flower|3.5": {
+   "median": 3500,
+   "n": 5
+  },
+  "rove|vaporizers|0.5": {
+   "median": 4500,
+   "n": 81
+  },
+  "wyld|edible|50": {
+   "median": 2800.0,
+   "n": 4
+  },
+  "ruby farms|preroll|5": {
+   "median": 5650.0,
+   "n": 122
+  },
+  "new york honey|concentrate|1": {
+   "median": 4400,
+   "n": 13
+  },
+  "mfny|preroll|0.75": {
+   "median": 1600,
+   "n": 29
+  },
+  "hepworth|concentrate|3.5": {
+   "median": 12000,
+   "n": 3
+  },
+  "alchemy pure|preroll|2.5": {
+   "median": 3000.0,
+   "n": 16
+  },
+  "mfny|vaporizers|1": {
+   "median": 6000,
+   "n": 55
+  },
+  "nama|edible|100": {
+   "median": 1800.0,
+   "n": 24
+  },
+  "ayrloom|topical|1000": {
+   "median": 5500,
+   "n": 45
+  },
+  "flav|vaporizers|1": {
+   "median": 5000.0,
+   "n": 10
+  },
+  "ruby farms|preroll|4.9": {
+   "median": 5000.0,
+   "n": 14
+  },
+  "7 seaz|concentrate|3.5": {
+   "median": 5000.0,
+   "n": 2
+  },
+  "ruby farms|preroll|1.5": {
+   "median": 3000.0,
+   "n": 38
+  },
+  "high 5's|preroll|4": {
+   "median": 6500.0,
+   "n": 10
+  },
+  "to the moon|edible|100": {
+   "median": 2600,
+   "n": 15
+  },
+  "revert|flower|3.5": {
+   "median": 3000.0,
+   "n": 66
+  },
+  "level|edible|100": {
+   "median": 2550.0,
+   "n": 20
+  },
+  "7 seaz|flower|2": {
+   "median": 1785.0,
+   "n": 10
+  },
+  "rythm|flower|3.5": {
+   "median": 5000.0,
+   "n": 34
+  },
+  "rove|vaporizers|1": {
+   "median": 8252.0,
+   "n": 126
+  },
+  "runtz|flower|7": {
+   "median": 9000,
+   "n": 7
+  },
+  "jaunty|vaporizers|0.5": {
+   "median": 4000.0,
+   "n": 26
+  },
+  "hashtag honey|preroll|2.5": {
+   "median": 3000.0,
+   "n": 6
+  },
+  "|flower|7": {
+   "median": 7000.0,
+   "n": 2
+  },
+  "ayrloom|edible|100": {
+   "median": 2500.0,
+   "n": 32
+  },
+  "to the moon|flower|3.5": {
+   "median": 3500.0,
+   "n": 52
+  },
+  "flav|edible|100": {
+   "median": 1632,
+   "n": 87
+  },
+  "nyce|vaporizers|0.5": {
+   "median": 4600.0,
+   "n": 44
+  },
+  "|concentrate|1": {
+   "median": 5000,
+   "n": 7
+  },
+  "herb|flower|7": {
+   "median": 3500,
+   "n": 31
+  },
+  "rythm|vaporizers|1": {
+   "median": 6000.0,
+   "n": 18
+  },
+  "hashtag honey|preroll|1": {
+   "median": 936.5,
+   "n": 20
+  },
+  "revert|preroll|0.5": {
+   "median": 796,
+   "n": 49
+  },
+  "|vaporizers|1": {
+   "median": 5000,
+   "n": 55
+  },
+  "1906|edible|100": {
+   "median": 2900,
+   "n": 35
+  },
+  "ayrloom|tinctures|300": {
+   "median": 5000.0,
+   "n": 26
+  },
+  "ruby farms|preroll|3.5": {
+   "median": 3801,
+   "n": 137
+  },
+  "7 seaz|flower|7": {
+   "median": 5000,
+   "n": 7
+  },
+  "ayrloom|preroll|3": {
+   "median": 4000,
+   "n": 73
+  },
+  "|vaporizers|0.5": {
+   "median": 2599.0,
+   "n": 48
+  },
+  "mfny|tinctures|1000": {
+   "median": 4800.0,
+   "n": 6
+  },
+  "rove|preroll|1": {
+   "median": 2500,
+   "n": 55
+  },
+  "leal|flower|7": {
+   "median": 5000.0,
+   "n": 14
+  },
+  "edie parker|preroll|3.5": {
+   "median": 5000.0,
+   "n": 8
+  },
+  "ayrloom|vaporizers|0.5": {
+   "median": 3000,
+   "n": 9
+  },
+  "off hours|vaporizers|0.5": {
+   "median": 3164,
+   "n": 11
+  },
+  "bouket|preroll|1": {
+   "median": 1400,
+   "n": 19
+  },
+  "ravens view genetics|preroll|1": {
+   "median": 1100.0,
+   "n": 20
+  },
+  "myhi|edible|100": {
+   "median": 2486.0,
+   "n": 14
+  },
+  "mfny|concentrate|2": {
+   "median": 10000.0,
+   "n": 6
+  },
+  "florist farms|flower|7": {
+   "median": 7000,
+   "n": 17
+  },
+  "stiiizy|edible|100": {
+   "median": 2500,
+   "n": 27
+  },
+  "|edible|100": {
+   "median": 2599.0,
+   "n": 22
+  },
+  "hepworth|concentrate|1": {
+   "median": 4000,
+   "n": 7
+  },
+  "mfny|concentrate|1": {
+   "median": 6215,
+   "n": 79
+  },
+  "herb|flower|3.5": {
+   "median": 2500.0,
+   "n": 60
+  },
+  "to the moon|preroll|4.5": {
+   "median": 4000,
+   "n": 11
+  },
+  "rythm|concentrate|2": {
+   "median": 10500,
+   "n": 9
+  },
+  "edie parker|flower|3.5": {
+   "median": 4500.0,
+   "n": 16
+  },
+  "rolling hills wellness|flower|3.5": {
+   "median": 5000,
+   "n": 7
+  },
+  "cannabals|vaporizers|2": {
+   "median": 7345.0,
+   "n": 26
+  },
+  "chime & chill|vaporizers|1": {
+   "median": 4500.0,
+   "n": 4
+  },
+  "jetpacks|flower|3.5": {
+   "median": 6000,
+   "n": 25
+  },
+  "hashtag honey|vaporizers|1": {
+   "median": 4000.0,
+   "n": 72
+  },
+  "wyld|edible|100": {
+   "median": 2800,
+   "n": 121
+  },
+  "kiva|edible|100": {
+   "median": 3000.0,
+   "n": 22
+  },
+  "jetpacks|preroll|3": {
+   "median": 5000,
+   "n": 27
+  },
+  "new york honey|vaporizers|2": {
+   "median": 6800,
+   "n": 3
+  },
+  "florist farms|preroll|1": {
+   "median": 1278.0,
+   "n": 42
+  },
+  "harney brothers|edible|50": {
+   "median": 2050.0,
+   "n": 10
+  },
+  "mini mart|preroll|3.5": {
+   "median": 3408.0,
+   "n": 10
+  },
+  "alchemy pure|vaporizers|0.5": {
+   "median": 4200.0,
+   "n": 6
+  },
+  "hurley grown|flower|7": {
+   "median": 5000.0,
+   "n": 2
+  },
+  "florist farms|edible|100": {
+   "median": 2400.0,
+   "n": 22
+  },
+  "|preroll|1": {
+   "median": 1000,
+   "n": 17
+  },
+  "hepworth|vaporizers|0.5": {
+   "median": 1500,
+   "n": 21
+  },
+  "florist farms|edible|10": {
+   "median": 497,
+   "n": 3
+  },
+  "rythm|flower|28": {
+   "median": 19000.0,
+   "n": 12
+  },
+  "myhi|vaporizers|1": {
+   "median": 5525.0,
+   "n": 8
+  },
+  "bodega boyz|preroll|1.25": {
+   "median": 2200,
+   "n": 19
+  },
+  "|flower|3.5": {
+   "median": 3717,
+   "n": 39
+  },
+  "hashtag honey|edible|100": {
+   "median": 1600,
+   "n": 45
+  },
+  "old pal|preroll|2": {
+   "median": 1.0,
+   "n": 2
+  },
+  "rythm|preroll|1": {
+   "median": 1800.0,
+   "n": 12
+  },
+  "hurley grown|flower|3.5": {
+   "median": 3616.0,
+   "n": 18
+  },
+  "flav|preroll|4": {
+   "median": 4000,
+   "n": 5
+  },
+  "honey king|preroll|3.5": {
+   "median": 4500,
+   "n": 9
+  },
+  "mr. moxey's mints|edible|100": {
+   "median": 2650.0,
+   "n": 4
+  },
+  "hashtag honey|flower|3.5": {
+   "median": 4000.0,
+   "n": 30
+  },
+  "to the moon|vaporizers|1": {
+   "median": 5300,
+   "n": 5
+  },
+  "hepworth|edible|100": {
+   "median": 2000,
+   "n": 9
+  },
+  "rove|preroll|3": {
+   "median": 6100,
+   "n": 23
+  },
+  "honey king|vaporizers|1.1": {
+   "median": 4159,
+   "n": 7
+  },
+  "|preroll|0.5": {
+   "median": 800.0,
+   "n": 4
+  },
+  "revert|vaporizers|2": {
+   "median": 6625.0,
+   "n": 14
+  },
+  "7 seaz|preroll|1.2": {
+   "median": 2000,
+   "n": 9
+  },
+  "7 seaz|preroll|0.6": {
+   "median": 1000,
+   "n": 11
+  },
+  "miss grass|preroll|0.4": {
+   "median": 700,
+   "n": 7
+  },
+  "7 seaz|flower|28": {
+   "median": 20000,
+   "n": 7
+  },
+  "crispy's|edible|100": {
+   "median": 2600,
+   "n": 19
+  },
+  "|edible|10": {
+   "median": 678.0,
+   "n": 12
+  },
+  "alchemy pure|preroll|0.5": {
+   "median": 600.0,
+   "n": 4
+  },
+  "jetpacks|preroll|0.6": {
+   "median": 1406.5,
+   "n": 46
+  },
+  "high peaks|edible|10": {
+   "median": 500.0,
+   "n": 16
+  },
+  "grams|preroll|1": {
+   "median": 1200.0,
+   "n": 6
+  },
+  "high scale|flower|3.5": {
+   "median": 4118.5,
+   "n": 2
+  },
+  "jetpacks|preroll|1": {
+   "median": 2200,
+   "n": 25
+  },
+  "hepworth|flower|3.5": {
+   "median": 3000,
+   "n": 27
+  },
+  "slack hollow|preroll|4": {
+   "median": 4800,
+   "n": 5
+  },
+  "honey king|preroll|1": {
+   "median": 1498.0,
+   "n": 4
+  },
+  "zizzle|flower|3.5": {
+   "median": 5000.0,
+   "n": 54
+  },
+  "7 seaz|flower|14": {
+   "median": 10000,
+   "n": 11
+  },
+  "florette|preroll|2.5": {
+   "median": 2750.0,
+   "n": 6
+  },
+  "grassroots|preroll|1": {
+   "median": 1800.0,
+   "n": 10
+  },
+  "grassroots|flower|7": {
+   "median": 7000.0,
+   "n": 8
+  },
+  "ghost.|flower|3.5": {
+   "median": 4600,
+   "n": 5
+  },
+  "ruby farms|flower|3.5": {
+   "median": 4200,
+   "n": 23
+  },
+  "|flower|14": {
+   "median": 8500,
+   "n": 9
+  },
+  "jaunty|concentrate|1": {
+   "median": 6000.0,
+   "n": 44
+  },
+  "major|flower|3.5": {
+   "median": 5000.0,
+   "n": 36
+  },
+  "jetpacks|preroll|2.5": {
+   "median": 5500,
+   "n": 29
+  },
+  "honey king|preroll|1.5": {
+   "median": 1488.0,
+   "n": 10
+  },
+  "old pal|flower|14": {
+   "median": 6500,
+   "n": 13
+  },
+  "ayrloom|tinctures|150": {
+   "median": 3000.0,
+   "n": 12
+  },
+  "leal|preroll|1": {
+   "median": 900.0,
+   "n": 16
+  },
+  "drew martin|preroll|4.5": {
+   "median": 6000,
+   "n": 5
+  },
+  "mfny|preroll|3": {
+   "median": 5000.0,
+   "n": 30
+  },
+  "1906|edible|90": {
+   "median": 900,
+   "n": 3
+  },
+  "hashtag honey|vaporizers|2": {
+   "median": 6000,
+   "n": 29
+  },
+  "flav|preroll|1": {
+   "median": 1278.0,
+   "n": 8
+  },
+  "veteran's choice creations|concentrate|1": {
+   "median": 4500,
+   "n": 3
+  },
+  "hepworth|tinctures|750": {
+   "median": 8250.0,
+   "n": 2
+  },
+  "dogwalkers|preroll|1": {
+   "median": 1900.0,
+   "n": 14
+  },
+  "old pal|flower|3.5": {
+   "median": 3300,
+   "n": 7
+  },
+  "mfny|tinctures|391.7": {
+   "median": 4900.0,
+   "n": 2
+  },
+  "revert|vaporizers|1": {
+   "median": 3200,
+   "n": 11
+  },
+  "rythm|edible|100": {
+   "median": 2500.0,
+   "n": 2
+  },
+  "luci|preroll|1": {
+   "median": 1803.0,
+   "n": 8
+  },
+  "wyld|edible|10": {
+   "median": 2938.0,
+   "n": 6
+  },
+  "new york honey|concentrate|2": {
+   "median": 5000.0,
+   "n": 14
+  },
+  "rythm|preroll|2.5": {
+   "median": 3800,
+   "n": 15
+  },
+  "mfny|tinctures|1500": {
+   "median": 4801,
+   "n": 3
+  },
+  "jetpacks|preroll|0.5": {
+   "median": 1450,
+   "n": 43
+  },
+  "ayrloom|edible|5": {
+   "median": 400,
+   "n": 7
+  },
+  "papa & barkley|edible|100": {
+   "median": 3100,
+   "n": 5
+  },
+  "hashtag honey|flower|28": {
+   "median": 18000,
+   "n": 5
+  },
+  "slack hollow|flower|1": {
+   "median": 1000.0,
+   "n": 4
+  },
+  "the green lady|edible|100": {
+   "median": 3000.0,
+   "n": 4
+  },
+  "gr\u00f6n|edible|25": {
+   "median": 2493.0,
+   "n": 8
+  },
+  "ruby farms|preroll|3": {
+   "median": 5800,
+   "n": 11
+  },
+  "pax|edible|100": {
+   "median": 2800.0,
+   "n": 32
+  },
+  "animal house|flower|3.5": {
+   "median": 5000,
+   "n": 21
+  },
+  "high peaks|edible|100": {
+   "median": 3500,
+   "n": 3
+  },
+  "alchemy pure|preroll|3": {
+   "median": 3500,
+   "n": 3
+  },
+  "hurley grown|preroll|4.5": {
+   "median": 4686.0,
+   "n": 2
+  },
+  "nyce|edible|100": {
+   "median": 2200.0,
+   "n": 14
+  },
+  "zizzle|preroll|2.5": {
+   "median": 3200.0,
+   "n": 4
+  },
+  "florist farms|preroll|0.5": {
+   "median": 1200.0,
+   "n": 4
+  },
+  "cannabals|vaporizers|6": {
+   "median": 12000.0,
+   "n": 12
+  },
+  "foy|edible|100": {
+   "median": 2800,
+   "n": 5
+  },
+  "hepworth|preroll|2.5": {
+   "median": 3800,
+   "n": 9
+  },
+  "florette|flower|3.5": {
+   "median": 4000.0,
+   "n": 10
+  },
+  "to the moon|flower|14": {
+   "median": 8830.0,
+   "n": 32
+  },
+  "hepworth|vaporizers|1": {
+   "median": 3000,
+   "n": 13
+  },
+  "bouket|flower|7": {
+   "median": 5750.0,
+   "n": 18
+  },
+  "herb|preroll|1": {
+   "median": 950.0,
+   "n": 14
+  },
+  "bodega boyz|vaporizers|2": {
+   "median": 9000.0,
+   "n": 28
+  },
+  "zizzle|preroll|5": {
+   "median": 6600,
+   "n": 5
+  },
+  "minny grown|edible|100": {
+   "median": 2500.0,
+   "n": 6
+  },
+  "mfny|tinctures|400": {
+   "median": 4779,
+   "n": 5
+  },
+  "ravens view genetics|flower|3.5": {
+   "median": 3800,
+   "n": 9
+  },
+  "eaton botanicals|edible|5": {
+   "median": 3458.0,
+   "n": 2
+  },
+  "wana|edible|20": {
+   "median": 2800.0,
+   "n": 2
+  },
+  "grassroots|flower|28": {
+   "median": 17500,
+   "n": 3
+  },
+  "bouket|flower|4": {
+   "median": 5078.0,
+   "n": 6
+  },
+  "alchemy pure|flower|3.5": {
+   "median": 4000.0,
+   "n": 12
+  },
+  "|vaporizers|2": {
+   "median": 8000,
+   "n": 5
+  },
+  "koa cannabis co.|preroll|3.5": {
+   "median": 5500.0,
+   "n": 32
+  },
+  "honey king|vaporizers|2": {
+   "median": 6991,
+   "n": 9
+  },
+  "revert|edible|100": {
+   "median": 1500.0,
+   "n": 6
+  },
+  "herb|vaporizers|1": {
+   "median": 3500,
+   "n": 7
+  },
+  "alchemy pure|concentrate|1": {
+   "median": 7500,
+   "n": 9
+  },
+  "ruby farms|edible|100": {
+   "median": 2500,
+   "n": 13
+  },
+  "herb|flower|28": {
+   "median": 13000.0,
+   "n": 14
+  },
+  "hepworth|flower|7": {
+   "median": 4000,
+   "n": 7
+  },
+  "hepworth|preroll|7": {
+   "median": 5000,
+   "n": 9
+  },
+  "high scale|flower|1.5": {
+   "median": 1195.0,
+   "n": 2
+  },
+  "major|preroll|1": {
+   "median": 1300.0,
+   "n": 14
+  },
+  "grassroots|flower|14": {
+   "median": 12540,
+   "n": 9
+  },
+  "livwell|flower|14": {
+   "median": 8849.0,
+   "n": 8
+  },
+  "kings road|vaporizers|2": {
+   "median": 7500,
+   "n": 21
+  },
+  "mfny|preroll|2.5": {
+   "median": 5714.5,
+   "n": 4
+  },
+  "miss grass|flower|14": {
+   "median": 9000,
+   "n": 3
+  },
+  "harney brothers|edible|80": {
+   "median": 1747.5,
+   "n": 4
+  },
+  "ghost.|vaporizers|2": {
+   "median": 8500,
+   "n": 19
+  },
+  "bodega boyz|preroll|2.8": {
+   "median": 4400.0,
+   "n": 6
+  },
+  "edie parker|vaporizers|0.5": {
+   "median": 4000,
+   "n": 3
+  },
+  "herb|flower|14": {
+   "median": 8000,
+   "n": 3
+  },
+  "eaton botanicals|preroll|2.5": {
+   "median": 2800.0,
+   "n": 4
+  },
+  "luci|preroll|1.3": {
+   "median": 3616,
+   "n": 5
+  },
+  "pax|vaporizers|0.5": {
+   "median": 5000.0,
+   "n": 4
+  },
+  "1906|edible|20": {
+   "median": 2900.0,
+   "n": 6
+  },
+  "|flower|28": {
+   "median": 11504.5,
+   "n": 2
+  },
+  "bouket|vaporizers|1": {
+   "median": 6000,
+   "n": 3
+  },
+  "veteran's choice creations|flower|1": {
+   "median": 3000,
+   "n": 3
+  },
+  "pax|vaporizers|0.1": {
+   "median": 2000.0,
+   "n": 2
+  },
+  "honey king|flower|3.5": {
+   "median": 4071,
+   "n": 7
+  },
+  "alchemy pure|preroll|0.75": {
+   "median": 1600.0,
+   "n": 4
+  },
+  "honey king|preroll|2.5": {
+   "median": 3616.0,
+   "n": 2
+  },
+  "papa & barkley|topical|100": {
+   "median": 9000.0,
+   "n": 2
+  },
+  "cali honey|flower|3.5": {
+   "median": 3600,
+   "n": 3
+  },
+  "|preroll|3.5": {
+   "median": 3500.0,
+   "n": 8
+  },
+  "pixlz|edible|100": {
+   "median": 2400.0,
+   "n": 6
+  },
+  "dogwalkers|preroll|2.25": {
+   "median": 4500.0,
+   "n": 4
+  },
+  "house of piff|edible|100": {
+   "median": 3000.0,
+   "n": 2
+  },
+  "chime & chill|topical|200": {
+   "median": 3000.0,
+   "n": 2
+  },
+  "butter|edible|100": {
+   "median": 4047.0,
+   "n": 2
+  },
+  "hashtag honey|edible|50": {
+   "median": 1600,
+   "n": 3
+  },
+  "rythm|flower|14": {
+   "median": 11000,
+   "n": 3
+  },
+  "alchemy pure|flower|1": {
+   "median": 900,
+   "n": 3
+  },
+  "dogwalkers|preroll|0.75": {
+   "median": 1400,
+   "n": 11
+  },
+  "zizzle|vaporizers|0.99": {
+   "median": 10170.0,
+   "n": 2
+  },
+  "chime & chill|topical|100": {
+   "median": 3400.0,
+   "n": 2
+  },
+  "|preroll|2.5": {
+   "median": 5085.0,
+   "n": 8
+  },
+  "bodega boyz|flower|3.5": {
+   "median": 3000.0,
+   "n": 16
+  },
+  "|preroll|5": {
+   "median": 4500,
+   "n": 3
+  },
+  "7 seaz|tinctures|1000": {
+   "median": 5000.0,
+   "n": 2
+  },
+  "7 seaz|preroll|3": {
+   "median": 3500.0,
+   "n": 4
+  },
+  "ish|preroll|1": {
+   "median": 1200.0,
+   "n": 2
+  },
+  "grams|flower|3.5": {
+   "median": 4200.0,
+   "n": 4
+  },
+  "sticky's weed farm|flower|3.5": {
+   "median": 3500.0,
+   "n": 4
+  },
+  "alibi|preroll|4": {
+   "median": 4400,
+   "n": 3
+  },
+  "|preroll|0.75": {
+   "median": 3500.0,
+   "n": 2
+  },
+  "ayrloom|edible|50": {
+   "median": 1800,
+   "n": 3
+  },
+  "7 seaz|vaporizers|1": {
+   "median": 3000.0,
+   "n": 12
+  },
+  "supernaturals|preroll|0.75": {
+   "median": 1000,
+   "n": 5
+  },
+  "florette|preroll|1": {
+   "median": 1100.0,
+   "n": 8
+  },
+  "1906|edible|75": {
+   "median": 2900,
+   "n": 7
+  },
+  "veteran's choice creations|topical|900": {
+   "median": 5500.0,
+   "n": 2
+  },
+  "revert|preroll|0.7": {
+   "median": 1400,
+   "n": 5
+  },
+  "grassroots|edible|100": {
+   "median": 2500.0,
+   "n": 2
+  },
+  "rythm|vaporizers|0.5": {
+   "median": 4500,
+   "n": 3
+  },
+  "butter|flower|3.5": {
+   "median": 4400,
+   "n": 3
+  },
+  "ruby farms|preroll|2.5": {
+   "median": 6000.0,
+   "n": 2
+  },
+  "ayrloom|tinctures|1000": {
+   "median": 6050.0,
+   "n": 12
+  },
+  "supernaturals|preroll|3.5": {
+   "median": 3600.0,
+   "n": 8
+  },
+  "mfny|tinctures|390": {
+   "median": 4900.0,
+   "n": 2
+  },
+  "minny grown|edible|10": {
+   "median": 565,
+   "n": 11
+  },
+  "supernaturals|edible|100": {
+   "median": 2800.0,
+   "n": 2
+  },
+  "high scale|flower|28": {
+   "median": 20700.0,
+   "n": 2
+  },
+  "herb|preroll|32": {
+   "median": 13000.0,
+   "n": 2
+  },
+  "ghost.|preroll|7": {
+   "median": 7000.0,
+   "n": 2
+  },
+  "miss grass|flower|3.5": {
+   "median": 3800.0,
+   "n": 4
+  },
+  "nyce|vaporizers|1": {
+   "median": 7500,
+   "n": 3
+  },
+  "supernaturals|preroll|2.5": {
+   "median": 3500,
+   "n": 3
+  },
+  "|flower|1.2": {
+   "median": 1500.0,
+   "n": 2
+  },
+  "papa & barkley|tinctures|432": {
+   "median": 9000.0,
+   "n": 2
+  },
+  "|flower|1": {
+   "median": 1096.0,
+   "n": 4
+  },
+  "|preroll|3": {
+   "median": 5250.0,
+   "n": 2
+  },
+  "dogwalkers|preroll|4.2": {
+   "median": 6500,
+   "n": 5
+  },
+  "rythm|flower|7": {
+   "median": 7000,
+   "n": 5
+  },
+  "kings road|concentrate|1": {
+   "median": 5000,
+   "n": 3
+  },
+  "harney brothers|edible|25": {
+   "median": 2050.0,
+   "n": 2
+  },
+  "high scale|preroll|1.4": {
+   "median": 1283.0,
+   "n": 2
+  },
+  "the healing rose|topical|25": {
+   "median": 500.0,
+   "n": 2
+  },
+  "alchemy pure|flower|0.7": {
+   "median": 1017,
+   "n": 3
+  },
+  "zizzle|preroll|1.5": {
+   "median": 3000,
+   "n": 3
+  },
+  "flav|flower|14": {
+   "median": 9000,
+   "n": 3
+  },
+  "hepworth|topical|2500": {
+   "median": 14500.0,
+   "n": 2
+  },
+  "mfny|tinctures|418": {
+   "median": 4789.5,
+   "n": 2
+  },
+  "ish|flower|14": {
+   "median": 8000,
+   "n": 3
+  },
+  "cali honey|preroll|2": {
+   "median": 6000.0,
+   "n": 2
+  },
+  "alchemy pure|preroll|0.7": {
+   "median": 900.0,
+   "n": 2
+  },
+  "kings road|concentrate|3.5": {
+   "median": 13000.0,
+   "n": 4
+  },
+  "livwell|flower|28": {
+   "median": 13500.0,
+   "n": 2
+  },
+  "old pal|preroll|7": {
+   "median": 5000,
+   "n": 3
+  },
+  "veteran's choice creations|preroll|1": {
+   "median": 3000.0,
+   "n": 2
+  },
+  "veteran's choice creations|edible|100": {
+   "median": 1800,
+   "n": 3
+  },
+  "revert|preroll|3.5": {
+   "median": 4301.0,
+   "n": 2
+  },
+  "hashtag honey|flower|1.2": {
+   "median": 1250.0,
+   "n": 2
+  },
+  "ravens view genetics|preroll|3": {
+   "median": 4600,
+   "n": 3
+  },
+  "2x baked|edible|10": {
+   "median": 1065.0,
+   "n": 2
+  },
+  "alchemy pure|flower|28": {
+   "median": 15500.0,
+   "n": 2
+  },
+  "bodega boyz|flower|28": {
+   "median": 13000.0,
+   "n": 2
+  },
+  "papa & barkley|topical|51": {
+   "median": 3195.0,
+   "n": 2
+  },
+  "hashtag honey|flower|14": {
+   "median": 11000.0,
+   "n": 2
+  },
+  "to the moon|flower|3": {
+   "median": 3000.0,
+   "n": 2
+  },
+  "harney brothers|tinctures|50": {
+   "median": 2000.0,
+   "n": 2
+  },
+  "cannabals|edible|10": {
+   "median": 565.0,
+   "n": 2
+  },
+  "2x baked|edible|100": {
+   "median": 2200.0,
+   "n": 2
+  },
+  "|edible|20": {
+   "median": 3000.0,
+   "n": 2
+  },
+  "amedicanna|flower|2": {
+   "median": 2301.0,
+   "n": 2
+  }
+ },
+ "brand_per_g": {
+  "bouket|flower": {
+   "median": 1285.7142857142858,
+   "n": 76
+  },
+  "jaunty|vaporizers": {
+   "median": 4500.0,
+   "n": 379
+  },
+  "stiiizy|preroll": {
+   "median": 2000.0,
+   "n": 134
+  },
+  "jetpacks|preroll": {
+   "median": 2300.0,
+   "n": 177
+  },
+  "stiiizy|vaporizers": {
+   "median": 4600.0,
+   "n": 437
+  },
+  "runtz|flower": {
+   "median": 1514.2857142857142,
+   "n": 141
+  },
+  "mini mart|flower": {
+   "median": 750.0,
+   "n": 56
+  },
+  "to the moon|flower": {
+   "median": 1000.0,
+   "n": 99
+  },
+  "florist farms|flower": {
+   "median": 1142.857142857143,
+   "n": 50
+  },
+  "cannabals|vaporizers": {
+   "median": 3991.25,
+   "n": 114
+  },
+  "ruby farms|vaporizers": {
+   "median": 5650.0,
+   "n": 31
+  },
+  "edie parker|vaporizers": {
+   "median": 5500.0,
+   "n": 47
+  },
+  "ayrloom|vaporizers": {
+   "median": 4500.0,
+   "n": 204
+  },
+  "high 5's|preroll": {
+   "median": 1687.5,
+   "n": 14
+  },
+  "miss grass|preroll": {
+   "median": 2250.0,
+   "n": 22
+  },
+  "pax|vaporizers": {
+   "median": 6700.0,
+   "n": 166
+  },
+  "revert|preroll": {
+   "median": 1582.0,
+   "n": 76
+  },
+  "florist farms|preroll": {
+   "median": 1227.7142857142858,
+   "n": 184
+  },
+  "rythm|vaporizers": {
+   "median": 5000.0,
+   "n": 32
+  },
+  "nyce|concentrate": {
+   "median": 6000.0,
+   "n": 34
+  },
+  "mfny|vaporizers": {
+   "median": 7600.0,
+   "n": 123
+  },
+  "rythm|concentrate": {
+   "median": 6000.0,
+   "n": 36
+  },
+  "revert|flower": {
+   "median": 642.8571428571429,
+   "n": 169
+  },
+  "florist farms|vaporizers": {
+   "median": 4500.0,
+   "n": 68
+  },
+  "jetpacks|concentrate": {
+   "median": 4520.0,
+   "n": 72
+  },
+  "bodega boyz|vaporizers": {
+   "median": 4500.0,
+   "n": 61
+  },
+  "new york honey|vaporizers": {
+   "median": 3500.0,
+   "n": 26
+  },
+  "cannabals|preroll": {
+   "median": 1285.7142857142858,
+   "n": 17
+  },
+  "rove|preroll": {
+   "median": 2500.0,
+   "n": 92
+  },
+  "off hours|vaporizers": {
+   "median": 3999.0,
+   "n": 45
+  },
+  "runtz|preroll": {
+   "median": 1120.0,
+   "n": 11
+  },
+  "grassroots|flower": {
+   "median": 1142.857142857143,
+   "n": 79
+  },
+  "the ladies|flower": {
+   "median": 1000.0,
+   "n": 5
+  },
+  "rove|vaporizers": {
+   "median": 8500.0,
+   "n": 207
+  },
+  "ruby farms|preroll": {
+   "median": 1140.0,
+   "n": 324
+  },
+  "new york honey|concentrate": {
+   "median": 3500.0,
+   "n": 27
+  },
+  "mfny|preroll": {
+   "median": 1900.0,
+   "n": 64
+  },
+  "hepworth|concentrate": {
+   "median": 3600.0,
+   "n": 11
+  },
+  "alchemy pure|preroll": {
+   "median": 1200.0,
+   "n": 29
+  },
+  "flav|vaporizers": {
+   "median": 5000.0,
+   "n": 10
+  },
+  "leal|preroll": {
+   "median": 900.0,
+   "n": 18
+  },
+  "7 seaz|flower": {
+   "median": 714.2857142857143,
+   "n": 35
+  },
+  "rythm|flower": {
+   "median": 1285.7142857142858,
+   "n": 54
+  },
+  "hashtag honey|preroll": {
+   "median": 973.0,
+   "n": 27
+  },
+  "|flower": {
+   "median": 1011.4285714285714,
+   "n": 60
+  },
+  "nyce|vaporizers": {
+   "median": 8800.0,
+   "n": 47
+  },
+  "|concentrate": {
+   "median": 5000.0,
+   "n": 7
+  },
+  "herb|flower": {
+   "median": 628.5714285714286,
+   "n": 108
+  },
+  "|vaporizers": {
+   "median": 5085.0,
+   "n": 109
+  },
+  "ayrloom|preroll": {
+   "median": 1333.3333333333333,
+   "n": 74
+  },
+  "leal|flower": {
+   "median": 714.2857142857143,
+   "n": 15
+  },
+  "edie parker|preroll": {
+   "median": 1428.5714285714287,
+   "n": 8
+  },
+  "bouket|preroll": {
+   "median": 1400.0,
+   "n": 19
+  },
+  "ravens view genetics|preroll": {
+   "median": 1100.0,
+   "n": 23
+  },
+  "mfny|concentrate": {
+   "median": 6215.0,
+   "n": 85
+  },
+  "to the moon|preroll": {
+   "median": 888.8888888888889,
+   "n": 12
+  },
+  "edie parker|flower": {
+   "median": 1285.7142857142858,
+   "n": 16
+  },
+  "rolling hills wellness|flower": {
+   "median": 1428.5714285714287,
+   "n": 7
+  },
+  "chime & chill|vaporizers": {
+   "median": 4500.0,
+   "n": 4
+  },
+  "jetpacks|flower": {
+   "median": 1714.2857142857142,
+   "n": 25
+  },
+  "hashtag honey|vaporizers": {
+   "median": 4000.0,
+   "n": 101
+  },
+  "mini mart|preroll": {
+   "median": 973.7142857142858,
+   "n": 10
+  },
+  "alchemy pure|vaporizers": {
+   "median": 8400.0,
+   "n": 6
+  },
+  "hurley grown|flower": {
+   "median": 1033.142857142857,
+   "n": 20
+  },
+  "|preroll": {
+   "median": 1300.0,
+   "n": 48
+  },
+  "hepworth|vaporizers": {
+   "median": 3000.0,
+   "n": 34
+  },
+  "myhi|vaporizers": {
+   "median": 5525.0,
+   "n": 8
+  },
+  "bodega boyz|preroll": {
+   "median": 1600.0,
+   "n": 25
+  },
+  "old pal|preroll": {
+   "median": 714.2857142857143,
+   "n": 5
+  },
+  "rythm|preroll": {
+   "median": 1800.0,
+   "n": 27
+  },
+  "flav|preroll": {
+   "median": 1200.0,
+   "n": 13
+  },
+  "honey king|preroll": {
+   "median": 1285.7142857142858,
+   "n": 27
+  },
+  "hashtag honey|flower": {
+   "median": 1085.7142857142858,
+   "n": 39
+  },
+  "to the moon|vaporizers": {
+   "median": 5300.0,
+   "n": 5
+  },
+  "honey king|vaporizers": {
+   "median": 3495.5,
+   "n": 16
+  },
+  "revert|vaporizers": {
+   "median": 3250.0,
+   "n": 25
+  },
+  "7 seaz|preroll": {
+   "median": 1666.6666666666667,
+   "n": 24
+  },
+  "grams|preroll": {
+   "median": 1200.0,
+   "n": 7
+  },
+  "high scale|flower": {
+   "median": 796.6666666666666,
+   "n": 6
+  },
+  "hepworth|flower": {
+   "median": 857.1428571428571,
+   "n": 36
+  },
+  "slack hollow|preroll": {
+   "median": 1200.0,
+   "n": 5
+  },
+  "zizzle|flower": {
+   "median": 1428.5714285714287,
+   "n": 54
+  },
+  "florette|preroll": {
+   "median": 1100.0,
+   "n": 14
+  },
+  "grassroots|preroll": {
+   "median": 1800.0,
+   "n": 10
+  },
+  "ghost.|flower": {
+   "median": 1314.2857142857142,
+   "n": 5
+  },
+  "ruby farms|flower": {
+   "median": 1200.0,
+   "n": 23
+  },
+  "jaunty|concentrate": {
+   "median": 6000.0,
+   "n": 44
+  },
+  "major|flower": {
+   "median": 1428.5714285714287,
+   "n": 36
+  },
+  "old pal|flower": {
+   "median": 464.2857142857143,
+   "n": 20
+  },
+  "drew martin|preroll": {
+   "median": 1333.3333333333333,
+   "n": 6
+  },
+  "veteran's choice creations|concentrate": {
+   "median": 4500.0,
+   "n": 3
+  },
+  "dogwalkers|preroll": {
+   "median": 1800.0,
+   "n": 35
+  },
+  "luci|preroll": {
+   "median": 2260.0,
+   "n": 14
+  },
+  "slack hollow|flower": {
+   "median": 1000.0,
+   "n": 5
+  },
+  "animal house|flower": {
+   "median": 1428.5714285714287,
+   "n": 21
+  },
+  "zizzle|preroll": {
+   "median": 1420.0,
+   "n": 12
+  },
+  "hepworth|preroll": {
+   "median": 785.7142857142857,
+   "n": 18
+  },
+  "florette|flower": {
+   "median": 1142.857142857143,
+   "n": 10
+  },
+  "herb|preroll": {
+   "median": 900.0,
+   "n": 16
+  },
+  "ravens view genetics|flower": {
+   "median": 1085.7142857142858,
+   "n": 9
+  },
+  "alchemy pure|flower": {
+   "median": 1142.857142857143,
+   "n": 21
+  },
+  "koa cannabis co.|preroll": {
+   "median": 1571.4285714285713,
+   "n": 32
+  },
+  "herb|vaporizers": {
+   "median": 3500.0,
+   "n": 7
+  },
+  "alchemy pure|concentrate": {
+   "median": 7500.0,
+   "n": 9
+  },
+  "major|preroll": {
+   "median": 1300.0,
+   "n": 15
+  },
+  "livwell|flower": {
+   "median": 584.6785714285714,
+   "n": 10
+  },
+  "kings road|vaporizers": {
+   "median": 3750.0,
+   "n": 21
+  },
+  "miss grass|flower": {
+   "median": 864.2857142857143,
+   "n": 8
+  },
+  "ghost.|vaporizers": {
+   "median": 4250.0,
+   "n": 19
+  },
+  "eaton botanicals|preroll": {
+   "median": 1120.0,
+   "n": 4
+  },
+  "bouket|vaporizers": {
+   "median": 6000.0,
+   "n": 3
+  },
+  "veteran's choice creations|flower": {
+   "median": 3000.0,
+   "n": 3
+  },
+  "honey king|flower": {
+   "median": 1163.142857142857,
+   "n": 7
+  },
+  "cali honey|flower": {
+   "median": 1028.5714285714287,
+   "n": 3
+  },
+  "bodega boyz|flower": {
+   "median": 857.1428571428571,
+   "n": 18
+  },
+  "grams|flower": {
+   "median": 1200.0,
+   "n": 5
+  },
+  "sticky's weed farm|flower": {
+   "median": 1000.0,
+   "n": 4
+  },
+  "alibi|preroll": {
+   "median": 1100.0,
+   "n": 3
+  },
+  "7 seaz|vaporizers": {
+   "median": 3000.0,
+   "n": 12
+  },
+  "supernaturals|preroll": {
+   "median": 1285.7142857142858,
+   "n": 16
+  },
+  "butter|flower": {
+   "median": 1257.142857142857,
+   "n": 3
+  },
+  "flav|flower": {
+   "median": 676.5714285714287,
+   "n": 4
+  },
+  "kings road|concentrate": {
+   "median": 5000.0,
+   "n": 7
+  },
+  "ish|flower": {
+   "median": 571.4285714285714,
+   "n": 3
+  },
+  "cali honey|preroll": {
+   "median": 3000.0,
+   "n": 3
+  },
+  "veteran's choice creations|preroll": {
+   "median": 3000.0,
+   "n": 3
+  }
+ }
+}

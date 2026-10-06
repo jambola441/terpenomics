@@ -38,6 +38,7 @@ STALE_HOURS = 30    # the cron runs daily at 13:00 UTC; a store unseen this long
 TOP = 15            # findings printed per detector; the rest are counted
 MIN_STORES = 2      # a size or a review cluster at one store is noise, as for the bootstrap
 CURATED_DAYS = 30   # a curated product no listing has matched this long has stopped selling
+UNSURE = 0.5        # Jev's probability under which an enrichment answer is reviewed
 SECTIONS = [        # (kind, title), in the order the report prints them
     ("stale-store", "Stores the daily run missed"),
     ("shared-name", "Store names recorded on unrelated products"),
@@ -46,6 +47,7 @@ SECTIONS = [        # (kind, title), in the order the report prints them
     ("size-sync", "Product-page sizes the last import left behind"),
     ("brandless", "Listings with no brand that start with a catalog brand's name"),
     ("stale-curated", f"Curated products no listing has matched for {CURATED_DAYS} days"),
+    ("unsure", f"Enrichment answers Jev gave under {UNSURE:.0%}, by brand and field"),
 ]
 
 
@@ -66,13 +68,14 @@ class Data:
     dispensaries: dict[str, dict]
     aliases: dict[str, str]
     now: datetime
+    answers: list[dict] = ()  # enrich_cache rows Jev answered (entry src "jev"): slug, cache_key, entry
 
 
 # ---------------------------------------------------------------------------
 # Loading
 # ---------------------------------------------------------------------------
 
-LISTING_COLS = ("id,dispensary_id,scraped_name,scraped_brand,scraped_category,variant,size,"
+LISTING_COLS = ("id,dispensary_id,sku,scraped_name,scraped_brand,scraped_category,variant,size,"
                 "description,catalog_entry_id,catalog_match_method,catalog_match_confidence,last_seen_at")
 
 
@@ -80,8 +83,9 @@ def load(now: datetime | None = None) -> Data:
     import db_http
     listings = db_http.select_all("listings", f"select={LISTING_COLS}&is_active=is.true&order=id")
     stores = {d["id"]: d for d in db_http.select_all("dispensaries", "select=id,name,slug,is_active")}
+    answers = db_http.select_all("enrich_cache", "select=slug,cache_key,entry&entry->>src=eq.jev&order=slug")
     return Data(listings, catalog_store.load_all("db"), stores, brand_aliases(),
-                now or datetime.now(timezone.utc))
+                now or datetime.now(timezone.utc), answers)
 
 
 def brand_aliases() -> dict[str, str]:
@@ -335,8 +339,37 @@ def stale_curated(data: Data) -> list[Finding]:
     return out
 
 
+def unsure_answers(data: Data) -> list[Finding]:
+    """Active listings whose enrichment answer Jev gave under UNSURE (enrich.py,
+    ENRICH_LLM=0 keeps Jev's best pick whatever its probability, and its probability per
+    field), and sizes the chooser left at the store's figure. Grouped by brand and field,
+    so a brand whose names Jev reads badly shows as one finding."""
+    by_key = {}
+    slug_of = {d["id"]: d.get("slug") for d in data.dispensaries.values()}
+    for l in data.listings:
+        by_key[(slug_of.get(l.get("dispensary_id")), f"{l.get('sku') or ''}|{l.get('variant') or ''}")] = l
+    groups: dict[tuple[str, str], list[str]] = defaultdict(list)
+    for row in data.answers:
+        entry = row.get("entry") or {}
+        l = by_key.get((row.get("slug"), row.get("cache_key")))
+        if l is None or entry.get("src") != "jev":
+            continue
+        brand = l.get("scraped_brand") or "(no brand)"
+        p = entry.get("p") or {}
+        for field in ("category", "subtype", "strain", "product_line"):
+            if p.get(field, 1.0) < UNSURE:
+                groups[(brand, field)].append(f'{l.get("scraped_name")} -> {entry.get(field)!r}')
+        if entry.get("size_by") == "field":
+            groups[(brand, "size")].append(f'{l.get("scraped_name")} -> {l.get("variant")!r} (the store\'s)')
+    return [Finding(f"unsure:{field}:{norm_name(brand)}", "unsure",
+                    f"{brand} {field}: {len(rows)} listing(s), e.g. " + "; ".join(rows[:3]), len(rows),
+                    "python3 scripts/db_http.py select enrich_cache "
+                    f'"select=cache_key,entry&entry->>src=eq.jev"', (len(rows),))
+            for (brand, field), rows in groups.items()]
+
+
 DETECTORS = (stale_stores, cross_wired_names, missing_sizes, review_clusters, size_sync, brandless,
-             stale_curated)
+             stale_curated, unsure_answers)
 
 
 def detect(data: Data) -> list[Finding]:
