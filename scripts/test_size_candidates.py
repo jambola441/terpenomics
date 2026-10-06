@@ -127,6 +127,7 @@ def test_counts_and_figures_stores_write_loosely():
     assert sc.assess(listing("Torrwood Farm Prerolled Flower 28pk Lilac Diesel 1oz")).values == [28.0]
     assert sc.assess(listing("Black Maple (IH) 3.5g - 1/8oz - Flower", category="flower")).values == [3.5]
     assert sc.assess(listing("Off Hours | Overglow Sour Rope | 100THC:40CBG", category="edible")).values == [100.0]
+    assert sc.assess(listing("Papa & Barkley THC1000 Releaf Tincture 30ml", "30", category="tinctures")).values == [1000.0]
 
 
 def test_a_count_in_one_text_times_a_unit_in_another():

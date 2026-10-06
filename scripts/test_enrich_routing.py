@@ -328,3 +328,22 @@ def test_without_the_llm_unsure_fields_keep_the_stores_values(fakes, monkeypatch
     assert asked == ["Gummies b 5mg THC 2.5mg CBN"]
     assert usage["jev_classified"] == 2
     assert not (enrich._CACHE_DIR / "test-store.haiku-or.json").exists()         # nothing cached
+
+
+@pytest.mark.parametrize("name,brand,category,first,never", [
+    ("Cookies N Cream Cones 100mg Ice Cream", "Lake Effect", "edible", "Cookies N Cream", "Cookies N Cream Cones"),
+    ("Black Cherry Sparkling Water 5mg", "Ayrloom", "edible", "Black Cherry", "Black Cherry Sparkling Water"),
+    ("Strawberry Sativa 100mg THC 10 pcs Live Rosin Gummies", "Nyce", "edible", "Strawberry", "Strawberry Sativa"),
+    ("Camino | Watermelon Lemonade 'Bliss' Gummies [20pk]", "Camino", "edible", "Watermelon Lemonade",
+     "Watermelon Lemonade Bliss"),
+    ("Grape Soda Pre-Roll 1g", "Boutiq", "preroll", "Grape Soda", "Grape Soda Pre-Roll"),   # a strain, not a drink
+    ("Sugar Cookie 3.5g", "Jaunty", "flower", "Sugar Cookie", None),
+])
+def test_strain_options_end_before_the_categorys_own_format_and_stay_apart(name, brand, category, first, never):
+    got = jev_extract.strain_phrases(name, brand, category)
+    assert got[0] == first and never not in got
+
+
+def test_neither_the_brand_nor_its_line_is_offered_as_a_strain():
+    assert jev_extract.strain_phrases("Papa & Barkley 1:3 Releaf Balm 50ml", "Papa & Barkley", "topical") == []
+    assert "Releaf" in jev_extract.phrases("Papa & Barkley 1:3 Releaf Balm 50ml", "Papa & Barkley")

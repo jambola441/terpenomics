@@ -83,8 +83,8 @@ _PER_UNIT = re.compile(rf"{_NUM}\s*(g|gr|grams?|mg)\s*(?:thc\s*)?(?:each|ea\b\.?
                        rf"per\s+{_UNIT_NOUN}|/\s*{_UNIT_NOUN})", re.I)
 # A count, a figure, the units: "five 0.5g pre-rolls", "Ten 10mg pearls" — each unit's figure.
 _COUNT_SIZE_NOUN = re.compile(rf"\b(\d+|{_WORD})\s+{_NUM}\s*(g|gr|grams?|mg)\s+(?:[\w'-]+\s+){{0,2}}?{_UNIT_NOUNS}\b", re.I)
-# A dose with no unit beside THC ("100THC:40CBG").
-_BARE_THC = re.compile(r"\b(\d+(?:\.\d+)?)\s*thc\b", re.I)
+# A dose with no unit beside THC: "100THC:40CBG", Papa & Barkley's "THC1000".
+_BARE_THC = re.compile(r"\b(\d+(?:\.\d+)?)\s*thc\b|\bthc\s*(\d+(?:\.\d+)?)\b(?!\s*(?:%|mg|g\b))", re.I)
 # A bare standard weight as a whole segment ("X| Flamer | Hehe Haha | 3.5", "Runtz- 3.5- Flower").
 _STANDARD_G = {0.5, 1.0, 2.0, 3.5, 7.0, 14.0, 28.0}
 _SEGMENT = re.compile(r"\s*\|\s*|\s*[-–]\s+|\s+[-–]\s*")
@@ -199,7 +199,8 @@ def _totals(t: str, unit: str) -> tuple[list[float], bool]:
                      and float(s) in _STANDARD_G]
         return _distinct(found), True
     thc_only = sizes._NON_THC_MG.sub(" ", t)
-    found = sizes._floats(sizes._MG, thc_only) or sizes._floats(_BARE_THC, thc_only)
+    found = sizes._floats(sizes._MG, thc_only) or [
+        float(a or b) for a, b in _BARE_THC.findall(thc_only)]
     if found:
         return _distinct(found), True
     return _distinct(sizes._floats(sizes._MG, t)), False
