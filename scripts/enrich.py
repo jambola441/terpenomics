@@ -703,9 +703,9 @@ def _jev_text() -> bool:
     return os.environ.get("ENRICH_JEV_TEXT", "1").strip() != "0"
 
 
-# ENRICH_LLM=0 sends nothing to an LLM: Jev and code answer what they can, and a field
-# they leave open keeps the store's value (_run_without_llm). A switch for measuring that
-# pipeline against this one (evals/enrich/README.md), not a production setting.
+# ENRICH_LLM=0 sends nothing to an LLM: Jev and code answer every field
+# (_run_without_llm). Measured level with the LLM path on the gold suites, at less than
+# half the run-to-run churn and 40% of the cost (evals/enrich/README.md, "Jev only").
 def _llm_enabled() -> bool:
     return os.environ.get("ENRICH_LLM", "1").strip() != "0"
 
@@ -743,6 +743,7 @@ def _extract_with_jev(rows: list[tuple[int, dict]], categories: list, strains: l
 
 
 def _classify_with_jev(pending: list[tuple[int, dict]], categories: list, subtypes: list,
+                       min_confidence: float | None = None, probs: dict | None = None,
                        ) -> tuple[list[tuple[int, dict]], list[tuple[int, dict]], jev.Usage]:
     """Settle category and subtype with Jev where it is confident.
 
@@ -751,6 +752,7 @@ def _classify_with_jev(pending: list[tuple[int, dict]], categories: list, subtyp
     pass A's applier makes, in the same order: a curated device token fixes the
     category, the owning enricher's name tokens and the rails fix the subtype.
     """
+    bar = JEV_MIN_CONFIDENCE if min_confidence is None else min_confidence
     usage = jev.Usage()
     items = [(row, _hint_category(row), _hint_subtype(row)) for _, row in pending]
     answers = jev_classify.classify(items, usage=usage)
@@ -766,9 +768,11 @@ def _classify_with_jev(pending: list[tuple[int, dict]], categories: list, subtyp
         sub_answer, p_sub = a.subtype_for(cat)
         if len(SUBTYPES.get(cat, ())) <= 1 or not owner.needs_model:
             p_sub = 1.0          # nothing to choose, or the owner's tokens decide (merch)
-        if min(1.0 if forced else a.p_category, p_sub) < JEV_MIN_CONFIDENCE:
+        if min(1.0 if forced else a.p_category, p_sub) < bar:
             rest.append((oi, row))
             continue
+        if probs is not None:
+            probs[oi] = (1.0 if forced else a.p_category, p_sub)
         categories[oi] = cat
         subtypes[oi] = _valid_subtype(sub_answer, cat, owner.token_subtype(name) or hint_sub)
         classified.append((oi, row))
@@ -996,36 +1000,41 @@ def _squash(s: str) -> str:
     return re.sub(r"[^a-z0-9]", "", (s or "").lower())
 
 
-def _run_without_llm(pending: list[tuple[int, dict]], categories: list, subtypes: list,
-                     strains: list, product_lines: list, variants: list) -> dict:
-    """Jev and code only (ENRICH_LLM=0).
+def _run_without_llm(pending: list[tuple[int, dict]], cache: dict, slug: str, categories: list,
+                     subtypes: list, strains: list, product_lines: list, variants: list) -> dict:
+    """Jev and code only (ENRICH_LLM=0): every field is Jev's pick or code's, whatever
+    Jev's confidence — measured on the gold suites, its best guess beats keeping the
+    store's value (evals/enrich/README.md, "Jev only").
 
-      category, subtype  Jev (jev_classify) at JEV_MIN_CONFIDENCE; below it the store's
-                         category and the rule-based subtype stand
+      category, subtype  Jev (jev_classify)
       size               code where it reads the size without guessing (stated_size), else
-                         size_choice: size_candidates' readings, the price, then Jev; below
-                         Jev's bar the store's size field stands
-      strain, line       Jev from the name's phrases (jev_extract), each at its own bar;
-                         below it, none
+                         size_choice: size_candidates' readings, the run's prices, then Jev;
+                         below the chooser's bar the store's size field stands
+      strain, line       Jev from the name's phrases (jev_extract)
 
-    Nothing is cached: a field left at the store's value is not an answer to keep.
+    Each answer is cached with Jev's probability per field ("p"), which the daily audit
+    reads to review the unsure ones. A row whose Jev call failed is marked enrich_failed
+    and not cached, so the next run asks again and the importer keeps what it holds.
     """
     import size_candidates
     import size_choice
 
     usage = dict(_ZERO_USAGE)
-    by_jev, rest, cu = _classify_with_jev(pending, categories, subtypes)
-    print(f"    jev only: classified {len(by_jev)} of {len(pending)}; {len(rest)} keep the store's category")
+    probs: dict[int, tuple[float, float]] = {}
+    by_jev, rest, cu = _classify_with_jev(pending, categories, subtypes, min_confidence=0.0, probs=probs)
+    failed = {oi for oi, _ in rest}
 
     def category(oi, row):
         return categories[oi] or _hint_category(row)
 
+    p_size: dict[int, tuple[float, str]] = {}
     items, open_rows = [], []
     for oi, row in pending:
         cat = category(oi, row)
         size = stated_size(row, cat)
         if size is not None:
             variants[oi] = enrichers.for_category(cat).variant(row.get("name", ""), size) or size
+            p_size[oi] = (1.0, "code")
         elif size_candidates.unit_of(cat):
             items.append(size_choice.Item(
                 name=row.get("name", ""), category=cat, variant=row.get("variant"),
@@ -1033,29 +1042,55 @@ def _run_without_llm(pending: list[tuple[int, dict]], categories: list, subtypes
                 price_cents=int(row["price_cents"]) if str(row.get("price_cents") or "").isdigit() else None))
             open_rows.append((oi, row, cat))
     su = jev.Usage()
-    picks = size_choice.choose(items, usage=su)
+    picks = size_choice.choose(items, size_choice.prices_for_run(), usage=su)
     for (oi, row, cat), pick in zip(open_rows, picks):
+        p_size[oi] = (pick.p, pick.by)
         if pick.by != "field" and pick.value is not None:
             size = normalize_variant(f"{pick.value:g}{size_candidates.unit_of(cat)}", cat)
             variants[oi] = enrichers.for_category(cat).variant(row.get("name", ""), size) or size
-    print(f"    jev only: code sized {len(pending) - len(items)}, the chooser {len(items)} "
-          f"({sum(p.by != 'field' for p in picks)} answered)")
 
     xu = jev.Usage()
     answers = jev_extract.extract([(row, category(oi, row), subtypes[oi]) for oi, row in pending], usage=xu)
+    p_text: dict[int, tuple[float, float]] = {}
     for (oi, row), a in zip(pending, answers):
         if a is None:
+            if jev_extract.phrases(row.get("name", ""), row.get("brand")):
+                failed.add(oi)          # a name with phrases and no answer: the call failed
             continue
-        same = a.strain and a.line and a.line.lower() == a.strain.lower()
-        if a.strain and a.p_strain >= JEV_TEXT_MIN:
+        if a.strain:
             strains[oi] = enrichers.for_category(category(oi, row)).strain(
                 row.get("name", ""), jev_extract.tidy(a.strain))
-        if a.line and not same and a.p_line >= JEV_LINE_MIN:
+        if a.line and not (a.strain and a.line.lower() == a.strain.lower()):
             product_lines[oi] = a.line
+        p_text[oi] = (a.p_strain, a.p_line)
+
+    for oi, row in pending:
+        if oi in failed:
+            row["enrich_failed"] = True
+            continue
+        key = _cache_key(row)
+        if not key:
+            continue
+        p_cat, p_sub = probs.get(oi, (1.0, 1.0))
+        p_str, p_line = p_text.get(oi, (1.0, 1.0))
+        p_sz, size_by = p_size.get(oi, (1.0, "none"))
+        cache[key] = {
+            "v": _ENRICH_VERSION, "category": categories[oi], "subtype": subtypes[oi],
+            "strain": strains[oi], "product_line": product_lines[oi], "variant": variants[oi],
+            "jq": jev_classify.QUESTION_VERSION, "jx": jev_extract.QUESTION_VERSION, "src": "jev",
+            "size_by": size_by,
+            "p": {"category": round(p_cat, 3), "subtype": round(p_sub, 3), "strain": round(p_str, 3),
+                  "product_line": round(p_line, 3), "size": round(p_sz, 3)},
+        }
+    _save_cache(cache, slug)
 
     usage["jev_requests"] = cu.requests + su.requests + xu.requests
     usage["jev_cost_usd"] = cu.cost_usd + su.cost_usd + xu.cost_usd
     usage["jev_classified"] = len(by_jev)
+    usage["sized_by_code"] = sum(1 for p, by in p_size.values() if by == "code")
+    print(f"    jev only: {len(pending)} row(s); sized by code {usage['sized_by_code']}, by the chooser "
+          f"{sum(1 for p in picks if p.by != 'field')} of {len(picks)}; {len(failed)} failed "
+          f"(${usage['jev_cost_usd']:.4f})")
     return usage
 
 
@@ -1083,7 +1118,7 @@ def _run_enrich(
     import threading
 
     if not _llm_enabled():
-        return _run_without_llm(pending, categories, subtypes, strains, product_lines, variants)
+        return _run_without_llm(pending, cache, slug, categories, subtypes, strains, product_lines, variants)
 
     client = _make_client(model_cfg)
     if client is None:

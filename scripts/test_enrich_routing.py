@@ -299,16 +299,17 @@ def test_tidy_keeps_mixed_case_and_title_cases_one_case_phrases():
 
 # --- ENRICH_LLM=0: Jev and code only -------------------------------------------------
 
-def test_without_the_llm_unsure_fields_keep_the_stores_values(fakes, monkeypatch):
+def test_without_the_llm_jev_answers_everything_and_the_answers_are_cached(fakes, monkeypatch):
     import size_choice
     monkeypatch.setenv("ENRICH_LLM", "0")
     monkeypatch.setenv("ENRICH_CLASSIFIER", "jev")
     monkeypatch.setattr(enrich.jev_classify, "classify",
-                        jev_answers((0.97, 0.93), (0.97, 0.93), (0.40, 0.93)))
+                        jev_answers((0.97, 0.93), (0.97, 0.93), (0.40, 0.93), None))
     monkeypatch.setattr(enrich.jev_extract, "extract", text_answers(
-        ("Lychee", 0.95, "Bliss", 0.90),          # both sure
-        ("Mango", 0.60, None, 0.90),              # strain unsure: none
+        ("Lychee", 0.95, "Bliss", 0.90),
+        ("Mango", 0.60, None, 0.90),              # unsure, and taken: its best guess beats none
         ("Kiwi", 0.95, None, 0.90),
+        ("Plum", 0.95, None, 0.90),
     ))
     asked = []
 
@@ -317,17 +318,24 @@ def test_without_the_llm_unsure_fields_keep_the_stores_values(fakes, monkeypatch
         return [size_choice.Pick(20.0, "jev", 0.9)]
     monkeypatch.setattr(size_choice, "choose", fake_choose)
     rows = [gummy("Gummies a 10pk", "a"),                                   # code: 10 x 10mg
-            dict(gummy("Gummies b 5mg THC 2.5mg CBN", "b"), variant=""),    # two doses: chooser
-            dict(gummy("Mystery c 10pk", "c"), category="other")]           # Jev unsure of category
+            dict(gummy("Gummies b 5mg THC 2.5mg CBN", "b"), variant=""),    # two doses: the chooser
+            dict(gummy("Mystery c 10pk", "c"), category="other"),           # Jev unsure, and taken
+            gummy("Failed d 10pk", "d")]                                    # Jev's call failed
     usage = enrich.enrich(rows, model="haiku-or", brand_examples={}, catalog_first=False)
 
     assert not any(fakes[k] for k in ("classify", "extract", "extract_sized"))   # no LLM call
-    assert [(r["category"], r["strain"], r["product_line"]) for r in rows] == [
-        ("edible", "Lychee", "Bliss"), ("edible", "", None), ("other", "Kiwi", None)]
-    assert [r["variant"] for r in rows] == ["100mg", "20mg", "10mg"]
+    assert [(r["category"], r["strain"], r["product_line"]) for r in rows[:3]] == [
+        ("edible", "Lychee", "Bliss"), ("edible", "Mango", None), ("edible", "Kiwi", None)]
+    assert [r["variant"] for r in rows[:3]] == ["100mg", "20mg", "100mg"]
     assert asked == ["Gummies b 5mg THC 2.5mg CBN"]
-    assert usage["jev_classified"] == 2
-    assert not (enrich._CACHE_DIR / "test-store.haiku-or.json").exists()         # nothing cached
+    assert rows[3].get("enrich_failed") and usage["jev_classified"] == 3
+
+    cache = json.loads((enrich._CACHE_DIR / "test-store.haiku-or.json").read_text())
+    assert sorted(cache) == ["a|10mg", "b|", "c|10mg"]                         # the failed row is not
+    assert cache["b|"]["src"] == "jev" and cache["b|"]["size_by"] == "jev"
+    assert cache["b|"]["p"] == {"category": 0.97, "subtype": 0.93, "strain": 0.6,
+                                "product_line": 0.9, "size": 0.9}
+    assert cache["c|10mg"]["p"]["category"] == 0.4
 
 
 @pytest.mark.parametrize("name,brand,category,first,never", [

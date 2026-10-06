@@ -164,3 +164,23 @@ def test_a_curated_product_nothing_matched_for_30_days_is_flagged():
     found = dh.stale_curated(data(ls, find))
     assert [f.key for f in found] == ["stale-curated:find.:lb:flower:flower::zangria"]
     assert "never matched" in found[0].text and found[0].look.endswith("z")
+
+
+def test_enrichment_answers_jev_was_unsure_of_are_grouped_by_brand_and_field():
+    ls = [dict(listing(1, "A", "Jaunty Sugar Cookie 1g"), sku="s1", variant="1g", scraped_brand="Jaunty"),
+          dict(listing(2, "A", "Jaunty Lemon 1g"), sku="s2", variant="1g", scraped_brand="Jaunty"),
+          dict(listing(3, "B", "Other Thing"), sku="s3", variant="", scraped_brand="Other")]
+    sure = {"category": 0.99, "subtype": 0.9, "strain": 0.95, "product_line": 0.9, "size": 1.0}
+    answers = [
+        {"slug": "store-A", "cache_key": "s1|1g", "entry": {"src": "jev", "strain": "Sugar",
+                                                           "p": {**sure, "strain": 0.31}, "size_by": "code"}},
+        {"slug": "store-A", "cache_key": "s2|1g", "entry": {"src": "jev", "strain": "Lemon",
+                                                           "p": {**sure, "strain": 0.45}, "size_by": "code"}},
+        {"slug": "store-B", "cache_key": "s3|", "entry": {"src": "jev", "p": sure, "size_by": "field"}},
+        {"slug": "store-B", "cache_key": "gone|", "entry": {"src": "jev", "p": {**sure, "strain": 0.1}}},
+    ]
+    d = data(ls)
+    d.answers = answers
+    found = dh.unsure_answers(d)
+    assert keys(found) == ["unsure:size:other", "unsure:strain:jaunty"]
+    assert next(f for f in found if f.key == "unsure:strain:jaunty").evidence == 2

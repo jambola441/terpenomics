@@ -26,8 +26,11 @@ without it, and Jev's answers at p >= 0.8 go from 77% to 94% right.
 from __future__ import annotations
 
 import json
+import os
 import re
+import statistics
 import sys
+from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -70,17 +73,106 @@ class Item:
 @dataclass
 class PriceBook:
     """Typical prices, from listings whose own readings settle on one size:
-    category   "category|size" -> {"median": cents, "n": listings}
-    brand_size "brand|category|size" -> {"median", "n"}
-    brand_per_g "brand|category" -> {"median": cents per gram, "n"}"""
+    category    "category|size" -> {"median": cents, "n": listings}
+    brand_size  "brand|category|size" -> {"median", "n"}
+    brand_per_g "brand|category" -> {"median": cents per gram, "n"}
+    product     "catalog_id|product_key|size" -> {"median", "n"}, from listings matched to it"""
     category: dict = field(default_factory=dict)
     brand_size: dict = field(default_factory=dict)
     brand_per_g: dict = field(default_factory=dict)
+    product: dict = field(default_factory=dict)
 
     @classmethod
     def load(cls, path) -> "PriceBook":
         d = json.loads(Path(path).read_text(encoding="utf-8"))
-        return cls(d.get("category", {}), d.get("brand_size", {}), d.get("brand_per_g", {}))
+        return cls(d.get("category", {}), d.get("brand_size", {}), d.get("brand_per_g", {}),
+                   d.get("product", {}))
+
+    def save(self, path) -> None:
+        Path(path).write_text(json.dumps({"category": self.category, "brand_size": self.brand_size,
+                                          "brand_per_g": self.brand_per_g, "product": self.product}))
+
+    @classmethod
+    def build(cls, listings: list[dict], entries: list[dict] = ()) -> "PriceBook":
+        """From active listings (scraped_brand, scraped_category, scraped_name, variant,
+        price_cents, catalog_entry_id, catalog_match_method) and catalog entries (id,
+        catalog_id, product_key, variant, category). A listing counts only where its own
+        readings settle on one size, so a mis-sized listing does not set a price."""
+        trusted = {"exact", "jev", "manual"}
+        entry_of = {e["id"]: e for e in entries}
+        cat, brand_size, per_g, product = (defaultdict(list) for _ in range(4))
+        for li in listings:
+            price, category = li.get("price_cents"), li.get("scraped_category")
+            unit = sc.unit_of(category)
+            if not price or not unit:
+                continue
+            a = sc.assess({"variant": li.get("variant"), "scraped_name": li.get("scraped_name"),
+                           "scraped_category": category})
+            if a.status != "settled" or not a.values:
+                continue
+            v = round(a.values[0], 3)
+            brand = (li.get("scraped_brand") or "").strip().lower()
+            cat[(category, v)].append(price)
+            brand_size[(brand, category, v)].append(price)
+            if unit == "g" and v > 0:
+                per_g[(brand, category)].append(price / v)
+            e = entry_of.get(li.get("catalog_entry_id"))
+            if e and li.get("catalog_match_method") in trusted:
+                es = sizes.parse(e.get("variant"), category=e.get("category") or category)
+                ev = es.mg if unit == "mg" else es.grams
+                if ev is not None and sc.same(ev, v, unit):
+                    product[(e["catalog_id"], e.get("product_key") or e["id"], v)].append(price)
+
+        def table(groups, least):
+            return {"|".join(f"{k:g}" if isinstance(k, float) else str(k) for k in key):
+                    {"median": statistics.median(ps), "n": len(ps)}
+                    for key, ps in groups.items() if len(ps) >= least}
+        return cls(table(cat, 3), table(brand_size, 2), table(per_g, 3), table(product, 1))
+
+    @classmethod
+    def from_db(cls) -> "PriceBook":
+        """build() from the database: over Postgres (DATABASE_URL), or Supabase's REST API
+        with DB_VIA_HTTP=1, as the enrich cache reaches it."""
+        lcols = ("scraped_brand", "scraped_category", "scraped_name", "variant", "price_cents",
+                 "catalog_entry_id", "catalog_match_method")
+        ecols = ("id", "catalog_id", "product_key", "variant", "category")
+        if os.environ.get("DB_VIA_HTTP", "").strip().lower() in ("1", "true", "yes"):
+            import db_http
+            listings = db_http.select_all("listings", f"select={','.join(lcols)}&is_active=eq.true&order=id")
+            entries = db_http.select_all("brand_catalog_entries",
+                                         f"select={','.join(ecols)}&is_active=eq.true&order=id")
+        else:
+            import psycopg2
+            import psycopg2.extras
+            conn = psycopg2.connect(os.environ["DATABASE_URL"], connect_timeout=10)
+            try:
+                with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                    cur.execute(f"SELECT {', '.join(lcols)} FROM listings WHERE is_active")
+                    listings = [dict(r) for r in cur.fetchall()]
+                    cur.execute(f"SELECT {', '.join(ecols)} FROM brand_catalog_entries WHERE is_active")
+                    entries = [{k: (str(v) if k in ("id", "catalog_id") and v is not None else v)
+                                for k, v in r.items()} for r in cur.fetchall()]
+                for li in listings:
+                    if li.get("catalog_entry_id") is not None:
+                        li["catalog_entry_id"] = str(li["catalog_entry_id"])
+            finally:
+                conn.close()
+        return cls.build(listings, entries)
+
+    def product_sizes(self, catalog_id: str, product_key: str, entries: list[dict],
+                      category: str | None) -> list[dict]:
+        """A matched product's sizes as Item.product_sizes: value, variant, typical price."""
+        unit = sc.unit_of(category)
+        out = []
+        for e in entries:
+            s = sizes.parse(e.get("variant"), category=e.get("category") or category)
+            v = s.mg if unit == "mg" else s.grams
+            if v is None or any(sc.same(v, o["value"], unit) for o in out):
+                continue
+            p = self.product.get(f"{catalog_id}|{product_key}|{round(v, 3):g}")
+            out.append({"value": v, "variant": e.get("variant"),
+                        "typical": f"${p['median'] / 100:,.2f}" if p else None})
+        return out
 
     def per_gram(self, item: Item) -> tuple[float, str] | None:
         """(cents per gram, whose): the brand's usual for the category, else the category's."""
@@ -208,6 +300,24 @@ def decide_or_ask(item: Item, prices: PriceBook, price: str = "both"):
                     "description can be copied from another size of the product."
                     + (" The price should fit the size." if price in ("both", "jev") else ""))
     return None, (state, {"size": jev.Choice(instructions=instructions, criteria=criteria)}, labels)
+
+
+_RUN_PRICES: PriceBook | None = None
+
+
+def prices_for_run() -> PriceBook:
+    """The run's price snapshot: the file SIZE_PRICES names (scrape.py writes one before
+    a run starts, so every store's subprocess reads the same prices), or an empty book."""
+    global _RUN_PRICES
+    if _RUN_PRICES is None:
+        path = os.environ.get("SIZE_PRICES")
+        try:
+            _RUN_PRICES = PriceBook.load(path) if path else PriceBook()
+        except (OSError, ValueError) as exc:
+            print(f"  [warn] size prices unreadable at {path} ({exc}); choosing without them",
+                  file=sys.stderr)
+            _RUN_PRICES = PriceBook()
+    return _RUN_PRICES
 
 
 def choose(items: list[Item], prices: PriceBook | None = None, *, threshold: float = THRESHOLD,
