@@ -61,9 +61,6 @@ _NON_THC_MG = re.compile(rf"{_NUM}\s*(?:mg|milligrams?)\s*(?:of\s+)?(?:cbd|cbn|c
 
 OZ_GRAMS = 28.0   # cannabis convention, same as scraper_common
 EDIBLE_PACKAGE_CAP_MG = 100.0
-# No pre-roll, pod or cart weighs under this, so a pack's lone weight that would make
-# each unit lighter is a unit's weight: "Sour Diesel - 32PK 1G Prerolls" is 32 x 1g.
-MIN_UNIT_G = 0.2
 
 
 @dataclass(frozen=True)
@@ -150,8 +147,7 @@ def parse(*texts: str | None, category: str | None = None) -> Size:
             grams.append(g)
     mgs = _floats(_MG, text)
 
-    total_g = _total(grams, pack, unit_g, unit_below=None if is_label else 1.0,
-                     min_unit=None if is_label else MIN_UNIT_G)
+    total_g = _total(grams, pack, unit_g, unit_below=None if is_label else 1.0)
     # New York caps an edible package at 100mg, so a lone dose next to a pack count
     # is per piece whenever multiplying stays within the cap ("10mg / 10 pack" is
     # 100mg) and is the package total when it would not ("100mg 10pk" is 100mg).
@@ -214,16 +210,14 @@ def weight_mentions(*texts: str | None) -> list[float]:
 
 
 def _total(values: list[float], pack: int | None, unit: float | None, *,
-           unit_below: float | None, cap: float | None = None,
-           min_unit: float | None = None) -> float | None:
+           unit_below: float | None, cap: float | None = None) -> float | None:
     """The package total implied by the mentions.
 
     With a pack and a stated per-unit size, the total is their product. With a pack
     and several mentions, a pair where small x pack == large is unit and total
     ("5 Pack | .6g | 3g"). A lone mention next to a pack is a unit size when it is
-    small (`unit_below`: "5pk 0.6g" is 3g), when as a total it would make each unit
-    lighter than `min_unit` ("32PK 1G" is 32g), or when multiplying stays within
-    `cap` (doses). Without a pack, the largest mention is the package — a listing that
+    small (`unit_below`: "5pk 0.6g" is 3g) or when multiplying stays within `cap`
+    (doses). Without a pack, the largest mention is the package — a listing that
     restates its size twice is common, one naming a smaller size inside is rare. A
     size restated is one mention: "Half Gram ... 0.5g | 5pk" is 2.5g.
     """
@@ -236,8 +230,6 @@ def _total(values: list[float], pack: int | None, unit: float | None, *,
             return largest
         if len(values) == 1:
             if unit_below is not None and smallest < unit_below:
-                return pack * smallest
-            if min_unit is not None and smallest / pack < min_unit:
                 return pack * smallest
             if cap is not None and smallest * pack <= cap:
                 return pack * smallest
