@@ -123,8 +123,11 @@ def reading_words(c: sc.Candidate, case: dict, reads: list[sc.Candidate]) -> str
     return f"{where[c.source]}: {c.reading}"
 
 
-def decide_or_ask(case: dict):
-    """(settled size, how) when code decides; else (None, (state, questions, labels))."""
+def decide_or_ask(case: dict, price: str = "both"):
+    """(settled size, how) when code decides; else (None, (state, questions, labels)).
+
+    `price` says where the listing's price is used: "code" (the per-gram check drops
+    sizes), "jev" (Jev reads it and each option's typical price), "both" or "none"."""
     unit = case["unit"]
     listing = {"variant": case["field"], "scraped_name": case["name"], "description": case["description"],
                "scraped_category": case["category"]}
@@ -133,21 +136,22 @@ def decide_or_ask(case: dict):
         return (a.values[0] if a.values else None), "code"
     reads = [c for c in a.candidates if c.likely or c.source == "catalog"] or a.candidates
     values = sc.distinct_values(reads)
-    values = [v for v in values if price_fits(case, v)] or values
-    if len(values) == 1:
-        return values[0], "price"
+    if price in ("both", "code"):
+        values = [v for v in values if price_fits(case, v)] or values
+        if len(values) == 1:
+            return values[0], "price"
     state = {"brand": case["brand"], "listing_name": case["name"], "category": case["category"],
              "store_size_field": case["field"] or "(empty)"}
     if said := size_sentences(case["description"]):
         state["description_says"] = said
-    if case["price_cents"]:
+    if case["price_cents"] and price in ("both", "jev"):
         state["price"] = f"${case['price_cents'] / 100:,.2f}"
         if unit == "g" and (pg := per_gram(case)):
             state["price_suggests"] = f"about {case['price_cents'] / pg[0]:.2g}g at {pg[1]} ${pg[0] / 100:,.2f} per gram"
     criteria, labels = {}, {}
     for v in values:
         bits = list(dict.fromkeys(reading_words(c, case, a.candidates) for c in reads if sc.same(c.value, v, unit)))
-        if tp := size_price(case, v):
+        if price in ("both", "jev") and (tp := size_price(case, v)):
             bits.append(tp)
         labels[_fmt(v, unit)] = v
         criteria[_fmt(v, unit)] = f"The package holds {_fmt(v, unit)}. Read from: " + "; ".join(bits) + "."
@@ -155,7 +159,10 @@ def decide_or_ask(case: dict):
                     "Each option says how the listing or the store's size field gives that size. Stores write "
                     "sizes loosely: a figure beside a pack count can be each unit's or the whole pack's, the "
                     "store's size field is sometimes the count times a figure that was already the total, and a "
-                    "description can be copied from another size of the product. The price should fit the size.")
+                    "description can be copied from another size of the product."
+                    + (" The price should fit the size." if price in ("both", "jev") else ""))
+    if len(criteria) < 2:
+        criteria["none"] = "None of these sizes fits."
     return None, (state, {"size": jev.Choice(instructions=instructions, criteria=criteria)}, labels)
 
 
@@ -169,10 +176,10 @@ def parse_size(case: dict) -> float | None:
     return s.mg if case["unit"] == "mg" else s.grams
 
 
-def ask(cases: list[dict]) -> dict[str, dict]:
+def ask(cases: list[dict], price: str = "both") -> dict[str, dict]:
     out, jobs = {}, []
     for c in cases:
-        value, how = decide_or_ask(c)
+        value, how = decide_or_ask(c, price)
         if value is not None or how in ("code", "price"):
             out[c["sid"]] = {"value": value, "p": 1.0, "by": how}
         else:
@@ -220,11 +227,13 @@ def main() -> None:
     ap.add_argument("--answers", help="score these saved answers instead of asking Jev")
     ap.add_argument("--save", help="save the answers here")
     ap.add_argument("--show", help="print the question for one case id")
+    ap.add_argument("--price", choices=["both", "code", "jev", "none"], default="both",
+                    help="where the price is used (an ablation; the chooser uses both)")
     args = ap.parse_args()
     cases = [c for c in CASES if args.split == "all" or c["split"] == args.split]
     if args.show:
         c = next(x for x in CASES if x["sid"] == args.show)
-        value, how = decide_or_ask(c)
+        value, how = decide_or_ask(c, args.price)
         if value is not None or how in ("code", "price"):
             print(f"decided by {how}: {value}")
             return
@@ -234,7 +243,7 @@ def main() -> None:
         for k, v in qs["size"].criteria.items():
             print(f"  [{k}] {v}")
         return
-    answers = json.loads(Path(args.answers).read_text()) if args.answers else ask(cases)
+    answers = json.loads(Path(args.answers).read_text()) if args.answers else ask(cases, args.price)
     if args.save:
         Path(args.save).write_text(json.dumps(answers, indent=1))
     score(cases, answers, args.threshold)
