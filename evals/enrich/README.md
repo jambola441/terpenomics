@@ -869,6 +869,29 @@ All nine case files, three interleaved runs each, against the production path:
 - **Size misses (2):** Camino's 20pk filed as "72g", and Papa & Barkley's "THC1000" with no unit.
 - **Where Jev only is better:** Ayrloom's "150MG THC : 450MG CBD" is 150mg, where Haiku sums it to 600mg. The others are tea sachets' 50mg, "Lemon Candy Runtz" whole, and Camino's 'Sleep' line.
 
+**After fixing the strain options (same day).** `jev_extract.strain_phrases` changes the strain options:
+- a strain option ends before a word naming the category's own format;
+- stretches the store set apart (a lineage, a quoted word, the brand's line, the brand) are no longer rejoined;
+- the brand's lines are no longer offered as strains.
+
+Both paths were re-run, since today's path uses the same options for the rows Jev settles:
+
+| | today (Jev, then Haiku) | Jev only, any confidence |
+| --- | ---: | ---: |
+| cases passed (of 302) | 284.3 (284–285) | 282.3 (281–285) |
+| category / subtype | 281 / 248.0 | 281 / 248.0 |
+| strain (of 247) / line (of 20) | 238.3 / 20 | 239.3 / 20 |
+| size (of 243) | 239.7 | 240.0 |
+| listings changed across the 3 runs | 28 | 12 |
+| listings changed between two runs | 21.0 | 8.0 |
+| $/run, s/run | $0.082, 43 s | $0.032, 34 s |
+
+- **Field by field, Jev only now equals or beats today.**
+- **The two cases left are convergence cases:**
+  - an Ayrloom balm whose three store listings come back "Revive", "Balm Revive" and no strain;
+  - a Blue Dream eighth whose fourth listing Jev calls smalls.
+- **The overall gap is within the run-to-run spread.** Jev only ranges 281–285 against today's 284–285.
+
 ## Fleet report — all 24 live stores (2026-08-25)
 
 `dispensary_report.py` runs the audit checks **per store** and normalizes to
