@@ -109,6 +109,8 @@ export default function ListingDetailView({
   const elsewhere = listing.also_available_at ?? []
   const similar = listing.similar_at_dispensary ?? []
   const checked = checkedAgo(listing.last_seen_at ?? null)
+  // Scraped text, so only follow it if it is a real web link.
+  const productUrl = listing.url && /^https?:\/\//i.test(listing.url) ? listing.url : null
 
   function handleAddToCart() {
     if (!onAddToCart || !listing) return
@@ -207,6 +209,22 @@ export default function ListingDetailView({
           <div style={{ color: t.text4, fontSize: font.size.caption, marginTop: 8 }}>
             Stock last checked {checked}
           </div>
+        )}
+
+        {/* The scraped product page on the store's own site. */}
+        {productUrl && (
+          <a
+            href={productUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'block', marginTop: 14, boxSizing: 'border-box', textAlign: 'center', textDecoration: 'none',
+              background: 'transparent', border: `1px solid ${t.border}`, borderRadius: radius.md,
+              color: t.text2, fontSize: font.size.small, fontWeight: font.weight.medium, padding: 12,
+            }}
+          >
+            View on {listing.dispensary_name}'s website ↗
+          </a>
         )}
 
         {/* ── The store selling it ── */}
