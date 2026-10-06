@@ -100,6 +100,20 @@ class TestSizes:
         # An explicit per-piece form is not a guess.
         assert sizes.parse("Kiva 2pk x 20mg", category="edible").alt_mg is None
 
+    def test_a_packs_lone_weight_is_a_units_when_as_a_total_its_units_would_be_too_small(self):
+        # Hold Up Roll Up's Herb 32-pack, its size field "1g": 32 joints are not 1g in
+        # all, so it is the 32g entry, not the single (2026-10-06).
+        assert sizes.parse("1g", "Sour Diesel - 32PK 1G Prerolls", category="preroll") == \
+            sizes.Size(grams=32.0, pack=32)
+        idx = cm.CatalogIndex(catalog(
+            {"name": "sour diesel", "category": "preroll", "variant": "1g", "pk": "sd"},
+            {"name": "sour diesel", "category": "preroll", "variant": "32g", "pk": "sd"}))
+        assert idx.pick_entry("sd", "1g", "preroll", "Sour Diesel - 32PK 1G Prerolls")["variant"] == "32g"
+        # A weight that can be the total stays the total, and a label reads as written.
+        assert sizes.parse("", "STIIIZY 40s 5pk 2.5g", category="preroll") == sizes.Size(grams=2.5, pack=5)
+        assert sizes.parse("", "STIIIZY - 2PK 1G Pods", category="vaporizers") == sizes.Size(grams=1.0, pack=2)
+        assert sizes.parse("32pk 1g", category="preroll") == sizes.Size(grams=1.0, pack=32)
+
     def test_the_first_reading_picks_the_entry_when_both_fit(self):
         idx = cm.CatalogIndex(catalog(
             {"name": "dreamberry", "category": "edible", "variant": "2pk 20mg", "pk": "db"},
