@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { AdminTable, badge, categoryColor, navBtnStyle, selectStyle, Dash, type Column } from './components/AdminTable'
 import { ExportBadge } from './BrandCatalogs'
 import api from './api/client'
-import type { BrandCatalog, BrandCatalogEntry, CatalogExportStatus } from './types'
+import type { BrandCatalog, BrandCatalogEntry, CatalogEntryListings, CatalogExportStatus } from './types'
 
 const LIMIT = 50
 
@@ -100,6 +100,10 @@ export default function BrandCatalogEdit() {
   const [bulkBusy, setBulkBusy] = useState<string | null>(null)
   /** Index of the last checkbox clicked, so shift-click can extend from it. */
   const anchorRef = useRef<number | null>(null)
+
+  // Entries opened to show their listings, and what each has loaded (once per entry).
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
+  const [entryListings, setEntryListings] = useState<Record<string, ListingsState>>({})
 
   useEffect(() => {
     if (isNew) return
@@ -284,6 +288,24 @@ export default function BrandCatalogEdit() {
   }
 
   /** Checkbox click. Shift extends from the last one clicked, as in a file list. */
+  function toggleListings(entry: BrandCatalogEntry) {
+    const open = !expanded.has(entry.id)
+    setExpanded(prev => {
+      const next = new Set(prev)
+      if (open) next.add(entry.id)
+      else next.delete(entry.id)
+      return next
+    })
+    const loaded = entryListings[entry.id]
+    if (!open || (loaded && !loaded.error)) return
+    setEntryListings(prev => ({ ...prev, [entry.id]: { loading: true } }))
+    api.brandCatalogs.entryListings(catalogId!, entry.id)
+      .then(data => setEntryListings(prev => ({ ...prev, [entry.id]: { loading: false, data } })))
+      .catch(err => setEntryListings(prev => ({
+        ...prev, [entry.id]: { loading: false, error: err instanceof Error ? err.message : String(err) },
+      })))
+  }
+
   function toggleRow(entry: BrandCatalogEntry, index: number, shift: boolean) {
     // Read the anchor and move it here, not inside the updater: React runs an
     // updater lazily at re-render, by which point `anchorRef.current` would already
@@ -375,8 +397,17 @@ export default function BrandCatalogEdit() {
       ),
     },
     {
-      key: 'listings', header: 'Listings', align: 'right',
-      render: e => (e.listing_count ? e.listing_count : <Dash />),
+      key: 'listings', header: 'Listings', align: 'right', stopPropagation: true,
+      render: e => e.listing_count ? (
+        <button
+          onClick={() => toggleListings(e)}
+          aria-expanded={expanded.has(e.id)}
+          title={expanded.has(e.id) ? 'Hide its listings' : 'Show the listings that resolve to this entry'}
+          style={{ ...navBtnStyle, padding: '2px 8px', fontSize: 12, color: '#cbd5e1' }}
+        >
+          {expanded.has(e.id) ? '▾' : '▸'} {e.listing_count}
+        </button>
+      ) : <Dash />,
     },
     {
       key: 'verified', header: 'Verified',
@@ -585,6 +616,7 @@ export default function BrandCatalogEdit() {
                 rows={entries}
                 rowKey={e => e.id}
                 onRowClick={e => setEditing(e)}
+                expansion={{ expanded, render: e => <EntryListings state={entryListings[e.id]} /> }}
                 selection={{
                   selected,
                   onToggle: toggleRow,
@@ -610,6 +642,96 @@ export default function BrandCatalogEdit() {
           </>
         )}
       </div>
+    </div>
+  )
+}
+
+/* ── An entry's listings ────────────────────────────────────────────────────── */
+
+type ListingsState = { loading: boolean; error?: string; data?: CatalogEntryListings }
+
+/** How a listing came to this entry. The first three are trusted: the listing takes
+ *  its line, strain and size from the entry. A review match is only a suggestion. */
+const MATCH: Record<string, { colors: React.CSSProperties; title: string }> = {
+  exact: { colors: { background: '#14532d', color: '#86efac' }, title: 'A store name recorded on this entry' },
+  jev: { colors: { background: '#1e1b4b', color: '#a5b4fc' }, title: 'Jev picked this entry with confidence' },
+  manual: { colors: { background: '#0c4a6e', color: '#7dd3fc' }, title: 'A person matched it' },
+  jev_review: {
+    colors: { background: '#422006', color: '#fbbf24' },
+    title: 'Jev suggests this entry but is not sure: the listing keeps its own fields',
+  },
+}
+
+/** The listings that resolve to an entry, at every store: opened under its row. */
+function EntryListings({ state }: { state: ListingsState | undefined }) {
+  const wrap: React.CSSProperties = { padding: '8px 12px 12px 42px', background: '#0b1220' }
+  if (!state || state.loading) return <div style={{ ...wrap, color: '#475569' }}>Loading listings…</div>
+  if (state.error) return <div style={{ ...wrap, color: '#fca5a5' }}>Couldn’t load the listings: {state.error}</div>
+  const { listings, total } = state.data!
+  if (!listings.length) return <div style={{ ...wrap, color: '#475569' }}>No listings resolve here.</div>
+
+  const cell: React.CSSProperties = { padding: '6px 10px', color: '#cbd5e1', fontSize: 12, verticalAlign: 'top' }
+  const head: React.CSSProperties = {
+    ...cell, color: '#475569', fontWeight: 500, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em',
+  }
+  return (
+    <div style={wrap}>
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <thead>
+          <tr style={{ textAlign: 'left', borderBottom: '1px solid #1e293b' }}>
+            <th style={head}>Store</th>
+            <th style={head}>Store’s name</th>
+            <th style={head}>Size</th>
+            <th style={{ ...head, textAlign: 'right' }}>Price</th>
+            <th style={head}>Stock</th>
+            <th style={head}>Match</th>
+            <th style={head}>Last seen</th>
+          </tr>
+        </thead>
+        <tbody>
+          {listings.map(l => {
+            const match = l.match_method ? MATCH[l.match_method] : undefined
+            const pct = l.match_confidence != null && l.match_confidence < 1
+              ? ` ${Math.round(l.match_confidence * 100)}%` : ''
+            return (
+              <tr key={l.id} style={{ borderBottom: '1px solid #0f172a', opacity: l.is_active ? 1 : 0.5 }}>
+                <td style={cell}>{l.dispensary.name}</td>
+                <td style={{ ...cell, color: '#f1f5f9' }}>
+                  {l.url
+                    ? <a href={l.url} target="_blank" rel="noreferrer" style={{ color: '#f1f5f9' }}>{l.scraped_name}</a>
+                    : l.scraped_name}
+                  {!l.is_active && (
+                    <span style={{ ...badge, marginLeft: 6, background: '#1e293b', color: '#94a3b8' }}>inactive</span>
+                  )}
+                </td>
+                <td style={cell}>
+                  {l.variant && l.size && l.variant !== l.size
+                    ? <span title={`The store typed ${l.variant}; the product page shows ${l.size}`}>{l.variant} → {l.size}</span>
+                    : (l.size ?? <Dash />)}
+                </td>
+                <td style={{ ...cell, textAlign: 'right' }}>
+                  {l.price_cents != null ? `$${(l.price_cents / 100).toFixed(2)}` : <Dash />}
+                </td>
+                <td style={cell}>{l.in_stock ? 'In stock' : <span style={{ color: '#64748b' }}>Out</span>}</td>
+                <td style={cell}>
+                  {l.match_method
+                    ? (
+                      <span title={match?.title}
+                            style={{ ...badge, ...(match?.colors ?? { background: '#1e293b', color: '#94a3b8' }) }}>
+                        {l.match_method}{pct}
+                      </span>
+                    )
+                    : <Dash />}
+                </td>
+                <td style={cell}>{l.last_seen_at ? new Date(l.last_seen_at).toLocaleDateString() : <Dash />}</td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+      {total > listings.length && (
+        <div style={{ color: '#475569', fontSize: 12, marginTop: 6 }}>Showing {listings.length} of {total}.</div>
+      )}
     </div>
   )
 }

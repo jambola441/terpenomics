@@ -35,6 +35,7 @@ import type {
   BrandCatalogDetail,
   BrandCatalogEntry,
   BrandCatalogEntryPage,
+  CatalogEntryListings,
   CatalogExportStatus,
   PortalDispensary,
   Feed,
@@ -426,6 +427,10 @@ export const api = {
 
     listEntries: (id: string, params?: CatalogEntryParams) =>
       authenticatedFetch<BrandCatalogEntryPage>(`/admin/brand-catalogs/${id}/entries${buildQueryString(params)}`),
+
+    /** The listings at every store that resolve to this entry, active ones first. */
+    entryListings: (id: string, entryId: string) =>
+      authenticatedFetch<CatalogEntryListings>(`/admin/brand-catalogs/${id}/entries/${entryId}/listings`),
 
     createEntry: (id: string, data: Partial<BrandCatalogEntry>) =>
       authenticatedFetch<BrandCatalogEntry>(`/admin/brand-catalogs/${id}/entries`, {
