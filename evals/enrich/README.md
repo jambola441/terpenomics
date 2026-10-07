@@ -959,6 +959,24 @@ Step 1's runs (3 each), 291 labelled cases:
 
 Under the old labels the catalog match looked harmful, because its identities followed a convention the labels did not. Under the new labels it adds 9 to 10 cases. The six cases still missed after the match are the catalog errors above.
 
+### Enrichment no longer looks up the catalog itself (2026-10-07)
+
+Enrichment answered a listing whose name is a catalog product straight from the
+catalog, before any model. The importer matches every listing again anyway, so the
+shortcut is gone. The importer's match now sets the category too; that was the one
+field only the shortcut had been supplying.
+
+The check was Hold Up Roll Up's raw scrape through Jev only, with and without the
+shortcut, each followed by the importer's match and overlay.
+
+- **Before the category fix:** 11 listings landed differently. Three were Rove vapes
+  ("Melted Diamonds Reload", "Mini Bar") that Jev filed as concentrates.
+- **After it:** 4 listings land differently, none of them rows the shortcut answered.
+  They are Jev's run-to-run variation.
+- **Live data:** of 11,586 trusted matches, 7 disagree with the listing's category,
+  so taking the entry's category changes almost nothing there.
+- **Cost:** about $0.03 more on this store's first run, nothing on cached rows.
+
 ## Fleet report — all 24 live stores (2026-08-25)
 
 `dispensary_report.py` runs the audit checks **per store** and normalizes to

@@ -104,10 +104,8 @@ def enrich_with_model(model: str, suites: list[dict], brand_nudge: bool = False,
     err = None
     t = time.time()
     try:
-        # catalog_first=False: a gold row whose brand has a catalog would otherwise be
-        # answered from the catalog, and the run would stop measuring the model.
         usage = enrich.enrich(rows, model=model, brand_examples=brand_examples,
-                              catalog_hints=catalog_hint, catalog_first=False)
+                              catalog_hints=catalog_hint)
     except Exception as e:  # registry guard, client build, etc.
         usage, err = {}, f"{type(e).__name__}: {e}"
     secs = time.time() - t

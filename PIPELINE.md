@@ -89,26 +89,21 @@ often a real size the catalog lacks. So does a listing that names another pack c
 | 1 | a human's verified claim | all |
 | 2 | merch rules — the name's tokens | all |
 | 3 | this store's cache of earlier answers | all |
-| 4 | the brand catalog, when the listing's name *is* a recorded catalog product | all |
-| 5 | **Jev** | category, subtype |
-| 5 | code, when the store's figure is unambiguous (`stated_size`) | size |
-| 5 | **Jev**, picking from the name's phrases (`jev_extract.py`) | strain, product line |
-| 5 | Haiku, one call, for whatever is still open — with Jev's settled rows as context | strain, product line — and size where code refused |
-| 6 | Haiku, two calls, for rows Jev is unsure of (p < 0.80) | all |
+| 4 | **Jev** | category, subtype |
+| 4 | code, when the size is unambiguous (`stated_size`, `code_size`) | size |
+| 4 | **Jev**, picking from the name's phrases (`jev_extract.py`) | strain, product line |
+| 4 | Haiku, one call, for whatever is still open — with Jev's settled rows as context | strain, product line — and size where code refused |
+| 5 | Haiku, two calls, for rows Jev is unsure of (p < 0.80) | all |
 
-Steps 1–4 make no model call, and step 5 settles about half of what is left without
-one. On the gold suites, steps 5–6 are more accurate than Haiku alone, change fewer
+Steps 1–3 make no model call, and step 4 settles about half of what is left without
+one. On the gold suites, steps 4–5 are more accurate than Haiku alone, change fewer
 answers between runs, and cost 48% less (287.7 vs 278.7 of 302 cases; $0.086 vs $0.164
 a run; [evals/enrich/README.md](evals/enrich/README.md#jev-picks-strain-and-line-too--and-haiku-needs-the-easy-rows-2026-10-04)).
-Step 4 would have answered 21% of today's model-bound rows once the top-50 bootstrap
-catalogs are pushed, more as catalogs grow. A listing qualifies when its name, with
-or without the brand, is one a store has already used for that product — recorded in
-the catalog when it was built. Its answers agreed with the stored category, subtype
-and size on 99–100% of rows and strain on 98%. Strain differences are spellings
-("Grand Daddy Purple" vs "Granddaddy Purple"); product line differences are line
-splits. In both cases the catalog's consensus is the point. `ENRICH_CLASSIFIER=llm`
-puts every model-bound row through step 6, as before; `ENRICH_CATALOG_FIRST=0`
-skips step 4.
+A listing whose name is a catalog product takes the catalog's identity at import
+(`import_listings.apply_catalog`, category included), so enrichment no longer looks
+the catalog up itself; removing that shortcut changed 4 of 846 Hold Up Roll Up
+listings, all run-to-run Jev variation (evals/enrich/README.md, 2026-10-07). `ENRICH_CLASSIFIER=llm`
+puts every model-bound row through step 5, as before.
 
 ## Brand catalogs
 
@@ -363,7 +358,7 @@ Knobs: `SCRAPER_TIMEOUT_SEC` (1200), `IMPORT_TIMEOUT_SEC` (900),
 `IMPORT_STALE_THRESHOLD` (0.5), `SCRAPE_TIMEOUT_SEC` (5400, whole sweep),
 `ENRICH_MAX_WORKERS` (8), `ENRICH_CLASSIFIER` (`jev`; `llm` is the rollback),
 `ENRICH_JEV_MIN_CONFIDENCE` (0.80), `ENRICH_JEV_TEXT` (1), `ENRICH_JEV_TEXT_MIN` (0.90),
-`ENRICH_JEV_LINE_MIN` (0.80), `ENRICH_JEV_NO_LINE_MIN` (0.50), `ENRICH_CATALOG_FIRST` (1),
+`ENRICH_JEV_LINE_MIN` (0.80), `ENRICH_JEV_NO_LINE_MIN` (0.50),
 `JEV_MODEL`, `JEV_TIMEOUT`, `DB_VIA_HTTP` (off; `1` reaches the database over
 Supabase's REST API instead of `DATABASE_URL`), `ENRICH_CACHE` (files; `db` keeps the
 enrich cache in Postgres).

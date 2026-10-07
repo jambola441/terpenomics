@@ -365,8 +365,15 @@ def _overlay(rec: dict, entry: dict, stats: dict, is_masked) -> None:
     is never copied onto a listing: the catalog is authoritative about which product
     it is, not about how to spell it on our menu. Fix those once in the admin and
     they flow everywhere.
+
+    The category is the entry's too: a listing a model filed as a concentrate whose
+    name is Rove's "Melted Diamonds Reload" vape is a vape. (Of 11,586 trusted matches
+    on 2026-10-07, 7 disagreed with the listing's category, 1906's tablets filed as
+    tinctures among them.)
     """
     import catalog_match
+    if entry.get("category"):
+        rec["scraped_category"] = entry["category"]
     subtype = catalog_match.matched_subtype(entry, rec.get("scraped_name"))
     if subtype:
         stats["subtype_from_name"] += subtype != entry.get("subtype")

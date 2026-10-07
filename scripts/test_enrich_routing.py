@@ -1,11 +1,8 @@
 """Which rows reach which model in enrich.py — offline, with Jev and the LLM faked.
 
-Two routes skip work the LLM used to do:
-  - catalog first: a listing that names a catalog product takes the catalog's answer
-    and reaches no model at all (enrich.catalog_answer)
-  - Jev classifies: category and subtype come from Jev (jev_classify.py), the LLM
-    writes strain, product line and size in one call, and rows Jev is unsure of take
-    the old two-call path
+Jev classifies: category and subtype come from Jev (jev_classify.py), the LLM writes
+strain, product line and size in one call, and rows Jev is unsure of take the old
+two-call path. With ENRICH_LLM=0, Jev and code answer everything.
 """
 
 import json
@@ -16,96 +13,9 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-import catalog_match  # noqa: E402
-import catalog_store  # noqa: E402
 import enrich  # noqa: E402
 import jev_classify  # noqa: E402
 import jev_extract  # noqa: E402
-from brand_catalog import strip_brand  # noqa: E402
-
-
-# --- catalog first -----------------------------------------------------------
-
-STORE_NAMES = {
-    "fj3": "Jetpacks FJ-3 Afghani 5pk - Infused Pre-Rolls",
-    "gummy": "Jetpacks Blue Razz Gummies 10pk",
-    "masked": "Jetpacks Alaskan Thunder Fuck Pre-Roll",
-    "nosub": "Jetpacks Mystery Thing",
-}
-
-
-def entry(key, name, category, subtype, strain, variant, line=None):
-    return {"id": f"id-{key}", "product_key": key, "name": name, "category": category,
-            "subtype": subtype, "strain": strain, "variant": variant, "product_line": line,
-            "is_active": True, "match_terms": [strip_brand(STORE_NAMES[key], "Jetpacks")]}
-
-
-CATALOG = {"brand_name": "Jetpacks", "entries": [
-    entry("fj3", "FJ-3 Afghani", "preroll", "infused", "Afghani", "5pk 3g", "FJ-3"),
-    entry("gummy", "Blue Razz Gummies", "edible", "gummy", "Blue Razz", "100mg"),
-    entry("masked", "Alaskan Thunder Fu*k", "preroll", "single", "Alaskan Thunder Fu*k", "1g"),
-    entry("nosub", "Mystery Thing", "edible", None, "Mystery", "100mg"),
-]}
-INDEXES = {catalog_store.brand_key("Jetpacks"): catalog_match.CatalogIndex(CATALOG)}
-
-
-def row(key, variant, category="preroll", brand="Jetpacks", **kw):
-    return {"name": STORE_NAMES.get(key, key), "brand": brand, "category": category,
-            "variant": variant, "sku": key, "dispensary_slug": "test-store", **kw}
-
-
-def test_a_listing_that_names_a_catalog_product_takes_its_identity():
-    hit = enrich.catalog_answer(row("fj3", "5pk x 0.6g"), INDEXES)
-    # A pre-roll keeps no subtype (taxonomy.keeps_subtype), whatever the entry says.
-    assert hit == {"category": "preroll", "subtype": None, "strain": "Afghani",
-                   "product_line": "FJ-3", "variant": "3g"}
-
-
-def test_the_size_written_is_the_listings_total_in_pass_a_form():
-    # 10 x 100mg is over NY's 100mg edible cap, so "100mg" beside "10pk" is the pack.
-    hit = enrich.catalog_answer(row("gummy", "100mg", category="edible"), INDEXES)
-    assert hit["variant"] == "100mg" and hit["subtype"] == "gummy"
-
-
-@pytest.mark.parametrize("listing", [
-    row("fj3", "1g"),                              # size disagrees with the entry
-    row("fj3", "0.6g"),       # "5pk" is in the name only: 0.6g is the store's figure
-    row("fj3", ""),                                # no size to check — the name has none
-    row("masked", "1g"),                           # a self-censored strain is never copied
-    row("nosub", "100mg", category="edible"),      # an incomplete entry settles nothing
-    row("fj3", "5pk x 0.6g", brand="Someone Else"),  # brand without a catalog
-    row("Jetpacks Something New 1g", "1g"),        # not a recorded name: that is for Jev
-])
-def test_anything_short_of_a_full_answer_goes_to_the_model(listing):
-    assert enrich.catalog_answer(listing, INDEXES) is None
-
-
-def test_catalog_rows_never_reach_a_model(monkeypatch):
-    seen = []
-    monkeypatch.setattr(enrich, "_catalog_indexes", lambda: INDEXES)
-    monkeypatch.setattr(enrich, "_load_cache", lambda slug: {})
-
-    def fake_run(pending, cache, slug, categories, subtypes, strains, lines, variants, *a):
-        seen.extend(r["name"] for _, r in pending)
-        for oi, _ in pending:
-            categories[oi], subtypes[oi], strains[oi], variants[oi] = "preroll", "single", "X", "1g"
-        return dict(enrich._ZERO_USAGE)
-
-    monkeypatch.setattr(enrich, "_run_enrich", fake_run)
-    rows = [row("fj3", "5pk x 0.6g"), row("Jetpacks Something New 1g", "1g")]
-    usage = enrich.enrich(rows, model="haiku-or", brand_examples={}, catalog_first=True)
-    assert seen == ["Jetpacks Something New 1g"]
-    assert usage["from_catalog"] == 1
-    assert (rows[0]["strain"], rows[0]["product_line"], rows[0]["variant"]) == ("Afghani", "FJ-3", "3g")
-
-
-def test_catalog_first_off_sends_everything_on(monkeypatch):
-    monkeypatch.setattr(enrich, "_catalog_indexes", lambda: pytest.fail("catalogs read"))
-    monkeypatch.setattr(enrich, "_load_cache", lambda slug: {})
-    monkeypatch.setattr(enrich, "_run_enrich", lambda pending, *a: dict(enrich._ZERO_USAGE))
-    usage = enrich.enrich([row("fj3", "5pk x 0.6g")], model="haiku-or", brand_examples={},
-                          catalog_first=False)
-    assert usage["from_catalog"] == 0
 
 
 # --- Jev classifies, the LLM writes text --------------------------------------
@@ -164,7 +74,7 @@ def test_confident_jev_rows_skip_pass_a_and_code_or_pass_b_writes_the_size(fakes
     rows = [gummy("Sure Gummies 10pk", "a"),                  # code reads 100mg: 10 x 100mg is over the cap
             dict(gummy("Sure Gummies 2pk 20mg", "d"), variant=""),  # 20mg, or 2 x 20mg
             gummy("Unsure Gummies 10pk", "b"), gummy("Failed Gummies 10pk", "c")]
-    usage = enrich.enrich(rows, model="haiku-or", brand_examples={}, catalog_first=False)
+    usage = enrich.enrich(rows, model="haiku-or", brand_examples={})
 
     assert [p["name"] for p in fakes["classify"]] == ["Unsure Gummies 10pk", "Failed Gummies 10pk"]
     assert [p["name"] for p in fakes["extract_sized"]] == ["Sure Gummies 2pk 20mg"]
@@ -207,7 +117,7 @@ def test_a_cached_answer_from_an_older_jev_question_is_asked_again(fakes, monkey
              "jq": jev_classify.QUESTION_VERSION - 1}
     (enrich._CACHE_DIR / "test-store.haiku-or.json").write_text(json.dumps({"a|100mg": stale}))
     rows = [gummy("Sure Gummies 10pk", "a")]
-    enrich.enrich(rows, model="haiku-or", brand_examples={}, catalog_first=False)
+    enrich.enrich(rows, model="haiku-or", brand_examples={})
     assert rows[0]["subtype"] == "gummy" and rows[0]["strain"] == "Plain"
 
 
@@ -216,7 +126,7 @@ def test_llm_classifier_never_asks_jev(fakes, monkeypatch):
     monkeypatch.setattr(enrich.jev_classify, "classify",
                         lambda *a, **k: pytest.fail("Jev asked under ENRICH_CLASSIFIER=llm"))
     rows = [gummy("Sure Gummies 10pk", "a")]
-    usage = enrich.enrich(rows, model="haiku-or", brand_examples={}, catalog_first=False)
+    usage = enrich.enrich(rows, model="haiku-or", brand_examples={})
     assert len(fakes["classify"]) == 1 and not fakes["extract_sized"]
     assert rows[0]["variant"] == "50mg" and "jev_classified" not in usage
 
@@ -251,7 +161,7 @@ def test_a_row_jev_settles_reaches_no_llm(fakes, monkeypatch):
         ("Kiwi", 0.85, None, 0.90),               # strain under the 0.90 bar -> LLM
     ))
     rows = [gummy(f"Gummies {c} 10pk", c) for c in "abcdefg"]
-    usage = enrich.enrich(rows, model="haiku-or", brand_examples={}, catalog_first=False)
+    usage = enrich.enrich(rows, model="haiku-or", brand_examples={})
 
     assert sorted(p["name"] for p in fakes["extract"]) == [f"Gummies {c} 10pk" for c in "cdefg"]
     assert (rows[0]["strain"], rows[0]["product_line"]) == ("Blue Razz", None)   # tidied
@@ -273,7 +183,7 @@ def test_jev_text_off_sends_every_row_to_the_llm(fakes, monkeypatch):
     monkeypatch.setattr(enrich.jev_extract, "extract",
                         lambda *a, **k: pytest.fail("Jev asked for text under ENRICH_JEV_TEXT=0"))
     rows = [gummy("Gummies a 10pk", "a")]
-    enrich.enrich(rows, model="haiku-or", brand_examples={}, catalog_first=False)
+    enrich.enrich(rows, model="haiku-or", brand_examples={})
     assert rows[0]["strain"] == "Plain"
 
 
@@ -321,7 +231,7 @@ def test_without_the_llm_jev_answers_everything_and_the_answers_are_cached(fakes
             dict(gummy("Gummies b 2pk 20mg", "b"), variant=""),             # 20mg or 40mg: the chooser
             dict(gummy("Mystery c 10pk", "c"), category="other"),           # Jev unsure, and taken
             gummy("Failed d 10pk", "d")]                                    # Jev's call failed
-    usage = enrich.enrich(rows, model="haiku-or", brand_examples={}, catalog_first=False)
+    usage = enrich.enrich(rows, model="haiku-or", brand_examples={})
 
     assert not any(fakes[k] for k in ("classify", "extract", "extract_sized"))   # no LLM call
     assert [(r["category"], r["strain"], r["product_line"]) for r in rows[:3]] == [
@@ -346,7 +256,7 @@ def test_without_the_llm_a_size_field_in_another_unit_is_not_kept(fakes, monkeyp
     monkeypatch.setattr(enrich.jev_classify, "classify", jev_answers((0.97, 0.93)))
     monkeypatch.setattr(enrich.jev_extract, "extract", text_answers(("Midnight Blueberry", 0.95, None, 0.90)))
     rows = [dict(gummy("Camino - Sleep | Midnight Blueberry 5:1 CBN 20pk", "a"), variant="72g")]
-    enrich.enrich(rows, model="haiku-or", brand_examples={}, catalog_first=False)
+    enrich.enrich(rows, model="haiku-or", brand_examples={})
     assert rows[0]["variant"] == "" and rows[0]["strain"] == "Midnight Blueberry"
 
 

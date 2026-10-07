@@ -83,3 +83,13 @@ def test_only_a_trusted_match_is_sized_and_the_switch_turns_it_off(monkeypatch):
     assert import_listings.size_choice_on()
     monkeypatch.setenv("IMPORT_SIZE_CHOICE", "0")
     assert not import_listings.size_choice_on()
+
+
+def test_a_trusted_match_gives_the_listing_its_category_too():
+    """Rove's reload is a vape, whatever a model filed it as; its identity is the entry's."""
+    from collections import Counter
+    rec = {"scraped_name": "Cherry Gelato - 1g Live Resin Melted Diamonds Reload", "scraped_category": "concentrate",
+           "subtype": "other", "strain": "Cherry Gelato", "product_line": None}
+    entry_ = {"category": "vaporizers", "subtype": "pod", "strain": "Cherry Gelato", "product_line": "Melted Diamonds"}
+    import_listings._overlay(rec, entry_, Counter(), lambda s: False)
+    assert (rec["scraped_category"], rec["product_line"]) == ("vaporizers", "Melted Diamonds")
