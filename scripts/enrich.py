@@ -5,16 +5,16 @@ Each row is answered by the cheapest thing that can answer it, in this order:
   1. a human's verified claim (verification.py)                          no model
   2. a category owner that reads the name — merch (enrichers.py)         no model
   3. this store's cache of earlier answers                               no model
-  4. the brand catalog, when the name IS a catalog product
-     (catalog_answer; ENRICH_CATALOG_FIRST=0 turns it off)               no model
-  5. Jev picks category and subtype (jev_classify.py); code writes the size where
+  4. Jev picks category and subtype (jev_classify.py); code writes the size where
      the store's figure is unambiguous (stated_size); Jev picks strain and product
      line from the name's phrases (jev_extract.py; ENRICH_JEV_TEXT=0 turns it off).
      Whatever is still open goes to one Haiku call, which sees the rows Jev settled
      as context
-  6. rows Jev is unsure of (below ENRICH_JEV_MIN_CONFIDENCE): Haiku's two calls —
+  5. rows Jev is unsure of (below ENRICH_JEV_MIN_CONFIDENCE): Haiku's two calls —
      pass A classifies and sizes, pass B extracts strain and product line
-ENRICH_CLASSIFIER=llm sends every model-bound row down 6, as before Jev.
+ENRICH_CLASSIFIER=llm sends every model-bound row down 5, as before Jev.
+A listing that names a catalog product takes the catalog's identity at import
+(import_listings.apply_catalog), whatever enrichment wrote.
 Answers are cached per store in data/enrich_cache/<slug>.json, or in Postgres with
 ENRICH_CACHE=db (enrich_cache_db.py) where there is no persistent disk.
 
@@ -541,41 +541,6 @@ def _with_context(prompt: str) -> str:
     return head + _CONTEXT_NOTE + sep + reply
 
 
-# ---------------------------------------------------------------------------
-# Catalog first — a listing that names a catalog product needs no model call
-# ---------------------------------------------------------------------------
-
-# On by default. The eval harness turns it off, so a model comparison measures the
-# model rather than whichever gold brands happen to have catalogs.
-def _catalog_first_default() -> bool:
-    return os.environ.get("ENRICH_CATALOG_FIRST", "1").strip() != "0"
-
-
-_CATALOG_INDEXES: dict | None = None
-
-
-def _catalog_indexes() -> dict:
-    """{brand_key: CatalogIndex}, read from Postgres once per process.
-
-    Empty — catalog-first simply off for the run — when the database cannot be read.
-    Never the data/catalogs/ export files: they can hold products the catalog has
-    since dropped, and a dropped product must not be matched (PIPELINE_HEALTH.md).
-    """
-    global _CATALOG_INDEXES
-    if _CATALOG_INDEXES is None:
-        import catalog_match
-        import catalog_store
-        try:
-            catalogs = catalog_store.load_all("db")
-        except Exception as e:  # noqa: BLE001 — an optimisation must not fail a scrape
-            print(f"  [warn] catalog-first off this run: catalogs unavailable ({e})",
-                  file=sys.stderr)
-            catalogs = {}
-        _CATALOG_INDEXES = {k: catalog_match.CatalogIndex(c)
-                            for k, c in catalogs.items() if c.get("entries")}
-    return _CATALOG_INDEXES
-
-
 def stated_size(row: dict, category: str | None) -> str | None:
     """The listing's size when code can read it without guessing — or None, and the
     size chooser (or a model) reads it.
@@ -644,56 +609,6 @@ def code_size(row: dict, category: str | None) -> str | None:
     if grams and not size_choice.prices_for_run().fits(item, grams):
         return None
     return size
-
-
-def catalog_answer(row: dict, indexes: dict) -> dict | None:
-    """Every field enrichment would ask a model for, read from the brand's catalog —
-    or None, and the row goes to the model as usual.
-
-    Only for a listing whose name IS a catalog title or a store name already recorded
-    for that product (catalog_match's `exact` tier, the one that needs no model), and
-    only when the entry settles every field the way the importer would:
-      - category from the entry; subtype from it too unless a format word in the
-        name says otherwise (catalog_match.matched_subtype, as the importer does),
-        and none for a pre-roll (taxonomy.keeps_subtype)
-      - strain from the entry — never a self-censored spelling, never blank
-      - product_line as the entry has it, blank included (import_listings._overlay)
-      - size: the listing's own, read the way pass A reads it, which must agree with
-        the entry's. The listing's figure is what gets written, in the form pass A
-        writes it, because the size is part of the listing key and the products
-        view's identity — a catalog label ("5pk 3g") would split a product from its
-        other stores' "3g".
-    Anything short of that — an ambiguous match, a missing field, a size that is
-    absent or disagrees — returns None. The importer re-resolves every listing
-    against the catalog anyway, so a row this declines loses nothing but the saving.
-    """
-    import catalog_match
-    import catalog_store
-    import sizes
-    from catalog_enricher import _is_masked
-    index = indexes.get(catalog_store.brand_key(row.get("brand")))
-    if index is None:
-        return None
-    name = row.get("name", "")
-    key, _ = index.exact(name, _hint_category(row) or None)
-    if key is None:
-        return None
-    product = index.products[key]
-    cat = product.category
-    if cat not in SUBTYPES or enrichers.skips_model(cat):
-        return None
-    entry = index.pick_entry(key, row.get("variant"), cat, name)
-    subtype = catalog_match.matched_subtype(entry, name)
-    strain = entry.get("strain") or product.strain
-    if (taxonomy.keeps_subtype(cat) and subtype not in SUBTYPES[cat]) \
-            or not strain or _is_masked(strain):
-        return None
-    size = stated_size(row, cat)
-    if size is None or sizes.same_size(sizes.parse(size, category=cat),
-                                       sizes.parse(entry.get("variant"), category=cat)) is not True:
-        return None
-    return {"category": cat, "subtype": subtype, "strain": strain,
-            "product_line": entry.get("product_line"), "variant": size}
 
 
 # ---------------------------------------------------------------------------
@@ -1427,7 +1342,7 @@ def _run_enrich(
 
 def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
            model: str = DEFAULT_MODEL, brand_examples: dict[str, dict] | None = None,
-           catalog_hints: bool = False, catalog_first: bool | None = None) -> dict:
+           catalog_hints: bool = False) -> dict:
     """Enrich every row in place: corrects category, adds subtype/strain/product_line/variant.
 
     `model` selects an entry from MODELS (default "haiku"). Each non-default model
@@ -1488,9 +1403,6 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
     product_lines: list[str | None] = []
     variants:      list[str | None] = []
     pending:       list[tuple[int, dict]] = []
-    if catalog_first is None:
-        catalog_first = _catalog_first_default()
-    from_catalog = 0
 
     for i, row in enumerate(rows):
         # A row a human has signed off on entirely never reaches the model — the
@@ -1536,16 +1448,6 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
             strains.append(entry.get("strain"))
             product_lines.append(entry.get("product_line"))
             variants.append(entry.get("variant"))
-        elif catalog_first and (hit := catalog_answer(row, _catalog_indexes())):
-            # The listing names a known product: its identity is the catalog's, which
-            # the importer would overlay anyway, so there is nothing to ask a model.
-            # Not cached — it is recomputed for free, and a catalog edit lands at once.
-            categories.append(hit["category"])
-            subtypes.append(hit["subtype"])
-            strains.append(hit["strain"])
-            product_lines.append(hit["product_line"])
-            variants.append(hit["variant"])
-            from_catalog += 1
         else:
             categories.append(None)
             subtypes.append(_hint_subtype(row))
@@ -1555,11 +1457,9 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
             pending.append((i, row))
 
     no_model = sum(1 for r in rows if enrichers.skips_model(_hint_category(r)))
-    cached_count = len(rows) - len(pending) - no_model - from_catalog
+    cached_count = len(rows) - len(pending) - no_model
     if no_model:
         print(f"  deterministic: {no_model} row(s) answered from the name, no model call")
-    if from_catalog:
-        print(f"  catalog: {from_catalog} row(s) name a catalog product, no model call")
     if pending:
         print(f"  enrich: {cached_count} cached, {len(pending)} → {model}")
         usage = _run_enrich(pending, cache, slug, categories, subtypes, strains, product_lines, variants, model_cfg, batch_size, brand_examples, catalog_hints)
@@ -1604,7 +1504,6 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
         print(msg)
 
     usage["failed_rows"] = sum(1 for row in rows if row.get("enrich_failed"))
-    usage["from_catalog"] = from_catalog
     if usage["failed_rows"]:
         print(f"  [warn] {usage['failed_rows']} row(s) unenriched this run "
               f"(marked enrich_failed; the importer keeps their stored identity)", file=sys.stderr)

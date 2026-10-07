@@ -106,7 +106,7 @@ def priced(model, monkeypatch, tmp_path):
     monkeypatch.setattr(enrich, "_CACHE_DIR", tmp_path)
     row = {"name": "Gummies 10pk", "brand": "Testbrand", "category": "edible", "variant": "10mg",
            "sku": "a", "dispensary_slug": "test-store", "description": ""}
-    usage = enrich.enrich([row], model=model, brand_examples={}, catalog_first=False)
+    usage = enrich.enrich([row], model=model, brand_examples={})
     assert usage["reasoning_tokens"] == 2 * PER_CALL["reasoning_tokens"]
     return usage["cost_usd"]
 
