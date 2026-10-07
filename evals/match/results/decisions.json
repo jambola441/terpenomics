@@ -1,0 +1,1772 @@
+{
+ "ea6eefe8-6be1-4260-81ab-2f13925c335f": {
+  "method": "jev",
+  "product_key": "7154305335351",
+  "entry_id": "bbb9c52e-22ba-4dd9-b1eb-b30ed9b16ac1",
+  "p": 0.96
+ },
+ "db11a646-b88b-421f-adbf-09d1840e9688": {
+  "method": "jev",
+  "product_key": "7108688150583",
+  "entry_id": "35989b81-763d-41c8-9247-3eba6eae239a",
+  "p": 0.96
+ },
+ "9edb19da-2085-4a1d-b9ec-4c6f3665b8ad": {
+  "method": "jev",
+  "product_key": "7109636882487",
+  "entry_id": "ae1935ac-3519-403e-8a77-6160f8d1c3c2",
+  "p": 0.97
+ },
+ "275f7ef3-9598-42d7-b153-5da766653f40": {
+  "method": "jev",
+  "product_key": "7113352478775",
+  "entry_id": "4339a8ed-a757-43ba-9be1-2b332f89d9fc",
+  "p": 0.89
+ },
+ "3c828293-8076-4cf4-b082-5a63a8e88864": {
+  "method": "jev_review",
+  "product_key": "7097633046583",
+  "entry_id": "d090d09f-0481-451b-a8c7-21f8b0a697bc",
+  "p": 0.72
+ },
+ "8c4b9bc2-0265-4738-b4e8-067c4fb24649": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "77daf847-894a-4251-a77d-572ed958efca": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "a62032b5-48f4-4016-8a0a-c8622e5f67c0": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "bcf6e85b-c880-4044-8e8c-11c38e334adb": {
+  "method": "jev",
+  "product_key": "7154322767927",
+  "entry_id": "63f33496-5a12-4451-8258-537733c22dc4",
+  "p": 0.98
+ },
+ "6dc21cd7-238b-4b43-808b-757832e8ce17": {
+  "method": "jev",
+  "product_key": "7113352282167",
+  "entry_id": "bb88ca2c-4715-4bae-9f96-a888e3a43f5b",
+  "p": 0.98
+ },
+ "fb9ce8d3-647e-4662-a1a4-137038a3c043": {
+  "method": "exact",
+  "product_key": "sf:vaporizers:all-in-one:palms:papayapunch",
+  "entry_id": "b2fcbbc1-24e0-4916-b6f0-bc7632d6441f",
+  "p": 1.0
+ },
+ "76166c26-75e1-45ce-bb5e-e8aa2596dcf5": {
+  "method": "exact",
+  "product_key": "sf:vaporizers:all-in-one:liquiddiamonds:spacecandy",
+  "entry_id": "c59ee826-fd18-47ed-bf4b-a2c480f5785b",
+  "p": 1.0
+ },
+ "4b2ab1ac-6332-4772-a085-d016f2d80a47": {
+  "method": "jev",
+  "product_key": "sf:vaporizers:cart:classic:whitewidow",
+  "entry_id": "dd1e91dd-e306-4de6-af64-bbdcbe6b2f90",
+  "p": 0.94
+ },
+ "f8026d59-7c00-4f54-a73c-883eb2ad44ed": {
+  "method": "jev",
+  "product_key": "sf:vaporizers:cart:liveresin:gg4",
+  "entry_id": "4caa061e-7022-4b05-aff9-7e12be6238c1",
+  "p": 1.0
+ },
+ "dbdbd09d-f963-4d90-9c10-391bd83be23d": {
+  "method": "jev",
+  "product_key": "sf:concentrate:rosin:coldcure:sunsetserenade",
+  "entry_id": "8420e3c8-53b1-4875-92ce-76373e744b93",
+  "p": 0.99
+ },
+ "20b5a006-e146-4702-8fc1-b390be8aeba4": {
+  "method": "jev_review",
+  "product_key": "sf:vaporizers:all-in-one:palms:papayapunch",
+  "entry_id": "b2fcbbc1-24e0-4916-b6f0-bc7632d6441f",
+  "p": 0.69
+ },
+ "1f130dac-00e0-4586-94ec-d28be0d6e174": {
+  "method": "jev_review",
+  "product_key": "sf:concentrate:rosin:coldcure:bloomfruit",
+  "entry_id": "06a89b61-dc90-4e02-b897-80a7bcb154fd",
+  "p": 0.83
+ },
+ "4c31f873-0fb7-4370-aeeb-5d33c2621646": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.72
+ },
+ "aee1a8c7-3b2d-4426-9628-7df9e7ca1872": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.97
+ },
+ "9a597559-23de-4d77-a10e-9c6add592684": {
+  "method": "exact",
+  "product_key": "sf:vaporizers:all-in-one:palms:mangohaze",
+  "entry_id": "06d6abbd-795c-4b10-a6e8-1e135141d629",
+  "p": 1.0
+ },
+ "ab44b1cd-9928-434b-bc0d-e4272a289acf": {
+  "method": "exact",
+  "product_key": "sf:concentrate:resin:liveresin:thebelafonte",
+  "entry_id": "7f2ab956-bfd6-470e-82f4-2119428e3119",
+  "p": 1.0
+ },
+ "0a6c050d-44a3-4d9c-a03a-51846f44faac": {
+  "method": "exact",
+  "product_key": "sf:concentrate:resin:liveresin:superboof",
+  "entry_id": "f52ab658-f741-43d7-a003-444867c3fc4c",
+  "p": 1.0
+ },
+ "ae3c19a5-6341-4cc3-a4fc-de3ca6b3307c": {
+  "method": "jev",
+  "product_key": "sf:vaporizers:cart:liveresin:thebelafonte",
+  "entry_id": "fcfd4abe-c0e3-4ca3-92b6-b04837032207",
+  "p": 1.0
+ },
+ "0bbecf1a-1fc6-4c91-965a-9d8e91959a4c": {
+  "method": "jev",
+  "product_key": "sf:edible:gummy::peachescreamxoishii",
+  "entry_id": "781dd13b-b611-4277-8c5e-d435024847d4",
+  "p": 1.0
+ },
+ "b34d0a2f-b5fe-45ce-8f43-a92cb35e018c": {
+  "method": "jev",
+  "product_key": "sf:vaporizers:all-in-one:classicsliveresin:sourdiesel",
+  "entry_id": "95c47c17-1ac1-4ea5-957a-fe2f804e9be0",
+  "p": 0.95
+ },
+ "be44d6f9-50ff-4013-8764-27ac9b810b41": {
+  "method": "jev_review",
+  "product_key": "lb:tinctures:tincture::honeybanana",
+  "entry_id": "844075ec-5624-47e8-bd60-197cf3075e99",
+  "p": 0.64
+ },
+ "0b75f951-5aa0-467f-81b0-7e24350b4bfc": {
+  "method": "jev_review",
+  "product_key": "sf:vaporizers:cart:classicstwofer:chemdog",
+  "entry_id": "fa48220b-a779-43ca-93dc-1de27edcfce3",
+  "p": 0.57
+ },
+ "f3374eb8-fa02-452d-8552-c43a8b3c5a28": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "a5db9d51-e3de-44ed-90eb-f2d5aaa0de1a": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.76
+ },
+ "615c3a29-8170-4839-b9d7-43cd2bc81b95": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.97
+ },
+ "c5f5a96a-117f-4259-827a-0257c78dde2b": {
+  "method": "exact",
+  "product_key": "lb:edible:chocolate::milkchocolateseasalt",
+  "entry_id": "ffd77f31-de82-4075-b005-f0df492d87bb",
+  "p": 1.0
+ },
+ "5b94b8a4-d4ea-4e47-a2f4-956c76ad9802": {
+  "method": "exact",
+  "product_key": "sf:edible:gummy:mega:sourgrape",
+  "entry_id": "c7c8458d-f3a8-4168-bef2-f511356b0615",
+  "p": 1.0
+ },
+ "21d62cc5-f57e-4495-bbe7-4864c23d0bda": {
+  "method": "jev",
+  "product_key": "sf:edible:chocolate:minibar:darkchocolate",
+  "entry_id": "8341377f-5e3d-4275-8d50-7055a6e1460b",
+  "p": 0.94
+ },
+ "f152622f-e0a0-41fa-923b-a92790d76315": {
+  "method": "jev",
+  "product_key": "sf:edible:chocolate:minibar:11darkchocolate",
+  "entry_id": "b7a354b3-57bd-4994-a8bf-f870f69e0090",
+  "p": 0.96
+ },
+ "cb909398-1d4e-42a7-99d0-7efe8bbc0cf0": {
+  "method": "jev",
+  "product_key": "sf:edible:gummy:pearls:blueberrylemonade",
+  "entry_id": "7a70d8ca-6c2f-42d9-b283-7c8d26d1cf38",
+  "p": 0.99
+ },
+ "6b8b973a-1e80-449d-92c5-8ed02a45ac59": {
+  "method": "jev_review",
+  "product_key": "sf:edible:chocolate::111darkchocolate",
+  "entry_id": "03b1c405-1161-42a7-899e-9482e05cbc6d",
+  "p": 0.68
+ },
+ "0fb07527-3ccb-409b-ab51-6e0899ae032a": {
+  "method": "jev_review",
+  "product_key": "sf:edible:chocolate:pips:111darkchocolate",
+  "entry_id": "178b3e2b-7ae6-4d7a-b014-d1f44c4df87f",
+  "p": 0.78
+ },
+ "14b5324e-fe6d-433a-8b91-11004decdc24": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.99
+ },
+ "9b507f1f-74b4-4e4f-bfb0-481d1efc1987": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.94
+ },
+ "30c314db-9852-4427-8c01-302b4b3006d7": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.95
+ },
+ "7d1a47c6-dc77-4586-8054-4e06a3fbb550": {
+  "method": "exact",
+  "product_key": "sf:preroll::liveresininfused:garlicbud",
+  "entry_id": "7e65d0f5-58e9-46b1-b442-231a4d0cd490",
+  "p": 1.0
+ },
+ "d98e7e5a-1b73-4c59-8031-6cc6deee3884": {
+  "method": "exact",
+  "product_key": "sf:preroll::liveresininfused:sourtangie",
+  "entry_id": "2fd3fa8b-83f9-41f8-bdf1-4e5ec5484d15",
+  "p": 1.0
+ },
+ "6b4ba1cb-9a57-4bc6-ad68-c55eb867fd1a": {
+  "method": "jev",
+  "product_key": "sf:preroll:::banananutbread",
+  "entry_id": "7c521967-33a1-49b7-a74c-1b4928b2600d",
+  "p": 0.96
+ },
+ "8aee2ccd-684e-418f-81b8-3427be2320cb": {
+  "method": "jev",
+  "product_key": "sf:vaporizers:cart::supersourdiesel",
+  "entry_id": "af1cd8e5-80e4-45d5-9eea-11a7e7529440",
+  "p": 0.99
+ },
+ "1642d6ac-bda7-4edb-b340-ee3294470148": {
+  "method": "jev",
+  "product_key": "sf:preroll:::blackscotti",
+  "entry_id": "309483b4-6b35-48f7-be8c-813475424f76",
+  "p": 0.98
+ },
+ "cd043434-b5f1-4d82-8091-13a5b200f752": {
+  "method": "jev_review",
+  "product_key": "sf:preroll::kiefcoated:greencrack",
+  "entry_id": "811f4fdd-36c5-4128-acaa-e82430ad3c8c",
+  "p": 0.58
+ },
+ "1401d944-d14e-4424-95c6-122c0474cea5": {
+  "method": "jev_review",
+  "product_key": "sf:preroll:::blackwidow",
+  "entry_id": "d9967951-5792-438e-9415-95925f0a982f",
+  "p": 0.73
+ },
+ "41690168-d85a-46d1-87c3-468cbab8da8e": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.59
+ },
+ "71e80c45-f625-4dff-8870-6ca66221f614": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 1.0
+ },
+ "c398237e-05cc-485a-a848-a131859ccb83": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.76
+ },
+ "fc8df3bc-235f-400c-95f2-c1736b8f2f8d": {
+  "method": "exact",
+  "product_key": "sf:preroll:::strawberryamnesia",
+  "entry_id": "1bd6b5bb-3680-4cc1-ac25-a5abfce4df0a",
+  "p": 1.0
+ },
+ "e0062ff5-436e-4453-83da-fbdeb536171d": {
+  "method": "exact",
+  "product_key": "sf:flower:flower::grapelato",
+  "entry_id": "ffb0c8c5-968d-4434-9751-658dbf6e1fc2",
+  "p": 1.0
+ },
+ "886d22a1-2d4e-4877-ada7-0e2990dfe2ce": {
+  "method": "jev",
+  "product_key": "sf:flower:preground::greengoblin",
+  "entry_id": "8f56476a-0838-4282-9b6c-af88b14f7349",
+  "p": 0.98
+ },
+ "98d2ba87-f926-4901-bb5b-c260c9ac4c2f": {
+  "method": "jev",
+  "product_key": "sf:flower:preground::sourbluediesel",
+  "entry_id": "e1f86eca-d6f5-41d5-9dd7-fee2c0931cb4",
+  "p": 0.99
+ },
+ "b3b90a8e-8aad-44d2-9c02-661099a09b1e": {
+  "method": "jev",
+  "product_key": "sf:flower:preground::bubbakush",
+  "entry_id": "1568388d-798c-4fcd-b0b9-0858d899be8e",
+  "p": 0.92
+ },
+ "c857e3b9-10ef-464c-b400-0d49726695d0": {
+  "method": "jev_review",
+  "product_key": "sf:preroll:::skywalkerog",
+  "entry_id": "2b2cc34e-2949-4d9f-9dab-ef4e915cbed2",
+  "p": 0.56
+ },
+ "014332d0-8518-46a1-bfa9-5f4e242725ab": {
+  "method": "jev_review",
+  "product_key": "sf:preroll:::superdiesel",
+  "entry_id": "4fa78c5e-214e-41c7-94a4-cb0cac9b35de",
+  "p": 0.73
+ },
+ "d4678045-3929-43f4-8ab0-0631315c7c38": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.97
+ },
+ "9f333755-594c-42bc-ba9b-02c0b16893fc": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "9d3e42aa-8eaf-4b45-a852-11481fad8ab6": {
+  "method": "exact",
+  "product_key": "sf:preroll:::bluedream",
+  "entry_id": "34bd1e85-a288-4ef4-bfe3-b8332c1509dd",
+  "p": 1.0
+ },
+ "18da6253-47da-4d53-8fef-ff3e2f02b00f": {
+  "method": "exact",
+  "product_key": "sf:edible:gummy:limelight:cherrylimeade",
+  "entry_id": "24c1b6ff-f3f9-468c-9adb-9e96fb6bdb78",
+  "p": 1.0
+ },
+ "1499b9ca-6012-41e5-a32d-f592cde68e8d": {
+  "method": "exact",
+  "product_key": "sf:edible:gummy:mellow:blueraspberry",
+  "entry_id": "c7d2333b-e6b7-45e1-8616-80e009f3de86",
+  "p": 1.0
+ },
+ "22b385cd-7455-44e9-8f5b-d6daa3153589": {
+  "method": "jev",
+  "product_key": "lb:edible:gummy::melt",
+  "entry_id": "4e438fbc-9eef-4e8b-9947-5eb8e5554ecd",
+  "p": 0.97
+ },
+ "c230cdce-ffeb-4e5a-a2b4-85213e9fb94f": {
+  "method": "jev",
+  "product_key": "sf:edible:gummy:awaken:orangepunch",
+  "entry_id": "1f0befb0-9056-4a7e-b307-0e7380d9ce78",
+  "p": 0.99
+ },
+ "dbce81f0-2f7a-4cf1-a96c-33d3f3368ac7": {
+  "method": "jev",
+  "product_key": "lb:edible:gummy:party:partyanimal",
+  "entry_id": "a3c4c614-e3ab-4c8c-8ca5-0285a52fd42b",
+  "p": 0.89
+ },
+ "c2e211e3-becc-4150-8c68-da17e8827b55": {
+  "method": "jev_review",
+  "product_key": "sf:vaporizers:all-in-one:offbox:rs11",
+  "entry_id": "d667ad77-3f7a-42b4-b7fe-e4593f313f74",
+  "p": 0.79
+ },
+ "81e87043-fbfd-49e1-81bb-76f109a2ae53": {
+  "method": "jev_review",
+  "product_key": "sf:edible:gummy:serenity:paradisecooler",
+  "entry_id": "32d24755-4af4-46a7-8449-e5dfab5218f4",
+  "p": 0.64
+ },
+ "492572d6-1662-44bf-98ea-7a11466e24f0": {
+  "method": "jev",
+  "product_key": "sf:edible:gummy:liveresin:gelonade",
+  "entry_id": "99962837-a89b-4ff9-a449-9aab5db46623",
+  "p": 0.97
+ },
+ "a1564d17-90dc-4f05-ac08-b8f27e6b7d6d": {
+  "method": "jev_review",
+  "product_key": "sf:edible:gummy:daydream:pinkberry",
+  "entry_id": "4df20332-926f-4d43-8d31-af2695158517",
+  "p": 0.73
+ },
+ "f84fbec7-46e7-47f1-b414-2e73977fa50a": {
+  "method": "exact",
+  "product_key": "lb:edible:gummy:recover:freshlysqueezed",
+  "entry_id": "ba40f8b5-5898-4e6a-9610-37e6d7c74f6b",
+  "p": 1.0
+ },
+ "91a25fdf-c0f9-486f-b763-e9de27a55ebf": {
+  "method": "exact",
+  "product_key": "sf:edible:gummy:gummies:exhilaratewildcherry",
+  "entry_id": "589d53a2-a3b2-4d8c-ad0f-921557d0752e",
+  "p": 1.0
+ },
+ "2eb977d1-263f-4864-b0f8-e9a77ec7d42f": {
+  "method": "jev",
+  "product_key": "sf:edible:gummy:fruitchews:blisspineappleparadise",
+  "entry_id": "a065a725-55e3-4763-836f-e664dd04d93d",
+  "p": 0.99
+ },
+ "418b5d44-df8f-41d8-983b-98de6221a779": {
+  "method": "jev",
+  "product_key": "sf:edible:gummy:sours:deepsleepblackberrydream",
+  "entry_id": "3a29124e-2650-46a6-a5f6-361e659c5476",
+  "p": 0.99
+ },
+ "122bd3c6-1f48-4506-a933-bf5a1b69ff62": {
+  "method": "jev",
+  "product_key": "lb:edible:gummy:soothingsleep:boysenberry",
+  "entry_id": "340f8945-854d-4790-ad87-406271111692",
+  "p": 0.99
+ },
+ "6389171e-26b5-4774-b210-1abb6929030d": {
+  "method": "jev_review",
+  "product_key": "sf:edible:gummy:sours:upliftingwatermelonspritz",
+  "entry_id": "78ca28d0-2fe3-4ad8-9468-53aed237c1d9",
+  "p": 0.75
+ },
+ "4f540eb0-ec46-4a56-bee1-4ae655fde7ed": {
+  "method": "jev_review",
+  "product_key": "sf:edible:gummy:gummies:excitewildcherry",
+  "entry_id": "879ebe94-321e-4c64-81f0-f4890aaaf226",
+  "p": 0.54
+ },
+ "9443e7f1-61f4-477a-9d6c-0679086d9e53": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 1.0
+ },
+ "55b0b69e-e397-4a46-88e9-f5788420ca02": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "5f5b5311-408c-45fc-a3dd-ce479cf33348": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 1.0
+ },
+ "b9636b4e-0578-435f-937a-cf8338fc97b0": {
+  "method": "exact",
+  "product_key": "sf:edible:gummy::pomegranate",
+  "entry_id": "e5066f96-3e33-45d2-b5c1-7bf54edcd53a",
+  "p": 1.0
+ },
+ "6eb3b693-5526-4523-9e72-96aa6fd277b1": {
+  "method": "exact",
+  "product_key": "sf:edible:gummy::grapefruit",
+  "entry_id": "84d30c85-5ff8-4b68-bb74-27315ac1cdd6",
+  "p": 1.0
+ },
+ "531ab49b-fcf1-4943-bf6a-ccbb54fdd3ed": {
+  "method": "jev",
+  "product_key": "sf:edible:gummy::peach",
+  "entry_id": "145ace6d-87f7-409f-8595-05bd87985c6e",
+  "p": 0.92
+ },
+ "6b8083a8-bcd5-44de-ac9e-62d35d28371f": {
+  "method": "exact",
+  "product_key": "sf:edible:gummy::sourapple",
+  "entry_id": "23e1c5f4-b6bb-44d7-a1d0-51b6873532c3",
+  "p": 1.0
+ },
+ "153c735b-e2ac-4a3a-bfe0-98d683cb4257": {
+  "method": "jev",
+  "product_key": "sf:edible:gummy::strawberry",
+  "entry_id": "5fdec743-2608-420c-9f0b-f4e4b748f36d",
+  "p": 0.92
+ },
+ "8cbe0312-fb86-4592-8fef-c254f4d2b22b": {
+  "method": "jev_review",
+  "product_key": "sf:edible:gummy::pear",
+  "entry_id": "a96857b3-05fd-45b1-9f68-fb647cc806e1",
+  "p": 0.57
+ },
+ "c4ec620d-7abb-4923-8e80-73d7bd66eecb": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.34
+ },
+ "c26d212f-d779-4a0b-90ce-4a796574c9d2": {
+  "method": "jev",
+  "product_key": "sf:edible:gummy::bloodorange",
+  "entry_id": "6feddace-02fa-4de5-9871-ce6743c3a686",
+  "p": 0.98
+ },
+ "22e40617-08e6-48b3-9c6a-b083839ba711": {
+  "method": "jev",
+  "product_key": "sf:edible:gummy::sourcherry",
+  "entry_id": "c750c66f-895b-4b12-bc19-07adcaaeca93",
+  "p": 0.99
+ },
+ "0d0f12cc-2b6f-45f0-8a7b-a7ea4ac383e2": {
+  "method": "jev",
+  "product_key": "sf:edible:gummy::marionberry",
+  "entry_id": "4aa078ba-83a3-4958-bfad-f66e0be716ec",
+  "p": 0.98
+ },
+ "b18c3f43-eab0-45f7-b2f2-05bb0ba38c5a": {
+  "method": "exact",
+  "product_key": "sf:flower:flower::girlscoutcookies",
+  "entry_id": "807b5fd3-3728-4fe4-b09f-bbc3293192fb",
+  "p": 1.0
+ },
+ "c0fbba7e-13ed-4afe-8c77-cf036f66cc5a": {
+  "method": "exact",
+  "product_key": "sf:preroll:::cinderellajack",
+  "entry_id": "470862d6-12e2-4a00-bec5-31f4e22b18b0",
+  "p": 1.0
+ },
+ "e1d1a6b2-ea8b-4634-aed9-e63b0b902648": {
+  "method": "jev",
+  "product_key": "sf:flower:flower::kushmints",
+  "entry_id": "381e7c9d-0366-4d82-b454-92b141b72d73",
+  "p": 1.0
+ },
+ "15e7c556-3295-44d3-ba43-79b84e1981fa": {
+  "method": "jev",
+  "product_key": "sf:preroll:::bluecookies",
+  "entry_id": "8f1f42d2-9d5e-42b8-afcc-0a923ca38e70",
+  "p": 0.99
+ },
+ "46456aa4-cf30-443b-90c3-863327e4ab00": {
+  "method": "jev",
+  "product_key": "sf:preroll:::gasface",
+  "entry_id": "7079477c-33e5-41f6-8c1b-bcd4101b748f",
+  "p": 0.98
+ },
+ "6fcd7cf1-407c-4cb5-b9e8-047dce1ead6b": {
+  "method": "jev_review",
+  "product_key": "sf:preroll::infused:biggiesmallsog",
+  "entry_id": "4135cfde-1b2f-488d-9b21-307f8af6fb78",
+  "p": 0.6
+ },
+ "e805e57c-470e-4a31-a260-b4a831b58d6a": {
+  "method": "jev_review",
+  "product_key": "sf:preroll::infused:hawaiianthunderfuck",
+  "entry_id": "5ef6de7d-99c8-4a9b-8097-54e1dce7876a",
+  "p": 0.63
+ },
+ "528fe26b-55fc-4bae-908d-b8625f23e8f3": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.59
+ },
+ "a25c024c-8c17-4ce6-95b2-74ec2af16be4": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.88
+ },
+ "19ba267f-4ddd-4196-856b-0cd2b0744ef2": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.41
+ },
+ "1fb9fcc7-510d-4f00-9e3c-46507f3e2f9f": {
+  "method": "exact",
+  "product_key": "sf:preroll:::macnilla",
+  "entry_id": "a6548a31-e08a-4d5d-824c-17aab6198430",
+  "p": 1.0
+ },
+ "437011ac-d2cf-4cbc-bc5a-56c229ac5e0a": {
+  "method": "exact",
+  "product_key": "sf:flower:preground:ready2roll:hybrid",
+  "entry_id": "4e188902-8fdf-4193-9f2c-b6c01a694d33",
+  "p": 1.0
+ },
+ "17286bcf-9ac1-4a0a-a865-5508ba6227ac": {
+  "method": "jev",
+  "product_key": "sf:vaporizers:all-in-one::ogkush",
+  "entry_id": "8c00ae91-9acd-4932-a2af-c1421f560da8",
+  "p": 0.93
+ },
+ "9698e122-4931-405c-82b8-cc341de423ed": {
+  "method": "jev",
+  "product_key": "sf:preroll:::pluto",
+  "entry_id": "298a9d34-256a-4567-8aa0-9786a8f4f1af",
+  "p": 0.97
+ },
+ "fc1f7b0b-2551-46bb-a1a9-9763cb281573": {
+  "method": "jev",
+  "product_key": "sf:preroll::infused:lemoncherrygelato",
+  "entry_id": "3c9bc3f5-4234-4d96-a078-3f546b4530c1",
+  "p": 0.99
+ },
+ "c51ccbcb-98b3-4169-9b70-a0855a9c6751": {
+  "method": "jev_review",
+  "product_key": "sf:preroll:::pluto",
+  "entry_id": "298a9d34-256a-4567-8aa0-9786a8f4f1af",
+  "p": 0.8
+ },
+ "4271ce85-edbc-4d73-8926-f3f836538cfb": {
+  "method": "jev_review",
+  "product_key": "sf:flower:flower::memorylossog",
+  "entry_id": "df4740e3-fd6a-45e8-abd8-8efd82564d42",
+  "p": 0.7
+ },
+ "06a6e938-f135-4a2e-b9bf-0a88acd31dff": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.96
+ },
+ "f2113f8d-6f9b-4b78-b764-413545b4b588": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "f565e0ce-52c2-40e0-a601-e99bd436c44a": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 1.0
+ },
+ "28ba0ee6-f01f-46dc-9b11-312c765d06d9": {
+  "method": "exact",
+  "product_key": "sf:preroll:::xj13",
+  "entry_id": "31ced0d8-2609-4dc3-a5ee-d356e1e283ff",
+  "p": 1.0
+ },
+ "89cd647c-3b34-4ca4-9d38-aa7bf7ad9c28": {
+  "method": "exact",
+  "product_key": "sf:preroll:::rainbowbelts",
+  "entry_id": "6a8cfa5f-e020-4653-9899-3f59aa1e2b34",
+  "p": 1.0
+ },
+ "06cf65ae-77be-4525-b3d2-d1dcb1072a3c": {
+  "method": "jev",
+  "product_key": "sf:preroll:::bluedream",
+  "entry_id": "922fee5c-026d-4d2c-9c0d-bc993181b44b",
+  "p": 0.9
+ },
+ "9a2f923b-b0c0-447f-8b2f-e3c13edcd651": {
+  "method": "jev",
+  "product_key": "sf:preroll:::nycdiesel",
+  "entry_id": "90b9c8ab-5867-4206-a1e8-138d545fb218",
+  "p": 0.91
+ },
+ "8b903caa-c376-4268-a2b5-5cbbb38b8613": {
+  "method": "jev",
+  "product_key": "sf:preroll:::papayapunch",
+  "entry_id": "422a74ae-7810-4e51-9112-0fbaf9a0ce20",
+  "p": 0.92
+ },
+ "ecf2ff68-0475-4d1a-9d8f-028c6b42a37f": {
+  "method": "jev_review",
+  "product_key": "sf:preroll:::gorillagoo",
+  "entry_id": "a18ae043-dda1-4f07-a06b-3d27ae208db7",
+  "p": 0.78
+ },
+ "915d0fed-7215-4be3-b169-167ece34fe1a": {
+  "method": "jev_review",
+  "product_key": "sf:preroll:::watermelon",
+  "entry_id": "81d52601-e6e0-403f-b6c1-c0534c4d3b9a",
+  "p": 0.78
+ },
+ "d8fe4d72-ba88-4f0c-b658-ffb38d80ad44": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.51
+ },
+ "23324979-ba25-4d92-a214-44f789c77b8e": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.56
+ },
+ "9de85fe9-abe6-4ed5-ac29-9cdcce3e2a84": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.95
+ },
+ "310408e3-3a60-4556-b67f-fc8038b112a9": {
+  "method": "exact",
+  "product_key": "sf:edible:beverage::mangotea",
+  "entry_id": "c40cb11d-d11c-473a-bfdd-a0c470bb52f6",
+  "p": 1.0
+ },
+ "271f60a8-2d1f-428e-8d44-9d266533b4c0": {
+  "method": "exact",
+  "product_key": "sf:edible:beverage::limeade",
+  "entry_id": "77abf084-390e-41f5-bad3-4e6eecd21e81",
+  "p": 1.0
+ },
+ "cc19d92f-ce6a-4ac9-b86e-153bc3ba6245": {
+  "method": "jev",
+  "product_key": "sf:edible:beverage::raspberrytea",
+  "entry_id": "56631bbe-40ac-4c6c-9173-af3737ddb43d",
+  "p": 1.0
+ },
+ "ebdfac0f-2822-4ca0-af88-789f38e6bf2e": {
+  "method": "jev",
+  "product_key": "sf:edible:beverage::strawberrylemonade",
+  "entry_id": "92ac9a8a-bfa0-4ed9-ac8c-eb2e24924e68",
+  "p": 0.99
+ },
+ "1f0e651c-efcd-49fa-bab6-f02343d6fd63": {
+  "method": "jev",
+  "product_key": "sf:edible:beverage::lemonade",
+  "entry_id": "aa3681a9-66a5-44fe-899e-b473d89248a7",
+  "p": 0.97
+ },
+ "2a23a04c-a57b-4855-b85f-df10579cae16": {
+  "method": "jev_review",
+  "product_key": "sf:edible:beverage::lemonade",
+  "entry_id": "aa3681a9-66a5-44fe-899e-b473d89248a7",
+  "p": 0.81
+ },
+ "6ac53327-6c86-49f4-abaf-6dece6c8bfad": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.82
+ },
+ "b2fe4bdf-a383-48fa-b2af-65a452f99f49": {
+  "method": "exact",
+  "product_key": "sf:edible:beverage::fruitpunch",
+  "entry_id": "dfcf50c3-5fa6-46b0-bdf5-9697d9f8e318",
+  "p": 1.0
+ },
+ "6108d536-ff4a-4166-93db-ba4b4b12fb33": {
+  "method": "jev",
+  "product_key": "sf:edible:beverage::peachtea",
+  "entry_id": "9d74f68f-482e-45ee-ba64-30497bf71ea5",
+  "p": 0.99
+ },
+ "d2ec4cdc-046e-442f-b3c1-d95f4e001251": {
+  "method": "exact",
+  "product_key": "sf:preroll:::lemonwreck",
+  "entry_id": "525babb6-343f-43d9-9851-58ce4559ae5b",
+  "p": 1.0
+ },
+ "8e15c787-11d5-4f71-8ee4-532acb3e99b2": {
+  "method": "exact",
+  "product_key": "sf:preroll:::bluecheese",
+  "entry_id": "886cb2c1-9bc6-49cb-a718-200a55fcb383",
+  "p": 1.0
+ },
+ "7b62b360-245d-4c16-bb60-e71e93cde503": {
+  "method": "jev",
+  "product_key": "sf:preroll:::lemonwreck",
+  "entry_id": "d401c847-07ee-4b36-8a4a-f1a03b8824b6",
+  "p": 0.99
+ },
+ "9abf3493-27b1-47eb-b824-e28de3e03113": {
+  "method": "jev",
+  "product_key": "sf:preroll::bubblehashinfused:rainbowcookiesxlakushcake",
+  "entry_id": "df59d7ab-5f75-4e03-b0df-8e204c1cc797",
+  "p": 0.98
+ },
+ "be7ace9e-ca82-4303-9eeb-64e8c5adaae2": {
+  "method": "jev",
+  "product_key": "sf:preroll:::grapedrink",
+  "entry_id": "dacd4846-2ff1-4c0e-8179-8508decc88cd",
+  "p": 0.98
+ },
+ "dfae8ae3-562c-4aa0-b223-6ce591111752": {
+  "method": "jev_review",
+  "product_key": "sf:preroll:::mulefuel",
+  "entry_id": "301ac9c7-03e6-49d6-8c45-1bebfab74351",
+  "p": 0.51
+ },
+ "67ffc524-c64e-432e-a8b1-46551e9727e9": {
+  "method": "jev_review",
+  "product_key": "sf:preroll::tripleinfused:strawberrybananasplash",
+  "entry_id": "ab5673cc-dd43-4157-8d1d-75811ab93e90",
+  "p": 0.77
+ },
+ "63fd543f-0329-46d8-86a3-02894a67633c": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.75
+ },
+ "4ffa4634-52b8-40d6-a1d6-b93f32bb766e": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "1d82cd90-9f6d-4fee-a52e-c5fac9910472": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.78
+ },
+ "2cae6236-c48a-4795-88ef-074b9e392038": {
+  "method": "exact",
+  "product_key": "sf:preroll:::firstclassgas",
+  "entry_id": "2d372751-3f74-41e7-80cd-e7180959d850",
+  "p": 1.0
+ },
+ "cf86dd6c-2eca-4ae9-a600-04f256e4138c": {
+  "method": "exact",
+  "product_key": "sf:preroll:::firstclassgas",
+  "entry_id": "2d372751-3f74-41e7-80cd-e7180959d850",
+  "p": 1.0
+ },
+ "df83d6c7-1b81-4655-a827-da47b8f504aa": {
+  "method": "jev",
+  "product_key": "sf:flower:flower::grapenerdz",
+  "entry_id": "6d7df3e2-16f3-4f66-95ea-1dc11befc184",
+  "p": 0.98
+ },
+ "7330d0cd-a85a-49fc-a315-a28bf2c48eaf": {
+  "method": "jev",
+  "product_key": "sf:preroll:::friedicecream",
+  "entry_id": "7eb85dab-4153-4245-9351-4d4e18aca6c9",
+  "p": 0.98
+ },
+ "57266df3-ff63-4ba3-9e33-ee09621c8b79": {
+  "method": "jev",
+  "product_key": "sf:preroll:::lipsmacker",
+  "entry_id": "f64bea5e-e635-4eee-95b6-a671a78cfaa8",
+  "p": 0.94
+ },
+ "26dd46c1-ff43-4f7d-a5b3-b5b0ab61ffd9": {
+  "method": "jev_review",
+  "product_key": "sf:preroll::infused:hawaiiansnowcone",
+  "entry_id": "f82bbc2f-1701-4767-822f-543dbc6bc17f",
+  "p": 0.79
+ },
+ "e14b146e-63f2-425c-97e0-f6155a4698c7": {
+  "method": "jev_review",
+  "product_key": "sf:preroll::infused:bluelobster",
+  "entry_id": "4fc545b8-c987-4d10-9c49-875e1ab0489c",
+  "p": 0.62
+ },
+ "d8360d41-3c9e-4905-80d6-5ba39ad6b172": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.95
+ },
+ "4eb1a5aa-dd87-4b6a-b798-27d2dbefae75": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.97
+ },
+ "9702aa57-fa12-45ef-b2ab-bad389b7c823": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.96
+ },
+ "3d4de537-30f0-4a78-95d7-732fc6c39dc8": {
+  "method": "exact",
+  "product_key": "lb:vaporizers:pod:original:sfvog",
+  "entry_id": "38e26914-4cae-4719-b72f-5a64e1c7ffb6",
+  "p": 1.0
+ },
+ "1881982e-6cd1-4f3d-b908-726b96c24efa": {
+  "method": "exact",
+  "product_key": "lb:vaporizers:pod:original:strawnana",
+  "entry_id": "c2e217c7-ea82-4a79-9774-060a3bcec9be",
+  "p": 1.0
+ },
+ "076cda6f-0603-4b81-abc0-f5ae1d69943d": {
+  "method": "jev",
+  "product_key": "lb:edible:gummy::sourstrawberry",
+  "entry_id": "97c39e2d-06dd-41c8-aa87-2ea10f457824",
+  "p": 0.94
+ },
+ "e2903708-6720-486f-ac43-32fc276011c4": {
+  "method": "jev_review",
+  "product_key": "lb:vaporizers:pod:original:watermelonz",
+  "entry_id": "e8bdd6dc-0c82-4be0-8c2d-4cb74a395f6f",
+  "p": 0.83
+ },
+ "9cd23c25-0cc7-4bf0-9888-c5c60eefd669": {
+  "method": "jev",
+  "product_key": "lb:vaporizers:pod:original:premiumjack",
+  "entry_id": "5f2c593b-54d2-4ed0-9b35-d5553e4f38d1",
+  "p": 0.96
+ },
+ "7a237d6f-757b-4825-8022-1c4645b928fe": {
+  "method": "jev_review",
+  "product_key": "lb:vaporizers:pod:original:orangesunset",
+  "entry_id": "85c428ab-ef70-42e7-8dca-42e6bf032a3e",
+  "p": 0.57
+ },
+ "2d1f6b68-1637-4e97-9b3c-f651752aef4c": {
+  "method": "jev_review",
+  "product_key": "lb:vaporizers:pod:original:kinglouisxiii",
+  "entry_id": "e6c10453-4591-4a09-8ac4-3e8831543ddf",
+  "p": 0.88
+ },
+ "83515ef3-4d7d-4770-89bd-418fc42d8fc1": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "0c0837fa-6332-4165-bc1b-e8b680763d42": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "06ec6a87-2ebf-407a-a3cf-1e9c2ffe0dfb": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 1.0
+ },
+ "b123a598-e3e9-4ca1-8370-2e3c8e6dc59d": {
+  "method": "exact",
+  "product_key": "lb:preroll::doobies:supersilverhaze",
+  "entry_id": "bff36998-b39d-4131-9f73-d0bbdc7c6acb",
+  "p": 1.0
+ },
+ "656f5b6d-afe7-40ed-82e7-bb4c01aace4b": {
+  "method": "exact",
+  "product_key": "lb:preroll::classics:whitewidow",
+  "entry_id": "80954b2b-962b-41e8-bf84-45437f05ee26",
+  "p": 1.0
+ },
+ "f3600c1a-6b1d-4447-8c23-a7b8fefc13f1": {
+  "method": "jev",
+  "product_key": "lb:preroll::doobies:weddingcake",
+  "entry_id": "1df57326-3c1d-4691-a59a-bf91375a3544",
+  "p": 1.0
+ },
+ "d7442aa4-938b-42aa-a0a8-cb0aee6823c9": {
+  "method": "jev_review",
+  "product_key": "lb:vaporizers:battery::granddaddypurple",
+  "entry_id": "b9c40b39-de3c-4bf4-bce1-120556ac522d",
+  "p": 0.89
+ },
+ "5d58bb73-f3f4-469f-b6dc-660dfcc171a0": {
+  "method": "jev",
+  "product_key": "lb:preroll::doobies:supersilverhaze",
+  "entry_id": "bff36998-b39d-4131-9f73-d0bbdc7c6acb",
+  "p": 0.98
+ },
+ "284b57c5-e6fa-4cdf-af23-c86c07273b8e": {
+  "method": "jev_review",
+  "product_key": "lb:preroll::doobies:tangerinedream",
+  "entry_id": "6ff2b8ce-b0f4-41f8-8fa6-019661795113",
+  "p": 0.69
+ },
+ "e4784186-4087-4d34-bd6c-3499975d0d09": {
+  "method": "jev_review",
+  "product_key": "lb:preroll::classics:biscottijealousy",
+  "entry_id": "33c8a4a6-0a51-4e64-a1a6-63faea7030a3",
+  "p": 0.89
+ },
+ "45740f2a-27a3-4213-a0ff-c98813cf906b": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "e4da219b-872b-419c-9445-61af05b6a247": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.5
+ },
+ "fab0bcb7-47d3-4549-a3ef-ae9b2552523d": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.61
+ },
+ "a0b58b2c-ed98-4fe8-9ff6-fd3b7b1bdd4c": {
+  "method": "exact",
+  "product_key": "lb:vaporizers:all-in-one::forbiddenfruit",
+  "entry_id": "0941fd71-e8c6-41d1-be17-cf712da4f960",
+  "p": 1.0
+ },
+ "16d222cb-8b91-45ba-986b-9cb2afd754b6": {
+  "method": "exact",
+  "product_key": "lb:edible:gummy:brick:orangesoda",
+  "entry_id": "3d843d9f-adb2-4201-bb5b-e844e2f0754d",
+  "p": 1.0
+ },
+ "89ec8418-7e76-4e37-86cc-08a0e0f990a6": {
+  "method": "jev",
+  "product_key": "lb:edible:gummy:brick:tropicalblast",
+  "entry_id": "32e0929d-971c-41fb-9fed-740c3a4db9ed",
+  "p": 1.0
+ },
+ "dc4abac3-04b3-42f4-8ccf-58be96b410ac": {
+  "method": "jev",
+  "product_key": "lb:vaporizers:all-in-one::superlemonhaze",
+  "entry_id": "89090a68-12b6-492a-b8c5-87053e305995",
+  "p": 0.99
+ },
+ "69a72334-094e-427e-9b14-41c079eae1fc": {
+  "method": "jev",
+  "product_key": "lb:edible:gummy::strawberrybanana",
+  "entry_id": "b74cb0c0-db97-4a38-b5ec-38835e2792e5",
+  "p": 0.93
+ },
+ "50d8ca82-3940-44d8-945d-341335b48eb0": {
+  "method": "jev_review",
+  "product_key": "lb:vaporizers:all-in-one::bluedream",
+  "entry_id": "0dd6902b-103c-4695-89fd-ada25a8f52c9",
+  "p": 0.89
+ },
+ "47241be0-5b8d-413e-93c9-8b35881d5867": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 1.0
+ },
+ "458fdc68-ff41-4999-87af-e37e6df16dc7": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "cec32c90-b734-437c-84a3-1aa09e893128": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.95
+ },
+ "8324be0c-a48a-4e1f-93cc-4c58c6afb400": {
+  "method": "exact",
+  "product_key": "lb:vaporizers:all-in-one:premier:weddingcake",
+  "entry_id": "8bc116e1-35fe-4497-a91d-ec8940d3d2f8",
+  "p": 1.0
+ },
+ "44948db2-f4bc-4d78-9058-ee12cafe578d": {
+  "method": "exact",
+  "product_key": "lb:vaporizers:cart:diamondseries:watermelonburst",
+  "entry_id": "c9ea0e6c-d97c-4422-a031-20138284868e",
+  "p": 1.0
+ },
+ "0a5ddf79-fa9b-490f-880e-d6161fa257bd": {
+  "method": "jev",
+  "product_key": "lb:vaporizers:cart:classics:gelato",
+  "entry_id": "7856c393-8e63-49e4-936b-92450c756447",
+  "p": 1.0
+ },
+ "bc60e821-a51f-4842-a2b6-0267b3b34a79": {
+  "method": "jev_review",
+  "product_key": "lb:vaporizers:cart:premier:durbanguava",
+  "entry_id": "7952d7fb-21b1-430a-915b-f9892dfed322",
+  "p": 0.7
+ },
+ "7a681009-8be8-436a-a12c-62f3427482b7": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "104df5fb-33bc-4e18-b0bf-1851564c69d9": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "debaddb8-a5e9-4a2f-9a94-00776f2e1bad": {
+  "method": "exact",
+  "product_key": "lb:vaporizers:cart:diamondseries:magicmelon",
+  "entry_id": "ec528b26-1c57-4e88-9533-6cdfb9a77a43",
+  "p": 1.0
+ },
+ "c722f192-3274-4db0-95fb-901fb5ef7e6e": {
+  "method": "exact",
+  "product_key": "lb:vaporizers:cart:diamondseries:fruitpunch",
+  "entry_id": "2ff67fe6-c7a5-4362-b206-465b140a3f8d",
+  "p": 1.0
+ },
+ "0c991526-2e71-43b6-a385-b7757d1b7c85": {
+  "method": "exact",
+  "product_key": "lb:vaporizers:all-in-one:premier:orangekush",
+  "entry_id": "393a6f41-a17a-4bc7-9186-6d04b956abdf",
+  "p": 1.0
+ },
+ "aaf5004d-0421-45eb-a229-95d38da1c273": {
+  "method": "exact",
+  "product_key": "lb:preroll::fjmini:passionfruit",
+  "entry_id": "3ae787c8-c4f2-4ac9-b3b9-76224d2cad89",
+  "p": 1.0
+ },
+ "fde70d18-40c9-40d1-a643-ae758637249e": {
+  "method": "exact",
+  "product_key": "lb:preroll::fjmini:strawberrysourdiesel",
+  "entry_id": "e0241d8c-4aa3-4c8d-9a25-7a34e7a055e6",
+  "p": 1.0
+ },
+ "7d1ea95b-6fbe-4ef3-b55e-d35b2c3e6c3f": {
+  "method": "jev",
+  "product_key": "lb:flower:infused:powdereddonuts:birthdaycake",
+  "entry_id": "c54b7e69-cd2f-45c3-95b9-dc203b465c42",
+  "p": 1.0
+ },
+ "88cc3c61-90a2-44ed-b79b-db36f1e580c0": {
+  "method": "jev",
+  "product_key": "lb:concentrate:other::mimosa",
+  "entry_id": "9ac5b13e-7601-4772-8000-e17d4a000d3d",
+  "p": 0.96
+ },
+ "ed6039e3-edac-499d-a833-3b0ef2f64290": {
+  "method": "jev",
+  "product_key": "lb:preroll::bigbangmini:rainbowbelts",
+  "entry_id": "f479b492-12ce-4266-8b06-ba1c283fcf71",
+  "p": 1.0
+ },
+ "d88397e7-4751-4d59-b4f4-d340b3dae095": {
+  "method": "jev_review",
+  "product_key": "lb:preroll::bigbangmini:nycsourdiesel",
+  "entry_id": "2269d038-05bc-40e4-8149-983e251ad9b7",
+  "p": 0.68
+ },
+ "c15639df-37c7-42bd-933a-bce116cbfc9c": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "20de8488-7e6a-4864-a8db-4fe2dc9d5166": {
+  "method": "jev",
+  "product_key": "lb:flower:infused:powdereddonuts:birthdaycake",
+  "entry_id": "c54b7e69-cd2f-45c3-95b9-dc203b465c42",
+  "p": 1.0
+ },
+ "a74998d5-ea26-4a9e-a163-27ea77d2dd81": {
+  "method": "jev",
+  "product_key": "lb:preroll::fjmini:blueberrypancakes",
+  "entry_id": "d055a1cf-efe7-4665-bb57-e079aca9a3df",
+  "p": 1.0
+ },
+ "ee0f7966-9ce2-40cd-8aeb-118e1048c961": {
+  "method": "exact",
+  "product_key": "lb:vaporizers:all-in-one:slowcuredresin:rainbowbelts",
+  "entry_id": "b2b3baf1-7a13-4d30-97e1-e4a0c43e046e",
+  "p": 1.0
+ },
+ "524de51c-f505-4c1c-90c6-b872e6de5bdc": {
+  "method": "exact",
+  "product_key": "lb:preroll:::superboof",
+  "entry_id": "21da7a54-ac20-4aba-9a40-65bc0746111d",
+  "p": 1.0
+ },
+ "46ccf729-3ef8-4581-a233-3bcd9d7b558f": {
+  "method": "jev",
+  "product_key": "lb:flower:flower::purplesunset",
+  "entry_id": "1d044e02-fe32-463f-a30f-6e71030985f3",
+  "p": 0.98
+ },
+ "54e812e8-d0fb-4023-9090-30cf2ea40069": {
+  "method": "jev",
+  "product_key": "lb:edible:gummy::atomicapple",
+  "entry_id": "fcb8a425-9601-4893-86d7-9290359bbc7c",
+  "p": 0.98
+ },
+ "42c7c6fc-38d5-4ea8-90cf-dc485a4ab710": {
+  "method": "jev",
+  "product_key": "lb:vaporizers:all-in-one:lightsout:cloudberry",
+  "entry_id": "3e797cc6-df63-43d1-aff5-28d674fa454e",
+  "p": 1.0
+ },
+ "f720b11a-9995-4d14-888d-ee068e520a0c": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.98
+ },
+ "8f233ff2-789b-4094-aa94-974bb8a0a9cf": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "cb4bbb27-b8a1-4027-b2ee-c25d40f8d33f": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "d9bd8fb1-1212-4ebe-8c03-61cc68e54f11": {
+  "method": "jev",
+  "product_key": "lb:concentrate:rosin::pineappledonuts",
+  "entry_id": "20541a07-1a17-4066-90c3-2f7823622946",
+  "p": 0.98
+ },
+ "38f293b5-52c8-49a4-9aa8-540da0ae098b": {
+  "method": "jev",
+  "product_key": "lb:vaporizers:all-in-one:ultra:whitewidow",
+  "entry_id": "bccb7f70-59fc-4adf-9dc1-ce42cfad3943",
+  "p": 1.0
+ },
+ "8bd38528-bf2e-4e40-90a3-d1840ff92926": {
+  "method": "exact",
+  "product_key": "lb:edible:gummy::strawberry",
+  "entry_id": "c9571e3f-8e01-4399-8855-6e187e26d073",
+  "p": 1.0
+ },
+ "b67592bc-e216-43ff-8736-4b3e7e2f7b8a": {
+  "method": "exact",
+  "product_key": "lb:edible:gummy::calimelon",
+  "entry_id": "f470af96-6088-4c70-a35d-582514d71729",
+  "p": 1.0
+ },
+ "e8453730-f4a0-4c33-8583-4597ee8674da": {
+  "method": "jev",
+  "product_key": "lb:vaporizers:cart::whiteuzumaki",
+  "entry_id": "bdf5125d-7692-43b0-a61e-a69d70023b35",
+  "p": 0.97
+ },
+ "c20039b6-b0a1-4f2f-9afb-31407aac8e4d": {
+  "method": "jev",
+  "product_key": "lb:vaporizers:cart::nysourdiesel",
+  "entry_id": "ee3ba9d2-432c-491b-9a57-20c39bd3914c",
+  "p": 0.98
+ },
+ "20bf2ccb-021d-4a87-a372-40c570d5ddb0": {
+  "method": "jev",
+  "product_key": "lb:preroll:::granddaddypurp",
+  "entry_id": "230af574-f204-4a4c-91f1-600768530a68",
+  "p": 0.98
+ },
+ "ffcd7730-5c88-4d1b-9257-f4eb55e6ba24": {
+  "method": "jev_review",
+  "product_key": "lb:flower:flower::creamsmoothie",
+  "entry_id": "a706b932-b4b8-432c-80be-fb2b0211fd6b",
+  "p": 0.63
+ },
+ "807472b8-a547-450a-a6a2-8237fe23e7b1": {
+  "method": "jev_review",
+  "product_key": "lb:preroll:::unicornpiss",
+  "entry_id": "fee0772a-dbab-40e8-b8be-e7d4df7b93b2",
+  "p": 0.78
+ },
+ "24c9ab3d-eafe-4ce9-a5da-372c57f77282": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "85e79e35-e390-410c-8c4d-6c434f2526c3": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "1c19110f-9e7a-4c13-bae9-49f3f5e6d749": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "2e917a21-27d2-4aed-84e4-290b4c51de4d": {
+  "method": "exact",
+  "product_key": "lb:vaporizers:all-in-one:liverosin:northernlights",
+  "entry_id": "84ebbd81-4c53-4a1d-861e-974ef91cb2b7",
+  "p": 1.0
+ },
+ "5942dc4b-412d-432e-ad6e-81fbbe7529aa": {
+  "method": "exact",
+  "product_key": "lb:edible:gummy::juicymango",
+  "entry_id": "3c0a3181-7f27-40d3-8d9d-b1c151f01588",
+  "p": 1.0
+ },
+ "b8fde961-3e0e-47da-a5c0-69b645634443": {
+  "method": "jev_review",
+  "product_key": "lb:vaporizers:pod:highpurity:blueberryhaze",
+  "entry_id": "51aa7cce-0cc9-40f6-bd63-6a76aa9fd8f4",
+  "p": 0.5
+ },
+ "66a394fc-a01e-419f-af6f-e06eb300ce07": {
+  "method": "jev_review",
+  "product_key": "lb:vaporizers:all-in-one:highpurity:sweetberrysleep",
+  "entry_id": "176dbfb8-00b0-4600-9ea4-e038bf80aa1d",
+  "p": 0.53
+ },
+ "b3e678e2-603e-4de1-ae55-39a1b221fc7a": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "235ea80a-3c43-452c-8287-cfcd462ff846": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "b5c89de9-ced6-40b5-9df9-f71cf78368fe": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "792d0e50-62a4-48db-b926-55dcccf74ef5": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "e29ebadc-9daa-4745-a8bf-bc81fc913729": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "6fb437d8-c38c-46c7-912f-c1f7fa792f32": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "4508c9e0-18a9-4810-b98c-633a2cd7c634": {
+  "method": "exact",
+  "product_key": "lb:vaporizers:all-in-one::whitewidow",
+  "entry_id": "af88bf3d-5e23-4535-972a-9e125d60865e",
+  "p": 1.0
+ },
+ "57e34e92-3a36-4e3a-8921-016db5af1d6e": {
+  "method": "exact",
+  "product_key": "lb:vaporizers:all-in-one:live:mochi",
+  "entry_id": "3c12ef94-11f3-4759-9b75-bdc399eddb31",
+  "p": 1.0
+ },
+ "f63e0c45-a13f-47ba-b890-02912dc14985": {
+  "method": "jev",
+  "product_key": "lb:vaporizers:cart:flavorline:americano",
+  "entry_id": "55b1febe-c737-4ad4-9b15-d154cb981520",
+  "p": 0.91
+ },
+ "9e84fea7-2acb-49a7-8a17-f8b7ebc35184": {
+  "method": "jev",
+  "product_key": "lb:vaporizers:all-in-one::berryhaze",
+  "entry_id": "9076674f-c7a9-4f21-b999-3376f1d9ac75",
+  "p": 0.95
+ },
+ "656cd2c7-a443-4752-b01b-a7d27aacb581": {
+  "method": "jev",
+  "product_key": "lb:vaporizers:all-in-one:livepro:purplesunset",
+  "entry_id": "9fd95d55-cf43-416e-8adf-c64d82d03610",
+  "p": 0.94
+ },
+ "625c1d2b-7e48-48ba-a6fd-7e07292a46c8": {
+  "method": "jev_review",
+  "product_key": "lb:vaporizers:all-in-one:flavorline:pumpkinspice",
+  "entry_id": "052d255c-2ac5-48b1-9d20-168b4c12d483",
+  "p": 0.83
+ },
+ "8f3df202-d38f-44a4-915a-749a44f9be9c": {
+  "method": "jev_review",
+  "product_key": "lb:vaporizers:all-in-one:flavorline:sourdiesel",
+  "entry_id": "09d9c9e4-a7ae-42e5-bb61-dd75ba5b45b5",
+  "p": 0.62
+ },
+ "d96957b9-8121-476b-a425-ceaf9e9b84f0": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 1.0
+ },
+ "75d3bb08-4e7e-4ba4-980f-8580d6cabed6": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "6fc10caa-e968-47f3-b7eb-eaa7a189c56e": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "1d72cc26-54cf-4dc8-826a-d0d7f62d10dc": {
+  "method": "exact",
+  "product_key": "lb:flower:flower::lorange",
+  "entry_id": "052c328d-a755-483c-b671-1d175d4f312d",
+  "p": 1.0
+ },
+ "a5163b69-3c71-499a-be21-a76ffbaeefbd": {
+  "method": "exact",
+  "product_key": "lb:flower:flower::ozkush",
+  "entry_id": "40a21d1d-b1f7-42b6-824b-4e4d411c7b1d",
+  "p": 1.0
+ },
+ "cb1d9183-dad8-402f-9835-ee6819ca3695": {
+  "method": "jev",
+  "product_key": "lb:flower:flower::sherbpie",
+  "entry_id": "17477d69-4cb5-4411-878c-7c55fb87dd0a",
+  "p": 1.0
+ },
+ "e321b1a0-89e4-4f1f-9394-36819f93e182": {
+  "method": "jev",
+  "product_key": "lb:preroll:::ether",
+  "entry_id": "b593bc5a-90ef-4315-8753-f7062b8aa18a",
+  "p": 0.95
+ },
+ "2e1364f7-2f61-4ea6-9478-e25cab33168d": {
+  "method": "jev",
+  "product_key": "lb:preroll:::ether",
+  "entry_id": "b593bc5a-90ef-4315-8753-f7062b8aa18a",
+  "p": 0.96
+ },
+ "18ced41a-f7b6-4d22-841a-508df1f222b3": {
+  "method": "jev_review",
+  "product_key": "lb:flower:flower::lemoncherryz",
+  "entry_id": "400f0e40-0080-467c-95ec-6678c75af47d",
+  "p": 0.56
+ },
+ "947b15a7-8462-4101-8aec-dbedb07f1913": {
+  "method": "jev_review",
+  "product_key": "lb:flower:flower::lemoncherryz",
+  "entry_id": "400f0e40-0080-467c-95ec-6678c75af47d",
+  "p": 0.56
+ },
+ "06d61a15-ba1e-4687-b6be-a98b994e939f": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.8
+ },
+ "305897bf-7dff-42eb-b398-e0c52e6c3a53": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.7
+ },
+ "a0e9c782-8660-412f-8767-39c8b491f51d": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.54
+ },
+ "2587c140-017c-487c-99da-a85c218d0995": {
+  "method": "exact",
+  "product_key": "lb:flower:flower::garlicpatties",
+  "entry_id": "2bb27123-e873-436f-9f9f-a5bd598814df",
+  "p": 1.0
+ },
+ "2321aed6-c6ad-48ae-8817-9b8260caba55": {
+  "method": "exact",
+  "product_key": "lb:flower:flower::pommejelly",
+  "entry_id": "c64f8629-d344-4dbe-a382-65a13b664255",
+  "p": 1.0
+ },
+ "5b28ba8f-a65f-4457-b0e4-aba370909b9c": {
+  "method": "jev",
+  "product_key": "lb:flower:flower::pommejelly",
+  "entry_id": "f89ebb2a-ad83-4a58-a46b-829672f40b4c",
+  "p": 0.98
+ },
+ "8fb5a39c-7f74-4b16-890b-a865991ac36a": {
+  "method": "jev",
+  "product_key": "lb:flower:flower::pommejelly",
+  "entry_id": "198e4763-0800-4bd0-913f-f464598300a3",
+  "p": 0.98
+ },
+ "8edb48ed-f05c-4fd1-83a6-b6d69b0097eb": {
+  "method": "jev",
+  "product_key": "lb:flower:flower::islandbloom",
+  "entry_id": "902551fc-f774-489c-8458-7e77269b8b90",
+  "p": 0.99
+ },
+ "c62d012c-a6ab-47ab-914c-6d1071d1438d": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "0590342a-1604-4141-8f6d-fe86a16d9a87": {
+  "method": "jev",
+  "product_key": "lb:preroll:::thaisunrise",
+  "entry_id": "a0f8413c-19d7-4585-b131-2d45214a17c2",
+  "p": 0.98
+ },
+ "43038f9c-43e1-4625-9ae1-ee18ea1d22ee": {
+  "method": "jev",
+  "product_key": "lb:flower:flower::cooljazz",
+  "entry_id": "612e2f85-4a63-4ca6-b035-0a66079260c8",
+  "p": 0.99
+ },
+ "2fc82bec-41e1-403b-9862-09777d6eb8ed": {
+  "method": "jev",
+  "product_key": "lb:flower:flower::gaslit",
+  "entry_id": "a18a6206-f2dd-45c7-ad3f-7d538c7f1296",
+  "p": 0.99
+ },
+ "046cbecf-ff0e-4929-95ee-9b03fc8cc5ea": {
+  "method": "jev",
+  "product_key": "lb:flower:flower::lemoncreamsicle",
+  "entry_id": "6a7851c4-ab51-4d78-b161-fc4814064c2c",
+  "p": 0.99
+ },
+ "eaea66e6-3f97-46dd-b947-15eed34fb04a": {
+  "method": "exact",
+  "product_key": "lb:flower:flower::northernlights",
+  "entry_id": "06f1ac95-99cc-4ff0-9449-b2c9fd95e2d8",
+  "p": 1.0
+ },
+ "55a483f2-0561-4c70-9a62-71f9c1229021": {
+  "method": "exact",
+  "product_key": "lb:preroll:::candyfumes",
+  "entry_id": "18ebae6d-cc3c-4c09-a827-543871569fb1",
+  "p": 1.0
+ },
+ "a6786e2c-7cdd-4c04-82c1-3417665a9cd4": {
+  "method": "jev",
+  "product_key": "lb:vaporizers:all-in-one::toadvenom",
+  "entry_id": "d6f55d45-03bc-481b-ab17-e6a0d769173b",
+  "p": 0.96
+ },
+ "b2a06738-3f1a-4137-be7a-99a203a27ede": {
+  "method": "jev",
+  "product_key": "lb:vaporizers:all-in-one::pinataguts",
+  "entry_id": "9f310622-6eec-40a0-844f-ce01615872fc",
+  "p": 0.98
+ },
+ "9a794092-0408-4172-88a6-068b19288de1": {
+  "method": "jev",
+  "product_key": "lb:flower:flower::whitewidow",
+  "entry_id": "ccd741bc-ca5a-4704-9fb5-60edc688127d",
+  "p": 0.99
+ },
+ "1a1d7157-a47d-49f7-90b9-5d0936b8097c": {
+  "method": "jev_review",
+  "product_key": "lb:preroll:::candyfumes",
+  "entry_id": "18ebae6d-cc3c-4c09-a827-543871569fb1",
+  "p": 0.77
+ },
+ "7a1c6b13-5267-4d49-91af-44538c957974": {
+  "method": "jev_review",
+  "product_key": "lb:preroll:::candyfumes",
+  "entry_id": "18ebae6d-cc3c-4c09-a827-543871569fb1",
+  "p": 0.77
+ },
+ "a8babc64-9ac0-45e4-a313-e6e62b2faca8": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.82
+ },
+ "a79b4707-dcab-4743-af8f-40cf8d9e74bd": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "ea1e4e6b-1baa-42a2-ac7b-b94d58b20301": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "f3e65463-3359-4b4b-b32a-9ebc01cd5d74": {
+  "method": "exact",
+  "product_key": "lb:vaporizers:all-in-one:classicsurf:forbiddenfruit",
+  "entry_id": "d0a118bd-f5d1-44e0-8931-a6a089f963da",
+  "p": 1.0
+ },
+ "01014ffd-e09d-438f-b5d7-ac02d1b6024b": {
+  "method": "exact",
+  "product_key": "lb:vaporizers:all-in-one:classicsurf:bluedream",
+  "entry_id": "b0667585-7a38-4ac2-b5f5-ce08b82532c6",
+  "p": 1.0
+ },
+ "21bf66a5-cc5e-4f9a-945d-c6551b9fe38a": {
+  "method": "jev",
+  "product_key": "lb:vaporizers:all-in-one:livesurf:supersourdiesel",
+  "entry_id": "6b4f42d6-57fa-4d75-9121-6fd0071c5f3b",
+  "p": 0.95
+ },
+ "18607cec-3bd5-45fb-ade5-c4f2d3149b91": {
+  "method": "jev",
+  "product_key": "lb:vaporizers:all-in-one:classicsurf:firemango",
+  "entry_id": "9b518c0f-3086-44d4-88a0-4ca2d2c8c842",
+  "p": 0.94
+ },
+ "494d3e83-4f49-495e-a63b-cb19b774caec": {
+  "method": "jev",
+  "product_key": "lb:vaporizers:all-in-one::cherrypie",
+  "entry_id": "48a9edb6-ad8d-4b80-aacd-817bc441afce",
+  "p": 0.95
+ },
+ "b9cdda09-9300-48ac-bd6b-0b17e40ea775": {
+  "method": "jev_review",
+  "product_key": "lb:vaporizers:all-in-one:classicsurf:jackherer",
+  "entry_id": "40485d60-e71d-469a-a0b8-e3a34ee6ab6a",
+  "p": 0.75
+ },
+ "95f43b3c-061e-44a0-b74c-eae17f3ac7a3": {
+  "method": "jev_review",
+  "product_key": "lb:vaporizers:all-in-one:classicsurf:pineappleexpress",
+  "entry_id": "7f011962-0b1a-4fe0-833a-829098178cee",
+  "p": 0.82
+ },
+ "4b4e94d0-00fd-479a-923b-87c3c7181f77": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.63
+ },
+ "3fd18c3b-9d35-46f3-9ae0-c4f36c5e19bc": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.84
+ },
+ "5af3c29c-de25-4b63-aba9-8bb7d7bf8ab7": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 1.0
+ },
+ "e75c8d0d-b646-42b8-b23b-b19d51741c01": {
+  "method": "exact",
+  "product_key": "lb:flower:flower::velvetspritz",
+  "entry_id": "c059e6ae-a7d2-445a-a240-cf42dba537cb",
+  "p": 1.0
+ },
+ "55d2b13e-9316-4c1c-9611-e829e461b0b0": {
+  "method": "exact",
+  "product_key": "lb:flower:flower:darkheartcollection:foreignkushmints",
+  "entry_id": "36fc16c8-7133-472f-bde1-653f86021e75",
+  "p": 1.0
+ },
+ "4bbca3b8-49f3-4100-9bae-18d41dbe97dc": {
+  "method": "jev",
+  "product_key": "lb:flower:flower::papayadrip",
+  "entry_id": "a5ef024c-09d0-452b-805d-3979bbb836c7",
+  "p": 0.98
+ },
+ "21b46ca3-a468-471f-955c-b2329cf48d38": {
+  "method": "jev",
+  "product_key": "lb:flower:flower:darkheartcollection:foreignkushmints",
+  "entry_id": "36fc16c8-7133-472f-bde1-653f86021e75",
+  "p": 0.99
+ },
+ "a5275cbd-2219-436f-a6f2-cbee705c4cc3": {
+  "method": "jev",
+  "product_key": "lb:flower:smalls:darkheartcollection:delphidiesel",
+  "entry_id": "aa2e3544-9bb5-46b9-9b34-8ede99438ea1",
+  "p": 0.99
+ },
+ "b9d13240-bd90-431c-bf65-3f24358fc624": {
+  "method": "jev_review",
+  "product_key": "lb:flower:flower::atomicbreath",
+  "entry_id": "d47dd258-7266-4d77-8a6c-7c1de66a4b33",
+  "p": 0.86
+ },
+ "2b6d96df-d51d-41c0-9b7b-76c34894cfdb": {
+  "method": "jev_review",
+  "product_key": "lb:flower:flower::fuzzynavel",
+  "entry_id": "82a33db1-bad0-45c9-a3a9-a7e43f1eb370",
+  "p": 0.85
+ },
+ "4b5a0fff-8fb8-46b2-aab3-795960996848": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.0
+ },
+ "f5213846-1b96-4f67-a1b3-efa81b61e968": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.96
+ },
+ "94f9b9dc-e3d2-4eac-8b6e-95659c78ce75": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.6
+ },
+ "b4be1116-6e3e-4794-8a78-f7960c26a76b": {
+  "method": "exact",
+  "product_key": "lb:edible:tablet:drops:go",
+  "entry_id": "82d7a31b-737f-4810-a06b-935a7693a6a0",
+  "p": 1.0
+ },
+ "ba7f37fe-e804-45f9-abde-56d0a5db6178": {
+  "method": "exact",
+  "product_key": "lb:edible:tablet:drops:go",
+  "entry_id": "82d7a31b-737f-4810-a06b-935a7693a6a0",
+  "p": 1.0
+ },
+ "223d8483-f72d-4ec2-a44d-6739a9281cff": {
+  "method": "jev",
+  "product_key": "lb:edible:tablet:drops:chill",
+  "entry_id": "eedeadc8-17af-4a66-b369-b32d3caf9062",
+  "p": 1.0
+ },
+ "98cd58a8-6bfb-4470-9a96-7d790d554b70": {
+  "method": "jev",
+  "product_key": "lb:edible:tablet:drops:love",
+  "entry_id": "afbc8b8a-0c5a-47d2-a9f6-c5aae10f77c5",
+  "p": 0.99
+ },
+ "d762c41b-5454-4853-9dbf-0576bff0a5e2": {
+  "method": "jev",
+  "product_key": "lb:edible:tablet:drops:boost",
+  "entry_id": "336dfecd-bffd-48c6-8bcd-266e9bcd0916",
+  "p": 0.91
+ },
+ "e2df924a-3922-4c6f-b56a-ba280a09ca8f": {
+  "method": "jev_review",
+  "product_key": "lb:edible:tablet:drops:sleep",
+  "entry_id": "455e2465-e156-4be3-af31-5949f806a319",
+  "p": 0.61
+ },
+ "1061bd0b-747a-4ee9-ab71-8bfb486b17aa": {
+  "method": "jev_review",
+  "product_key": "lb:edible:tablet:drops:chill",
+  "entry_id": "1450ecc6-2b2c-49b1-9878-2426cb0ca7e2",
+  "p": 0.84
+ },
+ "f1011805-5010-4966-8086-4dbb1e051724": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.54
+ },
+ "7a991bbb-f340-4b55-9424-49e0a4ef9166": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.91
+ },
+ "af7dca67-3cdc-444e-aa95-c8951633328c": {
+  "method": "none",
+  "product_key": null,
+  "entry_id": null,
+  "p": 0.59
+ }
+}

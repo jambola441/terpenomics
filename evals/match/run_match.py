@@ -104,17 +104,18 @@ def report(scores: dict, rows: list[tuple[dict, dict]], catalogs: dict) -> str:
             lines.append(f"| {bar} | {b['trusted']} | {b['right']} | {b['wrong']} | {b['precision']} | "
                          f"{b['recall']} | {b['entry_right']}/{b['entry_labelled']} |")
         lines.append("")
-    names = {}
-    for cat in catalogs.values():
-        for e in cat.get("entries") or []:
-            names.setdefault(e.get("product_key"), e.get("name"))
+    def name(case: dict, key: str | None) -> str | None:
+        """A product's name in the case's own brand catalog: product keys repeat across brands."""
+        cat = catalogs.get(catalog_store.brand_key(case["brand"])) or {}
+        return next((e.get("name") for e in cat.get("entries") or [] if key and e.get("product_key") == key), None)
+
     wrong = [(c, d) for c, d in rows if trusted(d, bars_now[group(c)])
              and d["product_key"] != c["label"].get("product_key")]
     if wrong:
         lines += ["## Trusted today and wrong", ""]
         for c, d in wrong:
-            lines.append(f"- {c['brand']}: {c['listing']['name']!r} -> {names.get(d['product_key'])!r} "
-                         f"({d['method']} {d['p']}); label {names.get(c['label'].get('product_key'))!r}")
+            lines.append(f"- {c['brand']}: {c['listing']['name']!r} -> {name(c, d['product_key'])!r} "
+                         f"({d['method']} {d['p']}); label {name(c, c['label'].get('product_key'))!r}")
     return "\n".join(lines)
 
 

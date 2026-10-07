@@ -1,0 +1,491 @@
+[
+ {
+  "brand": "1906",
+  "change": "Correct the 2-pack pouch entries from '2pk 20mg' to '2pk 10mg' (total THC): Drops Chill 1450ecc6-2b2c-49b1-9878-2426cb0ca7e2, Drops Go 36805d8e-c5f7-43f8-9503-4d8072207cfc and Drops Sleep feef8aa2-7509-4c9a-93b4-ca04e2f555e0. The Boost 2pk (7d1eeccc-627e-4054-9be7-b9eee31b2ec9) and Bliss 2pk (b1c37912-bbbb-47eb-9c31-f726d3f27efa) entries carry the same 20mg, and the Genius and Love 4pk 40mg entries (61614a5f-b11a-4896-902e-e7b6c1b9e237, 8672cd32-ccaa-487f-837b-a7fa3081f226) may be wrong the same way (HII Bay Ridge titles them '10mg Pouch 4pk'); I did not verify those against a listing of mine.",
+  "evidence": "HII Bay Ridge titles every 1906 2-pack a '10mg Pouch 2pk' (Sleep 5:5:2, Bliss 1:1, Boost), and each drop is 5mg THC: HII Williamsburg's Chill 2PK says 'Each CHILL Drop contains 5mg THC and 25mg CBD. 2 Pack', Grow Together's Sleep pouch page lists 2 pills at THC 5.0mg each (its field says 10mg), and Kaya Bliss lists Go at 5mg THC + 5mg CBD per drop. A 2-pack is therefore 10mg THC; the stores' 20mg fields look like the pouch's '10mg' multiplied by the count, or a THC+CBD sum, and the conventions size doses by THC only. The Chill and Go 2pk entries also carry a $29 typical price, which is the 20-pack tin price (a pouch sells for about $5), so 20-pack tins whose field reads '20mg' (e.g. Emerald Carroll Gardens '20-Pack') probably fed them.",
+  "listing_ids": [
+   "1061bd0b-747a-4ee9-ab71-8bfb486b17aa",
+   "af7dca67-3cdc-444e-aa95-c8951633328c",
+   "e2df924a-3922-4c6f-b56a-ba280a09ca8f"
+  ]
+ },
+ {
+  "brand": "1906",
+  "change": "Correct Drops Genius 959c4fe9-e9e0-42c3-a6d2-bc98735add92 from '20pk 75mg' to '30pk 75mg' (strain, product line and the 75mg total stay as they are).",
+  "evidence": "The Genius tin is 30 drops of 2.5mg THC + 2.5mg CBD + 2.5mg CBG = 75mg THC: the brand copy on Garden Club's page says '30 Drops per container' and the page shows THC 75 mg; Soulmate lists 'Genius Drops 30-pack' at 75mg and Emerald Carroll Gardens lists a '30-Pack'. The '20pk' appears to come from HII Bay Ridge's title '75mg Tin 20pk Drops | Genius', while the same store titles its Love tin, also 75mg, as 30pk.",
+  "listing_ids": [
+   "7a991bbb-f340-4b55-9424-49e0a4ef9166"
+  ]
+ },
+ {
+  "brand": "Ayrloom",
+  "change": "Record a size for the Rescue balm entry (4339a8ed-a757-43ba-9be1-2b332f89d9fc, product 7113352478775): 1000mg THC (1:1, 1000mg THC plus 1000mg CBD per jar). The Revive and Restore balm entries (2c1b6f0b-1277-4829-8eaf-3c37d62b05db, e209fcb5-9696-4b1c-b8f0-5782a15b0c9f) also have no size and should be checked the same way.",
+  "evidence": "Listing 275f7ef3 and eleven other store listings name it 'Rescue 1:1 Topical | 1000MG THC : 1000MG CBD' or give 1000mg (e.g. quality-control-brighton-beach, dagmar-cannabis-wburg, emerald-dispensary-carroll-gardens, ignyte-whitestone, stashmaster-nyc); one store's 2000mg is THC plus CBD. The catalog entry's size is empty, so no Rescue listing can match it in a size and I labelled listing 275f7ef3 as product-only.",
+  "listing_ids": [
+   "275f7ef3-9598-42d7-b153-5da766653f40"
+  ]
+ },
+ {
+  "brand": "Ayrloom",
+  "change": "Possible duplicate product: the Honeycrisp beverage (product 7109636882487; entries ae1935ac-3519-403e-8a77-6160f8d1c3c2 at 10mg and ff50c31c-8bfc-4b09-910f-78610dff5582 at 5mg) and the Orchard Park beverage (product 7396090052663; entry 61ed0ee2-240b-42ab-a94a-bc9f81ffed99 at 10mg) look like the same 2:1 apple cider. Decide whether to merge them (one name as the strain, the other as an alias) or confirm they are different products.",
+  "evidence": "Stores list it both ways: 'ayrloom | Honeycrisp \"Orchard Park\" | 2:1 | 10MG THC : 5MG CBD' (oc-dispensary-bk, the-plug-crown-heights, stashmaster-nyc) and 'Orchard Park Fresh Apple Cider 2:1, 10 mg THC and 5 mg CBD per can' (the-spot-bk), while most stores say 'Honeycrisp 2:1 10MG THC : 5MG CBD'. Listing 9edb19da (Honeycrisp, 10THC:5CBD, 12oz) was matched to the Honeycrisp 10mg entry by its name.",
+  "listing_ids": [
+   "9edb19da-2085-4a1d-b9ec-4c6f3665b8ad"
+  ]
+ },
+ {
+  "brand": "Ayrloom",
+  "change": "Use the curated spelling 'Alaskan Thunder Fuck' as the strain of the four Alaskan Thunder Fu*k entries (preroll 3g 59625d0a-a079-4689-a7a1-c0f143073dd8; all-in-one 0.5g 89f5c33a-17f9-4e27-b9fa-0211df086ebb, 1g bcf28bda-b973-4a32-aea8-0fe9604342d5, 2g de98484c-7acf-4695-9bb9-13dec913ff66), or confirm the strain alias already maps the asterisk spelling.",
+  "evidence": "The catalog carries the brand's self-censored spelling 'Alaskan Thunder Fu*k'. The conventions say a self-censored spelling is never copied onto a listing, yet a trusted match takes its strain from the entry. Listing 8c4b9bc2 (ATF 5pk infused prerolls) matches the 3g preroll entry, and most stores write 'Alaskan Thunder Fuck' or 'ATF'.",
+  "listing_ids": [
+   "8c4b9bc2-0265-4738-b4e8-067c4fb24649"
+  ]
+ },
+ {
+  "brand": "BLOOM",
+  "change": "Add a product: Classic Guava Belts, vaporizers / cart, line Classic, 1g (typical price about $45). The catalog has Guava Belts only as an all-in-one (b6307958, line 'Classics').",
+  "evidence": "oc-dispensary-bk lists 'Vape Cart | Bloom | Guava Belts - Classic' 1g at $45, and Kaya (Brooklyn Heights and Bay Ridge) lists 'Guava Belts Cartridge - 1g' at $45; Bloom's site lists Guava Belts as a Classic strain, and the AIO is $50 elsewhere.",
+  "listing_ids": [
+   "5af3c29c-de25-4b63-aba9-8bb7d7bf8ab7"
+  ]
+ },
+ {
+  "brand": "BLOOM",
+  "change": "Add a Rosin line with two products: Rosin Papaya and Rosin Pandalorian, vaporizers / all-in-one, 1g (typical price about $72). The catalog has no Rosin entries at all; Pink Certz, listed by the same store, is missing too.",
+  "evidence": "Stashmaster lists 'Rosin Surf All-In-One 1000mg | Papaya', '| Pandalorian' and '| Pink Certz' at $72 each; the-spot-bk's Papaya page says 'Product Type: Surf Rosin All-in-One Vape' with solventless cannabis rosin; soulmate-fort-greene lists Pandalorian at $80; Bloom's site names Rosin as one of its three collections (Classic, Live, Rosin).",
+  "listing_ids": [
+   "4b4e94d0-00fd-479a-923b-87c3c7181f77",
+   "3fd18c3b-9d35-46f3-9ae0-c4f36c5e19bc"
+  ]
+ },
+ {
+  "brand": "BLOOM",
+  "change": "Curate BLOOM's product lines to the brand's three collections, Classic, Live and Rosin: 'Classic Surf' and 'Classics' become Classic, 'Live Surf' becomes Live. Surf is Bloom's all-in-one device, not a line. Merge the products this splits into one, for example Pineapple Express AIO (7f011962 classicsurf 0.5g and a217403d classic 1g), White Truffle AIO (a9dc32e5 live 1g and c4190b02 livesurf 0.5g), and Apricot Punch AIO 1g, which exists three times (3dc8e930 Classic, 7fca24a7 Classic Surf, 87cf98af no line).",
+  "evidence": "Bloom's site navigation is Classic, Live, Rosin and Technology, and its Classic strain list carries no 'Surf' in the names; its copy reads 'Classic: Distillate-based AIO...', 'Live Collection...' and 'ROSIN COLLECTION'. Other stores list one AIO at the same prices under different spellings: 'Classic Surf AIO' at hii ($50 1g, $30 0.5g) and 'Classic Disposable Vape' at Kaya ($50, $30); Live SSD is 'Live Surf' at hii/Stashmaster and 'Live AIO' at Milligrams, all $55 1g.",
+  "listing_ids": [
+   "f3e65463-3359-4b4b-b32a-9ebc01cd5d74",
+   "01014ffd-e09d-438f-b5d7-ac02d1b6024b",
+   "21bf66a5-cc5e-4f9a-945d-c6551b9fe38a",
+   "18607cec-3bd5-45fb-ade5-c4f2d3149b91",
+   "b9cdda09-9300-48ac-bd6b-0b17e40ea775",
+   "95f43b3c-061e-44a0-b74c-eae17f3ac7a3"
+  ]
+ },
+ {
+  "brand": "BLOOM",
+  "change": "Set product line Live on the Cherry Pie all-in-one 0.5g entry 48a9edb6 (currently no line) so it joins Live Cherry Pie 1g (433e743c) as one product.",
+  "evidence": "the-spot-bk lists it as '0.5g Live All-in-One' and its description says live resin; Stashmaster lists 'Live Surf All-In-One 1000mg | Cherry Pie'; Cherry Pie is not among the Classic strains on Bloom's site; the entry's $32.00 equals the Live 0.5g price.",
+  "listing_ids": [
+   "494d3e83-4f49-495e-a63b-cb19b774caec"
+  ]
+ },
+ {
+  "brand": "Cannabals",
+  "change": "Add a product: vaporizers / all-in-one, product line Chubby Puff, strain Grand Daddy Purple, size 6g.",
+  "evidence": "Herbology lists 'Cannabals | Chubby Puff Grand Daddy Purple | 6g | Disposable Vape' (6.0g field, indica, $87.61). The catalog's Chubby Puff entries are only Pineapple Express, Strawberry Cough and Green Crack, and no Grand Daddy Purple entry exists under any line or spelling.",
+  "listing_ids": [
+   "47241be0-5b8d-413e-93c9-8b35881d5867"
+  ]
+ },
+ {
+  "brand": "Cannabals",
+  "change": "Add a product: vaporizers / all-in-one, strain Acapulco Gold, size 2g (a liquid diamond AIO; give it the same line treatment as the other 2g liquid diamond AIOs once that is decided).",
+  "evidence": "Stashmaster lists 'Cannabals - Acapulco Gold Liquid Diamond AIO Vape - 2g' ($65, 2g in field and name). Searches of the catalog for Acapulco and Gold find nothing; the six 2g AIO entries are Blue Dream, Blackberry Brain, Baja Blast, Banana OG, Sour Diesel and Maui Wowie.",
+  "listing_ids": [
+   "cec32c90-b734-437c-84a3-1aa09e893128"
+  ]
+ },
+ {
+  "brand": "Cannabals",
+  "change": "Curate the Brick product line: set product line Brick on the entries that lost it, Strawberry Banana (b74cb0c0, gummy 100mg) and Blue Raspberry (c85c8e74, gummy 100mg), so they match Brick Tropical Blast, Brick Orange Soda, Brick Strawberry Lemonade and Brick Lychee. Also merge the duplicate 'Strawberry Lemonade' edible/other entry (50f5e95d, $21.47, one store's copy) into Brick Strawberry Lemonade. Blueberry Dreams (70414ccb) is a separate question and is not covered here.",
+  "evidence": "Every other store lists Strawberry Banana and Blue Raspberry only as Brick gummies (for example 'Cannabals | Brick | Strawberry Banana (H) | Gummies | 100mg', 'X| Brick | Blue Raspberry | Gummy | 100mg'), and Herbology's related-products list names 'Cannabals | Brick Blue Raspberry | 100mg 1pk | Distillate Gummy Edible' as a different family from the 10pk Live Resin gummies. Strawberry Banana's $17.00 typical price equals the Brick price at several stores.",
+  "listing_ids": [
+   "69a72334-094e-427e-9b14-41c079eae1fc"
+  ]
+ },
+ {
+  "brand": "Cannabals",
+  "change": "Curate the 'Liquid Diamonds' product line: of the six 2g all-in-one entries only Baja Blast (31fcbfa1) carries it; Blue Dream (0dd6902b), Blackberry Brain, Banana OG, Sour Diesel and Maui Wowie have no line. Decide one way: if Liquid Diamonds is Cannabals' 2g AIO family, set the line on all of them (including Blue Dream 0dd6902b); if it only names the extract, remove it from Baja Blast.",
+  "evidence": "OC Dispensary lists 'Vape AIO | Cannabals | Blue Dream - Liquid Diamonds' (2g, $80; its description calls it a 2g All-In-One with liquid diamonds at about 90-92% THC instead of standard distillate) and Stashmaster lists 'Acapulco Gold Liquid Diamond AIO Vape - 2g'. No other store lists a 2g Cannabals vape, so I could not check the other four entries against store names.",
+  "listing_ids": [
+   "50d8ca82-3940-44d8-945d-341335b48eb0",
+   "cec32c90-b734-437c-84a3-1aa09e893128"
+  ]
+ },
+ {
+  "brand": "Cannabals",
+  "change": "Review the Blueberry Dreams gummy entry (70414ccb, no line, plain 100mg, $20.00): Cannabals sells Blueberry Dreams 1:1 THC:CBN as a Brick (one piece) and as a 20pk of 5mg gummies, and the entry does not say which it is. Decide whether the 20pk is its own entry (size 20pk 100mg, line Mood as Kaya Bliss names it, cf. the Mood State vape line) or the same product as the Brick, and whether the Brick should carry the Brick line.",
+  "evidence": "Kaya Bliss Brooklyn Heights lists 'Cannabals - Mood Blueberry Dreams 1:1 THC:CBN Sleep Gummies 20pk - 100mg' ($22; its page shows THC 1.32 mg/g, against 6.08 mg/g on the Strawberry Banana brick). Midnight Moon (allbud) lists 'Blueberry Dreams | Sleep | 1:1 | 20pk' ($22, 5mg THC per gummy) and 'Blueberry Dreams | Sleep | 1:1 | Brick' as separate Cannabals products. Hold Up Roll Up, Fireleaf and RNR list the Brick at $20-$23; no store other than Kaya Bliss uses 'Mood' on a gummy.",
+  "listing_ids": [
+   "509d365a-4dcd-42e0-8581-3911faf6af40"
+  ]
+ },
+ {
+  "brand": "Doobie Labs",
+  "change": "Add a 1g size entry to the existing Candy Fumes pre-roll product (product key lb:preroll:::candyfumes): category preroll, no subtype, strain Candy Fumes, no product line, size 1g, typical price about $16. The catalog has this product only as the 2.5g 5-pack.",
+  "evidence": "Three stores list the single 1g pre-roll: Quality Control Brighton Beach ($18), Stashmaster ($16) and OC Dispensary BK ($16, spelled 'Candy Fumez'). size_readings settle both listings at 1g from the field and the name. The catalog already carries Blue Lobster pre-roll in both 1g and 2.5g, so this is the same pattern.",
+  "listing_ids": [
+   "1a1d7157-a47d-49f7-90b9-5d0936b8097c",
+   "7a1c6b13-5267-4d49-91af-44538c957974"
+  ]
+ },
+ {
+  "brand": "Fernway",
+  "change": "Add Banana Bread (line Flavor Line, vaporizers / all-in-one, 2g, typical price about $83-86). Stores also list a 1g Banana Bread 510 cartridge at $52, which could be added as its own entry.",
+  "evidence": "The catalog has no Banana Bread in any size. Stashmaster lists 'Banana Bread | Flavor Line | All-In-One Traveler PRO | 2.0g' at $86, Kaya Bliss 'Banana Bread Traveler Pro Disposable Vape - 2g' at $86, Travel Agency 'Banana Bread | Pro | All-in-one' 2g at $83 and 'Banana Bread | 510' 1g at $52, Kaya Bliss 'Banana Bread Cartridge - 1g' at $52. The OC Dispensary listing is the 2g all-in-one at $90.",
+  "listing_ids": [
+   "d96957b9-8121-476b-a425-ceaf9e9b84f0"
+  ]
+ },
+ {
+  "brand": "Fernway",
+  "change": "Add the Fernway Stylus 510 battery (USB-C, 510 thread) as an accessory entry: subtype battery, no size, typical price $20. The catalog is vaporizers-only today, so decide whether accessories belong in brand catalogs and under which category (merch or vaporizers).",
+  "evidence": "Two listings here are the same Stylus at $20, both filed as merch: The Spot BK 'Stylus 510 Premium Vape Battery' and Emerald Carroll Gardens 'Fernway 510 Stylus Pen Battery'. Kaya Bliss ('Stylus 510 Thread USB C Battery Kit - Black') and Hold Up Roll Up ('Stylus - Black 510 Battery') list it at $20 with no size. The Spot's '1g' size field is wrong for a battery.",
+  "listing_ids": [
+   "75d3bb08-4e7e-4ba4-980f-8580d6cabed6",
+   "6fc10caa-e968-47f3-b7eb-eaa7a189c56e"
+  ]
+ },
+ {
+  "brand": "Fernway",
+  "change": "Rename the product line 'LIVE Pro' to 'LIVE' on the Purple Sunset all-in-one entry (9fd95d55-cf43-416e-8adf-c64d82d03610, 1g), so it sits in the same LIVE line as LIVE Mochi (3c12ef94-11f3-4759-9b75-bdc399eddb31).",
+  "evidence": "'Pro' is the Traveler Pro hardware, not part of the line name. Fernway's own naming is 'Mochi | LIVE | All-In-One Traveler PRO | 1.0g'; The Spot lists Purple Sunset as '(LIVE) ... 1g Traveler Pro Vape' and Kaya Bliss as 'Purple Sunset Live Disposable Vape - 1g'. The Spot's description says 'Fernway LIVE combines freshly harvested live terpenes'.",
+  "listing_ids": [
+   "656cd2c7-a443-4752-b01b-a7d27aacb581",
+   "57e34e92-3a36-4e3a-8921-016db5af1d6e"
+  ]
+ },
+ {
+  "brand": "Fernway",
+  "change": "Review the product lines 'Pro', 'Traveler' and 'Traveler PRO' on these entries: Pro Red Headed Stranger, Pro Mandarin Orange, Pro Honeycrisp, Pro Pineapple Funk, Pro Alpine Strawberry, Traveler Red Headed Stranger, Traveler White Widow, Traveler PRO Red Headed Stranger. They name the all-in-one hardware, not a Fernway product family; the brand's own lines are Flavor Line, Strain Collection and LIVE. Traveler PRO Red Headed Stranger (2g, $83) is also typed as a cart although it is a 2g all-in-one.",
+  "evidence": "Fernway's own menu naming puts the line before the hardware: 'Red Headed Stranger | Strain Collection | All-In-One Traveler PRO | 2.0g' ($92, Dagmar) and 'Banana Bread | Flavor Line | All-In-One Traveler PRO | 2.0g' (Stashmaster). 'Pro' in 'Berry Haze | Pro | All-in-one' (Travel Agency) and 'Traveler' in 'Cuban Black Haze - 1G AIO Traveler' (Hold Up) are the same hardware. Most all-in-one entries (White Widow 2g, Berry Haze 2g, Snow Dog, Key Lime) carry no line, so the catalog is inconsistent. White Widow 'T-PRO' 2g and Berry Haze 'Traveler Pro' 2g name only the hardware and were matched to the line-less entries.",
+  "listing_ids": [
+   "4508c9e0-18a9-4810-b98c-633a2cd7c634",
+   "9e84fea7-2acb-49a7-8a17-f8b7ebc35184"
+  ]
+ },
+ {
+  "brand": "Florist Farms",
+  "change": "Add a 3.5g (7pk of 0.5g) entry to the plain Gorilla Glue pre-roll product, which has only a 1g entry (976a8972-b326-4ba1-8978-6bd7c20b388d).",
+  "evidence": "Brooklyn Organic Buds lists Florist Farms Gorilla Glue Pre-Roll Pack 7pk, 3.5g, $40 (seven half-gram pre-rolls). Many plain pre-roll strains in the catalog come as a 1g single and a 3.5g 7pk at $38-40. Seen at one store only and not checked against the brand's own site.",
+  "listing_ids": [
+   "c398237e-05cc-485a-a848-a131859ccb83"
+  ]
+ },
+ {
+  "brand": "Florist Farms",
+  "change": "Possible new product: Runtz Mints flower, 7g (quarter ounce), no product line. Add only if a second source confirms it.",
+  "evidence": "Brooklyn Organic Buds lists Runtz Mints | Premium Flower, 7g, $70 (the brand's usual 7g price). No catalog entry has this strain (the Runtz entries are Black, White and Super Banana Runtz; Gush Mintz is a different strain), no other store lists it, and a search of the brand's own site finds no Runtz Mints.",
+  "listing_ids": [
+   "41690168-d85a-46d1-87c3-468cbab8da8e"
+  ]
+ },
+ {
+  "brand": "Florist Farms",
+  "change": "Possible new product: Live Resin Infused Super Sour Diesel pre-roll, 1g (the store sells it as a 2pk of 0.5g), line Live Resin Infused. Add only if a second source confirms it.",
+  "evidence": "Brooklyn Organic Buds lists it at 1g, $16 (the catalog's usual price for Live Resin Infused 1g). The catalog has Super Sour Diesel only as cart and all-in-one vapes plus a plain Sour Diesel 7pk 3.5g pre-roll (whose brand-site handle says super-sour-diesel); no other store lists an infused Super Sour Diesel pre-roll and a search of the brand's own site shows none.",
+  "listing_ids": [
+   "71e80c45-f625-4dff-8870-6ca66221f614"
+  ]
+ },
+ {
+  "brand": "Grassroots",
+  "change": "Add a 14g size for Velvet Spritz (flower, subtype flower, no line), typical price about $132, next to the existing 3.5g entry.",
+  "evidence": "The Travel Agency lists Grassroots Velvet Spritz 14g at $132 (THC 32.22%) with no smalls wording; the catalog's only Velvet Spritz entry is 3.5g (c059e6ae-a7d2-445a-a240-cf42dba537cb).",
+  "listing_ids": [
+   "e75c8d0d-b646-42b8-b23b-b19d51741c01"
+  ]
+ },
+ {
+  "brand": "Grassroots",
+  "change": "Add a 14g size for Fuzzy Navel (flower, subtype flower, no line), typical price about $132, next to the existing 3.5g entry.",
+  "evidence": "StashMaster lists Grassroots - Fuzzy Navel - 14g at $132 with no smalls wording; the catalog's only Fuzzy Navel entry is 3.5g (82a33db1-bad0-45c9-a3a9-a7e43f1eb370).",
+  "listing_ids": [
+   "2b6d96df-d51d-41c0-9b7b-76c34894cfdb"
+  ]
+ },
+ {
+  "brand": "Grassroots",
+  "change": "Add a 3.5g size for Atomic Breath whole flower (flower, subtype flower, no line), typical price about $40-42; the catalog has this product only at 7g.",
+  "evidence": "Brooklyn Organic Buds lists Atomic Breath Premium Flower 3.5g at $40 and OC Dispensary lists Atomic Breath Whole Flower 3.5g at $42; the catalog's flower/flower Atomic Breath entry is 7g only (d47dd258-7266-4d77-8a6c-7c1de66a4b33).",
+  "listing_ids": [
+   "b9d13240-bd90-431c-bf65-3f24358fc624"
+  ]
+ },
+ {
+  "brand": "Grassroots",
+  "change": "Add a diamond-infused flower product for Atomic Breath (flower, subtype infused, no line) at 3.5g, typical price about $60.",
+  "evidence": "The Spot lists Atomic Breath 3.5g Diamond Infused (Flower) at $60 (37.14% THC) and its description says THCA-diamond infused flower; the catalog's only infused flower entry is Dark Heart Triple Stack, and Atomic Breath exists only as plain flower 7g, smalls 14g and pre-roll 2g.",
+  "listing_ids": [
+   "4b5a0fff-8fb8-46b2-aab3-795960996848"
+  ]
+ },
+ {
+  "brand": "Grassroots",
+  "change": "Add a smalls product for Foreign Kush Mints (flower, subtype smalls, line Dark Heart Collection) at 7g (about $70) and 14g (about $112), like the existing Dark Heart Collection Delphi Diesel smalls entries.",
+  "evidence": "Grow Together lists Dark Heart Collection Prepack Smalls 7g - Foreign Kush Mints at $70; The Spot's 14g Foreign Kush Mints at $112 (34.72% THC) is the lot The Travel Agency sells as Foreign Kush Mints Smalls 14g. The catalog's only Foreign Kush Mints entry is whole flower 3.5g (36fc16c8-7133-472f-bde1-653f86021e75).",
+  "listing_ids": [
+   "f5213846-1b96-4f67-a1b3-efa81b61e968",
+   "21b46ca3-a468-471f-955c-b2329cf48d38"
+  ]
+ },
+ {
+  "brand": "Grassroots",
+  "change": "Add a 1g size for the Dark Heart Triple Stack pre-roll (infused diamond single, typical price about $18) next to the existing 5pk 2g entry.",
+  "evidence": "The Spot lists Triple Stack 1g (Infused Pre-Roll) at $18 and Midnight Moon lists Triple Stack | Dark Heart Collection | Infused | Diamonds | Single at $18; the catalog's only Triple Stack pre-roll is the 5pk 2g (d83392bf-717d-4a9d-a472-8a13469b9188).",
+  "listing_ids": [
+   "94f9b9dc-e3d2-4eac-8b6e-95659c78ce75"
+  ]
+ },
+ {
+  "brand": "Grassroots",
+  "change": "Curate one spelling for the Dark Heart family: the catalog files it as both 'Dark Heart' (Triple Stack flower, infused and pre-roll; Moonbeam Gelato flower and pre-roll; Titan Express pre-roll) and 'Dark Heart Collection' (Foreign Kush Mints, Delphi Diesel smalls, Titan Express flower, Moonbeam Gelato flower). Pick one line name and merge the two Moonbeam Gelato flower 3.5g entries (48ddf69d-7a38-4971-96cc-e173138d98df and e68943aa-9f24-4685-8df2-a4c2abe050c5), which look like duplicates.",
+  "evidence": "Store names use both forms for the same family (Brooklyn Organic Buds, Greene Street and OC Dispensary say Dark Heart Collection; Kaya Bliss and Quality Control say Dark Heart), so the same line splits into different products by spelling and Triple Stack's 1g and 2g pre-rolls cannot share a line with Foreign Kush Mints or Delphi Diesel.",
+  "listing_ids": [
+   "94f9b9dc-e3d2-4eac-8b6e-95659c78ce75",
+   "a5275cbd-2219-436f-a6f2-cbee705c4cc3",
+   "55d2b13e-9316-4c1c-9611-e829e461b0b0"
+  ]
+ },
+ {
+  "brand": "Grön",
+  "change": "Add a product: edible / gummy, product line Pearls, strain Star Spell (star fruit, sativa, THC-only 100% hash rosin), 100mg THC per package. Pack count is not confirmed (standard Pearls are 10pk), so check it before writing the size.",
+  "evidence": "Listed by stashmaster-nyc ($25, 100mg), emerald-dispensary-bk ($24.86, 100mg) and fireleaf-canarsie ($24.86, 100mg). Grön's Arcana promotion page (arcana.eatgron.com) names Star Spell as a Pearls product: sativa, 100mg THC per pack, 100% solventless hash rosin, tarot card XVII. No Star Spell entry exists in the catalog (full list checked).",
+  "listing_ids": [
+   "9b507f1f-74b4-4e4f-bfb0-481d1efc1987",
+   "30c314db-9852-4427-8c01-302b4b3006d7"
+  ]
+ },
+ {
+  "brand": "Grön",
+  "change": "Add a product: edible / gummy, product line Mega, strain Mellow Moon (indica, THC-only hash rosin), size 100mg (one Mega per package).",
+  "evidence": "Listed by oc-dispensary-bk ($18, 100mg) and fireleaf-canarsie as 'Mellow Moon MEGA Rosin - THC - Indica' ($20.34, 100mg). Grön's Arcana promotion page (arcana.eatgron.com) names Mellow Moon as a MEGA: indica, 100mg THC per pack, 100% solventless hash rosin, tarot card XVIII. No Mellow Moon entry exists in the catalog (full list checked; the Mega entries are other flavours).",
+  "listing_ids": [
+   "14b5324e-fe6d-433a-8b91-11004decdc24"
+  ]
+ },
+ {
+  "brand": "Grön",
+  "change": "Add a size to the existing product Pearls Blueberry Lemonade (sf:edible:gummy:pearls:blueberrylemonade): 2pk 20mg (two pearls of 10mg THC + 30mg CBG, 3:1 CBG:THC, Grön's 'Fun Size' pack). The catalog has only 10pk 100mg.",
+  "evidence": "milligrams-greenpoint lists '3:1 Blueberry Lemonade Pearls 2-Pack - CBG/THC - Daytime Sativa' with description '20mg THC per package / 10mg THC per piece, 60mg CBG per package, 2 servings per package'. Leafly's Grön 'Fun Size Blueberry Lemonade 3:1' is a two-pearl pack of 20mg THC + 60mg CBG. This is the only store listing seen, and its 100mg size field and $22 price look like the 10pk's, so confirm the 2-pack size before adding it.",
+  "listing_ids": [
+   "cb909398-1d4e-42a7-99d0-7efe8bbc0cf0"
+  ]
+ },
+ {
+  "brand": "Heady Tree",
+  "change": "Add the Liquid Diamond Wormhole pre-roll family (1.5g, category preroll, no subtype) as its own product line, separate from the existing kief/hash 'Infused' line, starting with Blue Zangria 1.5g and Blue Lobster 1.5g. The catalog has no 1.5g entries and no Wormhole product: it holds only Blue Zangria flower (3.5g) and the kief-infused Infused Blue Lobster (1g).",
+  "evidence": "Four listings at three stores (Kaya Bliss Brooklyn Heights, Fireleaf Canarsie, Hold Up Roll Up) sell Blue Zangria or Blue Lobster as a 1.5g liquid diamond wormhole pre-roll at $20.00 to $25.00. HII Williamsburg (Blue Zangria, $20.00) and Twisted Vibration (Blue Lobster, $22.60) list the same 1.5g items, while HII and Dagmar list kief-infused Blue Lobster as a separate 1g joint at $16 to $19.",
+  "listing_ids": [
+   "d8360d41-3c9e-4905-80d6-5ba39ad6b172",
+   "4eb1a5aa-dd87-4b6a-b798-27d2dbefae75",
+   "9702aa57-fa12-45ef-b2ab-bad389b7c823",
+   "e14b146e-63f2-425c-97e0-f6155a4698c7"
+  ]
+ },
+ {
+  "brand": "Jetpacks",
+  "change": "Add a concentrate / other (badder) entry for Blueberry Pancakes, 1g, no product line, beside the catalog's other badders (Mimosa, Tangieberto, Guava Punch, Granddaddy Purple). Check first that the badder exists, because only one store lists it.",
+  "evidence": "OC Dispensary BK lists 'Concentrate Badder | Jetpacks | Blueberry Pancakes' at 1g, $40.00. The catalog has Blueberry Pancakes only as FJ-Mini, FJ1 and FJ-3 pre-rolls, and no other store in the review tools lists a Blueberry Pancakes badder. Jetpacks does sell many badders at 1g, around $35-45.",
+  "listing_ids": [
+   "c15639df-37c7-42bd-933a-bce116cbfc9c"
+  ]
+ },
+ {
+  "brand": "Layup",
+  "change": "Add the Lemonade Variety Pack as its own product: edible/beverage, 80mg (8 x 10mg cans, 2 each of Limeade, Lemonade, Strawberry Lemonade, Black Cherry Lemonade), separate from the single-can Lemonade, Limeade, Strawberry Lemonade and Black Cherry Lemonade entries.",
+  "evidence": "Two stores list the same make-up: hold-up-roll-up (8 x 10MG Beverages, 80mg, $40, page shows THC 80.0mg) and oc-dispensary-bk (8pk, 80MG, $35). The catalog has only single 10mg cans and no other store lists a pack. I did not check whether Layup itself sells the pack, so approve only if it is a Layup product.",
+  "listing_ids": [
+   "1f0e651c-efcd-49fa-bab6-f02343d6fd63",
+   "2a23a04c-a57b-4855-b85f-df10579cae16"
+  ]
+ },
+ {
+  "brand": "Layup",
+  "change": "Add the Iced Tea Variety Pack as its own product: edible/beverage, 80mg (8 x 10mg cans, 2 each of Peach Tea, Mango Tea, Raspberry Tea, Iced Tea Lemonade), separate from the single-can Peach Tea, Mango Tea, Raspberry Tea and Iced Tea Lemonade entries.",
+  "evidence": "hold-up-roll-up lists it as 8 X 10MG Beverages, $40, and its page shows THC 80.0mg. The catalog has only single 10mg cans and no other store lists a pack. I did not check whether Layup itself sells the pack, so approve only if it is a Layup product.",
+  "listing_ids": [
+   "6ac53327-6c86-49f4-abaf-6dece6c8bfad"
+  ]
+ },
+ {
+  "brand": "MFNY",
+  "change": "Add a 1g size (single cartridge) to the existing product Classics Live Resin Chemdog (vaporizers, cart, line Classics Live Resin); the catalog has it only at 0.5g.",
+  "evidence": "Milligrams Greenpoint lists MFNY Chemdog Live Resin Vape Cart at 1g, $58. stashmaster-nyc lists Chemdog Live Resin Cart 1g at $58 (and separates its 2pk carts), dagmar-cannabis-wburg lists ChemDog Live Resin 510 Cart 1g at $58, rnr-dispensary-bk lists 1g at $66. The only 1g Chemdog cart entry now is Classics Two-Fer Chemdog, a 2-pack, which is a different product.",
+  "listing_ids": [
+   "0b75f951-5aa0-467f-81b0-7e24350b4bfc"
+  ]
+ },
+ {
+  "brand": "MFNY",
+  "change": "Add the product Oishii as a tincture (category tinctures, subtype tincture, no product line, 15mL live resin tincture). Its mg total varies by batch: 394mg, 400mg and 427mg are in use.",
+  "evidence": "stashmaster-nyc lists Oishii Live Resin Tincture 15mL at 394mg, $48; herbology-bed-stuy lists the same at 400mg, $47.79; oc-dispensary-bk lists it at $50; hii-nyc-williamsburg lists it at 427mg, $48. The catalog's tincture entries are only Sour Diesel, Honey Banana and Hash Burger, and the existing Oishii entries are a cart, a badder, a gummy and a preroll.",
+  "listing_ids": [
+   "f3374eb8-fa02-452d-8552-c43a8b3c5a28"
+  ]
+ },
+ {
+  "brand": "Nanticoke",
+  "change": "Add a 2.5g size (5 x 0.5g pack) to the Pluto preroll product (sf:preroll:::pluto); the catalog has Pluto prerolls at 3.5g and 0.5g only.",
+  "evidence": "hii-williamsburg lists Nanticoke Preroll 5pk Pluto at 2.5g, $31.50 (product page: pre-rolls / packs, in stock). The catalog already carries 2.5g five-packs for Pineapple Runtz, Durban Poison, Blue Dream, Sour Diesel and Jack Herer, and Weedmaps shows an older Nanticoke 5 pack of 0.5g pre-rolls format.",
+  "listing_ids": [
+   "c51ccbcb-98b3-4169-9b70-a0855a9c6751"
+  ]
+ },
+ {
+  "brand": "Nanticoke",
+  "change": "Add a 3.5g size (5 x 0.7g pack) to the plain Sour Diesel preroll. The catalog has it only at 0.5g (sf:preroll:::sourdiesel) and 2.5g (lb:preroll:::sourdiesel), which are two product keys for one product and could share one.",
+  "evidence": "oc-dispensary-bk lists Nanticoke Pre-Rolls Sour Diesel 5pk at 3.5g, $35 (not infused). 3.5g five-packs already exist for Pluto, Jack Herer, Durban Poison, Blue Dream, Pineapple Runtz and Lilac Diesel, and Weedmaps shows Nanticoke's current 5pk joints as 0.7g each.",
+  "listing_ids": [
+   "06a6e938-f135-4a2e-b9bf-0a88acd31dff"
+  ]
+ },
+ {
+  "brand": "Nanticoke",
+  "change": "Add the 0.7g product Hood Candyz (sold under an 'X | 5 Boro' name, $9). Its category is unclear (the store files it as flower; 0.7g could also be a mini pre-roll) and any product line needs the brand's confirmation before it is curated.",
+  "evidence": "Bedford Club product page: 'X| 5 Boro | HOOD CANDYZ | .7G', THC 28.48%, Indica, filed under Flower at $9. No catalog entry has Hood or Candy in its name, and web searches for 5 Boro and Hood Candyz found nothing.",
+  "listing_ids": [
+   "f2113f8d-6f9b-4b78-b764-413545b4b588"
+  ]
+ },
+ {
+  "brand": "Nanticoke",
+  "change": "Add a 1.25g size to Infused Sour Diesel (preroll, line Infused), or correct its 1g entry if the brand has replaced the 1g single with a 1.25g one.",
+  "evidence": "the-spot-bk lists Sour Diesel 1.25g Infused Pre-Roll at $18 (name and field agree). The catalog's Infused Mac Nilla and Infused Maui Mac Nut are 1.25g at $18, while Infused Sour Diesel is 1g with no price.",
+  "listing_ids": [
+   "f565e0ce-52c2-40e0-a601-e99bd436c44a"
+  ]
+ },
+ {
+  "brand": "Nanticoke",
+  "change": "Curate Memory Loss vs Memory Loss OG: the flower 'Memory Loss' (7g, sf:flower:flower::memoryloss) and 'Memory Loss OG' (3.5g, sf:flower:flower::memorylossog) look like one cultivar split into two products. Alias one spelling to the other so the 3.5g and 7g sizes share a product.",
+  "evidence": "Weedmaps strain page is titled Memory Loss (aka Memory Loss OG); Nanticoke's own Weedmaps page is MEMORY LOSS OG FLOWER (3.5g); stores list Nanticoke's 3.5g as Memory Loss or Memory Loss OG at $39 to $44 (milligrams-greenpoint: Nanticoke | Memory Loss 3.5g $39), and one store lists a Nanticoke Memory Loss quarter ounce at $65, the catalog's 7g price.",
+  "listing_ids": [
+   "4271ce85-edbc-4d73-8926-f3f836538cfb"
+  ]
+ },
+ {
+  "brand": "PAX",
+  "change": "Add a product: vaporizers / pod / High Purity Blue Zushi, 1g (typical price $55). The catalog has Blue Zushi only as a High Purity all-in-one (23fb03bf).",
+  "evidence": "Kaya Bliss Brooklyn Heights files 'Pax - High Purity Blue Zushi Pod - 1g' under vaporizers/pods at $55, and pax.com lists 'Blue Zushi High Purity THC Pod' in 0.5g and 1g Era pods as a product separate from the Trip all-in-one.",
+  "listing_ids": [
+   "b8fde961-3e0e-47da-a5c0-69b645634443"
+  ]
+ },
+ {
+  "brand": "PAX",
+  "change": "Add the 0.5g size (typical price about $45-50) to the product High Purity Sweet Berry Sleep, all-in-one, which the catalog holds only at 1g (176dbfb8). Also worth a look: pax.com calls the family 'Sleep by PAX' and the catalog files it under line High Purity, strain Sweet Berry Sleep.",
+  "evidence": "Brooklyn Organic Buds lists 'Effects | Sleep | High Purity THC | All-In-One Vape Pen' at 0.5g, $45, with the 1:1 sleep formulation and myrcene/linalool/citral terpenes; pax.com shows the same Sleep profile as Sleep (0.5g) and Sweet Berry Sleep (1g). Confidence is likely, not sure, because the store's name and strain wording differ from the catalog's.",
+  "listing_ids": [
+   "66a394fc-a01e-419f-af6f-e06eb300ce07"
+  ]
+ },
+ {
+  "brand": "PAX",
+  "change": "Decide whether the PAX catalog should hold hardware, and if so add the Era Go battery (colours seen: Black, Pink Crush; other stores also list Gold, Greenstone, Lavender, Sky, Onyx) with a category and subtype (stores file it under merch; the taxonomy also has vaporizers/battery) and no size.",
+  "evidence": "Three listings from three stores (hii-nyc-williamsburg Black $20.23, travel-agency-ny Pink Crush $20, kaya-bliss-bay-ridge Pink Crush $5) have no catalog entry; the catalog lists only vape all-in-ones, pods and gummies, so any hardware listing can only come back as no match.",
+  "listing_ids": [
+   "235ea80a-3c43-452c-8287-cfcd462ff846",
+   "792d0e50-62a4-48db-b926-55dcccf74ef5",
+   "6fb437d8-c38c-46c7-912f-c1f7fa792f32"
+  ]
+ },
+ {
+  "brand": "PAX",
+  "change": "If the catalog is to hold hardware, add the PAX dry-herb devices seen in this batch: Mini II Classic (Onyx), Four (Onyx) and Plus, each with no size. Subtype is the taxonomy's call (vaporizers/other fits; the stores file them under vaporizers). Skip if hardware is out of scope for the catalog.",
+  "evidence": "Kaya Bliss Bay Ridge lists Mini II Classic Onyx $150 and Four Onyx $225, and Brooklyn Organic Buds lists Plus $200; none has a catalog entry, and other stores list Mini 2 ($190) and Plus ($226-$250) as separate devices.",
+  "listing_ids": [
+   "b3e678e2-603e-4de1-ae55-39a1b221fc7a",
+   "b5c89de9-ced6-40b5-9df9-f71cf78368fe",
+   "e29ebadc-9daa-4745-a8bf-bc81fc913729"
+  ]
+ },
+ {
+  "brand": "PUFF",
+  "change": "Add PUFF vaporizer entries (category vaporizers, subtype cart, size 1g), starting with Pink Runtz (hybrid, 510 thread). The catalog comes from PUFF's pre-roll Shopify store and holds no vapes at all, so every PUFF cart listing currently has nothing to match; PUFF also sells 1g carts named Strawberry Banana Smash and Lemon Lime Twist (Stashmaster, $35) that would need entries too.",
+  "evidence": "Listing 4ffa4634 (Emerald BK, store category vaporizers, 1g, $39.55) has no counterpart in a prerolls-only catalog. Other stores list PUFF carts (Stashmaster: Strawberry Banana Smash Cart 1g and Lemon Lime Twist Cart 1g, both $35), and a web search surfaced a lab report headed PUFF Pink Runtz 1g vape (batch PUF-5VCD-PINR-789; found in a search summary, not opened).",
+  "listing_ids": [
+   "4ffa4634-52b8-40d6-a1d6-b93f32bb766e"
+  ]
+ },
+ {
+  "brand": "PUFF",
+  "change": "Check the strain spelling of the Triple Infused 'Strawberry Banana Splash' entries (1g, 2.5g, 7g): PUFF's own Weedmaps product pages and NY stores call the same hybrid 'Strawberry Banana Smash'. Consider recording 'Smash' as an alias of that strain (or correcting the spelling if Smash is the real name), and recording that stores label the Triple Infused family 'Diamond Infused'.",
+  "evidence": "puffprerolls.com lists 'Strawberry Banana Splash' in its Triple Infused collection (hybrid; 1g, 5x0.5g, 14x0.5g). PUFF's Weedmaps page 'Strawberry Banana Smash - Infused Pre Roll 1g' describes a hybrid 'infused with diamonds, bubble hash, and terpenes', which is the Triple Infused recipe, and a 5pk .5g page uses the same name. Ignyte Red Hook (listing 67ffc524) sells it as 'Strawberry Banana Smash ... Diamond Infused' 1g, and Grow Together BK lists 'Diamond Infused Grapeness', a product the catalog files as Triple Infused Grapeness. I labelled 67ffc524 as the 1g Splash entry with confidence likely.",
+  "listing_ids": [
+   "67ffc524-c64e-432e-a8b1-46551e9727e9"
+  ]
+ },
+ {
+  "brand": "Presidential",
+  "change": "Fold the two Moon Rocks line entries (03cbb937 Moon Rocks Watermelon 1g, 25371113 Moon Rocks XXX 1g) into the storefront products Watermelon and XXX as their 1g sizes, and drop the Moon Rocks product line: it is the brand's format name for every Presidential infused pre-roll and blunt, not a family of its own.",
+  "evidence": "Only these 2 of 59 entries carry a line or an lb: product key; the other 57 are sf: products with no line, and sf Watermelon (81d52601) and sf XXX (789acb79) exist only at 1.5g, so the lb entries look like the 1g size of the same products under a second product key. Presidential's own blurb on the RNR page names its whole range Infused Moonrock Prerolls and Blunts, and OC Dispensary titles every Presidential infused pre-roll 'Presidential - Moon Rocks | <strain>' (Pineapple, Presidential), so Moon Rocks is a format or store product name. I matched the OC Moon Rocks Pineapple 1g listing to the line-less sf Pineapple 1g entry for that reason.",
+  "listing_ids": [
+   "d8fe4d72-ba88-4f0c-b658-ffb38d80ad44",
+   "23324979-ba25-4d92-a214-44f789c77b8e",
+   "9de85fe9-abe6-4ed5-ac29-9cdcce3e2a84",
+   "915d0fed-7215-4be3-b169-167ece34fe1a"
+  ]
+ },
+ {
+  "brand": "Ruby Farms",
+  "change": "Add the Ruby Farms topicals, starting with the 'Turkey Tail Mushroom' balm: category topical, subtype topical, strain 'Turkey Tail Mushroom' (the balm's blend name), no product line, size 1000mg (THC only). The catalog has no topical entries at all. milligrams-greenpoint also lists Ruby Farms 'Blue Tansy Rose' and 'Eucalyptus Sage' 1:1 THC:CBD topicals, sized 2000mg there (THC plus CBD, so 1000mg THC each by the dose rule); those are missing too.",
+  "evidence": "The Travel Agency page for listing 45740f2a states '2.0oz | 1000mg THC : 1000mg CBD | Turkey Tail Mushroom' and THC content 1000 mg, so the THC-only dose is 1000mg. The store's 100mg size field looks like a typo, and the $50 price equals the brand's price for its other 1:1 topicals at other stores. Catalog searches for topical, balm, turkey and mushroom return no entries.",
+  "listing_ids": [
+   "45740f2a-27a3-4213-a0ff-c98813cf906b"
+  ]
+ },
+ {
+  "brand": "Ruby Farms",
+  "change": "Add 'Sour Diesel' in the Ruby Rosevelt line: category preroll, no subtype, strain Sour Diesel, product line 'Ruby Rosevelt' (the brand's spelling; stores write Roosevelt), size 3g (one hash-infused rose petal cigar). Also give the existing lineless 'Tangerine Dream' 3g entry (ba4e7d1d-6e04-412c-9557-25c1cb1eb1e2) the same line, since stores list it as 'Tangerine Dream Hash Infused Rose Petal Cigar' 3g at $58; it currently shares a product key with the 5g Tangerine Dream entry, which is probably the 10pk and a different product.",
+  "evidence": "Listing fab0bcb7 is 'Ruby Roosevelt - Sour Diesel | 3G Hash Infused Rose Petal Cigar' ($65.54). The catalog has no Sour Diesel pre-roll at 3g (only Doobies Sour Diesel 1g and 3.5g and Sour Diesel vapes) and no Rosevelt or cigar line. milligrams-greenpoint lists the same product as 'Sour Diesel Hash Infused Rose Petal Cigar' 3g at $58.00, and rubyfarms.com's Ruby J's collection page (as summarized) lists 'Ruby Rosevelt' as a hash-infused 3g cigar, separate from Ruby Doobie, Ruby Classics and Ruby Rose.",
+  "listing_ids": [
+   "fab0bcb7-47d3-4549-a3ef-ae9b2552523d"
+  ]
+ },
+ {
+  "brand": "Ruby Farms",
+  "change": "Curate one product line for Ruby Farms' hash-infused pre-rolls (2pk = 1g and 10pk = 5g of 0.5g joints) and re-line the entries that disagree. Today they sit under Doobies (Tangerine Dream 1g 6ff2b8ce, Biscotti Jealousy 1g 42a2de1c, Blueberry DJ Cut 5g 5947e24c), 'Doobies Hash Infused' (Pink Champagne a8389e1d, Black Haze fb0b3eeb), 'Ruby Hash Infused' (Purple Voodoo 37869d08), Classics (Biscotti Jealousy 5g 33c8a4a6, Amnesia Haze 5g b8d540d3) and no line (Maui Waui 4ac772f2, Platinum GSC 42de41eb, Sunset Sherbert d357aed0, Blueberry DJ Cut 1g e7c256b6, Tangerine Dream 5g efa558ca). rubyfarms.com sells the 10 count as 'Ruby Doobie 10 Count Hash-Infused' (10 x 0.5g = 5g), so I suggest the Doobies line for all of them (or one explicit hash-infused Doobies line if the infusion must be told apart). The two Classics entries should leave Classics, which are the 7 x 0.7g tins, so that Biscotti Jealousy 1g and 5g become two sizes of one product.",
+  "evidence": "Every store listing found for Tangerine Dream, Biscotti Jealousy, Blueberry DJ Cut, Amnesia Haze, Maui Waui, Platinum GSC and Sunset Sherbert is hash infused (2pk 1g, or 10pk 5g at $58-66); none is a plain Doobies or Classics. Root cause looks like the bootstrap taking the line per strain and size: fireleaf-canarsie names the family 'Hash Classics' while soulmate, bedford-club, rnr and milligrams say 'Hash Infused Doobies', so Biscotti Jealousy 5g landed under Classics and 1g under Doobies. The Classics Biscotti Jealousy price ($62.77) is exactly the mean of the fireleaf ($65.54) and grow-together ($60.00) hash-infused 10pk listings, and Classics Amnesia Haze ($58.01) is the grow-together hash-infused 10ct price; plain Classics sell at $50. rubyfarms.com's collection page (as summarized) lists Ruby Doobie 2/7/10 Count and Ruby Classics as separate items. Listings 284b57c5 and e4784186 were matched to the Doobies and Classics entries on this basis.",
+  "listing_ids": [
+   "284b57c5-e6fa-4cdf-af23-c86c07273b8e",
+   "e4784186-4087-4d34-bd6c-3499975d0d09"
+  ]
+ },
+ {
+  "brand": "Ruby Farms",
+  "change": "Re-line the 1.5g Ruby Rose (hash-infused rose petal single) entries under one product line. Doobies Strawberry Fields 1.5g (4ecb715d), Doobies White Widow 1.5g (6dc390a6) and Doobies Grand Daddy Purple 1.5g (7637334f) are filed under Doobies, although Doobies come only as 2pk 1g and 7pk 3.5g, and each shares a product key with the real Doobies 3.5g entry of that strain. Black Haze 1.5g (4cf0b2e5) and Kosher Kush 1.5g (80d20703) have no line, and Ghost Train Haze sits under two different lines, 'Rose Petals Infused' (5324572d) and 'Ruby Rose Petal' (6173ae85). The brand's name is Ruby Rose (rubyfarms.com); stores write Rose Petal or Rose Petals. Pick one curated name, apply it to all seven entries, and give each strain its own product apart from its Doobies 3.5g product.",
+  "evidence": "Every store listing of these strains at 1.5g is a hash-infused rose petal single at $29-35 (stashmaster 'Strawberry Fields Rose Petal Preroll - 1.5g', the-spot 'Strawberry Fields 1.5 Hash Infused Rose Petal', milligrams 'White Widow Hash Infused Rose Petal Preroll', 'Granddaddy Purple Hash Infused Rose Petal Preroll'); none says Doobies. The entries' typical price is $30, the Ruby Rose price, not the $38 of a Doobies 7pk. Listing e4da219b ('Rose Petals Hash Infused | Strawberry Fields | 1.5G Pack') was matched to 4ecb715d on this basis.",
+  "listing_ids": [
+   "e4da219b-872b-419c-9445-61af05b6a247"
+  ]
+ },
+ {
+  "brand": "STIIIZY",
+  "change": "Add 0.5g pod entries for the Original-line pods Orange Sunset (product lb:vaporizers:pod:original:orangesunset) and White Raspberry (product lb:vaporizers:pod:original:whiteraspberry); the catalog has both only at 1g.",
+  "evidence": "Listings 7a237d6f (Quality Control, Orange Sunset .5g pod, $26, 79.41% THC) and 06ec6a87 (Hold Up Roll Up, White Raspberry 0.5G pod, $25, 87.68% THC) are 0.5g pods of these strains, and size_readings settle both at 0.5g. The catalog already holds 0.5g Original pods for other strains (Blue Dream, Birthday Cake, Super Lemon Haze, Biscotti, Magic Melon) at $23-25, and other stores list them as X Original THC Pod | 0.5g.",
+  "listing_ids": [
+   "7a237d6f-757b-4825-8022-1c4645b928fe",
+   "06ec6a87-2ebf-407a-a3cf-1e9c2ffe0dfb"
+  ]
+ },
+ {
+  "brand": "STIIIZY",
+  "change": "Add STIIIZY battery entries (category merch, subtype battery), at least the Pro battery in Camouflage and the Lite battery in Black, if merch belongs in brand catalogs; the STIIIZY catalog holds no merch entries at all.",
+  "evidence": "Listings 83515ef3 (Hold Up Roll Up, Pro - Camouflage Battery, $20) and 0c0837fa (Kaya Bliss Bay Ridge, Lite Battery - Black, $5) match nothing: searches for battery, merch, pro, lite and camo return no entries. Other stores list the same items (Pro Battery - Camouflage at $20 at the-spot-bk, Lite Battery at twisted-vibration-wburg and kaya-bliss-brooklyn-heights) plus Pro XL, Bar and BIIIG models.",
+  "listing_ids": [
+   "83515ef3-4d7d-4770-89bd-418fc42d8fc1",
+   "0c0837fa-6332-4165-bc1b-e8b680763d42"
+  ]
+ },
+ {
+  "brand": "Wyld",
+  "change": "Remove or merge the three lb entries into the storefront entries of the same product: lb:edible:gummy::peach (150mg, entry d3ce9699-eee6-4c59-bb03-750b75683431, and 10pk 100mg, entry ec05889f-f559-4cdd-85a5-f78bab060227) into sf:edible:gummy::peach (10pk 50mg, entry 145ace6d-87f7-409f-8595-05bd87985c6e), and lb:edible:gummy::strawberry (10pk 100mg, entry 8c65eac9-120b-4e38-8355-b30770ee4dd2) into sf:edible:gummy::strawberry (10mg, entry 5fdec743-2608-420c-9f0b-f4e4b748f36d).",
+  "evidence": "Wyld's Peach is the 2:1 CBD:THC gummy (100mg CBD:50mg THC per package) and its Strawberry is the 20:1 CBD:THC gummy (200mg CBD:10mg THC per package); every Peach and Strawberry listing at other stores is one of these two CBD products, and no THC-only Peach or Strawberry gummy appears. The conventions size dose products by THC only, so the lb sizes (150mg is CBD plus THC, 100mg is the CBD figure or a store-field error) are not these products' sizes.",
+  "listing_ids": [
+   "531ab49b-fcf1-4943-bf6a-ccbb54fdd3ed",
+   "153c735b-e2ac-4a3a-bfe0-98d683cb4257",
+   "c4ec620d-7abb-4923-8e80-73d7bd66eecb"
+  ]
+ }
+]
