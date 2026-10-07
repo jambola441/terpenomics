@@ -491,8 +491,8 @@
       "expect": {
         "category": "edible",
         "subtype": "gummy",
-        "strain": "Sour Orchard Peach",
-        "product_line": "Balance",
+        "strain": "Balance Orchard Peach",
+        "product_line": "Sours",
         "variant": "100mg"
       }
     },
@@ -539,8 +539,8 @@
       "expect": {
         "category": "edible",
         "subtype": "gummy",
-        "strain": "Watermelon Lemonade",
-        "product_line": "Bliss",
+        "strain": "Bliss Watermelon Lemonade",
+        "product_line": "Gummies",
         "variant": "100mg"
       }
     },
@@ -571,8 +571,8 @@
       "expect": {
         "category": "edible",
         "subtype": "gummy",
-        "strain": "Tropical Burst",
-        "product_line": "Energy",
+        "strain": "Energy Tropical Burst",
+        "product_line": "Sours",
         "variant": "100mg"
       }
     },

@@ -934,6 +934,31 @@ On the store, Jev only differs from today's path on 50 of the 846 rows:
 - it changes half as many answers between runs;
 - it never changes a size between runs.
 
+## Labels follow the catalog's conventions; scored after the match too (2026-10-07)
+
+[`CONVENTIONS.md`](CONVENTIONS.md) is now the one statement of how identity is written: the effect rule, strains, lines and sizes. The labelled cases follow it.
+
+- **Labels changed (18 cases):**
+  - 15 Camino listings follow the effect rule: line = the family, strain = effect + flavour ("Gummies", "Chill Wild Berry"), as the catalog has them. This includes the cross-store cluster's canonical strain.
+  - 2 Grön listings take Mega as their line, as on all 12 of Grön's Mega products.
+  - Cannabals' strain takes the catalog's spelling, "Cookies & Cream".
+- **Labels kept, catalog fixes proposed instead:** the catalog is wrong, not the label.
+  - Ayrloom's UP beverages are missing the line UP (3 cases).
+  - MFNY's "Creamsicle x Rainbow Beltz" lost its "2.0".
+  - Grön's bar has the strain "Milk Chocolate Sativa".
+  - A Papa & Barkley Releaf balm has the strain "Balm".
+
+`score_after_match.py` scores a run twice: what enrichment writes, and what lands on the listing after the importer's catalog match takes a trusted entry's subtype, strain and line. Enrichment cannot write "Chill Wild Berry" from "Wild Berry 'Chill' Gummies", but the catalog match can, so the second score is the one that counts.
+
+Step 1's runs (3 each), 291 labelled cases:
+
+| | old labels, enrichment | old labels, after match | new labels, enrichment | new labels, after match |
+| --- | ---: | ---: | ---: | ---: |
+| today's path | 281.3 | 266.7 | 267.3 | 276.3 |
+| Jev only | 278.3 | 263.7 | 265.0 | 275.0 |
+
+Under the old labels the catalog match looked harmful, because its identities followed a convention the labels did not. Under the new labels it adds 9 to 10 cases. The six cases still missed after the match are the catalog errors above.
+
 ## Fleet report — all 24 live stores (2026-08-25)
 
 `dispensary_report.py` runs the audit checks **per store** and normalizes to
