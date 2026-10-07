@@ -183,6 +183,20 @@ def test_matcher_scoring_by_bar_and_catalog_kind():
     assert (built_["exact"], built_["exact_wrong"], built_["bars"][0.9]["entry_labelled"]) == (1, 0, 0)
 
 
+def test_the_report_names_products_from_the_listings_own_brand():
+    """Product keys repeat across brands ("sf:go" can be 1906's and Grön's), so a name
+    looked up across all catalogs could be another brand's."""
+    rm = _load("evals/match/run_match.py")
+    catalogs = {"1906": {"entries": [{"product_key": "k", "name": "Drops Go"}]},
+                "grön": {"entries": [{"product_key": "k", "name": "Baja Blaze Mega"},
+                                     {"product_key": "m", "name": "Pearls Lychee"}]}}
+    case = {"brand": "Grön", "catalog_source": "storefront_html", "listing": {"name": "Gron Pearls"},
+            "label": {"product_key": "m", "entry_id": "m1"}}
+    rows = [(case, {"method": "jev", "product_key": "k", "entry_id": "k1", "p": 0.95})]
+    text = rm.report(rm.score(rows), rows, catalogs)
+    assert "-> 'Baja Blaze Mega' (jev 0.95); label 'Pearls Lychee'" in text
+
+
 def test_the_spot_check_mixes_disagreements_with_each_kind_of_label():
     ls = _load("evals/match/label_sample.py")
     cases = []

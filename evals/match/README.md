@@ -16,6 +16,7 @@ product is present, or a product the matcher missed. This set can.
 ```bash
 DB_VIA_HTTP=1 python evals/match/build_sample.py                          # done: cases/sample.json
 DB_VIA_HTTP=1 python evals/match/label_sample.py --model claude-sonnet-5-5  # needs ANTHROPIC_API_KEY
+# or, without the key, Claude Code subagents driving scripts/review_cli.py (how the labels below were made)
 # a person checks cases/spot_check.md (30 labels)
 DB_VIA_HTTP=1 python evals/match/run_match.py                             # needs OPENROUTER_API_KEY
 ```
@@ -43,8 +44,65 @@ labels are left out of the scoring.
 tiers then Jev and no answer cache. It writes `results/summary.md`: a table per catalog
 kind by bar, plus the listings trusted today that are wrong.
 
-## Status
+## Labels (2026-10-07)
 
-The set is drawn but not labelled yet; labelling waits on `ANTHROPIC_API_KEY`. The
-whole path was checked end to end with a stand-in labeller on a copy of the set:
-labelling, the live matcher over all 300 listings (Jev about $0.006), and the scoring.
+The labels came from Claude Code subagents rather than the API. Each batch was one brand,
+labelled by a subagent on the `sonnet` alias that drove `scripts/review_cli.py` in match
+mode, with the same instructions and tools as `label_sample.py`.
+
+Of the 300 cases:
+
+- 210 are an entry;
+- 26 are the product in a size the catalog lacks;
+- 59 are products the catalog lacks;
+- 5 are unsure and left out.
+
+Of the 295 used, 230 labels are sure and 65 likely.
+
+Two checks before use:
+
+- **Early batches.** The first batches ran with a `search_catalog` that cut every list at
+  25 entries without saying so (fixed since). Their not-in-catalog and product-only labels
+  were rechecked against the full catalogs, and all hold.
+- **Disagreements.** All 14 cases where the matcher picks another product were read
+  against their labels; the results below say what they are.
+
+The files:
+
+- `cases/spot_check.md`: 30 labels for a person to check.
+- `cases/proposals.json`: the 57 catalog fixes the labellers proposed. They are queued
+  for the audit; nothing was changed.
+
+## Results (2026-10-07)
+
+The live matcher on the 295 used labels (`results/summary.md`):
+
+| catalogs | listings | bar today | trusted | wrong | precision | recall |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| brand site | 148 | 0.85 | 84 | 4 | 95.2% | 62.0% |
+| store-built | 147 | 0.90 | 79 | 1 | 98.7% | 72.9% |
+
+Recall is the share of the listings whose product the catalog has (129 and 107) that get
+a trusted match to the right product. When the product is right, the entry (the size) is
+right 157 times in 158.
+
+**The 5 trusted and wrong:**
+
+- **3 are duplicate catalog entries.** The matcher took a second entry for the same
+  product:
+  - Grön's "Milk Chocolate Sea Salt" beside "Mini Bar 1:1 Milk Chocolate";
+  - Off Hours' "Melt" beside "Melt Blueberry Pie";
+  - Off Hours' "Party Party Animal" beside "Party Animal Passion Pop".
+
+  The listing lands on a duplicate product. Curating the duplicates fixes these.
+- **1 is a mistake.** Layup's Lemonade Variety Pack (8 × 10mg) was matched to the single
+  Lemonade can.
+- **1 is a disputed label.** A Grassroots Foreign Kush Mints 14g is titled "(Flower)", but
+  the labeller read it as smalls from another store's listing.
+
+**Where the bars could move.** A bigger sample would be needed before acting on these:
+
+- Store-built catalogs at 0.7 instead of 0.9 would trust 15 more listings, all right. That
+  takes recall from 72.9% to 86.9%, with 1 wrong at either bar.
+- Brand-site catalogs at 0.7 instead of 0.85 would trust 15 more, 2 of them wrong.
+  Precision goes from 95.2% to 93.9%, and recall from 62.0% to 72.1%.
