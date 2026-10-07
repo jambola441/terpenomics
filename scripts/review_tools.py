@@ -30,6 +30,7 @@ import taxonomy
 from scraper_common import normalize_variant
 
 MAX_RESULTS = 25
+MAX_CATALOG = 200     # an empty search_catalog query: the catalog, up to this many entries
 PAGE_CHARS = 4000
 
 
@@ -111,11 +112,14 @@ def _words(text: str | None) -> set[str]:
 
 
 def _score(query: str, *texts: str | None) -> float:
+    """The share of the query's words found in the texts. A word of three letters or
+    more also counts when it begins one of theirs: "perm" finds "Permanent"."""
     q = _words(query)
     if not q:
         return 0.0
     have = set().union(*(_words(t) for t in texts))
-    return len(q & have) / len(q)
+    found = sum(1 for w in q if w in have or (len(w) >= 3 and any(h.startswith(w) for h in have)))
+    return found / len(q)
 
 
 # ---------------------------------------------------------------------------
@@ -123,18 +127,22 @@ def _score(query: str, *texts: str | None) -> float:
 # ---------------------------------------------------------------------------
 
 def search_catalog(ctx: ReviewContext, brand: str, query: str = "") -> dict:
-    """The brand's catalog entries best matching `query` (all when empty)."""
+    """The brand's catalog entries best matching `query`: its words are looked for in
+    each entry's name, strain, line, category, subtype and size. An empty query lists
+    the catalog, up to MAX_CATALOG entries; a list cut short says how many it left out."""
     cat = ctx.catalogs.get(catalog_store.brand_key(brand))
     if not cat:
         return {"brand": brand, "has_catalog": False, "entries": []}
     rows = []
     for e in cat.get("entries") or []:
-        s = _score(query, e.get("name"), e.get("strain"), e.get("product_line")) if query else 1.0
+        s = _score(query, e.get("name"), e.get("strain"), e.get("product_line"), e.get("category"),
+                   e.get("subtype"), e.get("variant")) if query.strip() else 1.0
         if s > 0:
             rows.append((s, e))
     rows.sort(key=lambda x: -x[0])
+    cap = MAX_RESULTS if query.strip() else MAX_CATALOG
     out = []
-    for _, e in rows[:MAX_RESULTS]:
+    for _, e in rows[:cap]:
         unit = size_candidates.unit_of(e.get("category"))
         parsed = sizes.parse(e.get("variant"), category=e.get("category"))
         value = parsed.mg if unit == "mg" else parsed.grams
@@ -145,8 +153,11 @@ def search_catalog(ctx: ReviewContext, brand: str, query: str = "") -> dict:
                     "subtype": e.get("subtype"), "strain": e.get("strain"), "product_line": e.get("product_line"),
                     "size": e.get("variant"),
                     "typical_price": f"${typical['median'] / 100:,.2f}" if typical else None})
-    return {"brand": cat.get("brand_name") or brand, "has_catalog": True,
-            "source": cat.get("source_method"), "entries": out}
+    result = {"brand": cat.get("brand_name") or brand, "has_catalog": True,
+              "source": cat.get("source_method"), "entries": out}
+    if len(rows) > len(out):
+        result["not_shown"] = f"{len(rows) - len(out)} more entries match; search with other words to see them"
+    return result
 
 
 def other_store_listings(ctx: ReviewContext, brand: str, query: str) -> dict:
@@ -158,16 +169,19 @@ def other_store_listings(ctx: ReviewContext, brand: str, query: str) -> dict:
     hits = [(_score(query, l["name"]), l) for l in ctx.listings
             if catalog_store.brand_key(l["brand"]) == key and l["id"] not in ctx.queue
             and l.get("store") not in own]
-    hits = sorted([h for h in hits if h[0] > 0], key=lambda x: -x[0])[:MAX_RESULTS]
+    hits = sorted([h for h in hits if h[0] > 0], key=lambda x: -x[0])
     rows = []
-    for _, l in hits:
+    for _, l in hits[:MAX_RESULTS]:
         row = {"store": ctx.stores.get(l["store"], l["store"]), "name": l["name"], "size_field": l["size_field"],
                "price": f"${l['price_cents'] / 100:,.2f}" if l.get("price_cents") else None}
         if not ctx.blind_matches:     # strain and line come from the matched entry when there is one
             row.update({"strain": l.get("strain"), "product_line": l.get("product_line"),
                         "catalog_match": l.get("catalog_match_method")})
         rows.append(row)
-    return {"brand": brand, "listings": rows}
+    result = {"brand": brand, "listings": rows}
+    if len(hits) > len(rows):
+        result["not_shown"] = f"{len(hits) - len(rows)} more listings match; search with other words to see them"
+    return result
 
 
 def listing_page(ctx: ReviewContext, listing_id: str) -> dict:
@@ -291,9 +305,11 @@ _NSTR = {"type": ["string", "null"]}
 TOOLS = [
     {"name": "search_catalog",
      "description": "The brand's catalog entries (our list of what the brand makes) matching a query: "
-                    "name, category, subtype, strain, product line, size and typical price. An empty "
-                    "query lists the whole catalog. A listing that is in the catalog should take its "
-                    "entry's identity.",
+                    "name, category, subtype, strain, product line, size and typical price. The query's "
+                    "words are looked for in the name, strain, line, category, subtype and size; a word "
+                    "of three letters or more also finds words it begins. An empty query lists the "
+                    f"catalog (up to {MAX_CATALOG} entries). A list cut short says how many entries it left out. "
+                    "A listing that is in the catalog should take its entry's identity.",
      "input_schema": {"type": "object", "properties": {"brand": _STR, "query": _STR},
                       "required": ["brand", "query"], "additionalProperties": False}},
     {"name": "other_store_listings",

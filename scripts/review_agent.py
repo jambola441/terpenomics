@@ -115,7 +115,8 @@ For each listing:
    description.
 2. Search the brand's catalog (search_catalog) for the words that tell the product apart
    (the strain or flavour, the line). Try another query when the first finds nothing close;
-   an empty query lists the whole catalog.
+   an empty query lists the catalog. Before answering that the catalog lacks the product,
+   list the catalog: an entry may be spelled differently from the listing.
 3. When the size matters, work it out with size_readings and compare it with the entries'
    sizes. A pack of five 0.5g joints is a 2.5g entry, not a 0.5g one.
 4. When the name alone doesn't settle it (a name you can't place, two entries that both
