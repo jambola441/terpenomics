@@ -109,8 +109,9 @@
       "expect": {
         "category": "edible",
         "subtype": "gummy",
-        "strain": "Midnight Blueberry",
-        "variant": "100mg"
+        "strain": "Sleep Midnight Blueberry",
+        "variant": "100mg",
+        "product_line": "Gummies"
       }
     },
     {
@@ -217,7 +218,8 @@
       "expect": {
         "category": "edible",
         "subtype": "gummy",
-        "strain": "Baja Blaze Mega"
+        "strain": "Baja Blaze",
+        "product_line": "Mega"
       }
     },
     {
@@ -293,8 +295,9 @@
       "expect": {
         "category": "edible",
         "subtype": "gummy",
-        "strain": "Yuzu Lemon",
-        "variant": "100mg"
+        "strain": "Balance Yuzu Lemon",
+        "variant": "100mg",
+        "product_line": "Gummies"
       }
     },
     {
@@ -324,8 +327,9 @@
       "expect": {
         "category": "edible",
         "subtype": "gummy",
-        "strain": "Freshly Squeezed",
-        "variant": "100mg"
+        "strain": "Recover Freshly Squeezed",
+        "variant": "100mg",
+        "product_line": "Gummies"
       }
     },
     {
@@ -340,8 +344,9 @@
       "expect": {
         "category": "edible",
         "subtype": "gummy",
-        "strain": "Pineapple Paradise",
-        "variant": "100mg"
+        "strain": "Bliss Pineapple Paradise",
+        "variant": "100mg",
+        "product_line": "Fruit Chews"
       }
     },
     {

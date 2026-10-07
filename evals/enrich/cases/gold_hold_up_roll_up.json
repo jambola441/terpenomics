@@ -282,8 +282,9 @@
       "expect": {
         "category": "edible",
         "subtype": "gummy",
-        "strain": "Blue Razzleberry Mega",
-        "variant": "100mg"
+        "strain": "Blue Razzleberry",
+        "variant": "100mg",
+        "product_line": "Mega"
       }
     },
     {
@@ -313,7 +314,7 @@
       },
       "expect": {
         "category": "edible",
-        "strain": "Cookies N Cream",
+        "strain": "Cookies & Cream",
         "variant": "100mg"
       }
     },

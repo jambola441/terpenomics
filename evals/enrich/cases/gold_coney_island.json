@@ -77,8 +77,8 @@
    "expect": {
     "category": "edible",
     "subtype": "gummy",
-    "strain": "Orchard Peach",
-    "product_line": "Balance",
+    "strain": "Balance Orchard Peach",
+    "product_line": "Sours",
     "variant": "100mg"
    }
   },
@@ -94,8 +94,8 @@
    "expect": {
     "category": "edible",
     "subtype": "gummy",
-    "strain": "Midnight Blueberry",
-    "product_line": "Sleep"
+    "strain": "Sleep Midnight Blueberry",
+    "product_line": "Gummies"
    }
   },
   {
@@ -110,8 +110,9 @@
    "expect": {
     "category": "edible",
     "subtype": "gummy",
-    "strain": "Pineapple Habanero",
-    "variant": "100mg"
+    "strain": "Uplifting Pineapple Habanero",
+    "variant": "100mg",
+    "product_line": "Gummies"
    }
   },
   {
@@ -126,8 +127,8 @@
    "expect": {
     "category": "edible",
     "subtype": "gummy",
-    "strain": "Watermelon Lemonade",
-    "product_line": "Bliss"
+    "strain": "Bliss Watermelon Lemonade",
+    "product_line": "Gummies"
    }
   },
   {
@@ -142,8 +143,8 @@
    "expect": {
     "category": "edible",
     "subtype": "gummy",
-    "strain": "Wild Berry",
-    "product_line": "Chill"
+    "strain": "Chill Wild Berry",
+    "product_line": "Gummies"
    }
   },
   {
@@ -158,8 +159,8 @@
    "expect": {
     "category": "edible",
     "subtype": "gummy",
-    "strain": "Wild Cherry",
-    "product_line": "Excite"
+    "strain": "Excite Wild Cherry",
+    "product_line": "Gummies"
    }
   },
   {
