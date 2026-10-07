@@ -79,3 +79,26 @@ def test_tools_have_schemas_and_bad_calls_come_back_as_errors():
     assert {t["name"] for t in rt.TOOLS} == set(rt.FUNCTIONS)
     assert "error" in json.loads(rt.run_tool(ctx(), "search_catalog", {"nope": 1}))
     assert "error" in json.loads(rt.run_tool(ctx(), "rm_rf", {}))
+
+
+def test_other_stores_leave_out_the_store_under_review():
+    """The same product at the listing's own store carries that store's earlier answer."""
+    same_store = {**OTHERS[0], "id": "o3", "store": "s1", "name": "Baja Blaze Mega Gummy"}
+    c = rt.ReviewContext(catalogs=CATALOGS, listings=OTHERS + [same_store, QUEUED], queue={"q1": QUEUED},
+                         stores={"s2": "the-plug"})
+    out = rt.other_store_listings(c, "Grön", "baja blaze mega")["listings"]
+    assert [(l["store"], l["name"]) for l in out] == [("the-plug", "Baja Blaze MEGA 100mg Gummy")]
+
+
+def test_a_submitted_size_is_written_as_the_package_total():
+    c = ctx()
+    assert rt.submit_labels(c, "q1", "edible", "Baja Blaze", "Mega", "20pk 100 mg", "likely", "x")["accepted"]
+    assert c.answers["q1"]["size"] == "100mg"
+    assert rt.submit_labels(c, "q1", "vaporizers", "Baja Blaze", None, "1000mg", "likely", "x")["accepted"]
+    assert c.answers["q1"]["size"] == "1g"
+
+
+def test_size_readings_can_read_as_another_category():
+    out = rt.size_readings(ctx(), "q1", category="flower")
+    assert out["unit"] == "g"
+    assert "error" in rt.size_readings(ctx(), "q1", category="gummies")

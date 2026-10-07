@@ -1,0 +1,1673 @@
+{
+ "eval_type": "review",
+ "description": "Hold Up Roll Up's raw scrape of 2026-10-06 through Jev-only: the 37 rows the review step gets (40 flagged without a trusted match, less 3 already gold cases). Labels judged 2026-10-07 against evals/enrich/CONVENTIONS.md; a field left out is unsettled and not scored; 'accept' lists the spellings that count. 'today' is today's production path (Haiku) on the same rows.",
+ "cases": [
+  {
+   "id": "hur-053",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Slack Hollow",
+    "name": "Jet Fuel Gelato - 2pk Pre-Rolls",
+    "category": "preroll",
+    "raw_category": "Preroll",
+    "size_field": "1g",
+    "price_cents": 1300,
+    "url": "https://holduprollup.com/menu/products/slack-hollow-412101/preroll/jet-fuel-gelato-2pk-pre-rolls-4200441",
+    "description": "(24.7%)"
+   },
+   "first_pass": {
+    "category": "preroll",
+    "subtype": "pack",
+    "strain": "Jet Fuel Gelato",
+    "product_line": null,
+    "variant": "1g"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.91,
+    "size": 1.0,
+    "strain": 0.92,
+    "subtype": 0.69
+   },
+   "size_by": "code",
+   "today": {
+    "category": "preroll",
+    "subtype": "pack",
+    "strain": "Jet Fuel Gelato",
+    "product_line": null,
+    "variant": "1g"
+   },
+   "expect": {
+    "category": "preroll",
+    "strain": "Jet Fuel Gelato",
+    "product_line": null,
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "hur-087",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Head & Heal",
+    "name": "Organic Small Dog CBD Oil - 300mg Tincture",
+    "category": "tinctures",
+    "raw_category": "Tinctures",
+    "size_field": "300mg",
+    "price_cents": 3400,
+    "url": "https://holduprollup.com/menu/products/head-heal-320973/tinctures/organic-small-dog-cbd-oil-300mg-tincture-5273288",
+    "description": "With Head & Heal, you're going straight to the source - we grow, process, and bottle all of our products right on our farm. Our philosophy is rooted in supporting the health of both people and the planet, which is why we produce sustainable and high quality CBD oil that you can trust, day in and day out. Ingredients: Certified Organic Fractionated Coconut Oil, Full Spectrum Hemp Extract 300mg CBD per bottle 10mg CBD per serving Contains only naturally-occurring terpenes Unflavored Extracted utilizing Certified Organic Sugar Cane Ethanol"
+   },
+   "first_pass": {
+    "category": "tinctures",
+    "subtype": "tincture",
+    "strain": "",
+    "product_line": null,
+    "variant": "300mg"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.95,
+    "size": 1.0,
+    "strain": 0.65,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "today": {
+    "category": "tinctures",
+    "subtype": "tincture",
+    "strain": "",
+    "product_line": null,
+    "variant": "300mg"
+   },
+   "expect": {
+    "category": "tinctures",
+    "subtype": "tincture",
+    "strain": null,
+    "variant": "300mg"
+   },
+   "note": "Pet CBD oil with no THC figure: the stated CBD total, as gold holdup-043 (Medium Dog) has it."
+  },
+  {
+   "id": "hur-089",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Head & Heal",
+    "name": "Organic Large Dog CBD Oil - 1200mg Tincture",
+    "category": "tinctures",
+    "raw_category": "Tinctures",
+    "size_field": "1.2g",
+    "price_cents": 10900,
+    "url": "https://holduprollup.com/menu/products/head-heal-320973/tinctures/organic-large-dog-cbd-oil-1200mg-tincture-5273286",
+    "description": "With Head & Heal, you're going straight to the source - we grow, process, and bottle all of our products right on our farm. Our philosophy is rooted in supporting the health of both people and the planet, which is why we produce sustainable and high quality CBD oil that you can trust, day in and day out. 1200mg CBD per bottle 40mg CBD per serving Contains only naturally-occurring terpenes Unflavored Extracted utilizing USDA Organic Sugar Cane Ethanol All hemp grown on our farm in Cortland, NY Flavor: earthy/grassy"
+   },
+   "first_pass": {
+    "category": "tinctures",
+    "subtype": "tincture",
+    "strain": "",
+    "product_line": null,
+    "variant": "1200mg"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.96,
+    "size": 1.0,
+    "strain": 0.61,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "today": {
+    "category": "tinctures",
+    "subtype": "tincture",
+    "strain": "",
+    "product_line": null,
+    "variant": "1200mg"
+   },
+   "expect": {
+    "category": "tinctures",
+    "subtype": "tincture",
+    "strain": null,
+    "variant": "1200mg"
+   },
+   "note": "Pet CBD oil with no THC figure: the stated CBD total, as gold holdup-043 (Medium Dog) has it."
+  },
+  {
+   "id": "hur-090",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Head & Heal",
+    "name": "Organic Full Spec. FOCUS CBG Oil 600mg Tincture",
+    "category": "tinctures",
+    "raw_category": "Tinctures",
+    "size_field": "0.6g",
+    "price_cents": 6500,
+    "url": "https://holduprollup.com/menu/products/head-heal-320973/tinctures/organic-full-spec-focus-cbg-oil-600mg-tincture-5273284",
+    "description": "This is a full spectrum CBG extract. We grew CBG dominant hemp, and extracted it the same way we extract our CBD dominant plants. 600mg CBG per bottle 20mg CBG per serving 30 servings per bottle Extracted utilizing USDA Organic Sugar Cane Ethanol Contains less than 0.3% THCWe find that CBG is much stronger than CBD. Generally, one doesn't need as much to have an effect."
+   },
+   "first_pass": {
+    "category": "tinctures",
+    "subtype": "tincture",
+    "strain": "Focus",
+    "product_line": null,
+    "variant": "600mg"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.51,
+    "size": 1.0,
+    "strain": 0.37,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "today": {
+    "category": "tinctures",
+    "subtype": "tincture",
+    "strain": "",
+    "product_line": null,
+    "variant": "600mg"
+   },
+   "expect": {
+    "category": "tinctures",
+    "subtype": "tincture",
+    "strain": "Focus",
+    "product_line": null,
+    "variant": "600mg"
+   },
+   "note": "CBG oil under 0.3% THC: the stated CBG total. Not the catalog's Focus (a 150mg THC:CBG tincture)."
+  },
+  {
+   "id": "hur-100",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Kush Queen",
+    "name": "Renew CBD Sugar Scrub",
+    "category": "topical",
+    "raw_category": "Topicals",
+    "size_field": "16.0 fluid_ounces",
+    "price_cents": 10000,
+    "url": "https://holduprollup.com/menu/products/kush-queen-517892/topicals/renew-cbd-sugar-scrub-5432382",
+    "description": "Kush Queen's Renew CBD Sugar Scrub leaves your skin glowing. The organic sugar base, CBD and jojoba oil work together to remove dead skin, clean pores and moisturize. Great for all skin types and full-body use from your neck to your feet. Light lavender and buttery jojoba oil"
+   },
+   "first_pass": {
+    "category": "topical",
+    "subtype": "topical",
+    "strain": "Renew",
+    "product_line": null,
+    "variant": ""
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.78,
+    "size": 1.0,
+    "strain": 0.64,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "today": {
+    "category": "topical",
+    "subtype": "topical",
+    "strain": "Renew",
+    "product_line": null,
+    "variant": ""
+   },
+   "expect": {
+    "category": "topical",
+    "subtype": "topical",
+    "strain": "Renew",
+    "product_line": null,
+    "variant": null
+   },
+   "note": "No cannabinoid figure anywhere; 16 fl oz is the jar."
+  },
+  {
+   "id": "hur-187",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "1906",
+    "name": "Genius for Brain-Power - 10mg 2PK Pills",
+    "category": "edible",
+    "raw_category": "Edibles",
+    "size_field": "10mg",
+    "price_cents": 600,
+    "url": "https://holduprollup.com/menu/products/1906-321012/edibles/genius-for-brain-power-10mg-2pk-pills-6637236",
+    "description": "GENIUS for Brain-Power GENIUS promotes cognitive performance through a blend of cannabis, caffeine, and five plant medicines. Swallowable pills with a rapid onset of 20 minutes. Vegan, calorie-free, sugar-free, and gluten-free. 2.5mg THC /2.5mg CBD / 2.5mg CBG per Drop 4 Drops per unit = 10mg THC/ 10mg CBD / 10mg CBG per unit"
+   },
+   "first_pass": {
+    "category": "edible",
+    "subtype": "tablet",
+    "strain": "",
+    "product_line": null,
+    "variant": "20mg"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.6,
+    "size": 1.0,
+    "strain": 0.45,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "today": {
+    "category": "edible",
+    "subtype": "tablet",
+    "strain": "Genius",
+    "product_line": null,
+    "variant": "20mg"
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "tablet",
+    "strain": "Genius",
+    "product_line": "Drops",
+    "variant": "10mg"
+   },
+   "note": "4 drops of 2.5mg THC = 10mg a unit (description); 1906's tablets are its Drops line."
+  },
+  {
+   "id": "hur-189",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "1906",
+    "name": "Love for Arousal - 10mg 2PK Pills",
+    "category": "edible",
+    "raw_category": "Edibles",
+    "size_field": "10mg",
+    "price_cents": 600,
+    "url": "https://holduprollup.com/menu/products/1906-321012/edibles/love-for-arousal-10mg-2pk-pills-6637238",
+    "description": "LOVE Drops for Arousal LOVE boosts arousal through a blend of cannabis and five herbal aphrodisiacs. Swallowable pills with a rapid onset of 20 minutes. Vegan, calorie-free, sugar-free, and gluten-free. 2.5mg THC/2.5mg CBD per drop 4 Drops per unit = 10mg THC/10mg CBD per unit"
+   },
+   "first_pass": {
+    "category": "edible",
+    "subtype": "tablet",
+    "strain": "Arousal",
+    "product_line": null,
+    "variant": "20mg"
+   },
+   "p": {
+    "category": 0.99,
+    "product_line": 0.7,
+    "size": 1.0,
+    "strain": 0.45,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "today": {
+    "category": "edible",
+    "subtype": "tablet",
+    "strain": "Love",
+    "product_line": null,
+    "variant": "20mg"
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "tablet",
+    "strain": "Love",
+    "product_line": "Drops",
+    "variant": "10mg"
+   },
+   "note": "4 drops of 2.5mg THC = 10mg a unit (description); 1906's tablets are its Drops line."
+  },
+  {
+   "id": "hur-251",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Veteran's Choice Creations",
+    "name": "F.E.C.O. - 1G Full Extract Cannabis Oil Applicator",
+    "category": "concentrate",
+    "raw_category": "Concentrates",
+    "size_field": "1g",
+    "price_cents": 4500,
+    "url": "https://holduprollup.com/menu/products/veterans-choice-creation-694287/concentrates/feco-1g-full-extract-cannabis-oil-applicator-7417495",
+    "description": "Veterans Choice Creations: FECO - High-Quality Cannabis Concentrate Experience the unparalleled versatility and potency of Veterans Choice Creations’ FECO, a top-tier cannabis concentrate crafted for the discerning enthusiast. Produced with meticulous attention to detail at Veterans Holdings, our Full Extract Cannabis Oil (FECO) sets the benchmark for quality and adaptability. Our FECO concentrate is enriched with THC, CBG, CBC, and other beneficial compounds, offering a powerful and consistent experience. Our FECO (Full Extract Cannabis Oil) is a highly concentrated, whole-plant extract, known for offering a broad spectrum of cannabinoids and terpenes. It is one of the most potent and versatile cannabis treatment options available. Start with a very small dose, no larger than a grain of rice. Since FECO is consumed orally, the onset of effects can take over an hour. If you don’t feel anything initially, wait 2-3 hours before taking another small dose. The effects of edibles can last 8-12 hours and are typically more intense than inhaled methods. FECO is usually consumed orally and processed through the liver like an edible. It can also be applied topically. To mask its strong herbal flavor, it can be mixed with food or placed in a gel capsule. Alternatively, it can be taken directly by mouth if the taste is not an issue. Each package contains one syringe with 1g of full extract cannabis oil, designed for precise dosing. For easier use, run the syringe under warm water."
+   },
+   "first_pass": {
+    "category": "concentrate",
+    "subtype": "rso",
+    "strain": "",
+    "product_line": null,
+    "variant": "1g"
+   },
+   "p": {
+    "category": 0.91,
+    "product_line": 0.73,
+    "size": 1.0,
+    "strain": 0.58,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "today": {
+    "category": "concentrate",
+    "subtype": "rso",
+    "strain": "",
+    "product_line": null,
+    "variant": "1g"
+   },
+   "expect": {
+    "category": "concentrate",
+    "subtype": "rso",
+    "product_line": null,
+    "variant": "1g"
+   },
+   "note": "No strain named; whether the lineage stands in is unsettled, so the strain isn't scored."
+  },
+  {
+   "id": "hur-252",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Doctor Solomon's",
+    "name": "Unwind Drops- CBD Rich 19:1 Tincture",
+    "category": "tinctures",
+    "raw_category": "Tinctures",
+    "size_field": "",
+    "price_cents": 4500,
+    "url": "https://holduprollup.com/menu/products/doctor-solomons-694292/tinctures/unwind-drops-cbd-rich-191-tincture-7417506",
+    "description": "Kick back and relax. Easy to dose, non-habit-forming, full-body relief to soften your worries and lure you to a new level of relaxation."
+   },
+   "first_pass": {
+    "category": "tinctures",
+    "subtype": "tincture",
+    "strain": "Unwind",
+    "product_line": null,
+    "variant": ""
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.51,
+    "size": 1.0,
+    "strain": 0.46,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "today": {
+    "category": "tinctures",
+    "subtype": "tincture",
+    "strain": "",
+    "product_line": null,
+    "variant": ""
+   },
+   "expect": {
+    "category": "tinctures",
+    "subtype": "tincture",
+    "strain": "Unwind",
+    "product_line": null,
+    "variant": null
+   },
+   "note": "No mg figure anywhere."
+  },
+  {
+   "id": "hur-303",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "1906",
+    "name": "BOOST For Everything - 5mg 2Pk Pills",
+    "category": "edible",
+    "raw_category": "Edibles",
+    "size_field": "",
+    "price_cents": 400,
+    "url": "https://holduprollup.com/menu/products/1906-321012/edibles/boost-for-everything-5mg-2pk-pills-7562693",
+    "description": "Get a boost with the fastest, cleanest, and healthiest way to consume THC. Boost is the only 1906 Drop not infused with plant medicines or designed to create a specific effect. Simply swallow to enjoy a healthier, microdosed high in 20 minutes or use to boost any other 1906 Experience."
+   },
+   "first_pass": {
+    "category": "edible",
+    "subtype": "tablet",
+    "strain": "Everything",
+    "product_line": "BOOST",
+    "variant": "10mg"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.68,
+    "size": 1.0,
+    "strain": 0.42,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "today": {
+    "category": "edible",
+    "subtype": "tablet",
+    "strain": "Boost",
+    "product_line": null,
+    "variant": "10mg"
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "tablet",
+    "strain": "Boost",
+    "product_line": "Drops",
+    "variant": "10mg"
+   },
+   "note": "2 x 5mg. The catalog's Drops Boost '2pk 20mg' entry carries stores' size fields."
+  },
+  {
+   "id": "hur-321",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "JUNIPER JILL",
+    "name": "Blueberry Love Drops - 2:1 Water Soluble Cannabis Lube",
+    "category": "topical",
+    "raw_category": "Topicals",
+    "size_field": "",
+    "price_cents": 5700,
+    "url": "https://holduprollup.com/menu/products/juniper-jill-312341/topicals/blueberry-love-drops-21-water-soluble-cannabis-lube-7603934",
+    "description": "Our THC- and CBD-infused Love Drops are the perfect addition to any sensual evening. Made with all natural ingredients in a coconut base, the drops are best applied 30 minutes before and can be reapplied during intimate time. Safe for ingestion, topical, and internal use on all body parts. Each .5ml dropper contains 5mg THC and 10mg CBD. NOT LATEX, TOY, OR PROPHYLACTIC SAFE"
+   },
+   "first_pass": {
+    "category": "topical",
+    "subtype": "topical",
+    "strain": "Blueberry Love Drops",
+    "product_line": null,
+    "variant": "5mg"
+   },
+   "p": {
+    "category": 0.95,
+    "product_line": 0.89,
+    "size": 1.0,
+    "strain": 0.56,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "today": {
+    "category": "topical",
+    "subtype": "topical",
+    "strain": "Blueberry Love",
+    "product_line": null,
+    "variant": ""
+   },
+   "expect": {
+    "category": "topical",
+    "subtype": "topical",
+    "variant": null
+   },
+   "note": "Only a per-dropper figure (5mg THC per 0.5ml), no package total. Strain/line unsettled (Love Drops?)."
+  },
+  {
+   "id": "hur-351",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Harney Brothers",
+    "name": "Spicy Pound Town - Cinnamon Spiced 5PK Tea Sachets",
+    "category": "edible",
+    "raw_category": "Edibles",
+    "size_field": "0.5g",
+    "price_cents": 2100,
+    "url": "https://holduprollup.com/menu/products/harney-brothers-633521/edibles/spicy-pound-town-cinnamon-spiced-5pk-tea-sachets-7782165",
+    "description": "Our most popular blend with our most popular product. It's a can't-miss TeaHC! 5 pack of tea sachets, 5MG Per Sachet, 25MG Total Get a little Spice in your life! This tea is made with an assertive blend of black teas, three types of cinnamon, orange peel, and sweet cloves. INGREDIENTS: Black tea, orange peel, natural & artificial cinnamon flavor, cinnamon, cloves, cannabis flower."
+   },
+   "first_pass": {
+    "category": "edible",
+    "subtype": "beverage",
+    "strain": "Cinnamon Spiced",
+    "product_line": null,
+    "variant": "25mg"
+   },
+   "p": {
+    "category": 0.96,
+    "product_line": 0.52,
+    "size": 1.0,
+    "strain": 0.51,
+    "subtype": 0.95
+   },
+   "size_by": "code",
+   "today": {
+    "category": "edible",
+    "subtype": "beverage",
+    "strain": "Spicy Pound Town",
+    "product_line": null,
+    "variant": "25mg"
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "beverage",
+    "strain": "Spicy Pound Town",
+    "product_line": null,
+    "variant": "25mg"
+   },
+   "note": "5 sachets x 5mg (description)."
+  },
+  {
+   "id": "hur-386",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Rove",
+    "name": "Green Crack - 0.5G Solventless Ice Hash Live Rosin Mini Bar",
+    "category": "vaporizers",
+    "raw_category": "Vape Disposables",
+    "size_field": "0.5g",
+    "price_cents": 6800,
+    "url": "https://holduprollup.com/menu/products/rove-319346/vape-disposables/green-crack-05g-solventless-ice-hash-live-rosin-mini-bar-7953403",
+    "description": "Green Crack is a popular 65% sativa-dominant hybrid renowned for its intense, energizing, and focused effects, making it an ideal \"wake and bake\" strain. It typically features sharp, fruity, and citrusy mango flavors. It is commonly used for daytime productivity and managing fatigue, stress, or depression. Genetics: Primarily a cross between Skunk #1 and an unknown Afghani indica, though sometimes cited as a 1989 SSSC Skunk #1 and an Afghani landrace. Aroma & Flavor: Sharp citrus, mango-like sweetness, and a light earthy edge. Effects: Energetic, focused, euphoric, and uplifting; often described as a, cerebral head high with minimal physical sedation. Usage: Best for morning or afternoon use; popular for combating fatigue and boosting creativity. Appearance: Dense, compact, resinous buds with a frosty look and orange hairs. Other Names: Sometimes referred to as Green Cush or Mango Crack Our solventless Live Rosin delivers the purest and freshest cannabis experience straight from the plant to the consumer. Derived from freshly frozen plants, this solventless process is made with only ice and water, rosin is as close as you can get to the plant. This full spectrum process preserves cannabinoids and terpenes with nothing added, giving you the cleanest full flower experience"
+   },
+   "first_pass": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Green Crack",
+    "product_line": null,
+    "variant": "0.5g"
+   },
+   "p": {
+    "category": 0.76,
+    "product_line": 0.96,
+    "size": 1.0,
+    "strain": 1.0,
+    "subtype": 0.6
+   },
+   "size_by": "code",
+   "today": {
+    "category": "concentrate",
+    "subtype": "rosin",
+    "strain": "Green Crack",
+    "product_line": null,
+    "variant": "0.5g"
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Green Crack",
+    "product_line": "Premier",
+    "variant": "0.5g"
+   },
+   "note": "Rove's 0.5g Ice Hash Live Rosin Minibar is the Premier line in the catalog; this flavour isn't in it yet."
+  },
+  {
+   "id": "hur-405",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Pure Bud",
+    "name": "Recovery Stick - 1000MG THC : 1000MG CBD Topical",
+    "category": "topical",
+    "raw_category": "Topicals",
+    "size_field": "",
+    "price_cents": 4500,
+    "url": "https://holduprollup.com/menu/products/pure-bud-730726/topicals/recovery-stick-1000mg-thc-1000mg-cbd-topical-7959225",
+    "description": "This topical is a perfect blend of cannabis sativa oil and other all-natural ingredients. It is incredibly convenient and efficient at supporting discomfort related to inflammation in your joints and muscles. All these all-natural ingredients work together to nourish your skin and in-still a sense of relaxation."
+   },
+   "first_pass": {
+    "category": "topical",
+    "subtype": "topical",
+    "strain": "Recovery",
+    "product_line": null,
+    "variant": "1000mg"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.63,
+    "size": 1.0,
+    "strain": 0.65,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "today": {
+    "category": "topical",
+    "subtype": "topical",
+    "strain": "Recovery Stick",
+    "product_line": null,
+    "variant": "1000mg"
+   },
+   "expect": {
+    "category": "topical",
+    "subtype": "topical",
+    "strain": "Recovery",
+    "product_line": null,
+    "variant": "1000mg"
+   },
+   "note": "'Stick' is the format."
+  },
+  {
+   "id": "hur-434",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Ayrloom",
+    "name": "ATF - 5PK Infused Prerolls",
+    "category": "preroll",
+    "raw_category": "Infused Pre-Roll",
+    "size_field": "2.5g",
+    "price_cents": 4500,
+    "url": "https://holduprollup.com/menu/products/ayrloom-316069/infused-pre-roll/atf-5pk-infused-prerolls-8002787",
+    "description": "Alaskan Thunder Fuck (also referred to as ATF, Matanuska Thunder Fuck or Matanuska Tundra) is a legendary sativa marijuana strain originating in the Matanuska Valley area of Alaska. According to the legend, it was originally a Northern California sativa crossed with a Russian ruderalis, but sometime in the late 70s it was crossed with Afghani genetics to make it heartier (and also making it a hybrid). Alaskan Thunder Fuck usually presents large, beautifully frosted buds with incredibly strong odors of pine, lemon, menthol, and skunk. Known for possessing a relaxing yet intensely euphoric high, it is also described as having a “creeper” effect as well as pronounced appetite enhancement."
+   },
+   "first_pass": {
+    "category": "preroll",
+    "subtype": "infused",
+    "strain": "ATF",
+    "product_line": null,
+    "variant": "2.5g"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.53,
+    "size": 1.0,
+    "strain": 0.67,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "today": {
+    "category": "preroll",
+    "subtype": "infused",
+    "strain": "Alaskan Thunder Fuck",
+    "product_line": null,
+    "variant": "2.5g"
+   },
+   "expect": {
+    "category": "preroll",
+    "product_line": null,
+    "variant": "3g"
+   },
+   "accept": {
+    "strain": [
+     "ATF",
+     "Alaskan Thunder Fuck"
+    ]
+   },
+   "note": "Ayrloom's own catalog has the 5pk at 3g (5 x 0.6g), as other stores list it; the store's field says 2.5g. The catalog spells the strain 'Alaskan Thunder Fu*k', which is never copied."
+  },
+  {
+   "id": "hur-460",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "REMZZZ",
+    "name": "Moondrift Berry MAX - 2:2:3 THC:CBD:CBN 10PK Sleep Gummies",
+    "category": "edible",
+    "raw_category": "Edibles",
+    "size_field": "",
+    "price_cents": 2500,
+    "url": "https://holduprollup.com/menu/products/remzzz-737036/edibles/moondrift-berry-max-223-thccbdcbn-10pk-sleep-gummies-8059464",
+    "description": "A dreamy blend of mixed berries that carries you gently from wakefulness to rest. Moondrift Berry feels like the soft transition between consciousness and calm, the moment where thoughts slow and breathing deepens. The flavor is familiar but not overly sweet, grounding you in the present while inviting you to let go. REMZzz Sleep Gummies offer consistent dosing for nightly use. Max: 100mg/unit – 15mg CBN, 10mg CBD, 5mg THC Hash, 5mg THC/piece"
+   },
+   "first_pass": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Moondrift Berry MAX",
+    "product_line": null,
+    "variant": ""
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.5,
+    "size": 0.66,
+    "strain": 0.64,
+    "subtype": 1.0
+   },
+   "size_by": "field",
+   "today": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Moondrift Berry",
+    "product_line": null,
+    "variant": "100mg"
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "gummy",
+    "variant": "100mg"
+   },
+   "note": "10 x (5mg + 5mg THC). Whether MAX goes in the strain or the line is unsettled."
+  },
+  {
+   "id": "hur-461",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "REMZZZ",
+    "name": "Moondrift Berry - 1:1:1 THc:CBD:CBN 20pk Sleep Gummies",
+    "category": "edible",
+    "raw_category": "Edibles",
+    "size_field": "",
+    "price_cents": 2500,
+    "url": "https://holduprollup.com/menu/products/remzzz-737036/edibles/moondrift-berry-111-thccbdcbn-20pk-sleep-gummies-8059463",
+    "description": "A dreamy blend of mixed berries that carries you gently from wakefulness to rest. Moondrift Berry feels like the soft transition between consciousness and calm, the moment where thoughts slow and breathing deepens. The flavor is familiar but not overly sweet, grounding you in the present while inviting you to let go. REMZzz Sleep Gummies offer consistent dosing for nightly use. Regular: 100 mg/unit – 5mg CBN, 5mg CBD, 2.5mg THC Hash, 2.5mg THC/piece"
+   },
+   "first_pass": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Moondrift Berry",
+    "product_line": null,
+    "variant": ""
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.66,
+    "size": 0.64,
+    "strain": 0.99,
+    "subtype": 1.0
+   },
+   "size_by": "field",
+   "today": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Moondrift Berry",
+    "product_line": null,
+    "variant": "100mg"
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Moondrift Berry",
+    "variant": "100mg"
+   },
+   "note": "20 x (2.5mg + 2.5mg THC). Line unsettled (Regular?)."
+  },
+  {
+   "id": "hur-462",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "REMZZZ",
+    "name": "Midnight Mango - 1:1:1 THC:CBD:CBN 20pk Sleep Gummies",
+    "category": "edible",
+    "raw_category": "Edibles",
+    "size_field": "",
+    "price_cents": 2500,
+    "url": "https://holduprollup.com/menu/products/remzzz-737036/edibles/midnight-mango-111-thccbdcbn-20pk-sleep-gummies-8059461",
+    "description": "Smooth, Midnight Mango that unwinds tension and quiets the noise. This is the taste of letting go, when the lights dim and your shoulders finally drop. Midnight Mango brings warmth without stimulation, just the natural ease your body needs to transition from effort to rest. REMZzz Sleep Gummies offer consistent dosing for nightly use. Regular: 100 mg/unit – 5mg CBN, 5mg CBD, 2.5mg THC Hash, 2.5mg THC/piece"
+   },
+   "first_pass": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Midnight Mango",
+    "product_line": null,
+    "variant": ""
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.84,
+    "size": 0.64,
+    "strain": 1.0,
+    "subtype": 1.0
+   },
+   "size_by": "field",
+   "today": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Midnight Mango",
+    "product_line": null,
+    "variant": "100mg"
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Midnight Mango",
+    "variant": "100mg"
+   },
+   "note": "20 x (2.5mg + 2.5mg THC); strain as gold holdup-025."
+  },
+  {
+   "id": "hur-463",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "REMZZZ",
+    "name": "Strawberry Siesta - 1:1:1 THC:CBD:CBN 20pk Sleep Gummies",
+    "category": "edible",
+    "raw_category": "Edibles",
+    "size_field": "",
+    "price_cents": 2500,
+    "url": "https://holduprollup.com/menu/products/remzzz-737036/edibles/strawberry-siesta-111-thccbdcbn-20pk-sleep-gummies-8059469",
+    "description": "Classic, comforting Strawberry Siesta invites you to pause and restore. This is the flavor of unwinding without overthinking, a taste that feels familiar and safe as you prepare for rest. Strawberry Siesta fits naturally into the rhythm of evening, signaling to your body that it’s time to shift gears and recharge. REMZzz Sleep Gummies offer consistent dosing for nightly use. Regular: 100 mg/unit – 5mg CBN, 5mg CBD, 2.5mg THC Hash, 2.5mg THC/piece"
+   },
+   "first_pass": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Strawberry Siesta",
+    "product_line": null,
+    "variant": ""
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.81,
+    "size": 0.58,
+    "strain": 0.97,
+    "subtype": 1.0
+   },
+   "size_by": "field",
+   "today": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Strawberry Siesta",
+    "product_line": null,
+    "variant": "100mg"
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Strawberry Siesta",
+    "variant": "100mg"
+   },
+   "note": "20 x (2.5mg + 2.5mg THC)."
+  },
+  {
+   "id": "hur-505",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "THC Supply Co.",
+    "name": "MAC Bud Buddy - 2G Pre-Ground Flower W/ Stash Box + One Hitter",
+    "category": "flower",
+    "raw_category": "Flowers",
+    "size_field": "2g",
+    "price_cents": 3500,
+    "url": "https://holduprollup.com/menu/products/thc-supply-co-734017/flowers/mac-bud-buddy-2g-pre-ground-flower-w-stash-box-one-hitter-8207236",
+    "description": "The Bud Buddy is the ultimate grab-and-go cannabis kit designed for convenience and quality. Each kit includes grams of top-shelf indoor pre-ground flower, a durable stainless steel one-hitter, and three integrated poker/cleaner tools built directly into the bottom of the compact carrying case. TWO Compact, durable, and ready whenever you are, the Bud Buddy delivers everything you need in one sleek package. MAC (Miracle Alien Cookies) is an indica-dominant hybrid celebrated for its heavy resin production, potent cerebral high, and creamy citrus flavor. Lineage: Crossed from Alien Cookies, Starfighter, and Colombian landrace. The highly sought-after \"MAC 1\" phenotype was specifically bred by Capulator. Effects: Uplifting and euphoric, leaving the mind creative and clear while delivering a relaxing, steady body effect. Flavor Profile: A smooth, creamy taste with sweet citrus, sour cherry, cheese, and gassy/musky undertones."
+   },
+   "first_pass": {
+    "category": "flower",
+    "subtype": "preground",
+    "strain": "MAC",
+    "product_line": null,
+    "variant": "2g"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.88,
+    "size": 1.0,
+    "strain": 0.52,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "today": {
+    "category": "flower",
+    "subtype": "preground",
+    "strain": "MAC",
+    "product_line": null,
+    "variant": "2g"
+   },
+   "expect": {
+    "category": "flower",
+    "subtype": "preground",
+    "strain": "MAC",
+    "variant": "2g"
+   },
+   "note": "Line unsettled (Bud Buddy is the kit's name)."
+  },
+  {
+   "id": "hur-507",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Sapphire",
+    "name": "King Louis XIII - 1G AIO Vape",
+    "category": "vaporizers",
+    "raw_category": "Vape Disposables",
+    "size_field": "1g",
+    "price_cents": 4000,
+    "url": "https://holduprollup.com/menu/products/sapphire-480979/vape-disposables/king-louis-xiii-1g-aio-vape-8290363",
+    "description": "King Louis XIII is an indica dominant hybrid and the supreme ruler of gassy canna aroma. This strain leads with kush notes of pine and cool earth, surrounded on all sides by eye-wateringly pungent gasoline and lime. Heady and rich, this strain is a foray into a damp, cool pine forest under the eternal spell of a citrusy gas fog. Hints of dry spice billow around the aroma in a complex union that will leave you feeling happy, relaxed, and a bit sleepy. Long live the King. Its dominant terpenes include Limonene, β-Caryophyllene, and Myrcene."
+   },
+   "first_pass": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "King Louis XIII",
+    "product_line": null,
+    "variant": "1g"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.72,
+    "size": 1.0,
+    "strain": 0.58,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "today": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "King Louis XIII",
+    "product_line": null,
+    "variant": "1g"
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "King Louis XIII",
+    "product_line": null,
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "hur-524",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "All That Chocolate",
+    "name": "Dark Chocolate with Lions Mane - 50MG Chocolate Bar",
+    "category": "edible",
+    "raw_category": "Edibles",
+    "size_field": "",
+    "price_cents": 1800,
+    "url": "https://holduprollup.com/menu/products/all-that-chocolate-758400/edibles/dark-chocolate-with-lions-mane-50mg-chocolate-bar-8320890",
+    "description": "Savor the rich, deep notes of our premium dark chocolate, enhanced by a delicate dusting of Lion's Mane Mushroom, known for its remarkable ability to support mental clarity and foster a profound sense of calm. Made with 70% dark chocolate and infused pure cannabis distillate for clarity and balance, creating a space where indulgence meets wellness."
+   },
+   "first_pass": {
+    "category": "edible",
+    "subtype": "chocolate",
+    "strain": "Dark Chocolate with Lions Mane",
+    "product_line": null,
+    "variant": "50mg"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 1.0,
+    "size": 1.0,
+    "strain": 0.56,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "today": {
+    "category": "edible",
+    "subtype": "chocolate",
+    "strain": "Dark Chocolate with Lions Mane",
+    "product_line": null,
+    "variant": "50mg"
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "chocolate",
+    "product_line": null,
+    "variant": "50mg"
+   },
+   "accept": {
+    "strain": [
+     "Dark Chocolate with Lions Mane",
+     "Dark Chocolate with Lion's Mane",
+     "Lions Mane",
+     "Lion's Mane",
+     "Dark Chocolate Lions Mane",
+     "Dark Chocolate Lion's Mane"
+    ]
+   }
+  },
+  {
+   "id": "hur-525",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "All That Chocolate",
+    "name": "Dark Chocolate - 100MG Chocolate Bar",
+    "category": "edible",
+    "raw_category": "Edibles",
+    "size_field": "",
+    "price_cents": 2600,
+    "url": "https://holduprollup.com/menu/products/all-that-chocolate-758400/edibles/dark-chocolate-100mg-chocolate-bar-8320889",
+    "description": "For the true connoisseur, our Dark Chocolate bar is a profound and satisfying experience. We begin with high-quality cacao, letting its deep, complex flavors take center stage—rich, bittersweet, and intensely satisfying. Our commitment to purity means we only use real cocoa butter, never palm or vegetable oils, resulting in an exceptionally smooth melt that releases the full character of the chocolate. This decadent foundation is infused with pure, lab-tested cannabis distillate, creating a clear, centered experience. The union is seamless, allowing the deep cacao flavor to shine through with a remarkably clean, non-herbal finish."
+   },
+   "first_pass": {
+    "category": "edible",
+    "subtype": "chocolate",
+    "strain": "",
+    "product_line": null,
+    "variant": "100mg"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.95,
+    "size": 1.0,
+    "strain": 0.55,
+    "subtype": 0.99
+   },
+   "size_by": "code",
+   "today": {
+    "category": "edible",
+    "subtype": "chocolate",
+    "strain": "Dark Chocolate",
+    "product_line": null,
+    "variant": "100mg"
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "chocolate",
+    "product_line": null,
+    "variant": "100mg"
+   },
+   "note": "Whether 'Dark Chocolate' is a chocolate bar's strain is unsettled (the conventions' Milk Chocolate rule)."
+  },
+  {
+   "id": "hur-542",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Vacation",
+    "name": "Tiki Fruit Punch Rings - 100M Hash Rosin Nano Gummies",
+    "category": "edible",
+    "raw_category": "Edibles",
+    "size_field": "",
+    "price_cents": 2500,
+    "url": "https://holduprollup.com/menu/products/vacation-760878/edibles/tiki-fruit-punch-rings-100m-hash-rosin-nano-gummies-8364680",
+    "description": "Tiki Fruit Punch – Tropical Takeoff Bright, fruity, and pure paradise in a bite. Tiki Fruit Punch mixes tropical sweetness with a smooth, balanced buzz that’s perfect for kicking back, catching sunsets, or just keeping the vacation rolling."
+   },
+   "first_pass": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Tiki Fruit Punch",
+    "product_line": null,
+    "variant": "100mg"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.93,
+    "size": 1.0,
+    "strain": 0.68,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "today": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Tiki Fruit Punch",
+    "product_line": null,
+    "variant": "100mg"
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Tiki Fruit Punch",
+    "product_line": null,
+    "variant": "100mg"
+   },
+   "note": "'100M' is 100mg; 'Rings' is the shape."
+  },
+  {
+   "id": "hur-543",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Vacation",
+    "name": "Pineapple Coconut Rings - 100MG Hash Rosin Nano Gummies",
+    "category": "edible",
+    "raw_category": "Edibles",
+    "size_field": "",
+    "price_cents": 2500,
+    "url": "https://holduprollup.com/menu/products/vacation-760878/edibles/pineapple-coconut-rings-100mg-hash-rosin-nano-gummies-8364677",
+    "description": "Hash Rosin Nano Gummies – Full Flavor, Fast Ride Vacation’s Hash Rosin Nano Gummies bring big flavor and even bigger vibes - fast. Each bag holds 10 mouthwatering gummies, each infused with 10mg of fast-acting, solventless hash rosin for a total of 100mg THC. Smooth, potent, and always ready for lift-off, Vacation Gummies are your all-access pass to quicker, better highs. Pineapple Coconut – Island Vibes Only Creamy coconut meets juicy pineapple for a flavor that’s pure vacation mode. Pineapple Coconut brings mellow tropical energy with a smooth, sunny finish made for all-day unwinding."
+   },
+   "first_pass": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Pineapple Coconut Rings",
+    "product_line": null,
+    "variant": "100mg"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.95,
+    "size": 1.0,
+    "strain": 0.6,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "today": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Pineapple Coconut",
+    "product_line": null,
+    "variant": "100mg"
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Pineapple Coconut",
+    "product_line": null,
+    "variant": "100mg"
+   },
+   "note": "'Rings' is the shape."
+  },
+  {
+   "id": "hur-577",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "New York Infusions",
+    "name": "Cheese Crackers - 100MG Baked Good",
+    "category": "edible",
+    "raw_category": "Edibles",
+    "size_field": "",
+    "price_cents": 2500,
+    "url": "https://holduprollup.com/menu/products/new-york-infusions-765834/edibles/cheese-crackers-100mg-baked-good-8445931",
+    "description": "New York Infusions Cheese Crackers are 100 MG of THC per bag, and the ideal savory, crunchy, cheesy, edible. These crackers are perfect for cannabis snacking and a delicious alternative to the usual sweet and sugary choices. Elevate snacking with a cannabis-infused twist using New York Infusions Savory Cheese Crackers – 100mg, a uniquely flavored, crave-worthy edible now available at Cannabis Realm of NY. Designed for those who prefer savory over sweet, this crunchy snack delivers a bold cheese experience paired with a precise cannabis dose. Product Overview Format: Pack of savory cannabis-infused cheese crackers with a total of 100mg THC per bag. Flavor Profile: Rich, cheesy taste with a satisfyingly crunchy texture that appeals to snack lovers looking for a savory alternative to typical sweet edibles. THC Dose: 100mg of THC crafted for controlled edible enjoyment — perfect for dosing throughout the day or sharing responsibly. Experience: Offers a balanced, relaxing high that pairs well with leisure activities, social gatherings, or a chill evening in. Why It’s a Great Choice The New York Infusions Savory Cheese Crackers – 100mg stand out as a delicious and unconventional edible with a savory profile that complements its cannabis effects."
+   },
+   "first_pass": {
+    "category": "edible",
+    "subtype": "other",
+    "strain": "Cheese Crackers",
+    "product_line": null,
+    "variant": "100mg"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.98,
+    "size": 1.0,
+    "strain": 0.63,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "today": {
+    "category": "edible",
+    "subtype": "other",
+    "strain": "Cheese Crackers",
+    "product_line": null,
+    "variant": "100mg"
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "other",
+    "product_line": null,
+    "variant": "100mg"
+   },
+   "accept": {
+    "strain": [
+     "Cheese Crackers",
+     "Cheese"
+    ]
+   }
+  },
+  {
+   "id": "hur-579",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "B Noble",
+    "name": "Singapore Sling - 3.5G Flower",
+    "category": "flower",
+    "raw_category": "Flowers",
+    "size_field": "3.5g",
+    "price_cents": 3000,
+    "url": "https://holduprollup.com/menu/products/b-noble-614588/flowers/singapore-sling-35g-flower-8462714",
+    "description": "Curaleaf is proud to partner with B NOBLE to bring you: high quality pre-rolls with a greater purpose. Each pack contains premium, whole flower, where a percentage of every purchase goes to a local organization working in cannabis justice and reform. Rich in countless compounds and loaded with natural terpenes, our flower is grown to the highest standards by experienced cultivators who love cannabis as much as you do. We offer a carefully selected variety of Sativa, Indica and Hybrid strains to bring you an exquisite range of aromatics and effects."
+   },
+   "first_pass": {
+    "category": "preroll",
+    "subtype": "single",
+    "strain": "Singapore Sling",
+    "product_line": null,
+    "variant": "3.5g"
+   },
+   "p": {
+    "category": 0.6,
+    "product_line": 0.88,
+    "size": 1.0,
+    "strain": 0.99,
+    "subtype": 0.81
+   },
+   "size_by": "code",
+   "today": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Singapore Sling",
+    "product_line": null,
+    "variant": "3.5g"
+   },
+   "expect": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Singapore Sling",
+    "product_line": null,
+    "variant": "3.5g"
+   },
+   "note": "The description is B Noble's pre-roll boilerplate; the name and other stores say flower."
+  },
+  {
+   "id": "hur-584",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Harney Brothers",
+    "name": "Sleep Tea - 10MG 5PK Tea Sachets",
+    "category": "edible",
+    "raw_category": "Edibles",
+    "size_field": "",
+    "price_cents": 2100,
+    "url": "https://holduprollup.com/menu/products/harney-brothers-633521/edibles/sleep-tea-10mg-5pk-tea-sachets-8476383",
+    "description": "A delightfully dreamy option that provides a longer, deeper night of sleep. Calming holy basil is blended with moringa, turmeric, coconut, goji berries, and a hint of spiced nutmeg. Sip plain or add a drop of honey for sweetness. 5 pack of tea sachets INGREDIENTS: Organic moringa, organic turmeric powder, organic coconut, organic holy basil, organic goji berries, organic nutmeg, cannabis flower. CONTAINS COCONUT"
+   },
+   "first_pass": {
+    "category": "edible",
+    "subtype": "beverage",
+    "strain": "Sleep Tea",
+    "product_line": null,
+    "variant": "50mg"
+   },
+   "p": {
+    "category": 0.9,
+    "product_line": 0.63,
+    "size": 1.0,
+    "strain": 0.62,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "today": {
+    "category": "edible",
+    "subtype": "beverage",
+    "strain": "Sleep Tea",
+    "product_line": null,
+    "variant": "50mg"
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "beverage",
+    "strain": "Sleep Tea",
+    "product_line": null,
+    "variant": "50mg"
+   },
+   "note": "5 x 10mg; the catalog writes Harney's teas with 'Tea' (Peach Tea)."
+  },
+  {
+   "id": "hur-612",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Royal Leaf X Kalya",
+    "name": "Pinnacle - 1G Live Rosin AIO Vape",
+    "category": "vaporizers",
+    "raw_category": "Vape Disposables",
+    "size_field": "1g",
+    "price_cents": 7500,
+    "url": "https://holduprollup.com/menu/products/royal-leaf-x-kalya-715933/vape-disposables/pinnacle-1g-live-rosin-aio-vape-8625880",
+    "description": "68.42% THC - 6.94% Terpenes Lineage: Created through genetics involving Blue Dream, Hindu Kush, Slurty 3, and Gush Mints.Effects: Uplifting and creative at first, smoothly transitioning into day-to-night physical relaxation.Aroma & Taste: A complex profile blending sweet citrus, earthy pine, and a subtle gas finish. Royal Leaf Pinnacle is a balanced hybrid strain known for its smooth, terpene-forward profile. It is frequently cultivated in living soil and offers a clear, uplifting cerebral onset that eventually settles into calm, steady relaxation"
+   },
+   "first_pass": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "",
+    "product_line": "Pinnacle",
+    "variant": "1g"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.81,
+    "size": 1.0,
+    "strain": 0.65,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "today": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Pinnacle",
+    "product_line": null,
+    "variant": "1g"
+   },
+   "expect": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Pinnacle",
+    "product_line": null,
+    "variant": "1g"
+   },
+   "note": "Pinnacle is the strain (Slurty 3 x Gush Mints)."
+  },
+  {
+   "id": "hur-615",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Royal Leaf X Kalya",
+    "name": "Pinnacle - 2G Live Rosin",
+    "category": "concentrate",
+    "raw_category": "Concentrates",
+    "size_field": "2g",
+    "price_cents": 12000,
+    "url": "https://holduprollup.com/menu/products/royal-leaf-x-kalya-715933/concentrates/pinnacle-2g-live-rosin-8625881",
+    "description": "66.6% THC - 7.32% Terps The Pinnacle strain (most commonly a Slurty 3 × Gush Mints cross, bred by Purple City Genetics) is a potent indica-dominant hybrid celebrated for its exceptionally high THC levels and heavy, relaxing physical effects. Genetics: Slurty 3 × Gush Mints Terpenes: β-Caryophyllene, Limonene, Linalool Flavors & Aroma: Sweet vanilla, creamy grape, pine, and diesel, with a touch of funk. Effects: Begins with a warm, euphoric cerebral buzz before melting into deep, heavy body relaxation. Contents: Live Rosin Concentrate - (2.0g) Flavor: Sweet cookies, Fruity Notes, Gassy Extraction Method: Solventless Ingredients: Rosin Royal Leaf Shake Shack is a solventless live rosin concentrate made from fresh-frozen cannabis. This hybrid offers a flavorful combination of sweet cookie notes, fruity undertones, and a smooth gassy finish. Its effects are balanced, beginning with an uplifting sense of euphoria before settling into a relaxing body high. The clean, terpene-rich profile delivers a full-spectrum experience without the use of solvents or additives. Packaged in a 2-gram jar, it's an excellent choice for consumers seeking flavorful, premium live rosin."
+   },
+   "first_pass": {
+    "category": "concentrate",
+    "subtype": "rosin",
+    "strain": "",
+    "product_line": "Pinnacle",
+    "variant": "2g"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.66,
+    "size": 1.0,
+    "strain": 0.6,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "today": {
+    "category": "concentrate",
+    "subtype": "rosin",
+    "strain": "Pinnacle",
+    "product_line": null,
+    "variant": "2g"
+   },
+   "expect": {
+    "category": "concentrate",
+    "subtype": "rosin",
+    "strain": "Pinnacle",
+    "product_line": null,
+    "variant": "2g"
+   },
+   "note": "Pinnacle is the strain (Slurty 3 x Gush Mints)."
+  },
+  {
+   "id": "hur-653",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Slack Hollow",
+    "name": "Permanent Marker - 8PK Prerolls",
+    "category": "preroll",
+    "raw_category": "Preroll",
+    "size_field": "4g",
+    "price_cents": 4800,
+    "url": "https://holduprollup.com/menu/products/slack-hollow-412101/preroll/permanent-marker-8pk-prerolls-8678889",
+    "description": "Permanent Marker is a modern cannabis strain bred by Los Angeles indie brand Doja Exclusive, who released the Permanent Marker weed strain in 2022 on both coasts. Bred and grown by Seed Junky Genetics’ JBeezy and selected by Doja Pak, the strain fuses several well-established cultivars: (Biscotti x Sherb Bx) x Jealousy. It can smell like a permanent marker. Others note its floral, soapy, candy, and gassy funk that fully translate into the taste. It has a lingering, pungent flavor of a soapy funk with a hint of candy and floral gas tones. The potent strain smells amazing, and can support creativity or relaxation day and night. Just be careful—it's strong."
+   },
+   "first_pass": {
+    "category": "preroll",
+    "subtype": "pack",
+    "strain": "Permanent Marker",
+    "product_line": null,
+    "variant": "4g"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.8,
+    "size": 1.0,
+    "strain": 0.5,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "today": {
+    "category": "preroll",
+    "subtype": "pack",
+    "strain": "Permanent Marker",
+    "product_line": null,
+    "variant": "4g"
+   },
+   "expect": {
+    "category": "preroll",
+    "strain": "Permanent Marker",
+    "product_line": null,
+    "variant": "4g"
+   }
+  },
+  {
+   "id": "hur-685",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Blotter",
+    "name": "Orange Boof - 1g Cured Resin Sugar",
+    "category": "concentrate",
+    "raw_category": "Concentrates",
+    "size_field": "1g",
+    "price_cents": 4000,
+    "url": "https://holduprollup.com/menu/products/blotter-321013/concentrates/orange-boof-1g-cured-resin-sugar-8722959",
+    "description": "Bright orange zest and tropical sweetness come together in this flavorful concentrate experience."
+   },
+   "first_pass": {
+    "category": "concentrate",
+    "subtype": "resin",
+    "strain": "Orange Boof",
+    "product_line": null,
+    "variant": "1g"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.81,
+    "size": 1.0,
+    "strain": 0.95,
+    "subtype": 0.69
+   },
+   "size_by": "code",
+   "today": {
+    "category": "concentrate",
+    "subtype": "resin",
+    "strain": "Orange Boof",
+    "product_line": null,
+    "variant": "1g"
+   },
+   "expect": {
+    "category": "concentrate",
+    "subtype": "resin",
+    "strain": "Orange Boof",
+    "product_line": null,
+    "variant": "1g"
+   }
+  },
+  {
+   "id": "hur-712",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Dragonfly",
+    "name": "Triple Bake Cake - 1.25G Live Resin Infused Preroll",
+    "category": "preroll",
+    "raw_category": "Infused Pre-Roll",
+    "size_field": "1.25g",
+    "price_cents": 1500,
+    "url": "https://holduprollup.com/menu/products/dragonfly-619475/infused-pre-roll/triple-bake-cake-125g-live-resin-infused-preroll-8922131",
+    "description": "Triple Bake Cake (often referred to as Triple Cake) is an indica-dominant hybrid cannabis strain prized for its sweet, dessert-like aroma and deeply relaxing effects. Aroma: Creamy vanilla frosting, sweet cookie dough, and sugary pastry with subtle earth and spice. Flavor: Sweet cake, light citrus, and a smooth, creamy finish"
+   },
+   "first_pass": {
+    "category": "preroll",
+    "subtype": "infused",
+    "strain": "Triple Bake Cake",
+    "product_line": null,
+    "variant": "1.25g"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.57,
+    "size": 1.0,
+    "strain": 0.66,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "today": {
+    "category": "preroll",
+    "subtype": "infused",
+    "strain": "Triple Bake Cake",
+    "product_line": null,
+    "variant": "1.25g"
+   },
+   "expect": {
+    "category": "preroll",
+    "strain": "Triple Bake Cake",
+    "product_line": null,
+    "variant": "1.25g"
+   }
+  },
+  {
+   "id": "hur-740",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Lowell Herb Co.",
+    "name": "All Terrain - 3.6G Variety 6Pk Prerolls",
+    "category": "preroll",
+    "raw_category": "Preroll",
+    "size_field": "3.6g",
+    "price_cents": 4500,
+    "url": "https://holduprollup.com/menu/products/lowell-herb-co-735451/preroll/all-terrain-36g-variety-6pk-prerolls-9008550",
+    "description": "\"Experience the best of every mood with the Lowell Variety 6-Pack. This curated multipack includes six premium pre-rolls featuring 2 Sativa, 2 Hybrid, and 2 Indica strains, making it the perfect way to explore the Lowell lineup or have the right option for any time of day. Whether you're looking for an uplifting daytime smoke, a balanced afternoon session, or a relaxing evening unwind, the Variety Pack has you covered. Crafted with premium flower and Lowell's signature attention to quality, it's an easy way to sample multiple strains in one convenient package.\" Trailblazer - 29.5%, Mind Safari - 29%, Dreamweaver - 31%"
+   },
+   "first_pass": {
+    "category": "preroll",
+    "subtype": "pack",
+    "strain": "All Terrain",
+    "product_line": null,
+    "variant": "3.6g"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.82,
+    "size": 1.0,
+    "strain": 0.62,
+    "subtype": 0.99
+   },
+   "size_by": "code",
+   "today": {
+    "category": "preroll",
+    "subtype": "pack",
+    "strain": "All Terrain",
+    "product_line": null,
+    "variant": "3.6g"
+   },
+   "expect": {
+    "category": "preroll",
+    "strain": "All Terrain",
+    "product_line": null,
+    "variant": "3.6g"
+   },
+   "note": "Lowell Smokes is the brand's other name, not a line."
+  },
+  {
+   "id": "hur-778",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Layup",
+    "name": "Iced Tea Variety Pack - 8 X 10MG Beverages",
+    "category": "edible",
+    "raw_category": "Drinks",
+    "size_field": "",
+    "price_cents": 4000,
+    "url": "https://holduprollup.com/menu/products/layup-630784/drinks/iced-tea-variety-pack-8-x-10mg-beverages-9148201",
+    "description": "8 Cans, 10MG each x2 Peach Tea x2 Mango Tea x2 Raspberry Tea x2Iced Tea Lemonade"
+   },
+   "first_pass": {
+    "category": "edible",
+    "subtype": "beverage",
+    "strain": "Iced Tea",
+    "product_line": null,
+    "variant": "80mg"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.83,
+    "size": 1.0,
+    "strain": 0.47,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "today": {
+    "category": "edible",
+    "subtype": "beverage",
+    "strain": "",
+    "product_line": null,
+    "variant": "80mg"
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "beverage",
+    "product_line": null,
+    "variant": "80mg"
+   },
+   "accept": {
+    "strain": [
+     "Iced Tea Variety",
+     "Iced Tea Variety Pack",
+     "Variety Pack",
+     "Variety"
+    ]
+   },
+   "note": "Four flavours, two cans each; 'Iced Tea' alone names none of them."
+  },
+  {
+   "id": "hur-844",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "KSHN",
+    "name": "Citrus - 100MG 10PK Pouches",
+    "category": "edible",
+    "raw_category": "Edibles",
+    "size_field": "",
+    "price_cents": 2800,
+    "url": "https://holduprollup.com/menu/products/kshn-779051/edibles/citrus-100mg-10pk-pouches-9273593",
+    "description": "Ready to trade the old ways for a new kind of high? Meet the Citrus KSHN Pouch, a flavorful pioneer of a new consumption category in the cannabis world. Crafted by New York connoisseurs and made in small, high-quality batches, this isn't your grandma's edible (seriously, it's NOT an edible! See instructions below). This is your Session Dose™. One pouch, one session, total control. Think of it like your favorite piece of gum: pop one in, enjoy the ride, and grab another when you're ready for more. No commitment, no guessing, no waiting around wondering if you took too much. Forget the guessing game. Our Cool Processed™ Nanoemulsion isn't magic, it's just science. We break down the molecules so the good stuff (THC) gets a fast-track right into your bloodstream. It completely bypasses your body's usual, complicated digestive detour. The bottom line? A more predictable, fast-acting, and long-lasting ride. How To Pouch Up Tuck it: Slide a pouch right between your lip and gum. Suck it: Enjoy the tropical flavor for 15-30 minutes as your effects gracefully build. Ditch it: When you're done, simply discard the biodegradable pouch. (Pro Tip): Feeling extra? Tuck & suck another pouch to boost the flavor and the high! The Good Stuff That Matters Zero Calories? Yep. Save your snack budget for, well, actual snacks. Naturally Flavored, Vegan, Gluten-Free: Mother Nature approved. Plant-Based Pouch: Biodegradable and made from natural cellulose. No Artificial Sweeteners: We sweeten with xylitol, an FDA-recognized ingredient clinically shown to promote gum health and protect your smile."
+   },
+   "first_pass": {
+    "category": "edible",
+    "subtype": "other",
+    "strain": "Citrus",
+    "product_line": null,
+    "variant": "100mg"
+   },
+   "p": {
+    "category": 0.72,
+    "product_line": 0.93,
+    "size": 1.0,
+    "strain": 1.0,
+    "subtype": 0.62
+   },
+   "size_by": "code",
+   "today": {
+    "category": "edible",
+    "subtype": "other",
+    "strain": "Citrus",
+    "product_line": null,
+    "variant": "100mg"
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "other",
+    "strain": "Citrus",
+    "product_line": null,
+    "variant": "100mg"
+   },
+   "note": "An oral pouch; the store files it under edibles."
+  },
+  {
+   "id": "hur-845",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "KSHN",
+    "name": "Spearmint - 100MG 10PK Pouches",
+    "category": "edible",
+    "raw_category": "Edibles",
+    "size_field": "",
+    "price_cents": 2800,
+    "url": "https://holduprollup.com/menu/products/kshn-779051/edibles/spearmint-100mg-10pk-pouches-9273594",
+    "description": "Ready to trade the old ways for a new kind of high? Meet the Spearmint KSHN Pouch, a flavorful pioneer of a new consumption category in the cannabis world. Crafted by New York connoisseurs and made in small, high-quality batches, this isn't your grandma's edible (seriously, it's NOT an edible! See instructions below). This is your Session Dose™. One pouch, one session, total control. Think of it like your favorite piece of gum: pop one in, enjoy the ride, and grab another when you're ready for more. No commitment, no guessing, no waiting around wondering if you took too much. Forget the guessing game. Our Cool Processed™ Nanoemulsion isn't magic, it's just science. We break down the molecules so the good stuff (THC) gets a fast-track right into your bloodstream. It completely bypasses your body's usual, complicated digestive detour. The bottom line? A more predictable, fast-acting, and long-lasting ride. How To Pouch Up Tuck it: Slide a pouch right between your lip and gum. Suck it: Enjoy the tropical flavor for 15-30 minutes as your effects gracefully build. Ditch it: When you're done, simply discard the biodegradable pouch. (Pro Tip): Feeling extra? Tuck & suck another pouch to boost the flavor and the high! The Good Stuff That Matters Zero Calories? Yep. Save your snack budget for, well, actual snacks. Naturally Flavored, Vegan, Gluten-Free: Mother Nature approved. Plant-Based Pouch: Biodegradable and made from natural cellulose. No Artificial Sweeteners: We sweeten with xylitol, an FDA-recognized ingredient clinically shown to promote gum health and protect your smile."
+   },
+   "first_pass": {
+    "category": "edible",
+    "subtype": "other",
+    "strain": "Spearmint",
+    "product_line": null,
+    "variant": "100mg"
+   },
+   "p": {
+    "category": 0.73,
+    "product_line": 1.0,
+    "size": 1.0,
+    "strain": 1.0,
+    "subtype": 0.45
+   },
+   "size_by": "code",
+   "today": {
+    "category": "edible",
+    "subtype": "other",
+    "strain": "Spearmint",
+    "product_line": null,
+    "variant": "100mg"
+   },
+   "expect": {
+    "category": "edible",
+    "subtype": "other",
+    "strain": "Spearmint",
+    "product_line": null,
+    "variant": "100mg"
+   },
+   "note": "An oral pouch; the store files it under edibles."
+  }
+ ]
+}

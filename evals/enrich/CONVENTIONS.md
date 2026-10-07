@@ -76,7 +76,10 @@ The name that tells the product apart from the brand's others in its line.
   - not THC plus the others ("150MG THC : 450MG CBD" is 150mg, not 600mg);
   - a per-piece figure times the count when the text gives it per piece;
   - two THC figures for one piece add up (REMZzz's "2.5mg THC Hash, 2.5mg THC/piece" is
-    5mg a piece, and its 1:1:1 ratio and "100 mg/unit" agree).
+    5mg a piece, and its 1:1:1 ratio and "100 mg/unit" agree);
+  - a product that states no THC figure at all (a hemp CBD or CBG oil) takes the figure
+    it does state: Head & Heal's "300 mg CBD per bottle" spray is 300mg, as the labelled
+    cases have it.
 - New York caps an edible package at 100mg of THC: a figure above it is not one
   edible package's.
 - Catalog entries for dose products are written as the pack and total ("20pk 100mg");

@@ -16,6 +16,7 @@ the live listings of the queued brands, the run's typical prices.
 
 from __future__ import annotations
 
+import dataclasses
 import html
 import json
 import re
@@ -26,6 +27,7 @@ import size_candidates
 import size_choice
 import sizes
 import taxonomy
+from scraper_common import normalize_variant
 
 MAX_RESULTS = 25
 PAGE_CHARS = 4000
@@ -43,22 +45,30 @@ class ReviewContext:
     proposals: list[dict] = field(default_factory=list)
     answers: dict[str, dict] = field(default_factory=dict)
     fetch_page: callable = None                      # url -> html; None turns the tool off
+    stores: dict[str, str] = field(default_factory=dict)   # dispensary id -> slug, for display
+
+    def for_batch(self, queue: dict[str, dict]) -> "ReviewContext":
+        """A copy sharing what is read (catalogs, listings, prices) with its own queue,
+        answers and proposals: one per conversation."""
+        return dataclasses.replace(self, queue=queue, answers={}, proposals=[])
 
     @classmethod
     def from_db(cls, brands: list[str]) -> "ReviewContext":
         """Catalogs and the live listings of `brands`, over the same transport the
-        pipeline uses (DB_VIA_HTTP or DATABASE_URL)."""
+        pipeline uses (DB_VIA_HTTP or DATABASE_URL). Prices are the run's snapshot
+        (SIZE_PRICES) when there is one, else built from the live listings."""
         import os
         catalogs = catalog_store.load_all("db")
         keys = {catalog_store.brand_key(b) for b in brands}
-        listings = []
+        listings, stores = [], {}
         if os.environ.get("DB_VIA_HTTP", "").strip().lower() in ("1", "true", "yes"):
             import db_http
             cols = ("id,scraped_brand,scraped_name,scraped_category,variant,price_cents,description,url,"
                     "strain,product_line,dispensary_id,catalog_entry_id,catalog_match_method")
-            for row in db_http.select_all("listings", f"select={cols}&is_active=eq.true"):
+            for row in db_http.select_all("listings", f"select={cols}&is_active=eq.true&order=id"):
                 if catalog_store.brand_key(row.get("scraped_brand")) in keys:
                     listings.append(_listing(row))
+            stores = {str(r["id"]): r["slug"] for r in db_http.select_all("dispensaries", "select=id,slug&order=id")}
         else:
             import psycopg2
             import psycopg2.extras
@@ -71,10 +81,12 @@ class ReviewContext:
                                    FROM listings WHERE is_active""")
                     listings = [_listing(dict(r)) for r in cur.fetchall()
                                 if catalog_store.brand_key(r["scraped_brand"]) in keys]
+                    cur.execute("SELECT id, slug FROM dispensaries")
+                    stores = {str(r["id"]): r["slug"] for r in cur.fetchall()}
             finally:
                 conn.close()
-        return cls(catalogs=catalogs, listings=listings, prices=size_choice.prices_for_run(),
-                   fetch_page=_http_get)
+        prices = size_choice.prices_for_run() if os.environ.get("SIZE_PRICES") else size_choice.PriceBook.from_db()
+        return cls(catalogs=catalogs, listings=listings, prices=prices, fetch_page=_http_get, stores=stores)
 
 
 def _listing(row: dict) -> dict:
@@ -137,13 +149,16 @@ def search_catalog(ctx: ReviewContext, brand: str, query: str = "") -> dict:
 
 def other_store_listings(ctx: ReviewContext, brand: str, query: str) -> dict:
     """How other dispensaries list the brand's products matching `query`: their names,
-    sizes, prices, and the strain and line already recorded for them."""
+    sizes, prices, and the strain and line already recorded for them. The stores of the
+    listings under review are left out: their own earlier answers are not evidence."""
     key = catalog_store.brand_key(brand)
+    own = {q.get("store") for q in ctx.queue.values() if q.get("store")}
     hits = [(_score(query, l["name"]), l) for l in ctx.listings
-            if catalog_store.brand_key(l["brand"]) == key and l["id"] not in ctx.queue]
+            if catalog_store.brand_key(l["brand"]) == key and l["id"] not in ctx.queue
+            and l.get("store") not in own]
     hits = sorted([h for h in hits if h[0] > 0], key=lambda x: -x[0])[:MAX_RESULTS]
     return {"brand": brand, "listings": [
-        {"store": l["store"], "name": l["name"], "size_field": l["size_field"],
+        {"store": ctx.stores.get(l["store"], l["store"]), "name": l["name"], "size_field": l["size_field"],
          "price": f"${l['price_cents'] / 100:,.2f}" if l.get("price_cents") else None,
          "strain": l.get("strain"), "product_line": l.get("product_line"),
          "catalog_match": l.get("catalog_match_method")} for _, l in hits]}
@@ -166,17 +181,21 @@ def listing_page(ctx: ReviewContext, listing_id: str) -> dict:
     return {"listing_id": listing_id, "url": l["url"], "text": text[:PAGE_CHARS]}
 
 
-def size_readings(ctx: ReviewContext, listing_id: str) -> dict:
+def size_readings(ctx: ReviewContext, listing_id: str, category: str | None = None) -> dict:
     """Every size the listing's texts could mean (size_candidates), each with where it
-    comes from and what a package that size typically sells for."""
+    comes from and what a package that size typically sells for. `category` reads them
+    as that category when the store filed the listing wrongly (None: the store's)."""
     l = ctx.queue.get(listing_id)
     if not l:
         return {"error": f"{listing_id} is not a listing under review"}
-    item = size_choice.Item(name=l["name"], category=l["category"], variant=l.get("size_field"),
+    if category is not None and category not in taxonomy.CATEGORY_ORDER:
+        return {"error": f"category must be one of {list(taxonomy.CATEGORY_ORDER)}"}
+    category = category or l["category"]
+    item = size_choice.Item(name=l["name"], category=category, variant=l.get("size_field"),
                             description=l.get("description"), brand=l["brand"], price_cents=l.get("price_cents"))
     a = size_candidates.assess({"variant": l.get("size_field"), "scraped_name": l["name"],
-                                "description": l.get("description"), "scraped_category": l["category"]})
-    unit = size_candidates.unit_of(l["category"])
+                                "description": l.get("description"), "scraped_category": category})
+    unit = size_candidates.unit_of(category)
     readings = [{"size": c.label(), "source": c.source, "reading": c.reading, "likely": c.likely}
                 for c in a.candidates]
     prices = {f"{v:g}{unit}": ctx.prices.size_price(item, v) for v in a.options()} if unit else {}
@@ -204,16 +223,20 @@ def submit_labels(ctx: ReviewContext, listing_id: str, category: str, strain: st
     if confidence not in ("sure", "likely", "unsure"):
         problems.append('confidence must be "sure", "likely" or "unsure"')
     unit = size_candidates.unit_of(category)
+    total = None
     if size and unit:
         parsed = sizes.parse(size, category=category)
-        if (parsed.mg if unit == "mg" else parsed.grams) is None:
+        value = parsed.mg if unit == "mg" else parsed.grams
+        if value is None:
             problems.append(f"size must be a package total in {'mg' if unit == 'mg' else 'grams'}, like "
                             f"{'100mg' if unit == 'mg' else '3.5g'}")
+        else:
+            total = normalize_variant(f"{value:g}{unit}", category)   # written as the pipeline writes it
     if problems:
         return {"accepted": False, "errors": problems}
     ctx.answers[listing_id] = {
         "category": category, "subtype": subtype if taxonomy.keeps_subtype(category) else None,
-        "strain": strain or None, "product_line": product_line or None, "size": size or None,
+        "strain": strain or None, "product_line": product_line or None, "size": total,
         "confidence": confidence, "evidence": evidence}
     return {"accepted": True}
 
@@ -254,9 +277,11 @@ TOOLS = [
     {"name": "size_readings",
      "description": "Every size the listing's size field, name and description could mean, with where "
                     "each comes from, whether its unit could exist, and what a package that size "
-                    "typically sells for. Use it instead of doing pack arithmetic yourself.",
-     "input_schema": {"type": "object", "properties": {"listing_id": _STR},
-                      "required": ["listing_id"], "additionalProperties": False}},
+                    "typically sells for. Use it instead of doing pack arithmetic yourself. category: "
+                    "read the sizes as this category when the store filed the listing wrongly (null: "
+                    "the store's category).",
+     "input_schema": {"type": "object", "properties": {"listing_id": _STR, "category": _NSTR},
+                      "required": ["listing_id", "category"], "additionalProperties": False}},
     {"name": "submit_labels",
      "description": "Record your answer for one listing. Call once per listing. category and subtype "
                     "from the taxonomy; strain and product_line as the conventions say (null when there "
