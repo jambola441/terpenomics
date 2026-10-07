@@ -119,3 +119,20 @@ def test_labelling_a_matcher_test_set_hides_what_the_matcher_recorded():
     row = rt.other_store_listings(c, "Grön", "baja blaze mega")["listings"][0]
     assert set(row) == {"store", "name", "size_field", "price"}
     assert rt.search_catalog(c, "Grön", "baja")["entries"][0]["product"] == "k1"
+
+
+def test_the_shell_wrapper_runs_a_batch_against_a_saved_context(tmp_path, monkeypatch):
+    import io
+    import pickle
+    import review_cli
+    (tmp_path / "ctx.pkl").write_bytes(pickle.dumps(rt.ReviewContext(catalogs=CATALOGS, listings=OTHERS)))
+    (tmp_path / "batch.json").write_text(json.dumps({"context": str(tmp_path / "ctx.pkl"), "task": "labels",
+                                                     "listings": [QUEUED]}))
+    out = json.loads(review_cli.call(str(tmp_path), "search_catalog", '{"brand": "Grön", "query": "baja"}'))
+    assert out["entries"][0]["entry_id"] == "e1"
+    labels = {"listing_id": "q1", "category": "edible", "subtype": "gummy", "strain": "Mother's Milk",
+              "product_line": None, "size": "100mg", "confidence": "likely", "evidence": "x"}
+    monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(labels)))
+    assert json.loads(review_cli.call(str(tmp_path), "submit_labels", "-")) == {"accepted": True}
+    assert json.loads((tmp_path / "answers.json").read_text())["q1"]["strain"] == "Mother's Milk"
+    assert "error" in json.loads(review_cli.call(str(tmp_path), "submit_match", "{}"))   # not this task's tool
