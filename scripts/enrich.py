@@ -348,6 +348,30 @@ MODELS: dict[str, dict] = {
     # answers a /chat/completions request with 404 "cannot be used with the
     # chat/completions endpoint (adapter OpenAIBatchAdapter)". Adopting it would be a
     # submit-poll-retrieve rewrite, not a MODELS entry.
+    # Claude Haiku 5.5, released 2026-10-07: a CANDIDATE for today's path. Not the
+    # default, and not what the cron runs. MEASURED 2026-10-07 against haiku-or: all nine
+    # case files, three runs each, both paths, plus Jev only for reference.
+    #   production path  276.7 (276-277) vs 273.3 (272-276) cases of 302; after the
+    #                    catalog match 279.0 (279-279) vs 275.3 (274-278) of 291, where
+    #                    Jev only scores 275.7. Rows changed across the 3 runs: 31 vs 33.
+    #                    $/run $0.045 vs $0.081 (Jev $0.030 of both); s/run 73 vs 43.
+    #   llm path         267.7 vs 272.0, and less steady: 63 vs 39 rows changed, mostly
+    #                    product lines. The gain is in the rows Jev leaves the model.
+    # It reasons unless told not to. "low" scored within the spread of that default;
+    # "none" lost 8 cases on the production path. So no reasoning setting is sent.
+    # Its prompts run about 30% more tokens than Haiku 4.5's. evals/enrich/README.md.
+    "haiku-5.5-or": {
+        "provider":  "openrouter",
+        "api_model": "anthropic/claude-haiku-5.5",
+        # OpenRouter's rates. No cache was read or written in the measured runs, but if
+        # one is, it is priced at these rates rather than as plain input.
+        "cost": {"input": 0.10 / 1e6, "output": 0.50 / 1e6,
+                 "cache_write": 0.125 / 1e6, "cache_read": 0.01 / 1e6},
+        # Reasoning counts against max_tokens: about 16k of a production-path run's 21k
+        # output tokens. This is the cap the runs were measured with; it is a cap, not a
+        # charge.
+        "max_tokens": 16384,
+    },
 }
 
 

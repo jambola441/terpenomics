@@ -38,6 +38,27 @@ def test_catalog_search_ranks_by_the_query_and_shows_typical_prices():
     assert rt.search_catalog(ctx(), "Nobody", "x") == {"brand": "Nobody", "has_catalog": False, "entries": []}
 
 
+def test_catalog_search_finds_word_beginnings_sizes_and_subtypes():
+    def found(query):
+        return [e["entry_id"] for e in rt.search_catalog(ctx(), "Grön", query)["entries"]]
+    assert found("lych") == ["e2"]              # a word of 3+ letters finds the words it begins
+    assert found("ly") == []                    # shorter ones only whole words
+    assert found("10pk") == ["e2"]              # the size is searched too
+    assert found("gummy") == ["e1", "e2"]       # and the subtype
+
+
+def test_a_list_cut_short_says_how_much_it_left_out(monkeypatch):
+    monkeypatch.setattr(rt, "MAX_CATALOG", 1)
+    monkeypatch.setattr(rt, "MAX_RESULTS", 1)
+    whole = rt.search_catalog(ctx(), "Grön", "")
+    assert len(whole["entries"]) == 1 and whole["not_shown"].startswith("1 more entries match")
+    assert "not_shown" not in rt.search_catalog(ctx(), "Grön", "baja")
+    others = rt.other_store_listings(ctx(), "Grön", "pearls baja")
+    assert len(others["listings"]) == 1 and others["not_shown"].startswith("1 more listings match")
+    monkeypatch.setattr(rt, "MAX_CATALOG", 200)
+    assert "not_shown" not in rt.search_catalog(ctx(), "Grön", "")
+
+
 def test_other_stores_exclude_the_listing_under_review():
     names = [l["name"] for l in rt.other_store_listings(ctx(), "Grön", "baja blaze mega")["listings"]]
     assert names == ["Baja Blaze MEGA 100mg Gummy"]

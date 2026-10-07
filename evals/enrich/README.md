@@ -977,6 +977,108 @@ shortcut, each followed by the importer's match and overlay.
   so taking the entry's category changes almost nothing there.
 - **Cost:** about $0.03 more on this store's first run, nothing on cached rows.
 
+## Model comparison — Haiku 5.5 vs Haiku 4.5 (2026-10-07)
+
+Claude Haiku 5.5 came out on 2026-10-07. On OpenRouter it costs a tenth of Haiku 4.5
+per token: $0.10/$0.50 per M against $1.00/$5.00. It reasons by default.
+
+**Not adopted yet.** The cron still runs `haiku-or`. The `haiku-5.5-or` entry in `MODELS`
+(`anthropic/claude-haiku-5.5`, pinned) is there so the result can be reproduced, and
+switching is one argument.
+
+**How it was measured.** The same way as Luna:
+
+- all nine case files (302 cases, 333 listings);
+- three runs per arm, interleaved, on both paths;
+- three reasoning settings: unset (the default), `low` and `none`;
+- each production-path run also scored after the catalog match (`score_after_match.py`,
+  291 labelled cases), all on the same catalogs.
+
+Jev only was run three times the same evening for reference, since it is the
+alternative to today's path.
+
+| production path, 3 runs each | Jev only | haiku-or | Haiku 5.5 | 5.5 `low` | 5.5 `none` |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| cases passed, of 302 | 272.7 (272–273) | 273.3 (272–276) | 276.7 (276–277) | 275.7 (275–276) | 268.3 (267–270) |
+| after the catalog match, of 291 | 275.7 (275–276) | 275.3 (274–278) | **279.0 (279–279)** | 278.3 (277–280) | 270.0 (270–270) |
+| — subtype (of 252), after the match | 248.0 | 249.7 | 250.0 | 249.7 | 245.3 |
+| — strain (of 247) | 240.0 | 238.0 | 239.7 | 239.3 | 236.0 |
+| — line (of 28) | 21.3 | 21.3 | 22.7 | 21.7 | 20.3 |
+| — size (of 243) | 241.0 | 242.0 | 242.7 | 242.0 | 240.7 |
+| listings changed across the 3 runs, of 333 | 10 | 33 | 31 | 38 | 40 |
+| $ per run | $0.032 | $0.081 | $0.045 | $0.043 | $0.037 |
+| — of which the model (Jev is $0.030 of each) | — | $0.051 | $0.014 | $0.013 | $0.006 |
+| seconds per run | 51 | 43 | 73 | 67 | 40 |
+| failed rows / model errors | 0 / 0 | 0 / 0 | 0 / 0 | 0 / 0 | 0 / 0 |
+
+Category is 281 of 281 after the match in every arm but `none` (280.3).
+
+`--classifier llm`, the rollback, where the model answers every row:
+
+| llm path, 3 runs each | haiku-or | Haiku 5.5 | 5.5 `low` | 5.5 `none` |
+| --- | ---: | ---: | ---: | ---: |
+| cases passed, of 302 | 272.0 (268–277) | 267.7 (265–269) | 269.0 (267–270) | 256.3 (254–258) |
+| after the catalog match, of 291 (mean) | 272.7 | 272.0 | 272.7 | 262.3 |
+| listings changed across the 3 runs, of 333 | 39 | 63 | 49 | 72 |
+| — of which the product line | 9 | 25 | 23 | 32 |
+| $ per run | $0.164 | $0.035 | $0.030 | $0.020 |
+| seconds per run | 17 | 34 | 33 | 11 |
+
+### What the numbers say
+
+- **On the production path Haiku 5.5 is ahead, by about a point.** After the match it
+  passed 279 of 291 in every run, against 274–278 for Haiku 4.5 and 275–276 for Jev
+  only.
+- **Where it gains on Haiku 4.5** (10 cases where it passed more runs):
+  - strains that Haiku 4.5 gets wrong: "Chem Dog" for Chem Dawg, "Pillow Talk Sleep
+    Drops", "Milk Chocolate Sativa", "Jack" for Premium Jack, and an empty strain on
+    MyHi's Simply Flavorless;
+  - lines it finds more often: Grön's Mega, and Ayrloom's UP in 2 runs of 3.
+- **Where it loses** (3 cases): strains where the label has none.
+  - "Unscented" on a lotion;
+  - "Organic Medium Dog" on a dog oil (a disputed label: see
+    `evals/review/results/subagents-2026-10-07.md`);
+  - "Babish", once, on Old Pal's infused sugar.
+
+  Against Jev only it loses the lotion and the dog oil, plus Eaton's Apple-A-Day. On
+  Apple-A-Day both Haiku arms write the line as the strain in every run.
+- **Steadiness:** the same as Haiku 4.5 on this path (31 listings changed against 33),
+  but three times Jev only's 10.
+- **Cost:** the model's share falls from $0.051 to $0.014 a run, and a run from $0.081
+  to $0.045, against Jev only's $0.032.
+  - Reasoning is why the saving is less than the tenfold price cut: about 16k of its 21k
+    output tokens a run.
+  - A normal night only enriches new or changed listings, so the saving is cents.
+- **Speed:** slower, at 73 s a run against 43 s (one run took 94 s). No call timed out;
+  the timeout is 90 s per call.
+- **On the llm path it is behind, and unsteady.** It passed 267.7 against 272.0, and 63
+  listings changed against 39, mostly product lines (25 against 9).
+  - That path is only the rollback.
+  - It does show the model alone is no better than Haiku 4.5. The production-path gain
+    comes from the rows Jev leaves it.
+- **Reasoning setting:**
+  - `none` is worse on both paths: 8 cases fewer on the production path, 11 on the llm
+    path.
+  - `low` is within the spread of the default on the production path. The default is a
+    little ahead there on all three measures: cases, after the match, and steadiness.
+  - The entry therefore sends no reasoning setting.
+
+### Verdict
+
+On the production path, Haiku 5.5 is a little more accurate than Haiku 4.5, as steady,
+and 45% cheaper per run. It is the better model for today's path.
+
+**Switching is a cron argument, and not made here.** It means changing the cron's
+`SCRAPE_ARGS` from `--model haiku-or` to `--model haiku-5.5-or`. The pipeline is paused
+anyway.
+
+**For the Jev-only question, it moves the line.**
+
+- With Haiku 4.5, today's path and Jev only were level after the match: 275.3 against
+  275.7, within either's spread.
+- With Haiku 5.5, today's path leads by 3.3 cases.
+- The cost of that lead: $0.013 more a run, and three times the run-to-run changes.
+
 ## Fleet report — all 24 live stores (2026-08-25)
 
 `dispensary_report.py` runs the audit checks **per store** and normalizes to
