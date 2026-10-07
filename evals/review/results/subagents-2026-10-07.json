@@ -1,5 +1,5 @@
 {
- "run": "2026-10-07, as Claude Code subagents (general-purpose, model aliases sonnet and opus) driving scripts/review_cli.py; 13 batches per model, grouped by store, at most 6 listings",
+ "run": "2026-10-07, as Claude Code subagents (general-purpose, model aliases sonnet, opus and haiku; haiku ran claude-haiku-5-5) driving scripts/review_cli.py; 13 batches per model, grouped by store, at most 6 listings",
  "models": {
   "sonnet": {
    "summary": {
@@ -10061,6 +10061,5015 @@
      "file": "hold_up_roll_up_queue.json",
      "confidence": "likely",
      "evidence": "No KSHN catalog or other-store listings; the name and store THC profile give a 10-pack of oral THC pouches at 100mg total, and the $28 price matches the brand 100mg packs. A pouch is none of gummy, chocolate, beverage or tablet, so edible/other, with the flavour Spearmint as strain and no line (Pouches is a format).",
+     "fields": {
+      "category": {
+       "want": [
+        "edible"
+       ],
+       "first_pass": "edible",
+       "agent": "edible",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "other"
+       ],
+       "first_pass": "other",
+       "agent": "other",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "Spearmint"
+       ],
+       "first_pass": "Spearmint",
+       "agent": "Spearmint",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "product_line": {
+       "want": [
+        null
+       ],
+       "first_pass": null,
+       "agent": null,
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "100mg"
+       ],
+       "first_pass": "100mg",
+       "agent": "100mg",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    }
+   ]
+  },
+  "haiku": {
+   "summary": {
+    "totals": {
+     "listings": 72,
+     "unsure": 13,
+     "unanswered": 0,
+     "all_first": 50,
+     "all_applied": 61,
+     "fields": 279,
+     "ok_first": 246,
+     "ok_agent": 267,
+     "ok_applied": 261,
+     "has_today": 168,
+     "fixed": 21,
+     "broke": 6,
+     "ok_today": 153
+    },
+    "per_field": {
+     "category": {
+      "ok_first": 69,
+      "ok_agent": 70,
+      "ok_applied": 70,
+      "n": 70,
+      "ok_today": 36
+     },
+     "subtype": {
+      "ok_first": 55,
+      "ok_agent": 55,
+      "ok_applied": 55,
+      "n": 56,
+      "ok_today": 31
+     },
+     "strain": {
+      "ok_first": 42,
+      "ok_agent": 51,
+      "ok_applied": 47,
+      "n": 53,
+      "ok_today": 29
+     },
+     "product_line": {
+      "ok_first": 25,
+      "ok_agent": 29,
+      "ok_applied": 26,
+      "n": 35,
+      "ok_today": 25
+     },
+     "variant": {
+      "ok_first": 55,
+      "ok_agent": 62,
+      "ok_applied": 63,
+      "n": 65,
+      "ok_today": 32
+     }
+    },
+    "by_confidence": {
+     "sure": {
+      "n": 37,
+      "ok": 36
+     },
+     "likely": {
+      "n": 190,
+      "ok": 183
+     },
+     "unsure": {
+      "n": 52,
+      "ok": 48
+     }
+    }
+   },
+   "answers": {
+    "cat-cart-as-concentrate": {
+     "category": "vaporizers",
+     "subtype": "cart",
+     "strain": "Gelato",
+     "product_line": null,
+     "size": "0.5g",
+     "confidence": "likely",
+     "evidence": "The name says Cart, and under the format rule that beats the pod and all-in-one entries for Gelato 0.5g; the store's concentrate filing is wrong, and Live Resin describes the type rather than a line. No catalog entry or store listing is a cart, and Stiiizy's 0.5g live resin is often sold as a pod, so the cart versus pod split needs a check."
+    },
+    "cat-pod": {
+     "category": "vaporizers",
+     "subtype": "pod",
+     "strain": "Birthday Cake",
+     "product_line": null,
+     "size": "0.5g",
+     "confidence": "likely",
+     "evidence": "The name gives a pod at 0.5g of Birthday Cake, and the only PAX catalog entry is the High Purity London Pound Cake all-in-one, so nothing settles the strain. Era is the name of PAX's pod system rather than a product line, so the line is null."
+    },
+    "cat-beverage": {
+     "category": "edible",
+     "subtype": "beverage",
+     "strain": "Grapefruit Rosemary",
+     "product_line": null,
+     "size": "5mg",
+     "confidence": "likely",
+     "evidence": "The name and description make this a sparkling beverage, and for drinks the flavour is the strain. Retailer pages list Cann's 12 oz Grapefruit Rosemary can at 5mg THC; their CBD figures conflict, but only THC counts, so the size is 5mg."
+    },
+    "cat-preroll-pack": {
+     "category": "preroll",
+     "subtype": null,
+     "strain": "Sativa Blend",
+     "product_line": "Royal Minis",
+     "size": "3.5g",
+     "confidence": "sure",
+     "evidence": "The catalog entry from the brand's site (source wp_json) is Royal Minis Sativa Blend at 3.5g, and grow-together-bk lists the 7X Royal Minis Sativa Blend at 3.5G, so the entry's identity is taken. A pre-roll keeps no subtype, so the first pass's pack is dropped, and 3.5g is the pack total (7 x 0.5g)."
+    },
+    "coney-013-dr-jekyll-and-mr-high-gelato": {
+     "category": "flower",
+     "subtype": "flower",
+     "strain": "Gelato",
+     "product_line": null,
+     "size": "3.5g",
+     "confidence": "likely",
+     "evidence": "The name gives Gelato as the strain and the store files it as flower at 1/8oz, read as 3.5g of whole flower. The brand has no catalog and no other store lists this Gelato, but other NY stores list the brand's 3.5g flower under other strains at $40-50, which supports the format."
+    },
+    "coney-024-moods-ny-minute-mini-aio": {
+     "category": "vaporizers",
+     "subtype": "all-in-one",
+     "strain": "New York Minute",
+     "product_line": null,
+     "size": "1g",
+     "confidence": "likely",
+     "evidence": "New York Minute is a MOODS vape flavour sold as a 1g Mini all-in-one (FLUENT launch reports, 2025), so the flavour is the strain and the AIO with 1g follows. 'Mini' is the device format rather than a line; the store writes 'NY Minute', so check the spelling against the strain alias list."
+    },
+    "coney-030-rec-roots-super-candy": {
+     "category": "flower",
+     "subtype": "flower",
+     "strain": "Super Candy",
+     "product_line": null,
+     "size": "3.5g",
+     "confidence": "likely",
+     "evidence": "The name gives Super Candy as the strain of a flower product at 1/8oz, read as 3.5g; Super Candy is a known cultivar (Candy Kush x Super Silver Haze), so it reads as a strain, not a line. The brand has no catalog and no other store or web source lists a Rec Roots Super Candy, so the listing alone supports it."
+    },
+    "coney-038-toke-blueberry-glue-pre-roll": {
+     "category": "preroll",
+     "subtype": null,
+     "strain": "Blueberry Glue",
+     "product_line": null,
+     "size": "0.5g",
+     "confidence": "unsure",
+     "evidence": "Pre-rolls keep no subtype, so the first pass's 'single' is dropped. The store field says 0.5g but no price or pack count is recorded, and TOKE is sold as 3pk x 0.5g (1.5g) at ignyte, so single or pack cannot be settled. Blueberry Glue appears only in this listing's name; no other store or web source lists it."
+    },
+    "holdup-006-blackberry-kush-2g-starter-kit": {
+     "category": "vaporizers",
+     "subtype": "all-in-one",
+     "strain": "Blackberry Kush",
+     "product_line": null,
+     "size": "2g",
+     "confidence": "unsure",
+     "evidence": "Rechargeable battery with a preloaded 2g pod, sold as a PRELOAD Starter Kit (web: Weedmaps Eureka 'PRELOAD Starter Kit - 2g CLASSIC - Blackberry Kush'; ignyte lists the same strain and size as 'Classic Starter Kit - Vape AIOs'). The catalog's only Blackberry Kush entry is the RELOAD cart, a different format, so it does not apply. Unsure on the product line: PRELOAD may be the kit's line, brooklyn records 'Classic Preload' as RELOAD, and ignyte records none."
+    },
+    "holdup-027-platinum-life-breath-1g-preroll": {
+     "category": "preroll",
+     "subtype": null,
+     "strain": "Platinum Life Breath",
+     "product_line": null,
+     "size": "1g",
+     "confidence": "likely",
+     "evidence": "The name and description both give the strain Platinum Life Breath (Platinum Kush Breath Remix x Lifehack), not a line. Name and size field agree on a single 1g pre-roll. Preroll takes no subtype, so the first pass's 'single' is dropped. ADK has no catalog and no other-store listings."
+    },
+    "holdup-034-silly-nice-bubble-hash-1g": {
+     "category": "concentrate",
+     "subtype": "hash",
+     "strain": null,
+     "product_line": null,
+     "size": "1g",
+     "confidence": "likely",
+     "evidence": "Solventless bubble hash (web: Weedmaps 'SILLY NICE | 1G | BUBBLE HASH | SOLVENTLESS'). No strain is named in the name, the description or any web source the search returned, so the strain is null. Silly Nice has no catalog and no other-store listings."
+    },
+    "holdup-035-chem-dawg-1g-cured-resin-crumble": {
+     "category": "concentrate",
+     "subtype": "resin",
+     "strain": "Chem Dawg",
+     "product_line": null,
+     "size": "1g",
+     "confidence": "likely",
+     "evidence": "Cured resin is a resin, and crumble is its texture. The name gives the strain Chem Dawg and the description agrees (it is spelled Chemdog or Chemdawg; the listing's spelling is kept and the curated alias list was not checked). Single 1g per name and size field. Blotter has no catalog and no other-store listings."
+    },
+    "holdup-037-biscotti-1g-cured-resin-budder": {
+     "category": "concentrate",
+     "subtype": "resin",
+     "strain": "Biscotti",
+     "product_line": null,
+     "size": "1g",
+     "confidence": "likely",
+     "evidence": "Cured resin budder is a resin. The name and description both name the Biscotti strain (Gelato 25 x Sour Florida OG). Single 1g per name, size field and the $40 price (Blotter's usual single 1g is $45). Blotter has no catalog and no other-store listings."
+    },
+    "holdup-043-organic-medium-dog-cbd-oil-600mg-tinctur": {
+     "category": "tinctures",
+     "subtype": "tincture",
+     "strain": null,
+     "product_line": null,
+     "size": "600mg",
+     "confidence": "likely",
+     "evidence": "Hemp full-spectrum CBD tincture for dogs. The store page states 600mg CBD per bottle and no THC figure, so the stated 600mg is the size under the dose rule. Name and size field agree. No strain or product line. The Head & Heal catalog has no dog product (a search for 'Dog' returned nothing)."
+    },
+    "holdup-044-pillow-talk-sleep-drops-300mg-thc-1500mg": {
+     "category": "tinctures",
+     "subtype": "tincture",
+     "strain": "Pillow Talk",
+     "product_line": null,
+     "size": "300mg",
+     "confidence": "sure",
+     "evidence": "The catalog entry 'pillow talk' (tincture, 300mg, strain Pillow Talk, no line, from the brand's Shopify product data) matches. The 1800mg figure is THC plus CBN, so the size is the 300mg THC; other stores list the same drops at 300mg with the same strain and no line."
+    },
+    "holdup-047-on-heat-relief-muscle-spray-300mg": {
+     "category": "topical",
+     "subtype": "topical",
+     "strain": "Heat Relief",
+     "product_line": null,
+     "size": "300mg",
+     "confidence": "likely",
+     "evidence": "The store page's own copy calls it 'CBD Heat Relief Spray-On' and one other store records strain Heat Relief, so that is the blend name. The 300mg is CBD only (300 mg CBD per bottle), which counts when no THC figure is stated."
+    },
+    "gold-000-off-hours-razz-lemonade-live-resin-rope": {
+     "category": "edible",
+     "subtype": "gummy",
+     "strain": "Razz Lemonade",
+     "product_line": "Livewire",
+     "size": "100mg",
+     "confidence": "sure",
+     "evidence": "The brand's own catalog entry (Livewire Razz Lemonade, gummy, 100mg) and two other stores list the same Livewire Razz Lemonade Live Resin Rope at 100mg, so the line is Livewire. The listing's 30g field is a net weight, not a dose, so the 100mg comes from the catalog and those stores."
+    },
+    "gold-003-old-pal-x-babish-thc-infused-sugar-100mg": {
+     "category": "edible",
+     "subtype": "other",
+     "strain": null,
+     "product_line": null,
+     "size": "100mg",
+     "confidence": "likely",
+     "evidence": "Babish is the chef collaborator (Andrew Rea), not a strain or an Old Pal line, and infused sugar has no flavour, so strain and line are null. The 100mg size comes from the name and launch coverage (about 5mg THC per teaspoon, 100mg per package), and Old Pal has no catalog entries, so a catalog addition is proposed."
+    },
+    "gold-016-gr-n-milk-chocolate-mini-bar-daytime-sativa-": {
+     "category": "edible",
+     "subtype": "chocolate",
+     "strain": "Sativa",
+     "product_line": "Mini Bar",
+     "size": "100mg",
+     "confidence": "likely",
+     "evidence": "'Milk Chocolate' restates the bar format, so the strain is the lineage, Sativa (from 'Daytime Sativa'), per the strain rule; Mini Bar is the catalog and store line. The catalog entry and stores name the strain 'Milk Chocolate', which breaks that rule, so a catalog fix is proposed."
+    },
+    "gold-020-camino-recover-freshly-squeezed-1-2-cbg-20pk": {
+     "category": "edible",
+     "subtype": "gummy",
+     "strain": "Recover Freshly Squeezed",
+     "product_line": "Gummies",
+     "size": "100mg",
+     "confidence": "sure",
+     "evidence": "The Camino catalog entry 'Gummies Recover Freshly Squeezed' (20pk 100mg) matches, and Recover is the effect, so it goes in the strain under the Gummies family line, as in the Camino row of the line table. The size is 20 x 5mg THC = 100mg with CBG excluded, since the 72g field is a net weight."
+    },
+    "gold-040-eaton-botanicals-little-pandas-tropical-cool": {
+     "category": "preroll",
+     "subtype": null,
+     "strain": "Tropical Cooler",
+     "product_line": "Little Pandas",
+     "size": "2.5g",
+     "confidence": "unsure",
+     "evidence": "Eaton's Little Pandas 5pk pages say five 0.5g pre-rolls (2.5g total), against the store's 1.75g field, so the pack total needs a person to check. 'Tropical Cooler' appears on no Little Pandas listing found, and mullein is the line's standard ingredient, so it is not part of the strain."
+    },
+    "gold-083-stiiizy-premium-jack-5g-pod": {
+     "category": "vaporizers",
+     "subtype": "pod",
+     "strain": "Premium Jack",
+     "product_line": "Original",
+     "size": "0.5g",
+     "confidence": "likely",
+     "evidence": "The listing's own 'Pod' word makes the subtype pod, not the all-in-one entry's, and Premium Jack 1g pods are the Original line in the catalog and several stores, so the 0.5g pod is likely Original too. The 0.5g size agrees in the field and the name, and the store's 'other' category is wrong."
+    },
+    "gold-085-jetty-gdp-1g-concentrate-dablicator": {
+     "category": "concentrate",
+     "subtype": "other",
+     "strain": "GDP",
+     "product_line": null,
+     "size": "1g",
+     "confidence": "unsure",
+     "evidence": "Store text names strain GDP (a classic NorCal indica) in a 1g concentrate Dablicator; size 1g is settled and the price fits a concentrate. Subtype is open: a retailer calls the Dablicator CO2 wax (other), but Jetty's Dablicator image file says Solventless, which could mean rosin. No catalog or other-store listing exists, so a person should confirm the subtype."
+    },
+    "gold-087-blotter-runtz-mintz-1g-live-resin-sugar": {
+     "category": "concentrate",
+     "subtype": "resin",
+     "strain": "Runtz Mintz",
+     "product_line": null,
+     "size": "1g",
+     "confidence": "likely",
+     "evidence": "The name says live resin sugar, and Blotter's own account describes a crystalline sugar made from frozen fresh flower, which the taxonomy files as resin. Blotter names its sugars by strain (Tang Punch, Sticky Bunz), so there is no line; size 1g is settled. No catalog or other-store listing exists for Runtz Mintz."
+    },
+    "gold-100-papa-barkley-thc1000-releaf-tincture-30ml": {
+     "category": "tinctures",
+     "subtype": "tincture",
+     "strain": null,
+     "product_line": "Releaf",
+     "size": "1000mg",
+     "confidence": "likely",
+     "evidence": "THC1000 is a potency name, so strain is null by convention; stashmaster-nyc lists the same product with strain null, line Releaf, 1000mg. The size 1000mg is settled from the name and description, and stashmaster also says 30ml. No catalog entry; web listings show THC1000 at 15 ml with 1000 mg and none at 30 ml, so the 30ml label needs a check."
+    },
+    "spot-001-dream-star-31-thc-cherry-diesel-34-thc-s": {
+     "category": "preroll",
+     "subtype": null,
+     "strain": "Dream Star x Cherry Diesel",
+     "product_line": null,
+     "size": "4g",
+     "confidence": "likely",
+     "evidence": "The store's 4pk is a mix of two strains; oc-dispensary-bk lists the same 4g $44 pack as 'Dream Star x Cherry Diesel - 4pk', and the 4g reads as 4 x 1g, which the field also gives. A pre-roll keeps no subtype, so the first pass's 'pack' is wrong; the 'x' spelling rests on one other store."
+    },
+    "spot-006-purple-punch-indica-23-75-thc-1g-pre-rol": {
+     "category": "preroll",
+     "subtype": null,
+     "strain": "Purple Punch",
+     "product_line": null,
+     "size": "1g",
+     "confidence": "likely",
+     "evidence": "The name gives the strain Purple Punch as a single 1g pre-roll, and the field and name agree on 1g. A pre-roll keeps no subtype, so the first pass's 'pack' is wrong; no catalog or other store confirms it, hence likely."
+    },
+    "spot-026-reserve-hybrid-16-45-thc-1-1-thc-cbd-7g-": {
+     "category": "flower",
+     "subtype": "infused",
+     "strain": "Hybrid",
+     "product_line": "Reserve",
+     "size": "7g",
+     "confidence": "likely",
+     "evidence": "The store's 'other' is wrong; the name reads Infused Ground Flower, so subtype infused (preground is the alternative) with Reserve as the tier line and Hybrid as the strain, since CC7 Back is a photo code. The 7g field and name agree, the description's 2.364g is TAC mg, and grow-together-bk lists the same 7g at $97.34."
+    },
+    "spot-032-permanent-marker-hybrid-100mg-10-pack-ne": {
+     "category": "edible",
+     "subtype": "gummy",
+     "strain": "Permanent Marker Nectarine",
+     "product_line": "Euphoria",
+     "size": "100mg",
+     "confidence": "likely",
+     "evidence": "Euphoria is nama's line and Permanent Marker the cultivar, as two other stores record (line Euphoria, strain Permanent Marker, 100mg), so the first pass swapped line and strain; the flavour is part of the strain for edibles and Live Resin is a format. The 100mg total is in the field, name and description, and the 1000mg reading would break New York's 100mg package cap."
+    },
+    "spot-049-relief-balm-130mg-cbd-40mg-thc-3-1-15ml-": {
+     "category": "topical",
+     "subtype": "topical",
+     "strain": null,
+     "product_line": "Releaf",
+     "size": "40mg",
+     "confidence": "likely",
+     "evidence": "'Relief' is the store's spelling of the Releaf line (the description says Releaf Balm), and the size is the 40mg THC, not the 130mg CBD. Balm restates the format and 3:1 is a potency, so the strain is null; the catalog's Releaf Balm entry records strain 'Balm' (about 20 listings do too), which I have proposed for a person to decide."
+    },
+    "var-concentrate-1g": {
+     "category": "concentrate",
+     "subtype": "rosin",
+     "strain": "GMO",
+     "product_line": null,
+     "size": "1g",
+     "confidence": "unsure",
+     "evidence": "Live Rosin in the name makes the subtype rosin, and the size is 1g as written. The strain is only what the listing says: no catalog or store lists Punch, and web pages for Punch 1g badders name the strain Honeythorn GMO, so the spelling needs a person."
+    },
+    "var-flower-eighth-grams": {
+     "category": "flower",
+     "subtype": "flower",
+     "strain": "Papaya",
+     "product_line": null,
+     "size": "3.5g",
+     "confidence": "likely",
+     "evidence": "Eighth is the size word for 3.5g, matching the 3.5 grams in the description, so it is not part of the strain and the first pass's Papaya Eighth is dropped. No catalog or store lists MFNY Papaya, so the strain rests on the name alone."
+    },
+    "holdup-017-blue-razzleberry-mega-100mg-gummy": {
+     "category": "edible",
+     "subtype": "gummy",
+     "strain": "Blue Razzleberry",
+     "product_line": null,
+     "size": "100mg",
+     "confidence": "unsure",
+     "evidence": "The size 100mg is the package THC (store profile THC 100.0mg, 10 servings), which matches Prepared Foods and the New York cap; CBG is not counted. The product line is open: Prepared Foods calls MEGA a gummy line across seven flavours, but the store page's MEGA PEARL wording and an Illinois review read it as a format or dose tier, so a person should decide (the brand's site would settle it)."
+    },
+    "gold-006-camino-sleep-midnight-blueberry-5-1-cbn-20pk": {
+     "category": "edible",
+     "subtype": "gummy",
+     "strain": "Sleep Midnight Blueberry",
+     "product_line": "Gummies",
+     "size": "100mg",
+     "confidence": "sure",
+     "evidence": "The brand storefront catalog has Gummies Sleep Midnight Blueberry (line Gummies, strain Sleep Midnight Blueberry, 20pk 100mg), and retailer menus show 5mg THC per gummy at a 5:1 THC:CBN ratio, so 20 pieces give 100mg THC; the CBN is not counted. The store's 72g field is a net weight and is ignored."
+    },
+    "gold-015-eaton-botanicals-apple-a-day-apple-2-5mg-gum": {
+     "category": "edible",
+     "subtype": "gummy",
+     "strain": "Apple",
+     "product_line": "Apple-A-Day",
+     "size": "50mg",
+     "confidence": "sure",
+     "evidence": "The brand storefront catalog entry Apple-A-Day Apple (line Apple-A-Day, strain Apple, 20pk 50mg) matches, and retailer menus show a 20-pack at 2.5mg THC per gummy. The 2.5mg size reading is per piece, so the package total is 20 x 2.5mg = 50mg THC; the store's 120g field is a net weight."
+    },
+    "hur-053": {
+     "category": "preroll",
+     "subtype": null,
+     "strain": "Jet Fuel Gelato",
+     "product_line": null,
+     "size": "1g",
+     "confidence": "likely",
+     "evidence": "Subtype is null because a preroll keeps no subtype. The size 1g is the pack total (two 0.5g pre-rolls): the store field and the $13 price fit 1g (the brand's usual is $12/g and 2g packs typically sell for $43.51), and a third-party snapshot lists Slack Hollow's 8-pack at 4g, so a person should check the joint weight."
+    },
+    "hur-087": {
+     "category": "tinctures",
+     "subtype": "tincture",
+     "strain": null,
+     "product_line": null,
+     "size": "300mg",
+     "confidence": "likely",
+     "evidence": "The size 300mg is the bottle total (300 mg CBD per bottle; hemp CBD with no THC figure, so the stated figure counts, and the 10mg is per serving). The store page tags it pet products, which the taxonomy has no category for, so a person should check the category."
+    },
+    "hur-089": {
+     "category": "tinctures",
+     "subtype": "tincture",
+     "strain": null,
+     "product_line": null,
+     "size": "1200mg",
+     "confidence": "likely",
+     "evidence": "The size 1200mg is the bottle total (1200 mg CBD per bottle, under 0.3% THC so the CBD figure counts; 40mg is per serving). Weedmaps lists the same Large Dog 1200mg 30mL oil as Tinctures with no strain or line, and the store page tags it pet products, so a person should check the category."
+    },
+    "hur-090": {
+     "category": "tinctures",
+     "subtype": "tincture",
+     "strain": "Focus",
+     "product_line": null,
+     "size": "600mg",
+     "confidence": "likely",
+     "evidence": "The page and description state 600mg CBG per bottle with no THC figure, so the 600mg stands; the catalog's Focus entries are the 150mg THC:CBG product, a different product, and are not taken. Strain Focus with no line follows the brand's naming in the catalog, other stores and Weedmaps listings for this 600mg bottle."
+    },
+    "hur-100": {
+     "category": "topical",
+     "subtype": "topical",
+     "strain": "Renew",
+     "product_line": null,
+     "size": null,
+     "confidence": "likely",
+     "evidence": "Renew is the blend name, which counts as the strain for a topical, and no line is named. No mg figure appears on the page, in the description or in web search, and the 16.0 fluid_ounces field is a volume, not a dose, so the size is null."
+    },
+    "hur-187": {
+     "category": "edible",
+     "subtype": "tablet",
+     "strain": "Genius",
+     "product_line": "Drops",
+     "size": "20mg",
+     "confidence": "unsure",
+     "evidence": "Genius and Drops are settled by the catalog's Drops Genius and the Genius Drops listings at other stores. The total is not: the text says 10mg per unit and 2PK (20mg), but the store field and profile say 10mg, the $6 price sits near the 5mg typical price, and brand 2-packs elsewhere are listed at 5mg or 10mg, so the pack label needs checking."
+    },
+    "hur-189": {
+     "category": "edible",
+     "subtype": "tablet",
+     "strain": "Love",
+     "product_line": "Drops",
+     "size": "20mg",
+     "confidence": "unsure",
+     "evidence": "Love is the product name, so it is the strain, and Drops is the line (catalog Drops Love and other stores); 'for Arousal' is the purpose, not the strain. The total is not settled: the text says 10mg per unit and 2PK (20mg), but the store field is 10mg, the $6 price sits near the 5mg typical price, and Leafly lists a Love Drops 2-pack at 5mg THC, so the pack label needs checking."
+    },
+    "hur-251": {
+     "category": "concentrate",
+     "subtype": "rso",
+     "strain": "Hybrid",
+     "product_line": null,
+     "size": "1g",
+     "confidence": "likely",
+     "evidence": "F.E.C.O. only restates the format (full extract cannabis oil), so with nothing else the lineage is the strain: the store page gives Hybrid, and the Weedmaps brand listing is RSO-FECO with no strain type. The 1g in the field, name and description matches the brand's usual $45 price for 1g."
+    },
+    "hur-252": {
+     "category": "tinctures",
+     "subtype": "tincture",
+     "strain": "Unwind",
+     "product_line": "Drops",
+     "size": "25mg",
+     "confidence": "likely",
+     "evidence": "The store page states THC 25.0mg and CBD 475.0mg, and doses count THC only, so the size is 25mg, not the 500mg bottle total. Drops is the line and Unwind the strain, since Leafly lists the brand's Rescue, Doze, Restore and Unwind Drops; a Leafly listing with 50mg THC conflicts, and the 19:1 name favours 25mg."
+    },
+    "hur-303": {
+     "category": "edible",
+     "subtype": "tablet",
+     "strain": "Boost",
+     "product_line": "Drops",
+     "size": "10mg",
+     "confidence": "unsure",
+     "evidence": "The 1906 catalog and the NY store records put this Boost in the Drops line as a tablet, and 'For Everything' is a tagline, not the strain. The size is open: '5mg 2Pk' reads as 10mg total, but the catalog's 2pk entry and three NY stores list the 2-pack at 20mg, so the pouch label should decide."
+    },
+    "hur-321": {
+     "category": "topical",
+     "subtype": "topical",
+     "strain": "Blueberry",
+     "product_line": "Love Drops",
+     "size": "300mg",
+     "confidence": "likely",
+     "evidence": "The store's page states THC 300mg for the product, and the 0.5 ml droppers hold 5mg each, so the package is a 30 ml bottle of 60 doses; the first pass counted one dropper. Blueberry is the scent (strain) and 'Love Drops' is the product family named in the description; no catalog or other store lists this product."
+    },
+    "hur-351": {
+     "category": "edible",
+     "subtype": "beverage",
+     "strain": "Spicy Pound Town",
+     "product_line": null,
+     "size": "25mg",
+     "confidence": "unsure",
+     "evidence": "The store's page states 25mg THC (5 sachets of 5mg), so the size, category and subtype stand. Three stores record strain Spicy Pound Town and one records it as the line with strain Hot Cinnamon Spice, while the drinks rule would make the flavour the strain; a web listing for the same name at 10mg a sachet is a different strength."
+    },
+    "hur-386": {
+     "category": "vaporizers",
+     "subtype": "pod",
+     "strain": "Green Crack",
+     "product_line": null,
+     "size": "0.5g",
+     "confidence": "likely",
+     "evidence": "Rove's Minibar is a starter kit whose consumable is a 0.5g ice hash live rosin pod, per web listings for the same line, so this is a pod rather than the first pass's all-in-one. One store files the same product as concentrate, and no Rove catalog or other store has it."
+    },
+    "hur-405": {
+     "category": "topical",
+     "subtype": "topical",
+     "strain": "Recovery",
+     "product_line": null,
+     "size": "1000mg",
+     "confidence": "likely",
+     "evidence": "The store's page states THC 1000mg and CBD 1000mg for the stick, so 1000mg THC is the package total. 'Recovery' is the blend name, which counts as the strain for a topical, and one other store records the same product with that strain; there is no catalog and the web found only hemp CBD sticks."
+    },
+    "hur-434": {
+     "category": "preroll",
+     "subtype": null,
+     "strain": "Alaskan Thunder Fuck",
+     "product_line": null,
+     "size": "3g",
+     "confidence": "likely",
+     "evidence": "The brand's own catalog entry for this 5-pack (3g, $45) and nine other stores' 5-pack listings (3g, $40 to $45.20) say 3g, so the store's 2.5g field looks wrong and a person should check it. Pre-rolls keep no subtype, and the strain is written in full, not the brand's self-censored 'Fu*k'."
+    },
+    "hur-460": {
+     "category": "edible",
+     "subtype": "gummy",
+     "strain": "Moondrift Berry MAX",
+     "product_line": "Sleep",
+     "size": "100mg",
+     "confidence": "likely",
+     "evidence": "The store page states THC 100.0mg (CBD 100.0mg) for the 10-pack: 10 pieces at 5mg THC hash plus 5mg THC/piece, which fits the 2:2:3 name. herbology-bed-stuy lists 'Moondrift Berry MAX' at 100mg 10pk, so MAX stays in the strain to separate it from the 20pk 1:1:1 Moondrift Berry, and 'Sleep' is the only family name on the product (effect rule)."
+    },
+    "hur-461": {
+     "category": "edible",
+     "subtype": "gummy",
+     "strain": "Moondrift Berry",
+     "product_line": "Sleep",
+     "size": "100mg",
+     "confidence": "likely",
+     "evidence": "20 pieces at 2.5mg THC hash plus 2.5mg THC/piece is 100mg THC, matching the 1:1:1 name and garden-club's 'Moondrift Berry | Regular Sleep Gummies | 20pk' at 100mg. 'Sleep' is the only family name, so it is the line under the effect rule; no REMZZZ catalog or web listing confirms it."
+    },
+    "hur-462": {
+     "category": "edible",
+     "subtype": "gummy",
+     "strain": "Midnight Mango",
+     "product_line": "Sleep",
+     "size": "100mg",
+     "confidence": "likely",
+     "evidence": "20 pieces at 2.5mg THC hash plus 2.5mg THC/piece is 100mg THC, and emerald-dispensary-bk lists 'Midnight Mango' with the same 2.5/5/5 per-piece dose at 100MG THC. 'Sleep' is the only family name, so it is the line under the effect rule."
+    },
+    "hur-463": {
+     "category": "edible",
+     "subtype": "gummy",
+     "strain": "Strawberry Siesta",
+     "product_line": "Sleep",
+     "size": "100mg",
+     "confidence": "likely",
+     "evidence": "20 pieces at 2.5mg THC hash plus 2.5mg THC/piece is 100mg THC, and garden-club lists 'Strawberry Siesta | Regular Sleep Gummies | 20pk' at 100mg. emerald-dispensary-bk's 'Strawberry Siesta' is 5/15/15 per piece (a different ratio) under the same name, which a person should check; 'Sleep' is the line under the effect rule."
+    },
+    "hur-505": {
+     "category": "flower",
+     "subtype": "preground",
+     "strain": "MAC",
+     "product_line": "Bud Buddy",
+     "size": "2g",
+     "confidence": "likely",
+     "evidence": "The name, the 2g field and the page's kit description agree on 2g pre-ground flower, and the description gives the strain as MAC (Miracle Alien Cookies, the MAC 1 phenotype). 'Bud Buddy' recurs across strains at THC Supply Co. (the-plug-crown-heights lists its Sativa kit the same way), so it names a product family rather than a format."
+    },
+    "hur-507": {
+     "category": "vaporizers",
+     "subtype": "all-in-one",
+     "strain": "King Louis XIII",
+     "product_line": null,
+     "size": "1g",
+     "confidence": "likely",
+     "evidence": "The name, the 1g field and the store page give a 1g all-in-one vape of the King Louis XIII cultivar, and greene-street-sheepshead-bay lists 'King Louis XIII | 1g All-in-One Disposable' as the same strain. Nothing beyond the strain names a family, so the line stays null, and no Sapphire King Louis XIII SKU turned up on the web."
+    },
+    "hur-524": {
+     "category": "edible",
+     "subtype": "chocolate",
+     "strain": "Lion's Mane",
+     "product_line": null,
+     "size": "50mg",
+     "confidence": "likely",
+     "evidence": "The store page confirms THC 50.0mg, so the size is 50mg. 'Dark Chocolate' only restates the bar format, so the name that sets this bar apart is Lion's Mane. No catalog or other store lists this 50mg bar, so the strain is uncorroborated."
+    },
+    "hur-525": {
+     "category": "edible",
+     "subtype": "chocolate",
+     "strain": null,
+     "product_line": null,
+     "size": "100mg",
+     "confidence": "unsure",
+     "evidence": "The 100mg size is confirmed by the store page (THC 100.0mg) and by other stores' 100mg dark chocolate bars. The strain is contested: the convention says 'Dark Chocolate' restates the bar format and is no strain, but two stores (kaya-bliss-bay-ridge, oc-dispensary-bk) record Dark Chocolate as the strain, so a person should decide."
+    },
+    "hur-542": {
+     "category": "edible",
+     "subtype": "gummy",
+     "strain": "Tiki Fruit Punch",
+     "product_line": "Hash Rosin Nano Gummies",
+     "size": "100mg",
+     "confidence": "likely",
+     "evidence": "The store page gives THC 100.0mg, and 'Rings' in the name is the shape, so the flavour Tiki Fruit Punch is the strain. Hash Rosin Nano Gummies is the family name Vacation prints across its flavours (see hur-543), so it is the line; it carries format words, so double-check it."
+    },
+    "hur-543": {
+     "category": "edible",
+     "subtype": "gummy",
+     "strain": "Pineapple Coconut",
+     "product_line": "Hash Rosin Nano Gummies",
+     "size": "100mg",
+     "confidence": "likely",
+     "evidence": "The store page names the family Hash Rosin Nano Gummies and the flavour Pineapple Coconut, and 'Rings' is the shape, not part of the strain. The bag is 10 gummies at 10mg, a total of 100mg, which matches the name and THC 100.0mg, so the 10mg per-piece reading is not the package size."
+    },
+    "hur-577": {
+     "category": "edible",
+     "subtype": "other",
+     "strain": "Cheese",
+     "product_line": null,
+     "size": "100mg",
+     "confidence": "likely",
+     "evidence": "The store page describes savory cheese crackers with THC 100.0mg per bag, and every size reading agrees on 100mg. 'Crackers' is the format and 'Cheese' is the flavour, which is the strain for edibles; no catalog, other store, or web source for the brand was found."
+    },
+    "hur-579": {
+     "category": "flower",
+     "subtype": "flower",
+     "strain": "Singapore Sling",
+     "product_line": null,
+     "size": "3.5g",
+     "confidence": "sure",
+     "evidence": "The store category is Flowers, the name and store size say 3.5G Flower, and four other stores list the same 3.5g Singapore Sling flower. The description's pre-roll wording is copied from another product, since the page says whole flower, so the preroll reading is wrong."
+    },
+    "hur-584": {
+     "category": "edible",
+     "subtype": "beverage",
+     "strain": "Hemp Moringa",
+     "product_line": "Sleep",
+     "size": "50mg",
+     "confidence": "likely",
+     "evidence": "The page states THC 50.0mg and the $21 price matches 5-pack packs ($20 typical), so the size is 50mg, not 10mg. Other retailers name the same tea 'Sleep | Hemp Moringa Tea Sachets 5pk' (line Sleep, flavour Hemp Moringa), the same split the catalog uses for Wake & Bake Yaupon Mint; the lone 'Sleep Tea' spelling is weak."
+    },
+    "hur-612": {
+     "category": "vaporizers",
+     "subtype": "all-in-one",
+     "strain": "Pinnacle",
+     "product_line": null,
+     "size": "1g",
+     "confidence": "likely",
+     "evidence": "The name and page give a 1g live rosin AIO vape, and the page calls Pinnacle a hybrid strain, so it is the strain, not a line; Royal Leaf X Kalya is the brand. No catalog entry or other store lists this product."
+    },
+    "hur-615": {
+     "category": "concentrate",
+     "subtype": "rosin",
+     "strain": "Pinnacle",
+     "product_line": null,
+     "size": "2g",
+     "confidence": "likely",
+     "evidence": "The page gives a 2.0g solventless live rosin jar and calls Pinnacle the strain (Slurty 3 x Gush Mints), so Pinnacle is the strain, not a line. The description also mentions 'Royal Leaf Shake Shack' and a sweet-cookie flavour that do not match this product, so a person should check the copy."
+    },
+    "hur-653": {
+     "category": "preroll",
+     "subtype": null,
+     "strain": "Permanent Marker",
+     "product_line": null,
+     "size": "4g",
+     "confidence": "likely",
+     "evidence": "The page names Permanent Marker as an indica strain, and the 4g field is the 8-pack total (8 x 0.5g), with the $48 price matching Slack Hollow's usual 4g pack rather than 32g. Pre-rolls take no subtype, so the first pass's 'pack' is dropped."
+    },
+    "hur-685": {
+     "category": "concentrate",
+     "subtype": "resin",
+     "strain": "Orange Boof",
+     "product_line": null,
+     "size": "1g",
+     "confidence": "sure",
+     "evidence": "Two other stores list Blotter Orange Boof as cured resin (sugar wax) at 1g with strain Orange Boof, matching this listing's name and page. No catalog entry exists for Blotter."
+    },
+    "hur-712": {
+     "category": "preroll",
+     "subtype": null,
+     "strain": "Triple Bake Cake",
+     "product_line": null,
+     "size": "1.25g",
+     "confidence": "likely",
+     "evidence": "The page is a 1.25g live-resin-infused pre-roll whose description names Triple Bake Cake as a strain. Pre-rolls take no subtype, so the first pass's 'infused' is dropped; Dragonfly's other 1.25g pre-rolls in the catalog are preroll with no subtype and no line."
+    },
+    "hur-740": {
+     "category": "preroll",
+     "subtype": null,
+     "strain": "All Terrain",
+     "product_line": null,
+     "size": "3.6g",
+     "confidence": "likely",
+     "evidence": "Size: the name and store field give 3.6g for the pack, which Stashmaster states as six 0.6g pre-rolls, and the $45 price fits 3.6g rather than 21.6g. Strain: 'All Terrain' is the pack's name and is recorded as the strain by kaya-bliss-brooklyn-heights and emerald-dispensary-carroll-gardens; the strains inside vary by retailer, so they are not used as identity."
+    },
+    "hur-778": {
+     "category": "edible",
+     "subtype": "beverage",
+     "strain": null,
+     "product_line": null,
+     "size": "80mg",
+     "confidence": "sure",
+     "evidence": "The store page and name give eight 10mg cans, 80mg in total, and oc-dispensary-bk lists the same Tea Variety Pack 8pk at 80MG with no strain. Iced Tea is the beverage format, not one flavour, and the four flavours are mixed, so the strain is null; the storefront catalog's 10mg cans confirm the beverage subtype."
+    },
+    "hur-844": {
+     "category": "edible",
+     "subtype": "other",
+     "strain": "Citrus",
+     "product_line": null,
+     "size": "100mg",
+     "confidence": "unsure",
+     "evidence": "Size: the store page shows THC 100.0mg for the 10-pack and the brand states 10mg a pouch, while the 1000mg reading is above New York's 100mg edible cap. Category is open: the store files it under Edibles and a press quote places it in the edible category, but the listing says it is NOT an edible and press calls it a THC pouch, so a person should decide edible/other or other/other."
+    },
+    "hur-845": {
+     "category": "edible",
+     "subtype": "other",
+     "strain": "Spearmint",
+     "product_line": null,
+     "size": "100mg",
+     "confidence": "unsure",
+     "evidence": "Size: the store page shows THC 100.0mg for the 10-pack and the brand states 10mg a pouch, while the 1000mg reading is above New York's 100mg edible cap. Category is open: the store files it under Edibles and a press quote places it in the edible category, but the listing says it is NOT an edible and press calls it a THC pouch, so a person should decide edible/other or other/other."
+    }
+   },
+   "proposals": [
+    {
+     "brand": "Stiiizy",
+     "change": "Add a Gelato 0.5g cart entry (vaporizers, cart, strain Gelato, size 0.5g), unless a person confirms the store's cart is the same product as the existing Gelato 0.5g pod entry.",
+     "evidence": "The listing 'Gelato Live Resin Cart 0.5g' is filed by its store as concentrate, and the catalog has Gelato 0.5g only as pod and all-in-one. Leafly lists Stiiizy's 0.5g live resin as a pod (filed under cartridges), so the cart and the pod may be one product.",
+     "listing_ids": [
+      "cat-cart-as-concentrate"
+     ]
+    },
+    {
+     "brand": "PAX",
+     "change": "Add PAX Era pod Birthday Cake 0.5g (vaporizers, pod, strain Birthday Cake, size 0.5g).",
+     "evidence": "The PAX catalog holds only the High Purity London Pound Cake all-in-one (1g and 2g). No other store lists this pod, and web searches found no Birthday Cake pod, so the proposal rests on one store listing.",
+     "listing_ids": [
+      "cat-pod"
+     ]
+    },
+    {
+     "brand": "Cann",
+     "change": "Create a Cann catalog entry for the Grapefruit Rosemary sparkling beverage 5mg (edible, beverage, strain Grapefruit Rosemary, size 5mg, 12 oz can).",
+     "evidence": "Cann has no catalog, and no other store in the data lists this drink. Retailer pages list the 12 oz Grapefruit Rosemary can at 5mg THC, though their CBD figures conflict.",
+     "listing_ids": [
+      "cat-beverage"
+     ]
+    },
+    {
+     "brand": "Punch",
+     "change": "Create a Punch catalog entry for the GMO live rosin badder 1g (concentrate, rosin, strain GMO, size 1g), with the strain name to be confirmed.",
+     "evidence": "Punch has no catalog, and no other store in the data lists this badder. Web pages list Punch 1g rosin badders by strain with a Tier number, including Honeythorn GMO Tier 2, so the strain may be Honeythorn GMO rather than plain GMO.",
+     "listing_ids": [
+      "var-concentrate-1g"
+     ]
+    },
+    {
+     "brand": "MFNY",
+     "change": "Add MFNY Papaya flower 3.5g (flower, strain Papaya, size 3.5g), once a person confirms MFNY sells whole flower.",
+     "evidence": "The MFNY storefront catalog has no Papaya entry. Eighth in the listing name is the 3.5g size, not part of the strain. Web searches found no MFNY whole-flower listing, and MFNY's own product description names extracts, pre-rolls, tinctures and gummies rather than flower, though a third-party blog says it sells flower.",
+     "listing_ids": [
+      "var-flower-eighth-grams"
+     ]
+    },
+    {
+     "brand": "Dr. Jekyll and Mr. High",
+     "change": "Brand has no catalog. Add a flower entry: Gelato, 3.5g, no product line. NY stores also write the brand as 'Dr Jekyll/Mr High'.",
+     "evidence": "The store listing is the only record of this Gelato. Other NY stores (ignyte Red Hook and Whitestone) list the brand's 3.5g flower under other strains at $40-50, so the format is confirmed for the brand but not the Gelato strain.",
+     "listing_ids": [
+      "coney-013-dr-jekyll-and-mr-high-gelato"
+     ]
+    },
+    {
+     "brand": "MOODS",
+     "change": "Brand has no catalog. Add a vaporizer entry: New York Minute, all-in-one, 1g Mini, no product line. Confirm the flavour spelling on the packaging (the store writes 'NY Minute').",
+     "evidence": "FLUENT launch reports (May 2025) name the sativa-leaning flavour 'New York Minute' for the 1g Mini all-in-one. No other store lists it.",
+     "listing_ids": [
+      "coney-024-moods-ny-minute-mini-aio"
+     ]
+    },
+    {
+     "brand": "Rec Roots",
+     "change": "Brand has no catalog. Add a flower entry: Super Candy, 3.5g, no product line.",
+     "evidence": "The store listing is the only record of Super Candy. No other store lists it, a web search found no Rec Roots Super Candy, and Leafly's partial Rec Roots catalog does not show it either.",
+     "listing_ids": [
+      "coney-030-rec-roots-super-candy"
+     ]
+    },
+    {
+     "brand": "TOKE",
+     "change": "Brand has no catalog. Add pre-roll entries for Blueberry Glue once the pack is settled: single 0.5g, or 3pk x 0.5g (1.5g) as the ignyte store lists TOKE. Check the product page or packaging for this listing.",
+     "evidence": "The ignyte (Whitestone) listings show TOKE pre-rolls as 3pk x 0.5g at $20. No store lists TOKE Blueberry Glue, and a web search found no TOKE Blueberry Glue.",
+     "listing_ids": [
+      "coney-038-toke-blueberry-glue-pre-roll"
+     ]
+    },
+    {
+     "brand": "Eureka",
+     "change": "Add the Eureka PRELOAD Starter Kit 2g Blackberry Kush as an all-in-one (vaporizers / all-in-one, strain Blackberry Kush, size 2g, no product line). The catalog's only Blackberry Kush entry is the RELOAD cart, a different format. Also decide whether PRELOAD is curated as the product line for Eureka's starter kits; the brand prints it on every kit, while stores record it as RELOAD or leave it blank.",
+     "evidence": "Weedmaps brand listing 'EUREKA - PRELOAD Starter Kit - 2g CLASSIC - Blackberry Kush' (slug aio-2g-classic): a reusable battery with a preloaded 2g RELOAD pod. ignyte lists 'Blackberry Kush (I) 2g - Classic Starter Kit - Vape AIOs'. The listing's own description says 'rechargeable' and 'preloaded'.",
+     "listing_ids": [
+      "holdup-006-blackberry-kush-2g-starter-kit"
+     ]
+    },
+    {
+     "brand": "ADK",
+     "change": "Add ADK Platinum Life Breath 1g pre-roll (preroll, no subtype, strain Platinum Life Breath, size 1g). ADK has no catalog and no other-store listings yet.",
+     "evidence": "Listing name 'Platinum Life Breath - 1g Preroll' and size field 1g; the description names the strain Platinum Life Breath (Platinum Kush Breath Remix x Lifehack).",
+     "listing_ids": [
+      "holdup-027-platinum-life-breath-1g-preroll"
+     ]
+    },
+    {
+     "brand": "Silly Nice",
+     "change": "Add Silly Nice 1G Bubble Hash (concentrate / hash, no strain, no product line, size 1g). Silly Nice has no catalog yet.",
+     "evidence": "Weedmaps product 'SILLY NICE | 1G | BUBBLE HASH | SOLVENTLESS'; no strain is named in any source found.",
+     "listing_ids": [
+      "holdup-034-silly-nice-bubble-hash-1g"
+     ]
+    },
+    {
+     "brand": "Blotter",
+     "change": "Add two 1g cured resins (concentrate / resin, size 1g, no product line): Chem Dawg cured resin crumble (strain Chem Dawg) and Biscotti cured resin budder (strain Biscotti). Blotter has no catalog yet. The Chem Dawg strain spelling should be checked against the curated strain aliases.",
+     "evidence": "Both listing names give the strain and the 1g size, and the descriptions agree on the strains. Biscotti's $40 price matches a single 1g (Blotter's usual 1g is $45).",
+     "listing_ids": [
+      "holdup-035-chem-dawg-1g-cured-resin-crumble",
+      "holdup-037-biscotti-1g-cured-resin-budder"
+     ]
+    },
+    {
+     "brand": "Head & Heal",
+     "change": "Add Head & Heal Organic Medium Dog CBD Oil 600mg tincture (tinctures / tincture, no strain, no product line, size 600mg; hemp CBD with no THC). The Head & Heal catalog has no dog product.",
+     "evidence": "The store page gives 'Full Spectrum Hemp Extract 600mg CBD per bottle' and no THC figure. The name and size field both say 600mg.",
+     "listing_ids": [
+      "holdup-043-organic-medium-dog-cbd-oil-600mg-tinctur"
+     ]
+    },
+    {
+     "brand": "Head & Heal",
+     "change": "Add the topical CBD Heat Relief Spray-On, 300mg (category topical, subtype topical, strain Heat Relief, no product line). The catalog has no topical entry for this product.",
+     "evidence": "The store page gives 300 mg CBD per bottle and calls it CBD Heat Relief Spray-On. One other store (soulmate-fort-greene) lists the same spray at 300mg, $34, strain Heat Relief.",
+     "listing_ids": [
+      "holdup-047-on-heat-relief-muscle-spray-300mg"
+     ]
+    },
+    {
+     "brand": "GRON",
+     "change": "Add the gummy GRON Blue Razzleberry Mega, 100mg (category edible, subtype gummy, strain Blue Razzleberry). GRON has no catalog, and the product line (Mega) is still open for a person to decide.",
+     "evidence": "The store page gives THC 100.0mg per package with 10 servings. Prepared Foods describes MEGA gummies across seven flavours, including Blue Razzleberry, with 100mg THC per package.",
+     "listing_ids": [
+      "holdup-017-blue-razzleberry-mega-100mg-gummy"
+     ]
+    },
+    {
+     "brand": "Slack Hollow",
+     "change": "Add the pre-roll Jet Fuel Gelato 2pk (category preroll, no subtype, strain Jet Fuel Gelato, size 1g total as two 0.5g pre-rolls). The brand has no catalog.",
+     "evidence": "The store page shows the 2pk pre-rolls at $13 with a 1g size field; the brand's usual is $12/g. Hoodie Analytics lists Slack Hollow's 8-pack at 4g, which suggests 0.5g pre-rolls.",
+     "listing_ids": [
+      "hur-053"
+     ]
+    },
+    {
+     "brand": "Head & Heal",
+     "change": "Add the pet CBD oil Organic Small Dog CBD Oil, 300mg tincture (category tinctures, subtype tincture, no strain, no product line). The catalog has no entry for it.",
+     "evidence": "The store page gives 300 mg CBD per bottle and 10 mg per serving, and tags the product pet products. The Large Dog oil of the same line is on Weedmaps as Tinctures with no strain or line.",
+     "listing_ids": [
+      "hur-087"
+     ]
+    },
+    {
+     "brand": "Head & Heal",
+     "change": "Add the pet CBD oil Organic Large Dog CBD Oil, 1200mg tincture (category tinctures, subtype tincture, no strain, no product line). The catalog has no entry for it.",
+     "evidence": "The store page and Weedmaps (Head & Heal | Large Dog CBD Oil | 1200mg | 30mL) both give 1200 mg CBD per bottle, with no strain or product line stated.",
+     "listing_ids": [
+      "hur-089"
+     ]
+    },
+    {
+     "brand": "Head & Heal",
+     "change": "Add a Focus CBG oil entry: tinctures, subtype tincture, strain Focus, no product line, size 600mg (30mL full-spectrum CBG, under 0.3% THC). The existing Focus entries are the 150mg THC:CBG 1:4 product, a different product.",
+     "evidence": "hur-090's page and description give 600mg CBG per bottle and no THC figure. Weedmaps retailer listings name the 600mg CBG bottle Focus. Other stores list the Focus product they carry only as the 150mg THC:CBG 1:4 tincture.",
+     "listing_ids": [
+      "hur-090"
+     ]
+    },
+    {
+     "brand": "Kush Queen",
+     "change": "Add Renew CBD Sugar Scrub: topicals, subtype topical, strain Renew, no product line. The size stays open until the label's mg figure is known. Kush Queen has no catalog at all.",
+     "evidence": "hur-100's page and description give no mg figure. No other store lists the product, and a web search found no listing for it.",
+     "listing_ids": [
+      "hur-100"
+     ]
+    },
+    {
+     "brand": "1906",
+     "change": "Add a two-pack entry for Drops Genius: edible, subtype tablet, strain Genius, product line Drops. The catalog has only the 4pk 40mg and 20pk 75mg entries. The two-pack total (10mg or 20mg) is open; a person should confirm it before the size is written.",
+     "evidence": "hur-187's name says 10mg 2PK and its description says 4 drops per unit = 10mg per unit, which points to 20mg; its store field and profile say 10mg. Other stores list Genius Drops only as the 4-pack and the 20/30-pack.",
+     "listing_ids": [
+      "hur-187"
+     ]
+    },
+    {
+     "brand": "1906",
+     "change": "Add a two-pack entry for Drops Love: edible, subtype tablet, strain Love, product line Drops. The catalog has only the 4pk 40mg and 30pk 75mg entries. The two-pack total (10mg or 20mg, possibly 5mg) is open; a person should confirm it before the size is written.",
+     "evidence": "hur-189's name says 10mg 2PK and its description says 4 drops per unit = 10mg per unit, which points to 20mg; its store field is 10mg. Leafly's brand catalog lists a Love Drops 2-pack at 5mg THC. Other stores list Love Drops as 4-pack and 30-pack.",
+     "listing_ids": [
+      "hur-189"
+     ]
+    },
+    {
+     "brand": "Veteran's Choice Creations",
+     "change": "Add the brand's FECO 1g syringe: concentrates, subtype rso, strain Hybrid, no product line, size 1g. The brand has no catalog at all.",
+     "evidence": "hur-251's page gives Hybrid, RSO and FECO tags, and 1g in the field, name and description. The Weedmaps brand listing is titled 1G RSO - FECO at $44 and gives no strain type. No other store lists the brand.",
+     "listing_ids": [
+      "hur-251"
+     ]
+    },
+    {
+     "brand": "Doctor Solomon's",
+     "change": "Add Unwind Drops CBD Rich 19:1: tinctures, subtype tincture, product line Drops, strain Unwind, size 25mg (THC only, in a 500mg bottle with 475mg CBD). The brand has no catalog at all.",
+     "evidence": "hur-252's page states THC 25.0mg and CBD 475.0mg. Leafly's brand page lists Unwind 15ml (500mg) at 475mg CBD and 25mg THC, and also lists Rescue, Doze and Restore Drops. One Leafly CBD Rich Drops listing shows 50mg THC, which conflicts.",
+     "listing_ids": [
+      "hur-252"
+     ]
+    },
+    {
+     "brand": "1906",
+     "change": "Confirm the Drops Boost 2-pack size. The catalog has it as 2pk 20mg; if the pouch is 2 x 5mg, add a Drops Boost 2pk 10mg entry (tablet, strain Boost, line Drops) and fix or retire the 20mg entry.",
+     "evidence": "hur-303 reads '5mg 2Pk' (10mg total at 5mg per drop, as the 20pk tins are). The catalog's 2pk 20mg entry has no price, and three NY stores' size fields say 20mg, while an MA shop titles its 2-pack pouch 10mg. The pouch label should settle it.",
+     "listing_ids": [
+      "hur-303"
+     ]
+    },
+    {
+     "brand": "JUNIPER JILL",
+     "change": "Create a Juniper Jill catalog (none exists) with Blueberry Love Drops 2:1 water soluble cannabis lube: topical, strain Blueberry, product line Love Drops, size 300mg THC (a 30 ml bottle of 0.5 ml droppers at 5mg THC each).",
+     "evidence": "The store's page states THC 300mg and CBD 600mg for the product, which is 60 droppers of 5mg THC and 10mg CBD. The page shows $25 now and $57 before. No other store or web source was found for this product.",
+     "listing_ids": [
+      "hur-321"
+     ]
+    },
+    {
+     "brand": "Harney Brothers",
+     "change": "Add Spicy Pound Town 5pk tea sachets at 25mg (edible, beverage, 5 x 5mg THC). Settle the strain first: 'Spicy Pound Town' with no line (three stores) or strain 'Hot Cinnamon Spice' with line 'Spicy Pound Town' (one store).",
+     "evidence": "The Harney Brothers catalog has no Spicy Pound Town entry. A web listing of the same name at 10mg a sachet (50mg a pack) is a different strength and would need its own entry.",
+     "listing_ids": [
+      "hur-351"
+     ]
+    },
+    {
+     "brand": "Rove",
+     "change": "Add the Green Crack 0.5g Minibar pod to the Rove catalog: vaporizers, pod, strain Green Crack, no product line, size 0.5g.",
+     "evidence": "The Rove catalog has no Green Crack entry. Web listings for Rove's Minibar starter kit sell a 0.5g ice hash live rosin pod for $60. One store files this product as concentrate, so confirm the category when the entry is added.",
+     "listing_ids": [
+      "hur-386"
+     ]
+    },
+    {
+     "brand": "Pure Bud",
+     "change": "Create a Pure Bud catalog (none exists) with the Recovery Stick: topical, strain Recovery, size 1000mg THC (1000mg THC : 1000mg CBD).",
+     "evidence": "The store's page states 1000mg THC and 1000mg CBD. One other store lists Pure Bud's Recovery Topical 1:1 with strain Recovery; the web found only hemp CBD sticks under the PUREBUD name.",
+     "listing_ids": [
+      "hur-405"
+     ]
+    },
+    {
+     "brand": "Ayrloom",
+     "change": "Correct the strain spelling on the Ayrloom Alaskan Thunder Fu*k entries (the 3g infused pre-roll, and the 0.5g, 1g and 2g all-in-one vapes) from 'Alaskan Thunder Fu*k' to 'Alaskan Thunder Fuck', the spelling the matched stores use. Keep the pre-roll at 3g.",
+     "evidence": "A self-censored spelling must not be carried onto listings. The 3g pre-roll entry comes from the brand's own site, and nine other stores' 5-pack listings also say 3g; hur-434's store field says 2.5g and should be checked.",
+     "listing_ids": [
+      "hur-434"
+     ]
+    },
+    {
+     "brand": "REMZZZ",
+     "change": "Add the REMZZZ products the catalog lacks, written as pack and total, all gummies under category edible: Moondrift Berry 20pk 100mg (1:1:1 THC:CBD:CBN, 2.5mg THC hash plus 2.5mg THC per piece); Moondrift Berry MAX 10pk 100mg (2:2:3, 5mg plus 5mg THC per piece); Midnight Mango 20pk 100mg (1:1:1); Strawberry Siesta 20pk 100mg (1:1:1).",
+     "evidence": "No REMZZZ catalog exists. The hur-460 store page states THC 100.0mg for the 10-pack, and other stores list the same flavours at 100mg (herbology-bed-stuy Moondrift Berry MAX 10pk; garden-club Moondrift Berry and Strawberry Siesta 20pk; emerald-dispensary-bk Midnight Mango). emerald-dispensary-bk's Strawberry Siesta is 5/15/15 per piece, a different ratio, so check before adding that name.",
+     "listing_ids": [
+      "hur-460",
+      "hur-461",
+      "hur-462",
+      "hur-463"
+     ]
+    },
+    {
+     "brand": "REMZZZ",
+     "change": "Curate product line 'Sleep' for REMZZZ: the Sleep Gummies family, with the flavours (Moondrift Berry, Midnight Mango, Strawberry Siesta) and MAX as strains.",
+     "evidence": "All four listings name the product 'REMZzz Sleep Gummies', and the effect is the only family name the brand gives it, so the effect rule makes Sleep the line. The other stores' names agree ('Regular Sleep Gummies', 'Sleep Gummies'), but no REMZZZ brand page was found on the web to confirm the family.",
+     "listing_ids": [
+      "hur-460",
+      "hur-461",
+      "hur-462",
+      "hur-463"
+     ]
+    },
+    {
+     "brand": "THC Supply Co.",
+     "change": "Add the 'MAC Bud Buddy' 2g kit to the catalog as a flower entry: category flower, subtype preground, strain MAC, product line Bud Buddy, size 2g.",
+     "evidence": "No THC Supply Co. catalog exists. The store page and listing state a 2g pre-ground kit with the MAC strain, and the 2g field and typical price ($35) agree. the-plug-crown-heights lists the same brand's 2G Sativa Bud Buddy, so the family recurs across strains.",
+     "listing_ids": [
+      "hur-505"
+     ]
+    },
+    {
+     "brand": "THC Supply Co.",
+     "change": "Curate product line 'Bud Buddy' for THC Supply Co.: the kit family that carries different strains (MAC, Sativa).",
+     "evidence": "The kit name recurs across strains at two stores (hur-505 'MAC Bud Buddy', the-plug-crown-heights 'Sativa Pre-Ground Bud Buddy'), so it names a family rather than a format. The web found no THC Supply Co. brand page to confirm.",
+     "listing_ids": [
+      "hur-505"
+     ]
+    },
+    {
+     "brand": "Sapphire",
+     "change": "Add the 'King Louis XIII' 1g all-in-one vape to the catalog: category vaporizers, subtype all-in-one, strain King Louis XIII, size 1g, no product line.",
+     "evidence": "No Sapphire catalog exists. The store page and listing give a 1g all-in-one at $40, and greene-street-sheepshead-bay lists 'King Louis XIII | 1g All-in-One Disposable' at $39.99. King Louis XIII is a cultivar many brands use, but the web showed a New York vape brand, Sapphire Farms, with no King Louis XIII SKU under it.",
+     "listing_ids": [
+      "hur-507"
+     ]
+    },
+    {
+     "brand": "All That Chocolate",
+     "change": "Add product: Dark Chocolate with Lion's Mane 50mg chocolate bar (edible / chocolate / strain Lion's Mane / no line / size 50mg).",
+     "evidence": "The store page confirms THC 50.0mg for a single bar. The brand has no catalog, and no other store lists this bar; the web search found no All That Chocolate listing for it.",
+     "listing_ids": [
+      "hur-524"
+     ]
+    },
+    {
+     "brand": "All That Chocolate",
+     "change": "Add product: Dark Chocolate 100mg chocolate bar (edible / chocolate / size 100mg). Person to decide the strain: Dark Chocolate (recorded by two stores) or none (the strain convention treats a format restatement as no strain).",
+     "evidence": "The store page confirms THC 100.0mg, and other stores list 100mg bars. Two stores (kaya-bliss-bay-ridge, oc-dispensary-bk) record strain Dark Chocolate for it, which conflicts with the convention. The brand has no catalog.",
+     "listing_ids": [
+      "hur-525"
+     ]
+    },
+    {
+     "brand": "Vacation",
+     "change": "Add product: Tiki Fruit Punch 100mg gummy (edible / gummy / strain Tiki Fruit Punch / line Hash Rosin Nano Gummies / size 100mg). Also curate Hash Rosin Nano Gummies as a Vacation product line, since it is the family name across flavours.",
+     "evidence": "The store page gives THC 100.0mg for the bag and a $25 price. The brand has no catalog, and no other store lists Vacation products.",
+     "listing_ids": [
+      "hur-542"
+     ]
+    },
+    {
+     "brand": "Vacation",
+     "change": "Add product: Pineapple Coconut 100mg gummy (edible / gummy / strain Pineapple Coconut / line Hash Rosin Nano Gummies / size 100mg). Also curate Hash Rosin Nano Gummies as a Vacation product line.",
+     "evidence": "The store page names the family Hash Rosin Nano Gummies and the flavour Pineapple Coconut, with 10 gummies at 10mg for a 100mg bag. The brand has no catalog, and no other store lists Vacation products.",
+     "listing_ids": [
+      "hur-543"
+     ]
+    },
+    {
+     "brand": "New York Infusions",
+     "change": "Add product: Cheese savory cheese crackers 100mg edible (edible / other / strain Cheese / no line / size 100mg).",
+     "evidence": "The store page gives THC 100.0mg per bag, and all size readings agree on 100mg. The brand has no catalog, no other store lists it, and the web search found no New York Infusions listing.",
+     "listing_ids": [
+      "hur-577"
+     ]
+    },
+    {
+     "brand": "B Noble",
+     "change": "Add product: Singapore Sling 3.5g whole flower (flower / flower / strain Singapore Sling / no line / size 3.5g, Sativa). Also check whether the Weedmaps label Big Buds is a B Noble product line.",
+     "evidence": "Four other stores list the same 3.5g Singapore Sling flower with strain Singapore Sling, and the store's own page says Flower. The brand has no catalog. A Weedmaps listing reads B Noble - Singapore Sling | Big Buds | 3.5g.",
+     "listing_ids": [
+      "hur-579"
+     ]
+    },
+    {
+     "brand": "Harney Brothers",
+     "change": "Add the 5-pack tea sachet to the catalog: edible, beverage, line Sleep, strain Hemp Moringa, size 5pk 50mg (typical price about $20). Curate the line Sleep for Harney Brothers if it is not already in data/product_lines.json. The same 5-pack line also appears at other stores as Nighttime | Chamomile Mint and Spicy Pound Town | Hot Cinnamon Spice, neither of which is in the catalog.",
+     "evidence": "The listing page states THC 50.0mg for the 5-pack at $21. The stores soulmate-fort-greene (Sleep | Hemp Moringa) and public menus for The Travel Agency and Midnight Moon (Sleep | Hemp Moringa Tea Sachets 5pk at $20) agree on the name; kaya-bliss-brooklyn-heights lists it as Sleep Tea Sachets 5pk 50mg.",
+     "listing_ids": [
+      "hur-584"
+     ]
+    },
+    {
+     "brand": "Royal Leaf X Kalya",
+     "change": "Add Pinnacle, the 1g live rosin all-in-one vape, to the catalog: vaporizers, all-in-one, strain Pinnacle, no product line, size 1g. The brand has no catalog entries at all.",
+     "evidence": "The listing page reads 'Pinnacle - 1G Live Rosin AIO Vape', about 68% THC hybrid, described as the Pinnacle strain (Blue Dream, Hindu Kush, Slurty 3, Gush Mints lineage), listed at $75. No other store or web listing was found for this product.",
+     "listing_ids": [
+      "hur-612"
+     ]
+    },
+    {
+     "brand": "Royal Leaf X Kalya",
+     "change": "Add Pinnacle, the 2g live rosin concentrate, to the catalog: concentrate, rosin, strain Pinnacle, no product line, size 2g. The brand has no catalog entries at all.",
+     "evidence": "The listing page reads 'Pinnacle - 2G Live Rosin', a 2.0g solventless live rosin jar priced at $120, with the Pinnacle strain (Slurty 3 x Gush Mints). No other store or web listing was found for this product.",
+     "listing_ids": [
+      "hur-615"
+     ]
+    },
+    {
+     "brand": "Slack Hollow",
+     "change": "Add Permanent Marker, an 8-pack indica pre-roll pack, to the catalog: preroll, no subtype, strain Permanent Marker, no product line, size 4g (8 x 0.5g). The brand has no catalog entries at all.",
+     "evidence": "The listing page reads 'Permanent Marker - 8PK Prerolls', with the Permanent Marker strain (indica), store size field 4g and price $48. No other store lists this product.",
+     "listing_ids": [
+      "hur-653"
+     ]
+    },
+    {
+     "brand": "Blotter",
+     "change": "Add Orange Boof, a 1g cured resin sugar, to the catalog: concentrate, resin, strain Orange Boof, no product line, size 1g. The brand has no catalog entries at all.",
+     "evidence": "Two other stores, oc-dispensary-bk and rnr-dispensary-bk, list Blotter Orange Boof as cured resin (sugar wax) at 1g with strain Orange Boof, at $45 and $41; this listing is $40 and its page agrees on 1g and cured resin sugar.",
+     "listing_ids": [
+      "hur-685"
+     ]
+    },
+    {
+     "brand": "Dragonfly",
+     "change": "Add Triple Bake Cake, a 1.25g live resin infused pre-roll, to the catalog: preroll, no subtype, strain Triple Bake Cake, no product line, size 1.25g. The Dragonfly catalog has no Triple Bake Cake entry.",
+     "evidence": "The listing page reads 'Triple Bake Cake - 1.25G Live Resin Infused Preroll' at $15, with the Triple Bake Cake strain (indica-dominant hybrid). The catalog's other Dragonfly 1.25g pre-rolls are preroll with no subtype and no line; no other menu was found listing this product.",
+     "listing_ids": [
+      "hur-712"
+     ]
+    },
+    {
+     "brand": "Layup",
+     "change": "Add the Tea Variety Pack to the catalog: 8 cans, 2 each of Peach Tea, Mango Tea, Raspberry Tea and Iced Tea Lemonade at 10mg each, 80mg total; edible / beverage, no strain, no product line, size 80mg.",
+     "evidence": "The storefront catalog lists only the 10mg single cans. Hold Up Roll Up lists the 8-can pack at 80mg and $40 (hur-778), and oc-dispensary-bk lists Edible Drinks LayUp Tea Variety Pack 8pk 80MG at $35 with no strain.",
+     "listing_ids": [
+      "hur-778"
+     ]
+    },
+    {
+     "brand": "Lowell Herb Co.",
+     "change": "Start the catalog with the All Terrain variety 6-pack pre-rolls: six 0.6g, 3.6g total; preroll, no subtype, strain All Terrain, no product line, size 3.6g.",
+     "evidence": "Lowell has no catalog. kaya-bliss-brooklyn-heights and stashmaster-nyc list the same pack at 3.6g and $40, and emerald-dispensary-carroll-gardens lists All Terrain (Hybrid) at 3.5g, which may be a different pack.",
+     "listing_ids": [
+      "hur-740"
+     ]
+    },
+    {
+     "brand": "KSHN",
+     "change": "Add the 10pk 100mg THC pouches to a catalog: Citrus and Spearmint, 10 x 10mg, 100mg total, size 100mg, no product line. Category and subtype follow the person's decision on hur-844 and hur-845.",
+     "evidence": "KSHN has no catalog, and no other store lists its pouches in our data. Both listings show THC 100.0mg for the pack, and Citrus and Spearmint are both in the flavour list of the brand's press releases (Tropical, Citrus, Sweet Mint, Cinnamon, Spearmint).",
+     "listing_ids": [
+      "hur-844",
+      "hur-845"
+     ]
+    },
+    {
+     "brand": "Old Pal",
+     "change": "Add a product the catalog lacks: Old Pal x Babish THC Infused Sugar 100mg (edible, subtype other, no strain, no product line). The Old Pal catalog has no entries at all.",
+     "evidence": "Launch coverage (July 2024) describes the Old Pal x Babish THC infused sugar at about 5mg THC per teaspoon and 100mg per package. Store listing gold-003 reads 100MG at $22.60, and no other store lists Old Pal products.",
+     "listing_ids": [
+      "gold-003-old-pal-x-babish-thc-infused-sugar-100mg"
+     ]
+    },
+    {
+     "brand": "Grön",
+     "change": "Correct the strain of the Mini Bar Milk Chocolate entry (sf:edible:chocolate:minibar:milkchocolate) from 'Milk Chocolate' to the lineage 'Sativa', because 'Milk Chocolate' restates the chocolate-bar format. Also check whether the separate 'Milk Chocolate Sativa' entry (lb:edible:chocolate::milkchocolatesativa, 10pk 100mg) duplicates this product.",
+     "evidence": "Strain rule: a phrase that only restates the format is not the strain, and with nothing else the lineage is. Stores name the strain 'Milk Chocolate' (for example kaya-bliss-bay-ridge), and sources disagree on the 1:1 versus 3:1 CBG:THC ratio for this bar, which the catalog does not state.",
+     "listing_ids": [
+      "gold-016-gr-n-milk-chocolate-mini-bar-daytime-sativa-"
+     ]
+    },
+    {
+     "brand": "Eaton",
+     "change": "Add the Eaton Little Pandas 5pk pre-roll to the catalog (line Little Pandas, 2.5g total as 5 x 0.5g). Confirm whether a Tropical Cooler flavour exists, since the store lists it and no Little Pandas listing found shows it. The Eaton catalog is empty.",
+     "evidence": "The Weedmaps brand page for Little Pandas 5pk states 0.5g each, five per tin, and shows flavours Guzzlerz and Blueberry Muffin. The store field for gold-040 reads 1.75g, which conflicts with the brand page.",
+     "listing_ids": [
+      "gold-040-eaton-botanicals-little-pandas-tropical-cool"
+     ]
+    },
+    {
+     "brand": "STIIIZY",
+     "change": "Add the Original Premium Jack 0.5g pod (vaporizers, subtype pod, strain Premium Jack, product line Original, 0.5g). The catalog has Premium Jack 0.5g only as an all-in-one, and Original Premium Jack only at 1g.",
+     "evidence": "Another store lists a Premium Jack 0.5g pod at $26 with no line recorded, and the catalog's Original 0.5g pods (Blue Dream, Birthday Cake, Do-Si-Dos and others) show the Original line runs at 0.5g. The web search found no direct confirmation of the Original line at 0.5g.",
+     "listing_ids": [
+      "gold-083-stiiizy-premium-jack-5g-pod"
+     ]
+    },
+    {
+     "brand": "Jetty",
+     "change": "Add a product: GDP 1g concentrate in a Dablicator (concentrate, subtype to confirm between other and rosin, strain GDP, no product line, size 1g). Jetty has no catalog yet.",
+     "evidence": "Store listing gold-085 (1g, $59.89; the store describes GDP as a classic NorCal indica). The brand homepage summary did not show GDP. A retailer calls the Dablicator CO2 wax; the brand's Dablicator image file says Solventless.",
+     "listing_ids": [
+      "gold-085-jetty-gdp-1g-concentrate-dablicator"
+     ]
+    },
+    {
+     "brand": "Blotter",
+     "change": "Add a product: Runtz Mintz 1g live resin sugar (concentrate, resin, strain Runtz Mintz, no product line, size 1g). Blotter has no catalog yet.",
+     "evidence": "Store listing gold-087 (1g). Blotter's sugars are named by strain (Tang Punch, Sticky Bunz, Iced Sangria) with no product line; the search found no Runtz Mintz product on Blotter pages.",
+     "listing_ids": [
+      "gold-087-blotter-runtz-mintz-1g-live-resin-sugar"
+     ]
+    },
+    {
+     "brand": "Papa and Barkley",
+     "change": "Add a product: Releaf THC1000 tincture, 30ml, 1000mg THC (tinctures, tincture, product line Releaf, strain null). Confirm the 30ml THC total on the label before approving: web listings show THC1000 at 15 ml with 1000 mg and none at 30 ml.",
+     "evidence": "Store listing gold-100 (1000mg from the name and description, $113) and stashmaster-nyc (30ml, 1000mg, $100, strain null, line Releaf). The catalog has Releaf Sleep and other Releaf items but no THC1000; the brand homepage summary did not show it.",
+     "listing_ids": [
+      "gold-100-papa-barkley-thc1000-releaf-tincture-30ml"
+     ]
+    },
+    {
+     "brand": "Eaton Botanicals",
+     "change": "Retire the duplicate catalog entry 'Apple A Day' (listing-bootstrap; strain 'Apple A Day', no product line, 20pk 50mg) and keep the storefront entry 'Apple-A-Day Apple' (line Apple-A-Day, strain Apple, 20pk 50mg).",
+     "evidence": "Both entries are 20pk 50mg gummies and the bootstrap entry appears to be the same product. The storefront entry matches the listing name and the brand's line; the bootstrap entry has no line and uses the product name as its strain. Retailer menus show the Apple-A-Day 20-pack at 2.5mg THC per gummy.",
+     "listing_ids": [
+      "gold-015-eaton-botanicals-apple-a-day-apple-2-5mg-gum"
+     ]
+    },
+    {
+     "brand": "Alibi",
+     "change": "Add Alibi pre-roll pack Dream Star x Cherry Diesel: category preroll, no subtype, strain Dream Star x Cherry Diesel, size 4g (4 x 1g). Alibi has no catalog on file yet.",
+     "evidence": "Listing spot-001 reads as a 4 x 1g mixed pack at 4g, and oc-dispensary-bk lists the same pack as Dream Star x Cherry Diesel - 4pk at 4g, $44. The 'x' spelling rests on that one store; web results also show Alibi sells a 4 x 1g pack pairing these two strains.",
+     "listing_ids": [
+      "spot-001-dream-star-31-thc-cherry-diesel-34-thc-s"
+     ]
+    },
+    {
+     "brand": "Canna Cure Farms LLC",
+     "change": "Add pre-roll Purple Punch: category preroll, no subtype, strain Purple Punch, size 1g. This brand has no catalog on file yet.",
+     "evidence": "Listing spot-006 names Purple Punch as one 1g pre-roll, and the field and name agree on 1g. No other store lists this brand in the data, so this rests on the listing alone.",
+     "listing_ids": [
+      "spot-006-purple-punch-indica-23-75-thc-1g-pre-rol"
+     ]
+    },
+    {
+     "brand": "Toast",
+     "change": "Add flower Reserve Hybrid: category flower, subtype infused, strain Hybrid, product line Reserve, size 7g (typical price $97.34). The Toast catalog holds only pre-roll entries, so this flower is missing.",
+     "evidence": "Listing spot-026 is a 7g flower named Infused Ground Flower with the Reserve line, and grow-together-bk lists Toast 7g Infused Ground Flower - Reserve at $97.34 with no strain or line recorded. Infused versus preground is the open call; the other store's name leads with Infused.",
+     "listing_ids": [
+      "spot-026-reserve-hybrid-16-45-thc-1-1-thc-cbd-7g-"
+     ]
+    },
+    {
+     "brand": "nama",
+     "change": "Add gummy: line Euphoria, strain Permanent Marker Nectarine, size 100mg. nama has no catalog on file yet.",
+     "evidence": "Listing spot-032 and two other stores (twisted-vibration-wburg, kaya-bliss-bay-ridge) record line Euphoria, strain Permanent Marker, 100mg at $18 to $20; stashmaster-nyc records strain Permanent Marker Nectarine. Whether the flavour belongs in the strain is open; the stores disagree.",
+     "listing_ids": [
+      "spot-032-permanent-marker-hybrid-100mg-10-pack-ne"
+     ]
+    },
+    {
+     "brand": "Papa & Barkley",
+     "change": "Releaf Balm entry: strain Balm restates the format, so set strain to null and keep line Releaf. Releaf Releaf entry: strain Releaf repeats the line, so review it (its 180mg size may not be a THC figure). The 3:1 and 1:3 balms both match the Releaf Balm entry, so THC size (40mg for the 3:1 in spot-049) is what tells them apart.",
+     "evidence": "Convention: a format is never the strain, and neither is a line or a potency. About 20 listings record strain Balm, so this changes many listings and a person should decide.",
+     "listing_ids": [
+      "spot-049-relief-balm-130mg-cbd-40mg-thc-3-1-15ml-"
+     ]
+    }
+   ],
+   "per_batch": {
+    "tokens": 151253,
+    "tool_calls": 42,
+    "seconds": 559
+   },
+   "scored": [
+    {
+     "id": "cat-cart-as-concentrate",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "likely",
+     "evidence": "The name says Cart, and under the format rule that beats the pod and all-in-one entries for Gelato 0.5g; the store's concentrate filing is wrong, and Live Resin describes the type rather than a line. No catalog entry or store listing is a cart, and Stiiizy's 0.5g live resin is often sold as a pod, so the cart versus pod split needs a check.",
+     "fields": {
+      "category": {
+       "want": [
+        "vaporizers"
+       ],
+       "first_pass": "vaporizers",
+       "agent": "vaporizers",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "subtype": {
+       "want": [
+        "cart"
+       ],
+       "first_pass": "cart",
+       "agent": "cart",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "cat-pod",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "likely",
+     "evidence": "The name gives a pod at 0.5g of Birthday Cake, and the only PAX catalog entry is the High Purity London Pound Cake all-in-one, so nothing settles the strain. Era is the name of PAX's pod system rather than a product line, so the line is null.",
+     "fields": {
+      "category": {
+       "want": [
+        "vaporizers"
+       ],
+       "first_pass": "vaporizers",
+       "agent": "vaporizers",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "subtype": {
+       "want": [
+        "pod"
+       ],
+       "first_pass": "pod",
+       "agent": "pod",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "cat-beverage",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "likely",
+     "evidence": "The name and description make this a sparkling beverage, and for drinks the flavour is the strain. Retailer pages list Cann's 12 oz Grapefruit Rosemary can at 5mg THC; their CBD figures conflict, but only THC counts, so the size is 5mg.",
+     "fields": {
+      "category": {
+       "want": [
+        "edible"
+       ],
+       "first_pass": "edible",
+       "agent": "edible",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "subtype": {
+       "want": [
+        "beverage"
+       ],
+       "first_pass": "beverage",
+       "agent": "beverage",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "cat-preroll-pack",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "sure",
+     "evidence": "The catalog entry from the brand's site (source wp_json) is Royal Minis Sativa Blend at 3.5g, and grow-together-bk lists the 7X Royal Minis Sativa Blend at 3.5G, so the entry's identity is taken. A pre-roll keeps no subtype, so the first pass's pack is dropped, and 3.5g is the pack total (7 x 0.5g).",
+     "fields": {
+      "category": {
+       "want": [
+        "preroll"
+       ],
+       "first_pass": "preroll",
+       "agent": "preroll",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "coney-013-dr-jekyll-and-mr-high-gelato",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "likely",
+     "evidence": "The name gives Gelato as the strain and the store files it as flower at 1/8oz, read as 3.5g of whole flower. The brand has no catalog and no other store lists this Gelato, but other NY stores list the brand's 3.5g flower under other strains at $40-50, which supports the format.",
+     "fields": {
+      "category": {
+       "want": [
+        "flower"
+       ],
+       "first_pass": "flower",
+       "agent": "flower",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "subtype": {
+       "want": [
+        "flower"
+       ],
+       "first_pass": "flower",
+       "agent": "flower",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "strain": {
+       "want": [
+        "Gelato"
+       ],
+       "first_pass": "Gelato",
+       "agent": "Gelato",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "variant": {
+       "want": [
+        "3.5g"
+       ],
+       "first_pass": "3.5g",
+       "agent": "3.5g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "coney-024-moods-ny-minute-mini-aio",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "likely",
+     "evidence": "New York Minute is a MOODS vape flavour sold as a 1g Mini all-in-one (FLUENT launch reports, 2025), so the flavour is the strain and the AIO with 1g follows. 'Mini' is the device format rather than a line; the store writes 'NY Minute', so check the spelling against the strain alias list.",
+     "fields": {
+      "category": {
+       "want": [
+        "vaporizers"
+       ],
+       "first_pass": "vaporizers",
+       "agent": "vaporizers",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "subtype": {
+       "want": [
+        "all-in-one"
+       ],
+       "first_pass": "all-in-one",
+       "agent": "all-in-one",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "variant": {
+       "want": [
+        "1g"
+       ],
+       "first_pass": "1g",
+       "agent": "1g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "coney-030-rec-roots-super-candy",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "likely",
+     "evidence": "The name gives Super Candy as the strain of a flower product at 1/8oz, read as 3.5g; Super Candy is a known cultivar (Candy Kush x Super Silver Haze), so it reads as a strain, not a line. The brand has no catalog and no other store or web source lists a Rec Roots Super Candy, so the listing alone supports it.",
+     "fields": {
+      "category": {
+       "want": [
+        "flower"
+       ],
+       "first_pass": "flower",
+       "agent": "flower",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "subtype": {
+       "want": [
+        "flower"
+       ],
+       "first_pass": "flower",
+       "agent": "flower",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "strain": {
+       "want": [
+        "Super Candy"
+       ],
+       "first_pass": "Super Candy",
+       "agent": "Super Candy",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "variant": {
+       "want": [
+        "3.5g"
+       ],
+       "first_pass": "3.5g",
+       "agent": "3.5g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "coney-038-toke-blueberry-glue-pre-roll",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "unsure",
+     "evidence": "Pre-rolls keep no subtype, so the first pass's 'single' is dropped. The store field says 0.5g but no price or pack count is recorded, and TOKE is sold as 3pk x 0.5g (1.5g) at ignyte, so single or pack cannot be settled. Blueberry Glue appears only in this listing's name; no other store or web source lists it.",
+     "fields": {
+      "category": {
+       "want": [
+        "preroll"
+       ],
+       "first_pass": "preroll",
+       "agent": "preroll",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "strain": {
+       "want": [
+        "Blueberry Glue"
+       ],
+       "first_pass": "Blueberry Glue",
+       "agent": "Blueberry Glue",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "variant": {
+       "want": [
+        "0.5g"
+       ],
+       "first_pass": "0.5g",
+       "agent": "0.5g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "holdup-006-blackberry-kush-2g-starter-kit",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "unsure",
+     "evidence": "Rechargeable battery with a preloaded 2g pod, sold as a PRELOAD Starter Kit (web: Weedmaps Eureka 'PRELOAD Starter Kit - 2g CLASSIC - Blackberry Kush'; ignyte lists the same strain and size as 'Classic Starter Kit - Vape AIOs'). The catalog's only Blackberry Kush entry is the RELOAD cart, a different format, so it does not apply. Unsure on the product line: PRELOAD may be the kit's line, brooklyn records 'Classic Preload' as RELOAD, and ignyte records none.",
+     "fields": {
+      "category": {
+       "want": [
+        "vaporizers"
+       ],
+       "first_pass": "vaporizers",
+       "agent": "vaporizers",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "strain": {
+       "want": [
+        "Blackberry Kush"
+       ],
+       "first_pass": "Blackberry Kush",
+       "agent": "Blackberry Kush",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "variant": {
+       "want": [
+        "2g"
+       ],
+       "first_pass": "2g",
+       "agent": "2g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "holdup-027-platinum-life-breath-1g-preroll",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "likely",
+     "evidence": "The name and description both give the strain Platinum Life Breath (Platinum Kush Breath Remix x Lifehack), not a line. Name and size field agree on a single 1g pre-roll. Preroll takes no subtype, so the first pass's 'single' is dropped. ADK has no catalog and no other-store listings.",
+     "fields": {
+      "category": {
+       "want": [
+        "preroll"
+       ],
+       "first_pass": "preroll",
+       "agent": "preroll",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "strain": {
+       "want": [
+        "Platinum Life Breath"
+       ],
+       "first_pass": "Platinum Life Breath",
+       "agent": "Platinum Life Breath",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "variant": {
+       "want": [
+        "1g"
+       ],
+       "first_pass": "1g",
+       "agent": "1g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "holdup-034-silly-nice-bubble-hash-1g",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "likely",
+     "evidence": "Solventless bubble hash (web: Weedmaps 'SILLY NICE | 1G | BUBBLE HASH | SOLVENTLESS'). No strain is named in the name, the description or any web source the search returned, so the strain is null. Silly Nice has no catalog and no other-store listings.",
+     "fields": {
+      "category": {
+       "want": [
+        "concentrate"
+       ],
+       "first_pass": "concentrate",
+       "agent": "concentrate",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "subtype": {
+       "want": [
+        "hash"
+       ],
+       "first_pass": "hash",
+       "agent": "hash",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "strain": {
+       "want": [
+        null
+       ],
+       "first_pass": "",
+       "agent": null,
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "variant": {
+       "want": [
+        "1g"
+       ],
+       "first_pass": "1g",
+       "agent": "1g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "holdup-035-chem-dawg-1g-cured-resin-crumble",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "likely",
+     "evidence": "Cured resin is a resin, and crumble is its texture. The name gives the strain Chem Dawg and the description agrees (it is spelled Chemdog or Chemdawg; the listing's spelling is kept and the curated alias list was not checked). Single 1g per name and size field. Blotter has no catalog and no other-store listings.",
+     "fields": {
+      "category": {
+       "want": [
+        "concentrate"
+       ],
+       "first_pass": "concentrate",
+       "agent": "concentrate",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "subtype": {
+       "want": [
+        "resin"
+       ],
+       "first_pass": "resin",
+       "agent": "resin",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "strain": {
+       "want": [
+        "Chem Dawg"
+       ],
+       "first_pass": "Chem Dawg",
+       "agent": "Chem Dawg",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "variant": {
+       "want": [
+        "1g"
+       ],
+       "first_pass": "1g",
+       "agent": "1g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "holdup-037-biscotti-1g-cured-resin-budder",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "likely",
+     "evidence": "Cured resin budder is a resin. The name and description both name the Biscotti strain (Gelato 25 x Sour Florida OG). Single 1g per name, size field and the $40 price (Blotter's usual single 1g is $45). Blotter has no catalog and no other-store listings.",
+     "fields": {
+      "category": {
+       "want": [
+        "concentrate"
+       ],
+       "first_pass": "concentrate",
+       "agent": "concentrate",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "subtype": {
+       "want": [
+        "resin"
+       ],
+       "first_pass": "resin",
+       "agent": "resin",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "strain": {
+       "want": [
+        "Biscotti"
+       ],
+       "first_pass": "Biscotti",
+       "agent": "Biscotti",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "variant": {
+       "want": [
+        "1g"
+       ],
+       "first_pass": "1g",
+       "agent": "1g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "holdup-043-organic-medium-dog-cbd-oil-600mg-tinctur",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "likely",
+     "evidence": "Hemp full-spectrum CBD tincture for dogs. The store page states 600mg CBD per bottle and no THC figure, so the stated 600mg is the size under the dose rule. Name and size field agree. No strain or product line. The Head & Heal catalog has no dog product (a search for 'Dog' returned nothing).",
+     "fields": {
+      "category": {
+       "want": [
+        "tinctures"
+       ],
+       "first_pass": "tinctures",
+       "agent": "tinctures",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "subtype": {
+       "want": [
+        "tincture"
+       ],
+       "first_pass": "tincture",
+       "agent": "tincture",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "strain": {
+       "want": [
+        null
+       ],
+       "first_pass": "",
+       "agent": null,
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "variant": {
+       "want": [
+        "600mg"
+       ],
+       "first_pass": "600mg",
+       "agent": "600mg",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "holdup-044-pillow-talk-sleep-drops-300mg-thc-1500mg",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "sure",
+     "evidence": "The catalog entry 'pillow talk' (tincture, 300mg, strain Pillow Talk, no line, from the brand's Shopify product data) matches. The 1800mg figure is THC plus CBN, so the size is the 300mg THC; other stores list the same drops at 300mg with the same strain and no line.",
+     "fields": {
+      "category": {
+       "want": [
+        "tinctures"
+       ],
+       "first_pass": "tinctures",
+       "agent": "tinctures",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "subtype": {
+       "want": [
+        "tincture"
+       ],
+       "first_pass": "tincture",
+       "agent": "tincture",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "strain": {
+       "want": [
+        "Pillow Talk"
+       ],
+       "first_pass": "Pillow Talk",
+       "agent": "Pillow Talk",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "variant": {
+       "want": [
+        "300mg"
+       ],
+       "first_pass": "300mg",
+       "agent": "300mg",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "holdup-047-on-heat-relief-muscle-spray-300mg",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "likely",
+     "evidence": "The store page's own copy calls it 'CBD Heat Relief Spray-On' and one other store records strain Heat Relief, so that is the blend name. The 300mg is CBD only (300 mg CBD per bottle), which counts when no THC figure is stated.",
+     "fields": {
+      "category": {
+       "want": [
+        "topical"
+       ],
+       "first_pass": "topical",
+       "agent": "topical",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "subtype": {
+       "want": [
+        "topical"
+       ],
+       "first_pass": "topical",
+       "agent": "topical",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "variant": {
+       "want": [
+        "300mg"
+       ],
+       "first_pass": "300mg",
+       "agent": "300mg",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "gold-000-off-hours-razz-lemonade-live-resin-rope",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "sure",
+     "evidence": "The brand's own catalog entry (Livewire Razz Lemonade, gummy, 100mg) and two other stores list the same Livewire Razz Lemonade Live Resin Rope at 100mg, so the line is Livewire. The listing's 30g field is a net weight, not a dose, so the 100mg comes from the catalog and those stores.",
+     "fields": {
+      "category": {
+       "want": [
+        "edible"
+       ],
+       "first_pass": "edible",
+       "agent": "edible",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "subtype": {
+       "want": [
+        "gummy"
+       ],
+       "first_pass": "gummy",
+       "agent": "gummy",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "strain": {
+       "want": [
+        "Razz Lemonade"
+       ],
+       "first_pass": "Razz Lemonade",
+       "agent": "Razz Lemonade",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "gold-003-old-pal-x-babish-thc-infused-sugar-100mg",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "likely",
+     "evidence": "Babish is the chef collaborator (Andrew Rea), not a strain or an Old Pal line, and infused sugar has no flavour, so strain and line are null. The 100mg size comes from the name and launch coverage (about 5mg THC per teaspoon, 100mg per package), and Old Pal has no catalog entries, so a catalog addition is proposed.",
+     "fields": {
+      "category": {
+       "want": [
+        "edible"
+       ],
+       "first_pass": "edible",
+       "agent": "edible",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "subtype": {
+       "want": [
+        "other"
+       ],
+       "first_pass": "other",
+       "agent": "other",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "variant": {
+       "want": [
+        "100mg"
+       ],
+       "first_pass": "100mg",
+       "agent": "100mg",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "strain": {
+       "want": [
+        null
+       ],
+       "first_pass": "Babish",
+       "agent": null,
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": false,
+     "all_applied": true
+    },
+    {
+     "id": "gold-016-gr-n-milk-chocolate-mini-bar-daytime-sativa-",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "likely",
+     "evidence": "'Milk Chocolate' restates the bar format, so the strain is the lineage, Sativa (from 'Daytime Sativa'), per the strain rule; Mini Bar is the catalog and store line. The catalog entry and stores name the strain 'Milk Chocolate', which breaks that rule, so a catalog fix is proposed.",
+     "fields": {
+      "category": {
+       "want": [
+        "edible"
+       ],
+       "first_pass": "edible",
+       "agent": "edible",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "subtype": {
+       "want": [
+        "chocolate"
+       ],
+       "first_pass": "chocolate",
+       "agent": "chocolate",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "variant": {
+       "want": [
+        "100mg"
+       ],
+       "first_pass": "100mg",
+       "agent": "100mg",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "gold-020-camino-recover-freshly-squeezed-1-2-cbg-20pk",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "sure",
+     "evidence": "The Camino catalog entry 'Gummies Recover Freshly Squeezed' (20pk 100mg) matches, and Recover is the effect, so it goes in the strain under the Gummies family line, as in the Camino row of the line table. The size is 20 x 5mg THC = 100mg with CBG excluded, since the 72g field is a net weight.",
+     "fields": {
+      "category": {
+       "want": [
+        "edible"
+       ],
+       "first_pass": "edible",
+       "agent": "edible",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "subtype": {
+       "want": [
+        "gummy"
+       ],
+       "first_pass": "gummy",
+       "agent": "gummy",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "strain": {
+       "want": [
+        "Recover Freshly Squeezed"
+       ],
+       "first_pass": "Freshly Squeezed",
+       "agent": "Recover Freshly Squeezed",
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "variant": {
+       "want": [
+        "100mg"
+       ],
+       "first_pass": "100mg",
+       "agent": "100mg",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "product_line": {
+       "want": [
+        "Gummies"
+       ],
+       "first_pass": "Recover",
+       "agent": "Gummies",
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": false,
+     "all_applied": true
+    },
+    {
+     "id": "gold-040-eaton-botanicals-little-pandas-tropical-cool",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "unsure",
+     "evidence": "Eaton's Little Pandas 5pk pages say five 0.5g pre-rolls (2.5g total), against the store's 1.75g field, so the pack total needs a person to check. 'Tropical Cooler' appears on no Little Pandas listing found, and mullein is the line's standard ingredient, so it is not part of the strain.",
+     "fields": {
+      "category": {
+       "want": [
+        "preroll"
+       ],
+       "first_pass": "preroll",
+       "agent": "preroll",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "variant": {
+       "want": [
+        "1.75g"
+       ],
+       "first_pass": "1.75g",
+       "agent": "2.5g",
+       "ok_first": true,
+       "ok_agent": false,
+       "ok_applied": true
+      },
+      "product_line": {
+       "want": [
+        "Little Pandas"
+       ],
+       "first_pass": "Little Pandas",
+       "agent": "Little Pandas",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "gold-083-stiiizy-premium-jack-5g-pod",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "likely",
+     "evidence": "The listing's own 'Pod' word makes the subtype pod, not the all-in-one entry's, and Premium Jack 1g pods are the Original line in the catalog and several stores, so the 0.5g pod is likely Original too. The 0.5g size agrees in the field and the name, and the store's 'other' category is wrong.",
+     "fields": {
+      "category": {
+       "want": [
+        "vaporizers"
+       ],
+       "first_pass": "vaporizers",
+       "agent": "vaporizers",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "subtype": {
+       "want": [
+        "pod"
+       ],
+       "first_pass": "pod",
+       "agent": "pod",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "strain": {
+       "want": [
+        "Premium Jack"
+       ],
+       "first_pass": "Premium Jack",
+       "agent": "Premium Jack",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "variant": {
+       "want": [
+        "0.5g"
+       ],
+       "first_pass": "0.5g",
+       "agent": "0.5g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "gold-085-jetty-gdp-1g-concentrate-dablicator",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "unsure",
+     "evidence": "Store text names strain GDP (a classic NorCal indica) in a 1g concentrate Dablicator; size 1g is settled and the price fits a concentrate. Subtype is open: a retailer calls the Dablicator CO2 wax (other), but Jetty's Dablicator image file says Solventless, which could mean rosin. No catalog or other-store listing exists, so a person should confirm the subtype.",
+     "fields": {
+      "category": {
+       "want": [
+        "concentrate"
+       ],
+       "first_pass": "concentrate",
+       "agent": "concentrate",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "strain": {
+       "want": [
+        "GDP"
+       ],
+       "first_pass": "GDP",
+       "agent": "GDP",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "variant": {
+       "want": [
+        "1g"
+       ],
+       "first_pass": "1g",
+       "agent": "1g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "gold-087-blotter-runtz-mintz-1g-live-resin-sugar",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "likely",
+     "evidence": "The name says live resin sugar, and Blotter's own account describes a crystalline sugar made from frozen fresh flower, which the taxonomy files as resin. Blotter names its sugars by strain (Tang Punch, Sticky Bunz), so there is no line; size 1g is settled. No catalog or other-store listing exists for Runtz Mintz.",
+     "fields": {
+      "category": {
+       "want": [
+        "concentrate"
+       ],
+       "first_pass": "concentrate",
+       "agent": "concentrate",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "subtype": {
+       "want": [
+        "resin"
+       ],
+       "first_pass": "resin",
+       "agent": "resin",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "strain": {
+       "want": [
+        "Runtz Mintz"
+       ],
+       "first_pass": "Runtz Mintz",
+       "agent": "Runtz Mintz",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "variant": {
+       "want": [
+        "1g"
+       ],
+       "first_pass": "1g",
+       "agent": "1g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "gold-100-papa-barkley-thc1000-releaf-tincture-30ml",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "likely",
+     "evidence": "THC1000 is a potency name, so strain is null by convention; stashmaster-nyc lists the same product with strain null, line Releaf, 1000mg. The size 1000mg is settled from the name and description, and stashmaster also says 30ml. No catalog entry; web listings show THC1000 at 15 ml with 1000 mg and none at 30 ml, so the 30ml label needs a check.",
+     "fields": {
+      "category": {
+       "want": [
+        "tinctures"
+       ],
+       "first_pass": "tinctures",
+       "agent": "tinctures",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "subtype": {
+       "want": [
+        "tincture"
+       ],
+       "first_pass": "tincture",
+       "agent": "tincture",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "variant": {
+       "want": [
+        "1000mg"
+       ],
+       "first_pass": "1000mg",
+       "agent": "1000mg",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "product_line": {
+       "want": [
+        "Releaf"
+       ],
+       "first_pass": "Releaf",
+       "agent": "Releaf",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "spot-001-dream-star-31-thc-cherry-diesel-34-thc-s",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "likely",
+     "evidence": "The store's 4pk is a mix of two strains; oc-dispensary-bk lists the same 4g $44 pack as 'Dream Star x Cherry Diesel - 4pk', and the 4g reads as 4 x 1g, which the field also gives. A pre-roll keeps no subtype, so the first pass's 'pack' is wrong; the 'x' spelling rests on one other store.",
+     "fields": {
+      "category": {
+       "want": [
+        "preroll"
+       ],
+       "first_pass": "preroll",
+       "agent": "preroll",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "variant": {
+       "want": [
+        "4g"
+       ],
+       "first_pass": "4g",
+       "agent": "4g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "spot-006-purple-punch-indica-23-75-thc-1g-pre-rol",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "likely",
+     "evidence": "The name gives the strain Purple Punch as a single 1g pre-roll, and the field and name agree on 1g. A pre-roll keeps no subtype, so the first pass's 'pack' is wrong; no catalog or other store confirms it, hence likely.",
+     "fields": {
+      "category": {
+       "want": [
+        "preroll"
+       ],
+       "first_pass": "preroll",
+       "agent": "preroll",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "strain": {
+       "want": [
+        "Purple Punch"
+       ],
+       "first_pass": "Purple Punch",
+       "agent": "Purple Punch",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "variant": {
+       "want": [
+        "1g"
+       ],
+       "first_pass": "1g",
+       "agent": "1g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "spot-026-reserve-hybrid-16-45-thc-1-1-thc-cbd-7g-",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "likely",
+     "evidence": "The store's 'other' is wrong; the name reads Infused Ground Flower, so subtype infused (preground is the alternative) with Reserve as the tier line and Hybrid as the strain, since CC7 Back is a photo code. The 7g field and name agree, the description's 2.364g is TAC mg, and grow-together-bk lists the same 7g at $97.34.",
+     "fields": {
+      "category": {
+       "want": [
+        "flower"
+       ],
+       "first_pass": "flower",
+       "agent": "flower",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "variant": {
+       "want": [
+        "7g"
+       ],
+       "first_pass": "7g",
+       "agent": "7g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "spot-032-permanent-marker-hybrid-100mg-10-pack-ne",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "likely",
+     "evidence": "Euphoria is nama's line and Permanent Marker the cultivar, as two other stores record (line Euphoria, strain Permanent Marker, 100mg), so the first pass swapped line and strain; the flavour is part of the strain for edibles and Live Resin is a format. The 100mg total is in the field, name and description, and the 1000mg reading would break New York's 100mg package cap.",
+     "fields": {
+      "category": {
+       "want": [
+        "edible"
+       ],
+       "first_pass": "edible",
+       "agent": "edible",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "subtype": {
+       "want": [
+        "gummy"
+       ],
+       "first_pass": "gummy",
+       "agent": "gummy",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "variant": {
+       "want": [
+        "100mg"
+       ],
+       "first_pass": "100mg",
+       "agent": "100mg",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "spot-049-relief-balm-130mg-cbd-40mg-thc-3-1-15ml-",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "likely",
+     "evidence": "'Relief' is the store's spelling of the Releaf line (the description says Releaf Balm), and the size is the 40mg THC, not the 130mg CBD. Balm restates the format and 3:1 is a potency, so the strain is null; the catalog's Releaf Balm entry records strain 'Balm' (about 20 listings do too), which I have proposed for a person to decide.",
+     "fields": {
+      "category": {
+       "want": [
+        "topical"
+       ],
+       "first_pass": "topical",
+       "agent": "topical",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "subtype": {
+       "want": [
+        "topical"
+       ],
+       "first_pass": "topical",
+       "agent": "topical",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "var-concentrate-1g",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "unsure",
+     "evidence": "Live Rosin in the name makes the subtype rosin, and the size is 1g as written. The strain is only what the listing says: no catalog or store lists Punch, and web pages for Punch 1g badders name the strain Honeythorn GMO, so the spelling needs a person.",
+     "fields": {
+      "variant": {
+       "want": [
+        "1g"
+       ],
+       "first_pass": "1g",
+       "agent": "1g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "var-flower-eighth-grams",
+     "slice": "flagged",
+     "file": "gold_queue.json",
+     "confidence": "likely",
+     "evidence": "Eighth is the size word for 3.5g, matching the 3.5 grams in the description, so it is not part of the strain and the first pass's Papaya Eighth is dropped. No catalog or store lists MFNY Papaya, so the strain rests on the name alone.",
+     "fields": {
+      "variant": {
+       "want": [
+        "3.5g"
+       ],
+       "first_pass": "3.5g",
+       "agent": "3.5g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "holdup-017-blue-razzleberry-mega-100mg-gummy",
+     "slice": "missed",
+     "file": "gold_queue.json",
+     "confidence": "unsure",
+     "evidence": "The size 100mg is the package THC (store profile THC 100.0mg, 10 servings), which matches Prepared Foods and the New York cap; CBG is not counted. The product line is open: Prepared Foods calls MEGA a gummy line across seven flavours, but the store page's MEGA PEARL wording and an Illinois review read it as a format or dose tier, so a person should decide (the brand's site would settle it).",
+     "fields": {
+      "category": {
+       "want": [
+        "edible"
+       ],
+       "first_pass": "edible",
+       "agent": "edible",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "subtype": {
+       "want": [
+        "gummy"
+       ],
+       "first_pass": "gummy",
+       "agent": "gummy",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "strain": {
+       "want": [
+        "Blue Razzleberry"
+       ],
+       "first_pass": "Blue Razzleberry",
+       "agent": "Blue Razzleberry",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "variant": {
+       "want": [
+        "100mg"
+       ],
+       "first_pass": "100mg",
+       "agent": "100mg",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "product_line": {
+       "want": [
+        "Mega"
+       ],
+       "first_pass": null,
+       "agent": null,
+       "ok_first": false,
+       "ok_agent": false,
+       "ok_applied": false
+      }
+     },
+     "all_first": false,
+     "all_applied": false
+    },
+    {
+     "id": "gold-006-camino-sleep-midnight-blueberry-5-1-cbn-20pk",
+     "slice": "missed",
+     "file": "gold_queue.json",
+     "confidence": "sure",
+     "evidence": "The brand storefront catalog has Gummies Sleep Midnight Blueberry (line Gummies, strain Sleep Midnight Blueberry, 20pk 100mg), and retailer menus show 5mg THC per gummy at a 5:1 THC:CBN ratio, so 20 pieces give 100mg THC; the CBN is not counted. The store's 72g field is a net weight and is ignored.",
+     "fields": {
+      "category": {
+       "want": [
+        "edible"
+       ],
+       "first_pass": "edible",
+       "agent": "edible",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "subtype": {
+       "want": [
+        "gummy"
+       ],
+       "first_pass": "gummy",
+       "agent": "gummy",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "strain": {
+       "want": [
+        "Sleep Midnight Blueberry"
+       ],
+       "first_pass": "Midnight Blueberry",
+       "agent": "Sleep Midnight Blueberry",
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "variant": {
+       "want": [
+        "100mg"
+       ],
+       "first_pass": "",
+       "agent": "100mg",
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "product_line": {
+       "want": [
+        "Gummies"
+       ],
+       "first_pass": "Sleep",
+       "agent": "Gummies",
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": false,
+     "all_applied": true
+    },
+    {
+     "id": "gold-015-eaton-botanicals-apple-a-day-apple-2-5mg-gum",
+     "slice": "missed",
+     "file": "gold_queue.json",
+     "confidence": "sure",
+     "evidence": "The brand storefront catalog entry Apple-A-Day Apple (line Apple-A-Day, strain Apple, 20pk 50mg) matches, and retailer menus show a 20-pack at 2.5mg THC per gummy. The 2.5mg size reading is per piece, so the package total is 20 x 2.5mg = 50mg THC; the store's 120g field is a net weight.",
+     "fields": {
+      "category": {
+       "want": [
+        "edible"
+       ],
+       "first_pass": "edible",
+       "agent": "edible",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "subtype": {
+       "want": [
+        "gummy"
+       ],
+       "first_pass": "gummy",
+       "agent": "gummy",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "strain": {
+       "want": [
+        "Apple"
+       ],
+       "first_pass": "Apple",
+       "agent": "Apple",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true
+      },
+      "product_line": {
+       "want": [
+        "Apple-A-Day"
+       ],
+       "first_pass": null,
+       "agent": "Apple-A-Day",
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": true
+      }
+     },
+     "all_first": false,
+     "all_applied": true
+    },
+    {
+     "id": "hur-053",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "likely",
+     "evidence": "Subtype is null because a preroll keeps no subtype. The size 1g is the pack total (two 0.5g pre-rolls): the store field and the $13 price fit 1g (the brand's usual is $12/g and 2g packs typically sell for $43.51), and a third-party snapshot lists Slack Hollow's 8-pack at 4g, so a person should check the joint weight.",
+     "fields": {
+      "category": {
+       "want": [
+        "preroll"
+       ],
+       "first_pass": "preroll",
+       "agent": "preroll",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "Jet Fuel Gelato"
+       ],
+       "first_pass": "Jet Fuel Gelato",
+       "agent": "Jet Fuel Gelato",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "product_line": {
+       "want": [
+        null
+       ],
+       "first_pass": null,
+       "agent": null,
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "1g"
+       ],
+       "first_pass": "1g",
+       "agent": "1g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "hur-087",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "likely",
+     "evidence": "The size 300mg is the bottle total (300 mg CBD per bottle; hemp CBD with no THC figure, so the stated figure counts, and the 10mg is per serving). The store page tags it pet products, which the taxonomy has no category for, so a person should check the category.",
+     "fields": {
+      "category": {
+       "want": [
+        "tinctures"
+       ],
+       "first_pass": "tinctures",
+       "agent": "tinctures",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "tincture"
+       ],
+       "first_pass": "tincture",
+       "agent": "tincture",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        null
+       ],
+       "first_pass": "",
+       "agent": null,
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "300mg"
+       ],
+       "first_pass": "300mg",
+       "agent": "300mg",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "hur-089",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "likely",
+     "evidence": "The size 1200mg is the bottle total (1200 mg CBD per bottle, under 0.3% THC so the CBD figure counts; 40mg is per serving). Weedmaps lists the same Large Dog 1200mg 30mL oil as Tinctures with no strain or line, and the store page tags it pet products, so a person should check the category.",
+     "fields": {
+      "category": {
+       "want": [
+        "tinctures"
+       ],
+       "first_pass": "tinctures",
+       "agent": "tinctures",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "tincture"
+       ],
+       "first_pass": "tincture",
+       "agent": "tincture",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        null
+       ],
+       "first_pass": "",
+       "agent": null,
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "1200mg"
+       ],
+       "first_pass": "1200mg",
+       "agent": "1200mg",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "hur-090",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "likely",
+     "evidence": "The page and description state 600mg CBG per bottle with no THC figure, so the 600mg stands; the catalog's Focus entries are the 150mg THC:CBG product, a different product, and are not taken. Strain Focus with no line follows the brand's naming in the catalog, other stores and Weedmaps listings for this 600mg bottle.",
+     "fields": {
+      "category": {
+       "want": [
+        "tinctures"
+       ],
+       "first_pass": "tinctures",
+       "agent": "tinctures",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "tincture"
+       ],
+       "first_pass": "tincture",
+       "agent": "tincture",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "Focus"
+       ],
+       "first_pass": "Focus",
+       "agent": "Focus",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": false
+      },
+      "product_line": {
+       "want": [
+        null
+       ],
+       "first_pass": null,
+       "agent": null,
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "600mg"
+       ],
+       "first_pass": "600mg",
+       "agent": "600mg",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "hur-100",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "likely",
+     "evidence": "Renew is the blend name, which counts as the strain for a topical, and no line is named. No mg figure appears on the page, in the description or in web search, and the 16.0 fluid_ounces field is a volume, not a dose, so the size is null.",
+     "fields": {
+      "category": {
+       "want": [
+        "topical"
+       ],
+       "first_pass": "topical",
+       "agent": "topical",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "topical"
+       ],
+       "first_pass": "topical",
+       "agent": "topical",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "Renew"
+       ],
+       "first_pass": "Renew",
+       "agent": "Renew",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "product_line": {
+       "want": [
+        null
+       ],
+       "first_pass": null,
+       "agent": null,
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        null
+       ],
+       "first_pass": "",
+       "agent": null,
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "hur-187",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "unsure",
+     "evidence": "Genius and Drops are settled by the catalog's Drops Genius and the Genius Drops listings at other stores. The total is not: the text says 10mg per unit and 2PK (20mg), but the store field and profile say 10mg, the $6 price sits near the 5mg typical price, and brand 2-packs elsewhere are listed at 5mg or 10mg, so the pack label needs checking.",
+     "fields": {
+      "category": {
+       "want": [
+        "edible"
+       ],
+       "first_pass": "edible",
+       "agent": "edible",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "tablet"
+       ],
+       "first_pass": "tablet",
+       "agent": "tablet",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "Genius"
+       ],
+       "first_pass": "",
+       "agent": "Genius",
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": false,
+       "ok_today": true
+      },
+      "product_line": {
+       "want": [
+        "Drops"
+       ],
+       "first_pass": null,
+       "agent": "Drops",
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": false,
+       "ok_today": false
+      },
+      "variant": {
+       "want": [
+        "10mg"
+       ],
+       "first_pass": "20mg",
+       "agent": "20mg",
+       "ok_first": false,
+       "ok_agent": false,
+       "ok_applied": false,
+       "ok_today": false
+      }
+     },
+     "all_first": false,
+     "all_applied": false
+    },
+    {
+     "id": "hur-189",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "unsure",
+     "evidence": "Love is the product name, so it is the strain, and Drops is the line (catalog Drops Love and other stores); 'for Arousal' is the purpose, not the strain. The total is not settled: the text says 10mg per unit and 2PK (20mg), but the store field is 10mg, the $6 price sits near the 5mg typical price, and Leafly lists a Love Drops 2-pack at 5mg THC, so the pack label needs checking.",
+     "fields": {
+      "category": {
+       "want": [
+        "edible"
+       ],
+       "first_pass": "edible",
+       "agent": "edible",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "tablet"
+       ],
+       "first_pass": "tablet",
+       "agent": "tablet",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "Love"
+       ],
+       "first_pass": "Arousal",
+       "agent": "Love",
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": false,
+       "ok_today": true
+      },
+      "product_line": {
+       "want": [
+        "Drops"
+       ],
+       "first_pass": null,
+       "agent": "Drops",
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": false,
+       "ok_today": false
+      },
+      "variant": {
+       "want": [
+        "10mg"
+       ],
+       "first_pass": "20mg",
+       "agent": "20mg",
+       "ok_first": false,
+       "ok_agent": false,
+       "ok_applied": false,
+       "ok_today": false
+      }
+     },
+     "all_first": false,
+     "all_applied": false
+    },
+    {
+     "id": "hur-251",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "likely",
+     "evidence": "F.E.C.O. only restates the format (full extract cannabis oil), so with nothing else the lineage is the strain: the store page gives Hybrid, and the Weedmaps brand listing is RSO-FECO with no strain type. The 1g in the field, name and description matches the brand's usual $45 price for 1g.",
+     "fields": {
+      "category": {
+       "want": [
+        "concentrate"
+       ],
+       "first_pass": "concentrate",
+       "agent": "concentrate",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "rso"
+       ],
+       "first_pass": "rso",
+       "agent": "rso",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "product_line": {
+       "want": [
+        null
+       ],
+       "first_pass": null,
+       "agent": null,
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "1g"
+       ],
+       "first_pass": "1g",
+       "agent": "1g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "hur-252",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "likely",
+     "evidence": "The store page states THC 25.0mg and CBD 475.0mg, and doses count THC only, so the size is 25mg, not the 500mg bottle total. Drops is the line and Unwind the strain, since Leafly lists the brand's Rescue, Doze, Restore and Unwind Drops; a Leafly listing with 50mg THC conflicts, and the 19:1 name favours 25mg.",
+     "fields": {
+      "category": {
+       "want": [
+        "tinctures"
+       ],
+       "first_pass": "tinctures",
+       "agent": "tinctures",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "tincture"
+       ],
+       "first_pass": "tincture",
+       "agent": "tincture",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "Unwind"
+       ],
+       "first_pass": "Unwind",
+       "agent": "Unwind",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": false
+      },
+      "product_line": {
+       "want": [
+        null
+       ],
+       "first_pass": null,
+       "agent": "Drops",
+       "ok_first": true,
+       "ok_agent": false,
+       "ok_applied": false,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "25mg"
+       ],
+       "first_pass": "",
+       "agent": "25mg",
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": false
+      }
+     },
+     "all_first": false,
+     "all_applied": false
+    },
+    {
+     "id": "hur-303",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "unsure",
+     "evidence": "The 1906 catalog and the NY store records put this Boost in the Drops line as a tablet, and 'For Everything' is a tagline, not the strain. The size is open: '5mg 2Pk' reads as 10mg total, but the catalog's 2pk entry and three NY stores list the 2-pack at 20mg, so the pouch label should decide.",
+     "fields": {
+      "category": {
+       "want": [
+        "edible"
+       ],
+       "first_pass": "edible",
+       "agent": "edible",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "tablet"
+       ],
+       "first_pass": "tablet",
+       "agent": "tablet",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "Boost"
+       ],
+       "first_pass": "Everything",
+       "agent": "Boost",
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": false,
+       "ok_today": true
+      },
+      "product_line": {
+       "want": [
+        "Drops"
+       ],
+       "first_pass": "BOOST",
+       "agent": "Drops",
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": false,
+       "ok_today": false
+      },
+      "variant": {
+       "want": [
+        "10mg"
+       ],
+       "first_pass": "10mg",
+       "agent": "10mg",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": false,
+     "all_applied": false
+    },
+    {
+     "id": "hur-321",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "likely",
+     "evidence": "The store's page states THC 300mg for the product, and the 0.5 ml droppers hold 5mg each, so the package is a 30 ml bottle of 60 doses; the first pass counted one dropper. Blueberry is the scent (strain) and 'Love Drops' is the product family named in the description; no catalog or other store lists this product.",
+     "fields": {
+      "category": {
+       "want": [
+        "topical"
+       ],
+       "first_pass": "topical",
+       "agent": "topical",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "topical"
+       ],
+       "first_pass": "topical",
+       "agent": "topical",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "300mg"
+       ],
+       "first_pass": "5mg",
+       "agent": "300mg",
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": false
+      }
+     },
+     "all_first": false,
+     "all_applied": true
+    },
+    {
+     "id": "hur-351",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "unsure",
+     "evidence": "The store's page states 25mg THC (5 sachets of 5mg), so the size, category and subtype stand. Three stores record strain Spicy Pound Town and one records it as the line with strain Hot Cinnamon Spice, while the drinks rule would make the flavour the strain; a web listing for the same name at 10mg a sachet is a different strength.",
+     "fields": {
+      "category": {
+       "want": [
+        "edible"
+       ],
+       "first_pass": "edible",
+       "agent": "edible",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "beverage"
+       ],
+       "first_pass": "beverage",
+       "agent": "beverage",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "Spicy Pound Town"
+       ],
+       "first_pass": "Cinnamon Spiced",
+       "agent": "Spicy Pound Town",
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": false,
+       "ok_today": true
+      },
+      "product_line": {
+       "want": [
+        null
+       ],
+       "first_pass": null,
+       "agent": null,
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "25mg"
+       ],
+       "first_pass": "25mg",
+       "agent": "25mg",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": false,
+     "all_applied": false
+    },
+    {
+     "id": "hur-386",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "likely",
+     "evidence": "Rove's Minibar is a starter kit whose consumable is a 0.5g ice hash live rosin pod, per web listings for the same line, so this is a pod rather than the first pass's all-in-one. One store files the same product as concentrate, and no Rove catalog or other store has it.",
+     "fields": {
+      "category": {
+       "want": [
+        "vaporizers"
+       ],
+       "first_pass": "vaporizers",
+       "agent": "vaporizers",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": false
+      },
+      "subtype": {
+       "want": [
+        "all-in-one"
+       ],
+       "first_pass": "all-in-one",
+       "agent": "pod",
+       "ok_first": true,
+       "ok_agent": false,
+       "ok_applied": false,
+       "ok_today": false
+      },
+      "strain": {
+       "want": [
+        "Green Crack"
+       ],
+       "first_pass": "Green Crack",
+       "agent": "Green Crack",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "product_line": {
+       "want": [
+        "Premier"
+       ],
+       "first_pass": null,
+       "agent": null,
+       "ok_first": false,
+       "ok_agent": false,
+       "ok_applied": false,
+       "ok_today": false
+      },
+      "variant": {
+       "want": [
+        "0.5g"
+       ],
+       "first_pass": "0.5g",
+       "agent": "0.5g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": false,
+     "all_applied": false
+    },
+    {
+     "id": "hur-405",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "likely",
+     "evidence": "The store's page states THC 1000mg and CBD 1000mg for the stick, so 1000mg THC is the package total. 'Recovery' is the blend name, which counts as the strain for a topical, and one other store records the same product with that strain; there is no catalog and the web found only hemp CBD sticks.",
+     "fields": {
+      "category": {
+       "want": [
+        "topical"
+       ],
+       "first_pass": "topical",
+       "agent": "topical",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "topical"
+       ],
+       "first_pass": "topical",
+       "agent": "topical",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "Recovery"
+       ],
+       "first_pass": "Recovery",
+       "agent": "Recovery",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": false
+      },
+      "product_line": {
+       "want": [
+        null
+       ],
+       "first_pass": null,
+       "agent": null,
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "1000mg"
+       ],
+       "first_pass": "1000mg",
+       "agent": "1000mg",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "hur-434",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "likely",
+     "evidence": "The brand's own catalog entry for this 5-pack (3g, $45) and nine other stores' 5-pack listings (3g, $40 to $45.20) say 3g, so the store's 2.5g field looks wrong and a person should check it. Pre-rolls keep no subtype, and the strain is written in full, not the brand's self-censored 'Fu*k'.",
+     "fields": {
+      "category": {
+       "want": [
+        "preroll"
+       ],
+       "first_pass": "preroll",
+       "agent": "preroll",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "product_line": {
+       "want": [
+        null
+       ],
+       "first_pass": null,
+       "agent": null,
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "3g"
+       ],
+       "first_pass": "2.5g",
+       "agent": "3g",
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": false
+      },
+      "strain": {
+       "want": [
+        "ATF",
+        "Alaskan Thunder Fuck"
+       ],
+       "first_pass": "ATF",
+       "agent": "Alaskan Thunder Fuck",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": false,
+     "all_applied": true
+    },
+    {
+     "id": "hur-460",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "likely",
+     "evidence": "The store page states THC 100.0mg (CBD 100.0mg) for the 10-pack: 10 pieces at 5mg THC hash plus 5mg THC/piece, which fits the 2:2:3 name. herbology-bed-stuy lists 'Moondrift Berry MAX' at 100mg 10pk, so MAX stays in the strain to separate it from the 20pk 1:1:1 Moondrift Berry, and 'Sleep' is the only family name on the product (effect rule).",
+     "fields": {
+      "category": {
+       "want": [
+        "edible"
+       ],
+       "first_pass": "edible",
+       "agent": "edible",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "gummy"
+       ],
+       "first_pass": "gummy",
+       "agent": "gummy",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "100mg"
+       ],
+       "first_pass": "",
+       "agent": "100mg",
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": false,
+     "all_applied": true
+    },
+    {
+     "id": "hur-461",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "likely",
+     "evidence": "20 pieces at 2.5mg THC hash plus 2.5mg THC/piece is 100mg THC, matching the 1:1:1 name and garden-club's 'Moondrift Berry | Regular Sleep Gummies | 20pk' at 100mg. 'Sleep' is the only family name, so it is the line under the effect rule; no REMZZZ catalog or web listing confirms it.",
+     "fields": {
+      "category": {
+       "want": [
+        "edible"
+       ],
+       "first_pass": "edible",
+       "agent": "edible",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "gummy"
+       ],
+       "first_pass": "gummy",
+       "agent": "gummy",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "Moondrift Berry"
+       ],
+       "first_pass": "Moondrift Berry",
+       "agent": "Moondrift Berry",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "100mg"
+       ],
+       "first_pass": "",
+       "agent": "100mg",
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": false,
+     "all_applied": true
+    },
+    {
+     "id": "hur-462",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "likely",
+     "evidence": "20 pieces at 2.5mg THC hash plus 2.5mg THC/piece is 100mg THC, and emerald-dispensary-bk lists 'Midnight Mango' with the same 2.5/5/5 per-piece dose at 100MG THC. 'Sleep' is the only family name, so it is the line under the effect rule.",
+     "fields": {
+      "category": {
+       "want": [
+        "edible"
+       ],
+       "first_pass": "edible",
+       "agent": "edible",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "gummy"
+       ],
+       "first_pass": "gummy",
+       "agent": "gummy",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "Midnight Mango"
+       ],
+       "first_pass": "Midnight Mango",
+       "agent": "Midnight Mango",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "100mg"
+       ],
+       "first_pass": "",
+       "agent": "100mg",
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": false,
+     "all_applied": true
+    },
+    {
+     "id": "hur-463",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "likely",
+     "evidence": "20 pieces at 2.5mg THC hash plus 2.5mg THC/piece is 100mg THC, and garden-club lists 'Strawberry Siesta | Regular Sleep Gummies | 20pk' at 100mg. emerald-dispensary-bk's 'Strawberry Siesta' is 5/15/15 per piece (a different ratio) under the same name, which a person should check; 'Sleep' is the line under the effect rule.",
+     "fields": {
+      "category": {
+       "want": [
+        "edible"
+       ],
+       "first_pass": "edible",
+       "agent": "edible",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "gummy"
+       ],
+       "first_pass": "gummy",
+       "agent": "gummy",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "Strawberry Siesta"
+       ],
+       "first_pass": "Strawberry Siesta",
+       "agent": "Strawberry Siesta",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "100mg"
+       ],
+       "first_pass": "",
+       "agent": "100mg",
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": false,
+     "all_applied": true
+    },
+    {
+     "id": "hur-505",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "likely",
+     "evidence": "The name, the 2g field and the page's kit description agree on 2g pre-ground flower, and the description gives the strain as MAC (Miracle Alien Cookies, the MAC 1 phenotype). 'Bud Buddy' recurs across strains at THC Supply Co. (the-plug-crown-heights lists its Sativa kit the same way), so it names a product family rather than a format.",
+     "fields": {
+      "category": {
+       "want": [
+        "flower"
+       ],
+       "first_pass": "flower",
+       "agent": "flower",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "preground"
+       ],
+       "first_pass": "preground",
+       "agent": "preground",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "MAC"
+       ],
+       "first_pass": "MAC",
+       "agent": "MAC",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "2g"
+       ],
+       "first_pass": "2g",
+       "agent": "2g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "hur-507",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "likely",
+     "evidence": "The name, the 1g field and the store page give a 1g all-in-one vape of the King Louis XIII cultivar, and greene-street-sheepshead-bay lists 'King Louis XIII | 1g All-in-One Disposable' as the same strain. Nothing beyond the strain names a family, so the line stays null, and no Sapphire King Louis XIII SKU turned up on the web.",
+     "fields": {
+      "category": {
+       "want": [
+        "vaporizers"
+       ],
+       "first_pass": "vaporizers",
+       "agent": "vaporizers",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "all-in-one"
+       ],
+       "first_pass": "all-in-one",
+       "agent": "all-in-one",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "King Louis XIII"
+       ],
+       "first_pass": "King Louis XIII",
+       "agent": "King Louis XIII",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "product_line": {
+       "want": [
+        null
+       ],
+       "first_pass": null,
+       "agent": null,
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "1g"
+       ],
+       "first_pass": "1g",
+       "agent": "1g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "hur-524",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "likely",
+     "evidence": "The store page confirms THC 50.0mg, so the size is 50mg. 'Dark Chocolate' only restates the bar format, so the name that sets this bar apart is Lion's Mane. No catalog or other store lists this 50mg bar, so the strain is uncorroborated.",
+     "fields": {
+      "category": {
+       "want": [
+        "edible"
+       ],
+       "first_pass": "edible",
+       "agent": "edible",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "chocolate"
+       ],
+       "first_pass": "chocolate",
+       "agent": "chocolate",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "product_line": {
+       "want": [
+        null
+       ],
+       "first_pass": null,
+       "agent": null,
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "50mg"
+       ],
+       "first_pass": "50mg",
+       "agent": "50mg",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "Dark Chocolate with Lions Mane",
+        "Dark Chocolate with Lion's Mane",
+        "Lions Mane",
+        "Lion's Mane",
+        "Dark Chocolate Lions Mane",
+        "Dark Chocolate Lion's Mane"
+       ],
+       "first_pass": "Dark Chocolate with Lions Mane",
+       "agent": "Lion's Mane",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "hur-525",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "unsure",
+     "evidence": "The 100mg size is confirmed by the store page (THC 100.0mg) and by other stores' 100mg dark chocolate bars. The strain is contested: the convention says 'Dark Chocolate' restates the bar format and is no strain, but two stores (kaya-bliss-bay-ridge, oc-dispensary-bk) record Dark Chocolate as the strain, so a person should decide.",
+     "fields": {
+      "category": {
+       "want": [
+        "edible"
+       ],
+       "first_pass": "edible",
+       "agent": "edible",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "chocolate"
+       ],
+       "first_pass": "chocolate",
+       "agent": "chocolate",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "product_line": {
+       "want": [
+        null
+       ],
+       "first_pass": null,
+       "agent": null,
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "100mg"
+       ],
+       "first_pass": "100mg",
+       "agent": "100mg",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "hur-542",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "likely",
+     "evidence": "The store page gives THC 100.0mg, and 'Rings' in the name is the shape, so the flavour Tiki Fruit Punch is the strain. Hash Rosin Nano Gummies is the family name Vacation prints across its flavours (see hur-543), so it is the line; it carries format words, so double-check it.",
+     "fields": {
+      "category": {
+       "want": [
+        "edible"
+       ],
+       "first_pass": "edible",
+       "agent": "edible",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "gummy"
+       ],
+       "first_pass": "gummy",
+       "agent": "gummy",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "Tiki Fruit Punch"
+       ],
+       "first_pass": "Tiki Fruit Punch",
+       "agent": "Tiki Fruit Punch",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "product_line": {
+       "want": [
+        null
+       ],
+       "first_pass": null,
+       "agent": "Hash Rosin Nano Gummies",
+       "ok_first": true,
+       "ok_agent": false,
+       "ok_applied": false,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "100mg"
+       ],
+       "first_pass": "100mg",
+       "agent": "100mg",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": true,
+     "all_applied": false
+    },
+    {
+     "id": "hur-543",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "likely",
+     "evidence": "The store page names the family Hash Rosin Nano Gummies and the flavour Pineapple Coconut, and 'Rings' is the shape, not part of the strain. The bag is 10 gummies at 10mg, a total of 100mg, which matches the name and THC 100.0mg, so the 10mg per-piece reading is not the package size.",
+     "fields": {
+      "category": {
+       "want": [
+        "edible"
+       ],
+       "first_pass": "edible",
+       "agent": "edible",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "gummy"
+       ],
+       "first_pass": "gummy",
+       "agent": "gummy",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "Pineapple Coconut"
+       ],
+       "first_pass": "Pineapple Coconut Rings",
+       "agent": "Pineapple Coconut",
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "product_line": {
+       "want": [
+        null
+       ],
+       "first_pass": null,
+       "agent": "Hash Rosin Nano Gummies",
+       "ok_first": true,
+       "ok_agent": false,
+       "ok_applied": false,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "100mg"
+       ],
+       "first_pass": "100mg",
+       "agent": "100mg",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": false,
+     "all_applied": false
+    },
+    {
+     "id": "hur-577",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "likely",
+     "evidence": "The store page describes savory cheese crackers with THC 100.0mg per bag, and every size reading agrees on 100mg. 'Crackers' is the format and 'Cheese' is the flavour, which is the strain for edibles; no catalog, other store, or web source for the brand was found.",
+     "fields": {
+      "category": {
+       "want": [
+        "edible"
+       ],
+       "first_pass": "edible",
+       "agent": "edible",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "other"
+       ],
+       "first_pass": "other",
+       "agent": "other",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "product_line": {
+       "want": [
+        null
+       ],
+       "first_pass": null,
+       "agent": null,
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "100mg"
+       ],
+       "first_pass": "100mg",
+       "agent": "100mg",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "Cheese Crackers",
+        "Cheese"
+       ],
+       "first_pass": "Cheese Crackers",
+       "agent": "Cheese",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "hur-579",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "sure",
+     "evidence": "The store category is Flowers, the name and store size say 3.5G Flower, and four other stores list the same 3.5g Singapore Sling flower. The description's pre-roll wording is copied from another product, since the page says whole flower, so the preroll reading is wrong.",
+     "fields": {
+      "category": {
+       "want": [
+        "flower"
+       ],
+       "first_pass": "preroll",
+       "agent": "flower",
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "flower"
+       ],
+       "first_pass": "single",
+       "agent": "flower",
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "Singapore Sling"
+       ],
+       "first_pass": "Singapore Sling",
+       "agent": "Singapore Sling",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "product_line": {
+       "want": [
+        null
+       ],
+       "first_pass": null,
+       "agent": null,
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "3.5g"
+       ],
+       "first_pass": "3.5g",
+       "agent": "3.5g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": false,
+     "all_applied": true
+    },
+    {
+     "id": "hur-584",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "likely",
+     "evidence": "The page states THC 50.0mg and the $21 price matches 5-pack packs ($20 typical), so the size is 50mg, not 10mg. Other retailers name the same tea 'Sleep | Hemp Moringa Tea Sachets 5pk' (line Sleep, flavour Hemp Moringa), the same split the catalog uses for Wake & Bake Yaupon Mint; the lone 'Sleep Tea' spelling is weak.",
+     "fields": {
+      "category": {
+       "want": [
+        "edible"
+       ],
+       "first_pass": "edible",
+       "agent": "edible",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "beverage"
+       ],
+       "first_pass": "beverage",
+       "agent": "beverage",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "Sleep Tea"
+       ],
+       "first_pass": "Sleep Tea",
+       "agent": "Hemp Moringa",
+       "ok_first": true,
+       "ok_agent": false,
+       "ok_applied": false,
+       "ok_today": true
+      },
+      "product_line": {
+       "want": [
+        null
+       ],
+       "first_pass": null,
+       "agent": "Sleep",
+       "ok_first": true,
+       "ok_agent": false,
+       "ok_applied": false,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "50mg"
+       ],
+       "first_pass": "50mg",
+       "agent": "50mg",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": true,
+     "all_applied": false
+    },
+    {
+     "id": "hur-612",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "likely",
+     "evidence": "The name and page give a 1g live rosin AIO vape, and the page calls Pinnacle a hybrid strain, so it is the strain, not a line; Royal Leaf X Kalya is the brand. No catalog entry or other store lists this product.",
+     "fields": {
+      "category": {
+       "want": [
+        "vaporizers"
+       ],
+       "first_pass": "vaporizers",
+       "agent": "vaporizers",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "all-in-one"
+       ],
+       "first_pass": "all-in-one",
+       "agent": "all-in-one",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "Pinnacle"
+       ],
+       "first_pass": "",
+       "agent": "Pinnacle",
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "product_line": {
+       "want": [
+        null
+       ],
+       "first_pass": "Pinnacle",
+       "agent": null,
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "1g"
+       ],
+       "first_pass": "1g",
+       "agent": "1g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": false,
+     "all_applied": true
+    },
+    {
+     "id": "hur-615",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "likely",
+     "evidence": "The page gives a 2.0g solventless live rosin jar and calls Pinnacle the strain (Slurty 3 x Gush Mints), so Pinnacle is the strain, not a line. The description also mentions 'Royal Leaf Shake Shack' and a sweet-cookie flavour that do not match this product, so a person should check the copy.",
+     "fields": {
+      "category": {
+       "want": [
+        "concentrate"
+       ],
+       "first_pass": "concentrate",
+       "agent": "concentrate",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "rosin"
+       ],
+       "first_pass": "rosin",
+       "agent": "rosin",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "Pinnacle"
+       ],
+       "first_pass": "",
+       "agent": "Pinnacle",
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "product_line": {
+       "want": [
+        null
+       ],
+       "first_pass": "Pinnacle",
+       "agent": null,
+       "ok_first": false,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "2g"
+       ],
+       "first_pass": "2g",
+       "agent": "2g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": false,
+     "all_applied": true
+    },
+    {
+     "id": "hur-653",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "likely",
+     "evidence": "The page names Permanent Marker as an indica strain, and the 4g field is the 8-pack total (8 x 0.5g), with the $48 price matching Slack Hollow's usual 4g pack rather than 32g. Pre-rolls take no subtype, so the first pass's 'pack' is dropped.",
+     "fields": {
+      "category": {
+       "want": [
+        "preroll"
+       ],
+       "first_pass": "preroll",
+       "agent": "preroll",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "Permanent Marker"
+       ],
+       "first_pass": "Permanent Marker",
+       "agent": "Permanent Marker",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "product_line": {
+       "want": [
+        null
+       ],
+       "first_pass": null,
+       "agent": null,
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "4g"
+       ],
+       "first_pass": "4g",
+       "agent": "4g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "hur-685",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "sure",
+     "evidence": "Two other stores list Blotter Orange Boof as cured resin (sugar wax) at 1g with strain Orange Boof, matching this listing's name and page. No catalog entry exists for Blotter.",
+     "fields": {
+      "category": {
+       "want": [
+        "concentrate"
+       ],
+       "first_pass": "concentrate",
+       "agent": "concentrate",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "resin"
+       ],
+       "first_pass": "resin",
+       "agent": "resin",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "Orange Boof"
+       ],
+       "first_pass": "Orange Boof",
+       "agent": "Orange Boof",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "product_line": {
+       "want": [
+        null
+       ],
+       "first_pass": null,
+       "agent": null,
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "1g"
+       ],
+       "first_pass": "1g",
+       "agent": "1g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "hur-712",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "likely",
+     "evidence": "The page is a 1.25g live-resin-infused pre-roll whose description names Triple Bake Cake as a strain. Pre-rolls take no subtype, so the first pass's 'infused' is dropped; Dragonfly's other 1.25g pre-rolls in the catalog are preroll with no subtype and no line.",
+     "fields": {
+      "category": {
+       "want": [
+        "preroll"
+       ],
+       "first_pass": "preroll",
+       "agent": "preroll",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "Triple Bake Cake"
+       ],
+       "first_pass": "Triple Bake Cake",
+       "agent": "Triple Bake Cake",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "product_line": {
+       "want": [
+        null
+       ],
+       "first_pass": null,
+       "agent": null,
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "1.25g"
+       ],
+       "first_pass": "1.25g",
+       "agent": "1.25g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "hur-740",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "likely",
+     "evidence": "Size: the name and store field give 3.6g for the pack, which Stashmaster states as six 0.6g pre-rolls, and the $45 price fits 3.6g rather than 21.6g. Strain: 'All Terrain' is the pack's name and is recorded as the strain by kaya-bliss-brooklyn-heights and emerald-dispensary-carroll-gardens; the strains inside vary by retailer, so they are not used as identity.",
+     "fields": {
+      "category": {
+       "want": [
+        "preroll"
+       ],
+       "first_pass": "preroll",
+       "agent": "preroll",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "All Terrain"
+       ],
+       "first_pass": "All Terrain",
+       "agent": "All Terrain",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "product_line": {
+       "want": [
+        null
+       ],
+       "first_pass": null,
+       "agent": null,
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "3.6g"
+       ],
+       "first_pass": "3.6g",
+       "agent": "3.6g",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "hur-778",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "sure",
+     "evidence": "The store page and name give eight 10mg cans, 80mg in total, and oc-dispensary-bk lists the same Tea Variety Pack 8pk at 80MG with no strain. Iced Tea is the beverage format, not one flavour, and the four flavours are mixed, so the strain is null; the storefront catalog's 10mg cans confirm the beverage subtype.",
+     "fields": {
+      "category": {
+       "want": [
+        "edible"
+       ],
+       "first_pass": "edible",
+       "agent": "edible",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "beverage"
+       ],
+       "first_pass": "beverage",
+       "agent": "beverage",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "product_line": {
+       "want": [
+        null
+       ],
+       "first_pass": null,
+       "agent": null,
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "80mg"
+       ],
+       "first_pass": "80mg",
+       "agent": "80mg",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "Iced Tea Variety",
+        "Iced Tea Variety Pack",
+        "Variety Pack",
+        "Variety"
+       ],
+       "first_pass": "Iced Tea",
+       "agent": null,
+       "ok_first": false,
+       "ok_agent": false,
+       "ok_applied": false,
+       "ok_today": false
+      }
+     },
+     "all_first": false,
+     "all_applied": false
+    },
+    {
+     "id": "hur-844",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "unsure",
+     "evidence": "Size: the store page shows THC 100.0mg for the 10-pack and the brand states 10mg a pouch, while the 1000mg reading is above New York's 100mg edible cap. Category is open: the store files it under Edibles and a press quote places it in the edible category, but the listing says it is NOT an edible and press calls it a THC pouch, so a person should decide edible/other or other/other.",
+     "fields": {
+      "category": {
+       "want": [
+        "edible"
+       ],
+       "first_pass": "edible",
+       "agent": "edible",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "subtype": {
+       "want": [
+        "other"
+       ],
+       "first_pass": "other",
+       "agent": "other",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "strain": {
+       "want": [
+        "Citrus"
+       ],
+       "first_pass": "Citrus",
+       "agent": "Citrus",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "product_line": {
+       "want": [
+        null
+       ],
+       "first_pass": null,
+       "agent": null,
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      },
+      "variant": {
+       "want": [
+        "100mg"
+       ],
+       "first_pass": "100mg",
+       "agent": "100mg",
+       "ok_first": true,
+       "ok_agent": true,
+       "ok_applied": true,
+       "ok_today": true
+      }
+     },
+     "all_first": true,
+     "all_applied": true
+    },
+    {
+     "id": "hur-845",
+     "slice": "flagged",
+     "file": "hold_up_roll_up_queue.json",
+     "confidence": "unsure",
+     "evidence": "Size: the store page shows THC 100.0mg for the 10-pack and the brand states 10mg a pouch, while the 1000mg reading is above New York's 100mg edible cap. Category is open: the store files it under Edibles and a press quote places it in the edible category, but the listing says it is NOT an edible and press calls it a THC pouch, so a person should decide edible/other or other/other.",
      "fields": {
       "category": {
        "want": [
