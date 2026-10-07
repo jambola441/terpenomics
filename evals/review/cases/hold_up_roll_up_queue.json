@@ -398,9 +398,9 @@
     "subtype": "tincture",
     "strain": "Unwind",
     "product_line": null,
-    "variant": null
+    "variant": "25mg"
    },
-   "note": "No mg figure anywhere."
+   "note": "The store page's cannabinoid profile: 25mg THC, 475mg CBD (the 19:1 of the name). Corrected 2026-10-07: first labelled with no size; both review agents found the figure."
   },
   {
    "id": "hur-303",
@@ -486,9 +486,9 @@
    "expect": {
     "category": "topical",
     "subtype": "topical",
-    "variant": null
+    "variant": "300mg"
    },
-   "note": "Only a per-dropper figure (5mg THC per 0.5ml), no package total. Strain/line unsettled (Love Drops?)."
+   "note": "The store page's cannabinoid profile: 300mg THC, 600mg CBD (the 2:1 of the name; 60 droppers of 5mg). Corrected 2026-10-07: first labelled with no size; both review agents found the figure. Strain/line unsettled (Blueberry, line Love Drops?)."
   },
   {
    "id": "hur-351",
