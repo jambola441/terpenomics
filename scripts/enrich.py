@@ -577,20 +577,24 @@ def _catalog_indexes() -> dict:
 
 
 def stated_size(row: dict, category: str | None) -> str | None:
-    """The size pass A would write, when code can read it without guessing — or None,
-    and a model reads it.
+    """The listing's size when code can read it without guessing — or None, and the
+    size chooser (or a model) reads it.
 
-    weight  the store's own figure (the variant field), which pass A is told to prefer
-            over its own per-unit math ("2pk" beside "0.8g" is as often the package as
-            the piece) — unless the name states a different weight ("Runtz - 28G" filed
-            as 1/8 oz), a conflict for the model to settle. With the field empty, the
-            name's figure when it states exactly one weight.
-    dose    the package total, a pack count multiplied in under New York's 100mg cap,
-            as pass A is told to — unless more than one dose is named (THC beside CBD
-            or CBN, a per-piece figure beside a total that no pack count explains).
-    Measured on the gold suites: willing on 92% of rows and right on all of them
-    (evals/enrich/README.md); pass A's answer is 97% right. On 1,703 real listings it
-    answers 91% and agrees with the size Haiku stored on 96.3%.
+    weight  the store's own figure (the variant field): "2pk" beside "1g" is as often
+            the pack as each joint, and the store's field is the better guess — unless
+            the name states a different weight ("Runtz - 28G" filed as 1/8 oz), a
+            conflict for the chooser. With the field empty, the name's figure when it
+            states exactly one weight.
+    dose    only when every reading of the size field, name and description agrees
+            (size_candidates.assess "settled"). "3pk - 30mg" can be the pack or each
+            stick, and a field can hold THC plus CBD; those go to the chooser.
+
+    Measured on 598 listings a model read blind (evals/sizes):
+      weights  answers 83%, agrees with the reader on 97.4%. Sending the field-vs-pack
+               cases to the chooser instead (100% on 73%) lost pre-roll packs on the
+               gold suites: without a price Jev doubles "2pk" + "1g" to 2g.
+      doses    answers 54%, agrees on 98.7%. The rule this replaced (a dose times the
+               pack count under the 100mg cap) answered 56% and agreed on 72.4%.
     """
     import sizes
     spec = taxonomy.spec(category)
@@ -611,17 +615,35 @@ def stated_size(row: dict, category: str | None) -> str | None:
             return None
         return normalize_variant(f"{stated.grams:g}g", category)
     if spec.measure == "dose":
-        stated = sizes.parse(row.get("variant"), row.get("name"), category=category)
-        doses = sizes.mg_mentions(row.get("variant"), row.get("name"))
-        if not stated.mg or not doses:
+        import size_candidates
+        a = size_candidates.assess({"variant": row.get("variant"), "scraped_name": row.get("name"),
+                                    "description": row.get("description"), "scraped_category": category})
+        if a.status != "settled" or not a.values:
             return None
-        if len(doses) > 1:
-            pack = stated.pack or 0
-            if not (len(doses) == 2 and pack > 1
-                    and abs(doses[0] * pack - doses[1]) <= 0.05 * doses[1]):
-                return None
-        return normalize_variant(f"{stated.mg:g}mg", category)
+        return normalize_variant(f"{a.values[0]:g}mg", category)
     return None
+
+
+def code_size(row: dict, category: str | None) -> str | None:
+    """stated_size, unless the listing's price rules the weight out: Hold Up Roll Up's
+    $150 "Sour Diesel - 32PK 1G Prerolls" with "1g" in its size field is 15 times Herb's
+    usual price per gram, so the size goes to the chooser (whose price check finds 32g).
+    Uses the run's price snapshot (size_choice.prices_for_run); without one, or for a
+    dose, it is stated_size."""
+    size = stated_size(row, category)
+    spec = taxonomy.spec(category)
+    if size is None or spec is None or spec.measure != "weight":
+        return size
+    import size_choice
+    import sizes
+    price = str(row.get("price_cents") or "")
+    item = size_choice.Item(name=row.get("name", ""), category=category, variant=row.get("variant"),
+                            description=row.get("description"), brand=row.get("brand"),
+                            price_cents=int(price) if price.isdigit() else None)
+    grams = sizes.parse(size, category=category).grams
+    if grams and not size_choice.prices_for_run().fits(item, grams):
+        return None
+    return size
 
 
 def catalog_answer(row: dict, indexes: dict) -> dict | None:
@@ -1031,7 +1053,7 @@ def _run_without_llm(pending: list[tuple[int, dict]], cache: dict, slug: str, ca
     items, open_rows = [], []
     for oi, row in pending:
         cat = category(oi, row)
-        size = stated_size(row, cat)
+        size = code_size(row, cat)
         if size is not None:
             variants[oi] = enrichers.for_category(cat).variant(row.get("name", ""), size) or size
             p_size[oi] = (1.0, "code")
@@ -1188,7 +1210,7 @@ def _run_enrich(
     need_size: list[tuple[int, dict]] = []
     sized_by_code: list[tuple[int, dict]] = []
     for oi, row in by_jev:
-        size = stated_size(row, categories[oi])
+        size = code_size(row, categories[oi])
         if size is None:
             need_size.append((oi, row))
             continue

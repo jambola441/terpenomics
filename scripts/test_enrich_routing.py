@@ -62,8 +62,8 @@ def test_a_listing_that_names_a_catalog_product_takes_its_identity():
 
 
 def test_the_size_written_is_the_listings_total_in_pass_a_form():
-    # 10 pieces of a lone 10mg dose is 100mg (NY caps an edible package at 100mg).
-    hit = enrich.catalog_answer(row("gummy", "10mg", category="edible"), INDEXES)
+    # 10 x 100mg is over NY's 100mg edible cap, so "100mg" beside "10pk" is the pack.
+    hit = enrich.catalog_answer(row("gummy", "100mg", category="edible"), INDEXES)
     assert hit["variant"] == "100mg" and hit["subtype"] == "gummy"
 
 
@@ -111,7 +111,7 @@ def test_catalog_first_off_sends_everything_on(monkeypatch):
 # --- Jev classifies, the LLM writes text --------------------------------------
 
 def gummy(name, sku):
-    return {"name": name, "brand": "Testbrand", "category": "edible", "variant": "10mg",
+    return {"name": name, "brand": "Testbrand", "category": "edible", "variant": "100mg",
             "sku": sku, "dispensary_slug": "test-store", "description": ""}
 
 
@@ -161,13 +161,13 @@ def test_confident_jev_rows_skip_pass_a_and_code_or_pass_b_writes_the_size(fakes
     monkeypatch.setenv("ENRICH_CLASSIFIER", "jev")
     monkeypatch.setattr(enrich.jev_classify, "classify",
                         jev_answers((0.97, 0.93), (0.97, 0.93), (0.97, 0.55), None))
-    rows = [gummy("Sure Gummies 10pk", "a"),                  # code reads 10 x 10mg = 100mg
-            dict(gummy("Sure Gummies 5mg THC 2.5mg CBN", "d"), variant=""),  # two doses
+    rows = [gummy("Sure Gummies 10pk", "a"),                  # code reads 100mg: 10 x 100mg is over the cap
+            dict(gummy("Sure Gummies 2pk 20mg", "d"), variant=""),  # 20mg, or 2 x 20mg
             gummy("Unsure Gummies 10pk", "b"), gummy("Failed Gummies 10pk", "c")]
     usage = enrich.enrich(rows, model="haiku-or", brand_examples={}, catalog_first=False)
 
     assert [p["name"] for p in fakes["classify"]] == ["Unsure Gummies 10pk", "Failed Gummies 10pk"]
-    assert [p["name"] for p in fakes["extract_sized"]] == ["Sure Gummies 5mg THC 2.5mg CBN"]
+    assert [p["name"] for p in fakes["extract_sized"]] == ["Sure Gummies 2pk 20mg"]
     assert fakes["extract_sized"][0]["hint_variant"] == ""
     assert sorted(p["name"] for p in fakes["extract"]) == [
         "Failed Gummies 10pk", "Sure Gummies 10pk", "Unsure Gummies 10pk"]
@@ -176,17 +176,17 @@ def test_confident_jev_rows_skip_pass_a_and_code_or_pass_b_writes_the_size(fakes
     assert (usage["jev_classified"], usage["sized_by_code"]) == (2, 1)
 
     cache = json.loads((enrich._CACHE_DIR / "test-store.haiku-or.json").read_text())
-    assert cache["a|10mg"]["jq"] == jev_classify.QUESTION_VERSION
-    assert "jq" not in cache["b|10mg"]
+    assert cache["a|100mg"]["jq"] == jev_classify.QUESTION_VERSION
+    assert "jq" not in cache["b|100mg"]
 
 
 @pytest.mark.parametrize("name,variant,category,want", [
     ("Blue Dream 1/8", "3.5g", "flower", "3.5g"),
-    ("GMO | Pre-Roll Pack | 2pk", "0.8g", "preroll", "0.8g"),     # the store's figure
+    ("GMO | Pre-Roll Pack | 2pk", "0.8g", "preroll", "0.8g"),      # a weight: the store's figure
     ("Runtz - 28G Flower", "1/8 oz", "flower", None),              # name and field disagree
-    ("Gummies 10pk", "10mg", "edible", "100mg"),                   # pack math, NY cap
-    ("Gummies 20MG x 2PK", "", "edible", "40mg"),
-    ("Drops | 150MG THC : 450MG CBD", ".15g", "tinctures", None),  # two doses: model reads it
+    ("Gummies 10pk", "10mg", "edible", None),                      # 10mg, or 10 x 10mg: the chooser
+    ("MyHi - Stir Sticks 3pk - 30mg", "30mg", "edible", None),     # the old rule wrote 90mg
+    ("Drops | 150MG THC : 450MG CBD", ".15g", "tinctures", "150mg"),  # the THC, not the sum
     ("Tea Sachets", "50.0 milligrams", "edible", "50mg"),
     ("Mystery", "", "edible", None),
     # An empty size field: the name's figure, when it states exactly one weight
@@ -205,7 +205,7 @@ def test_a_cached_answer_from_an_older_jev_question_is_asked_again(fakes, monkey
     stale = {"v": enrich._ENRICH_VERSION, "category": "edible", "subtype": "chocolate",
              "strain": "Old", "product_line": None, "variant": "10mg",
              "jq": jev_classify.QUESTION_VERSION - 1}
-    (enrich._CACHE_DIR / "test-store.haiku-or.json").write_text(json.dumps({"a|10mg": stale}))
+    (enrich._CACHE_DIR / "test-store.haiku-or.json").write_text(json.dumps({"a|100mg": stale}))
     rows = [gummy("Sure Gummies 10pk", "a")]
     enrich.enrich(rows, model="haiku-or", brand_examples={}, catalog_first=False)
     assert rows[0]["subtype"] == "gummy" and rows[0]["strain"] == "Plain"
@@ -262,8 +262,8 @@ def test_a_row_jev_settles_reaches_no_llm(fakes, monkeypatch):
     assert fakes["context"] == [[{"name": "Gummies a 10pk", "strain": "Blue Razz", "product_line": None},
                                  {"name": "Gummies b 10pk", "strain": "Lychee", "product_line": "Bliss"}]]
     cache = json.loads((enrich._CACHE_DIR / "test-store.haiku-or.json").read_text())
-    assert cache["a|10mg"]["jx"] == jev_extract.QUESTION_VERSION
-    assert "jx" not in cache["c|10mg"]
+    assert cache["a|100mg"]["jx"] == jev_extract.QUESTION_VERSION
+    assert "jx" not in cache["c|100mg"]
 
 
 def test_jev_text_off_sends_every_row_to_the_llm(fakes, monkeypatch):
@@ -317,8 +317,8 @@ def test_without_the_llm_jev_answers_everything_and_the_answers_are_cached(fakes
         asked.extend(i.name for i in items)
         return [size_choice.Pick(20.0, "jev", 0.9)]
     monkeypatch.setattr(size_choice, "choose", fake_choose)
-    rows = [gummy("Gummies a 10pk", "a"),                                   # code: 10 x 10mg
-            dict(gummy("Gummies b 5mg THC 2.5mg CBN", "b"), variant=""),    # two doses: the chooser
+    rows = [gummy("Gummies a 10pk", "a"),                                   # code: 100mg, the pack
+            dict(gummy("Gummies b 2pk 20mg", "b"), variant=""),             # 20mg or 40mg: the chooser
             dict(gummy("Mystery c 10pk", "c"), category="other"),           # Jev unsure, and taken
             gummy("Failed d 10pk", "d")]                                    # Jev's call failed
     usage = enrich.enrich(rows, model="haiku-or", brand_examples={}, catalog_first=False)
@@ -327,15 +327,15 @@ def test_without_the_llm_jev_answers_everything_and_the_answers_are_cached(fakes
     assert [(r["category"], r["strain"], r["product_line"]) for r in rows[:3]] == [
         ("edible", "Lychee", "Bliss"), ("edible", "Mango", None), ("edible", "Kiwi", None)]
     assert [r["variant"] for r in rows[:3]] == ["100mg", "20mg", "100mg"]
-    assert asked == ["Gummies b 5mg THC 2.5mg CBN"]
+    assert asked == ["Gummies b 2pk 20mg"]
     assert rows[3].get("enrich_failed") and usage["jev_classified"] == 3
 
     cache = json.loads((enrich._CACHE_DIR / "test-store.haiku-or.json").read_text())
-    assert sorted(cache) == ["a|10mg", "b|", "c|10mg"]                         # the failed row is not
+    assert sorted(cache) == ["a|100mg", "b|", "c|100mg"]                         # the failed row is not
     assert cache["b|"]["src"] == "jev" and cache["b|"]["size_by"] == "jev"
     assert cache["b|"]["p"] == {"category": 0.97, "subtype": 0.93, "strain": 0.6,
                                 "product_line": 0.9, "size": 0.9}
-    assert cache["c|10mg"]["p"]["category"] == 0.4
+    assert cache["c|100mg"]["p"]["category"] == 0.4
 
 
 def test_without_the_llm_a_size_field_in_another_unit_is_not_kept(fakes, monkeypatch):
@@ -371,3 +371,15 @@ def test_neither_the_brand_nor_its_line_is_offered_as_a_strain():
     assert jev_extract.strain_phrases("Papa & Barkley 1:3 Releaf Balm 50ml", "Papa & Barkley", "topical") == []
     assert jev_extract.strain_phrases("Unscented CBD Lotion - 300mg", "Heady Tree", "topical") == []
     assert "Releaf" in jev_extract.phrases("Papa & Barkley 1:3 Releaf Balm 50ml", "Papa & Barkley")
+
+
+def test_a_weight_its_price_rules_out_is_left_to_the_chooser(monkeypatch):
+    """Hold Up Roll Up's $150 "Sour Diesel - 32PK 1G Prerolls" with "1g" in its size
+    field: 15 times Herb's usual price per gram, so code does not write 1g."""
+    import size_choice
+    monkeypatch.setattr(size_choice, "_RUN_PRICES",
+                        size_choice.PriceBook(brand_per_g={"herb|preroll": {"median": 1000, "n": 5}}))
+    row = {"name": "Sour Diesel - 32PK 1G Prerolls", "variant": "1g", "brand": "Herb", "price_cents": "15000"}
+    assert enrich.stated_size(row, "preroll") == "1g"
+    assert enrich.code_size(row, "preroll") is None
+    assert enrich.code_size({**row, "price_cents": "1000"}, "preroll") == "1g"     # $10 for 1g fits
