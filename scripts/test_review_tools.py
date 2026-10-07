@@ -102,3 +102,20 @@ def test_size_readings_can_read_as_another_category():
     out = rt.size_readings(ctx(), "q1", category="flower")
     assert out["unit"] == "g"
     assert "error" in rt.size_readings(ctx(), "q1", category="gummies")
+
+
+def test_a_match_answer_names_an_entry_of_the_listings_brand():
+    c = ctx()
+    assert not rt.submit_match(c, "q1", "nope", None, "sure", "x")["accepted"]
+    assert not rt.submit_match(c, "q1", "e1", "e2", "sure", "x")["accepted"]          # one or the other
+    assert rt.submit_match(c, "q1", None, "e1", "likely", "The 10pk isn't in the catalog.") == {"accepted": True}
+    assert c.answers["q1"]["product_key"] == "k1" and c.answers["q1"]["entry_id"] is None
+    assert rt.submit_match(c, "q1", None, None, "sure", "Not in the catalog.")["accepted"]
+    assert c.answers["q1"]["product_key"] is None
+
+
+def test_labelling_a_matcher_test_set_hides_what_the_matcher_recorded():
+    c = ctx(blind_matches=True)
+    row = rt.other_store_listings(c, "Grön", "baja blaze mega")["listings"][0]
+    assert set(row) == {"store", "name", "size_field", "price"}
+    assert rt.search_catalog(c, "Grön", "baja")["entries"][0]["product"] == "k1"

@@ -46,6 +46,7 @@ class ReviewContext:
     answers: dict[str, dict] = field(default_factory=dict)
     fetch_page: callable = None                      # url -> html; None turns the tool off
     stores: dict[str, str] = field(default_factory=dict)   # dispensary id -> slug, for display
+    blind_matches: bool = False   # hide what the matcher recorded (labelling a matcher test set)
 
     def for_batch(self, queue: dict[str, dict]) -> "ReviewContext":
         """A copy sharing what is read (catalogs, listings, prices) with its own queue,
@@ -139,7 +140,8 @@ def search_catalog(ctx: ReviewContext, brand: str, query: str = "") -> dict:
         value = parsed.mg if unit == "mg" else parsed.grams
         typical = ctx.prices.product.get(f"{e.get('catalog_id')}|{e.get('product_key') or e.get('id')}|{round(value, 3):g}") \
             if value is not None else None
-        out.append({"entry_id": e.get("id"), "name": e.get("name"), "category": e.get("category"),
+        out.append({"entry_id": e.get("id"), "product": e.get("product_key"), "name": e.get("name"),
+                    "category": e.get("category"),
                     "subtype": e.get("subtype"), "strain": e.get("strain"), "product_line": e.get("product_line"),
                     "size": e.get("variant"),
                     "typical_price": f"${typical['median'] / 100:,.2f}" if typical else None})
@@ -157,11 +159,15 @@ def other_store_listings(ctx: ReviewContext, brand: str, query: str) -> dict:
             if catalog_store.brand_key(l["brand"]) == key and l["id"] not in ctx.queue
             and l.get("store") not in own]
     hits = sorted([h for h in hits if h[0] > 0], key=lambda x: -x[0])[:MAX_RESULTS]
-    return {"brand": brand, "listings": [
-        {"store": ctx.stores.get(l["store"], l["store"]), "name": l["name"], "size_field": l["size_field"],
-         "price": f"${l['price_cents'] / 100:,.2f}" if l.get("price_cents") else None,
-         "strain": l.get("strain"), "product_line": l.get("product_line"),
-         "catalog_match": l.get("catalog_match_method")} for _, l in hits]}
+    rows = []
+    for _, l in hits:
+        row = {"store": ctx.stores.get(l["store"], l["store"]), "name": l["name"], "size_field": l["size_field"],
+               "price": f"${l['price_cents'] / 100:,.2f}" if l.get("price_cents") else None}
+        if not ctx.blind_matches:     # strain and line come from the matched entry when there is one
+            row.update({"strain": l.get("strain"), "product_line": l.get("product_line"),
+                        "catalog_match": l.get("catalog_match_method")})
+        rows.append(row)
+    return {"brand": brand, "listings": rows}
 
 
 def listing_page(ctx: ReviewContext, listing_id: str) -> dict:
@@ -241,6 +247,33 @@ def submit_labels(ctx: ReviewContext, listing_id: str, category: str, strain: st
     return {"accepted": True}
 
 
+def submit_match(ctx: ReviewContext, listing_id: str, entry_id: str | None, product_entry_id: str | None,
+                 confidence: str, evidence: str) -> dict:
+    """Record which catalog entry the listing is: entry_id when an entry is this product in
+    this size; product_entry_id (any entry of the product) when the catalog has the
+    product but not this size; both None when the catalog lacks the product."""
+    l = ctx.queue.get(listing_id)
+    if not l:
+        return {"accepted": False, "error": f"{listing_id} is not a listing under review"}
+    cat = ctx.catalogs.get(catalog_store.brand_key(l["brand"])) or {}
+    entries = {e.get("id"): e for e in cat.get("entries") or []}
+    problems = []
+    if entry_id and product_entry_id:
+        problems.append("give entry_id or product_entry_id, not both")
+    for name, eid in (("entry_id", entry_id), ("product_entry_id", product_entry_id)):
+        if eid and eid not in entries:
+            problems.append(f"{name} {eid} is not an entry of the {l['brand']} catalog")
+    if confidence not in ("sure", "likely", "unsure"):
+        problems.append('confidence must be "sure", "likely" or "unsure"')
+    if problems:
+        return {"accepted": False, "errors": problems}
+    chosen = entries.get(entry_id or product_entry_id)
+    ctx.answers[listing_id] = {"entry_id": entry_id or None, "product_entry_id": product_entry_id or None,
+                               "product_key": chosen.get("product_key") if chosen else None,
+                               "confidence": confidence, "evidence": evidence}
+    return {"accepted": True}
+
+
 def propose_catalog_fix(ctx: ReviewContext, brand: str, change: str, evidence: str,
                         listing_ids: list[str] | None = None) -> dict:
     """Suggest a catalog change for a person to approve in the daily audit: a missing
@@ -251,7 +284,7 @@ def propose_catalog_fix(ctx: ReviewContext, brand: str, change: str, evidence: s
 
 
 FUNCTIONS = {f.__name__: f for f in (search_catalog, other_store_listings, listing_page,
-                                     size_readings, submit_labels, propose_catalog_fix)}
+                                     size_readings, submit_labels, submit_match, propose_catalog_fix)}
 
 _STR = {"type": "string"}
 _NSTR = {"type": ["string", "null"]}
@@ -294,6 +327,17 @@ TOOLS = [
          "confidence": {"type": "string", "enum": ["sure", "likely", "unsure"]}, "evidence": _STR},
          "required": ["listing_id", "category", "subtype", "strain", "product_line", "size",
                       "confidence", "evidence"], "additionalProperties": False}},
+    {"name": "submit_match",
+     "description": "Record which catalog entry one listing is. Call once per listing. entry_id: the "
+                    "entry that is this product in this size. product_entry_id: when the catalog has the "
+                    "product but not in this size, any entry of that product (entries of one product share "
+                    "'product'). Both null when the catalog lacks the product. confidence: sure, likely or "
+                    "unsure. evidence: one or two sentences naming what decided it.",
+     "input_schema": {"type": "object", "properties": {
+         "listing_id": _STR, "entry_id": _NSTR, "product_entry_id": _NSTR,
+         "confidence": {"type": "string", "enum": ["sure", "likely", "unsure"]}, "evidence": _STR},
+         "required": ["listing_id", "entry_id", "product_entry_id", "confidence", "evidence"],
+         "additionalProperties": False}},
     {"name": "propose_catalog_fix",
      "description": "Suggest a catalog change for a person to approve: a product or size the catalog "
                     "lacks, an entry that is wrong, a product line to curate. Nothing is changed.",

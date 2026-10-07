@@ -142,3 +142,55 @@ def test_review_scoring_counts_what_the_pipeline_would_write():
     assert unsure["fields"]["variant"]["ok_agent"] and not unsure["fields"]["variant"]["ok_applied"]
     totals = rr.summarize([s, unsure])["totals"]
     assert (totals["fields"], totals["fixed"], totals["broke"], totals["unsure"]) == (6, 1, 0, 1)
+
+
+def test_the_match_mode_asks_for_an_entry_and_offers_its_own_submit_tool():
+    client = FakeClient(response("end_turn", text("done")), response("end_turn", text("done")))
+    ra.review_batch(ctx(), [QUEUED], client=client, task="match")
+    req = client.requests[0]
+    names = {t["name"] for t in req["tools"]}
+    assert "submit_match" in names and "submit_labels" not in names
+    assert "which catalog entry" in req["system"][0]["text"]
+    assert "Call submit_match" in client.requests[1]["messages"][-1]["content"]
+    assert "submit_match" not in {t["name"] for t in ra.tool_definitions()}
+
+
+def _load(rel):
+    path = Path(__file__).resolve().parent.parent / rel
+    spec = importlib.util.spec_from_file_location(path.stem, path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_matcher_scoring_by_bar_and_catalog_kind():
+    rm = _load("evals/match/run_match.py")
+    site = {"catalog_source": "storefront_html"}
+    built = {"catalog_source": "listings_bootstrap"}
+    rows = [
+        ({**site, "label": {"product_key": "a", "entry_id": "a1"}}, {"method": "jev", "product_key": "a", "entry_id": "a1", "p": 0.95}),
+        ({**site, "label": {"product_key": "b", "entry_id": "b1"}}, {"method": "jev", "product_key": "c", "entry_id": "c1", "p": 0.86}),
+        ({**site, "label": {"product_key": None}}, {"method": "jev_review", "product_key": "d", "entry_id": "d1", "p": 0.7}),
+        ({**built, "label": {"product_key": "e", "entry_id": None, "product_entry_id": "e2"}},
+         {"method": "exact", "product_key": "e", "entry_id": "e1", "p": 1.0}),
+    ]
+    s = rm.score(rows, bars=[0.6, 0.85, 0.9])
+    site_ = s["brand site"]["bars"]
+    assert (site_[0.85]["trusted"], site_[0.85]["right"], site_[0.85]["precision"]) == (2, 1, 0.5)
+    assert (site_[0.9]["trusted"], site_[0.9]["precision"], site_[0.9]["recall"]) == (1, 1.0, 0.5)
+    assert site_[0.6]["wrong"] == 2                                   # the review-band pick counts below its p
+    built_ = s["store-built"]
+    assert (built_["exact"], built_["exact_wrong"], built_["bars"][0.9]["entry_labelled"]) == (1, 0, 0)
+
+
+def test_the_spot_check_mixes_disagreements_with_each_kind_of_label():
+    ls = _load("evals/match/label_sample.py")
+    cases = []
+    for i in range(40):
+        entry = f"e{i % 3}" if i % 4 else None
+        cases.append({"id": f"c{i}", "brand": "Grön", "store": "s", "listing": {"name": f"n{i}"},
+                      "recorded": {"method": "jev", "p": 0.9, "entry_id": "e0"},
+                      "label": {"entry_id": entry, "product_entry_id": None if entry or i % 8 else "e1",
+                                "confidence": "sure", "evidence": "x"}})
+    text = ls.spot_check(cases, CATALOGS, n=12)
+    assert text.count("   - case c") == 12

@@ -99,6 +99,46 @@ and anything a person should double-check.
 """
 
 
+MATCH_HEAD = """\
+You decide which catalog entry each listing from a New York dispensary menu is. Your answers
+become a test set for our catalog matcher, so they must be your own careful reading.
+
+A listing's identity is five fields: category, subtype, strain, product line and size (the
+conventions below say how each is written). A catalog entry is one product in one size;
+entries of the same product share "product". The listing is an entry when all five fields
+agree, judged by the conventions rather than by wording: stores abbreviate, reorder and
+misspell names and add their own codes.
+
+For each listing:
+
+1. Read it: the name, the store's category, the store's size field, the price, the
+   description.
+2. Search the brand's catalog (search_catalog) for the words that tell the product apart
+   (the strain or flavour, the line). Try another query when the first finds nothing close;
+   an empty query lists the whole catalog.
+3. When the size matters, work it out with size_readings and compare it with the entries'
+   sizes. A pack of five 0.5g joints is a 2.5g entry, not a 0.5g one.
+4. When the name alone doesn't settle it (a name you can't place, two entries that both
+   fit), look at how other stores list the product (other_store_listings) or search the web.
+5. Record the answer with submit_match, once per listing:
+   - entry_id when an entry is this product in this size;
+   - product_entry_id when the catalog has the product but not in this size;
+   - both null when the catalog lacks the product. Similar is not the same: another strain,
+     flavour, format or line is another product.
+
+Confidence:
+- sure: the entry plainly is the listing, or plainly no entry is.
+- likely: one reading is clearly better, with a little doubt.
+- unsure: you can't tell. Unsure listings are left out of the test set; prefer it to a guess.
+
+When you have recorded every listing, reply with one short line per listing: its id and
+anything a person should double-check.
+"""
+
+HEADS = {"labels": SYSTEM_HEAD, "match": MATCH_HEAD}
+SUBMIT = {"labels": "submit_labels", "match": "submit_match"}
+
+
 def _taxonomy_text() -> str:
     lines = []
     for cat in taxonomy.CATEGORY_ORDER:
@@ -110,15 +150,17 @@ def _taxonomy_text() -> str:
     return "\n".join(lines)
 
 
-def system_prompt() -> str:
-    """The labelling preamble: how to work, the conventions verbatim, the taxonomy.
-    Identical across requests, so it caches."""
-    return (f"{SYSTEM_HEAD}\n## Labelling conventions\n\n{CONVENTIONS.read_text().strip()}\n\n"
+def system_prompt(task: str = "labels") -> str:
+    """The preamble: how to work, the conventions verbatim, the taxonomy. Identical
+    across requests of a task, so it caches. task: "labels" reviews a listing's five
+    fields; "match" labels which catalog entry it is (a matcher test set)."""
+    return (f"{HEADS[task]}\n## Labelling conventions\n\n{CONVENTIONS.read_text().strip()}\n\n"
             f"## Taxonomy: categories and their subtypes\n\n{_taxonomy_text()}\n")
 
 
-def tool_definitions(web: bool = True) -> list[dict]:
-    tools = [{**t, "strict": True} for t in review_tools.TOOLS]
+def tool_definitions(web: bool = True, task: str = "labels") -> list[dict]:
+    other = {v for k, v in SUBMIT.items() if k != task}
+    tools = [{**t, "strict": True} for t in review_tools.TOOLS if t["name"] not in other]
     if web:
         tools += [{"type": "web_search_20260209", "name": "web_search", "max_uses": 5},
                   {"type": "web_fetch_20260209", "name": "web_fetch", "max_uses": 5,
@@ -157,11 +199,13 @@ def batch_prompt(listings: list[dict], stores: dict[str, str] | None = None) -> 
                                        for l in listings)
 
 
-def batches(listings: list[dict], size: int = BATCH_SIZE) -> list[list[dict]]:
-    """Groups of at most `size` from one store and brand, in first-seen order."""
+def batches(listings: list[dict], size: int = BATCH_SIZE, by_store: bool = True) -> list[list[dict]]:
+    """Groups of at most `size` from one brand (and one store, unless by_store is off),
+    in first-seen order."""
     groups: dict[tuple, list[dict]] = {}
     for l in listings:
-        groups.setdefault((l.get("store") or "", catalog_store.brand_key(l.get("brand"))), []).append(l)
+        store = (l.get("store") or "") if by_store else ""
+        groups.setdefault((store, catalog_store.brand_key(l.get("brand"))), []).append(l)
     return [g[i:i + size] for g in groups.values() for i in range(0, len(g), size)]
 
 
@@ -237,7 +281,7 @@ def _trace_turn(response) -> dict:
 
 def review_batch(ctx: review_tools.ReviewContext, listings: list[dict], model: str = DEFAULT_MODEL, *,
                  client=None, effort: str = "medium", web: bool = True, fallbacks: bool = True,
-                 max_turns: int = MAX_TURNS, trace: bool = True) -> BatchResult:
+                 max_turns: int = MAX_TURNS, trace: bool = True, task: str = "labels") -> BatchResult:
     """Run one conversation over `listings` (all in ctx.queue) and return what it recorded.
 
     The history only ever grows: each response's content is appended unchanged, all of
@@ -247,8 +291,8 @@ def review_batch(ctx: review_tools.ReviewContext, listings: list[dict], model: s
     result = BatchResult(listing_ids=[l["id"] for l in listings], model=model)
     params = dict(
         model=model, max_tokens=MAX_TOKENS,
-        system=[{"type": "text", "text": system_prompt(), "cache_control": {"type": "ephemeral"}}],
-        tools=tool_definitions(web),
+        system=[{"type": "text", "text": system_prompt(task), "cache_control": {"type": "ephemeral"}}],
+        tools=tool_definitions(web, task),
         thinking={"type": "adaptive", "display": "summarized"},
         output_config={"effort": effort},
         cache_control={"type": "ephemeral"},      # caches the growing conversation too
@@ -297,7 +341,7 @@ def review_batch(ctx: review_tools.ReviewContext, listings: list[dict], model: s
             if missing and not reminded:
                 reminded = True
                 messages.append({"role": "user", "content":
-                                 f"No answer was recorded for {', '.join(missing)}. Call submit_labels for "
+                                 f"No answer was recorded for {', '.join(missing)}. Call {SUBMIT[task]} for "
                                  f"each (confidence unsure when you can't tell)."})
                 continue
             break
