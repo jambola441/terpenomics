@@ -127,6 +127,16 @@ def test_an_ounce_word_is_a_reading_even_in_a_name():
     assert (a.status, a.values) == ("conflict", [2.0, 7.0])
 
 
+def test_an_ounce_compound_hyphenated_or_run_together():
+    """"Half-Ounce" was read as its last word, an ounce (28g)."""
+    for name in ("Gelato Half-Ounce Bag", "Gelato Half Ounce", "Gelato HalfOunce", "Gelato Half-Oz"):
+        assert sc.assess(listing(name, category="flower")).values == [14.0], name
+    assert sc.assess(listing("Gelato Quarter-Ounce", category="flower")).values == [7.0]
+    assert sc.assess(listing("Gelato Eighth-Oz", category="flower")).values == [3.5]
+    assert sc.assess(listing("Gelato 1/8-oz", category="flower")).values == [3.5]
+    assert sc.assess(listing("Gelato Ounce", category="flower")).values == [28.0]
+
+
 def test_counts_and_figures_stores_write_loosely():
     assert sc.assess(listing("Runtz - Lemon Candy Runtz | .75g Pre-Roll 2 - Pack")).values == [0.75, 1.5]
     assert sc.assess(listing("2x Baked | Sugar Cookie | 10mg | 10 Bite size Cookies",
