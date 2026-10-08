@@ -21,7 +21,7 @@ const BUTTON_RADIUS = 10
 
 /* ── FeedState — loading / error / empty, so every screen fails the same way ── */
 
-export function FeedState({ loading, error, empty, hint, icon, onRetry, style }: {
+export function FeedState({ loading, error, empty, hint, icon, onRetry, action, style }: {
   loading?: boolean
   error?: string | null
   empty?: string | null
@@ -30,6 +30,8 @@ export function FeedState({ loading, error, empty, hint, icon, onRetry, style }:
   /** Glyph in the disc; defaults to `alert` for errors and `leaf` when empty. */
   icon?: IconName
   onRetry?: () => void
+  /** The way out of an empty state ("Pick your stores"). */
+  action?: { title: string; onPress: () => void }
   style?: StyleProp<ViewStyle>
 }) {
   if (loading) {
@@ -58,6 +60,9 @@ export function FeedState({ loading, error, empty, hint, icon, onRetry, style }:
       {hint ? <Text style={s.feedHint}>{hint}</Text> : null}
       {failed && onRetry ? (
         <Button title="Try again" icon="refresh" variant="secondary" onPress={onRetry} style={{ marginTop: space[3] }} />
+      ) : null}
+      {!failed && action ? (
+        <Button title={action.title} onPress={action.onPress} style={{ marginTop: space[3] }} />
       ) : null}
     </View>
   )

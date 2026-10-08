@@ -1,11 +1,12 @@
-import { FlatList, RefreshControl, ScrollView, Text, View } from 'react-native'
-import { router } from 'expo-router'
+import { useCallback, useRef } from 'react'
+import { FlatList, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native'
+import { router, useFocusEffect } from 'expo-router'
 import { FEED_RAILS, type FeedListing, type FeedRail } from '@web/types'
 import { api } from '@/lib/api'
 import { useFetch } from '@/lib/useFetch'
 import ListingCard from '@/components/ListingCard'
 import { FeedState, SectionTitle, styles } from '@/components/ui'
-import { t, space } from '@/lib/theme'
+import { t, space, type } from '@/lib/theme'
 
 const RAIL_TITLES: Record<FeedRail, string> = {
   featured: 'Featured',
@@ -14,10 +15,20 @@ const RAIL_TITLES: Record<FeedRail, string> = {
   deals: 'Best prices',
 }
 
-/** The combined feed across every store the shopper follows. Following stores
- *  is done on the web for now; the Map tab that does it comes later. */
+/** The combined feed across every store the shopper follows. Stores are
+ *  picked in the stores screen (app/stores.tsx). */
 export default function Home() {
   const { data: feed, error, loading, refreshing, refresh } = useFetch('feed', () => api.me.getFeed({ view: 'combined' }))
+
+  // Back from picking stores, or from a listing where one was followed: show
+  // the feed for the stores as they are now. The first focus is the load.
+  const focused = useRef(false)
+  useFocusEffect(
+    useCallback(() => {
+      if (focused.current) refresh()
+      focused.current = true
+    }, [refresh]),
+  )
 
   if (loading || error) return <FeedState loading={loading} error={error} onRetry={refresh} />
   if (!feed?.combined || feed.dispensaries.length === 0) {
@@ -25,7 +36,8 @@ export default function Home() {
       <FeedState
         icon="store"
         empty="No stores yet"
-        hint="Follow a few stores on the Terpee website and their menus will show up here."
+        hint="Follow the stores you shop at and what's on their shelves shows up here."
+        action={{ title: 'Pick your stores', onPress: () => router.push('/stores') }}
       />
     )
   }
@@ -41,6 +53,14 @@ export default function Home() {
       contentContainerStyle={{ paddingBottom: space[8] }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={t.text3} />}
     >
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: space[4], paddingTop: space[3] }}>
+        <Text style={type.meta}>
+          {feed.dispensaries.length} {feed.dispensaries.length === 1 ? 'store' : 'stores'} you follow
+        </Text>
+        <Pressable onPress={() => router.push('/stores')} accessibilityRole="button" hitSlop={12}>
+          <Text style={[type.link, { color: t.accent }]}>Edit</Text>
+        </Pressable>
+      </View>
       {FEED_RAILS.map(rail => {
         const items = feed.combined![rail]
         if (!items?.length) return null

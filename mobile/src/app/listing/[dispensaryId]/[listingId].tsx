@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { router, useLocalSearchParams } from 'expo-router'
@@ -26,6 +27,45 @@ function Cannabinoids({ items }: { items: Cannabinoid[] }) {
         </View>
       ))}
     </View>
+  )
+}
+
+/** Follow / Following for the listing's store, so a shopper can add a store
+ *  to Home from where they found it. */
+function FollowStore({ dispensaryId, name }: { dispensaryId: string; name: string }) {
+  const { data: followed, setData } = useFetch('followed', () => api.me.listPreferredDispensaries())
+  const [busy, setBusy] = useState(false)
+  if (!followed) return null
+  const following = followed.some(d => d.id === dispensaryId)
+
+  async function toggle() {
+    setBusy(true)
+    try {
+      const next = following
+        ? await api.me.removePreferredDispensary(dispensaryId)
+        : await api.me.addPreferredDispensary(dispensaryId)
+      setData(() => next)
+    } catch {
+      Alert.alert("That didn't save", 'Check your connection and try again.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Pressable
+      onPress={toggle}
+      disabled={busy}
+      accessibilityRole="button"
+      accessibilityState={{ selected: following, busy }}
+      accessibilityLabel={following ? `Unfollow ${name}` : `Follow ${name}`}
+      style={[s.follow, following ? { borderColor: t.accent } : { backgroundColor: t.accent, borderColor: t.accent }]}
+    >
+      {following ? <Icon name="check" size={14} color={t.accent} /> : null}
+      <Text style={[type.button, { fontSize: 14, color: following ? t.accent : t.accentInk }]}>
+        {following ? 'Following' : 'Follow'}
+      </Text>
+    </Pressable>
   )
 }
 
@@ -75,6 +115,7 @@ export default function ListingScreen() {
             <Text style={styles.name}>{l.dispensary_name}</Text>
             {l.dispensary?.address ? <Text style={styles.meta} numberOfLines={1}>{l.dispensary.address}</Text> : null}
           </View>
+          <FollowStore dispensaryId={l.dispensary_id} name={l.dispensary_name} />
         </View>
       </View>
 
@@ -163,6 +204,10 @@ function AddToCart({ listing }: { listing: ListingDetail }) {
 }
 
 const s = StyleSheet.create({
+  follow: {
+    flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 36,
+    paddingHorizontal: space[3], borderRadius: radius.pill, borderWidth: 1,
+  },
   gutter: { paddingHorizontal: space[4] },
   tags: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space[2], marginBottom: space[2] },
   name: { ...type.title, fontSize: font.size.display, lineHeight: 30 },
