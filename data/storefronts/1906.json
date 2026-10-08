@@ -1,0 +1,225 @@
+{
+  "brand": "1906",
+  "site": "https://1906dispensary.com",
+  "source": {
+    "kind": "json",
+    "url": "https://1906dispensary.com/products.json?limit=250#tin",
+    "items": "products.*",
+    "fields": {
+      "id": "id",
+      "title": "title",
+      "body": "body_html",
+      "tags": "tags",
+      "product_type": "product_type"
+    },
+    "also": [
+      {
+        "url": "https://1906dispensary.com/products.json?limit=250#pouch"
+      }
+    ]
+  },
+  "learned": "2026-10-08, by hand: 1906dispensary.com (Shopify, the brand's dispensary-edition site) lists 15 products, one per formula, with no variants and no prices (all 0.00, available=false). Each description states the THC per piece and which states sell it; each product page's Supplement Facts states the tin count ('Tin Servings: 20') and, for the pouch, only '1 to 2 by state market'. 13 are sold in New York (2 are MA-only), read here as 23 product-size pairs.",
+  "notes": [
+    "products.json is read twice, once per package (the '#tin' and '#pouch' fragments never reach the server; the rules read them from `page`). Every product is one Shopify product with a 'Default Title' variant, so the package is not on the site as a variant: the tin count comes from the product page's Supplement Facts, the NY pouch count from NY store names. Product pages answered a 'Your connection needs to be verified' challenge after about a dozen requests in a row, so the recipe reads products.json only, and sizes are rule constants checked against the dose the description states. A new product falls through to 'no title rule'.",
+    "Tins (from Supplement Facts, Serving Size x Tin Servings): the 5mg Drops (Bliss, Boost, Chill, Go, Sleep) and Go Beans are 1 drop x 20 = 20pk 100mg; Genius and Love are 2.5mg drops, 2 drops x 15 servings = 30pk 75mg. Stores agree (8, 5, 7, 6, 6 stores; Genius 5, Love 6). Love Beans' page answered the verification challenge when read, so its tin count is taken as Go Beans' (20 x 5mg); check it on the page. The beans are sold in CO and NY and seen at one NY store each (Go Beans 20pk 100mg; Go and Love Beans 10mg).",
+    "Pouches: the site says '1 to 2 by state market'. New York's is 2 servings: 2pk 10mg for the 5mg drops and beans, 4pk 10mg for Genius and Love ('1906 | 10mg Pouch 2pk Drops', '1906 - Genius Drops 4pk - 10mg'). Many stores put 20mg or 40mg in the size field for these (THC and CBD added); THC only is 10mg, and store_skip drops those.",
+    "Boost+ 30mg: the description says 30mg THC per drop; its Supplement Facts panel (10mg, Tin Servings 10, Pouch Servings 9) is stale. New York sells it only as a 3-drop pouch, 3pk 90mg (NY's 100mg package cap rules out a tin). Written as strain Boost, as every NY store names it ('1906 - Boost Drops 3pk - 90mg', '1906 Boost Pouch 3pk'): 'Boost+' reads as 'Boost and' in the name keys and would miss them, and its product key is Boost's anyway.",
+    "Relief AM 25mg and Relief PM 25mg are the NY gummies (the 20mg pair says 'Available in MA Dispensaries'). The site gives 25mg THC a piece and no count; NY stores sell a 4pk 100mg pouch ('Relief AM ... Gummies 4pk - 100mg'). Line Relief, strain AM / PM (the effect rule: Relief is the family).",
+    "Lines: Drops (data/product_lines.json '1906'), Beans (the chocolate 'Go Beans', 'Love Beans'), Relief. The effect is the strain.",
+    "Skips by body text: 'Available in MA' (Relief 20mg pair, RSO 5mg). A product whose description moves to MA-only drops out by itself.",
+    "store_skip drops the stores' consensus sizes that add CBD (and CBG) to the THC: the pouches as 2pk 20mg and 4pk 40mg, and a Boost '20pk 20mg' that is no package. 'Drops Sleep' 2pk 20mg filed under tinctures is the same pouch."
+  ],
+  "skip": [
+    {
+      "when": {
+        "body": "(?i)available in MA\\b"
+      },
+      "why": "Massachusetts only (Relief AM/PM 20mg, RSO)"
+    },
+    {
+      "when": {
+        "title": "(?i)^Relief\\b",
+        "page": "#tin$"
+      },
+      "why": "no tin: New York's Relief is a 4-gummy pouch"
+    },
+    {
+      "when": {
+        "title": "(?i)^Boost\\+",
+        "page": "#tin$"
+      },
+      "why": "no tin in New York: Boost+ (30mg a drop) is sold as a 3-drop pouch, within NY's 100mg package cap"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "title": "(?i)\\bBeans\\b"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "chocolate"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)^Relief\\b"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "gummy"
+      }
+    },
+    {
+      "when": {
+        "body": "(?i)\\b1906 Drops?\\b|per Drop\\b|Sleep Drops|sleep"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "tablet"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^edible$",
+        "page": "#pouch$",
+        "body": "(?i)available in NY"
+      },
+      "match": "^(?P<line>Relief) (?P<strain>AM|PM) 25mg$",
+      "set": {
+        "size": "4pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "page": "#pouch$",
+        "body": "(?<![\\d.])30mg THC per Drop"
+      },
+      "match": "^Boost\\+ 30mg$",
+      "set": {
+        "line": "Drops",
+        "strain": "Boost",
+        "size": "3pk 90mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "page": "#tin$",
+        "body": "(?<![\\d.])5mg THC[^.]*per Bean"
+      },
+      "match": "^(?P<strain>Go|Love) (?P<line>Beans)$",
+      "set": {
+        "size": "20pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "page": "#pouch$",
+        "body": "(?<![\\d.])5mg THC[^.]*per Bean"
+      },
+      "match": "^(?P<strain>Go|Love) (?P<line>Beans)$",
+      "set": {
+        "size": "2pk 10mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "page": "#tin$",
+        "body": "(?<![\\d.])2\\.5mg THC(?:[^.]|\\.\\d)*per Drop"
+      },
+      "match": "^(?P<strain>[A-Z][a-z]+)(?: 2\\.5mg)?$",
+      "set": {
+        "line": "Drops",
+        "size": "30pk 75mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "page": "#pouch$",
+        "body": "(?<![\\d.])2\\.5mg THC(?:[^.]|\\.\\d)*per Drop"
+      },
+      "match": "^(?P<strain>[A-Z][a-z]+)(?: 2\\.5mg)?$",
+      "set": {
+        "line": "Drops",
+        "size": "4pk 10mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "page": "#tin$",
+        "body": "(?<![\\d.])5mg THC[^.]*per Drop"
+      },
+      "match": "^(?P<strain>[A-Z][a-z]+)(?: 5mg)?$",
+      "set": {
+        "line": "Drops",
+        "size": "20pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "page": "#pouch$",
+        "body": "(?<![\\d.])5mg THC[^.]*per Drop"
+      },
+      "match": "^(?P<strain>[A-Z][a-z]+)(?: 5mg)?$",
+      "set": {
+        "line": "Drops",
+        "size": "2pk 10mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "page": "#tin$"
+      },
+      "match": "^(?P<strain>Sleep)$",
+      "set": {
+        "line": "Drops",
+        "size": "20pk 100mg"
+      },
+      "why": "Sleep's description states no dose; its Supplement Facts: 1 drop, Tin Servings 20, THC 5mg"
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "page": "#pouch$"
+      },
+      "match": "^(?P<strain>Sleep)$",
+      "set": {
+        "line": "Drops",
+        "size": "2pk 10mg"
+      }
+    }
+  ],
+  "store_skip": [
+    {
+      "when": {
+        "name": "^Drops (Bliss|Boost|Chill|Go|Sleep)$",
+        "size": "^2pk 20mg$"
+      },
+      "why": "the 2-drop pouch sized by THC and CBD together (5mg + 5mg a drop); it is 10mg THC, as the stores' own names say ('1906 | 10mg Pouch 2pk Drops', '1906 - Bliss Drops 2pk - 10mg') and the site's entry has it"
+    },
+    {
+      "when": {
+        "name": "^Drops (Genius|Love)$",
+        "size": "^4pk 40mg$"
+      },
+      "why": "the 4-drop pouch of 2.5mg drops sized with its CBD (and CBG); it is 10mg THC ('1906 - Genius Drops 4pk - 10mg', '1906 | 10mg Pouch 4pk Drops'), the site's 4pk 10mg"
+    },
+    {
+      "when": {
+        "name": "^Drops Boost$",
+        "size": "^20pk 20mg$"
+      },
+      "why": "no such package: a mix of the 20-drop tin (100mg) and the 2-drop pouch written as 20mg ('1906 | Boost (Sativa) 20-Pack Tablets' at 20mg, 'BOOST DROPS - 2PK' at 20mg); the site has both as 20pk 100mg and 2pk 10mg"
+    }
+  ]
+}

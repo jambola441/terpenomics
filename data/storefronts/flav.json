@@ -1,0 +1,266 @@
+{
+  "brand": "Flav",
+  "site": "https://flavinc.com",
+  "source": {
+    "kind": "html",
+    "urls": [
+      "https://flavinc.com/products/edibles/infused-gummy-rings/#rings-10pk-100mg"
+    ],
+    "item": ".e-loop-item-3290 .flavor-span",
+    "fields": {
+      "title": "."
+    },
+    "also": [
+      {
+        "urls": [
+          "https://flavinc.com/products/edibles/infused-gummy-rings/#rings-mega-2pk-100mg"
+        ],
+        "item": ".e-loop-item-3290 .flavor-span"
+      },
+      {
+        "urls": [
+          "https://flavinc.com/products/edibles/live-resin-sour-belts/#belts-10pk-100mg"
+        ],
+        "item": ".e-loop-item-3593 .flavor-span"
+      },
+      {
+        "urls": [
+          "https://flavinc.com/products/edibles/live-resin-sour-belts/#belts-mega-1pk-100mg"
+        ],
+        "item": ".e-loop-item-3593 .flavor-span"
+      },
+      {
+        "urls": [
+          "https://flavinc.com/products/vapes/distillate/#distillate-aio-1g"
+        ],
+        "item": ".e-loop-item-3619 .flavor-span"
+      },
+      {
+        "urls": [
+          "https://flavinc.com/products/flower/flower-duos/#duos-whole-14g"
+        ],
+        "item": ".e-loop-item-3626 .flavor-span"
+      },
+      {
+        "urls": [
+          "https://flavinc.com/products/flower/flower-duos/#duos-infused-rtr-14g"
+        ],
+        "item": ".e-loop-item-3628 .flavor-span"
+      },
+      {
+        "urls": [
+          "https://flavinc.com/products/flower/flower-duos/#duos-rtr-14g"
+        ],
+        "item": ".e-loop-item-3629 .flavor-span"
+      },
+      {
+        "urls": [
+          "https://flavinc.com/products/flower/flower-duos/#duos-preroll-8pk-4g"
+        ],
+        "item": ".e-loop-item-9003241321010132 .flavor-span"
+      }
+    ]
+  },
+  "learned": "2026-10-08, agent pass. flavinc.com is a WordPress/Elementor marketing site for MO, AZ and NY, with no shop: no WooCommerce, no Shopify, and its 'product' post type holds 9 line pages with no SKUs or sizes. Each line page does state its fixed formats and sizes in prose and lists its flavours or strain pairs in 'spotlight' blocks (<span class=flavor-span>). Some blocks are labelled by state. This recipe reads the blocks that are New York's, or that NY stores sell from, one page fetch per block and size: Rings, Live Resin Sour Belts, Distillate AIO vapes, and the Flav Duos family (whole flower, ready-to-roll and infused ready-to-roll 14g, infused pre-roll 8-pack 4g). That is 53 entries. The 'Test Distru' page (flavinc.com/test-distru/) embeds a public Distru wholesale menu (company 492724, menu 3570). It belongs to White Mountain Health Center (FLAV), the Arizona licensee, and carries 300mg rings and AZ-only vapes, so it is not used as a source. Its product copy is the brand's own and fixes which flavours come in megadose.",
+  "notes": [
+    "Sizes come from each line page's prose, set by rules keyed on the '#<format>-<size>' fragment of each url. Rings: 'standard dose (100mg/10mg per piece) or megadose (100mg/50mg per piece or 300mg 30mg per piece)'. In NY that is 10pk 100mg and 2pk 100mg; 300mg is over New York's 100mg cap, and only the Arizona Distru menu sells it. Belts: '10mg to 100mg per piece', so in NY a 10pk 100mg and a 1pk 100mg megadose belt. Distillate vapes: 'a full-gram tank' AIO, 1g. Duos: 'Whole Flower comes 14 grams, split 7 and 7', ready-to-roll 14g, 'Pre-Roll 8-pack at 4 grams total'.",
+    "Megadose flavours are not on flavinc.com. The skip rules keep the ones the brand's own Distru product copy names: rings 'Peach, Cherry, and Watermelon', belts 'Megadose Rainbow, Blueberry, and Strawberry'. NY stores sell exactly those six. If the brand adds a megadose flavour, edit the skip rules.",
+    "Blocks are picked by their spotlight post id (.e-loop-item-<id>), which stays the same when the brand edits a list: 3290 rings flavours, 3593 belt flavours, 3619 distillate strains, 3626 whole flower duos, 3628 infused ready-to-roll duos, 3629 regular ready-to-roll duos, 9003241321010132 infused pre-roll 8-pack duos. A NEW block (a new format or state list) needs a new `also` entry. The same ids are in https://flavinc.com/wp-json/wp/v2/spotlight?per_page=100.",
+    "Left out as not New York's, or with no NY evidence: Missouri strain pre-rolls (2 and 5 packs) and Hash Rosin rings (both labelled MO), Infused Flower 3.5g (its strains are the MO pre-roll list), Cones (on the MO ordering page), Snap Duo 2G vapes (on the AZ ordering page), Live Resin 1G vapes and Sleep & Relief gummies (no state named and no NY store listing; Sleep & Relief's three flavours are not tied to its CBG and CBN products).",
+    "The NY ordering page says Flower Duos are 'exclusively available' in New York. The infused pre-roll page labels the six 8-pack pairs 'New York Strains', with the same pairs as the 8-pack block on /products/flower/flower-duos/ that is read here. That block spells them as stores do ('Hippie Crasher', where the NY block has 'Hippy'). Two title rules fix its 'Sour tangie' and 'Mr Nice Guy'.",
+    "Lines: 'Rings', 'Belts' (the site's 'Live Resin Sour Belts'; Live Resin is the extract) and 'Duos' (Flav Duos, a family printed across flower and pre-roll formats). Megadose is a size of the same product (2pk or 1pk 100mg), not a line. Distillate vapes have no line. Infused ready-to-roll duos are subtype infused and regular ones preground.",
+    "Whole flower duo names keep the site's '&' ('Black Cherry Gelato & Grape Soda'). The other duo blocks use 'x'. A store that writes a whole flower pair in the other order will not match until it is aliased. 'Granddaddy Purp' is the site's spelling.",
+    "Store names: stores put the line after the flavour ('Peach Rings', 'Blueberry Belts', 'Rainbow Mega Belt') or use 'Live Resin Belts'. store_aliases map those to the site's line and flavour. 'Apple' rings and belts are the site's 'Green Apple' (the brand's Distru menu says 'Apple Rings' and 'Green Apple Belts').",
+    "Only at stores, and correctly so: Rainbow Poppers (20pk x 5mg, not on the site), and single-strain 1g live resin infused pre-rolls of the NY duo strains (Pineapple Dream, Sour Tangie). The site mentions a '2-pack (1g) single strain' but lists strains for it only under Missouri."
+  ],
+  "skip": [
+    {
+      "when": {
+        "page": "#rings-mega-",
+        "title": "^(?!(?:Peach|Cherry|Watermelon)$)"
+      },
+      "why": "megadose rings come in Peach, Cherry and Watermelon only (the brand's own copy: 'Available in our top selling flavors Peach, Cherry, and Watermelon')"
+    },
+    {
+      "when": {
+        "page": "#belts-mega-",
+        "title": "^(?!(?:Rainbow|Blueberry|Strawberry)$)"
+      },
+      "why": "megadose belts come in Rainbow, Blueberry and Strawberry only (the brand's own copy: 'Megadose Rainbow, Blueberry, and Strawberry flavors')"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "page": "#rings-|#belts-"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "gummy"
+      }
+    },
+    {
+      "when": {
+        "page": "#distillate-aio-"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "all-in-one"
+      }
+    },
+    {
+      "when": {
+        "page": "#duos-whole-"
+      },
+      "set": {
+        "category": "flower",
+        "subtype": "flower"
+      }
+    },
+    {
+      "when": {
+        "page": "#duos-infused-rtr-"
+      },
+      "set": {
+        "category": "flower",
+        "subtype": "infused"
+      }
+    },
+    {
+      "when": {
+        "page": "#duos-rtr-"
+      },
+      "set": {
+        "category": "flower",
+        "subtype": "preground"
+      }
+    },
+    {
+      "when": {
+        "page": "#duos-preroll-"
+      },
+      "set": {
+        "category": "preroll"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "page": "#rings-10pk-100mg$"
+      },
+      "match": "^(?P<strain>[A-Za-z][A-Za-z &'.-]*)$",
+      "set": {
+        "line": "Rings",
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "page": "#rings-mega-2pk-100mg$"
+      },
+      "match": "^(?P<strain>[A-Za-z][A-Za-z &'.-]*)$",
+      "set": {
+        "line": "Rings",
+        "size": "2pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "page": "#belts-10pk-100mg$"
+      },
+      "match": "^(?P<strain>[A-Za-z][A-Za-z &'.-]*)$",
+      "set": {
+        "line": "Belts",
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "page": "#belts-mega-1pk-100mg$"
+      },
+      "match": "^(?P<strain>[A-Za-z][A-Za-z &'.-]*)$",
+      "set": {
+        "line": "Belts",
+        "size": "1pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "page": "#distillate-aio-1g$"
+      },
+      "match": "^(?P<strain>[A-Za-z0-9][A-Za-z0-9 &'.-]*)$",
+      "set": {
+        "size": "1g"
+      }
+    },
+    {
+      "when": {
+        "page": "#duos-[a-z-]*14g$"
+      },
+      "match": "(?i)^(?P<strain>[^()]+?)\\s*\\((?:sativa|indica|hybrid)\\)\\s*(?P<strain2>(?:x|&)\\s*[^()]+?)\\s*\\((?:sativa|indica|hybrid)\\)$",
+      "set": {
+        "line": "Duos",
+        "size": "14g"
+      }
+    },
+    {
+      "when": {
+        "page": "#duos-preroll-8pk-4g$"
+      },
+      "match": "(?i)^Hippie Crasher\\b.*\\bSour tangie\\b",
+      "set": {
+        "line": "Duos",
+        "strain": "Hippie Crasher x Sour Tangie",
+        "size": "4g"
+      },
+      "why": "the 8-pack block writes 'Sour tangie' in lower case"
+    },
+    {
+      "when": {
+        "page": "#duos-preroll-8pk-4g$"
+      },
+      "match": "(?i)^Mr\\.? Nice Guy\\b.*\\bBlackberry Haze\\b",
+      "set": {
+        "line": "Duos",
+        "strain": "Mr. Nice Guy x Blackberry Haze",
+        "size": "4g"
+      },
+      "why": "the 8-pack block drops the period the site's other blocks write ('Mr. Nice Guy')"
+    },
+    {
+      "when": {
+        "page": "#duos-preroll-8pk-4g$"
+      },
+      "match": "(?i)^(?P<strain>[^()]+?)\\s*\\((?:sativa|indica|hybrid)\\)\\s*(?P<strain2>x\\s*[^()]+?)\\s*\\((?:sativa|indica|hybrid)\\)$",
+      "set": {
+        "line": "Duos",
+        "size": "4g"
+      }
+    }
+  ],
+  "store_aliases": {
+    "lines": {
+      "Live Resin Belts": "Belts",
+      "Flav Duos": "Duos",
+      "Infused Duos": "Duos"
+    },
+    "names": {
+      "Apple Rings": "Rings Green Apple",
+      "Apple Belts": "Belts Green Apple",
+      "Peach Rings": "Rings Peach",
+      "Watermelon Rings": "Rings Watermelon",
+      "Cherry Rings": "Rings Cherry",
+      "Blue Raspberry Rings": "Rings Blue Raspberry",
+      "Blueberry Belts": "Belts Blueberry",
+      "Rainbow Belts": "Belts Rainbow",
+      "Strawberry Belts": "Belts Strawberry",
+      "Watermelon Belts": "Belts Watermelon",
+      "Mango Belts": "Belts Mango",
+      "Pink Lemonade Belts": "Belts Pink Lemonade",
+      "Rainbow Mega Belt": "Belts Rainbow",
+      "Blueberry Mega Belt": "Belts Blueberry",
+      "Strawberry Mega Belt": "Belts Strawberry"
+    }
+  }
+}

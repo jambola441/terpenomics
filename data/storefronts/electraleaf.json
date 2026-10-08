@@ -1,0 +1,161 @@
+{
+  "brand": "ElectraLeaf",
+  "site": "https://electraleaf.com",
+  "source": {
+    "kind": "json",
+    "url": "https://electraleaf.com/wp-json/wc/store/v1/products?per_page=100",
+    "pages": {
+      "param": "page",
+      "from": 1,
+      "to": 5
+    },
+    "items": "*",
+    "fields": {
+      "id": "id",
+      "title": "name",
+      "product_type": "categories.*.name",
+      "url": "permalink",
+      "body": "description"
+    },
+    "split": {
+      "field": "body",
+      "find": "1/8|1\\s?G(?:RAM)?\\s+JOINT\\b|5\\s+PACKS|(?<=, |D )VAPE\\b|[A-Z][\\w ]{2,30}(?=: An? [\\w ,-]{0,60}live rosin vape)|[A-Z][A-Z']*(?: [A-Z][A-Z']*)*? FLOWER X [A-Z][A-Z' ]+? ROSIN\\b"
+    }
+  },
+  "title_case": true,
+  "skip": [
+    {
+      "when": {
+        "product_type": "^electraleaf MA$"
+      },
+      "why": "Massachusetts only (category 'electraleaf MA')"
+    },
+    {
+      "when": {
+        "body": "^VAPE$"
+      },
+      "why": "'VAPE' in a strain's AVAILABLE IN line names no device or size (Mafia Funeral); the site's sized vapes are the Rosin Vape page's 1G AIOs"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "title": "(?i)^rosin vape$"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "all-in-one",
+        "size": "1g"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)^infused joints$"
+      },
+      "set": {
+        "category": "preroll",
+        "size": "1g"
+      }
+    },
+    {
+      "when": {
+        "body": "^1/8$|AVAILABLE IN 1/8\\["
+      },
+      "set": {
+        "category": "flower",
+        "size": "3.5g"
+      }
+    },
+    {
+      "when": {
+        "body": "^1\\s?G(?:RAM)?\\s+JOINT$"
+      },
+      "set": {
+        "category": "preroll",
+        "size": "1g"
+      }
+    },
+    {
+      "when": {
+        "body": "^5\\s+PACKS$"
+      },
+      "set": {
+        "category": "preroll",
+        "size": "2.5g"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^vaporizers$"
+      },
+      "match": "(?i)^rosin vape$",
+      "extract": {
+        "body": "^(?:Prominent Features )?(?P<strain>.+)$"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$",
+        "title": "(?i)^infused joints$"
+      },
+      "match": "(?i)^infused joints$",
+      "extract": {
+        "body": "^(?P<strain>.+?) FLOWER (?P<strain2>X .+?) ROSIN$"
+      }
+    },
+    {
+      "when": {
+        "category": "^(flower|preroll)$"
+      },
+      "match": "^Dead Head Og$",
+      "set": {
+        "strain": "Dead Head OG"
+      }
+    },
+    {
+      "when": {
+        "category": "^(flower|preroll)$"
+      },
+      "match": "^Rainbow belts$",
+      "set": {
+        "strain": "Rainbow Belts"
+      }
+    },
+    {
+      "when": {
+        "category": "^(flower|preroll)$"
+      },
+      "match": "^D lish$",
+      "set": {
+        "strain": "D-Lish"
+      }
+    },
+    {
+      "when": {
+        "category": "^(flower|preroll)$"
+      },
+      "match": "^Blooodclaat$",
+      "set": {
+        "strain": "Bloodclaat"
+      }
+    },
+    {
+      "when": {
+        "category": "^(flower|preroll)$"
+      },
+      "match": "^(?P<strain>.+)$"
+    }
+  ],
+  "learned": "2026-10-08, agent pass: electraleaf.com is a WooCommerce site whose Store API lists 90 products, each a strain page (type simple, price 0, not purchasable) with an 'AVAILABLE IN ...' format line; 7 are filed under 'electraleaf MA'. The format pages (/portfolio/5-pack-joints/, /portfolio/rosin-vapes/, /portfolio/1g-infused-joints/) state the sizes. 173 New York entries.",
+  "notes": [
+    "Read as kind json from the Store API (not wc_store_api) because the wc_store_api reader cuts the description at 2000 characters, and this site's descriptions are WPBakery/Uncode shortcode markup: the Rosin Vape strain list and the infused-joint blend list sit past that cut. One page of 100 holds all 90; pages 2-5 come back [] and add nothing, so growth past 100 is read without a change.",
+    "Each strain page's heading says the formats: 'AVAILABLE IN 1/8', '1/8 and 1G JOINT', '1/8 ,1G JOINT, 5 PACKS AND VAPE', '1/8 5 PACKS 1GRAM JOINT'. `split` makes one item per format word, and the category rules read the piece: 1/8 = 3.5g flower, 1G/1GRAM JOINT = 1g pre-roll, 5 PACKS = 2.5g pre-roll pack (the 5-pack page: 'five half-gram pre-rolls'). A page with only '1/8' is not split and is read by its 'AVAILABLE IN 1/8[' heading.",
+    "'VAPE' in a strain's format line (Mafia Funeral; Godzilla Glue, an MA page) names no device or size and is skipped. The sized vapes are the 'Rosin Vape' page: '1G AIO DEVICE', live rosin, strains listed as 'Zangria: A smooth indica live rosin vape ...' (Zangria, Jelly Rancher, Blueberry Muffin, Papaya); split reads each name before ': A ... live rosin vape'.",
+    "'INFUSED JOINTS' is the Rosin Roll (Electraleaf flower x Olio rosin, PICC hash-hole), '1G JOINTS', blends written 'GELONADE FLOWER X GAS TANKER ROSIN'; the strain is 'flower X rosin' as stores write their infused pre-rolls ('Blue Dream x Zangria Rosin Infused Preroll'). The heading says '5 BLENDS' but four are listed. Stores sell other blends (Cannolis x Blueberry Muffin, Blue Dream x Zangria, Super Lemon Diesel x Papaya), so the site's blend list lags; those stay store-only. 'Rosin Roll' is not used as a line: stores never use it and it describes the format (rosin-infused joint).",
+    "Products in category 'electraleaf MA' (Stardawg, Zerealz, Blue Zuzhi, Purple Chemdawg, Peanut Butter Sundae, Womo, Godzilla Glue) are skipped as Massachusetts-only. NY stores do sell Godzilla Glue (3.5g at 3 stores, a 1g pre-roll at one), so it is kept from the stores' consensus.",
+    "Names: title_case fixes the all-caps and lower-case titles (ALLEY OOP, ZOAP, ZERBERT, COTTON CANDY, laughing buddha). Title rules fix four more: 'Dead Head Og' (Dead Head OG), 'Rainbow belts' (Rainbow Belts), 'D lish' (D-Lish, as the page writes it), 'Blooodclaat' (Bloodclaat, as the page writes it).",
+    "Not read: Crispy's (/crispys/), the brand's 100mg crispy-rice edible bars (Cookies and Cream, Bedrock Bar, Birthday Cake, Hangry Bar), are a page of prose outside the Store API, and no store lists them under ElectraLeaf."
+  ]
+}

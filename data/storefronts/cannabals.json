@@ -1,0 +1,296 @@
+{
+  "brand": "Cannabals",
+  "site": "https://cannabalsny.com",
+  "source": {
+    "kind": "json",
+    "url": "https://docs.google.com/spreadsheets/d/1CdZy2pKmwfmwst_bLe27lTNn-QI8hHx1p7PIykEDvw0/gviz/tq?tqx=out:json&headers=0&gid=573179793",
+    "urls": [
+      "https://docs.google.com/spreadsheets/d/1CdZy2pKmwfmwst_bLe27lTNn-QI8hHx1p7PIykEDvw0/gviz/tq?tqx=out:json&headers=0&gid=573179793",
+      "https://docs.google.com/spreadsheets/d/1CdZy2pKmwfmwst_bLe27lTNn-QI8hHx1p7PIykEDvw0/gviz/tq?tqx=out:json&headers=0&gid=1184299952"
+    ],
+    "extract": "setResponse\\((.*)\\);?\\s*$",
+    "items": "table.rows.*",
+    "fields": {
+      "title": "c.0.v",
+      "product_type": "c.1.v",
+      "tags": "c.2.v",
+      "vendor": "c.3.v",
+      "meta": "c.4.v"
+    }
+  },
+  "learned": "2026-10-08, agent pass: the brand's own site (cannabalsny.com) has no catalog (a two-blurb /products/ page from 2023, 4 'Sample Product' posts, no Shopify or WooCommerce). Its /cirona-labs-onboarding/ page links the distributor's 'Product Purchase Menu', a link-shared Google Sheet 'CANNABALS Fall 2026' with a DOWNSTATE WAREHOUSE and an UPSTATE WAREHOUSE tab (about 130 rows each, Cannabals, Kingsroad and Layup sections). Read through Google's gviz JSON endpoint, no login. The older /cirona-labs-menu/ page on the site is a stale (Sept 2024) copy of the same sheet and is not used.",
+  "notes": [
+    "The sheet is Cirona Labs' wholesale menu for New York dispensaries (OCM-PROC-24-000051), one product per row under section header rows (a row with no price). It is one sheet for three brands: the Cannabals rows are kept by their Category column; Kingsroad (concentrates, 2 and 14 pack pre-rolls, 2G live resin AIOs) and Layup (cans) are skipped. Kingsroad's 2G AiO rows share the Category '2G AiO' with Cannabals' Liquid Diamond rows and are told apart by THC: Cannabals' are all 90%, Kingsroad's 74-82% or blank. A Cannabals 2G AiO row with no THC would be skipped by mistake and show in the skipped count.",
+    "Both tabs are read: downstate and upstate carry the same catalog and differ in stock, a few spellings and one product (Pumpkin Spice Latte cones are on the upstate tab only). A product on both tabs is one entry. Stock status is ignored: out-of-stock is a warehouse state, not a discontinued product.",
+    "The link in the onboarding page points at a third tab (gid 1872949893) that is an older copy of the downstate tab; it is not read.",
+    "Sizes are fixed by the format column: 1G / 2G / 6G AiO, a pre-roll pack is '7 pack .5g' = 3.5g, gummies and cones are 100mg THC packs ('100mg 10 Pack' = 10pk 100mg, Blueberry Dreams '100mg 20 Pack'), a Brick is one 100mg 'Scored Gummy'.",
+    "Lines: Chubby Puff (6G AiO), Puffs (the infused pre-rolls; the sheet never says Puffs, every store and the retailer pages do), Mood State (the 1G AiOs with an effect in the strain column, and the gummies priced with a ratio: Mimosa THC + THC-V 2:1 and so on) and Brick (the 100mg Scored Gummy bars, so Strawberry Lemonade Brick and Strawberry Lemonade 10pk gummy are two products). Live Resin and Liquid Diamond are the extract, not a line; the Live Resin gummies' names (Frose, Dragonfruit Lemonade, Pineapple Passionfruit, Tangerine Guava, Strawberry Lemonade) are the strains.",
+    "Mood State effects (Party, Energy, Recovery, Calm, Sleep) are not put in the strain; stores name these products by flavour (Mood State Mimosa, Tahiti Lime).",
+    "Title fixes: 'Granddaddy Purp' is Granddaddy Purple, 'Pinacolada' is Pina Colada, 'LCG' is Lemon Cherry Gelato, 'BlackBerry Brain' is Blackberry Brain, 'Dragonfruit Lemonades' (typo on one tab) is Dragonfruit Lemonade, 'White Chocoalte' (typo on one tab) is White Chocolate.",
+    "Cones are chocolate-coated ice cream cone tips sold as 10 x 10mg. Their names are the flavours as the sheet writes them (Mint, Caramel Espresso, Cookies & Cream); stores add 'Chocolate' to Mint and Caramel Espresso, mapped with store_aliases. Stores whose own subtype guess for 'Cookies & Cream' and 'Caramel Espresso' cones is 'other' (no 'chocolate' in the name) are the same cones; store_skip drops them.",
+    "Match terms: a Live Resin gummy and the Live Resin Brick of the same flavour (Strawberry Lemonade) share the sheet's title, so they share a match term; they differ by line (Brick) and size (10pk 100mg against 100mg)."
+  ],
+  "skip": [
+    {
+      "when": {
+        "meta": "^$"
+      },
+      "why": "section header, blank or total row of the sheet (no price)"
+    },
+    {
+      "when": {
+        "product_type": "^(?!(?:1G|2G|6G) AiO\\s*$|Infused Pre-Roll\\s*$|100mg )"
+      },
+      "why": "Kingsroad concentrates and pre-roll packs, Layup cans: other brands on Cirona's sheet"
+    },
+    {
+      "when": {
+        "product_type": "^2G AiO\\s*$",
+        "vendor": "^(?!0\\.9$)"
+      },
+      "why": "Kingsroad live resin 2G disposable (THC 74-82% or blank; Cannabals' Liquid Diamond rows are 90%)"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "product_type": "^(?:1G|2G|6G) AiO\\s*$"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "all-in-one"
+      }
+    },
+    {
+      "when": {
+        "product_type": "^Infused Pre-Roll\\s*$"
+      },
+      "set": {
+        "category": "preroll"
+      }
+    },
+    {
+      "when": {
+        "product_type": "Scored Gummy"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "gummy"
+      }
+    },
+    {
+      "when": {
+        "product_type": "Gummy"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "gummy"
+      }
+    },
+    {
+      "when": {
+        "product_type": "^100mg 10 Pack\\s*$"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "chocolate"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "product_type": "^1G AiO",
+        "tags": "^(?:Party|Energy|Recovery|Calm|Sleep)$"
+      },
+      "match": "^(?P<strain>.+?)\\s*$",
+      "set": {
+        "line": "Mood State",
+        "size": "1g"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "product_type": "^1G AiO"
+      },
+      "match": "^(?P<strain>.+?)\\s*$",
+      "set": {
+        "size": "1g"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "product_type": "^2G AiO",
+        "title": "(?i)^BlackBerry Brain"
+      },
+      "match": "(?i)^BlackBerry Brain",
+      "set": {
+        "strain": "Blackberry Brain",
+        "size": "2g"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "product_type": "^2G AiO"
+      },
+      "match": "^(?P<strain>.+?)\\s*$",
+      "set": {
+        "size": "2g"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "product_type": "^6G AiO",
+        "title": "^Granddaddy Purp\\s*$"
+      },
+      "match": "^Granddaddy Purp\\s*$",
+      "set": {
+        "line": "Chubby Puff",
+        "strain": "Granddaddy Purple",
+        "size": "6g"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "product_type": "^6G AiO"
+      },
+      "match": "^(?P<strain>.+?)\\s*$",
+      "set": {
+        "line": "Chubby Puff",
+        "size": "6g"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$",
+        "title": "^LCG\\s*$"
+      },
+      "match": "^LCG\\s*$",
+      "set": {
+        "line": "Puffs",
+        "strain": "Lemon Cherry Gelato",
+        "size": "3.5g"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "^(?P<strain>.+?)\\s*$",
+      "set": {
+        "line": "Puffs",
+        "size": "3.5g"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "product_type": "Scored Gummy",
+        "title": "^Pinacolada"
+      },
+      "match": "^Pinacolada",
+      "set": {
+        "line": "Brick",
+        "strain": "Pina Colada",
+        "size": "100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "product_type": "Scored Gummy"
+      },
+      "match": "^(?P<strain>.+?)\\s*(?:-\\s*(?:Sleep|Energy)\\s+BRICK.*|-\\s*Live Resin)?\\s*$",
+      "set": {
+        "line": "Brick",
+        "size": "100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "title": "THC \\+ ",
+        "product_type": "^100mg 20 Pack"
+      },
+      "match": "^(?P<strain>.+?)\\s+THC \\+ ",
+      "set": {
+        "line": "Mood State",
+        "size": "20pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "title": "THC \\+ "
+      },
+      "match": "^(?P<strain>.+?)\\s+THC \\+ ",
+      "set": {
+        "line": "Mood State",
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "title": "Dragonfruit Lemonades"
+      },
+      "match": "^Dragonfruit Lemonades",
+      "set": {
+        "strain": "Dragonfruit Lemonade",
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "product_type": "Pack Gummy"
+      },
+      "match": "^(?P<strain>.+?)\\s*(?:-\\s*Live Resin)?\\s*$",
+      "set": {
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "title": "(?i)^White Choco"
+      },
+      "match": "(?i)^White Choco",
+      "set": {
+        "strain": "White Chocolate",
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "product_type": "^100mg 10 Pack\\s*$"
+      },
+      "match": "^(?P<strain>.+?)\\s*$",
+      "set": {
+        "size": "10pk 100mg"
+      }
+    }
+  ],
+  "store_aliases": {
+    "names": {
+      "Mint Chocolate": "Mint",
+      "Caramel Espresso Chocolate": "Caramel Espresso"
+    }
+  },
+  "store_skip": [
+    {
+      "when": {
+        "name": "^(?:Caramel Espresso|Cookies & Cream)$",
+        "size": "^10pk 100mg$"
+      },
+      "why": "stores whose subtype guess is 'other' for the chocolate cones the sheet lists (Caramel Espresso, Cookies & Cream): same 10pk 100mg product, with 'chocolate' missing from the listing name"
+    }
+  ]
+}

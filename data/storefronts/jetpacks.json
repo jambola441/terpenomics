@@ -1,0 +1,131 @@
+{
+  "brand": "Jetpacks",
+  "site": "https://smokejetpacks.com",
+  "source": {
+    "kind": "json",
+    "urls": [
+      "https://smokejetpacks.com/#fj-mini",
+      "https://smokejetpacks.com/#fj1",
+      "https://smokejetpacks.com/#fj2",
+      "https://smokejetpacks.com/#fj-3"
+    ],
+    "extract": "const FJ_FLAVORS\\s*=\\s*(\\[.*?\\])\\s*;",
+    "lenient": true,
+    "items": "*",
+    "fields": {
+      "title": "n",
+      "tags": "t"
+    },
+    "also": [
+      {
+        "urls": [
+          "https://smokejetpacks.com/#bb-mini",
+          "https://smokejetpacks.com/#bigger-bang",
+          "https://smokejetpacks.com/#biggest-bang",
+          "https://smokejetpacks.com/#big-bang-5pk"
+        ],
+        "extract": "const BB_FLAVORS\\s*=\\s*(\\[.*?\\])\\s*;"
+      }
+    ]
+  },
+  "learned": "2026-10-08, by an agent pass: smokejetpacks.com is one hand-built page (no CMS; /products.json, /wp-json and /shop all 404). Its inline script defines const FJ_FLAVORS and const BB_FLAVORS (10 strains each, JS literals with unquoted keys) and const PRODUCTS, in which every size of a series points at the series' list (flavors:FJ_FLAVORS). The page is New York's (an Empire Standard brand); there is no state selector.",
+  "notes": [
+    "Both series are read: FJ_FLAVORS for the FJ Series (FJ-Mini 0.6g, FJ-1 1g, FJ-2 2g, FJ-3 5 x 0.6g = 3g) and, through source.also, BB_FLAVORS for the Big Bang Series (Big Bang Mini 0.5g, Bigger Bang 1g, Biggest Bang 2g, Big Bang 5 x 0.5g = 2.5g). The strain list and the sizes live in different parts of the script (const PRODUCTS points each size at its series' list by identifier, so it cannot be parsed), so the page is fetched once per size, each URL carrying a #fragment that never reaches the server; a title rule reads the fragment from `page` and sets line and size.",
+    "Lines are the model names, as data/product_lines.json already has them for Jetpacks (FJ-Mini, FJ1, FJ2, FJ-3), so store listings keep resolving to them. The site calls the family 'The FJ Series' and the models FJ-Mini, FJ-1, FJ-2, FJ-3; if the line should be the family, change the four `line` values to 'FJ Series' and add store_aliases lines for the four model names.",
+    "Not on the page as products with strains: Concentrates (Badder 1G, Diamonds 1G), Powdered Donuts (3.5G) and Jetfuel (3.5G) have a format and a size but no strain list, so they cannot be entries; stores sell 21 concentrate strains, 6 Powdered Donuts strains and 2 Jetfuel strains at two or more stores (2026-10-08), which stay on the stores' consensus.",
+    "A code comment above the data says 'Strain/flavor names are placeholders — swap for the live menu.' On 2026-10-08 all ten FJ strains and all ten Big Bang strains were sold by stores in New York under those names, so they match the live menu.",
+    "Both series are pre-rolls: FJ is whole flower with oil, kief, terpenes and THCa; Big Bang is live resin and THCa diamonds. 5-packs are the package total (5 x 0.6g = 3g)."
+  ],
+  "category": [
+    {
+      "when": {
+        "title": "."
+      },
+      "set": {
+        "category": "preroll"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "page": "#fj-mini$"
+      },
+      "match": "^(?P<strain>.+)$",
+      "set": {
+        "line": "FJ-Mini",
+        "size": "0.6g"
+      }
+    },
+    {
+      "when": {
+        "page": "#fj1$"
+      },
+      "match": "^(?P<strain>.+)$",
+      "set": {
+        "line": "FJ1",
+        "size": "1g"
+      }
+    },
+    {
+      "when": {
+        "page": "#fj2$"
+      },
+      "match": "^(?P<strain>.+)$",
+      "set": {
+        "line": "FJ2",
+        "size": "2g"
+      }
+    },
+    {
+      "when": {
+        "page": "#fj-3$"
+      },
+      "match": "^(?P<strain>.+)$",
+      "set": {
+        "line": "FJ-3",
+        "size": "3g"
+      }
+    },
+    {
+      "when": {
+        "page": "#bb-mini$"
+      },
+      "match": "^(?P<strain>.+)$",
+      "set": {
+        "line": "Big Bang Mini",
+        "size": "0.5g"
+      }
+    },
+    {
+      "when": {
+        "page": "#bigger-bang$"
+      },
+      "match": "^(?P<strain>.+)$",
+      "set": {
+        "line": "Bigger Bang",
+        "size": "1g"
+      }
+    },
+    {
+      "when": {
+        "page": "#biggest-bang$"
+      },
+      "match": "^(?P<strain>.+)$",
+      "set": {
+        "line": "Biggest Bang",
+        "size": "2g"
+      }
+    },
+    {
+      "when": {
+        "page": "#big-bang-5pk$"
+      },
+      "match": "^(?P<strain>.+)$",
+      "set": {
+        "line": "Big Bang",
+        "size": "2.5g"
+      }
+    }
+  ]
+}

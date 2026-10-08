@@ -1,0 +1,117 @@
+{
+  "brand": "BLOOM",
+  "site": "https://thebloombrands.com",
+  "source": {
+    "kind": "json",
+    "urls": [
+      "https://thebloombrands.com/wp-json/wp/v2/bloom-products?per_page=100#surf-0.5g",
+      "https://thebloombrands.com/wp-json/wp/v2/bloom-products?per_page=100#surf-1g",
+      "https://thebloombrands.com/wp-json/wp/v2/bloom-products?per_page=100#cart-1g"
+    ],
+    "items": "*",
+    "fields": {
+      "id": "id",
+      "title": "title.rendered",
+      "product_type": "class_list",
+      "url": "link",
+      "body": "content.rendered"
+    }
+  },
+  "learned": "2026-10-08, by an agent pass: thebloombrands.com is WordPress with a custom post type 'bloom-products' (32 posts, one per strain: 14 Classic, 8 Live, 10 Live Rosin). Each post says 'AVAILABLE IN: SURF, VAPES . WEIGHT: .5g, 1g.' No state selector, no NY flag. Only the Classic collection is read: 14 strains x Surf AIO and 510 cart x 0.5g and 1g = 56 entries.",
+  "notes": [
+    "The source is the WordPress REST API (/wp-json/wp/v2/bloom-products), read four times, once per format and size, with '#surf-0.5g', '#surf-1g', '#cart-0.5g', '#cart-1g' on the end (the fragment never reaches the server; the rules read format and size from `page`). A post is one strain; 'AVAILABLE IN: SURF, VAPES' is the formats (Surf = the brand's all-in-one, VAPES = 510 cartridge) and 'WEIGHT: .5g, 1g' the sizes. The site does not pair format with size; Cannabist's 2024 release on making Bloom for its markets (NY among them) says Surf and 510 carts both come in 0.5g and 1.0g, so every format x size is read. The skip rules drop a format or size a post no longer names.",
+    "Only Classic is read. Live (8 strains: Golden Applez, Banana Splitz, Blue Zkittles, Space Dust, Cereal Milk, Lemon Jack, Pink Cookies, Rainbow Runtz) is the national/California 'Seasonal Live' list: NY stores sell a different Live set (Lemon Meringue, Mai Tai, White Truffle, Super Sour Diesel, Cherry Pie, Rainbow Z, Colombian Gold), none of it on the site. Live Rosin on the site is 'SURF . WEIGHT: .5g' with California strains; NY stores sell Rosin Surf at 1g (Pandalorian, Papaya, Pink Certz). Both stay on the stores' consensus.",
+    "Line: 'Classic' is the brand's named collection (its own page /classic/, 'Classic, Live and Rosin' collections). 'Surf' is the brand's all-in-one device, a format (subtype all-in-one), not the line. Stores write the line as 'Classic Surf', 'Classics' or 'Surf' (one Skywalker listing); store_aliases map those to Classic.",
+    "Classic strains on the site not seen at two NY stores (2026-10-08): Champagne Kush, Grandaddy Purple, GSC, Green Crack. NY stores show only 1g Classic carts, no 0.5g carts. The site has no NY view, so these are kept as the site states them.",
+    "Classic carts are read at 1g only: the site's WEIGHT line gives .5g and 1g for every post, but NY stores sell Classic carts at 1g alone (2026-10-08), so the 0.5g cart is left out until a store lists one."
+  ],
+  "skip": [
+    {
+      "when": {
+        "product_type": "product_categories-live-rosin"
+      },
+      "why": "Live Rosin: California strains at 0.5g; NY's Rosin Surf is 1g with other strains (kept from stores)"
+    },
+    {
+      "when": {
+        "product_type": "product_categories-(?:[a-z]+-)?live(?:-surf)?(?:\\s|,|$)"
+      },
+      "why": "Live (incl. Rainbow Runtz, filed only as hybrid-live): the national Seasonal Live list; NY's Live strains differ and none are on the site (kept from stores)"
+    },
+    {
+      "when": {
+        "product_type": "^(?!.*product_categories-classic\\b)"
+      },
+      "why": "not in the Classic collection"
+    },
+    {
+      "when": {
+        "page": "#surf-",
+        "body": "^(?!.*AVAILABLE IN:[^.]*\\bSURF\\b)"
+      },
+      "why": "the post does not list SURF (all-in-one)"
+    },
+    {
+      "when": {
+        "page": "#cart-",
+        "body": "^(?!.*AVAILABLE IN:[^.]*\\bVAPES?\\b)"
+      },
+      "why": "the post does not list VAPES (510 cartridge)"
+    },
+    {
+      "when": {
+        "page": "-0\\.5g$",
+        "body": "^(?!.*WEIGHT:[^A-Z]*(?<![\\d.])0?\\.5\\s?g)"
+      },
+      "why": "the post's WEIGHT does not list .5g"
+    },
+    {
+      "when": {
+        "page": "-1g$",
+        "body": "^(?!.*WEIGHT:[^A-Z]*(?<![\\d.])1\\s?g)"
+      },
+      "why": "the post's WEIGHT does not list 1g"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "page": "#surf-"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "all-in-one"
+      }
+    },
+    {
+      "when": {
+        "page": "#cart-"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "cart"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^vaporizers$"
+      },
+      "match": "^(?P<strain>.+?)\\s*$",
+      "extract": {
+        "page": "-(?P<size>\\d*\\.?\\d+g)$"
+      },
+      "set": {
+        "line": "Classic"
+      }
+    }
+  ],
+  "store_aliases": {
+    "lines": {
+      "Classic Surf": "Classic",
+      "Classics": "Classic",
+      "Surf": "Classic"
+    }
+  }
+}
