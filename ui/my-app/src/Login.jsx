@@ -41,11 +41,29 @@ function SignIn({ audience }) {
   const [isError, setIsError] = useState(false)
   const [cooldown, setCooldown] = useState(0)
   const [providers, setProviders] = useState([])  // OAuth providers actually enabled
+  // Null until we know whether this browser already has a session.
+  const [signedIn, setSignedIn] = useState(null)
   const navigate = useNavigate()
   const location = useLocation()
   // Where the visitor was headed before being bounced here, if anywhere.
   const next = safeNext(location.state?.from)
   const home = staff ? '/admin' : '/portal'
+
+  // Already signed in: go on to where they were headed rather than offering a
+  // form that would send another text. getSession() refreshes an expired
+  // access token from the stored refresh token, so a long-idle visitor still
+  // counts as signed in; it only comes back empty when that refresh fails.
+  useEffect(() => {
+    let cancelled = false
+    supabase.auth.getSession()
+      .then(({ data }) => {
+        if (cancelled) return
+        if (data?.session) navigate(next || home, { replace: true })
+        else setSignedIn(false)
+      })
+      .catch(() => { if (!cancelled) setSignedIn(false) })
+    return () => { cancelled = true }
+  }, [navigate, next, home])
 
   // Ask Supabase which social providers are live rather than hardcoding them.
   // signInWithOAuth redirects the browser instead of making a request, so a
@@ -235,6 +253,10 @@ function SignIn({ audience }) {
   }
 
   const sendDisabled = loading || (channel === 'sms' ? !phone.trim() : !email.trim())
+
+  // Hold the page blank for the moment the session check takes, so a signed-in
+  // visitor never sees the form flash before being sent on.
+  if (signedIn === null) return <div style={{ minHeight: '100vh', background: t.bg }} />
 
   return (
     <div style={{

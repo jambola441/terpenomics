@@ -76,7 +76,7 @@ export function CategoryIcon({
   )
 }
 
-/** The Terpenomics mark — terpene ring and resin bead — with an optional
+/** The Terpee mark — terpene ring and resin bead — with an optional
  *  wordmark beside it. */
 export function Logo({
   size = 28,
@@ -94,7 +94,7 @@ export function Logo({
   return (
     <span
       role="img"
-      aria-label="Terpenomics"
+      aria-label="Terpee"
       style={{ display: 'inline-flex', alignItems: 'center', gap: Math.round(size * 0.32), ...style }}
     >
       <Icon name="mark" size={size} color={color} strokeWidth={1.9} />
@@ -110,7 +110,7 @@ export function Logo({
             color: textColor,
           }}
         >
-          terpenomics
+          terpee
         </span>
       )}
     </span>

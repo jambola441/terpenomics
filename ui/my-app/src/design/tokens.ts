@@ -1,5 +1,5 @@
 /* ============================================================================
-   Terpenomics design tokens — the single source of truth for colour, type,
+   Terpee design tokens — the single source of truth for colour, type,
    space, radius and motion, shared by the web portal and the mobile app.
 
    The web reads these through CSS custom properties (design/css.ts writes them

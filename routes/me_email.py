@@ -128,8 +128,8 @@ def start_email_change(
     try:
         sender.send(
             email,
-            f"{code} is your Terpenomics code",
-            f"Your Terpenomics verification code is {code}.\n\n"
+            f"{code} is your Terpee code",
+            f"Your Terpee verification code is {code}.\n\n"
             f"Enter it in the app to add this email to your account. It expires in "
             f"{TTL_SECONDS // 60} minutes.\n\n"
             "If you didn't ask for this, you can ignore this email.\n",

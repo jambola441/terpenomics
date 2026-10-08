@@ -19,7 +19,7 @@ export default function AgeGate() {
         {refused ? (
           <>
             <Text style={type.display} accessibilityRole="header">Sorry, you have to be 21 or older</Text>
-            <Text style={s.copy}>Terpenomics is only for adults of legal age to buy cannabis in New York.</Text>
+            <Text style={s.copy}>Terpee is only for adults of legal age to buy cannabis in New York.</Text>
             <Button title="I made a mistake" variant="secondary" onPress={() => setRefused(false)} />
           </>
         ) : (

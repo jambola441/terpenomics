@@ -1,5 +1,5 @@
 /* ============================================================================
-   Terpenomics — base styles
+   Terpee — base styles
    The tokens themselves (colour, radius, space, motion, type families) are
    written onto :root at startup from design/tokens.ts by design/css.ts; this
    file only uses them.

@@ -3,17 +3,27 @@
 
 Phone login is validated by the SMS provider, not by Supabase, so Supabase never
 issues the session on its own. Once the provider confirms the code we find or
-create the matching Supabase user with the service-role key, rotate a
-server-held password onto it, and exchange that password for a real session that
-the browser can adopt. The password is generated here, never returned to the
-client, and replaced on every login, so a leaked one is useless by the next
-sign-in.
+create the matching Supabase user with the service-role key and exchange a
+server-held password for a real session that the browser can adopt. The
+password is never returned to the client.
+
+The password is derived, not stored and not rotated per login: an HMAC of the
+user id under the service-role key. Changing a user's password through the
+admin API deletes every session that user has (GoTrue's UpdatePassword logs
+out all sessions when no session id is given), so rotating on each login meant
+signing in on the phone signed you out of the web, and the reverse -- each
+costing another text. A stable password leaves other devices signed in. It is
+only rewritten when the exchange fails: on a user's first login after this
+change, or after the service-role key is rotated.
 
 Everything downstream (auth.py, /me, admin routes) keeps verifying ordinary
 Supabase JWTs via JWKS — this module does not mint tokens itself.
 """
 from __future__ import annotations
 
+import base64
+import hashlib
+import hmac
 import logging
 import os
 import secrets
@@ -171,10 +181,44 @@ def _current_email(base_url: str, service_key: str, user_id: UUID) -> str | None
     return (resp.json() or {}).get("email") or None
 
 
+def login_password(user_id: UUID | str, service_key: str) -> str:
+    """The password phone login exchanges for this user's sessions.
+
+    Derived from the user id under the service-role key, so it is the same on
+    every login without being stored anywhere, and nobody without the
+    service-role key (which can mint sessions anyway) can compute it. The fixed
+    prefix keeps it inside any character-class rule the project sets.
+    """
+    digest = hmac.new(service_key.encode(), f"phone-login:{user_id}".encode(), hashlib.sha256).digest()
+    return "Tp9-" + base64.urlsafe_b64encode(digest).decode().rstrip("=")
+
+
+def _password_grant(base_url: str, anon_key: str, e164: str, email: str, password: str) -> dict[str, Any] | None:
+    """Exchange the password for a session, or None if Supabase refuses it."""
+    token_headers = {"apikey": anon_key, "Content-Type": "application/json"}
+    token_url = f"{base_url}/auth/v1/token?grant_type=password"
+
+    # Prefer the phone grant; fall back to the account's email so this keeps
+    # working with the dashboard's Phone provider switched off (we do not use
+    # Supabase's own SMS, so there is no reason for it to be on).
+    for payload in ({"phone": e164, "password": password}, {"email": email, "password": password}):
+        resp = _request("POST", token_url, headers=token_headers, json=payload)
+        if resp.status_code == 200:
+            session = resp.json() or {}
+            if session.get("access_token"):
+                return session
+    return None
+
+
 def issue_session(user_id: UUID, e164: str) -> dict[str, Any]:
-    """Rotate a fresh password onto the user and exchange it for a session."""
+    """Exchange the user's phone-login password for a session.
+
+    Tries the password first, which leaves the user's other sessions alone.
+    Only when Supabase refuses it is the password written onto the account,
+    which logs those sessions out once.
+    """
     base_url, service_key, anon_key = _config()
-    password = secrets.token_urlsafe(48)
+    password = login_password(user_id, service_key)
 
     # Never overwrite an address the account already has. find_or_create_user
     # matches on phone alone, so the user we are about to update may predate
@@ -183,6 +227,11 @@ def issue_session(user_id: UUID, e164: str) -> dict[str, Any]:
     # that depends on it. Only fill in an address when there is none.
     existing_email = _current_email(base_url, service_key, user_id)
     email = existing_email or synthetic_email(e164)
+
+    if existing_email is not None:
+        session = _password_grant(base_url, anon_key, e164, email, password)
+        if session is not None:
+            return session
 
     update: dict[str, Any] = {
         "password": password,
@@ -200,24 +249,13 @@ def issue_session(user_id: UUID, e164: str) -> dict[str, Any]:
         json=update,
     )
     if resp.status_code != 200:
-        raise SupabaseAdminError(f"Rotating the login password returned {resp.status_code}")
+        raise SupabaseAdminError(f"Setting the login password returned {resp.status_code}")
 
-    token_headers = {"apikey": anon_key, "Content-Type": "application/json"}
-    token_url = f"{base_url}/auth/v1/token?grant_type=password"
+    session = _password_grant(base_url, anon_key, e164, email, password)
+    if session is not None:
+        return session
 
-    # Prefer the phone grant; fall back to the synthetic email so this keeps
-    # working with the dashboard's Phone provider switched off (we do not use
-    # Supabase's own SMS, so there is no reason for it to be on).
-    for payload in ({"phone": e164, "password": password}, {"email": email, "password": password}):
-        resp = _request("POST", token_url, headers=token_headers, json=payload)
-        if resp.status_code == 200:
-            session = resp.json() or {}
-            if session.get("access_token"):
-                return session
-
-    raise SupabaseAdminError(
-        f"Supabase refused to issue a session for {mask(e164)} (status {resp.status_code})"
-    )
+    raise SupabaseAdminError(f"Supabase refused to issue a session for {mask(e164)}")
 
 
 def delete_user(user_id: UUID) -> None:

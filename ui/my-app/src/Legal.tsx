@@ -24,21 +24,21 @@ export function TermsPage() {
   return (
     <Page title="Terms of Service">
       <P>
-        These terms govern your use of Terpenomics (the website, the customer portal and the
+        These terms govern your use of Terpee (the website, the customer portal and the
         mobile app, together the “Service”). By creating an account or using the Service you
         agree to them. If you do not agree, do not use the Service.
       </P>
 
-      <H>1. Who can use Terpenomics</H>
+      <H>1. Who can use Terpee</H>
       <P>
         You must be 21 or older. Reserving products is only available while you are in New
         York State. You must give accurate information when you sign up and keep your phone
         number current. One account per person; accounts are not transferable.
       </P>
 
-      <H>2. What Terpenomics is, and is not</H>
+      <H>2. What Terpee is, and is not</H>
       <P>
-        Terpenomics shows menus from licensed New York dispensaries and lets you reserve
+        Terpee shows menus from licensed New York dispensaries and lets you reserve
         products for pickup. We are not a dispensary and do not sell, hold or deliver
         cannabis. Every sale is made by the dispensary, in the store, under its own policies
         and New York law.
@@ -87,7 +87,7 @@ export function TermsPage() {
       <H>5. Text messages</H>
       <P>
         Signing in sends a one-time code to your phone by text message. If you separately opt
-        in to marketing texts, we will send deals and updates from Terpenomics, up to 4
+        in to marketing texts, we will send deals and updates from Terpee, up to 4
         messages a month. Message and data rates may apply. Reply STOP to stop marketing texts
         and HELP for help. Opting in is never required to use the Service. Carriers are not
         liable for delayed or undelivered messages.
@@ -114,7 +114,7 @@ export function TermsPage() {
         the fullest extent the law allows. We are not responsible for products sold by
         dispensaries or partner stores, for their prices, availability or conduct, or for
         decisions you make based on information in the Service. To the fullest extent the law
-        allows, Terpenomics is not liable for indirect, incidental or consequential damages,
+        allows, Terpee is not liable for indirect, incidental or consequential damages,
         and its total liability for any claim relating to the Service is limited to $100.
       </P>
 
@@ -141,7 +141,7 @@ export function PrivacyPage() {
   return (
     <Page title="Privacy Policy">
       <P>
-        This policy explains what Terpenomics collects, why, who it is shared with, and the
+        This policy explains what Terpee collects, why, who it is shared with, and the
         choices you have. It covers the website, the customer portal and the mobile app.
       </P>
 
@@ -264,7 +264,7 @@ function Page({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div style={{ minHeight: '100dvh', background: t.bg, padding: '40px 16px 64px', boxSizing: 'border-box' }}>
       <article style={{ maxWidth: 680, margin: '0 auto', color: t.text2, fontSize: font.size.body, lineHeight: 1.65 }}>
-        <Link to="/" aria-label="Terpenomics home" style={{ display: 'inline-flex', textDecoration: 'none' }}>
+        <Link to="/" aria-label="Terpee home" style={{ display: 'inline-flex', textDecoration: 'none' }}>
           <Logo size={24} />
         </Link>
         <h1 style={{ color: t.text1, fontFamily: font.family.display, fontSize: font.size.hero, fontWeight: font.weight.semibold, margin: '24px 0 4px', letterSpacing: '-0.015em' }}>

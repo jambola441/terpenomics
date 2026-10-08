@@ -33,9 +33,9 @@ AGE_TEXT = "I am 21 years of age or older."
 # sending, what, how often, that rates apply, how to stop, and that agreeing is
 # not a condition of using the service. Any change to the text needs a new
 # version, so the records keep saying what each person actually saw.
-MARKETING_SMS_VERSION = "2026-10-05"
+MARKETING_SMS_VERSION = "2026-10-08"
 MARKETING_SMS_TEXT = (
-    "Text me deals and updates from Terpenomics at the number I signed in with. "
+    "Text me deals and updates from Terpee at the number I signed in with. "
     "Up to 4 msgs/month. Msg & data rates may apply. Reply STOP to opt out, HELP "
     "for help. Consent is not a condition of purchase."
 )

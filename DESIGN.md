@@ -1,4 +1,4 @@
-# Terpenomics design language
+# Terpee design language
 
 One system for the customer portal, the admin and partner pages, and the
 mobile app. The values live in code, not here:
@@ -100,7 +100,7 @@ Scale (px): micro 10 · caption 11 · small 12 · body 14 · callout 15 · title
 
 One 24-unit line set (`design/icons.ts`), round caps and joins, stroke 1.75 by
 default, inheriting the text colour. Interface glyphs are Lucide (ISC);
-product glyphs are drawn for Terpenomics on the same grid. Use
+product glyphs are drawn for Terpee on the same grid. Use
 `<Icon name="…" />` and `<CategoryIcon category={…} />`; never an emoji, never
 a text arrow (`→`, `←`, `↗`) standing in for an icon.
 
@@ -118,7 +118,7 @@ a text arrow (`→`, `←`, `↗`) standing in for an icon.
 
 A terpene ring holding a bead of resin: a hexagon (the six-carbon ring every
 terpene skeleton is drawn with) around a filled drop. Resin on Loam. The
-wordmark is `terpenomics`, lowercase, Fraunces 600, −0.02em. `<Logo />`
+wordmark is `terpee`, lowercase, Fraunces 600, −0.02em. `<Logo />`
 renders the lockup; `<Icon name="mark" />` the mark alone. Don't recolour it
 beyond resin, paper, or resin-ink on a resin tile.
 
