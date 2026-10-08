@@ -257,7 +257,7 @@ def complete_onboarding(
     first = _clean_name(payload.first_name, "first_name", required=True)
     last = _clean_name(payload.last_name, "last_name")
     if not payload.age_21:
-        raise HTTPException(status_code=422, detail="You must be 21 or older to use Terpenomics")
+        raise HTTPException(status_code=422, detail="You must be 21 or older to use Terpee")
     if payload.terms_version != consent.TERMS_VERSION:
         raise _stale("terms")
 

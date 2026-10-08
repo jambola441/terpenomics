@@ -91,7 +91,7 @@ browser                    our API                     VerifyNow        Supabase
    |  POST /auth/sms/verify   |                            |               |
    |------------------------->| validateOtp(ref, code) --->|               |
    |                          | find/create user ---------------------->   |
-   |                          | rotate password, get session ---------->   |
+   |                          | password grant -> session ------------->   |
    |<-- access + refresh -----|                            |               |
    |  supabase.auth.setSession()                                           |
 ```
@@ -126,9 +126,10 @@ route keeps verifying ordinary Supabase JWTs through JWKS — `auth.py`,
   token and refreshes it once on a 401. Swapping vendors means a new class and a
   branch in `get_provider()`; nothing above this module changes.
 - `services/supabase_admin.py` — finds or creates the user and mints the session.
-  The password it exchanges is generated server-side, never returned to the
-  client, and rotated on every login, so a leaked one is stale by the next
-  sign-in.
+  The password it exchanges is derived server-side (an HMAC of the user id under
+  the service-role key), never stored and never returned to the client. It is
+  written onto the account only when the exchange fails; see *Keeping people
+  signed in*.
 - `services/phone.py` — E.164 normalization, mirroring the frontend's.
 - `routes/auth_sms.py` — `POST /auth/sms/start` and `POST /auth/sms/verify`, plus
   the challenge lifecycle and rate limits.
@@ -176,6 +177,35 @@ replayed request cannot yield a second session.
 
 The IP limit reads `X-Forwarded-For`, which only means anything behind a trusted
 proxy. It is a speed bump, not an authorization check.
+
+## Keeping people signed in
+
+Every sign-in costs a text, so a session should outlive anything short of the
+customer signing out.
+
+- **Logging in on one device must not log out the others.** Supabase deletes
+  all of a user's sessions whenever the admin API changes their password
+  (GoTrue's `UpdatePassword(tx, nil)` calls `Logout`). The backend used to
+  rotate the password on every login, so signing in on the phone signed the
+  web out, and the reverse. It now tries the user's derived password first and
+  writes it only if Supabase refuses it: once per user after this change, and
+  again only if the service-role key is rotated.
+- **Signing out is per device.** Both apps call
+  `supabase.auth.signOut({ scope: 'local' })`. The default scope is `global`,
+  which revokes every session the account has.
+- **The sign-in pages check first.** `/` and `/staff` look for a session
+  before showing the form and go straight on if there is one; the app's
+  router already keeps a signed-in user off its sign-in screen.
+- **Tokens refresh on their own.** Both clients persist the session (browser
+  `localStorage`; the iOS Keychain in the app) and refresh the access token from
+  the refresh token, so a visit after weeks away still counts as signed in.
+
+Supabase project settings that would undo this (Authentication → Sessions):
+leave **Time-box user sessions** and **Inactivity timeout** unset, and keep
+**Detect and revoke potentially compromised refresh tokens** on with the default
+reuse interval. The access-token lifetime (JWT expiry) can stay at the default
+hour: it only sets how often the client refreshes, not how long anyone stays
+signed in.
 
 ## Routing after sign-in
 

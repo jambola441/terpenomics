@@ -193,7 +193,9 @@ export default function CustomerPortal() {
   }
 
   async function handleSignOut() {
-    await supabase.auth.signOut()
+    // This device only: the default scope is global, which would sign the
+    // account out everywhere, and each sign-in by text costs a message.
+    await supabase.auth.signOut({ scope: 'local' })
   }
 
   /**

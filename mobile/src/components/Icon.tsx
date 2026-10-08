@@ -88,7 +88,7 @@ export function CategoryIcon({
   return <Icon name={name} size={size} color={color ?? c.color} strokeWidth={strokeWidth} style={style} />
 }
 
-/** The Terpenomics mark — terpene ring and resin bead — with the wordmark
+/** The Terpee mark — terpene ring and resin bead — with the wordmark
  *  beside it unless `wordmark={false}`. */
 export function Logo({
   size = 28,
@@ -104,7 +104,7 @@ export function Logo({
     <View
       accessible
       accessibilityRole="image"
-      accessibilityLabel="Terpenomics"
+      accessibilityLabel="Terpee"
       style={[{ flexDirection: 'row', alignItems: 'center', gap: Math.round(size * 0.32) }, style]}
     >
       <Icon name="mark" size={size} color={t.accent} strokeWidth={1.9} />
@@ -118,7 +118,7 @@ export function Logo({
             color: t.text1,
           }}
         >
-          terpenomics
+          terpee
         </Text>
       ) : null}
     </View>

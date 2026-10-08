@@ -1,5 +1,5 @@
 /* ============================================================================
-   Terpenomics icons — one 24×24 line set for the web portal and the app.
+   Terpee icons — one 24×24 line set for the web portal and the app.
 
    Drawn on a 24-unit grid with 2-unit padding, round caps and joins, and no
    fill: they inherit the current colour and take the stroke width the renderer
@@ -11,7 +11,7 @@
      · Interface glyphs, from Lucide (ISC licence, © Lucide contributors —
        https://lucide.dev). To add one, copy its node from lucide.dev into
        `ui` under a plain-English name.
-     · Product glyphs, drawn for Terpenomics on the same grid: one per
+     · Product glyphs, drawn for Terpee on the same grid: one per
        category, each showing the form you buy it in (a bud, a cone, a
        cartridge, a gummy, a crystal, a dropper, a tube, a tote), plus the
        resin drop and the mark.
@@ -20,7 +20,7 @@
 export type IconElement = readonly [tag: string, attrs: Readonly<Record<string, string | number>>]
 export type IconNode = readonly IconElement[]
 
-/* ── Product glyphs (Terpenomics) ─────────────────────────────────────────── */
+/* ── Product glyphs (Terpee) ─────────────────────────────────────────── */
 
 const product = {
   // Flower — a bud: stacked calyxes on a short stem.

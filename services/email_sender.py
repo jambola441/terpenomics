@@ -58,5 +58,5 @@ def get_sender() -> EmailSender:
     api_key = os.getenv("RESEND_API_KEY")
     if not api_key:
         raise EmailUnavailable("Email is not configured: set RESEND_API_KEY")
-    sender = os.getenv("EMAIL_FROM", "Terpenomics <onboarding@resend.dev>")
+    sender = os.getenv("EMAIL_FROM", "Terpee <onboarding@resend.dev>")
     return ResendSender(api_key, sender)

@@ -94,7 +94,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }
 
   async function signOut() {
-    await supabase.auth.signOut()
+    // This device only. The default scope is global, which would end the
+    // web session too, and each sign-in costs a text.
+    await supabase.auth.signOut({ scope: 'local' })
   }
 
   return (

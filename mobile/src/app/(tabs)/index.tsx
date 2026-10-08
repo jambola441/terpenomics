@@ -25,7 +25,7 @@ export default function Home() {
       <FeedState
         icon="store"
         empty="No stores yet"
-        hint="Follow a few stores on terpenomics.com and their menus will show up here."
+        hint="Follow a few stores on the Terpee website and their menus will show up here."
       />
     )
   }
