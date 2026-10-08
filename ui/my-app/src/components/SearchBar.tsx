@@ -1,4 +1,14 @@
 import React from 'react'
+import { t } from '../theme'
+
+const inputStyle: React.CSSProperties = {
+  width: 300, padding: '6px 12px', fontSize: 13, borderRadius: 8,
+  background: t.surface2, border: `1px solid ${t.border}`, color: t.text1, outline: 'none',
+}
+const buttonStyle: React.CSSProperties = {
+  padding: '6px 12px', fontSize: 13, borderRadius: 8,
+  background: t.surface2, border: `1px solid ${t.border}`, color: t.text2, cursor: 'pointer',
+}
 
 type SearchBarProps = {
   value: string
@@ -26,14 +36,14 @@ export function SearchBar({
         placeholder={placeholder}
         value={value}
         onChange={e => onChange(e.target.value)}
-        style={{ width: 300, padding: '6px 12px' }}
+        style={inputStyle}
         disabled={disabled}
       />
-      <button type="submit" disabled={disabled}>
+      <button type="submit" disabled={disabled} style={buttonStyle}>
         Search
       </button>
       {showClearButton && value && (
-        <button type="button" onClick={onClear} disabled={disabled}>
+        <button type="button" onClick={onClear} disabled={disabled} style={buttonStyle}>
           Clear
         </button>
       )}

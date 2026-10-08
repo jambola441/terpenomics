@@ -5,6 +5,10 @@ import supabase  from './utils/supabase'
 import api, { API_BASE } from './api/client'
 import { ListingSearch } from './components/ListingSearch'
 import type { Listing, PointsSummary } from './types'
+import type { CSSProperties } from 'react'
+import { t, font, radius } from './theme'
+import { Icon } from './components/Icon'
+import { navBtnStyle, pageWrap, primaryBtnStyle, selectStyle, tdStyle, thStyle } from './components/AdminTable'
 
 type Feedback = 'like' | 'dislike' | 'neutral' | null
 
@@ -65,15 +69,18 @@ function dollars(cents: number | null | undefined) {
 
 function fmtFeedback(fb: Feedback) {
   if (!fb) return '—'
-  if (fb === 'like') return '👍 like'
-  if (fb === 'dislike') return '👎 dislike'
-  return '😐 neutral'
+  const icon = fb === 'like' ? 'thumbs-up' : fb === 'dislike' ? 'thumbs-down' : 'face-neutral'
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+      <Icon name={icon} size={14} />{fb}
+    </span>
+  )
 }
 
 function fmtTerpenes(terps: ItemTerpene[] | undefined) {
   if (!terps || terps.length === 0) return '—'
   const sorted = [...terps].sort((a, b) => (b.percent ?? -1) - (a.percent ?? -1))
-  return sorted.map(t => `${t.name}${t.percent != null ? ` (${t.percent}%)` : ''}`).join(', ')
+  return sorted.map(tp => `${tp.name}${tp.percent != null ? ` (${tp.percent}%)` : ''}`).join(', ')
 }
 
 export default function CustomerEdit() {
@@ -363,52 +370,54 @@ export default function CustomerEdit() {
     }
   }
 
-  if (loading) return <div style={{ padding: 24 }}>Loading…</div>
-  if (error) return <div style={{ padding: 24 }}>Error: {error}</div>
-  if (!customer) return <div style={{ padding: 24 }}>Not found</div>
+  if (loading) return <div style={{ ...pageWrap, color: t.text3 }}>Loading…</div>
+  if (error) return <div style={{ ...pageWrap, color: t.danger }}>Error: {error}</div>
+  if (!customer) return <div style={{ ...pageWrap, color: t.text3 }}>Not found</div>
 
   return (
-    <div style={{ padding: 24, maxWidth: 1100 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1>Customer</h1>
-        <button type="button" onClick={() => navigate(-1)}>Back</button>
+    <div style={pageWrap}>
+    <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
+        <button type="button" onClick={() => navigate(-1)} style={navBtnStyle}><Icon name="arrow-left" size={14} />Back</button>
+        <h1 style={titleStyle}>Customer</h1>
       </div>
 
-      <form onSubmit={saveCustomer} style={{ marginBottom: 24 }}>
-        <div style={{ display: 'grid', gap: 10 }}>
+      <form onSubmit={saveCustomer} style={{ ...cardStyle, marginBottom: 24 }}>
+        <div style={{ display: 'grid', gap: 14 }}>
           <div>
-            <label>Name</label>
-            <input value={name} onChange={e => setName(e.target.value)} style={{ width: '100%' }} />
+            <label style={labelStyle}>Name</label>
+            <input value={name} onChange={e => setName(e.target.value)} style={inputStyle} />
           </div>
 
           <div>
-            <label>Email</label>
-            <input value={email} onChange={e => setEmail(e.target.value)} style={{ width: '100%' }} />
+            <label style={labelStyle}>Email</label>
+            <input value={email} onChange={e => setEmail(e.target.value)} style={inputStyle} />
           </div>
 
           <div>
-            <label>Phone</label>
-            <input value={phone} onChange={e => setPhone(e.target.value)} style={{ width: '100%' }} />
+            <label style={labelStyle}>Phone</label>
+            <input value={phone} onChange={e => setPhone(e.target.value)} style={inputStyle} />
           </div>
 
-          <label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: t.text2 }}>
             <input type="checkbox" checked={marketing} onChange={e => setMarketing(e.target.checked)} /> Marketing opt-in
           </label>
 
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
-            {msg && <span>{msg}</span>}
+            <button type="submit" disabled={saving} style={saving ? disabledBtnStyle : primaryBtnStyle}>{saving ? 'Saving…' : 'Save'}</button>
+            {msg && <span style={{ fontSize: 13, color: t.text2 }}>{msg}</span>}
           </div>
         </div>
       </form>
 
       {/* Order Creation Section */}
-      <div style={{ border: '1px solid #ddd', padding: 12, marginBottom: 24 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <h2 style={{ margin: 0 }}>Create New Order</h2>
+      <div style={{ ...cardStyle, marginBottom: 24 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isOrderFormOpen ? 12 : 0 }}>
+          <h2 style={sectionTitleStyle}>Create New Order</h2>
           <button
             type="button"
             onClick={() => setIsOrderFormOpen(!isOrderFormOpen)}
+            style={navBtnStyle}
           >
             {isOrderFormOpen ? 'Hide' : 'Show'}
           </button>
@@ -423,60 +432,61 @@ export default function CustomerEdit() {
             />
 
             {orderError && (
-              <div style={{ color: 'crimson' }}>{orderError}</div>
+              <div style={{ color: t.danger, fontSize: 13 }}>{orderError}</div>
             )}
 
             {orderItems.length > 0 ? (
               <>
-                <table border={1} cellPadding={8} style={{ borderCollapse: 'collapse' }}>
+                <table style={tableStyle}>
                   <thead>
-                    <tr>
-                      <th align="left">Listing</th>
-                      <th align="center">Quantity</th>
-                      <th align="right">Price (cents)</th>
-                      <th align="right">Line Total</th>
-                      <th></th>
+                    <tr style={headRowStyle}>
+                      <th align="left" style={thStyle}>Listing</th>
+                      <th align="center" style={thStyle}>Quantity</th>
+                      <th align="right" style={thStyle}>Price (cents)</th>
+                      <th align="right" style={thStyle}>Line Total</th>
+                      <th style={thStyle}></th>
                     </tr>
                   </thead>
                   <tbody>
                     {orderItems.map((item, index) => (
-                      <tr key={index}>
-                        <td>
-                          <div><strong>{item.listing.scraped_name ?? '(unnamed listing)'}</strong></div>
-                          <div style={{ fontSize: 12, opacity: 0.7 }}>
+                      <tr key={index} style={rowStyle}>
+                        <td style={tdStyle}>
+                          <div style={{ color: t.text1, fontWeight: 600 }}>{item.listing.scraped_name ?? '(unnamed listing)'}</div>
+                          <div style={{ fontSize: 12, color: t.text3 }}>
                             {[item.listing.scraped_brand, item.listing.dispensary_name, item.listing.variant].filter(Boolean).join(' · ')}
                           </div>
                         </td>
-                        <td align="center">
+                        <td align="center" style={tdStyle}>
                           <input
                             type="number"
                             min={1}
                             value={item.quantity}
                             onChange={(e) => updateOrderItem(index, 'quantity', Number(e.target.value))}
-                            style={{ width: 60 }}
+                            style={{ ...inputStyle, width: 64 }}
                             disabled={orderSubmitting}
                           />
                         </td>
-                        <td align="right">
+                        <td align="right" style={tdStyle}>
                           <input
                             type="number"
                             min={0}
                             value={item.price_cents}
                             onChange={(e) => updateOrderItem(index, 'price_cents', Number(e.target.value))}
-                            style={{ width: 100 }}
+                            style={{ ...inputStyle, width: 100 }}
                             disabled={orderSubmitting}
                           />
                         </td>
-                        <td align="right">
+                        <td align="right" style={tdStyle}>
                           {dollars(item.quantity * item.price_cents)}
                         </td>
-                        <td>
+                        <td style={tdStyle}>
                           <button
                             type="button"
                             onClick={() => removeOrderItem(index)}
                             disabled={orderSubmitting}
+                            style={navBtnStyle}
                           >
-                            Remove
+                            <Icon name="close" size={14} />Remove
                           </button>
                         </td>
                       </tr>
@@ -484,9 +494,9 @@ export default function CustomerEdit() {
                   </tbody>
                   <tfoot>
                     <tr>
-                      <td colSpan={3} align="right"><strong>Total:</strong></td>
-                      <td align="right"><strong>{dollars(orderTotal)}</strong></td>
-                      <td></td>
+                      <td colSpan={3} align="right" style={{ ...tdStyle, color: t.text1, fontWeight: 600 }}>Total:</td>
+                      <td align="right" style={{ ...tdStyle, color: t.text1, fontWeight: 600 }}>{dollars(orderTotal)}</td>
+                      <td style={tdStyle}></td>
                     </tr>
                   </tfoot>
                 </table>
@@ -496,13 +506,14 @@ export default function CustomerEdit() {
                     type="button"
                     onClick={submitOrder}
                     disabled={orderSubmitting || orderItems.length === 0}
+                    style={orderSubmitting || orderItems.length === 0 ? disabledBtnStyle : primaryBtnStyle}
                   >
                     {orderSubmitting ? 'Creating Order...' : 'Create Order'}
                   </button>
                 </div>
               </>
             ) : (
-              <p style={{ margin: 0, opacity: 0.7 }}>
+              <p style={{ margin: 0, fontSize: 13, color: t.text3 }}>
                 Search for listings above to add them to the order.
               </p>
             )}
@@ -512,49 +523,49 @@ export default function CustomerEdit() {
 
       {cid && <TerpeePoints customerId={cid} />}
 
-      <div style={{ border: '1px solid #ddd', padding: 12, marginBottom: 24 }}>
+      <div style={{ ...cardStyle, marginBottom: 24 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-          <h2 style={{ margin: 0 }}>Top Terpenes</h2>
+          <h2 style={sectionTitleStyle}>Top Terpenes</h2>
 
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <label style={{ fontSize: 12, opacity: 0.8 }}>Window (days)</label>
+            <label style={{ ...labelStyle, marginBottom: 0 }}>Window (days)</label>
             <input
               type="number"
               min={1}
               max={3650}
               value={windowDays}
               onChange={e => setWindowDays(Number(e.target.value))}
-              style={{ width: 100 }}
+              style={{ ...inputStyle, width: 100 }}
             />
-            <button type="button" onClick={() => loadScores()} disabled={scoresLoading}>
+            <button type="button" onClick={() => loadScores()} disabled={scoresLoading} style={navBtnStyle}>
               {scoresLoading ? 'Refreshing…' : 'Refresh'}
             </button>
           </div>
         </div>
 
-        {scoresError ? <div style={{ color: 'crimson' }}>Error: {scoresError}</div> : null}
+        {scoresError ? <div style={{ color: t.danger, fontSize: 13, marginTop: 10 }}>Error: {scoresError}</div> : null}
 
         {scoresLoading ? (
-          <div>Loading terpene scores…</div>
+          <div style={mutedStyle}>Loading terpene scores…</div>
         ) : terpeneScores.length === 0 ? (
-          <div style={{ opacity: 0.8 }}>No scored terpenes yet (needs likes/dislikes).</div>
+          <div style={mutedStyle}>No scored terpenes yet (needs likes/dislikes).</div>
         ) : (
-          <table border={1} cellPadding={8} style={{ borderCollapse: 'collapse', width: '100%', marginTop: 10 }}>
+          <table style={{ ...tableStyle, marginTop: 10 }}>
             <thead>
-              <tr>
-                <th align="left">Terpene</th>
-                <th align="right">Score</th>
-                <th align="right">Likes</th>
-                <th align="right">Dislikes</th>
+              <tr style={headRowStyle}>
+                <th align="left" style={thStyle}>Terpene</th>
+                <th align="right" style={thStyle}>Score</th>
+                <th align="right" style={thStyle}>Likes</th>
+                <th align="right" style={thStyle}>Dislikes</th>
               </tr>
             </thead>
             <tbody>
               {terpeneScores.slice(0, 15).map(row => (
-                <tr key={row.terpene}>
-                  <td>{row.terpene}</td>
-                  <td align="right">{row.score.toFixed(2)}</td>
-                  <td align="right">{row.likes}</td>
-                  <td align="right">{row.dislikes}</td>
+                <tr key={row.terpene} style={rowStyle}>
+                  <td style={{ ...tdStyle, color: t.text1 }}>{row.terpene}</td>
+                  <td align="right" style={numStyle}>{row.score.toFixed(2)}</td>
+                  <td align="right" style={numStyle}>{row.likes}</td>
+                  <td align="right" style={numStyle}>{row.dislikes}</td>
                 </tr>
               ))}
             </tbody>
@@ -562,41 +573,37 @@ export default function CustomerEdit() {
         )}
       </div>
 
-      <h2>Orders</h2>
+      <h2 style={{ ...sectionTitleStyle, marginBottom: 12 }}>Orders</h2>
 
       {purchases.length === 0 ? (
-        <p>No purchases.</p>
+        <p style={mutedStyle}>No purchases.</p>
       ) : (
         <div style={{ display: 'grid', gap: 12 }}>
           {purchases.map(p => (
-            <div key={p.id} style={{ border: '1px solid #ddd', padding: 12 }}>
+            <div key={p.id} style={cardStyle}>
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
                 <div>
-                  <div><strong>{new Date(p.purchased_at).toLocaleString()}</strong></div>
-                  <div style={{ fontSize: 12, opacity: 0.8 }}>Order ID: {p.id}</div>
-                  <div style={{ fontSize: 12, opacity: 0.8 }}>Source: {p.source}</div>
+                  <div style={{ color: t.text1, fontWeight: 600 }}>{new Date(p.purchased_at).toLocaleString()}</div>
+                  <div style={metaStyle}>Order ID: <span style={{ fontFamily: font.family.mono }}>{p.id}</span></div>
+                  <div style={metaStyle}>Source: {p.source}</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div><strong>{dollars(p.total_amount_cents)}</strong></div>
-                  <div style={{ fontSize: 12, opacity: 0.8 }}>{p.items.length} item(s)</div>
+                  <div style={{ color: t.text1, fontWeight: 600 }}>{dollars(p.total_amount_cents)}</div>
+                  <div style={metaStyle}>{p.items.length} item(s)</div>
                 </div>
               </div>
 
               {p.items.length > 0 && (
-                <table
-                  border={1}
-                  cellPadding={8}
-                  style={{ borderCollapse: 'collapse', width: '100%', marginTop: 10 }}
-                >
+                <table style={{ ...tableStyle, marginTop: 10 }}>
                   <thead>
-                    <tr>
-                      <th align="left">Listing</th>
-                      <th align="left">Terpenes</th>
-                      <th align="right">Qty</th>
-                      <th align="right">Line</th>
-                      <th align="left">Feedback</th>
-                      <th align="left">Feedback At</th>
-                      <th align="left">Edit</th>
+                    <tr style={headRowStyle}>
+                      <th align="left" style={thStyle}>Listing</th>
+                      <th align="left" style={thStyle}>Terpenes</th>
+                      <th align="right" style={thStyle}>Qty</th>
+                      <th align="right" style={thStyle}>Line</th>
+                      <th align="left" style={thStyle}>Feedback</th>
+                      <th align="left" style={thStyle}>Feedback At</th>
+                      <th align="left" style={thStyle}>Edit</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -606,16 +613,17 @@ export default function CustomerEdit() {
                       const errRow = rowError[it.id]
 
                       return (
-                        <tr key={it.id}>
-                          <td>{it.product_name}</td>
-                          <td style={{ maxWidth: 420 }}>{fmtTerpenes(it.terpenes)}</td>
-                          <td align="right">{it.quantity}</td>
-                          <td align="right">{dollars(it.line_amount_cents)}</td>
-                          <td>{fmtFeedback(it.feedback ?? null)}</td>
-                          <td>{it.feedback_at ? new Date(it.feedback_at).toLocaleString() : '—'}</td>
-                          <td>
+                        <tr key={it.id} style={rowStyle}>
+                          <td style={{ ...tdStyle, color: t.text1 }}>{it.product_name}</td>
+                          <td style={{ ...tdStyle, maxWidth: 420, fontSize: 12 }}>{fmtTerpenes(it.terpenes)}</td>
+                          <td align="right" style={numStyle}>{it.quantity}</td>
+                          <td align="right" style={numStyle}>{dollars(it.line_amount_cents)}</td>
+                          <td style={tdStyle}>{fmtFeedback(it.feedback ?? null)}</td>
+                          <td style={{ ...tdStyle, color: t.text3, fontSize: 12 }}>{it.feedback_at ? new Date(it.feedback_at).toLocaleString() : '—'}</td>
+                          <td style={tdStyle}>
                             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                               <select
+                                style={selectStyle}
                                 value={current ?? ''}
                                 onChange={e =>
                                   setRowFeedback(prev => ({
@@ -634,11 +642,12 @@ export default function CustomerEdit() {
                                 type="button"
                                 onClick={() => saveItemFeedback(it.id)}
                                 disabled={savingRow}
+                                style={navBtnStyle}
                               >
                                 {savingRow ? 'Saving…' : 'Save'}
                               </button>
                             </div>
-                            {errRow ? <div style={{ color: 'crimson', fontSize: 12 }}>{errRow}</div> : null}
+                            {errRow ? <div style={{ color: t.danger, fontSize: 12 }}>{errRow}</div> : null}
                           </td>
                         </tr>
                       )
@@ -653,11 +662,12 @@ export default function CustomerEdit() {
 
       {hasMorePurchases && purchases.length > 0 && (
         <div style={{ marginTop: 16, textAlign: 'center' }}>
-          <button type="button" onClick={loadMorePurchases} disabled={loading}>
+          <button type="button" onClick={loadMorePurchases} disabled={loading} style={navBtnStyle}>
             {loading ? 'Loading…' : 'Load More Purchases'}
           </button>
         </div>
       )}
+    </div>
     </div>
   )
 }
@@ -672,35 +682,35 @@ function TerpeePoints({ customerId }: { customerId: string }) {
   }, [customerId])
 
   return (
-    <div style={{ border: '1px solid #ddd', padding: 12, marginBottom: 24 }}>
-      <h2 style={{ margin: '0 0 8px' }}>Terpee Points</h2>
+    <div style={{ ...cardStyle, marginBottom: 24 }}>
+      <h2 style={{ ...sectionTitleStyle, marginBottom: 8 }}>Terpee Points</h2>
       {error ? (
-        <p style={{ color: 'crimson', margin: 0 }}>{error}</p>
+        <p style={{ color: t.danger, margin: 0, fontSize: 13 }}>{error}</p>
       ) : !data ? (
-        <p style={{ margin: 0, opacity: 0.7 }}>Loading…</p>
+        <p style={mutedStyle}>Loading…</p>
       ) : (
         <>
-          <p style={{ margin: '0 0 8px' }}>
-            <b>{data.available.toLocaleString()}</b> available · <b>{data.pending.toLocaleString()}</b> pending
+          <p style={{ margin: '0 0 8px', fontSize: 14, color: t.text2 }}>
+            <b style={{ color: t.text1 }}>{data.available.toLocaleString()}</b> available · <b style={{ color: t.text1 }}>{data.pending.toLocaleString()}</b> pending
           </p>
           {data.entries.length === 0 ? (
-            <p style={{ margin: 0, opacity: 0.7 }}>No points yet. Points come from partner-store purchases matched to this customer.</p>
+            <p style={mutedStyle}>No points yet. Points come from partner-store purchases matched to this customer.</p>
           ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+            <table style={tableStyle}>
               <thead>
-                <tr style={{ textAlign: 'left' }}>
-                  <th>When</th><th>Partner</th><th>Kind</th><th align="right">Eligible</th><th align="right">Points</th><th>Available</th>
+                <tr style={{ ...headRowStyle, textAlign: 'left' }}>
+                  <th style={thStyle}>When</th><th style={thStyle}>Partner</th><th style={thStyle}>Kind</th><th align="right" style={thStyle}>Eligible</th><th align="right" style={thStyle}>Points</th><th style={thStyle}>Available</th>
                 </tr>
               </thead>
               <tbody>
                 {data.entries.map(e => (
-                  <tr key={e.id} style={{ borderTop: '1px solid #eee' }}>
-                    <td>{new Date(e.created_at).toLocaleString()}</td>
-                    <td>{e.partner_name ?? '—'}</td>
-                    <td>{e.kind}</td>
-                    <td align="right">{e.points > 0 ? `$${(e.eligible_cents / 100).toFixed(2)}` : '—'}</td>
-                    <td align="right" style={{ color: e.points < 0 ? 'crimson' : undefined }}>{e.points > 0 ? '+' : ''}{e.points}</td>
-                    <td>{e.pending ? `pending until ${new Date(e.available_at).toLocaleDateString()}` : 'yes'}</td>
+                  <tr key={e.id} style={rowStyle}>
+                    <td style={tdStyle}>{new Date(e.created_at).toLocaleString()}</td>
+                    <td style={tdStyle}>{e.partner_name ?? '—'}</td>
+                    <td style={tdStyle}>{e.kind}</td>
+                    <td align="right" style={numStyle}>{e.points > 0 ? `$${(e.eligible_cents / 100).toFixed(2)}` : '—'}</td>
+                    <td align="right" style={{ ...numStyle, color: e.points < 0 ? t.danger : t.text1 }}>{e.points > 0 ? '+' : ''}{e.points}</td>
+                    <td style={tdStyle}>{e.pending ? `pending until ${new Date(e.available_at).toLocaleDateString()}` : 'yes'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -711,3 +721,19 @@ function TerpeePoints({ customerId }: { customerId: string }) {
     </div>
   )
 }
+
+const titleStyle: CSSProperties = { margin: 0, fontFamily: font.family.display, fontSize: font.size.display, fontWeight: 600, letterSpacing: '-0.015em', color: t.text1 }
+const sectionTitleStyle: CSSProperties = { margin: 0, fontFamily: font.family.display, fontSize: font.size.title, fontWeight: 600, color: t.text1 }
+const cardStyle: CSSProperties = { background: t.surface1, border: `1px solid ${t.border}`, borderRadius: radius.lg, padding: 16 }
+const labelStyle: CSSProperties = { display: 'block', fontSize: 13, color: t.text2, fontWeight: 500, marginBottom: 6 }
+const inputStyle: CSSProperties = {
+  width: '100%', boxSizing: 'border-box', padding: '8px 10px', fontSize: 14, borderRadius: 8,
+  background: t.surface2, border: `1px solid ${t.border}`, color: t.text1, outline: 'none',
+}
+const disabledBtnStyle: CSSProperties = { ...primaryBtnStyle, background: t.surface2, border: `1px solid ${t.border}`, color: t.text4, cursor: 'default' }
+const tableStyle: CSSProperties = { width: '100%', borderCollapse: 'collapse', fontSize: 13 }
+const headRowStyle: CSSProperties = { borderBottom: `1px solid ${t.borderStrong}` }
+const rowStyle: CSSProperties = { borderBottom: `1px solid ${t.border}` }
+const numStyle: CSSProperties = { ...tdStyle, fontVariantNumeric: 'tabular-nums' }
+const mutedStyle: CSSProperties = { margin: 0, fontSize: 13, color: t.text3 }
+const metaStyle: CSSProperties = { fontSize: 12, color: t.text3 }

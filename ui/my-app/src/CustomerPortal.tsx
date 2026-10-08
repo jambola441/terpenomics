@@ -29,8 +29,9 @@ import CartDrawer from './components/CartDrawer'
 import OnboardingScreen from './components/OnboardingScreen'
 import type { CartItem, CustomerProfile, Order } from './types'
 import type { Session } from '@supabase/supabase-js'
-import { t, radius, font } from './theme'
+import { t, radius, font, motion } from './theme'
 import { FeedState } from './components/ui'
+import { Icon, type IconName } from './components/Icon'
 import 'leaflet/dist/leaflet.css'
 
 /** Mirrors MAX_QTY_PER_LINE in routes/orders.py. */
@@ -38,13 +39,13 @@ const MAX_QTY_PER_LINE = 12
 
 type Tab = 'home' | 'brands' | 'categories' | 'search' | 'map' | 'profile'
 
-const TABS: { key: Tab; label: string; icon: string }[] = [
-  { key: 'home', label: 'Home', icon: 'M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z' },
-  { key: 'brands', label: 'Brands', icon: 'M21.41 11.58l-9-9A2 2 0 0011 2H4a2 2 0 00-2 2v7a2 2 0 00.59 1.42l9 9a2 2 0 002.82 0l7-7a2 2 0 000-2.84zM6.5 8A1.5 1.5 0 118 6.5 1.5 1.5 0 016.5 8z' },
-  { key: 'categories', label: 'Shop', icon: 'M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z' },
-  { key: 'search', label: 'Search', icon: 'M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z' },
-  { key: 'map', label: 'Map', icon: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1114.5 9 2.5 2.5 0 0112 11.5z' },
-  { key: 'profile', label: 'You', icon: 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z' },
+const TABS: { key: Tab; label: string; icon: IconName }[] = [
+  { key: 'home', label: 'Home', icon: 'home' },
+  { key: 'brands', label: 'Brands', icon: 'tag' },
+  { key: 'categories', label: 'Shop', icon: 'grid' },
+  { key: 'search', label: 'Search', icon: 'search' },
+  { key: 'map', label: 'Map', icon: 'pin' },
+  { key: 'profile', label: 'You', icon: 'user' },
 ]
 
 /** Detail screens sit inside a section rather than beside it, so the nav keeps
@@ -64,10 +65,16 @@ function NotLinkedScreen({ message, onSignOut }: { message: string; onSignOut: (
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       height: '100dvh', padding: '0 32px', background: t.bg, textAlign: 'center',
     }}>
-      <div style={{ fontSize: 40, marginBottom: 18 }}>🔗</div>
       <div style={{
-        color: t.text1, fontWeight: font.weight.heavy, fontSize: font.size.heading,
-        marginBottom: 12, letterSpacing: '-0.01em',
+        width: 52, height: 52, borderRadius: '50%', marginBottom: 18,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: t.surface2, border: `1px solid ${t.border}`, color: t.text3,
+      }}>
+        <Icon name="unlink" size={22} />
+      </div>
+      <div style={{
+        color: t.text1, fontFamily: font.family.display, fontWeight: font.weight.semibold,
+        fontSize: font.size.display, marginBottom: 10, letterSpacing: '-0.015em',
       }}>
         Couldn't open your account
       </div>
@@ -80,8 +87,8 @@ function NotLinkedScreen({ message, onSignOut }: { message: string; onSignOut: (
       <button
         onClick={onSignOut}
         style={{
-          marginTop: 20, background: 'none', border: `1px solid ${t.border}`, borderRadius: 999,
-          color: t.text2, fontSize: font.size.body, padding: '10px 18px', cursor: 'pointer',
+          marginTop: 22, background: 'none', border: `1px solid ${t.borderStrong}`, borderRadius: radius.md,
+          color: t.text1, fontSize: font.size.body, fontWeight: font.weight.semibold, padding: '10px 18px', cursor: 'pointer',
         }}
       >
         Sign out
@@ -374,22 +381,27 @@ export default function CustomerPortal() {
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             background: t.accent, border: 'none', borderRadius: radius.lg,
             color: t.accentInk, fontWeight: font.weight.bold, fontSize: font.size.callout,
-            padding: '0 16px', cursor: 'pointer', zIndex: 2100,
-            boxShadow: '0 6px 24px rgba(0,0,0,0.45)',
+            padding: '0 14px 0 16px', cursor: 'pointer', zIndex: 2100,
+            boxShadow: 'var(--e-3)',
           }}
         >
-          <span>{cartCount} {cartCount === 1 ? 'item' : 'items'} in cart</span>
-          <span>View ›</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 9 }}>
+            <Icon name="bag" size={18} strokeWidth={2} />
+            <span className="num">{cartCount} {cartCount === 1 ? 'item' : 'items'} in cart</span>
+          </span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
+            View <Icon name="chevron-right" size={17} strokeWidth={2} />
+          </span>
         </button>
       )}
 
       {/* Floating bottom nav */}
       <nav style={{
-        position: 'fixed', bottom: 16, left: 12, right: 12, height: 58,
-        background: 'rgba(14, 14, 14, 0.92)',
-        backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
-        borderRadius: 20, border: '1px solid rgba(255,255,255,0.07)',
-        boxShadow: '0 4px 32px rgba(0,0,0,0.6)',
+        position: 'fixed', bottom: 16, left: 12, right: 12, height: 60,
+        background: 'rgba(19, 23, 20, 0.88)',
+        backdropFilter: 'blur(20px) saturate(140%)', WebkitBackdropFilter: 'blur(20px) saturate(140%)',
+        borderRadius: radius.xl, border: `1px solid ${t.border}`,
+        boxShadow: 'var(--e-3)',
         display: 'flex', alignItems: 'center', zIndex: 2100, padding: '0 4px',
       }}>
         {TABS.map(tab => {
@@ -402,15 +414,20 @@ export default function CustomerPortal() {
               style={{
                 flex: 1, height: '100%', padding: '0 2px',
                 background: 'none', border: 'none', cursor: 'pointer',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3,
-                color: active ? t.accent : '#555',
-                borderRadius: 16, transition: 'color 0.15s',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4,
+                color: active ? t.accent : t.text3,
+                borderRadius: radius.lg, transition: `color ${motion.fast}`,
               }}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d={tab.icon} />
-              </svg>
-              <span style={{ fontSize: 9.5, fontWeight: active ? 700 : 400, letterSpacing: '0.02em' }}>
+              <span style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 40, height: 26, borderRadius: radius.pill,
+                background: active ? t.accentTint : 'transparent',
+                transition: `background ${motion.fast}`,
+              }}>
+                <Icon name={tab.icon} size={19} strokeWidth={active ? 2 : 1.75} />
+              </span>
+              <span style={{ fontSize: 10, fontWeight: active ? font.weight.semibold : font.weight.medium, letterSpacing: '0.01em' }}>
                 {tab.label}
               </span>
             </button>

@@ -2,26 +2,28 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import api from './api/client'
 import type { LabReport, LabReportResult, LabReportUpload } from './types'
+import { t, font, tone } from './theme'
+import { terpeneStyle } from './design/tokens'
+import { Icon } from './components/Icon'
 
 // ---------------------------------------------------------------------------
 // Confidence badge
 // ---------------------------------------------------------------------------
 function ConfidenceBadge({ score }: { score: number }) {
-  const color = score >= 4 ? '#86efac' : score === 3 ? '#fcd34d' : '#fca5a5'
-  const bg    = score >= 4 ? '#14532d' : score === 3 ? '#451a03' : '#450a0a'
+  const tn    = tone[score >= 4 ? 'success' : score === 3 ? 'warning' : 'danger']
   const label = score >= 4 ? 'High'   : score === 3 ? 'Medium'  : 'Low'
   return (
-    <span style={{ display: 'inline-block', padding: '2px 10px', borderRadius: 12, fontSize: 13, fontWeight: 600, background: bg, color, border: `1px solid ${color}30` }}>
+    <span style={{ display: 'inline-block', padding: '2px 10px', borderRadius: 12, fontSize: 13, fontWeight: 600, background: tn.bg, color: tn.fg, border: `1px solid ${tn.edge}` }}>
       {label} confidence ({score}/5)
     </span>
   )
 }
 
 function PassFailBadge({ value }: { value: string | null }) {
-  if (!value) return <span style={{ color: '#475569' }}>—</span>
+  if (!value) return <span style={{ color: t.text3 }}>—</span>
   const pass = value.toUpperCase() === 'PASS'
   return (
-    <span style={{ display: 'inline-block', padding: '2px 10px', borderRadius: 12, fontSize: 13, fontWeight: 600, background: pass ? '#14532d' : '#450a0a', color: pass ? '#86efac' : '#fca5a5' }}>
+    <span style={{ display: 'inline-block', padding: '2px 10px', borderRadius: 12, fontSize: 13, fontWeight: 600, background: pass ? t.successTint : t.dangerTint, color: pass ? t.success : t.danger }}>
       {value.toUpperCase()}
     </span>
   )
@@ -34,15 +36,19 @@ function TerpeneRow({ name, percent, max }: { name: string; percent: number; max
   const pct = max > 0 ? (percent / max) * 100 : 0
   return (
     <tr>
-      <td style={{ padding: '5px 8px', whiteSpace: 'nowrap' }}>{name}</td>
+      <td style={{ padding: '5px 8px', whiteSpace: 'nowrap' }}>
+        <span aria-hidden style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: terpeneStyle(name).color, marginRight: 8 }} />
+        {name}
+      </td>
       <td style={{ padding: '5px 8px', width: '100%' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{
             height: 14,
             width: `${pct}%`,
             minWidth: 2,
-            background: '#1f6feb',
-            borderRadius: 3,
+            // The terpene's own colour, as on the customer's terpene profile.
+            background: terpeneStyle(name).color,
+            borderRadius: 4,
             transition: 'width 0.4s ease',
           }} />
         </div>
@@ -58,7 +64,7 @@ function TerpeneRow({ name, percent, max }: { name: string; percent: number; max
 // Results panel for a single report
 // ---------------------------------------------------------------------------
 function ResultsPanel({ result }: { result: LabReportResult }) {
-  const maxPct = Math.max(...result.terpenes.map(t => t.percent ?? 0), 0.001)
+  const maxPct = Math.max(...result.terpenes.map(tp => tp.percent ?? 0), 0.001)
   const sorted = [...result.terpenes].sort((a, b) => (b.percent ?? 0) - (a.percent ?? 0))
 
   return (
@@ -70,11 +76,11 @@ function ResultsPanel({ result }: { result: LabReportResult }) {
         {result.applied_to_listing && (
           <span style={{
             fontSize: 13,
-            background: '#ddf4ff',
-            color: '#0969da',
+            background: t.infoTint,
+            color: t.info,
             padding: '2px 10px',
             borderRadius: 12,
-            border: '1px solid #0969da40',
+            border: `1px solid ${t.infoEdge}`,
             fontWeight: 600,
           }}>
             Applied to listing
@@ -83,8 +89,8 @@ function ResultsPanel({ result }: { result: LabReportResult }) {
       </div>
 
       {result.confidence_notes && (
-        <p style={{ fontSize: 13, color: '#9a6700', background: '#fff8c5', padding: '8px 12px', borderRadius: 6, marginBottom: 16 }}>
-          ⚠ {result.confidence_notes}
+        <p style={{ fontSize: 13, color: t.warning, background: t.warningTint, border: `1px solid ${t.warningEdge}`, padding: '8px 12px', borderRadius: 6, marginBottom: 16, display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+          <Icon name="alert" size={15} style={{ marginTop: 2 }} /> {result.confidence_notes}
         </p>
       )}
 
@@ -100,8 +106,8 @@ function ResultsPanel({ result }: { result: LabReportResult }) {
             ['Total terpenes', result.total_terpenes != null ? `${result.total_terpenes}%` : null],
           ].map(([label, value]) => (
             <tr key={String(label)}>
-              <td style={{ padding: '4px 16px 4px 0', color: '#57606a', whiteSpace: 'nowrap' }}>{label}</td>
-              <td style={{ padding: '4px 0', fontWeight: value ? 500 : 400, color: value ? 'inherit' : '#57606a' }}>
+              <td style={{ padding: '4px 16px 4px 0', color: t.text3, whiteSpace: 'nowrap' }}>{label}</td>
+              <td style={{ padding: '4px 0', fontWeight: value ? 500 : 400, color: value ? 'inherit' : t.text3 }}>
                 {value ?? <span style={{ opacity: 0.4 }}>—</span>}
               </td>
             </tr>
@@ -111,19 +117,19 @@ function ResultsPanel({ result }: { result: LabReportResult }) {
 
       {/* Terpene table */}
       {sorted.length === 0 ? (
-        <p style={{ color: '#57606a' }}>No terpenes detected on this report.</p>
+        <p style={{ color: t.text3 }}>No terpenes detected on this report.</p>
       ) : (
         <>
           <h4 style={{ margin: '0 0 10px', fontSize: 15 }}>
-            Terpenes ({sorted.length}) — total {result.terpenes.reduce((s, t) => s + (t.percent ?? 0), 0).toFixed(3)}%
+            Terpenes ({sorted.length}) — total {result.terpenes.reduce((s, tp) => s + (tp.percent ?? 0), 0).toFixed(3)}%
           </h4>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <tbody>
-              {sorted.map(t => (
+              {sorted.map(tp => (
                 <TerpeneRow
-                  key={t.name}
-                  name={t.name}
-                  percent={t.percent ?? 0}
+                  key={tp.name}
+                  name={tp.name}
+                  percent={tp.percent ?? 0}
                   max={maxPct}
                 />
               ))}
@@ -140,10 +146,10 @@ function ResultsPanel({ result }: { result: LabReportResult }) {
 // ---------------------------------------------------------------------------
 function StatusBadge({ status }: { status: LabReport['status'] }) {
   const styles: Record<string, { bg: string; color: string }> = {
-    pending:   { bg: '#451a03', color: '#fcd34d' },
-    extracted: { bg: '#0c1a2e', color: '#93c5fd' },
-    applied:   { bg: '#14532d', color: '#86efac' },
-    failed:    { bg: '#450a0a', color: '#fca5a5' },
+    pending:   { bg: t.warningTint, color: t.warning },
+    extracted: { bg: t.infoTint, color: t.info },
+    applied:   { bg: t.successTint, color: t.success },
+    failed:    { bg: t.dangerTint, color: t.danger },
   }
   const s = styles[status] ?? styles.pending
   return (
@@ -301,20 +307,20 @@ export default function LabReportUpload() {
   }
 
   return (
-    <div style={{ padding: 24, fontFamily: "'Inter', system-ui, sans-serif", background: '#080d18', minHeight: '100vh', color: '#f1f5f9' }}>
+    <div style={{ padding: 24, background: t.bg, minHeight: '100vh', color: t.text1 }}>
       <div style={{ maxWidth: 900, margin: '0 auto' }}>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
-          <button onClick={() => navigate('/admin')} style={navBtnStyle}>← Admin</button>
+          <button onClick={() => navigate('/admin')} style={navBtnStyle}><Icon name="arrow-left" size={14} />Admin</button>
           <div>
-            <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>Lab Reports</h2>
-            <p style={{ margin: '3px 0 0', fontSize: 13, color: '#475569' }}>Upload COA PDFs — Claude extracts terpene data via vision API</p>
+            <h2 style={{ margin: 0, fontFamily: font.family.display, fontSize: font.size.display, fontWeight: 600, letterSpacing: '-0.015em' }}>Lab Reports</h2>
+            <p style={{ margin: '3px 0 0', fontSize: 13, color: t.text3 }}>Upload COA PDFs — Claude extracts terpene data via vision API</p>
           </div>
         </div>
 
         {/* Step 1 */}
-        <div style={{ padding: '16px 20px', border: '1px solid #1e293b', borderRadius: 8, marginBottom: 12, background: '#0a0f1a' }}>
-          <h3 style={{ margin: '0 0 12px', fontSize: 15, color: '#94a3b8', fontWeight: 500 }}>Step 1 — Upload PDFs</h3>
+        <div style={{ padding: '16px 20px', border: `1px solid ${t.border}`, borderRadius: 8, marginBottom: 12, background: t.surface1 }}>
+          <h3 style={{ margin: '0 0 12px', fontSize: 15, color: t.text2, fontWeight: 500 }}>Step 1 — Upload PDFs</h3>
 
           <div
             onDragOver={e => { e.preventDefault(); setDragging(true) }}
@@ -322,26 +328,26 @@ export default function LabReportUpload() {
             onDrop={onDrop}
             onClick={() => inputRef.current?.click()}
             style={{
-              border: `2px dashed ${dragging ? '#6366f1' : '#1e293b'}`,
+              border: `2px dashed ${dragging ? t.accent : t.borderStrong}`,
               borderRadius: 8, padding: 24, textAlign: 'center', cursor: 'pointer',
-              background: dragging ? '#0f172a' : 'transparent', transition: 'all 0.15s', marginBottom: 12,
+              background: dragging ? t.surface1 : 'transparent', transition: 'all 0.15s', marginBottom: 12,
             }}
           >
             <input ref={inputRef} type="file" accept=".pdf,application/pdf" multiple style={{ display: 'none' }} onChange={onFileChange} />
-            <div style={{ fontSize: 22, marginBottom: 4 }}>⬆</div>
-            <div style={{ fontWeight: 500, fontSize: 14, color: '#cbd5e1' }}>Drop PDFs here or click to browse</div>
-            <div style={{ fontSize: 13, color: '#475569', marginTop: 2 }}>Multiple files supported · Max 20 MB each</div>
+            <Icon name="upload" size={24} color={t.text3} style={{ display: 'block', margin: '0 auto 6px' }} />
+            <div style={{ fontWeight: 500, fontSize: 14, color: t.text2 }}>Drop PDFs here or click to browse</div>
+            <div style={{ fontSize: 13, color: t.text3, marginTop: 2 }}>Multiple files supported · Max 20 MB each</div>
           </div>
 
           {files.length > 0 && (
             <ul style={{ margin: '0 0 12px', padding: 0, listStyle: 'none' }}>
               {files.map(f => (
-                <li key={f.name} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', background: '#0f172a', border: '1px solid #1e293b', borderRadius: 6, marginBottom: 4, fontSize: 13 }}>
-                  <span>📄</span>
-                  <span style={{ flex: 1, color: '#cbd5e1' }}>{f.name}</span>
-                  <span style={{ color: '#475569', fontSize: 12 }}>{(f.size / 1024).toFixed(1)} KB</span>
+                <li key={f.name} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', background: t.surface1, border: `1px solid ${t.border}`, borderRadius: 6, marginBottom: 4, fontSize: 13 }}>
+                  <Icon name="file" size={15} color={t.text3} />
+                  <span style={{ flex: 1, color: t.text2 }}>{f.name}</span>
+                  <span style={{ color: t.text3, fontSize: 12 }}>{(f.size / 1024).toFixed(1)} KB</span>
                   {uploaded.length === 0 && (
-                    <button onClick={e => { e.stopPropagation(); removeFile(f.name) }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#475569', fontSize: 16, lineHeight: 1 }}>×</button>
+                    <button onClick={e => { e.stopPropagation(); removeFile(f.name) }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.text3, fontSize: 16, lineHeight: 1 }}>×</button>
                   )}
                 </li>
               ))}
@@ -352,38 +358,38 @@ export default function LabReportUpload() {
             <button
               onClick={handleUpload}
               disabled={files.length === 0 || uploading}
-              style={{ padding: '8px 20px', fontSize: 14, fontWeight: 600, borderRadius: 6, border: 'none', background: files.length === 0 || uploading ? '#1e293b' : '#4f46e5', color: files.length === 0 || uploading ? '#475569' : '#fff', cursor: files.length === 0 || uploading ? 'not-allowed' : 'pointer' }}
+              style={{ padding: '8px 20px', fontSize: 14, fontWeight: 600, borderRadius: 6, border: 'none', background: files.length === 0 || uploading ? t.surface2 : t.accent, color: files.length === 0 || uploading ? t.text3 : t.accentInk, cursor: files.length === 0 || uploading ? 'not-allowed' : 'pointer' }}
             >
               {uploading ? 'Uploading…' : `Upload ${files.length > 0 ? `${files.length} file${files.length > 1 ? 's' : ''}` : 'Files'}`}
             </button>
           )}
 
           {uploaded.length > 0 && (
-            <div style={{ fontSize: 13, color: '#86efac', background: '#14532d30', padding: '8px 12px', borderRadius: 6, border: '1px solid #14532d' }}>
-              ✓ {uploaded.length} file{uploaded.length > 1 ? 's' : ''} uploaded successfully
+            <div style={{ fontSize: 13, color: t.success, background: t.successTint, padding: '8px 12px', borderRadius: 6, border: `1px solid ${t.successEdge}`, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Icon name="check-circle" size={15} /> {uploaded.length} file{uploaded.length > 1 ? 's' : ''} uploaded successfully
             </div>
           )}
         </div>
 
         {/* Step 2 */}
-        <div style={{ padding: '16px 20px', border: '1px solid #1e293b', borderRadius: 8, marginBottom: 16, background: '#0a0f1a', opacity: step === 2 ? 1 : 0.5 }}>
-          <h3 style={{ margin: '0 0 12px', fontSize: 15, color: '#94a3b8', fontWeight: 500 }}>Step 2 — Extract Terpenes</h3>
+        <div style={{ padding: '16px 20px', border: `1px solid ${t.border}`, borderRadius: 8, marginBottom: 16, background: t.surface1, opacity: step === 2 ? 1 : 0.5 }}>
+          <h3 style={{ margin: '0 0 12px', fontSize: 15, color: t.text2, fontWeight: 500 }}>Step 2 — Extract Terpenes</h3>
           <button
             onClick={handleProcess}
             disabled={step !== 2 || processing || results.length > 0}
-            style={{ padding: '8px 20px', fontSize: 14, fontWeight: 600, borderRadius: 6, border: 'none', background: step !== 2 || processing || results.length > 0 ? '#1e293b' : '#4f46e5', color: step !== 2 || processing || results.length > 0 ? '#475569' : '#fff', cursor: step !== 2 || processing || results.length > 0 ? 'not-allowed' : 'pointer' }}
+            style={{ padding: '8px 20px', fontSize: 14, fontWeight: 600, borderRadius: 6, border: 'none', background: step !== 2 || processing || results.length > 0 ? t.surface2 : t.accent, color: step !== 2 || processing || results.length > 0 ? t.text3 : t.accentInk, cursor: step !== 2 || processing || results.length > 0 ? 'not-allowed' : 'pointer' }}
           >
             {processing ? 'Analyzing COAs…' : 'Process Reports'}
           </button>
         </div>
 
-        {error && <div style={{ marginBottom: 16, padding: '10px 14px', background: '#450a0a', color: '#fca5a5', borderRadius: 6, fontSize: 14 }}>{error}</div>}
+        {error && <div style={{ marginBottom: 16, padding: '10px 14px', background: t.dangerTint, color: t.danger, borderRadius: 6, fontSize: 14 }}>{error}</div>}
 
         {results.length > 0 && (
           <div style={{ marginBottom: 32 }}>
             {results.map((r, i) => (
-              <div key={r.lab_report_id} style={{ border: '1px solid #1e293b', borderRadius: 8, padding: '16px 20px', marginBottom: 12, background: '#0a0f1a' }}>
-                <h3 style={{ margin: '0 0 4px', fontSize: 15, color: '#f1f5f9' }}>{uploaded[i]?.filename ?? `Report ${i + 1}`}</h3>
+              <div key={r.lab_report_id} style={{ border: `1px solid ${t.border}`, borderRadius: 8, padding: '16px 20px', marginBottom: 12, background: t.surface1 }}>
+                <h3 style={{ margin: '0 0 4px', fontSize: 15, color: t.text1 }}>{uploaded[i]?.filename ?? `Report ${i + 1}`}</h3>
                 <ResultsPanel result={r} />
               </div>
             ))}
@@ -394,19 +400,19 @@ export default function LabReportUpload() {
         <div style={{ marginTop: 40 }}>
           <h3 style={{ margin: '0 0 16px', fontSize: 17, fontWeight: 600 }}>All Lab Reports</h3>
 
-          {listError && <div style={{ padding: '10px 14px', background: '#450a0a', color: '#fca5a5', borderRadius: 6, fontSize: 14, marginBottom: 12 }}>{listError}</div>}
-          {!listError && labReports.length === 0 && !listLoading && <p style={{ color: '#475569', fontSize: 14 }}>No lab reports yet.</p>}
+          {listError && <div style={{ padding: '10px 14px', background: t.dangerTint, color: t.danger, borderRadius: 6, fontSize: 14, marginBottom: 12 }}>{listError}</div>}
+          {!listError && labReports.length === 0 && !listLoading && <p style={{ color: t.text3, fontSize: 14 }}>No lab reports yet.</p>}
 
           {labReports.length > 0 && (
             <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 12, padding: '10px 14px', background: '#0f172a', border: '1px solid #1e293b', borderRadius: 6 }}>
-                <span style={{ fontSize: 13, color: '#94a3b8', minWidth: 120 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 12, padding: '10px 14px', background: t.surface1, border: `1px solid ${t.border}`, borderRadius: 6 }}>
+                <span style={{ fontSize: 13, color: t.text2, minWidth: 120 }}>
                   {selectedIds.size > 0 ? `${selectedIds.size} selected` : 'Select pending reports to process'}
                 </span>
                 <button
                   onClick={handleListProcess}
                   disabled={selectedIds.size === 0 || listProcessing}
-                  style={{ padding: '6px 18px', fontSize: 13, fontWeight: 600, borderRadius: 6, border: 'none', background: selectedIds.size === 0 || listProcessing ? '#1e293b' : '#4f46e5', color: selectedIds.size === 0 || listProcessing ? '#475569' : '#fff', cursor: selectedIds.size === 0 || listProcessing ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' }}
+                  style={{ padding: '6px 18px', fontSize: 13, fontWeight: 600, borderRadius: 6, border: 'none', background: selectedIds.size === 0 || listProcessing ? t.surface2 : t.accent, color: selectedIds.size === 0 || listProcessing ? t.text3 : t.accentInk, cursor: selectedIds.size === 0 || listProcessing ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' }}
                 >
                   {listProcessing ? 'Analyzing COAs…' : 'Process Selected'}
                 </button>
@@ -414,7 +420,7 @@ export default function LabReportUpload() {
 
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
-                  <tr style={{ color: '#475569', textAlign: 'left', borderBottom: '1px solid #1e293b' }}>
+                  <tr style={{ color: t.text3, textAlign: 'left', borderBottom: `1px solid ${t.border}` }}>
                     <th style={{ width: 36, padding: '8px', textAlign: 'center' }}>
                       <input type="checkbox" title="Select all pending" checked={allPendingSelected} disabled={pendingIds.length === 0} onChange={toggleSelectAll} />
                     </th>
@@ -438,9 +444,9 @@ export default function LabReportUpload() {
                       return (
                         <tr
                           key={r.id}
-                          style={{ borderBottom: '1px solid #0f172a', cursor: 'pointer', background: isSelected ? '#0c1a2e' : 'transparent' }}
+                          style={{ borderBottom: `1px solid ${t.border}`, cursor: 'pointer', background: isSelected ? t.infoTint : 'transparent' }}
                           onClick={() => navigate(`/admin/lab-reports/${r.id}`)}
-                          onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLTableRowElement).style.background = '#0a0f1a' }}
+                          onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLTableRowElement).style.background = t.surface1 }}
                           onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLTableRowElement).style.background = 'transparent' }}
                         >
                           <td style={{ textAlign: 'center', padding: '10px 8px' }} onClick={e => e.stopPropagation()}>
@@ -448,20 +454,20 @@ export default function LabReportUpload() {
                           </td>
                           <td style={{ ...tdStyle, whiteSpace: 'nowrap' }}>{r.created_at ? new Date(r.created_at).toLocaleDateString() : '—'}</td>
                           <td style={tdStyle}><StatusBadge status={r.status} /></td>
-                          <td style={tdStyle}>{r.lab_name ?? <span style={{ color: '#475569' }}>—</span>}</td>
-                          <td style={{ ...tdStyle, color: '#f1f5f9' }}>
+                          <td style={tdStyle}>{r.lab_name ?? <span style={{ color: t.text3 }}>—</span>}</td>
+                          <td style={{ ...tdStyle, color: t.text1 }}>
                             {r.listing_id
-                              ? <Link to={`/admin/listings/${r.listing_id}`} onClick={e => e.stopPropagation()} style={{ color: '#93c5fd' }}>View listing</Link>
-                              : <span style={{ color: '#475569' }}>—</span>}
+                              ? <Link to={`/admin/listings/${r.listing_id}`} onClick={e => e.stopPropagation()} style={{ color: t.info }}>View listing</Link>
+                              : <span style={{ color: t.text3 }}>—</span>}
                           </td>
-                          <td style={tdStyle}>{r.product_name_on_report ?? <span style={{ color: '#475569' }}>—</span>}</td>
-                          <td style={tdStyle}>{r.batch_id ?? <span style={{ color: '#475569' }}>—</span>}</td>
-                          <td style={tdStyle}>{r.test_date ?? <span style={{ color: '#475569' }}>—</span>}</td>
+                          <td style={tdStyle}>{r.product_name_on_report ?? <span style={{ color: t.text3 }}>—</span>}</td>
+                          <td style={tdStyle}>{r.batch_id ?? <span style={{ color: t.text3 }}>—</span>}</td>
+                          <td style={tdStyle}>{r.test_date ?? <span style={{ color: t.text3 }}>—</span>}</td>
                           <td style={{ ...tdStyle, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
-                            {r.total_terpenes != null ? `${r.total_terpenes}%` : <span style={{ color: '#475569' }}>—</span>}
+                            {r.total_terpenes != null ? `${r.total_terpenes}%` : <span style={{ color: t.text3 }}>—</span>}
                           </td>
                           <td style={tdStyle}><PassFailBadge value={r.pass_fail} /></td>
-                          <td style={tdStyle}>{r.confidence != null ? <ConfidenceBadge score={r.confidence} /> : <span style={{ color: '#475569' }}>—</span>}</td>
+                          <td style={tdStyle}>{r.confidence != null ? <ConfidenceBadge score={r.confidence} /> : <span style={{ color: t.text3 }}>—</span>}</td>
                         </tr>
                       )
                     })
@@ -471,10 +477,10 @@ export default function LabReportUpload() {
 
               {listResults.length > 0 && (
                 <div style={{ marginTop: 24 }}>
-                  <h3 style={{ margin: '0 0 12px', fontSize: 15, color: '#94a3b8' }}>Processing Results</h3>
+                  <h3 style={{ margin: '0 0 12px', fontSize: 15, color: t.text2 }}>Processing Results</h3>
                   {listResults.map(r => (
-                    <div key={r.lab_report_id} style={{ border: '1px solid #1e293b', borderRadius: 8, padding: '16px 20px', marginBottom: 12, background: '#0a0f1a' }}>
-                      <h4 style={{ margin: '0 0 4px', fontSize: 14, color: '#94a3b8' }}>{r.lab_report_id}</h4>
+                    <div key={r.lab_report_id} style={{ border: `1px solid ${t.border}`, borderRadius: 8, padding: '16px 20px', marginBottom: 12, background: t.surface1 }}>
+                      <h4 style={{ margin: '0 0 4px', fontSize: 14, color: t.text2 }}>{r.lab_report_id}</h4>
                       <ResultsPanel result={r} />
                     </div>
                   ))}
@@ -483,7 +489,7 @@ export default function LabReportUpload() {
             </>
           )}
 
-          {listLoading && <p style={{ color: '#475569', fontSize: 14, marginTop: 8 }}>Loading…</p>}
+          {listLoading && <p style={{ color: t.text3, fontSize: 14, marginTop: 8 }}>Loading…</p>}
 
           {!listLoading && labReports.length === LIST_LIMIT + listOffset && (
             <button onClick={() => loadLabReports(listOffset + LIST_LIMIT)} style={{ ...navBtnStyle, marginTop: 12 }}>
@@ -496,6 +502,6 @@ export default function LabReportUpload() {
   )
 }
 
-const thStyle: React.CSSProperties = { padding: '8px 12px', fontWeight: 500, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }
-const tdStyle: React.CSSProperties = { padding: '10px 12px', color: '#cbd5e1' }
-const navBtnStyle: React.CSSProperties = { padding: '6px 12px', background: '#0f172a', border: '1px solid #1e293b', borderRadius: 6, color: '#94a3b8', cursor: 'pointer', fontSize: 13 }
+const thStyle: React.CSSProperties = { padding: '8px 12px', fontWeight: 500, fontSize: 12, fontFamily: font.family.mono, textTransform: 'uppercase', letterSpacing: '0.06em' }
+const tdStyle: React.CSSProperties = { padding: '10px 12px', color: t.text2 }
+const navBtnStyle: React.CSSProperties = { padding: '6px 12px', background: t.surface2, border: `1px solid ${t.border}`, borderRadius: 6, color: t.text2, cursor: 'pointer', fontSize: 13 }

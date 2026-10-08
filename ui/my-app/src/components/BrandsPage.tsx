@@ -11,8 +11,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import api from '../api/client'
 import type { PortalBrand } from '../types'
-import { t, radius, font, alpha } from '../theme'
-import { FeedState, Pressable, Skeleton } from './ui'
+import { t, radius, font } from '../theme'
+import { BrandMark, FeedState, PageTitle, Pressable, Skeleton } from './ui'
 import { SearchField } from './browse'
 import { readEnum, useFilterParams, useScrollMemory, writeOne } from '../utils/browseState'
 
@@ -105,14 +105,9 @@ export default function BrandsPage({ onOpenBrand }: Props) {
 
   return (
     <div ref={scrollRef} style={{ height: 'calc(100dvh - 64px)', overflowY: 'auto', background: t.bg }}>
-      <div style={{ padding: '22px 16px 6px' }}>
-        <div style={{ color: t.text1, fontWeight: font.weight.heavy, fontSize: font.size.hero, letterSpacing: '-0.02em' }}>
-          Brands
-        </div>
-        <div style={{ color: t.text3, fontSize: font.size.small, marginTop: 2 }}>
-          Every brand stocked across the stores we track
-        </div>
-      </div>
+      <PageTitle style={{ padding: '26px 16px 6px' }} sub="Every brand stocked across the stores we track">
+        Brands
+      </PageTitle>
 
       <div style={{ padding: '12px 16px 0' }}>
         <SearchField
@@ -137,7 +132,7 @@ export default function BrandsPage({ onOpenBrand }: Props) {
           kind="empty"
           message={query ? `No brands matching "${query}"` : 'No brands yet'}
           hint={query ? 'Try a shorter search.' : undefined}
-          icon="🏷️"
+          icon="tag"
           style={{ padding: '48px 16px' }}
         />
       ) : (
@@ -159,24 +154,7 @@ export default function BrandsPage({ onOpenBrand }: Props) {
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 9,
                 }}
               >
-                <div style={{
-                  width: 62, height: 62, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
-                  background: t.surface2, border: `1px solid ${t.border}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  {brand.image_url ? (
-                    <img
-                      src={brand.image_url}
-                      alt={brand.name}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-                    />
-                  ) : (
-                    <span style={{ color: t.accent, fontWeight: font.weight.heavy, fontSize: 22 }}>
-                      {brand.name.charAt(0).toUpperCase()}
-                    </span>
-                  )}
-                </div>
+                <BrandMark name={brand.name} imageUrl={brand.image_url} size={64} />
                 <div style={{
                   color: t.text1, fontSize: font.size.caption + 1, fontWeight: font.weight.semibold,
                   textAlign: 'center', lineHeight: 1.25, width: '100%',
@@ -184,8 +162,8 @@ export default function BrandsPage({ onOpenBrand }: Props) {
                 }}>
                   {brand.name}
                 </div>
-                <div style={{ color: t.text3, fontSize: font.size.caption }}>
-                  {brand.listing_count.toLocaleString()}
+                <div className="num" style={{ color: t.text3, fontFamily: font.family.mono, fontSize: font.size.micro + 0.5 }}>
+                  {brand.listing_count.toLocaleString()} listed
                 </div>
               </Pressable>
             ))}
@@ -207,11 +185,11 @@ function SortChip({ label, active, onClick }: { label: string; active: boolean; 
       onClick={onClick}
       style={{
         cursor: 'pointer', whiteSpace: 'nowrap',
-        fontSize: font.size.small, fontWeight: active ? font.weight.bold : font.weight.medium,
+        fontSize: font.size.small, fontWeight: active ? font.weight.semibold : font.weight.medium,
         padding: '7px 13px', borderRadius: radius.pill,
-        background: active ? alpha(t.accent, 0.14) : t.surface2,
-        border: `1px solid ${active ? t.accent : t.border}`,
-        color: active ? t.accent : t.text3,
+        background: active ? t.accentTint : t.surface2,
+        border: `1px solid ${active ? t.accentDim : t.border}`,
+        color: active ? t.accent : t.text2,
         transition: 'all var(--t-fast)',
       }}
     >
@@ -233,7 +211,7 @@ function BrandGridSkeleton() {
           background: t.surface1, border: `1px solid ${t.border}`, borderRadius: radius.lg,
           padding: '14px 10px 12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 9,
         }}>
-          <Skeleton width={62} height={62} radius="50%" />
+          <Skeleton width={64} height={64} radius={radius.lg} />
           <Skeleton width="80%" height={11} />
           <Skeleton width={26} height={9} />
         </div>

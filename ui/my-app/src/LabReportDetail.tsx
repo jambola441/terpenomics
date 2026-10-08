@@ -3,19 +3,21 @@ import { useParams, Link } from 'react-router-dom'
 import api from './api/client'
 import type { LabReportDetail, LabReportResult, Listing } from './types'
 import { ListingSearch } from './components/ListingSearch'
+import { Icon } from './components/Icon'
+import { t, font, tone } from './theme'
+import { terpeneStyle } from './design/tokens'
 
 // ---------------------------------------------------------------------------
 // Shared badge components
 // ---------------------------------------------------------------------------
 function ConfidenceBadge({ score }: { score: number }) {
-  const color = score >= 4 ? '#1a7f37' : score === 3 ? '#9a6700' : '#cf222e'
-  const bg = score >= 4 ? '#dafbe1' : score === 3 ? '#fff8c5' : '#ffebe9'
+  const tn = tone[score >= 4 ? 'success' : score === 3 ? 'warning' : 'danger']
   const label = score >= 4 ? 'High' : score === 3 ? 'Medium' : 'Low'
   return (
     <span style={{
       display: 'inline-block', padding: '2px 10px', borderRadius: 12,
-      fontSize: 13, fontWeight: 600, background: bg, color,
-      border: `1px solid ${color}40`,
+      fontSize: 13, fontWeight: 600, background: tn.bg, color: tn.fg,
+      border: `1px solid ${tn.edge}`,
     }}>
       {label} confidence ({score}/5)
     </span>
@@ -29,8 +31,8 @@ function PassFailBadge({ value }: { value: string | null }) {
     <span style={{
       display: 'inline-block', padding: '2px 10px', borderRadius: 12,
       fontSize: 13, fontWeight: 600,
-      background: pass ? '#dafbe1' : '#ffebe9',
-      color: pass ? '#1a7f37' : '#cf222e',
+      background: pass ? t.successTint : t.dangerTint,
+      color: pass ? t.success : t.danger,
     }}>
       {value.toUpperCase()}
     </span>
@@ -39,10 +41,10 @@ function PassFailBadge({ value }: { value: string | null }) {
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, { bg: string; color: string }> = {
-    pending:   { bg: '#fff8c5', color: '#9a6700' },
-    extracted: { bg: '#ddf4ff', color: '#0969da' },
-    applied:   { bg: '#dafbe1', color: '#1a7f37' },
-    failed:    { bg: '#ffebe9', color: '#cf222e' },
+    pending:   { bg: t.warningTint, color: t.warning },
+    extracted: { bg: t.infoTint, color: t.info },
+    applied:   { bg: t.successTint, color: t.success },
+    failed:    { bg: t.dangerTint, color: t.danger },
   }
   const s = styles[status] ?? styles.pending
   return (
@@ -55,16 +57,22 @@ function StatusBadge({ status }: { status: string }) {
   )
 }
 
-function TerpeneRow({ name, percent, max }: { name: string; percent: number; max: number }) {
+/** One labelled bar. Terpenes wear their aroma colour (as on the customer's
+ *  terpene profile); pass `color` for anything else. */
+function TerpeneRow({ name, percent, max, color }: { name: string; percent: number; max: number; color?: string }) {
   const pct = max > 0 ? (percent / max) * 100 : 0
+  const fill = color ?? terpeneStyle(name).color
   return (
     <tr>
-      <td style={{ padding: '5px 8px', whiteSpace: 'nowrap' }}>{name}</td>
+      <td style={{ padding: '5px 8px', whiteSpace: 'nowrap' }}>
+        <span aria-hidden style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: fill, marginRight: 8 }} />
+        {name}
+      </td>
       <td style={{ padding: '5px 8px', width: '100%' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{
             height: 14, width: `${pct}%`, minWidth: 2,
-            background: '#1f6feb', borderRadius: 3, transition: 'width 0.4s ease',
+            background: fill, borderRadius: 4, transition: 'width 0.4s ease',
           }} />
         </div>
       </td>
@@ -171,8 +179,8 @@ export default function LabReportDetailPage() {
   if (loading) {
     return (
       <div style={{ padding: 24 }}>
-        <Link to="/admin/lab-reports" style={{ fontSize: 14, color: '#57606a' }}>← All Lab Reports</Link>
-        <p style={{ marginTop: 24, color: '#57606a' }}>Loading…</p>
+        <Link to="/admin/lab-reports" style={backLink}><Icon name="arrow-left" size={15} /> All Lab Reports</Link>
+        <p style={{ marginTop: 24, color: t.text3 }}>Loading…</p>
       </div>
     )
   }
@@ -180,8 +188,8 @@ export default function LabReportDetailPage() {
   if (error || !report) {
     return (
       <div style={{ padding: 24 }}>
-        <Link to="/admin/lab-reports" style={{ fontSize: 14, color: '#57606a' }}>← All Lab Reports</Link>
-        <div style={{ marginTop: 24, padding: '10px 14px', background: '#ffebe9', color: '#cf222e', borderRadius: 6 }}>
+        <Link to="/admin/lab-reports" style={backLink}><Icon name="arrow-left" size={15} /> All Lab Reports</Link>
+        <div style={{ marginTop: 24, padding: '10px 14px', background: t.dangerTint, color: t.danger, borderRadius: 6 }}>
           {error ?? 'Report not found'}
         </div>
       </div>
@@ -189,7 +197,7 @@ export default function LabReportDetailPage() {
   }
 
   const sortedTerpenes = [...report.terpenes].sort((a, b) => (b.percent ?? 0) - (a.percent ?? 0))
-  const maxPct = Math.max(...report.terpenes.map(t => t.percent ?? 0), 0.001)
+  const maxPct = Math.max(...report.terpenes.map(tp => tp.percent ?? 0), 0.001)
   const sortedCannabinoids = [...report.cannabinoids].sort((a, b) => (b.percent ?? 0) - (a.percent ?? 0))
   const maxCbdPct = Math.max(...report.cannabinoids.map(c => c.percent ?? 0), 0.001)
   const listingChanged = (selectedListing?.id ?? null) !== (report.listing_id ?? null)
@@ -198,21 +206,21 @@ export default function LabReportDetailPage() {
   return (
     <div style={{ padding: 24, maxWidth: 760 }}>
       {/* Breadcrumb */}
-      <Link to="/admin/lab-reports" style={{ fontSize: 14, color: '#57606a', textDecoration: 'none' }}>
-        ← All Lab Reports
+      <Link to="/admin/lab-reports" style={backLink}>
+        <Icon name="arrow-left" size={15} /> All Lab Reports
       </Link>
 
       {/* Title */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16, marginBottom: 24, flexWrap: 'wrap' }}>
-        <h1 style={{ margin: 0, fontSize: 20 }}>Lab Report</h1>
+        <h1 style={{ margin: 0, fontFamily: font.family.display, fontSize: font.size.display, fontWeight: 600, letterSpacing: '-0.015em' }}>Lab Report</h1>
         <StatusBadge status={report.status} />
         {report.confidence != null && <ConfidenceBadge score={report.confidence} />}
         <PassFailBadge value={report.pass_fail} />
       </div>
 
       {/* Metadata */}
-      <div style={{ border: '1px solid #d0d7de', borderRadius: 8, padding: '16px 20px', marginBottom: 20 }}>
-        <h2 style={{ margin: '0 0 14px', fontSize: 16 }}>Report Details</h2>
+      <div style={{ background: t.surface1, border: `1px solid ${t.border}`, borderRadius: 12, padding: '16px 20px', marginBottom: 20 }}>
+        <h2 style={sectionTitle}>Report Details</h2>
         <table style={{ borderCollapse: 'collapse', fontSize: 14, width: '100%' }}>
           <tbody>
             {([
@@ -226,8 +234,8 @@ export default function LabReportDetailPage() {
               ['Total terpenes', report.total_terpenes != null ? `${report.total_terpenes}%` : null],
             ] as [string, string | null][]).map(([label, value]) => (
               <tr key={label}>
-                <td style={{ padding: '5px 16px 5px 0', color: '#57606a', whiteSpace: 'nowrap', verticalAlign: 'top' }}>{label}</td>
-                <td style={{ padding: '5px 0', fontWeight: value ? 500 : 400, color: value ? 'inherit' : '#57606a', wordBreak: 'break-all' }}>
+                <td style={{ padding: '5px 16px 5px 0', color: t.text3, whiteSpace: 'nowrap', verticalAlign: 'top' }}>{label}</td>
+                <td style={{ padding: '5px 0', fontWeight: value ? 500 : 400, color: value ? 'inherit' : t.text3, wordBreak: 'break-all' }}>
                   {value ?? <span style={{ opacity: 0.4 }}>—</span>}
                 </td>
               </tr>
@@ -236,33 +244,33 @@ export default function LabReportDetailPage() {
         </table>
 
         {report.confidence_notes && (
-          <p style={{ fontSize: 13, color: '#9a6700', background: '#fff8c5', padding: '8px 12px', borderRadius: 6, marginTop: 14, marginBottom: 0 }}>
-            ⚠ {report.confidence_notes}
+          <p style={{ fontSize: 13, color: t.warning, background: t.warningTint, border: `1px solid ${t.warningEdge}`, padding: '8px 12px', borderRadius: 6, marginTop: 14, marginBottom: 0, display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+            <Icon name="alert" size={15} style={{ marginTop: 2 }} /> {report.confidence_notes}
           </p>
         )}
       </div>
 
       {/* Listing assignment */}
-      <div style={{ border: '1px solid #d0d7de', borderRadius: 8, padding: '16px 20px', marginBottom: 20 }}>
-        <h2 style={{ margin: '0 0 14px', fontSize: 16 }}>Assigned Listing</h2>
+      <div style={{ background: t.surface1, border: `1px solid ${t.border}`, borderRadius: 12, padding: '16px 20px', marginBottom: 20 }}>
+        <h2 style={sectionTitle}>Assigned Listing</h2>
 
         {selectedListing ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
             <div style={{
               flex: 1, padding: '8px 12px', borderRadius: 6,
-              border: '1px solid #d0d7de', background: '#373737', fontSize: 14,
+              border: `1px solid ${t.border}`, background: t.surface2, fontSize: 14,
             }}>
               <span style={{ fontWeight: 600 }}>{selectedListing.scraped_name ?? '(unnamed listing)'}</span>
-              {selectedListing.scraped_brand && <span style={{ color: '#57606a' }}> — {selectedListing.scraped_brand}</span>}
-              <span style={{ color: '#57606a' }}> ({selectedListing.dispensary_name})</span>
+              {selectedListing.scraped_brand && <span style={{ color: t.text3 }}> — {selectedListing.scraped_brand}</span>}
+              <span style={{ color: t.text3 }}> ({selectedListing.dispensary_name})</span>
             </div>
             <button
               onClick={() => { setSelectedListing(null); setAssignSuccess(false) }}
               disabled={assigning}
               style={{
                 padding: '6px 12px', fontSize: 13, borderRadius: 6,
-                border: '1px solid #d0d7de', background: '#f6f8fa',
-                cursor: assigning ? 'not-allowed' : 'pointer', color: '#57606a',
+                border: `1px solid ${t.border}`, background: t.surface2,
+                cursor: assigning ? 'not-allowed' : 'pointer', color: t.text2,
               }}
             >
               Clear
@@ -284,34 +292,34 @@ export default function LabReportDetailPage() {
             disabled={assigning || !listingChanged}
             style={{
               padding: '6px 18px', fontSize: 14, fontWeight: 600, borderRadius: 6, border: 'none',
-              background: assigning || !listingChanged ? '#d0d7de' : '#1f6feb',
-              color: assigning || !listingChanged ? '#57606a' : '#fff',
+              background: assigning || !listingChanged ? t.surface2 : t.accent,
+              color: assigning || !listingChanged ? t.text4 : t.accentInk,
               cursor: assigning || !listingChanged ? 'not-allowed' : 'pointer',
             }}
           >
             {assigning ? 'Saving…' : 'Save Assignment'}
           </button>
           {selectedListing && (
-            <Link to={`/admin/listings/${selectedListing.id}`} style={{ fontSize: 13, color: '#57606a' }}>
-              View listing →
+            <Link to={`/admin/listings/${selectedListing.id}`} style={{ fontSize: 13, color: t.text2, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+              View listing <Icon name="arrow-right" size={14} />
             </Link>
           )}
         </div>
 
         {assignSuccess && (
-          <p style={{ margin: '10px 0 0', fontSize: 13, color: '#1a7f37' }}>✓ Listing assignment saved</p>
+          <p style={{ margin: '10px 0 0', fontSize: 13, color: t.success, display: 'flex', alignItems: 'center', gap: 6 }}><Icon name="check-circle" size={15} /> Listing assignment saved</p>
         )}
         {assignError && (
-          <p style={{ margin: '10px 0 0', fontSize: 13, color: '#cf222e' }}>{assignError}</p>
+          <p style={{ margin: '10px 0 0', fontSize: 13, color: t.danger }}>{assignError}</p>
         )}
       </div>
 
       {/* Process / re-process */}
-      <div style={{ border: '1px solid #d0d7de', borderRadius: 8, padding: '16px 20px', marginBottom: 20 }}>
+      <div style={{ background: t.surface1, border: `1px solid ${t.border}`, borderRadius: 12, padding: '16px 20px', marginBottom: 20 }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 16 }}>
           {report.status === 'pending' ? 'Process Report' : 'Re-process Report'}
         </h2>
-        <p style={{ margin: '0 0 14px', fontSize: 13, color: '#57606a' }}>
+        <p style={{ margin: '0 0 14px', fontSize: 13, color: t.text3 }}>
           Runs Claude vision extraction on the uploaded PDF.
           {selectedListing && ' Terpenes and cannabinoids will be written to the assigned listing.'}
         </p>
@@ -320,43 +328,43 @@ export default function LabReportDetailPage() {
           disabled={processing || !canProcess}
           style={{
             padding: '8px 20px', fontSize: 14, fontWeight: 600, borderRadius: 6, border: 'none',
-            background: processing || !canProcess ? '#d0d7de' : '#1f6feb',
-            color: processing || !canProcess ? '#57606a' : '#fff',
+            background: processing || !canProcess ? t.surface2 : t.accent,
+            color: processing || !canProcess ? t.text4 : t.accentInk,
             cursor: processing || !canProcess ? 'not-allowed' : 'pointer',
           }}
         >
           {processing ? 'Analyzing COA…' : report.status === 'pending' ? 'Process Report' : 'Re-process Report'}
         </button>
         {!canProcess && (
-          <span style={{ marginLeft: 12, fontSize: 13, color: '#57606a' }}>Report is already applied</span>
+          <span style={{ marginLeft: 12, fontSize: 13, color: t.text3 }}>Report is already applied</span>
         )}
 
         {processError && (
-          <div style={{ marginTop: 12, padding: '8px 12px', background: '#ffebe9', color: '#cf222e', borderRadius: 6, fontSize: 14 }}>
+          <div style={{ marginTop: 12, padding: '8px 12px', background: t.dangerTint, color: t.danger, borderRadius: 6, fontSize: 14 }}>
             {processError}
           </div>
         )}
         {processResult && (
-          <div style={{ marginTop: 16, padding: '10px 14px', background: '#dafbe1', color: '#1a7f37', borderRadius: 6, fontSize: 14 }}>
-            ✓ Extraction complete — {processResult.terpenes.length} terpenes found
+          <div style={{ marginTop: 16, padding: '10px 14px', background: t.successTint, color: t.success, border: `1px solid ${t.successEdge}`, borderRadius: 6, fontSize: 14, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+            <Icon name="check-circle" size={15} /> Extraction complete — {processResult.terpenes.length} terpenes found
             {processResult.applied_to_listing && ', applied to listing'}
           </div>
         )}
       </div>
 
       {/* Cannabinoids */}
-      <div style={{ border: '1px solid #d0d7de', borderRadius: 8, padding: '16px 20px', marginBottom: 20 }}>
-        <h2 style={{ margin: '0 0 14px', fontSize: 16 }}>
+      <div style={{ background: t.surface1, border: `1px solid ${t.border}`, borderRadius: 12, padding: '16px 20px', marginBottom: 20 }}>
+        <h2 style={sectionTitle}>
           Cannabinoids
           {sortedCannabinoids.length > 0 && (
-            <span style={{ fontWeight: 400, fontSize: 14, color: '#57606a', marginLeft: 8 }}>
+            <span style={{ fontWeight: 400, fontSize: 14, color: t.text3, marginLeft: 8 }}>
               ({sortedCannabinoids.length})
             </span>
           )}
         </h2>
 
         {sortedCannabinoids.length === 0 ? (
-          <p style={{ color: '#57606a', fontSize: 14, margin: 0 }}>
+          <p style={{ color: t.text3, fontSize: 14, margin: 0 }}>
             {report.status === 'pending' || report.status === 'failed'
               ? 'No cannabinoid data yet — process the report to extract cannabinoids.'
               : 'No cannabinoids detected on this report.'}
@@ -365,7 +373,7 @@ export default function LabReportDetailPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
             <tbody>
               {sortedCannabinoids.map(c => (
-                <TerpeneRow key={c.name} name={c.name} percent={c.percent ?? 0} max={maxCbdPct} />
+                <TerpeneRow key={c.name} name={c.name} percent={c.percent ?? 0} max={maxCbdPct} color={t.text3} />
               ))}
             </tbody>
           </table>
@@ -373,18 +381,18 @@ export default function LabReportDetailPage() {
       </div>
 
       {/* Terpenes */}
-      <div style={{ border: '1px solid #d0d7de', borderRadius: 8, padding: '16px 20px' }}>
-        <h2 style={{ margin: '0 0 14px', fontSize: 16 }}>
+      <div style={{ background: t.surface1, border: `1px solid ${t.border}`, borderRadius: 12, padding: '16px 20px' }}>
+        <h2 style={sectionTitle}>
           Terpenes
           {sortedTerpenes.length > 0 && (
-            <span style={{ fontWeight: 400, fontSize: 14, color: '#57606a', marginLeft: 8 }}>
-              ({sortedTerpenes.length}) — total {sortedTerpenes.reduce((s, t) => s + (t.percent ?? 0), 0).toFixed(3)}%
+            <span style={{ fontWeight: 400, fontSize: 14, color: t.text3, marginLeft: 8 }}>
+              ({sortedTerpenes.length}) — total {sortedTerpenes.reduce((s, tp) => s + (tp.percent ?? 0), 0).toFixed(3)}%
             </span>
           )}
         </h2>
 
         {sortedTerpenes.length === 0 ? (
-          <p style={{ color: '#57606a', fontSize: 14, margin: 0 }}>
+          <p style={{ color: t.text3, fontSize: 14, margin: 0 }}>
             {report.status === 'pending' || report.status === 'failed'
               ? 'No terpene data yet — process the report to extract terpenes.'
               : 'No terpenes detected on this report.'}
@@ -392,8 +400,8 @@ export default function LabReportDetailPage() {
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
             <tbody>
-              {sortedTerpenes.map(t => (
-                <TerpeneRow key={t.name} name={t.name} percent={t.percent ?? 0} max={maxPct} />
+              {sortedTerpenes.map(tp => (
+                <TerpeneRow key={tp.name} name={tp.name} percent={tp.percent ?? 0} max={maxPct} />
               ))}
             </tbody>
           </table>
@@ -402,3 +410,6 @@ export default function LabReportDetailPage() {
     </div>
   )
 }
+
+const backLink = { fontSize: 14, color: t.text2, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 } as const
+const sectionTitle = { margin: '0 0 14px', fontFamily: font.family.mono, fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em', color: t.text3 } as const

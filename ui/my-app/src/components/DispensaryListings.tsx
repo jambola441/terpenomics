@@ -2,23 +2,12 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import type { CartItem, DispensaryListing } from '../types'
-import { t, radius, font, categoryColor, alpha } from '../theme'
+import { t, radius, font, categoryColor, categoryLabel, alpha } from '../theme'
 import { useScrollMemory } from '../utils/browseState'
-import { Pressable, Pill, FeedState, Skeleton, ProductImage } from './ui'
+import { boroughColor } from '../utils/boroughs'
+import { Pressable, Pill, FeedState, Skeleton, ProductImage, StoreBullet } from './ui'
+import { Icon, CategoryIcon } from './Icon'
 import { MarketNote } from './browse'
-
-const CATEGORY_EMOJI: Record<string, string> = {
-  flower: '🌸',
-  vaporizers: '💨',
-  cart: '💨',
-  edible: '🍬',
-  concentrate: '💎',
-  preroll: '🌿',
-  tinctures: '🧪',
-  topical: '🧴',
-  merch: '🛍️',
-  other: '📦',
-}
 
 function formatPrice(cents: number | null) {
   if (cents == null) return null
@@ -154,26 +143,23 @@ export default function DispensaryListings({
               }}
               style={{
                 position: 'absolute', bottom: 8, right: 8,
-                width: 30, height: 30, borderRadius: '50%',
-                background: cartQty > 0 ? t.accent : '#fff',
-                border: 'none', cursor: 'pointer', padding: 0,
+                width: 32, height: 32, borderRadius: '50%',
+                background: cartQty > 0 ? t.bg : t.accent,
+                border: cartQty > 0 ? `1.5px solid ${t.accent}` : 'none',
+                cursor: 'pointer', padding: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 12, fontWeight: 700, color: '#0a0a0a',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.45)', flexShrink: 0,
+                fontFamily: font.family.mono, fontSize: 12, fontWeight: font.weight.medium,
+                color: cartQty > 0 ? t.accent : t.accentInk,
+                boxShadow: 'var(--e-2)', flexShrink: 0,
                 transition: `background var(--t-fast), transform var(--t-fast)`,
               } as React.CSSProperties}
             >
-              {cartQty > 0 ? cartQty : (
-                <span style={{ position: 'relative', width: 9, height: 9, display: 'block' }}>
-                  <span style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: 2, marginTop: -1, background: '#0a0a0a', borderRadius: 1 }} />
-                  <span style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 2, marginLeft: -1, background: '#0a0a0a', borderRadius: 1 }} />
-                </span>
-              )}
+              {cartQty > 0 ? cartQty : <Icon name="plus" size={16} strokeWidth={2.25} />}
             </button>
           )}
         </div>
         <div style={{ padding: '9px 9px 11px', flex: 1 }}>
-          {price && <div style={{ color: t.accent, fontWeight: font.weight.bold, fontSize: font.size.small + 1, marginBottom: 3 }}>{price}</div>}
+          {price && <div className="num" style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.callout, marginBottom: 3 }}>{price}</div>}
           <div style={{
             color: t.text1, fontWeight: font.weight.semibold, fontSize: font.size.small, lineHeight: 1.3,
             display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
@@ -181,7 +167,7 @@ export default function DispensaryListings({
             {l.display_name}
           </div>
           {catColor && l.variant && (
-            <div style={{ color: t.text3, fontSize: font.size.caption, marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.variant}</div>
+            <div style={{ color: t.text3, fontFamily: font.family.mono, fontSize: font.size.caption, marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.variant}</div>
           )}
 
           {/* The half a store's own menu cannot answer: is this a good price? */}
@@ -190,6 +176,9 @@ export default function DispensaryListings({
       </Pressable>
     )
   }
+
+  // The store wears its borough's line colour, as its bullet does on the map.
+  const line = boroughColor(dispensaryAddress)
 
   return (
     <div ref={scrollRef} style={{ height: 'calc(100dvh - 64px)', overflowY: 'auto', background: t.bg }}>
@@ -200,57 +189,67 @@ export default function DispensaryListings({
           <img src={dispensaryBannerUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
         ) : (
-          <div style={{ width: '100%', height: '100%', background: `linear-gradient(135deg, ${alpha('#a8e063', 0.18)} 0%, ${t.surface1} 72%)` }} />
+          <div style={{ width: '100%', height: '100%', background: `linear-gradient(150deg, ${alpha(line, 0.28)} 0%, ${alpha(line, 0.06)} 55%, ${t.surface1} 100%)` }} />
         )}
-        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to bottom, ${alpha('#000', 0.15)} 0%, ${t.bg} 100%)` }} />
+        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to bottom, rgba(12, 15, 13, 0.1) 0%, ${t.bg} 100%)` }} />
         <button
           onClick={onBack}
           style={{
             position: 'absolute', top: 14, left: 14,
-            background: alpha('#000', 0.5), border: `1px solid ${alpha('#fff', 0.15)}`,
-            backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', borderRadius: radius.pill, color: '#fff',
-            fontSize: font.size.small, fontWeight: font.weight.medium, padding: '7px 14px', cursor: 'pointer',
-            display: 'inline-flex', alignItems: 'center', gap: 5,
+            background: 'rgba(12, 15, 13, 0.55)', border: '1px solid rgba(242, 240, 233, 0.12)',
+            backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', borderRadius: radius.pill, color: t.text1,
+            fontSize: font.size.small + 1, fontWeight: font.weight.medium, padding: '7px 14px 7px 10px', cursor: 'pointer',
+            display: 'inline-flex', alignItems: 'center', gap: 6,
           }}
-        >← Map</button>
+        ><Icon name="arrow-left" size={16} /> Map</button>
       </div>
 
       {/* Identity block */}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: -34, marginBottom: 18, position: 'relative', zIndex: 1, padding: '0 16px' }}>
-        <div style={{
-          width: 66, height: 66, borderRadius: radius.xl, border: `2px solid ${t.bg}`,
-          overflow: 'hidden', background: t.surface2, display: 'flex',
-          alignItems: 'center', justifyContent: 'center', marginBottom: 12,
-          boxShadow: 'var(--e-2)',
-        }}>
-          {dispensaryLogoUrl ? (
+        {dispensaryLogoUrl ? (
+          <div style={{
+            width: 68, height: 68, borderRadius: '50%', border: `3px solid ${t.bg}`,
+            overflow: 'hidden', background: t.surface2, marginBottom: 12, boxShadow: 'var(--e-2)',
+          }}>
             <img src={dispensaryLogoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
-          ) : (
-            <span style={{ color: t.accent, fontWeight: font.weight.heavy, fontSize: 26 }}>
-              {dispensaryName.charAt(0).toUpperCase()}
-            </span>
-          )}
-        </div>
-        <div style={{ color: t.text1, fontWeight: font.weight.heavy, fontSize: font.size.heading, lineHeight: 1.2, marginBottom: 7, textAlign: 'center', letterSpacing: '-0.01em' }}>
+          </div>
+        ) : (
+          <StoreBullet
+            name={dispensaryName}
+            address={dispensaryAddress}
+            size={68}
+            style={{ border: `3px solid ${t.bg}`, boxShadow: 'var(--e-2)', marginBottom: 12, boxSizing: 'content-box' }}
+          />
+        )}
+        <h1 style={{
+          color: t.text1, fontFamily: font.family.display, fontWeight: font.weight.semibold,
+          fontSize: font.size.hero - 2, lineHeight: 1.12, margin: '0 0 8px', textAlign: 'center', letterSpacing: '-0.02em',
+        }}>
           {dispensaryName}
-        </div>
+        </h1>
         {(dispensaryAddress || distanceMi != null) && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
-            {dispensaryAddress && <span style={{ color: t.text3, fontSize: font.size.small }}>📍 {dispensaryAddress}</span>}
-            {distanceMi != null && <span style={{ color: t.text4, fontSize: font.size.small }}>· {distanceMi < 0.1 ? '< 0.1' : distanceMi.toFixed(1)} mi away</span>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+            {dispensaryAddress && (
+              <span style={{ color: t.text2, fontSize: font.size.small + 1, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                <Icon name="pin" size={14} color={t.text3} /> {dispensaryAddress}
+              </span>
+            )}
+            {distanceMi != null && <span className="num" style={{ color: t.text3, fontSize: font.size.small + 1 }}>· {distanceMi < 0.1 ? '< 0.1' : distanceMi.toFixed(1)} mi away</span>}
           </div>
         )}
         {acceptsPickup ? (
-          <Pill color={categoryColor('flower')} tone="category" size="md">🛒 Pickup orders</Pill>
+          <Pill color={t.success} size="md"><Icon name="bag" size={12} strokeWidth={2} />Pickup orders</Pill>
         ) : (
           <Pill size="md">In store only</Pill>
         )}
       </div>
 
       {/* Sticky search */}
-      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: alpha('#0b0b0d', 0.86), backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderBottom: `1px solid ${t.border}`, padding: '8px 16px' }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'rgba(12, 15, 13, 0.9)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderBottom: `1px solid ${t.border}`, padding: '8px 16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ position: 'relative', flex: 1, display: 'flex' }}>
+          <Icon name="search" size={16} color={t.text3} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
           <input
             value={searchInput}
             onChange={e => setSearchInput(e.target.value)}
@@ -267,17 +266,19 @@ export default function DispensaryListings({
             placeholder="Search menu…"
             style={{
               flex: 1, background: t.surface2,
-              border: `1px solid ${searchFocus ? t.accent : t.border}`,
+              border: `1px solid ${searchFocus ? t.accentDim : t.border}`,
               boxShadow: searchFocus ? 'var(--ring)' : 'none',
-              borderRadius: radius.md, color: t.text1, fontSize: font.size.body, padding: '10px 13px', outline: 'none',
+              borderRadius: radius.md, color: t.text1, fontSize: font.size.body, padding: '10px 13px 10px 36px', outline: 'none',
               transition: `border-color var(--t-fast), box-shadow var(--t-fast)`,
             }}
           />
+          </div>
           {search && (
             <button
               onClick={() => { setSearchInput(''); setSearchParams(prev => { const n = new URLSearchParams(prev); n.delete('q'); return n }, { replace: true }) }}
-              style={{ background: t.surface2, border: `1px solid ${t.border}`, borderRadius: radius.md, color: t.text3, fontSize: 13, padding: '0 12px', height: 40, cursor: 'pointer' }}
-            >✕</button>
+              aria-label="Clear search"
+              style={{ background: t.surface2, border: `1px solid ${t.border}`, borderRadius: radius.md, color: t.text2, width: 42, height: 42, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+            ><Icon name="close" size={16} /></button>
           )}
         </div>
       </div>
@@ -293,14 +294,13 @@ export default function DispensaryListings({
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, flexShrink: 0, padding: '0 9px' }}
             >
               <div style={{
-                width: 52, height: 52, borderRadius: '50%',
-                background: alpha(c, 0.12), border: `1px solid ${alpha(c, 0.3)}`,
+                width: 54, height: 54, borderRadius: radius.lg,
+                background: alpha(c, 0.1), border: `1px solid ${alpha(c, 0.26)}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 22,
               }}>
-                {CATEGORY_EMOJI[cat] ?? '📦'}
+                <CategoryIcon category={cat} size={24} strokeWidth={1.6} />
               </div>
-              <span style={{ color: t.text2, fontSize: font.size.micro, fontWeight: font.weight.medium, whiteSpace: 'nowrap', textTransform: 'capitalize' }}>{cat}</span>
+              <span style={{ color: t.text2, fontSize: font.size.caption, fontWeight: font.weight.medium, whiteSpace: 'nowrap' }}>{categoryLabel(cat)}</span>
             </Pressable>
           )
         })}
@@ -312,7 +312,7 @@ export default function DispensaryListings({
       ) : error ? (
         <FeedState kind="error" message={error} />
       ) : listingsByCategory.size === 0 ? (
-        <FeedState kind="empty" message="Nothing found" hint={search ? `No menu items match “${search}”.` : 'This menu has no items right now.'} icon="🔍" />
+        <FeedState kind="empty" message="Nothing found" hint={search ? `No menu items match “${search}”.` : 'This menu has no items right now.'} icon="search" />
       ) : (
         <div style={{ paddingBottom: 80 }}>
           {[...listingsByCategory.entries()].map(([catKey, items]) => {
@@ -320,15 +320,15 @@ export default function DispensaryListings({
             return (
               <div key={catKey} style={{ marginBottom: 6 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 16px 11px' }}>
-                  <span style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.callout, letterSpacing: '-0.01em', display: 'inline-flex', alignItems: 'center', gap: 7, textTransform: 'capitalize' }}>
-                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: c, display: 'inline-block' }} />
-                    {catKey}
+                  <span style={{ color: t.text1, fontFamily: font.family.display, fontWeight: font.weight.semibold, fontSize: font.size.heading, letterSpacing: '-0.015em', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    <CategoryIcon category={catKey} size={19} color={c} />
+                    {categoryLabel(catKey)}
                   </span>
                   <button
                     onClick={() => navigate(`/portal/map/${dispensaryId}/aisle/${encodeURIComponent(catKey)}`)}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.accent, fontSize: font.size.small, fontWeight: font.weight.semibold, padding: '2px 0', display: 'flex', alignItems: 'center', gap: 4 }}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.text2, fontSize: font.size.small + 1, fontWeight: font.weight.semibold, padding: '2px 0', display: 'flex', alignItems: 'center', gap: 2 }}
                   >
-                    See all <span aria-hidden>→</span>
+                    See all <Icon name="chevron-right" size={15} />
                   </button>
                 </div>
                 <div className="no-scrollbar" style={{ display: 'flex', overflowX: 'auto', gap: 10, padding: '0 16px 12px', scrollSnapType: 'x proximity' }}>

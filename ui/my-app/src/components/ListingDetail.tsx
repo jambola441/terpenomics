@@ -21,11 +21,12 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import type { CartItem, ListingDetail, PortalDispensary, SimilarListing } from '../types'
-import { t, radius, font, categoryColor, alpha } from '../theme'
+import { t, radius, font } from '../theme'
 import {
   FeedState, Pill, CategoryTag, Label, ClassificationTag, DetailBlock,
-  CollapsibleBlock, SpecRow, Pressable, ProductImage,
+  CollapsibleBlock, SpecRow, Pressable, ProductImage, StoreBullet, TerpeneProfile,
 } from './ui'
+import { Icon, type IconName } from './Icon'
 import { formatDist, formatDollars, haversineMi } from '../utils/format'
 
 interface Props {
@@ -99,7 +100,6 @@ export default function ListingDetailView({
   }
 
   const cat = listing.scraped_category ?? 'other'
-  const catColor = categoryColor(cat)
   const cartSupported = listing.dispensary_accepts_pickup
   // Defaulted rather than assumed: these arrive with the listing, but the screen
   // should degrade to the product half rather than blank out if one is missing.
@@ -138,14 +138,15 @@ export default function ListingDetailView({
         onClick={() => navigate(-1)}
         style={{
           position: 'absolute', top: 16, left: 16, zIndex: 10,
-          background: alpha('#000', 0.55), border: `1px solid ${alpha('#fff', 0.15)}`,
-          backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
-          borderRadius: radius.pill, color: '#fff', fontSize: font.size.small, fontWeight: font.weight.medium,
-          padding: '7px 14px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5,
+          background: 'rgba(12, 15, 13, 0.72)', border: '1px solid rgba(242, 240, 233, 0.12)',
+          backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
+          borderRadius: radius.pill, color: t.text1, fontSize: font.size.small + 1, fontWeight: font.weight.medium,
+          padding: '7px 14px 7px 10px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6,
           maxWidth: 'calc(100% - 32px)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}
       >
-        ← {listing.dispensary_name}
+        <Icon name="arrow-left" size={16} />
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{listing.dispensary_name}</span>
       </button>
 
       {listing.image_url ? (
@@ -158,7 +159,7 @@ export default function ListingDetailView({
           />
         </div>
       ) : (
-        <div style={{ height: 150, background: `linear-gradient(135deg, ${alpha(catColor, 0.28)} 0%, ${t.surface1} 100%)` }} />
+        <ProductImage category={cat} height={240} radius="0" />
       )}
 
       <div style={{ padding: '20px 20px 32px' }}>
@@ -167,21 +168,24 @@ export default function ListingDetailView({
           <CategoryTag category={cat} />
           {listing.classification && <ClassificationTag classification={listing.classification} />}
           {listing.variant && <Pill>{listing.variant}</Pill>}
-          {!listing.in_stock && <Pill color={t.danger} tone="category">Out of stock</Pill>}
+          {!listing.in_stock && <Pill color={t.danger}>Out of stock</Pill>}
         </div>
 
-        <div style={{ color: t.text1, fontSize: font.size.display, fontWeight: font.weight.heavy, lineHeight: 1.2, marginBottom: 6, letterSpacing: '-0.01em' }}>
+        <h1 style={{
+          color: t.text1, fontFamily: font.family.display, fontSize: font.size.hero - 2, fontWeight: font.weight.semibold,
+          lineHeight: 1.15, margin: '0 0 6px', letterSpacing: '-0.02em',
+        }}>
           {listing.display_name}
-        </div>
+        </h1>
 
         {listing.scraped_brand && (
-          <div style={{ color: t.text2, fontSize: font.size.body, marginBottom: 18 }}>{listing.scraped_brand}</div>
+          <div style={{ color: t.text2, fontSize: font.size.callout, marginBottom: 20 }}>{listing.scraped_brand}</div>
         )}
 
         {/* ── Price, and how it compares ── */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
           {listing.price_cents != null && (
-            <div style={{ color: t.accent, fontWeight: font.weight.heavy, fontSize: font.size.hero, letterSpacing: '-0.01em' }}>
+            <div className="num" style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.hero - 2, letterSpacing: '-0.02em' }}>
               {formatDollars(listing.price_cents)}
             </div>
           )}
@@ -189,16 +193,16 @@ export default function ListingDetailView({
             <button
               onClick={handleAddToCart}
               style={{
-                background: addedFlash ? '#7fae46' : t.accent,
+                background: addedFlash ? t.success : t.accent,
                 border: 'none', borderRadius: radius.md,
-                color: t.accentInk, fontSize: font.size.body, fontWeight: font.weight.bold,
-                padding: '11px 22px', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 6,
-                boxShadow: 'var(--e-1)',
+                color: t.accentInk, fontSize: font.size.callout, fontWeight: font.weight.bold,
+                padding: '12px 20px 12px 16px', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 8,
                 transition: `background var(--t-base), transform var(--t-fast)`,
               }}
             >
-              {addedFlash ? '✓ Added' : cartQuantity > 0 ? `In cart (${cartQuantity})` : 'Add to cart'}
+              <Icon name={addedFlash ? 'check' : 'bag'} size={17} strokeWidth={2} />
+              {addedFlash ? 'Added' : cartQuantity > 0 ? `In cart (${cartQuantity})` : 'Add to cart'}
             </button>
           )}
         </div>
@@ -206,8 +210,8 @@ export default function ListingDetailView({
         <PriceContextLine listing={listing} />
 
         {checked && (
-          <div style={{ color: t.text4, fontSize: font.size.caption, marginTop: 8 }}>
-            Stock last checked {checked}
+          <div style={{ color: t.text3, fontSize: font.size.caption, marginTop: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
+            <Icon name="clock" size={12} /> Stock last checked {checked}
           </div>
         )}
 
@@ -218,12 +222,13 @@ export default function ListingDetailView({
             target="_blank"
             rel="noopener noreferrer"
             style={{
-              display: 'block', marginTop: 14, boxSizing: 'border-box', textAlign: 'center', textDecoration: 'none',
-              background: 'transparent', border: `1px solid ${t.border}`, borderRadius: radius.md,
-              color: t.text2, fontSize: font.size.small, fontWeight: font.weight.medium, padding: 12,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              marginTop: 14, boxSizing: 'border-box', textDecoration: 'none',
+              background: 'transparent', border: `1px solid ${t.borderStrong}`, borderRadius: radius.md,
+              color: t.text1, fontSize: font.size.small + 1, fontWeight: font.weight.medium, padding: 12,
             }}
           >
-            View on {listing.dispensary_name}'s website ↗
+            View on {listing.dispensary_name}'s website <Icon name="arrow-up-right" size={15} />
           </a>
         )}
 
@@ -238,7 +243,7 @@ export default function ListingDetailView({
         {elsewhere.length > 0 && (
           <div style={{ marginTop: 28 }}>
             <Label style={{ marginBottom: 4 }}>Also available at</Label>
-            <div style={{ color: t.text4, fontSize: font.size.caption, marginBottom: 10 }}>
+            <div style={{ color: t.text3, fontSize: font.size.caption, marginBottom: 10 }}>
               {elsewhere.length} other {elsewhere.length === 1 ? 'store' : 'stores'} carry this exact product
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -260,12 +265,13 @@ export default function ListingDetailView({
                 onClick={() => onOpenProduct(listing.scraped_brand ?? null, listing.product_key)}
                 style={{
                   width: '100%', marginTop: 10, boxSizing: 'border-box',
-                  background: 'transparent', border: `1px solid ${t.border}`, borderRadius: radius.md,
-                  color: t.text2, fontSize: font.size.small, fontWeight: font.weight.medium,
+                  background: 'transparent', border: `1px solid ${t.borderStrong}`, borderRadius: radius.md,
+                  color: t.text1, fontSize: font.size.small + 1, fontWeight: font.weight.medium,
                   padding: 12, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                 }}
               >
-                Compare all {context.other_store_count + 1} stores →
+                Compare all {context.other_store_count + 1} stores <Icon name="arrow-right" size={15} />
               </button>
             )}
           </div>
@@ -275,27 +281,24 @@ export default function ListingDetailView({
         {listing.cannabinoids.length > 0 && (
           <div style={{ marginTop: 28 }}>
             <Label style={{ marginBottom: 10 }}>Cannabinoids</Label>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(84px, 1fr))', gap: 8 }}>
               {listing.cannabinoids.map(c => (
                 <div key={c.name} style={{
                   background: t.surface1, border: `1px solid ${t.border}`,
-                  borderRadius: radius.md, padding: '9px 14px',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, minWidth: 74,
+                  borderRadius: radius.md, padding: '10px 12px',
+                  display: 'flex', flexDirection: 'column', gap: 4,
                 }}>
-                  <span style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.body }}>{c.name}</span>
-                  {/* The family only says something when it is not the name
-                      again — THC over THC is a tile of one word twice. */}
-                  {c.family.toUpperCase() !== c.name.toUpperCase() && (
-                    <span style={{
-                      color: c.family === 'thc' ? t.accent : '#3b9bf0',
-                      fontSize: font.size.micro, fontWeight: font.weight.bold, textTransform: 'uppercase', letterSpacing: '0.05em',
-                    }}>
-                      {c.family.toUpperCase()}
-                    </span>
-                  )}
-                  {c.percent != null && (
-                    <span style={{ color: t.text3, fontSize: font.size.caption }}>{c.percent}%</span>
-                  )}
+                  <span className="num" style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.title, letterSpacing: '-0.01em' }}>
+                    {c.percent != null ? `${c.percent}%` : '—'}
+                  </span>
+                  <span style={{ color: t.text3, fontFamily: font.family.mono, fontSize: font.size.caption, letterSpacing: '0.04em' }}>
+                    {c.name}
+                    {/* The family only says something when it is not the name
+                        again — THC over THC is a tile of one word twice. */}
+                    {c.family.toUpperCase() !== c.name.toUpperCase() && (
+                      <span style={{ color: c.family === 'thc' ? t.accentDim : t.info }}> · {c.family.toUpperCase()}</span>
+                    )}
+                  </span>
                 </div>
               ))}
             </div>
@@ -303,18 +306,9 @@ export default function ListingDetailView({
         )}
 
         {listing.terpenes.length > 0 && (
-          <div style={{ marginTop: 24 }}>
-            <Label style={{ marginBottom: 10 }}>Terpenes</Label>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-              {listing.terpenes.map(tp => (
-                <span key={tp.name} style={{
-                  background: t.surface2, color: t.text2, fontSize: font.size.small,
-                  padding: '6px 12px', borderRadius: radius.pill, border: `1px solid ${t.border}`,
-                }}>
-                  {tp.name}{tp.percent != null ? ` ${tp.percent}%` : ''}
-                </span>
-              ))}
-            </div>
+          <div style={{ marginTop: 28 }}>
+            <Label style={{ marginBottom: 12 }}>Terpene profile</Label>
+            <TerpeneProfile terpenes={listing.terpenes} />
           </div>
         )}
 
@@ -374,15 +368,9 @@ function PriceContextLine({ listing }: { listing: ListingDetail }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
       {context.is_cheapest && (
-        <span style={{
-          background: alpha(t.accent, 0.16), border: `1px solid ${alpha(t.accent, 0.4)}`,
-          color: t.accent, fontSize: font.size.caption, fontWeight: font.weight.bold,
-          borderRadius: radius.pill, padding: '3px 9px',
-        }}>
-          Cheapest of {context.other_store_count + 1}
-        </span>
+        <Pill color={t.success} size="md">Cheapest of {context.other_store_count + 1}</Pill>
       )}
-      <span style={{ color: t.text3, fontSize: font.size.small }}>
+      <span style={{ color: t.text2, fontSize: font.size.small + 1 }}>
         {gap > 0
           ? `${formatDollars(gap)} below the average at ${stores}`
           : gap < 0
@@ -414,27 +402,24 @@ function StoreCard({ store, distanceMi, onOpenDispensary }: {
       <Label style={{ marginBottom: 12 }}>Sold at</Label>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{
-          width: 44, height: 44, borderRadius: radius.md, flexShrink: 0, overflow: 'hidden',
-          background: t.surface2, border: `1px solid ${t.border}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          {store.logo_url ? (
+        {store.logo_url ? (
+          <div style={{
+            width: 44, height: 44, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
+            background: t.surface2, border: `1px solid ${t.border}`,
+          }}>
             <img
               src={store.logo_url}
               alt=""
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
             />
-          ) : (
-            <span style={{ color: t.accent, fontWeight: font.weight.heavy, fontSize: 19 }}>
-              {store.name.charAt(0).toUpperCase()}
-            </span>
-          )}
-        </div>
+          </div>
+        ) : (
+          <StoreBullet name={store.name} address={store.address} size={44} />
+        )}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
-            color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.body,
+            color: t.text1, fontFamily: font.family.display, fontWeight: font.weight.semibold, fontSize: font.size.title,
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
           }}>
             {store.name}
@@ -448,33 +433,34 @@ function StoreCard({ store, distanceMi, onOpenDispensary }: {
 
       <div style={{ marginTop: 12 }}>
         {store.accepts_pickup
-          ? <Pill color={categoryColor('flower')} tone="category">🛒 Order for pickup</Pill>
+          ? <Pill color={t.success}><Icon name="bag" size={11} strokeWidth={2} />Order for pickup</Pill>
           : <Pill>In-store only</Pill>}
       </div>
 
       <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
         {onOpenDispensary && (
-          <StoreAction label="Menu" onClick={() => onOpenDispensary(store.id)} />
+          <StoreAction label="Menu" icon="list" onClick={() => onOpenDispensary(store.id)} />
         )}
-        {directions && <StoreAction label="Directions" href={directions} />}
-        {store.website_url && <StoreAction label="Website" href={store.website_url} />}
+        {directions && <StoreAction label="Directions" icon="navigate" href={directions} />}
+        {store.website_url && <StoreAction label="Website" icon="arrow-up-right" href={store.website_url} />}
       </div>
     </div>
   )
 }
 
-function StoreAction({ label, onClick, href }: { label: string; onClick?: () => void; href?: string }) {
+function StoreAction({ label, icon, onClick, href }: { label: string; icon: IconName; onClick?: () => void; href?: string }) {
   const style: React.CSSProperties = {
-    flex: 1, minWidth: 92, textAlign: 'center', textDecoration: 'none',
+    flex: 1, minWidth: 92, textDecoration: 'none',
     background: t.surface2, border: `1px solid ${t.border}`, borderRadius: radius.md,
-    color: t.text2, fontSize: font.size.small, fontWeight: font.weight.semibold,
-    padding: '10px 12px', cursor: 'pointer', display: 'block', boxSizing: 'border-box',
-    whiteSpace: 'nowrap',
+    color: t.text1, fontSize: font.size.small + 1, fontWeight: font.weight.medium,
+    padding: '10px 12px', cursor: 'pointer', boxSizing: 'border-box', whiteSpace: 'nowrap',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
   }
+  const body = <><Icon name={icon} size={15} color={t.text3} />{label}</>
   if (href) {
-    return <a href={href} target="_blank" rel="noreferrer" style={style}>{label}</a>
+    return <a href={href} target="_blank" rel="noreferrer" style={style}>{body}</a>
   }
-  return <button onClick={onClick} style={style}>{label}</button>
+  return <button onClick={onClick} style={style}>{body}</button>
 }
 
 /* ── The same product somewhere else ───────────────────────────────────────── */
@@ -491,7 +477,7 @@ function AlternativeRow({ name, address, priceCents, herePriceCents, distanceMi,
   // The number that matters is the difference, not the price: a shopper on this
   // screen has already seen what it costs here.
   const gap = priceCents != null && herePriceCents != null ? priceCents - herePriceCents : null
-  const gapColor = gap == null || gap === 0 ? t.text3 : gap < 0 ? t.accent : t.danger
+  const gapColor = gap == null || gap === 0 ? t.text3 : gap < 0 ? t.success : t.danger
 
   return (
     <Pressable
@@ -514,11 +500,11 @@ function AlternativeRow({ name, address, priceCents, herePriceCents, distanceMi,
         </div>
       </div>
       <div style={{ textAlign: 'right', flexShrink: 0 }}>
-        <div style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.body }}>
+        <div className="num" style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.body }}>
           {priceCents != null ? formatDollars(priceCents) : '—'}
         </div>
         {gap != null && (
-          <div style={{ color: gapColor, fontSize: font.size.caption, fontWeight: font.weight.semibold, marginTop: 1 }}>
+          <div className="num" style={{ color: gapColor, fontFamily: font.family.mono, fontSize: font.size.caption, marginTop: 2 }}>
             {gap === 0 ? 'same price' : `${gap < 0 ? '−' : '+'}${formatDollars(Math.abs(gap))}`}
           </div>
         )}
@@ -538,7 +524,7 @@ function SimilarRail({ items, storeName, onOpen }: {
     <div style={{ marginTop: 4 }}>
       <div style={{ padding: '0 20px 10px' }}>
         <Label style={{ marginBottom: 4 }}>Similar at this store</Label>
-        <div style={{ color: t.text4, fontSize: font.size.caption }}>
+        <div style={{ color: t.text3, fontSize: font.size.caption }}>
           More like this on {storeName}&apos;s shelf
         </div>
       </div>
@@ -550,7 +536,6 @@ function SimilarRail({ items, storeName, onOpen }: {
         }}
       >
         {items.map(row => {
-          const color = categoryColor(row.scraped_category)
           return (
             <Pressable
               key={row.id}
@@ -583,14 +568,11 @@ function SimilarRail({ items, storeName, onOpen }: {
                   {row.display_name}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginTop: 7 }}>
-                  <span style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.small + 1 }}>
+                  <span className="num" style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.small + 2 }}>
                     {row.price_cents != null ? formatDollars(row.price_cents) : '—'}
                   </span>
                   {row.variant && (
-                    <span style={{
-                      color, fontSize: font.size.caption, fontWeight: font.weight.semibold,
-                      background: alpha(color, 0.12), borderRadius: radius.pill, padding: '2px 7px',
-                    }}>
+                    <span style={{ color: t.text3, fontFamily: font.family.mono, fontSize: font.size.caption }}>
                       {row.variant}
                     </span>
                   )}

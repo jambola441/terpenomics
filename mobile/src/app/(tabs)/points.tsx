@@ -1,12 +1,13 @@
 import { useCallback, useRef } from 'react'
-import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native'
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { router, useFocusEffect } from 'expo-router'
 import type { MyReceipt, PointsEntry } from '@web/types'
 import { formatDate, formatDollars } from '@web/utils/format'
 import { api } from '@/lib/api'
 import { useFetch } from '@/lib/useFetch'
-import { FeedState, SectionTitle, styles } from '@/components/ui'
-import { t, space, font, radius } from '@/lib/theme'
+import { FeedState, Label, SectionTitle, styles } from '@/components/ui'
+import { Icon } from '@/components/Icon'
+import { t, space, font, fonts, radius, type } from '@/lib/theme'
 
 const KIND: Record<string, string> = { earn: 'Earned', receipt: 'Receipt', refund: 'Refunded', adjust: 'Adjusted' }
 
@@ -48,26 +49,27 @@ export default function Points() {
             points.refresh()
             receipts.refresh()
           }}
-          tintColor={t.accent}
+          tintColor={t.text3}
         />
       }
     >
       <View style={[styles.card, { margin: space[4], padding: space[5], flexDirection: 'row', alignItems: 'flex-end', gap: space[6] }]}>
         <View>
-          <Text style={styles.meta}>Available</Text>
-          <Text style={{ color: t.accent, fontSize: 36, fontWeight: font.weight.heavy, marginTop: space[1] }}>
-            {data.available.toLocaleString()}
-          </Text>
+          <Label>Available</Label>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[2], marginTop: space[1] }}>
+            <Icon name="drop" size={26} color={t.accent} strokeWidth={2} />
+            <Text style={s.balance}>{data.available.toLocaleString()}</Text>
+          </View>
         </View>
         <View style={{ paddingBottom: space[1] }}>
-          <Text style={styles.meta}>Pending</Text>
-          <Text style={{ color: t.text2, fontSize: font.size.title, fontWeight: font.weight.bold, marginTop: space[1] }}>
+          <Label>Pending</Label>
+          <Text style={[type.number, { color: t.text2, fontSize: font.size.title, marginTop: space[1] }]}>
             {data.pending.toLocaleString()}
           </Text>
         </View>
       </View>
 
-      <Text style={[styles.meta, { paddingHorizontal: space[4], lineHeight: 18 }]}>
+      <Text style={[styles.meta, { paddingHorizontal: space[4], lineHeight: 18, color: t.text2 }]}>
         Earn {data.points_per_dollar === 1 ? '1 point' : `${data.points_per_dollar} points`} per dollar (before tax
         and tip) when you shop at Terpee partner stores with your phone number on the receipt. Points become
         available {data.pending_days} days after your purchase.
@@ -75,23 +77,17 @@ export default function Points() {
 
       <Pressable
         onPress={() => router.push('/receipt')}
-        style={({ pressed }) => [
-          {
-            margin: space[4],
-            padding: space[4],
-            borderRadius: radius.lg,
-            borderWidth: 1,
-            borderStyle: 'dashed',
-            borderColor: t.borderStrong,
-            backgroundColor: t.surface1,
-            gap: space[1],
-          },
-          pressed && { opacity: 0.8 },
-        ]}
+        style={({ pressed }) => [s.upload, pressed && { backgroundColor: t.surface2 }]}
         accessibilityRole="button"
       >
-        <Text style={[styles.name, { fontSize: font.size.callout }]}>🧾 Upload a receipt</Text>
-        <Text style={styles.meta}>{"Didn't give your number at a partner store? Send us the receipt and we'll add the points."}</Text>
+        <View style={s.uploadDisc}>
+          <Icon name="receipt" size={20} color={t.text2} />
+        </View>
+        <View style={{ flex: 1, gap: 2 }}>
+          <Text style={[styles.name, { fontSize: font.size.callout }]}>Upload a receipt</Text>
+          <Text style={styles.meta}>{"Didn't give your number at a partner store? Send us the receipt and we'll add the points."}</Text>
+        </View>
+        <Icon name="chevron-right" size={18} color={t.text3} />
       </Pressable>
 
       {receipts.data?.length ? (
@@ -124,7 +120,7 @@ function Row({ title, detail, value, color }: { title: string; detail: string; v
         <Text style={styles.name} numberOfLines={1}>{title}</Text>
         <Text style={[styles.meta, { marginTop: 2 }]}>{detail}</Text>
       </View>
-      <Text style={{ color, fontSize: font.size.callout, fontWeight: font.weight.bold }}>{value}</Text>
+      <Text style={[type.number, { color, fontSize: font.size.callout }]}>{value}</Text>
     </View>
   )
 }
@@ -155,3 +151,17 @@ function ReceiptRow({ receipt: r }: { receipt: MyReceipt }) {
     />
   )
 }
+
+const s = StyleSheet.create({
+  balance: { fontFamily: fonts.sansBold, fontSize: font.size.hero, lineHeight: 36, color: t.text1, fontVariant: ['tabular-nums'] },
+  upload: {
+    flexDirection: 'row', alignItems: 'center', gap: space[3],
+    margin: space[4], padding: space[4],
+    borderRadius: radius.lg, borderWidth: 1, borderStyle: 'dashed', borderColor: t.borderStrong,
+    backgroundColor: t.surface1,
+  },
+  uploadDisc: {
+    width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: t.surface2, borderWidth: 1, borderColor: t.border,
+  },
+})

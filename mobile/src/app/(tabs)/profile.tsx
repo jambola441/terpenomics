@@ -3,9 +3,9 @@ import { api } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import { formatE164ForDisplay } from '@/lib/phone'
 import { useFetch } from '@/lib/useFetch'
-import { Button, FeedState, SectionTitle, styles } from '@/components/ui'
+import { Button, FeedState, SectionTitle, StoreBullet, styles } from '@/components/ui'
 import EmailEditor from '@/components/EmailEditor'
-import { t, space } from '@/lib/theme'
+import { t, space, type } from '@/lib/theme'
 
 export default function Profile() {
   const { signOut, setProfile } = useAuth()
@@ -60,8 +60,8 @@ export default function Profile() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={{ paddingBottom: space[8] }}>
       <View style={{ padding: space[4], gap: space[1] }}>
-        <Text style={[styles.name, { fontSize: 24 }]}>{me.name || 'Welcome'}</Text>
-        {me.phone ? <Text style={styles.meta}>{formatE164ForDisplay(me.phone)}</Text> : null}
+        <Text style={type.display} accessibilityRole="header">{me.name || 'Welcome'}</Text>
+        {me.phone ? <Text style={[type.mono, { color: t.text3 }]}>{formatE164ForDisplay(me.phone)}</Text> : null}
       </View>
 
       <EmailEditor
@@ -75,7 +75,12 @@ export default function Profile() {
       <View style={[styles.card, { marginHorizontal: space[4], marginTop: space[3], padding: space[4], gap: space[2] }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Text style={[styles.name, { flex: 1 }]}>Deals and drops by text</Text>
-          <Switch value={me.marketing_opt_in} onValueChange={setOptIn} trackColor={{ true: t.accent }} />
+          <Switch
+            value={me.marketing_opt_in}
+            onValueChange={setOptIn}
+            trackColor={{ true: t.accent, false: t.surface3 }}
+            ios_backgroundColor={t.surface3}
+          />
         </View>
         <Text style={styles.meta}>{me.onboarding.disclosures.marketing_sms.text}</Text>
       </View>
@@ -84,9 +89,12 @@ export default function Profile() {
       <View style={{ paddingHorizontal: space[4], gap: space[2] }}>
         {stores.loading ? null : stores.data?.length ? (
           stores.data.map(d => (
-            <View key={d.id} style={[styles.card, { padding: space[3] }]}>
-              <Text style={styles.name}>{d.name}</Text>
-              {d.address ? <Text style={styles.meta}>{d.address}</Text> : null}
+            <View key={d.id} style={[styles.card, { padding: space[3], flexDirection: 'row', alignItems: 'center', gap: space[3] }]}>
+              <StoreBullet name={d.name} address={d.address} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.name}>{d.name}</Text>
+                {d.address ? <Text style={styles.meta} numberOfLines={2}>{d.address}</Text> : null}
+              </View>
             </View>
           ))
         ) : (
@@ -94,8 +102,8 @@ export default function Profile() {
         )}
       </View>
 
-      <Button title="Sign out" variant="ghost" onPress={signOut} style={{ margin: space[4], marginTop: space[7] }} />
-      <Button title="Delete account" variant="ghost" onPress={confirmDelete} style={{ marginHorizontal: space[4] }} />
+      <Button title="Sign out" icon="log-out" variant="secondary" onPress={signOut} style={{ margin: space[4], marginTop: space[7] }} />
+      <Button title="Delete account" icon="trash" variant="danger" onPress={confirmDelete} style={{ marginHorizontal: space[4] }} />
     </ScrollView>
   )
 }

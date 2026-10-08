@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import api from '../api/client'
 import type { CartItem, Order } from '../types'
-import { t, radius, font, alpha } from '../theme'
+import { t, radius, font } from '../theme'
 import { Spinner } from './ui'
+import { Icon } from './Icon'
 
 /**
  * Checkout for a pickup order.
@@ -25,15 +26,15 @@ function PaymentNotice() {
       display: 'flex',
       gap: 12,
       alignItems: 'flex-start',
-      background: alpha('#f0b93b', 0.1),
-      border: `1px solid ${alpha('#f0b93b', 0.32)}`,
+      background: t.warningTint,
+      border: `1px solid ${t.warningEdge}`,
       borderRadius: radius.lg,
       padding: '14px 16px',
     }}>
-      <div style={{ fontSize: 18, lineHeight: 1.2, flexShrink: 0 }} aria-hidden>💵</div>
+      <Icon name="dollar" size={19} color={t.warning} style={{ marginTop: 1 }} />
       <div style={{ minWidth: 0 }}>
         <div style={{
-          color: '#f0b93b', fontWeight: font.weight.bold,
+          color: t.warning, fontWeight: font.weight.semibold,
           fontSize: font.size.body, marginBottom: 3,
         }}>
           You pay at the store
@@ -58,14 +59,13 @@ function Confirmation({ order, onDone, onViewOrders }: {
     <div style={{ padding: '8px 20px 20px', textAlign: 'center' }}>
       <div style={{
         width: 60, height: 60, borderRadius: '50%', margin: '4px auto 16px',
-        background: alpha('#4ac97e', 0.14), border: `1px solid ${alpha('#4ac97e', 0.4)}`,
+        background: t.successTint, border: `1px solid ${t.successEdge}`, color: t.success,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 26,
-      }} aria-hidden>✓</div>
+      }} aria-hidden><Icon name="check" size={28} strokeWidth={2} /></div>
 
       <div style={{
-        color: t.text1, fontWeight: font.weight.bold,
-        fontSize: font.size.title, letterSpacing: '-0.01em',
+        color: t.text1, fontFamily: font.family.display, fontWeight: font.weight.semibold,
+        fontSize: font.size.display, letterSpacing: '-0.02em',
       }}>
         Order placed
       </div>
@@ -76,17 +76,18 @@ function Confirmation({ order, onDone, onViewOrders }: {
       {/* The code is the whole point of the confirmation — give it the room. */}
       <div style={{
         marginTop: 22, padding: '18px 16px',
-        background: t.surface2, border: `1px solid ${t.border}`, borderRadius: radius.lg,
+        // A ticket stub, like the one on the order card.
+        background: t.bg, border: `1px dashed ${t.borderStrong}`, borderRadius: radius.lg,
       }}>
         <div style={{
-          color: t.text3, fontSize: font.size.small,
+          color: t.text3, fontFamily: font.family.mono, fontSize: font.size.caption,
           textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8,
         }}>
           Pickup code
         </div>
         <div style={{
-          color: t.accent, fontWeight: font.weight.bold, fontSize: 32,
-          letterSpacing: '0.16em', fontVariantNumeric: 'tabular-nums',
+          color: t.text1, fontFamily: font.family.mono, fontWeight: font.weight.medium, fontSize: 34,
+          letterSpacing: '0.18em', fontVariantNumeric: 'tabular-nums',
         }}>
           {order.pickup_code}
         </div>
@@ -105,7 +106,7 @@ function Confirmation({ order, onDone, onViewOrders }: {
         onClick={onViewOrders}
         style={{
           width: '100%', marginTop: 22, boxSizing: 'border-box',
-          background: t.accent, border: 'none', borderRadius: radius.lg,
+          background: t.accent, border: 'none', borderRadius: radius.md,
           color: t.accentInk, fontWeight: font.weight.bold, fontSize: font.size.callout,
           padding: 14, cursor: 'pointer',
         }}
@@ -116,8 +117,8 @@ function Confirmation({ order, onDone, onViewOrders }: {
         onClick={onDone}
         style={{
           width: '100%', marginTop: 10, boxSizing: 'border-box',
-          background: 'transparent', border: `1px solid ${t.border}`, borderRadius: radius.lg,
-          color: t.text2, fontWeight: font.weight.semibold, fontSize: font.size.callout,
+          background: 'transparent', border: `1px solid ${t.borderStrong}`, borderRadius: radius.md,
+          color: t.text1, fontWeight: font.weight.semibold, fontSize: font.size.callout,
           padding: 13, cursor: 'pointer',
         }}
       >
@@ -264,7 +265,7 @@ export default function Checkout({ items, onBack, onPlaced, onViewOrders, onClos
             <div
               role="alert"
               style={{
-                background: alpha('#e5484d', 0.1), border: `1px solid ${alpha('#e5484d', 0.32)}`,
+                background: t.dangerTint, border: `1px solid ${t.dangerEdge}`,
                 borderRadius: radius.lg, color: t.danger,
                 fontSize: font.size.small, padding: '11px 13px', lineHeight: 1.5,
               }}
@@ -301,12 +302,11 @@ export default function Checkout({ items, onBack, onPlaced, onViewOrders, onClos
           style={{
             width: '100%', boxSizing: 'border-box',
             background: submitting ? t.surface3 : t.accent,
-            border: 'none', borderRadius: radius.lg,
+            border: 'none', borderRadius: radius.md,
             color: submitting ? t.text3 : t.accentInk,
             fontWeight: font.weight.bold, fontSize: font.size.callout,
             padding: 14, cursor: submitting ? 'default' : 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            boxShadow: submitting ? 'none' : 'var(--e-1)',
           }}
         >
           {submitting ? <><Spinner size={15} /> Placing order…</> : 'Place pickup order'}
@@ -316,8 +316,8 @@ export default function Checkout({ items, onBack, onPlaced, onViewOrders, onClos
           disabled={submitting}
           style={{
             width: '100%', marginTop: 10, boxSizing: 'border-box',
-            background: 'transparent', border: `1px solid ${t.border}`, borderRadius: radius.lg,
-            color: t.text3, fontWeight: font.weight.semibold, fontSize: font.size.callout,
+            background: 'transparent', border: `1px solid ${t.borderStrong}`, borderRadius: radius.md,
+            color: t.text1, fontWeight: font.weight.semibold, fontSize: font.size.callout,
             padding: 13, cursor: submitting ? 'default' : 'pointer',
           }}
         >

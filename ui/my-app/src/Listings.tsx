@@ -4,6 +4,8 @@ import { SearchBar } from './components/SearchBar'
 import { AdminTable, badge, categoryColor, navBtnStyle, selectStyle, Dash, type Column } from './components/AdminTable'
 import api from './api/client'
 import type { Listing } from './types'
+import { t, font } from './theme'
+import { Icon } from './components/Icon'
 
 const CATEGORIES = [
   'flower', 'vaporizers', 'preroll', 'concentrate', 'edible',
@@ -135,7 +137,7 @@ export default function Listings() {
   const hasFilters = q || filterDispensary || filterCategory || filterBrand || filterSubtype || filterClass || filterInStock
 
   const columns: Column<Listing>[] = [
-    { key: 'name', header: 'Scraped Name', sortable: true, td: { color: '#f1f5f9', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+    { key: 'name', header: 'Scraped Name', sortable: true, td: { color: t.text1, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
       render: l => l.scraped_name ?? <Dash /> },
     { key: 'brand', header: 'Brand', sortable: true,
       render: l => l.scraped_brand ?? <Dash /> },
@@ -143,31 +145,31 @@ export default function Listings() {
       render: l => l.scraped_category ? <span style={{ ...badge, ...categoryColor(l.scraped_category) }}>{l.scraped_category}</span> : <Dash /> },
     { key: 'subtype', header: 'Subtype', sortable: true,
       render: l => l.subtype ?? <Dash /> },
-    { key: 'product_line', header: 'Product Line', sortable: true, td: { color: '#94a3b8' },
+    { key: 'product_line', header: 'Product Line', sortable: true, td: { color: t.text2 },
       render: l => l.product_line ?? <Dash /> },
-    { key: 'strain', header: 'Strain', sortable: true, td: { color: '#a5b4fc' },
+    { key: 'strain', header: 'Strain', sortable: true, td: { color: t.text1 },
       render: l => l.strain ?? <Dash /> },
-    { key: 'classification', header: 'Class', td: { color: '#94a3b8' },
+    { key: 'classification', header: 'Class', td: { color: t.text2 },
       render: l => l.classification ?? <Dash /> },
     { key: 'variant', header: 'Variant',
       render: l => l.variant ?? <Dash /> },
-    { key: 'dispensary', header: 'Dispensary', sortable: true, td: { color: '#94a3b8' },
+    { key: 'dispensary', header: 'Dispensary', sortable: true, td: { color: t.text2 },
       render: l => l.dispensary_name },
     { key: 'price', header: 'Price', sortable: true,
       render: l => l.price_cents != null ? `$${(l.price_cents / 100).toFixed(2)}` : <Dash /> },
     { key: 'in_stock', header: 'In Stock',
-      render: l => l.in_stock ? <span style={{ color: '#86efac' }}>✓</span> : <span style={{ color: '#475569' }}>✗</span> },
+      render: l => l.in_stock ? <Icon name="check" size={15} color={t.success} label="In stock" /> : <Icon name="close" size={15} color={t.text4} label="Out of stock" /> },
     { key: 'link', header: '', align: 'right', stopPropagation: true,
-      render: l => l.url ? <a href={l.url} target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1', textDecoration: 'none', fontSize: 14 }} title={l.url}>↗</a> : null },
+      render: l => l.url ? <a href={l.url} target="_blank" rel="noopener noreferrer" style={{ color: t.accent, textDecoration: 'none', display: 'inline-flex' }} title={l.url}><Icon name="arrow-up-right" size={15} label="Open on store site" /></a> : null },
   ]
 
   return (
-    <div style={{ padding: 24, fontFamily: "'Inter', system-ui, sans-serif", background: '#080d18', minHeight: '100vh', color: '#f1f5f9' }}>
+    <div style={{ padding: 24, background: t.bg, minHeight: '100vh', color: t.text1 }}>
       <div style={{ maxWidth: 1300, margin: '0 auto' }}>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
-          <button onClick={() => navigate('/admin')} style={navBtnStyle}>← Admin</button>
-          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>Listings</h2>
+          <button onClick={() => navigate('/admin')} style={navBtnStyle}><Icon name="arrow-left" size={14} />Admin</button>
+          <h2 style={{ margin: 0, fontFamily: font.family.display, fontSize: font.size.display, fontWeight: 600, letterSpacing: '-0.015em' }}>Listings</h2>
         </div>
 
         {/* Search + filters */}
@@ -239,24 +241,24 @@ export default function Listings() {
             </select>
 
             {hasFilters && (
-              <button onClick={clearFilters} style={{ fontSize: 12, padding: '4px 10px', cursor: 'pointer', background: 'transparent', border: '1px solid #374151', borderRadius: 4, color: '#94a3b8' }}>
+              <button onClick={clearFilters} style={{ fontSize: 12, padding: '4px 10px', cursor: 'pointer', background: 'transparent', border: `1px solid ${t.borderStrong}`, borderRadius: 4, color: t.text2 }}>
                 Clear all
               </button>
             )}
           </div>
         </div>
 
-        {error && <div style={{ color: '#f87171', marginBottom: 16 }}>{error}</div>}
+        {error && <div style={{ color: t.danger, marginBottom: 16 }}>{error}</div>}
 
-        <p style={{ fontSize: 13, color: '#475569', marginBottom: 12 }}>
-          {q ? <>Searching: <strong style={{ color: '#94a3b8' }}>{q}</strong> — </> : null}
+        <p style={{ fontSize: 13, color: t.text3, marginBottom: 12 }}>
+          {q ? <>Searching: <strong style={{ color: t.text2 }}>{q}</strong> — </> : null}
           Showing {listings.length} listing(s)
         </p>
 
         {loading && listings.length === 0 ? (
-          <div style={{ color: '#475569', padding: 16 }}>Loading…</div>
+          <div style={{ color: t.text3, padding: 16 }}>Loading…</div>
         ) : listings.length === 0 ? (
-          <div style={{ color: '#475569', padding: 16 }}>No listings found.</div>
+          <div style={{ color: t.text3, padding: 16 }}>No listings found.</div>
         ) : (
           <AdminTable
             columns={columns}
@@ -268,14 +270,14 @@ export default function Listings() {
         )}
 
         {loading && listings.length > 0 && (
-          <div style={{ padding: 16, color: '#475569', textAlign: 'center' }}>Loading more…</div>
+          <div style={{ padding: 16, color: t.text3, textAlign: 'center' }}>Loading more…</div>
         )}
 
         {!loading && hasMore && listings.length > 0 && (
           <div style={{ marginTop: 16, textAlign: 'center' }}>
             <button
               onClick={() => fetchListings(offset + LIMIT)}
-              style={{ padding: '8px 20px', background: '#0f172a', border: '1px solid #1e293b', borderRadius: 6, color: '#94a3b8', cursor: 'pointer' }}
+              style={{ padding: '8px 20px', background: t.surface2, border: `1px solid ${t.border}`, borderRadius: 6, color: t.text2, cursor: 'pointer' }}
             >
               Load more
             </button>

@@ -1,16 +1,12 @@
 import { Tabs } from 'expo-router'
-import { SymbolView, type SymbolViewProps } from 'expo-symbols'
 import type { ColorValue } from 'react-native'
 import CartButton from '@/components/CartButton'
-import { t } from '@/lib/theme'
+import { Icon, type IconName } from '@/components/Icon'
+import { font, fonts, t } from '@/lib/theme'
 
-function TabIcon({ name, color }: { name: SymbolViewProps['name']; color: ColorValue }) {
-  return <SymbolView name={name} tintColor={color} size={24} />
-}
-
-function icon(name: SymbolViewProps['name']) {
+function icon(name: IconName) {
   return function TabBarIcon({ color }: { color: ColorValue }) {
-    return <TabIcon name={name} color={color} />
+    return <Icon name={name} color={color} size={24} />
   }
 }
 
@@ -20,22 +16,21 @@ export default function TabsLayout() {
       screenOptions={{
         headerStyle: { backgroundColor: t.bg },
         headerTintColor: t.text1,
+        headerTitleStyle: { fontFamily: fonts.display, fontSize: font.size.heading, color: t.text1 },
         headerShadowVisible: false,
         headerRight: () => <CartButton />,
-        tabBarStyle: { backgroundColor: t.bg, borderTopColor: t.border },
+        tabBarStyle: { backgroundColor: t.bg, borderTopColor: t.border, borderTopWidth: 1 },
         tabBarActiveTintColor: t.accent,
         tabBarInactiveTintColor: t.text3,
+        tabBarLabelStyle: { fontFamily: fonts.sansMedium, fontSize: font.size.caption },
         sceneStyle: { backgroundColor: t.bg },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: 'Home', tabBarIcon: icon({ ios: 'house.fill', android: 'home' }) }} />
-      <Tabs.Screen
-        name="shop"
-        options={{ title: 'Shop', headerShown: false, tabBarIcon: icon({ ios: 'square.grid.2x2.fill', android: 'grid_view' }) }}
-      />
-      <Tabs.Screen name="orders" options={{ title: 'Orders', tabBarIcon: icon({ ios: 'bag.fill', android: 'shopping_bag' }) }} />
-      <Tabs.Screen name="points" options={{ title: 'Points', tabBarIcon: icon({ ios: 'star.fill', android: 'star' }) }} />
-      <Tabs.Screen name="profile" options={{ title: 'You', tabBarIcon: icon({ ios: 'person.fill', android: 'person' }) }} />
+      <Tabs.Screen name="index" options={{ title: 'Home', tabBarIcon: icon('home') }} />
+      <Tabs.Screen name="shop" options={{ title: 'Shop', headerShown: false, tabBarIcon: icon('grid') }} />
+      <Tabs.Screen name="orders" options={{ title: 'Orders', tabBarIcon: icon('bag') }} />
+      <Tabs.Screen name="points" options={{ title: 'Points', tabBarIcon: icon('drop') }} />
+      <Tabs.Screen name="profile" options={{ title: 'You', tabBarIcon: icon('user') }} />
     </Tabs>
   )
 }

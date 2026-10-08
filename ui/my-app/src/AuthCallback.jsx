@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import supabase from './utils/supabase'
 import { takeNext } from './utils/redirect'
+import { t } from './theme'
+import { Logo } from './components/Icon'
 
 /**
  * Landing point for OAuth redirects.
@@ -68,6 +70,7 @@ export default function AuthCallback() {
 
   return (
     <div style={wrapStyle}>
+      <Logo size={30} style={{ marginBottom: 8 }} />
       {error ? (
         <>
           <p style={errStyle}>{error}</p>
@@ -84,23 +87,23 @@ export default function AuthCallback() {
 
 const wrapStyle = {
   minHeight: '100vh',
-  background: '#080d18',
+  background: t.bg,
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
   gap: 16,
-  fontFamily: "'Inter', system-ui, sans-serif",
-  padding: '40px 24px',
+  padding: '40px 16px',
 }
 
-const msgStyle = { margin: 0, fontSize: 14, color: '#475569' }
-const errStyle = { margin: 0, fontSize: 14, color: '#f87171', textAlign: 'center', maxWidth: 360 }
+const msgStyle = { margin: 0, fontSize: 14, color: t.text3 }
+const errStyle = { margin: 0, fontSize: 14, color: t.danger, textAlign: 'center', maxWidth: 360 }
 const linkStyle = {
   background: 'none',
   border: 'none',
-  color: '#2563eb',
+  color: t.accent,
   fontSize: 13,
+  fontWeight: 500,
   cursor: 'pointer',
   padding: 0,
 }

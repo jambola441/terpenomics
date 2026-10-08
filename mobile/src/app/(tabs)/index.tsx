@@ -21,10 +21,16 @@ export default function Home() {
 
   if (loading || error) return <FeedState loading={loading} error={error} onRetry={refresh} />
   if (!feed?.combined || feed.dispensaries.length === 0) {
-    return <FeedState empty="Follow a few stores on terpenomics.com and their menus will show up here." />
+    return (
+      <FeedState
+        icon="store"
+        empty="No stores yet"
+        hint="Follow a few stores on terpenomics.com and their menus will show up here."
+      />
+    )
   }
 
-  const storeName = new Map(feed.dispensaries.map(d => [d.id, d.name]))
+  const stores = new Map(feed.dispensaries.map(d => [d.id, d]))
   const open = (l: FeedListing) => {
     if (l.dispensary_id) router.push(`/listing/${l.dispensary_id}/${l.id}`)
   }
@@ -33,7 +39,7 @@ export default function Home() {
     <ScrollView
       style={styles.screen}
       contentContainerStyle={{ paddingBottom: space[8] }}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={t.accent} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={t.text3} />}
     >
       {FEED_RAILS.map(rail => {
         const items = feed.combined![rail]
@@ -50,7 +56,7 @@ export default function Home() {
               renderItem={({ item }) => (
                 <ListingCard
                   listing={item}
-                  storeName={item.dispensary_id ? storeName.get(item.dispensary_id) : null}
+                  store={item.dispensary_id ? stores.get(item.dispensary_id) : null}
                   onPress={() => open(item)}
                 />
               )}

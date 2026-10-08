@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import api from './api/client'
 import type { Listing } from './types'
+import { t, font, tone } from './theme'
+import { Icon } from './components/Icon'
+import { categoryColor, navBtnStyle } from './components/AdminTable'
 
 const NULL_SENTINEL = '__null__'
 function enc(v: string | null) { return v ?? NULL_SENTINEL }
@@ -43,25 +46,25 @@ export default function AdminListingDetail() {
     setListing(updated)
   }
 
-  if (loading) return <div style={{ padding: 24, background: '#080d18', minHeight: '100vh', color: '#475569' }}>Loading…</div>
-  if (error || !listing) return <div style={{ padding: 24, background: '#080d18', minHeight: '100vh', color: '#f87171' }}>{error ?? 'Not found'}</div>
+  if (loading) return <div style={{ padding: 24, background: t.bg, minHeight: '100vh', color: t.text3 }}>Loading…</div>
+  if (error || !listing) return <div style={{ padding: 24, background: t.bg, minHeight: '100vh', color: t.danger }}>{error ?? 'Not found'}</div>
 
   const l = listing
 
   return (
-    <div style={{ padding: 24, fontFamily: "'Inter', system-ui, sans-serif", background: '#080d18', minHeight: '100vh', color: '#f1f5f9' }}>
+    <div style={{ padding: 24, background: t.bg, minHeight: '100vh', color: t.text1 }}>
       <div style={{ maxWidth: 900, margin: '0 auto' }}>
 
         {/* Nav */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28, flexWrap: 'wrap' }}>
-          <button onClick={() => navigate('/admin/listings')} style={navBtnStyle}>← Listings</button>
+          <button onClick={() => navigate('/admin/listings')} style={navBtnStyle}><Icon name="arrow-left" size={14} />Listings</button>
           {l.scraped_category && (
             <a
               href={tupleProductUrl(l)}
               onClick={e => { e.preventDefault(); navigate(tupleProductUrl(l)) }}
-              style={{ ...navBtnStyle, color: '#a5b4fc', borderColor: '#3730a3', textDecoration: 'none' }}
+              style={{ ...navBtnStyle, color: tone.accent.fg, borderColor: tone.accent.edge, textDecoration: 'none' }}
             >
-              View product →
+              View product<Icon name="arrow-right" size={14} />
             </a>
           )}
           <a
@@ -72,8 +75,8 @@ export default function AdminListingDetail() {
             {l.dispensary_name}
           </a>
           {l.url && (
-            <a href={l.url} target="_blank" rel="noopener noreferrer" style={{ ...navBtnStyle, color: '#6366f1', borderColor: '#4338ca', textDecoration: 'none' }}>
-              View on site ↗
+            <a href={l.url} target="_blank" rel="noopener noreferrer" style={{ ...navBtnStyle, textDecoration: 'none' }}>
+              View on site<Icon name="arrow-up-right" size={14} />
             </a>
           )}
         </div>
@@ -82,7 +85,7 @@ export default function AdminListingDetail() {
 
           {/* Image */}
           {l.image_url && (
-            <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, overflow: 'hidden', aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ background: t.surface1, border: `1px solid ${t.border}`, borderRadius: 10, overflow: 'hidden', aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <img
                 src={l.image_url}
                 alt={l.scraped_name ?? ''}
@@ -93,12 +96,12 @@ export default function AdminListingDetail() {
           )}
 
           {/* Main card */}
-          <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: 24 }}>
-            <h2 style={{ margin: '0 0 4px', fontSize: 20, fontWeight: 700, color: '#f1f5f9' }}>
-              {l.scraped_name ?? <span style={{ color: '#475569' }}>Unnamed listing</span>}
+          <div style={{ background: t.surface1, border: `1px solid ${t.border}`, borderRadius: 10, padding: 24 }}>
+            <h2 style={{ margin: '0 0 4px', fontFamily: font.family.display, fontSize: font.size.display, fontWeight: 600, letterSpacing: '-0.015em', color: t.text1 }}>
+              {l.scraped_name ?? <span style={{ color: t.text3 }}>Unnamed listing</span>}
             </h2>
             {l.scraped_brand && (
-              <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 20 }}>{l.scraped_brand}</div>
+              <div style={{ fontSize: 13, color: t.text2, marginBottom: 20 }}>{l.scraped_brand}</div>
             )}
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 16, marginBottom: 20 }}>
@@ -113,28 +116,28 @@ export default function AdminListingDetail() {
                 label="Strain"
                 value={l.strain}
                 onSave={v => saveField('strain', v)}
-                inputColor="#a5b4fc"
+                inputColor={t.text1}
               />
               <StatField label="Classification">{l.classification ?? dash}</StatField>
               <StatField label="Variant">{l.variant ?? dash}</StatField>
               <StatField label="Price">{fmt(l.price_cents) ?? dash}</StatField>
-              <StatField label="SKU"><span style={{ fontFamily: 'monospace', fontSize: 11, color: '#64748b' }}>{l.sku ?? dash}</span></StatField>
-              <StatField label="In Stock">{l.in_stock ? <span style={{ color: '#86efac' }}>Yes</span> : <span style={{ color: '#475569' }}>No</span>}</StatField>
-              <StatField label="Active">{l.is_active ? <span style={{ color: '#86efac' }}>Yes</span> : <span style={{ color: '#475569' }}>No</span>}</StatField>
+              <StatField label="SKU"><span style={{ fontFamily: font.family.mono, fontSize: 11, color: t.text3 }}>{l.sku ?? dash}</span></StatField>
+              <StatField label="In Stock">{l.in_stock ? <span style={{ color: t.success }}>Yes</span> : <span style={{ color: t.text3 }}>No</span>}</StatField>
+              <StatField label="Active">{l.is_active ? <span style={{ color: t.success }}>Yes</span> : <span style={{ color: t.text3 }}>No</span>}</StatField>
               <StatField label="Scraped">{l.scraped_at ? new Date(l.scraped_at).toLocaleDateString() : dash}</StatField>
             </div>
 
             {l.description && (
               <>
-                <div style={{ height: 1, background: '#1e293b', marginBottom: 16 }} />
-                <div style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>{l.description}</div>
+                <div style={{ height: 1, background: t.border, marginBottom: 16 }} />
+                <div style={{ fontSize: 13, color: t.text2, lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>{l.description}</div>
               </>
             )}
           </div>
         </div>
 
         {/* IDs / metadata footer */}
-        <div style={{ marginTop: 20, background: '#0a0f1c', border: '1px solid #1e293b', borderRadius: 8, padding: '14px 18px', display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+        <div style={{ marginTop: 20, background: t.surface1, border: `1px solid ${t.border}`, borderRadius: 8, padding: '14px 18px', display: 'flex', gap: 24, flexWrap: 'wrap' }}>
           <MetaRow label="Listing ID" value={l.id} mono />
           <MetaRow label="Dispensary ID" value={l.dispensary_id} mono />
           <MetaRow label="Created" value={new Date(l.created_at).toLocaleString()} />
@@ -188,15 +191,15 @@ function InlineEditField({
   const dirty = status === 'idle' && draft.trim() !== (value ?? '')
 
   const indicator =
-    status === 'saving' ? <span style={{ color: '#475569', fontSize: 13 }}>…</span>
-    : status === 'saved'  ? <span style={{ color: '#86efac', fontSize: 13 }}>✓</span>
-    : status === 'error'  ? <span style={{ color: '#f87171', fontSize: 13 }}>✕</span>
-    : dirty               ? <span style={{ color: '#475569', fontSize: 13 }}>?</span>
+    status === 'saving' ? <span style={{ color: t.text3, fontSize: 13 }}>…</span>
+    : status === 'saved'  ? <Icon name="check" size={14} color={t.success} label="Saved" />
+    : status === 'error'  ? <Icon name="close" size={14} color={t.danger} label="Save failed" />
+    : dirty               ? <span style={{ color: t.text3, fontSize: 13 }}>?</span>
     : null
 
   return (
     <div>
-      <div style={{ fontSize: 10, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 10, color: t.text3, fontFamily: font.family.mono, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>{label}</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
         <input
           value={draft}
@@ -206,17 +209,16 @@ function InlineEditField({
           style={{
             fontSize: 14,
             fontWeight: 500,
-            fontFamily: "'Inter', system-ui, sans-serif",
-            color: inputColor ?? '#cbd5e1',
+            color: inputColor ?? t.text2,
             background: 'transparent',
             border: 'none',
-            borderBottom: '1px solid #1e293b',
+            borderBottom: `1px solid ${t.border}`,
             outline: 'none',
             width: '100%',
             padding: '2px 0',
           }}
-          onFocus={e => (e.currentTarget.style.borderBottomColor = '#3730a3')}
-          onBlur={e => (e.currentTarget.style.borderBottomColor = '#1e293b')}
+          onFocus={e => (e.currentTarget.style.borderBottomColor = t.accent)}
+          onBlur={e => (e.currentTarget.style.borderBottomColor = t.border)}
         />
         {indicator}
       </div>
@@ -224,13 +226,13 @@ function InlineEditField({
   )
 }
 
-const dash = <span style={{ color: '#475569' }}>—</span>
+const dash = <span style={{ color: t.text3 }}>—</span>
 
 function StatField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <div style={{ fontSize: 10, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: 14, fontWeight: 500, color: '#cbd5e1' }}>{children}</div>
+      <div style={{ fontSize: 10, color: t.text3, fontFamily: font.family.mono, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 14, fontWeight: 500, color: t.text2 }}>{children}</div>
     </div>
   )
 }
@@ -238,25 +240,10 @@ function StatField({ label, children }: { label: string; children: React.ReactNo
 function MetaRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div>
-      <div style={{ fontSize: 10, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 2 }}>{label}</div>
-      <div style={{ fontSize: 11, color: '#64748b', fontFamily: mono ? 'monospace' : undefined }}>{value}</div>
+      <div style={{ fontSize: 10, color: t.text3, fontFamily: font.family.mono, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>{label}</div>
+      <div style={{ fontSize: 11, color: t.text3, fontFamily: mono ? font.family.mono : undefined }}>{value}</div>
     </div>
   )
 }
 
-const CATEGORY_COLORS: Record<string, { background: string; color: string }> = {
-  flower:      { background: '#14532d', color: '#86efac' },
-  preroll:     { background: '#1a2e05', color: '#a3e635' },
-  vaporizers:  { background: '#1e1b4b', color: '#a5b4fc' },
-  concentrate: { background: '#431407', color: '#fdba74' },
-  edible:      { background: '#4a1942', color: '#f0abfc' },
-  tinctures:   { background: '#0c4a6e', color: '#7dd3fc' },
-  topical:     { background: '#3b3a2a', color: '#fde68a' },
-  merch:       { background: '#1c1917', color: '#a8a29e' },
-}
-function categoryColor(cat: string) {
-  return CATEGORY_COLORS[cat] ?? { background: '#1e293b', color: '#94a3b8' }
-}
-
 const badge: React.CSSProperties = { padding: '2px 8px', borderRadius: 4, fontSize: 12, fontWeight: 600 }
-const navBtnStyle: React.CSSProperties = { padding: '6px 12px', background: '#0f172a', border: '1px solid #1e293b', borderRadius: 6, color: '#94a3b8', cursor: 'pointer', fontSize: 13 }

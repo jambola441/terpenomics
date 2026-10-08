@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from './api/client'
+import { t, font } from './theme'
+import { Icon } from './components/Icon'
+import { navBtnStyle } from './components/AdminTable'
 
 export default function CustomerRegister() {
   const navigate = useNavigate()
@@ -37,22 +40,21 @@ export default function CustomerRegister() {
   return (
     <div style={{
       padding: 24,
-      fontFamily: "'Inter', system-ui, sans-serif",
-      background: '#080d18',
+      background: t.bg,
       minHeight: '100vh',
-      color: '#f1f5f9',
+      color: t.text1,
     }}>
       <div style={{ maxWidth: 480, margin: '0 auto' }}>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 32 }}>
-          <button onClick={() => navigate('/admin/customers')} style={navBtnStyle}>← Customers</button>
-          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>Register Customer</h2>
+          <button onClick={() => navigate('/admin/customers')} style={navBtnStyle}><Icon name="arrow-left" size={14} />Customers</button>
+          <h2 style={{ margin: 0, fontFamily: font.family.display, fontSize: font.size.display, fontWeight: 600, letterSpacing: '-0.015em' }}>Register Customer</h2>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div style={{
-            background: '#0f172a',
-            border: '1px solid #1e293b',
+            background: t.surface1,
+            border: `1px solid ${t.border}`,
             borderRadius: 10,
             padding: 24,
             display: 'flex',
@@ -97,7 +99,7 @@ export default function CustomerRegister() {
           </div>
 
           {error && (
-            <div style={{ color: '#f87171', fontSize: 13, marginTop: 12 }}>{error}</div>
+            <div style={{ color: t.danger, fontSize: 13, marginTop: 12 }}>{error}</div>
           )}
 
           <div style={{ marginTop: 20, display: 'flex', gap: 10 }}>
@@ -106,10 +108,10 @@ export default function CustomerRegister() {
               disabled={saving}
               style={{
                 padding: '10px 24px',
-                background: saving ? '#1e293b' : '#4f46e5',
+                background: saving ? t.surface2 : t.accent,
                 border: 'none',
-                borderRadius: 8,
-                color: saving ? '#475569' : '#fff',
+                borderRadius: 10,
+                color: saving ? t.text4 : t.accentInk,
                 fontSize: 14,
                 fontWeight: 600,
                 cursor: saving ? 'default' : 'pointer',
@@ -151,7 +153,7 @@ function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: (
         height: 24,
         borderRadius: 12,
         border: 'none',
-        background: checked ? '#4f46e5' : '#1e293b',
+        background: checked ? t.accent : t.surface3,
         position: 'relative',
         cursor: disabled ? 'default' : 'pointer',
         transition: 'background 0.2s',
@@ -165,31 +167,22 @@ function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: (
         width: 18,
         height: 18,
         borderRadius: '50%',
-        background: checked ? '#fff' : '#475569',
+        background: checked ? t.accentInk : t.text3,
         transition: 'left 0.2s',
       }} />
     </button>
   )
 }
 
-const labelStyle: React.CSSProperties = { fontSize: 13, color: '#94a3b8', fontWeight: 500 }
+const labelStyle: React.CSSProperties = { fontSize: 13, color: t.text2, fontWeight: 500 }
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  background: '#080d18',
-  border: '1px solid #1e293b',
+  background: t.surface2,
+  border: `1px solid ${t.border}`,
   borderRadius: 8,
-  color: '#f1f5f9',
+  color: t.text1,
   fontSize: 14,
   padding: '10px 12px',
   outline: 'none',
   boxSizing: 'border-box',
-}
-const navBtnStyle: React.CSSProperties = {
-  padding: '6px 12px',
-  background: '#0f172a',
-  border: '1px solid #1e293b',
-  borderRadius: 6,
-  color: '#94a3b8',
-  cursor: 'pointer',
-  fontSize: 13,
 }

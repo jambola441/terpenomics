@@ -12,6 +12,7 @@ import { useState, type ReactNode } from 'react'
 import api from '../api/client'
 import type { CustomerProfile } from '../types'
 import { t, radius, font } from '../theme'
+import { Logo } from './Icon'
 
 export default function OnboardingScreen({ profile, onDone, onSignOut }: {
   profile: CustomerProfile
@@ -60,9 +61,9 @@ export default function OnboardingScreen({ profile, onDone, onSignOut }: {
       padding: '48px 16px', boxSizing: 'border-box',
     }}>
       <form onSubmit={submit} style={{ width: '100%', maxWidth: 420, display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <div style={{ color: t.accent, fontWeight: font.weight.heavy, fontSize: font.size.heading }}>terpenomics</div>
+        <Logo size={26} style={{ marginBottom: 12 }} />
         <div>
-          <h1 style={{ color: t.text1, fontSize: 26, fontWeight: font.weight.heavy, margin: 0, letterSpacing: '-0.01em' }}>
+          <h1 style={{ color: t.text1, fontFamily: font.family.display, fontSize: font.size.hero, fontWeight: font.weight.semibold, margin: 0, letterSpacing: '-0.02em', lineHeight: 1.1 }}>
             {returning ? 'We updated our terms' : 'Finish signing up'}
           </h1>
           <p style={{ color: t.text2, fontSize: font.size.body, lineHeight: 1.55, margin: '8px 0 0' }}>
@@ -111,9 +112,9 @@ export default function OnboardingScreen({ profile, onDone, onSignOut }: {
           type="submit"
           disabled={!ready || saving}
           style={{
-            marginTop: 8, padding: '14px 18px', borderRadius: radius.lg, border: 'none',
-            background: ready ? t.accent : t.surface3, color: ready ? t.accentInk : t.text3,
-            fontSize: font.size.body, fontWeight: font.weight.bold,
+            marginTop: 8, padding: '14px 18px', borderRadius: radius.md, border: 'none',
+            background: ready ? t.accent : t.surface2, color: ready ? t.accentInk : t.text4,
+            fontSize: font.size.callout, fontWeight: font.weight.bold,
             cursor: ready && !saving ? 'pointer' : 'default', opacity: saving ? 0.7 : 1,
           }}
         >
@@ -175,5 +176,5 @@ function DocLink({ url, children }: { url: string | null; children: ReactNode })
 
 const inputStyle = {
   width: '100%', boxSizing: 'border-box', background: t.surface2, border: `1px solid ${t.border}`,
-  borderRadius: radius.lg, color: t.text1, fontSize: font.size.body, padding: '12px 14px', outline: 'none',
+  borderRadius: radius.md, color: t.text1, fontSize: font.size.body, padding: '12px 14px', outline: 'none',
 } as const

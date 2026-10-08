@@ -11,7 +11,8 @@ import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react'
 import { t, radius, font, alpha } from '../theme'
 import type { ListingPriceContext } from '../types'
 import { useRenderWindow } from '../utils/browseState'
-import { Pressable, Skeleton, Label, ProductImage } from './ui'
+import { Pressable, Skeleton, Label, ProductImage, Pill } from './ui'
+import { Icon } from './Icon'
 import { formatDist, formatDollars, formatDollarsShort, haversineMi } from '../utils/format'
 
 // Re-exported so the browse surfaces can keep pulling their whole toolkit from
@@ -19,11 +20,6 @@ import { formatDist, formatDollars, formatDollarsShort, haversineMi } from '../u
 export { formatDist, formatDollars, formatDollarsShort, haversineMi }
 
 /* ── Constants ────────────────────────────────────────────────────────────── */
-
-export const CATEGORY_EMOJI: Record<string, string> = {
-  flower: '🌸', vaporizers: '💨', cart: '💨', edible: '🍬', concentrate: '💎',
-  preroll: '🌿', tincture: '🧪', tinctures: '🧪', topical: '🧴', merch: '🛍️', other: '📦',
-}
 
 export const SORT_KEYS = ['featured', 'nearest', 'price-asc', 'price-desc', 'name'] as const
 export type SortKey = typeof SORT_KEYS[number]
@@ -86,8 +82,8 @@ export function productKey(parts: {
 
 export function Stat({ value, label, color }: { value: number; label: string; color: string }) {
   return (
-    <span style={{ color: t.text2, fontSize: font.size.small + 1 }}>
-      <span style={{ color, fontWeight: font.weight.bold }}>{value.toLocaleString()}</span> {label}
+    <span style={{ color: t.text3, fontSize: font.size.small + 1 }}>
+      <span className="num" style={{ color, fontFamily: font.family.mono, fontWeight: font.weight.medium }}>{value.toLocaleString()}</span> {label}
     </span>
   )
 }
@@ -110,12 +106,10 @@ export function SearchField({ value, onChange, placeholder, focused, onFocus, on
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
       <div style={{ position: 'relative', flex: 1 }}>
-        <svg
-          width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden
-          style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: t.text3 }}
-        >
-          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
-        </svg>
+        <Icon
+          name="search" size={16}
+          style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: t.text3 }}
+        />
         <input
           value={value}
           autoFocus={autoFocus}
@@ -124,11 +118,11 @@ export function SearchField({ value, onChange, placeholder, focused, onFocus, on
           onBlur={onBlur}
           placeholder={placeholder}
           style={{
-            width: '100%', background: alpha('#000', 0.32),
-            border: `1px solid ${focused ? t.accent : 'rgba(255,255,255,0.10)'}`,
+            width: '100%', background: t.surface2,
+            border: `1px solid ${focused ? t.accentDim : t.border}`,
             boxShadow: focused ? 'var(--ring)' : 'none',
-            borderRadius: radius.pill, color: t.text1, fontSize: font.size.body,
-            padding: '11px 14px 11px 34px', outline: 'none',
+            borderRadius: radius.md, color: t.text1, fontSize: font.size.body,
+            padding: '11px 14px 11px 36px', outline: 'none',
             transition: 'border-color var(--t-fast), box-shadow var(--t-fast)',
           }}
         />
@@ -138,12 +132,13 @@ export function SearchField({ value, onChange, placeholder, focused, onFocus, on
           onClick={() => onChange('')}
           aria-label="Clear search"
           style={{
-            background: alpha('#000', 0.32), border: '1px solid rgba(255,255,255,0.10)',
-            borderRadius: '50%', color: t.text2, fontSize: 13,
-            width: 38, height: 38, flexShrink: 0,
+            background: t.surface2, border: `1px solid ${t.border}`,
+            borderRadius: radius.md, color: t.text2,
+            width: 42, height: 42, flexShrink: 0,
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
           }}
         >
-          ✕
+          <Icon name="close" size={16} />
         </button>
       )}
     </div>
@@ -167,7 +162,7 @@ export function BrowseToolbar({ quickRail, activeCount, sortLabel, onOpenSheet, 
   return (
     <div style={{
       position: 'sticky', top: 0, zIndex: 10,
-      background: 'rgba(11,11,13,0.92)',
+      background: 'rgba(12, 15, 13, 0.92)',
       backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
       borderBottom: `1px solid ${t.border}`,
     }}>
@@ -183,14 +178,12 @@ export function BrowseToolbar({ quickRail, activeCount, sortLabel, onOpenSheet, 
             flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 7,
             padding: '8px 14px', borderRadius: radius.pill,
             background: activeCount ? 'var(--accent-tint)' : t.surface2,
-            border: `1px solid ${activeCount ? t.accent : t.border}`,
-            color: activeCount ? t.accent : t.text2,
+            border: `1px solid ${activeCount ? t.accentDim : t.border}`,
+            color: activeCount ? t.accent : t.text1,
             fontSize: font.size.small + 1, fontWeight: font.weight.semibold,
           }}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
-            <path d="M3 5h18v2l-7 7v5l-4 2v-7L3 7z" />
-          </svg>
+          <Icon name="filters" size={15} />
           Filters{activeCount ? ` · ${activeCount}` : ''}
         </button>
 
@@ -200,10 +193,11 @@ export function BrowseToolbar({ quickRail, activeCount, sortLabel, onOpenSheet, 
             flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 6,
             padding: '8px 14px', borderRadius: radius.pill,
             background: t.surface2, border: `1px solid ${t.border}`,
-            color: t.text2, fontSize: font.size.small + 1, fontWeight: font.weight.medium,
+            color: t.text1, fontSize: font.size.small + 1, fontWeight: font.weight.medium,
           }}
         >
-          {sortLabel} <span style={{ color: t.text3 }}>▾</span>
+          <Icon name="sort" size={14} color={t.text3} />
+          {sortLabel}
         </button>
 
         {activeChips}
@@ -212,8 +206,9 @@ export function BrowseToolbar({ quickRail, activeCount, sortLabel, onOpenSheet, 
           <button
             onClick={onClear}
             style={{
-              flexShrink: 0, background: 'none', border: 'none', color: t.text3,
+              flexShrink: 0, background: 'none', border: 'none', color: t.text2,
               fontSize: font.size.small, whiteSpace: 'nowrap', textDecoration: 'underline',
+              textUnderlineOffset: 3,
             }}
           >
             Clear
@@ -266,14 +261,14 @@ export function MarketNote({ market, priceCents, style }: {
   const min = m.min_cents
 
   const [text, color] =
-    m.other_store_count === 0 ? ['Only at this store', t.text4]
+    m.other_store_count === 0 ? ['Only at this store', t.text3]
     : min != null && priceCents != null && min < priceCents ? [`${formatDollars(min)} at ${others}`, t.warning]
-    : m.is_cheapest ? [`Best price of ${m.other_store_count + 1}`, t.accent]
-    : [`Also at ${others}`, t.text4]
+    : m.is_cheapest ? [`Best price of ${m.other_store_count + 1}`, t.success]
+    : [`Also at ${others}`, t.text3]
 
   return (
     <div style={{
-      fontSize: font.size.micro, fontWeight: font.weight.medium, color,
+      fontSize: font.size.caption, fontWeight: font.weight.medium, color,
       overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
       ...style,
     }}>
@@ -306,7 +301,7 @@ export function BrowseCard({ item, color, suppressSubtype, action, footer, onOpe
   // Single-store surfaces have nothing useful to say here; stay quiet instead
   // of printing a placeholder.
   const availability = item.dispensaryCount > 1
-    ? `📍 At ${item.dispensaryCount} dispensaries`
+    ? `At ${item.dispensaryCount} dispensaries`
     : item.storeName
 
   return (
@@ -322,25 +317,12 @@ export function BrowseCard({ item, color, suppressSubtype, action, footer, onOpe
         <ProductImage src={item.imageUrl} alt={item.name} category={item.category} radius="0" pad={12} />
 
         {item.variant && (
-          <span style={{
-            position: 'absolute', top: 8, left: 8,
-            background: alpha('#000', 0.62), color: '#fff',
-            backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
-            fontSize: font.size.micro, fontWeight: font.weight.bold,
-            padding: '3px 8px', borderRadius: radius.pill,
-          }}>
-            {item.variant}
-          </span>
+          <span style={plateBadge}>{item.variant}</span>
         )}
 
         {item.distanceMi != null && (
-          <span style={{
-            position: 'absolute', top: 8, right: 8,
-            background: alpha('#000', 0.62), color: t.accent,
-            backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
-            fontSize: font.size.micro, fontWeight: font.weight.bold,
-            padding: '3px 8px', borderRadius: radius.pill,
-          }}>
+          <span style={{ ...plateBadge, left: 'auto', right: 8, display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+            <Icon name="pin" size={11} strokeWidth={2} />
             {formatDist(item.distanceMi)}
           </span>
         )}
@@ -352,16 +334,16 @@ export function BrowseCard({ item, color, suppressSubtype, action, footer, onOpe
 
       <div style={{ padding: '10px 11px 12px', flex: 1, display: 'flex', flexDirection: 'column' }}>
         {item.priceCents != null ? (
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 4 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 5, marginBottom: 4 }}>
             {item.multiPriced && (
-              <span style={{ color: t.text4, fontSize: font.size.micro, fontWeight: font.weight.semibold }}>from</span>
+              <span style={{ color: t.text3, fontFamily: font.family.mono, fontSize: font.size.micro, textTransform: 'uppercase', letterSpacing: '0.06em' }}>from</span>
             )}
-            <span style={{ color: t.accent, fontWeight: font.weight.heavy, fontSize: font.size.callout }}>
+            <span className="num" style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.callout + 1, letterSpacing: '-0.01em' }}>
               {formatDollars(item.priceCents)}
             </span>
           </div>
         ) : (
-          <div style={{ color: t.text4, fontSize: font.size.caption, marginBottom: 4 }}>Price not listed</div>
+          <div style={{ color: t.text3, fontSize: font.size.caption, marginBottom: 4 }}>Price not listed</div>
         )}
 
         <div style={{
@@ -382,14 +364,7 @@ export function BrowseCard({ item, color, suppressSubtype, action, footer, onOpe
 
         {showSubtype && (
           <div style={{ marginTop: 8 }}>
-            <span style={{
-              background: alpha(color, 0.13), color, border: `1px solid ${alpha(color, 0.3)}`,
-              fontSize: font.size.micro, fontWeight: font.weight.bold,
-              padding: '2px 8px', borderRadius: radius.pill,
-              textTransform: 'capitalize', letterSpacing: '0.03em',
-            }}>
-              {item.subtype}
-            </span>
+            <Pill color={color} tone="category">{item.subtype}</Pill>
           </div>
         )}
 
@@ -398,15 +373,25 @@ export function BrowseCard({ item, color, suppressSubtype, action, footer, onOpe
           <div style={{ marginTop: 'auto', paddingTop: 8 }}>{footer}</div>
         ) : availability && (
           <div style={{
-            marginTop: 'auto', paddingTop: 8, color: t.text3, fontSize: font.size.micro,
-            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            marginTop: 'auto', paddingTop: 8, color: t.text3, fontSize: font.size.caption,
+            display: 'flex', alignItems: 'center', gap: 4, minWidth: 0,
           }}>
-            {availability}
+            {item.dispensaryCount > 1 && <Icon name="pin" size={12} />}
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{availability}</span>
           </div>
         )}
       </div>
     </Pressable>
   )
+}
+
+/** A label sat on the product plate: dark glass, mono figures. */
+const plateBadge: CSSProperties = {
+  position: 'absolute', top: 8, left: 8,
+  background: 'rgba(12, 15, 13, 0.78)', color: t.text1,
+  backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
+  fontFamily: font.family.mono, fontSize: font.size.micro + 0.5, fontWeight: font.weight.medium,
+  padding: '3px 7px', borderRadius: radius.sm,
 }
 
 /* ── Product grid ─────────────────────────────────────────────────────────── */
@@ -490,7 +475,7 @@ export function ActiveChip({ label, onRemove, capitalize = true }: {
   return (
     <span style={{
       flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 5,
-      background: 'var(--accent-tint)', border: `1px solid ${alpha('#a8e063', 0.4)}`, color: t.accent,
+      background: 'var(--accent-tint)', border: `1px solid ${t.accentDim}`, color: t.accent,
       fontSize: font.size.small, fontWeight: font.weight.semibold,
       padding: '5px 6px 5px 11px', borderRadius: radius.pill,
       whiteSpace: 'nowrap', maxWidth: 170, textTransform: capitalize ? 'capitalize' : 'none',
@@ -499,16 +484,18 @@ export function ActiveChip({ label, onRemove, capitalize = true }: {
       <button
         onClick={onRemove}
         aria-label={`Remove ${label}`}
-        style={{ background: 'none', border: 'none', color: t.accent, fontSize: 14, lineHeight: 1, padding: '0 2px', flexShrink: 0 }}
+        style={{ background: 'none', border: 'none', color: t.accent, lineHeight: 0, padding: '0 2px', flexShrink: 0 }}
       >
-        ✕
+        <Icon name="close" size={13} strokeWidth={2.25} />
       </button>
     </span>
   )
 }
 
-export function FacetChip({ label, count, active, color, onClick, disabled = false, capitalize = true }: {
+export function FacetChip({ label, icon, count, active, color, onClick, disabled = false, capitalize = true }: {
   label: string
+  /** Leading glyph, e.g. a category icon. */
+  icon?: ReactNode
   count?: number
   active: boolean
   color: string
@@ -523,24 +510,30 @@ export function FacetChip({ label, count, active, color, onClick, disabled = fal
       disabled={disabled}
       style={{
         flexShrink: 0, whiteSpace: 'nowrap', textTransform: capitalize ? 'capitalize' : 'none',
-        fontSize: font.size.small + 1, fontWeight: active ? font.weight.bold : font.weight.medium,
+        fontSize: font.size.small + 1, fontWeight: active ? font.weight.semibold : font.weight.medium,
         padding: '8px 13px', borderRadius: radius.pill,
-        background: active ? alpha(color, 0.16) : t.surface2,
-        border: `1px solid ${active ? color : t.border}`,
+        background: active ? alphaOf(color, 0.12) : t.surface2,
+        border: `1px solid ${active ? alphaOf(color, 0.6) : t.border}`,
         color: disabled ? t.text4 : active ? color : t.text2,
         opacity: disabled ? 0.5 : 1,
         display: 'inline-flex', alignItems: 'center', gap: 6,
         transition: 'all var(--t-fast)',
       }}
     >
+      {icon}
       {label}
       {count != null && (
-        <span style={{ color: active ? color : t.text4, fontWeight: font.weight.semibold, fontSize: font.size.caption }}>
+        <span className="num" style={{ color: active ? color : t.text3, fontFamily: font.family.mono, fontSize: font.size.caption }}>
           {count}
         </span>
       )}
     </button>
   )
+}
+
+/** Tint any colour — a hex from the category palette or a var(--token). */
+function alphaOf(color: string, a: number): string {
+  return color.startsWith('#') ? alpha(color, a) : `color-mix(in srgb, ${color} ${Math.round(a * 100)}%, transparent)`
 }
 
 export function FacetGroup({ title, facet, sel, color, onToggle, capitalize = true }: {
@@ -595,7 +588,7 @@ export function PriceRange({ bounds, value, onChange, color }: {
     <div>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 10 }}>
         <Label>Price</Label>
-        <span style={{ color: value ? color : t.text3, fontSize: font.size.small + 1, fontWeight: font.weight.semibold }}>
+        <span className="num" style={{ color: value ? color : t.text2, fontFamily: font.family.mono, fontSize: font.size.small + 1 }}>
           {formatDollarsShort(lo)} – {formatDollarsShort(hi)}{hi >= max ? '+' : ''}
         </span>
       </div>
@@ -680,7 +673,7 @@ export function FilterSheet({
       {open && (
         <div
           onClick={onClose}
-          style={{ position: 'fixed', inset: 0, background: alpha('#000', 0.6), zIndex: 2200, backdropFilter: 'blur(2px)' }}
+          style={{ position: 'fixed', inset: 0, background: t.scrim, zIndex: 2200, backdropFilter: 'blur(2px)' }}
         />
       )}
 
@@ -703,11 +696,11 @@ export function FilterSheet({
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px 4px' }}>
-          <div style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.title, letterSpacing: '-0.01em' }}>
+          <div style={{ color: t.text1, fontFamily: font.family.display, fontWeight: font.weight.semibold, fontSize: font.size.heading, letterSpacing: '-0.015em' }}>
             Filter &amp; sort
           </div>
           {activeCount > 0 && (
-            <button onClick={onClear} style={{ background: 'none', border: 'none', color: t.text3, fontSize: font.size.small + 1 }}>
+            <button onClick={onClear} style={{ background: 'none', border: 'none', color: t.text2, fontSize: font.size.small + 1, textDecoration: 'underline', textUnderlineOffset: 3 }}>
               Clear all
             </button>
           )}
@@ -737,7 +730,7 @@ export function FilterSheet({
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 10 }}>
                 <Label>Distance</Label>
                 {!distance.hasLocation && (
-                  <span style={{ color: t.text4, fontSize: font.size.caption }}>Location off</span>
+                  <span style={{ color: t.text3, fontSize: font.size.caption }}>Location off</span>
                 )}
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -778,9 +771,9 @@ export function FilterSheet({
           <button
             onClick={onClose}
             style={{
-              width: '100%', background: t.accent, border: 'none', borderRadius: radius.lg,
-              color: 'var(--accent-ink)', fontWeight: font.weight.bold, fontSize: font.size.callout,
-              padding: 14, boxShadow: 'var(--e-1)',
+              width: '100%', background: t.accent, border: 'none', borderRadius: radius.md,
+              color: t.accentInk, fontWeight: font.weight.bold, fontSize: font.size.callout,
+              padding: 14,
             }}
           >
             Show {resultCount} {resultCount === 1 ? 'product' : 'products'}

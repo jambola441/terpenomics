@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react'
 import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 import type { CustomerProfile } from '@web/types'
 import { api } from '@/lib/api'
-import { Button, styles } from '@/components/ui'
-import { t, radius, space, font } from '@/lib/theme'
+import { Button, Label, styles } from '@/components/ui'
+import { Icon } from '@/components/Icon'
+import { t, space, font, fonts, type } from '@/lib/theme'
 
 type Step = 'view' | 'enter' | 'code'
 
@@ -69,7 +70,7 @@ export default function EmailEditor({ profile, onSaved }: {
   return (
     <View style={[styles.card, s.card]}>
       <View style={s.row}>
-        <Text style={[styles.name, { flex: 1 }]}>Email</Text>
+        <Label style={{ flex: 1 }}>Email</Label>
         {step === 'view' ? (
           <>
             <Link onPress={() => { setEmail(''); setStep('enter') }}>{profile.email ? 'Change' : 'Add'}</Link>
@@ -81,13 +82,13 @@ export default function EmailEditor({ profile, onSaved }: {
       </View>
 
       {step === 'view' ? (
-        <Text style={styles.meta}>{profile.email ?? 'Add an email to get receipts and account notices.'}</Text>
+        <Text style={profile.email ? type.body : styles.meta}>{profile.email ?? 'Add an email to get receipts and account notices.'}</Text>
       ) : null}
 
       {step === 'enter' ? (
         <>
           <TextInput
-            style={s.input}
+            style={[styles.input, s.input]}
             value={email}
             onChangeText={setEmail}
             placeholder="you@example.com"
@@ -106,7 +107,7 @@ export default function EmailEditor({ profile, onSaved }: {
         <>
           <Text style={styles.meta}>Enter the 6-digit code we sent to {email.trim()}.</Text>
           <TextInput
-            style={[s.input, { letterSpacing: 6 }]}
+            style={[styles.input, s.input, s.code]}
             value={code}
             onChangeText={v => setCode(v.replace(/\D/g, '').slice(0, 6))}
             placeholder="123456"
@@ -126,7 +127,12 @@ export default function EmailEditor({ profile, onSaved }: {
         </>
       ) : null}
 
-      {error ? <Text style={s.error}>{error}</Text> : null}
+      {error ? (
+        <View style={s.error}>
+          <Icon name="alert" size={16} color={t.danger} style={{ marginTop: 2 }} />
+          <Text style={[type.body, { color: t.danger, flex: 1 }]}>{error}</Text>
+        </View>
+      ) : null}
     </View>
   )
 }
@@ -134,7 +140,7 @@ export default function EmailEditor({ profile, onSaved }: {
 function Link({ onPress, disabled, children }: { onPress: () => void; disabled?: boolean; children: string }) {
   return (
     <Pressable onPress={onPress} disabled={disabled} hitSlop={8} style={{ marginLeft: space[3] }}>
-      <Text style={{ color: disabled ? t.text4 : t.accent, fontSize: font.size.body }}>{children}</Text>
+      <Text style={[type.link, { color: disabled ? t.text4 : t.text1 }]}>{children}</Text>
     </Pressable>
   )
 }
@@ -142,9 +148,7 @@ function Link({ onPress, disabled, children }: { onPress: () => void; disabled?:
 const s = StyleSheet.create({
   card: { marginHorizontal: space[4], marginTop: space[3], padding: space[4], gap: space[2] },
   row: { flexDirection: 'row', alignItems: 'center' },
-  input: {
-    backgroundColor: t.surface2, borderRadius: radius.md, borderWidth: 1, borderColor: t.border,
-    color: t.text1, fontSize: font.size.title, paddingHorizontal: space[3], minHeight: 46,
-  },
-  error: { color: t.danger, fontSize: font.size.body },
+  input: { paddingHorizontal: space[3], minHeight: 46 },
+  code: { fontFamily: fonts.monoMedium, fontSize: font.size.heading, letterSpacing: 6, fontVariant: ['tabular-nums'] },
+  error: { flexDirection: 'row', alignItems: 'flex-start', gap: space[2] },
 })

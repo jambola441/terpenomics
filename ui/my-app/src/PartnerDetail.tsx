@@ -5,6 +5,8 @@ import api from './api/client'
 import type { PartnerDetail as Detail, PartnerMember, PosOrder } from './types'
 import { inputStyle, primaryBtn, when } from './utils/partners'
 import { Banner, ConnectionCard, LocationsTable, OrdersTable, Section, muted, page, wrap } from './components/partnerUi'
+import { t, font } from './theme'
+import { Icon } from './components/Icon'
 
 /**
  * One partner: connect their POS, watch the sync, see what came in.
@@ -68,8 +70,8 @@ export default function PartnerDetail() {
     return (
       <div style={page}>
         <div style={wrap}>
-          <button onClick={() => navigate('/admin/partners')} style={navBtnStyle}>← Partners</button>
-          <div style={{ color: error ? '#f87171' : '#475569', padding: 16 }}>{error ? `Error: ${error}` : 'Loading…'}</div>
+          <button onClick={() => navigate('/admin/partners')} style={navBtnStyle}><Icon name="arrow-left" size={14} />Partners</button>
+          <div style={{ color: error ? t.danger : t.text3, padding: 16 }}>{error ? `Error: ${error}` : 'Loading…'}</div>
         </div>
       </div>
     )
@@ -83,9 +85,9 @@ export default function PartnerDetail() {
       <div style={wrap}>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
-          <button onClick={() => navigate('/admin/partners')} style={navBtnStyle}>← Partners</button>
+          <button onClick={() => navigate('/admin/partners')} style={navBtnStyle}><Icon name="arrow-left" size={14} />Partners</button>
           {editingName === null ? (
-            <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600, cursor: 'text' }} title="Click to rename" onClick={() => setEditingName(partner.name)}>
+            <h2 style={{ margin: 0, fontFamily: font.family.display, fontSize: font.size.display, fontWeight: 600, letterSpacing: '-0.015em', cursor: 'text' }} title="Click to rename" onClick={() => setEditingName(partner.name)}>
               {partner.name}
             </h2>
           ) : (
@@ -101,8 +103,8 @@ export default function PartnerDetail() {
               <input autoFocus value={editingName} onChange={e => setEditingName(e.target.value)} style={inputStyle} onBlur={() => setEditingName(null)} />
             </form>
           )}
-          <span style={{ color: '#64748b', fontFamily: 'monospace', fontSize: 13 }}>{partner.slug}</span>
-          <label style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#94a3b8', cursor: 'pointer' }}>
+          <span style={{ color: t.text3, fontFamily: font.family.mono, fontSize: 13 }}>{partner.slug}</span>
+          <label style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: t.text2, cursor: 'pointer' }}>
             <input
               type="checkbox"
               checked={partner.is_active}
@@ -202,15 +204,15 @@ export default function PartnerDetail() {
                 <a
                   href={`/admin/customers/${o.customer_id}`}
                   onClick={e => { e.preventDefault(); navigate(`/admin/customers/${o.customer_id}`) }}
-                  style={{ color: '#a5b4fc', textDecoration: 'none' }}
+                  style={{ color: t.accent, textDecoration: 'none' }}
                 >
-                  matched <span style={{ color: '#64748b' }}>{MATCH_LABEL[o.matched_via ?? ''] ?? ''}</span>
-                  {o.points ? <span style={{ color: '#86efac' }}> · {o.points > 0 ? '+' : ''}{o.points} pts</span> : null}
+                  matched <span style={{ color: t.text3 }}>{MATCH_LABEL[o.matched_via ?? ''] ?? ''}</span>
+                  {o.points ? <span style={{ color: t.success }}> · {o.points > 0 ? '+' : ''}{o.points} pts</span> : null}
                 </a>
               ) : o.contact_purged_at ? (
-                <span style={{ color: '#475569' }}>unclaimed (expired)</span>
+                <span style={{ color: t.text3 }}>unclaimed (expired)</span>
               ) : (
-                <span style={{ color: '#64748b' }}>{o.has_contact ? 'not a member' : 'no phone on order'}</span>
+                <span style={{ color: t.text3 }}>{o.has_contact ? 'not a member' : 'no phone on order'}</span>
               ),
             } satisfies Column<PosOrder>}
           />
@@ -244,7 +246,7 @@ function MembersPanel({ partnerId, members, busy, onInvite, onRemove }: {
     <div>
       <div style={{ ...muted, marginBottom: 10 }}>
         Partners manage their own Square connection at{' '}
-        <a href={portal} style={{ color: '#a5b4fc' }}>{portal}</a>, signing in with Google. Add the
+        <a href={portal} style={{ color: t.accent }}>{portal}</a>, signing in with Google. Add the
         Google email of each person who should have access.
       </div>
       <form
@@ -268,12 +270,12 @@ function MembersPanel({ partnerId, members, busy, onInvite, onRemove }: {
         <div style={muted}>No one yet.</div>
       ) : (
         members.map(m => (
-          <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderBottom: '1px solid #1e293b', fontSize: 13 }}>
-            <span style={{ color: '#f1f5f9' }}>{m.email}</span>
-            <span style={{ color: '#64748b', fontSize: 12 }}>
+          <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderBottom: `1px solid ${t.border}`, fontSize: 13 }}>
+            <span style={{ color: t.text1 }}>{m.email}</span>
+            <span style={{ color: t.text3, fontSize: 12 }}>
               {m.signed_in ? `last signed in ${when(m.last_login_at)}` : 'invited, not signed in yet'}
             </span>
-            <button onClick={() => onRemove(m)} disabled={busy} style={{ ...navBtnStyle, marginLeft: 'auto', color: '#fca5a5', borderColor: '#7f1d1d' }}>
+            <button onClick={() => onRemove(m)} disabled={busy} style={{ ...navBtnStyle, marginLeft: 'auto', color: t.danger, borderColor: t.dangerEdge }}>
               Remove
             </button>
           </div>

@@ -4,6 +4,8 @@ import { AdminTable, badge, categoryColor, navBtnStyle, selectStyle, Dash, type 
 import { ExportBadge } from './BrandCatalogs'
 import api from './api/client'
 import type { BrandCatalog, BrandCatalogEntry, CatalogEntryListings, CatalogExportStatus } from './types'
+import { t, font, tone } from './theme'
+import { Icon } from './components/Icon'
 
 const LIMIT = 50
 
@@ -236,7 +238,7 @@ export default function BrandCatalogEdit() {
   function applyEntryUpdate(updated: BrandCatalogEntry) {
     if (status !== 'all' && updated.is_active !== (status === 'active')) {
       setEntries(prev => prev.filter(e => e.id !== updated.id))
-      setTotal(t => Math.max(0, t - 1))
+      setTotal(n => Math.max(0, n - 1))
       setSelected(prev => {
         if (!prev.has(updated.id)) return prev
         const next = new Set(prev)
@@ -366,16 +368,16 @@ export default function BrandCatalogEdit() {
   }
 
   if (loading) {
-    return <div style={{ padding: 24, background: '#080d18', minHeight: '100vh', color: '#475569' }}>Loading…</div>
+    return <div style={{ padding: 24, background: t.bg, minHeight: '100vh', color: t.text3 }}>Loading…</div>
   }
 
   const columns: Column<BrandCatalogEntry>[] = [
     {
-      key: 'name', header: 'Name', td: { color: '#f1f5f9', fontWeight: 500 },
+      key: 'name', header: 'Name', td: { color: t.text1, fontWeight: 500 },
       render: e => <span style={{ opacity: e.is_active ? 1 : 0.45 }}>{e.name}</span>,
     },
     {
-      key: 'product_line', header: 'Product line', td: { color: '#a5b4fc' },
+      key: 'product_line', header: 'Product line', td: { color: t.text1 },
       render: e => e.product_line ?? <Dash />,
     },
     {
@@ -403,9 +405,9 @@ export default function BrandCatalogEdit() {
           onClick={() => toggleListings(e)}
           aria-expanded={expanded.has(e.id)}
           title={expanded.has(e.id) ? 'Hide its listings' : 'Show the listings that resolve to this entry'}
-          style={{ ...navBtnStyle, padding: '2px 8px', fontSize: 12, color: '#cbd5e1' }}
+          style={{ ...navBtnStyle, gap: 4, padding: '2px 8px', fontSize: 12, color: t.text2 }}
         >
-          {expanded.has(e.id) ? '▾' : '▸'} {e.listing_count}
+          <Icon name={expanded.has(e.id) ? 'chevron-down' : 'chevron-right'} size={13} />{e.listing_count}
         </button>
       ) : <Dash />,
     },
@@ -417,11 +419,11 @@ export default function BrandCatalogEdit() {
         return (
           <span style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
             {live.map(f => (
-              <span key={f} style={{ ...badge, background: '#14532d', color: '#86efac' }}>{f}</span>
+              <span key={f} style={{ ...badge, background: t.successTint, color: t.success }}>{f}</span>
             ))}
             {e.lapsed_fields.map(f => (
               <span key={f} title="Claim made against a different name — re-confirm"
-                    style={{ ...badge, background: '#422006', color: '#fbbf24' }}>{f} lapsed</span>
+                    style={{ ...badge, background: t.warningTint, color: t.warning }}>{f} lapsed</span>
             ))}
           </span>
         )
@@ -438,8 +440,8 @@ export default function BrandCatalogEdit() {
           style={{
             ...navBtnStyle,
             padding: '3px 9px', fontSize: 12,
-            color: e.is_active ? '#fca5a5' : '#86efac',
-            borderColor: e.is_active ? '#7f1d1d' : '#14532d',
+            color: e.is_active ? t.danger : t.success,
+            borderColor: e.is_active ? t.dangerEdge : t.successEdge,
           }}
         >
           {e.is_active ? 'Remove' : 'Restore'}
@@ -449,24 +451,24 @@ export default function BrandCatalogEdit() {
   ]
 
   return (
-    <div style={{ padding: 24, fontFamily: "'Inter', system-ui, sans-serif", background: '#080d18', minHeight: '100vh', color: '#f1f5f9' }}>
+    <div style={{ padding: 24, background: t.bg, minHeight: '100vh', color: t.text1 }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
-          <button onClick={() => navigate('/admin/brand-catalogs')} style={navBtnStyle}>← Brand Catalogs</button>
-          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>
+          <button onClick={() => navigate('/admin/brand-catalogs')} style={navBtnStyle}><Icon name="arrow-left" size={14} />Brand Catalogs</button>
+          <h2 style={{ margin: 0, fontFamily: font.family.display, fontSize: font.size.display, fontWeight: 600, letterSpacing: '-0.015em' }}>
             {isNew ? 'New Brand Catalog' : catalog?.brand_name}
           </h2>
           {!isNew && catalog && (
-            <span style={{ color: '#475569', fontSize: 13 }}>
+            <span style={{ color: t.text3, fontSize: 13 }}>
               {catalog.active_entry_count} active of {catalog.entry_count} entries ·{' '}
               {catalog.listing_count.toLocaleString()} listings resolved
             </span>
           )}
         </div>
 
-        {error && <div style={{ color: '#f87171', fontSize: 13, marginBottom: 12 }}>{error}</div>}
-        {msg && <div style={{ color: '#86efac', fontSize: 13, marginBottom: 12 }}>{msg}</div>}
+        {error && <div style={{ color: t.danger, fontSize: 13, marginBottom: 12 }}>{error}</div>}
+        {msg && <div style={{ color: t.success, fontSize: 13, marginBottom: 12 }}>{msg}</div>}
 
         {!isNew && exportStatus && (
           <ExportPanel status={exportStatus} busy={exporting} onRegenerate={handleRegenerate} />
@@ -482,7 +484,7 @@ export default function BrandCatalogEdit() {
               </Field>
               <Field label="Slug (names the export file)">
                 <input value={brandSlug} onChange={e => setBrandSlug(e.target.value)}
-                       style={{ ...inputStyle, fontFamily: 'monospace' }} disabled={savingMeta}
+                       style={{ ...inputStyle, fontFamily: font.family.mono }} disabled={savingMeta}
                        placeholder="ayrloom" />
               </Field>
               <Field label="Source URL">
@@ -497,9 +499,9 @@ export default function BrandCatalogEdit() {
               </Field>
             </div>
             {!isNew && catalog && (
-              <div style={{ fontSize: 12, color: '#475569', marginTop: 14 }}>
+              <div style={{ fontSize: 12, color: t.text3, marginTop: 14 }}>
                 Last fetched {catalog.fetched_at ? new Date(catalog.fetched_at).toLocaleString() : 'never'}.
-                Only <code>scripts/brand_catalog.py fetch</code> can set that — it records when the
+                Only <code style={{ fontFamily: font.family.mono }}>scripts/brand_catalog.py fetch</code> can set that — it records when the
                 source was actually read.
               </div>
             )}
@@ -512,14 +514,14 @@ export default function BrandCatalogEdit() {
         </form>
 
         {isNew ? (
-          <div style={{ color: '#475569', fontSize: 13, marginTop: 20 }}>
+          <div style={{ color: t.text3, fontSize: 13, marginTop: 20 }}>
             Entries can be added once the catalog exists.
           </div>
         ) : (
           <>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '28px 0 14px', flexWrap: 'wrap' }}>
               <h3 style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>Entries</h3>
-              <span style={{ color: '#475569', fontSize: 12 }}>
+              <span style={{ color: t.text3, fontSize: 12 }}>
                 {entries.length} of {total} shown
               </span>
               <form
@@ -552,9 +554,9 @@ export default function BrandCatalogEdit() {
               </select>
               <button
                 onClick={() => setEditing('new')}
-                style={{ ...navBtnStyle, color: '#a5b4fc', borderColor: '#3730a3' }}
+                style={{ ...navBtnStyle, color: tone.accent.fg, borderColor: tone.accent.edge }}
               >
-                + New entry
+                <Icon name="plus" size={14} />New entry
               </button>
             </div>
 
@@ -567,7 +569,7 @@ export default function BrandCatalogEdit() {
                 onSaved={(saved, created) => {
                   if (created) {
                     setEntries(prev => [saved, ...prev])
-                    setTotal(t => t + 1)
+                    setTotal(n => n + 1)
                   } else {
                     replaceEntry(saved)
                   }
@@ -607,7 +609,7 @@ export default function BrandCatalogEdit() {
             )}
 
             {entries.length === 0 ? (
-              <div style={{ color: '#475569', padding: 16 }}>
+              <div style={{ color: t.text3, padding: 16 }}>
                 {entriesLoading ? 'Loading…' : 'No entries match these filters.'}
               </div>
             ) : (
@@ -653,32 +655,32 @@ type ListingsState = { loading: boolean; error?: string; data?: CatalogEntryList
 /** How a listing came to this entry. The first three are trusted: the listing takes
  *  its line, strain and size from the entry. A review match is only a suggestion. */
 const MATCH: Record<string, { colors: React.CSSProperties; title: string }> = {
-  exact: { colors: { background: '#14532d', color: '#86efac' }, title: 'A store name recorded on this entry' },
-  jev: { colors: { background: '#1e1b4b', color: '#a5b4fc' }, title: 'Jev picked this entry with confidence' },
-  manual: { colors: { background: '#0c4a6e', color: '#7dd3fc' }, title: 'A person matched it' },
+  exact: { colors: { background: t.successTint, color: t.success }, title: 'A store name recorded on this entry' },
+  jev: { colors: { background: t.infoTint, color: t.info }, title: 'Jev picked this entry with confidence' },
+  manual: { colors: { background: t.infoTint, color: t.info }, title: 'A person matched it' },
   jev_review: {
-    colors: { background: '#422006', color: '#fbbf24' },
+    colors: { background: t.warningTint, color: t.warning },
     title: 'Jev suggests this entry but is not sure: the listing keeps its own fields',
   },
 }
 
 /** The listings that resolve to an entry, at every store: opened under its row. */
 function EntryListings({ state }: { state: ListingsState | undefined }) {
-  const wrap: React.CSSProperties = { padding: '8px 12px 12px 42px', background: '#0b1220' }
-  if (!state || state.loading) return <div style={{ ...wrap, color: '#475569' }}>Loading listings…</div>
-  if (state.error) return <div style={{ ...wrap, color: '#fca5a5' }}>Couldn’t load the listings: {state.error}</div>
+  const wrap: React.CSSProperties = { padding: '8px 12px 12px 42px', background: t.surface1 }
+  if (!state || state.loading) return <div style={{ ...wrap, color: t.text3 }}>Loading listings…</div>
+  if (state.error) return <div style={{ ...wrap, color: t.danger }}>Couldn’t load the listings: {state.error}</div>
   const { listings, total } = state.data!
-  if (!listings.length) return <div style={{ ...wrap, color: '#475569' }}>No listings resolve here.</div>
+  if (!listings.length) return <div style={{ ...wrap, color: t.text3 }}>No listings resolve here.</div>
 
-  const cell: React.CSSProperties = { padding: '6px 10px', color: '#cbd5e1', fontSize: 12, verticalAlign: 'top' }
+  const cell: React.CSSProperties = { padding: '6px 10px', color: t.text2, fontSize: 12, verticalAlign: 'top' }
   const head: React.CSSProperties = {
-    ...cell, color: '#475569', fontWeight: 500, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em',
+    ...cell, color: t.text3, fontWeight: 500, fontSize: 11, fontFamily: font.family.mono, textTransform: 'uppercase', letterSpacing: '0.06em',
   }
   return (
     <div style={wrap}>
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
-          <tr style={{ textAlign: 'left', borderBottom: '1px solid #1e293b' }}>
+          <tr style={{ textAlign: 'left', borderBottom: `1px solid ${t.border}` }}>
             <th style={head}>Store</th>
             <th style={head}>Store’s name</th>
             <th style={head}>Size</th>
@@ -694,14 +696,14 @@ function EntryListings({ state }: { state: ListingsState | undefined }) {
             const pct = l.match_confidence != null && l.match_confidence < 1
               ? ` ${Math.round(l.match_confidence * 100)}%` : ''
             return (
-              <tr key={l.id} style={{ borderBottom: '1px solid #0f172a', opacity: l.is_active ? 1 : 0.5 }}>
+              <tr key={l.id} style={{ borderBottom: `1px solid ${t.border}`, opacity: l.is_active ? 1 : 0.5 }}>
                 <td style={cell}>{l.dispensary.name}</td>
-                <td style={{ ...cell, color: '#f1f5f9' }}>
+                <td style={{ ...cell, color: t.text1 }}>
                   {l.url
-                    ? <a href={l.url} target="_blank" rel="noreferrer" style={{ color: '#f1f5f9' }}>{l.scraped_name}</a>
+                    ? <a href={l.url} target="_blank" rel="noreferrer" style={{ color: t.text1 }}>{l.scraped_name}</a>
                     : l.scraped_name}
                   {!l.is_active && (
-                    <span style={{ ...badge, marginLeft: 6, background: '#1e293b', color: '#94a3b8' }}>inactive</span>
+                    <span style={{ ...badge, marginLeft: 6, background: t.surface2, color: t.text2 }}>inactive</span>
                   )}
                 </td>
                 <td style={cell}>
@@ -712,12 +714,12 @@ function EntryListings({ state }: { state: ListingsState | undefined }) {
                 <td style={{ ...cell, textAlign: 'right' }}>
                   {l.price_cents != null ? `$${(l.price_cents / 100).toFixed(2)}` : <Dash />}
                 </td>
-                <td style={cell}>{l.in_stock ? 'In stock' : <span style={{ color: '#64748b' }}>Out</span>}</td>
+                <td style={cell}>{l.in_stock ? 'In stock' : <span style={{ color: t.text3 }}>Out</span>}</td>
                 <td style={cell}>
                   {l.match_method
                     ? (
                       <span title={match?.title}
-                            style={{ ...badge, ...(match?.colors ?? { background: '#1e293b', color: '#94a3b8' }) }}>
+                            style={{ ...badge, ...(match?.colors ?? { background: t.surface2, color: t.text2 }) }}>
                         {l.match_method}{pct}
                       </span>
                     )
@@ -730,7 +732,7 @@ function EntryListings({ state }: { state: ListingsState | undefined }) {
         </tbody>
       </table>
       {total > listings.length && (
-        <div style={{ color: '#475569', fontSize: 12, marginTop: 6 }}>Showing {listings.length} of {total}.</div>
+        <div style={{ color: t.text3, fontSize: 12, marginTop: 6 }}>Showing {listings.length} of {total}.</div>
       )}
     </div>
   )
@@ -753,28 +755,28 @@ function ExportPanel({ status, busy, onRegenerate }: {
   const ok = status.in_sync
   return (
     <div style={{
-      background: ok ? '#0c1a12' : '#1a1405',
-      border: `1px solid ${ok ? '#14532d' : '#422006'}`,
+      background: ok ? tone.success.bg : tone.warning.bg,
+      border: `1px solid ${ok ? tone.success.edge : tone.warning.edge}`,
       borderRadius: 10, padding: '14px 18px', marginBottom: 20,
       display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap',
     }}>
       <ExportBadge status={status} />
-      <div style={{ fontSize: 13, color: ok ? '#86efac' : '#fbbf24', lineHeight: 1.6, flex: 1, minWidth: 320 }}>
+      <div style={{ fontSize: 13, color: ok ? t.success : t.warning, lineHeight: 1.6, flex: 1, minWidth: 320 }}>
         {ok ? (
           <>
-            <code style={{ color: '#64748b' }}>{status.path}</code> matches the database
+            <code style={{ color: t.text2, fontFamily: font.family.mono }}>{status.path}</code> matches the database
             ({status.db_entry_count} active entries). Enrichment is seeing what is stored here.
           </>
         ) : (
           <>
-            <code style={{ color: '#a16207' }}>{status.path}</code>{' '}
+            <code style={{ color: t.text1, fontFamily: font.family.mono }}>{status.path}</code>{' '}
             {status.file_exists
               ? <>disagrees with the database: {status.added} to add, {status.removed} to remove,{' '}
                  {status.changed} changed{status.metadata_changed ? ', plus catalog metadata' : ''}.</>
               : <>has not been generated yet ({status.db_entry_count} active entries here).</>}
             {' '}Enrichment reads that file, so these edits are not in front of the model until it is regenerated.
             {status.sample.length > 0 && (
-              <div style={{ color: '#a16207', fontSize: 12, marginTop: 6 }}>
+              <div style={{ color: t.text2, fontSize: 12, marginTop: 6 }}>
                 {status.sample.map((s, i) => (
                   <span key={i}>{i > 0 && ' · '}{s.kind} {s.name}{s.variant ? ` (${s.variant})` : ''}</span>
                 ))}
@@ -783,7 +785,7 @@ function ExportPanel({ status, busy, onRegenerate }: {
           </>
         )}
         {status.file_generated_at && (
-          <div style={{ color: '#475569', fontSize: 11, marginTop: 6 }}>
+          <div style={{ color: t.text3, fontSize: 11, marginTop: 6 }}>
             File written {new Date(status.file_generated_at).toLocaleString()}
             {status.file_entry_count != null && ` · ${status.file_entry_count} entries`}
           </div>
@@ -832,7 +834,7 @@ function InlineVariant({ entry, saving, onSave }: {
   }
 
   if (saving) {
-    return <span style={{ color: '#64748b' }}>saving…</span>
+    return <span style={{ color: t.text3 }}>saving…</span>
   }
 
   if (!editing) {
@@ -844,12 +846,12 @@ function InlineVariant({ entry, saving, onSave }: {
           : 'Click to edit'}
         style={{
           cursor: 'text', display: 'inline-block', minWidth: 60, padding: '2px 4px',
-          borderRadius: 4, borderBottom: '1px dashed #1e293b',
+          borderRadius: 4, borderBottom: `1px dashed ${t.border}`,
           opacity: entry.is_active ? 1 : 0.45,
         }}
       >
         {entry.variant ?? <Dash />}
-        {signedOff && <span style={{ color: '#86efac', marginLeft: 5 }} title="signed off">✓</span>}
+        {signedOff && <span style={{ color: t.success, marginLeft: 5, display: 'inline-flex', verticalAlign: '-2px' }} title="signed off"><Icon name="check" size={13} label="Signed off" /></span>}
       </span>
     )
   }
@@ -867,8 +869,8 @@ function InlineVariant({ entry, saving, onSave }: {
       }}
       placeholder="(empty)"
       style={{
-        width: '100%', minWidth: 90, background: '#080d18', border: '1px solid #3730a3',
-        borderRadius: 6, color: '#f1f5f9', fontSize: 12, padding: '4px 7px',
+        width: '100%', minWidth: 90, background: t.surface2, border: `1px solid ${t.accentDim}`,
+        borderRadius: 6, color: t.text1, fontSize: 12, padding: '4px 7px',
         outline: 'none', boxSizing: 'border-box',
       }}
     />
@@ -903,11 +905,11 @@ function BulkBar({ count, busy, anyInactive, onClear, onSetVariant, onClearVaria
 
   return (
     <div style={{
-      background: '#0f172a', border: '1px solid #3730a3', borderRadius: 10,
+      background: t.surface1, border: `1px solid ${tone.accent.edge}`, borderRadius: 10,
       padding: '12px 16px', marginBottom: 12,
       display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
     }}>
-      <span style={{ fontSize: 13, color: '#a5b4fc', fontWeight: 600 }}>{noun} selected</span>
+      <span style={{ fontSize: 13, color: t.accent, fontWeight: 600 }}>{noun} selected</span>
 
       <form
         onSubmit={e => { e.preventDefault(); if (variant.trim()) { onSetVariant(variant.trim()); setVariant('') } }}
@@ -923,7 +925,7 @@ function BulkBar({ count, busy, anyInactive, onClear, onSetVariant, onClearVaria
         <button
           type="submit"
           disabled={disabled || !variant.trim()}
-          style={{ ...navBtnStyle, color: '#a5b4fc', borderColor: '#3730a3', opacity: disabled || !variant.trim() ? 0.5 : 1 }}
+          style={{ ...navBtnStyle, color: tone.accent.fg, borderColor: tone.accent.edge, opacity: disabled || !variant.trim() ? 0.5 : 1 }}
         >
           Set variant on {count}
         </button>
@@ -940,7 +942,7 @@ function BulkBar({ count, busy, anyInactive, onClear, onSetVariant, onClearVaria
       <button
         disabled={disabled}
         onClick={() => { if (confirm(`Remove ${noun} from the catalog? They are deactivated, not deleted.`)) onSetActive(false) }}
-        style={{ ...navBtnStyle, color: '#fca5a5', borderColor: '#7f1d1d', opacity: disabled ? 0.5 : 1 }}
+        style={{ ...navBtnStyle, color: t.danger, borderColor: t.dangerEdge, opacity: disabled ? 0.5 : 1 }}
       >
         Remove
       </button>
@@ -949,7 +951,7 @@ function BulkBar({ count, busy, anyInactive, onClear, onSetVariant, onClearVaria
         <button
           disabled={disabled}
           onClick={() => onSetActive(true)}
-          style={{ ...navBtnStyle, color: '#86efac', borderColor: '#14532d', opacity: disabled ? 0.5 : 1 }}
+          style={{ ...navBtnStyle, color: t.success, borderColor: t.successEdge, opacity: disabled ? 0.5 : 1 }}
         >
           Restore
         </button>
@@ -959,7 +961,7 @@ function BulkBar({ count, busy, anyInactive, onClear, onSetVariant, onClearVaria
         Clear selection
       </button>
 
-      <div style={{ flexBasis: '100%', fontSize: 11, color: '#475569' }}>
+      <div style={{ flexBasis: '100%', fontSize: 11, color: t.text3 }}>
         {busy ?? 'Shift-click a checkbox to select a range. Each action is one save per row against the same endpoint a single edit uses, so a partial failure still leaves the rows that saved.'}
       </div>
     </div>
@@ -1004,7 +1006,7 @@ function EntryEditor({ catalogId, entry, onClose, onSaved, onSetActive, onError 
     if (!draft.name.trim()) { onError('Name is required.'); return }
     setSaving(true)
     try {
-      const terms = draft.match_terms.split(',').map(t => t.trim()).filter(Boolean)
+      const terms = draft.match_terms.split(',').map(term => term.trim()).filter(Boolean)
       if (isCreate) {
         const payload: Record<string, unknown> = { name: draft.name.trim() }
         for (const f of TEXT_FIELDS) {
@@ -1051,14 +1053,14 @@ function EntryEditor({ catalogId, entry, onClose, onSaved, onSetActive, onError 
   }
 
   return (
-    <div style={{ ...cardStyle, marginBottom: 18, borderColor: '#3730a3' }}>
+    <div style={{ ...cardStyle, marginBottom: 18, borderColor: tone.accent.edge }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
         <div style={sectionLabel}>{isCreate ? 'New entry' : 'Edit entry'}</div>
         {entry && !entry.is_active && (
-          <span style={{ ...badge, background: '#422006', color: '#fbbf24' }}>removed from catalog</span>
+          <span style={{ ...badge, background: t.warningTint, color: t.warning }}>removed from catalog</span>
         )}
         {entry && entry.listing_count ? (
-          <span style={{ fontSize: 12, color: '#64748b' }}>
+          <span style={{ fontSize: 12, color: t.text3 }}>
             {entry.listing_count} listing{entry.listing_count === 1 ? '' : 's'} resolve here
           </span>
         ) : null}
@@ -1072,7 +1074,7 @@ function EntryEditor({ catalogId, entry, onClose, onSaved, onSetActive, onError 
               value={draft[f.key]}
               onChange={e => set(f.key, e.target.value)}
               disabled={saving}
-              style={f.mono ? { ...inputStyle, fontFamily: 'monospace', fontSize: 12 } : inputStyle}
+              style={f.mono ? { ...inputStyle, fontFamily: font.family.mono, fontSize: 12 } : inputStyle}
             />
           </Field>
         ))}
@@ -1081,7 +1083,7 @@ function EntryEditor({ catalogId, entry, onClose, onSaved, onSetActive, onError 
             value={draft.match_terms}
             onChange={e => set('match_terms', e.target.value)}
             disabled={saving}
-            style={{ ...inputStyle, fontFamily: 'monospace', fontSize: 12 }}
+            style={{ ...inputStyle, fontFamily: font.family.mono, fontSize: 12 }}
           />
         </Field>
       </div>
@@ -1090,8 +1092,8 @@ function EntryEditor({ catalogId, entry, onClose, onSaved, onSetActive, onError 
         <div style={{ marginTop: 14 }}>
           <div style={{ ...labelStyle, marginBottom: 6 }}>Attributes (read-only)</div>
           <pre style={{
-            margin: 0, background: '#080d18', border: '1px solid #1e293b', borderRadius: 8,
-            padding: 10, fontSize: 12, color: '#94a3b8', overflowX: 'auto',
+            margin: 0, background: t.bg, border: `1px solid ${t.border}`, borderRadius: 8,
+            padding: 10, fontSize: 12, color: t.text2, overflowX: 'auto', fontFamily: font.family.mono,
           }}>{JSON.stringify(entry.attributes, null, 2)}</pre>
         </div>
       )}
@@ -1105,15 +1107,15 @@ function EntryEditor({ catalogId, entry, onClose, onSaved, onSetActive, onError 
             onClick={() => onSetActive(entry, !entry.is_active)}
             style={{
               ...navBtnStyle,
-              color: entry.is_active ? '#fca5a5' : '#86efac',
-              borderColor: entry.is_active ? '#7f1d1d' : '#14532d',
+              color: entry.is_active ? t.danger : t.success,
+              borderColor: entry.is_active ? t.dangerEdge : t.successEdge,
             }}
           >
             {entry.is_active ? 'Remove from catalog' : 'Restore to catalog'}
           </button>
         )}
         {entry && (
-          <span style={{ fontSize: 11, color: '#475569' }}>
+          <span style={{ fontSize: 11, color: t.text3 }}>
             First seen {new Date(entry.first_seen_at).toLocaleDateString()} · last seen on source{' '}
             {new Date(entry.last_seen_at).toLocaleDateString()} — neither is changed by an edit.
             Removing sets a flag; the row is never deleted, because listings point at it.
@@ -1122,26 +1124,26 @@ function EntryEditor({ catalogId, entry, onClose, onSaved, onSetActive, onError 
       </div>
 
       {entry && (
-        <div style={{ borderTop: '1px solid #1e293b', marginTop: 18, paddingTop: 16 }}>
+        <div style={{ borderTop: `1px solid ${t.border}`, marginTop: 18, paddingTop: 16 }}>
           <div style={{ ...sectionLabel, marginBottom: 10 }}>Human sign-off</div>
-          <div style={{ fontSize: 12, color: '#475569', marginBottom: 12, lineHeight: 1.6 }}>
+          <div style={{ fontSize: 12, color: t.text3, marginBottom: 12, lineHeight: 1.6 }}>
             A signed field is one the pipeline is not allowed to overwrite. Signed here rather
             than on a listing, one sign-off covers every store carrying this product. Renaming the
             entry lapses its claims rather than carrying them onto text nobody read.
             {entry.lapsed_fields.length > 0 && (
-              <span style={{ color: '#fbbf24' }}> Lapsed, needs re-confirming: {entry.lapsed_fields.join(', ')}.</span>
+              <span style={{ color: t.warning }}> Lapsed, needs re-confirming: {entry.lapsed_fields.join(', ')}.</span>
             )}
           </div>
           <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
             {VERIFIABLE.map(f => (
-              <label key={f} style={{ fontSize: 13, color: '#94a3b8', display: 'flex', gap: 6, alignItems: 'center', cursor: 'pointer' }}>
+              <label key={f} style={{ fontSize: 13, color: t.text2, display: 'flex', gap: 6, alignItems: 'center', cursor: 'pointer' }}>
                 <input
                   type="checkbox"
                   checked={checked.includes(f)}
                   onChange={e => setChecked(prev => e.target.checked ? [...prev, f] : prev.filter(x => x !== f))}
                 />
                 {f}
-                <span style={{ color: '#475569' }}>
+                <span style={{ color: t.text3 }}>
                   {(entry as any)[f] ? `= ${(entry as any)[f]}` : '= (empty)'}
                 </span>
               </label>
@@ -1158,7 +1160,7 @@ function EntryEditor({ catalogId, entry, onClose, onSaved, onSetActive, onError 
               {verifying ? 'Signing…' : 'Save sign-off'}
             </button>
             {entry.verified_at && (
-              <span style={{ fontSize: 11, color: '#475569' }}>
+              <span style={{ fontSize: 11, color: t.text3 }}>
                 Last signed by {entry.verified_by} on {new Date(entry.verified_at).toLocaleDateString()}
               </span>
             )}
@@ -1180,23 +1182,23 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   )
 }
 
-const labelStyle: React.CSSProperties = { fontSize: 13, color: '#94a3b8', fontWeight: 500 }
+const labelStyle: React.CSSProperties = { fontSize: 13, color: t.text2, fontWeight: 500 }
 const sectionLabel: React.CSSProperties = {
-  fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em',
-  fontWeight: 500, marginBottom: 14,
+  fontSize: 11, color: t.text3, fontFamily: font.family.mono, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em',
+  marginBottom: 14,
 }
 const cardStyle: React.CSSProperties = {
-  background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: 20,
+  background: t.surface1, border: `1px solid ${t.border}`, borderRadius: 10, padding: 20,
 }
 const inputStyle: React.CSSProperties = {
-  width: '100%', background: '#080d18', border: '1px solid #1e293b',
-  borderRadius: 8, color: '#f1f5f9', fontSize: 14, padding: '9px 12px',
+  width: '100%', background: t.surface2, border: `1px solid ${t.border}`,
+  borderRadius: 8, color: t.text1, fontSize: 14, padding: '9px 12px',
   outline: 'none', boxSizing: 'border-box',
 }
 function primaryBtn(busy: boolean): React.CSSProperties {
   return {
-    padding: '9px 20px', background: busy ? '#1e293b' : '#4f46e5', border: 'none',
-    borderRadius: 8, color: busy ? '#475569' : '#fff', fontSize: 14, fontWeight: 600,
+    padding: '9px 20px', background: busy ? t.surface2 : t.accent, border: 'none',
+    borderRadius: 10, color: busy ? t.text4 : t.accentInk, fontSize: 14, fontWeight: 600,
     cursor: busy ? 'default' : 'pointer', whiteSpace: 'nowrap',
   }
 }

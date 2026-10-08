@@ -5,8 +5,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { api } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
-import { Button } from '@/components/ui'
-import { t, radius, space, font } from '@/lib/theme'
+import { Button, Label, styles } from '@/components/ui'
+import { Icon, Logo } from '@/components/Icon'
+import { t, radius, space, fonts, type } from '@/lib/theme'
 
 /** After the first verified login, and again whenever the terms change.
  *
@@ -57,17 +58,17 @@ export default function SignUp() {
     <SafeAreaView style={s.screen}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={s.body} keyboardShouldPersistTaps="handled">
-          <Text style={s.brand}>terpenomics</Text>
-          <Text style={s.title}>{returning ? 'We updated our terms' : 'Finish signing up'}</Text>
+          <Logo size={28} style={s.logo} />
+          <Text style={type.display} accessibilityRole="header">{returning ? 'We updated our terms' : 'Finish signing up'}</Text>
           <Text style={s.copy}>
             {returning
               ? 'Please review and accept them to keep ordering.'
               : 'A few details before you can reserve products for pickup.'}
           </Text>
 
-          <Text style={s.label}>First name</Text>
+          <Label style={s.label}>First name</Label>
           <TextInput
-            style={s.input}
+            style={styles.input}
             value={first}
             onChangeText={setFirst}
             autoComplete="given-name"
@@ -77,9 +78,9 @@ export default function SignUp() {
             placeholder="Required"
             placeholderTextColor={t.text4}
           />
-          <Text style={s.label}>Last name</Text>
+          <Label style={s.label}>Last name</Label>
           <TextInput
-            style={s.input}
+            style={styles.input}
             value={last}
             onChangeText={setLast}
             autoComplete="family-name"
@@ -105,15 +106,20 @@ export default function SignUp() {
 
           <Check checked={marketing} onChange={setMarketing}>
             <Text style={s.checkText}>
-              <Text style={{ fontWeight: font.weight.semibold }}>Optional: </Text>
+              <Text style={{ fontFamily: fonts.sansSemibold }}>Optional: </Text>
               {disclosures.marketing_sms.text}
             </Text>
           </Check>
 
-          {error ? <Text style={s.error}>{error}</Text> : null}
+          {error ? (
+            <View style={s.error}>
+              <Icon name="alert" size={16} color={t.danger} style={{ marginTop: 3 }} />
+              <Text style={[type.copy, { color: t.danger, flex: 1 }]}>{error}</Text>
+            </View>
+          ) : null}
 
           <Button title="Continue" onPress={submit} disabled={!ready} loading={loading} style={{ marginTop: space[4] }} />
-          <Button title="Sign out" variant="ghost" onPress={signOut} />
+          <Button title="Sign out" variant="secondary" onPress={signOut} />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -132,7 +138,7 @@ function Check({ checked, onChange, children }: {
       accessibilityRole="checkbox"
       accessibilityState={{ checked }}
     >
-      <View style={[s.box, checked && s.boxOn]}>{checked ? <Text style={s.tick}>✓</Text> : null}</View>
+      <View style={[s.box, checked && s.boxOn]}>{checked ? <Icon name="check" size={16} color={t.accentInk} strokeWidth={2.5} /> : null}</View>
       <View style={{ flex: 1 }}>{children}</View>
     </Pressable>
   )
@@ -150,22 +156,16 @@ function DocLink({ url, children }: { url: string | null; children: string }) {
 const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: t.bg },
   body: { padding: space[6], gap: space[3] },
-  brand: { color: t.accent, fontSize: font.size.hero, fontWeight: font.weight.heavy, marginBottom: space[4] },
-  title: { color: t.text1, fontSize: font.size.display, fontWeight: font.weight.heavy },
-  copy: { color: t.text2, fontSize: font.size.callout, lineHeight: 22, marginBottom: space[2] },
-  label: { color: t.text2, fontSize: font.size.small, marginTop: space[2] },
-  input: {
-    backgroundColor: t.surface2, borderRadius: radius.lg, borderWidth: 1, borderColor: t.border,
-    color: t.text1, fontSize: font.size.title, paddingHorizontal: space[4], minHeight: 52,
-  },
+  logo: { marginBottom: space[5] },
+  copy: { ...type.copy, marginBottom: space[2] },
+  label: { marginTop: space[2] },
   check: { flexDirection: 'row', gap: space[3], alignItems: 'flex-start', paddingVertical: space[2] },
   box: {
     width: 22, height: 22, borderRadius: radius.xs, borderWidth: 1.5, borderColor: t.text3,
     alignItems: 'center', justifyContent: 'center', marginTop: 1,
   },
   boxOn: { backgroundColor: t.accent, borderColor: t.accent },
-  tick: { color: t.accentInk, fontSize: 14, fontWeight: font.weight.heavy },
-  checkText: { color: t.text1, fontSize: font.size.callout, lineHeight: 21 },
-  link: { color: t.accent, textDecorationLine: 'underline' },
-  error: { color: t.danger, fontSize: font.size.callout },
+  checkText: { ...type.copy, color: t.text1, lineHeight: 21 },
+  link: { color: t.text1, fontFamily: fonts.sansSemibold, textDecorationLine: 'underline' },
+  error: { flexDirection: 'row', alignItems: 'flex-start', gap: space[2] },
 })

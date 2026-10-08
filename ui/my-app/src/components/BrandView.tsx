@@ -12,8 +12,9 @@
 import { useEffect, useState } from 'react'
 import api from '../api/client'
 import type { PortalBrandDetail } from '../types'
-import { t, font, alpha } from '../theme'
+import { t, alpha, raw } from '../theme'
 import { Dot, Stat } from './browse'
+import { BackButton, BrandMark, PageTitle } from './ui'
 import BrowseScreen, { type BrowseItem } from './BrowseScreen'
 
 /** The brand endpoint inlines each offering's store, and every product is this
@@ -81,51 +82,17 @@ export default function BrandView({ brandName, onBack, onOpenProduct }: Props) {
       totalCount={data?.product_count ?? 0}
       emptyMessage={`Nothing from ${brandName} in stock`}
       emptyHint="Check back soon — menus update regularly."
-      emptyIcon="🏷️"
+      emptyIcon="tag"
       onOpen={item => onOpenProduct(item.key)}
-      heroBackground={`linear-gradient(160deg, ${alpha('#a8e063', 0.22)} 0%, ${alpha('#a8e063', 0.06)} 45%, ${t.bg} 100%)`}
+      heroBackground={`linear-gradient(165deg, ${alpha(raw.accent, 0.16)} 0%, ${alpha(raw.accent, 0.04)} 50%, ${t.bg} 100%)`}
       hero={<>
-        <button
-          onClick={onBack}
-          aria-label="Back"
-          style={{
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-            width: 36, height: 36, borderRadius: '50%',
-            background: alpha('#000', 0.35), border: `1px solid ${t.border}`,
-            color: t.text1, fontSize: 19, lineHeight: 1, padding: 0,
-            backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
-          }}
-        >
-          ←
-        </button>
+        <BackButton onClick={onBack} glass />
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 16 }}>
-          <div style={{
-            width: 58, height: 58, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
-            background: t.surface2, border: `1px solid ${t.border}`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            {data?.image_url ? (
-              <img
-                src={data.image_url}
-                alt={brandName}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-              />
-            ) : (
-              <span style={{ color: t.accent, fontWeight: font.weight.heavy, fontSize: 24 }}>
-                {brandName.charAt(0).toUpperCase()}
-              </span>
-            )}
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 18 }}>
+          <BrandMark name={brandName} imageUrl={data?.image_url} size={60} />
 
           <div style={{ minWidth: 0 }}>
-            <div style={{
-              color: t.text1, fontWeight: font.weight.heavy, fontSize: font.size.hero,
-              letterSpacing: '-0.02em', lineHeight: 1.1,
-            }}>
-              {brandName}
-            </div>
+            <PageTitle>{brandName}</PageTitle>
             {data && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 7, flexWrap: 'wrap' }}>
                 <Stat value={data.product_count} label={data.product_count === 1 ? 'product' : 'products'} color={c} />

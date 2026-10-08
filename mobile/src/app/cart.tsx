@@ -7,26 +7,28 @@ import { formatDollars } from '@web/utils/format'
 import { api } from '@/lib/api'
 import { MAX_QTY_PER_LINE, useCart } from '@/lib/cart'
 import { checkLegalRegion } from '@/lib/region'
-import { Button, Price, ProductImage, styles } from '@/components/ui'
-import { t, space, font, radius } from '@/lib/theme'
+import { Button, FeedState, Label, Price, ProductImage, StoreBullet, styles } from '@/components/ui'
+import { Icon } from '@/components/Icon'
+import { t, space, font, fonts, radius, type } from '@/lib/theme'
 
 function Stepper({ value, onChange }: { value: number; onChange: (n: number) => void }) {
-  const btn = (label: string, next: number, disabled: boolean) => (
+  const btn = (dir: 'minus' | 'plus', next: number, disabled: boolean) => (
     <Pressable
       onPress={() => onChange(next)}
       disabled={disabled}
       hitSlop={6}
-      style={[s.step, disabled && { opacity: 0.35 }]}
-      accessibilityLabel={label === '−' ? 'Decrease quantity' : 'Increase quantity'}
+      style={({ pressed }) => [s.step, pressed && { backgroundColor: t.surface1 }, disabled && { opacity: 0.35 }]}
+      accessibilityRole="button"
+      accessibilityLabel={dir === 'minus' ? (value === 1 ? 'Remove from cart' : 'Decrease quantity') : 'Increase quantity'}
     >
-      <Text style={s.stepText}>{label}</Text>
+      <Icon name={dir === 'minus' && value === 1 ? 'trash' : dir} size={16} color={t.text1} strokeWidth={2} />
     </Pressable>
   )
   return (
     <View style={s.stepper}>
-      {btn('−', value - 1, false)}
-      <Text style={[styles.name, { minWidth: 20, textAlign: 'center' }]}>{value}</Text>
-      {btn('+', value + 1, value >= MAX_QTY_PER_LINE)}
+      {btn('minus', value - 1, false)}
+      <Text style={[type.number, { minWidth: 20, textAlign: 'center' }]}>{value}</Text>
+      {btn('plus', value + 1, value >= MAX_QTY_PER_LINE)}
     </View>
   )
 }
@@ -34,14 +36,28 @@ function Stepper({ value, onChange }: { value: number; onChange: (n: number) => 
 function Placed({ order }: { order: Order }) {
   return (
     <SafeAreaView edges={['bottom']} style={[styles.screen, { padding: space[6], justifyContent: 'center', gap: space[4] }]}>
-      <Text style={{ color: t.accent, fontSize: font.size.display, fontWeight: font.weight.heavy }}>Order placed</Text>
-      <Text style={{ color: t.text2, fontSize: font.size.callout }}>{order.dispensary_name} is getting it ready.</Text>
-      <View style={[styles.card, { padding: space[5], alignItems: 'center', gap: space[1] }]}>
-        <Text style={styles.meta}>Your pickup code</Text>
-        <Text style={{ color: t.text1, fontSize: 40, fontWeight: font.weight.heavy, letterSpacing: 4 }}>{order.pickup_code}</Text>
-        <Text style={styles.meta}>Show this at the counter. Pay when you collect: {formatDollars(order.total_amount_cents)}</Text>
+      <View style={s.placedDisc}>
+        <Icon name="check" size={24} color={t.success} strokeWidth={2.25} />
       </View>
-      {order.dispensary_address ? <Text style={styles.meta}>{order.dispensary_address}</Text> : null}
+      <Text style={type.display} accessibilityRole="header">Order placed</Text>
+      <Text style={type.copy}>{order.dispensary_name} is getting it ready.</Text>
+      <View style={[styles.card, { padding: space[5], alignItems: 'center', gap: space[2] }]}>
+        <Label>Your pickup code</Label>
+        {/* Above the type scale on purpose: it is read across a counter. */}
+        <Text style={[type.code, { fontSize: 40, lineHeight: 48 }]}>{order.pickup_code}</Text>
+        <Text style={[styles.meta, { textAlign: 'center' }]}>
+          Show this at the counter. Pay when you collect: <Text style={s.figure}>{formatDollars(order.total_amount_cents)}</Text>
+        </Text>
+      </View>
+      {order.dispensary_name ? (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[3] }}>
+          <StoreBullet name={order.dispensary_name} address={order.dispensary_address} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.name}>{order.dispensary_name}</Text>
+            {order.dispensary_address ? <Text style={styles.meta}>{order.dispensary_address}</Text> : null}
+          </View>
+        </View>
+      ) : null}
       <Button
         title="View my orders"
         onPress={() => {
@@ -49,7 +65,7 @@ function Placed({ order }: { order: Order }) {
           router.navigate('/orders')
         }}
       />
-      <Button title="Done" variant="ghost" onPress={() => router.back()} />
+      <Button title="Done" variant="secondary" onPress={() => router.back()} />
     </SafeAreaView>
   )
 }
@@ -64,9 +80,11 @@ export default function Cart() {
 
   if (!cart.items.length) {
     return (
-      <View style={styles.center}>
-        <Text style={styles.muted}>{"Your cart is empty. Add something from a store's menu to reserve it for pickup."}</Text>
-      </View>
+      <FeedState
+        icon="bag"
+        empty="Your cart is empty"
+        hint="Add something from a store's menu to reserve it for pickup."
+      />
     )
   }
 
@@ -109,7 +127,12 @@ export default function Cart() {
         data={cart.items}
         keyExtractor={i => i.listingId}
         contentContainerStyle={{ padding: space[4], gap: space[4] }}
-        ListHeaderComponent={<Text style={styles.meta}>Pickup at {store.dispensaryName}</Text>}
+        ListHeaderComponent={
+          <View style={{ gap: space[1] }}>
+            <Label>Pickup at</Label>
+            <Text style={type.title}>{store.dispensaryName}</Text>
+          </View>
+        }
         renderItem={({ item }) => (
           <View style={{ flexDirection: 'row', gap: space[3], alignItems: 'center' }}>
             <ProductImage uri={item.image_url} size={64} />
@@ -123,7 +146,7 @@ export default function Cart() {
         )}
         ListFooterComponent={
           <TextInput
-            style={s.note}
+            style={[styles.input, s.note]}
             value={note}
             onChangeText={setNote}
             placeholder="Note for the store (optional)"
@@ -134,9 +157,12 @@ export default function Cart() {
         }
       />
       <SafeAreaView edges={['bottom']} style={s.footer}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Text style={styles.meta}>Pay at pickup{unpriced ? ' · some items have no listed price' : ''}</Text>
-          <Text style={[styles.name, { fontSize: font.size.title }]}>{formatDollars(cart.totalCents)}</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: space[3] }}>
+          <View style={{ flex: 1, gap: 2 }}>
+            <Label>Pay at pickup</Label>
+            {unpriced ? <Text style={styles.meta}>Some items have no listed price</Text> : null}
+          </View>
+          <Text style={[type.price, { fontSize: font.size.title, lineHeight: 22 }]}>{formatDollars(cart.totalCents)}</Text>
         </View>
         <Button title="Reserve for pickup" onPress={place} loading={placing} />
       </SafeAreaView>
@@ -145,19 +171,16 @@ export default function Cart() {
 }
 
 const s = StyleSheet.create({
-  stepper: { flexDirection: 'row', alignItems: 'center', gap: space[2], backgroundColor: t.surface2, borderRadius: radius.pill, padding: 4 },
-  step: { width: 28, height: 28, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: t.surface3 },
-  stepText: { color: t.text1, fontSize: font.size.title, fontWeight: font.weight.bold },
-  note: {
-    marginTop: space[2],
-    minHeight: 64,
-    backgroundColor: t.surface2,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: t.border,
-    color: t.text1,
-    fontSize: font.size.body,
-    padding: space[3],
+  stepper: {
+    flexDirection: 'row', alignItems: 'center', gap: space[2], padding: 4,
+    backgroundColor: t.surface2, borderRadius: radius.pill, borderWidth: 1, borderColor: t.border,
   },
+  step: { width: 28, height: 28, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: t.surface3 },
+  note: { marginTop: space[2], minHeight: 64, fontSize: font.size.body, padding: space[3], textAlignVertical: 'top' },
   footer: { padding: space[4], gap: space[3], borderTopWidth: 1, borderTopColor: t.border, backgroundColor: t.bg },
+  placedDisc: {
+    width: 48, height: 48, borderRadius: 24, borderWidth: 1, borderColor: t.successEdge, backgroundColor: t.successTint,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  figure: { color: t.text2, fontFamily: fonts.sansBold, fontVariant: ['tabular-nums'] },
 })

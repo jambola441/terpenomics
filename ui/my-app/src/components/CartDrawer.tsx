@@ -2,6 +2,8 @@ import { useState } from 'react'
 import Checkout from './Checkout'
 import type { CartItem, Order } from '../types'
 import { t, radius, font } from '../theme'
+import { Icon } from './Icon'
+import { FeedState, ProductImage } from './ui'
 
 interface CartDrawerProps {
   items: CartItem[]
@@ -32,7 +34,7 @@ export default function CartDrawer({ items, open, onClose, onRemove, onClear, on
         <div
           onClick={close}
           style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
+            position: 'fixed', inset: 0, background: t.scrim,
             zIndex: 2200, backdropFilter: 'blur(2px)',
           }}
         />
@@ -61,7 +63,7 @@ export default function CartDrawer({ items, open, onClose, onRemove, onClear, on
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px 0' }}>
           <div>
-            <div style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.title, letterSpacing: '-0.01em' }}>
+            <div style={{ color: t.text1, fontFamily: font.family.display, fontWeight: font.weight.semibold, fontSize: font.size.display, letterSpacing: '-0.02em' }}>
               {checkingOut ? 'Confirm pickup order' : 'Your cart'}
             </div>
             {dispensaryName && (
@@ -73,8 +75,8 @@ export default function CartDrawer({ items, open, onClose, onRemove, onClear, on
               <button
                 onClick={onClear}
                 style={{
-                  background: 'transparent', border: `1px solid ${t.border}`,
-                  borderRadius: radius.sm, color: t.text3, fontSize: font.size.small,
+                  background: 'transparent', border: `1px solid ${t.borderStrong}`,
+                  borderRadius: radius.md, color: t.text2, fontSize: font.size.small + 1,
                   padding: '6px 11px', cursor: 'pointer',
                 }}
               >
@@ -86,12 +88,12 @@ export default function CartDrawer({ items, open, onClose, onRemove, onClear, on
               aria-label="Close cart"
               style={{
                 background: t.surface2, border: `1px solid ${t.border}`,
-                borderRadius: radius.sm, color: t.text2, fontSize: 18,
-                width: 32, height: 32, cursor: 'pointer',
+                borderRadius: radius.pill, color: t.text2,
+                width: 34, height: 34, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
             >
-              ×
+              <Icon name="close" size={16} />
             </button>
           </div>
         </div>
@@ -109,10 +111,7 @@ export default function CartDrawer({ items, open, onClose, onRemove, onClear, on
         {/* Items */}
         <div style={{ overflowY: 'auto', flex: 1, padding: '16px 20px 0' }}>
           {items.length === 0 ? (
-            <div style={{ color: t.text3, fontSize: font.size.body, textAlign: 'center', padding: '40px 0' }}>
-              <div style={{ fontSize: 30, marginBottom: 10 }}>🛒</div>
-              Your cart is empty
-            </div>
+            <FeedState kind="empty" message="Your cart is empty" hint="Add something from a store that takes pickup orders." icon="bag" />
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {items.map(item => (
@@ -120,25 +119,16 @@ export default function CartDrawer({ items, open, onClose, onRemove, onClear, on
                   display: 'flex', gap: 12, alignItems: 'center',
                   background: t.surface2, borderRadius: radius.lg, padding: 12, border: `1px solid ${t.border}`,
                 }}>
-                  {item.image_url ? (
-                    <img
-                      src={item.image_url}
-                      alt=""
-                      style={{ width: 48, height: 48, borderRadius: radius.sm, objectFit: 'contain', background: t.tile, padding: 4, boxSizing: 'border-box', flexShrink: 0 }}
-                      onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-                    />
-                  ) : (
-                    <div style={{ width: 48, height: 48, borderRadius: radius.sm, background: t.surface3, flexShrink: 0 }} />
-                  )}
+                  <ProductImage src={item.image_url} height={52} pad={4} radius={radius.md} style={{ width: 52, flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ color: t.text1, fontWeight: font.weight.semibold, fontSize: font.size.body, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {item.name}
                     </div>
                     {item.variant && (
-                      <div style={{ color: t.text3, fontSize: font.size.small }}>{item.variant}</div>
+                      <div style={{ color: t.text3, fontFamily: font.family.mono, fontSize: font.size.caption, marginTop: 2 }}>{item.variant}</div>
                     )}
                     {item.price_cents != null && (
-                      <div style={{ color: t.accent, fontWeight: font.weight.bold, fontSize: font.size.small + 1, marginTop: 2 }}>
+                      <div className="num" style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.body, marginTop: 3 }}>
                         ${(item.price_cents / 100).toFixed(2)}
                       </div>
                     )}
@@ -148,11 +138,11 @@ export default function CartDrawer({ items, open, onClose, onRemove, onClear, on
                     aria-label="Remove item"
                     style={{
                       background: 'transparent', border: 'none',
-                      color: t.text3, fontSize: 18, cursor: 'pointer',
-                      padding: '4px 8px', flexShrink: 0,
+                      color: t.text3, cursor: 'pointer',
+                      padding: 6, flexShrink: 0, display: 'flex',
                     }}
                   >
-                    ×
+                    <Icon name="trash" size={17} />
                   </button>
                 </div>
               ))}
@@ -166,7 +156,7 @@ export default function CartDrawer({ items, open, onClose, onRemove, onClear, on
             {total > 0 && (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                 <span style={{ color: t.text2, fontSize: font.size.body }}>Estimated total</span>
-                <span style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.title }}>
+                <span className="num" style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.title }}>
                   ${(total / 100).toFixed(2)}
                 </span>
               </div>
@@ -175,10 +165,9 @@ export default function CartDrawer({ items, open, onClose, onRemove, onClear, on
               onClick={() => setCheckingOut(true)}
               style={{
                 display: 'block', width: '100%', boxSizing: 'border-box',
-                background: t.accent, border: 'none', borderRadius: radius.lg,
+                background: t.accent, border: 'none', borderRadius: radius.md,
                 color: t.accentInk, fontWeight: font.weight.bold, fontSize: font.size.callout,
                 padding: '14px', textAlign: 'center', cursor: 'pointer',
-                boxShadow: 'var(--e-1)',
               }}
             >
               Checkout · pay at the store

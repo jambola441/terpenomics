@@ -1,104 +1,95 @@
 import { Link } from 'react-router-dom'
+import { t, font, radius, motion } from './theme'
+import { Icon, Logo } from './components/Icon'
 
 const sections = [
-  { label: 'Products',       path: '/admin/products',       desc: 'Browse and edit the product catalog' },
-  { label: 'Customers',      path: '/admin/customers',      desc: 'View customer profiles and history' },
-  { label: 'Pickup Orders',  path: '/admin/orders',         desc: 'Incoming orders to prepare for pickup' },
-  { label: 'Purchases',      path: '/admin/purchases',      desc: 'All purchase transactions' },
-  { label: 'Lab Reports',    path: '/admin/lab-reports',    desc: 'Upload and review COAs' },
-  { label: 'Dispensaries',   path: '/admin/dispensaries',   desc: 'Manage dispensary locations and POS settings' },
-  { label: 'Listings',       path: '/admin/listings',       desc: 'Browse all scraped listings' },
-  { label: 'Receipts',       path: '/admin/receipts',       desc: 'Customer receipt uploads to review: read the subtotal, award points' },
-  { label: 'Partner Stores', path: '/admin/partners',       desc: 'Non-dispensary partners whose purchases earn Terpee points; connect their Square' },
-  { label: 'Brand Catalogs', path: '/admin/brand-catalogs', desc: "Products a brand says it makes \u2014 the referent enrichment is checked against" },
+  { label: 'Products',       path: '/admin/products',       icon: 'package',  desc: 'Browse and edit the product catalog' },
+  { label: 'Customers',      path: '/admin/customers',      icon: 'users',    desc: 'View customer profiles and history' },
+  { label: 'Pickup Orders',  path: '/admin/orders',         icon: 'bag',      desc: 'Incoming orders to prepare for pickup' },
+  { label: 'Purchases',      path: '/admin/purchases',      icon: 'receipt',  desc: 'All purchase transactions' },
+  { label: 'Lab Reports',    path: '/admin/lab-reports',    icon: 'flask',    desc: 'Upload and review COAs' },
+  { label: 'Dispensaries',   path: '/admin/dispensaries',   icon: 'store',    desc: 'Manage dispensary locations and POS settings' },
+  { label: 'Listings',       path: '/admin/listings',       icon: 'list',     desc: 'Browse all scraped listings' },
+  { label: 'Receipts',       path: '/admin/receipts',       icon: 'scan',     desc: 'Customer receipt uploads to review: read the subtotal, award points' },
+  { label: 'Partner Stores', path: '/admin/partners',       icon: 'building', desc: 'Non-dispensary partners whose purchases earn Terpee points; connect their Square' },
+  { label: 'Brand Catalogs', path: '/admin/brand-catalogs', icon: 'tag',      desc: "Products a brand says it makes — the referent enrichment is checked against" },
 ]
+
+const rowStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 16,
+  padding: '18px 20px',
+  background: t.surface1,
+  border: `1px solid ${t.border}`,
+  borderRadius: radius.lg,
+  textDecoration: 'none',
+  color: 'inherit',
+  fontWeight: 400,
+  transition: `border-color ${motion.fast}, background ${motion.fast}`,
+}
+
+const labelStyle = { fontSize: font.size.callout, fontWeight: 600, color: t.text1, marginBottom: 3 }
+const descStyle = { fontSize: 13, color: t.text3, lineHeight: 1.45 }
+
+function hover(e, on, accent = false) {
+  const el = e.currentTarget
+  if (accent) {
+    el.style.borderColor = on ? t.accentDim : t.border
+  } else {
+    el.style.background = on ? t.surface2 : t.surface1
+    el.style.borderColor = on ? t.borderStrong : t.border
+  }
+}
 
 export default function AdminHome() {
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#080d18',
-      fontFamily: "'Inter', system-ui, sans-serif",
-      padding: '64px 40px',
-    }}>
+    <div style={{ minHeight: '100vh', background: t.bg, padding: '56px 24px' }}>
       <div style={{ maxWidth: 640, margin: '0 auto' }}>
-        <div style={{
-          fontSize: 11,
-          fontWeight: 700,
-          letterSpacing: '0.3em',
-          textTransform: 'uppercase',
-          color: '#334155',
-          marginBottom: 56,
-        }}>
-          terpenomics admin
+        <div style={{ marginBottom: 40 }}>
+          <Logo size={26} />
+          <div style={{
+            marginTop: 10,
+            fontFamily: font.family.mono,
+            fontSize: font.size.caption,
+            fontWeight: 500,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            color: t.text3,
+          }}>
+            Admin
+          </div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <Link
             to="/portal"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '22px 24px',
-              background: '#0a1a0a',
-              border: '1px solid #1a3320',
-              borderRadius: 10,
-              textDecoration: 'none',
-              color: 'inherit',
-              marginBottom: 8,
-              transition: 'border-color 0.15s, background 0.15s',
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = '#0d1f0d'
-              e.currentTarget.style.borderColor = '#2d5c3a'
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = '#0a1a0a'
-              e.currentTarget.style.borderColor = '#1a3320'
-            }}
+            style={{ ...rowStyle, background: t.accentTint, marginBottom: 8 }}
+            onMouseEnter={e => hover(e, true, true)}
+            onMouseLeave={e => hover(e, false, true)}
           >
-            <div>
-              <div style={{ fontSize: 15, fontWeight: 500, color: '#a8e063', marginBottom: 5 }}>
-                Customer Portal
-              </div>
-              <div style={{ fontSize: 13, color: '#4a7c4e' }}>View the customer-facing storefront</div>
+            <Icon name="mark" size={22} color={t.accent} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ ...labelStyle, color: t.accent }}>Customer Portal</div>
+              <div style={descStyle}>View the customer-facing storefront</div>
             </div>
-            <span style={{ color: '#4a7c4e', fontSize: 18 }}>→</span>
+            <Icon name="chevron-right" size={18} color={t.accent} />
           </Link>
 
           {sections.map(s => (
             <Link
               key={s.path}
               to={s.path}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '22px 24px',
-                background: '#0f172a',
-                border: '1px solid #1e293b',
-                borderRadius: 10,
-                textDecoration: 'none',
-                color: 'inherit',
-                transition: 'border-color 0.15s, background 0.15s',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.background = '#111827'
-                e.currentTarget.style.borderColor = '#334155'
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.background = '#0f172a'
-                e.currentTarget.style.borderColor = '#1e293b'
-              }}
+              style={rowStyle}
+              onMouseEnter={e => hover(e, true)}
+              onMouseLeave={e => hover(e, false)}
             >
-              <div>
-                <div style={{ fontSize: 15, fontWeight: 500, color: '#f1f5f9', marginBottom: 5 }}>
-                  {s.label}
-                </div>
-                <div style={{ fontSize: 13, color: '#475569' }}>{s.desc}</div>
+              <Icon name={s.icon} size={20} color={t.text3} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={labelStyle}>{s.label}</div>
+                <div style={descStyle}>{s.desc}</div>
               </div>
-              <span style={{ color: '#334155', fontSize: 18 }}>→</span>
+              <Icon name="chevron-right" size={18} color={t.text3} />
             </Link>
           ))}
         </div>

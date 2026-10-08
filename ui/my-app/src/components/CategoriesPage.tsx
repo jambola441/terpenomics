@@ -9,9 +9,9 @@
 import { useEffect, useState } from 'react'
 import api from '../api/client'
 import type { PortalCategory } from '../types'
-import { t, radius, font, categoryColor, alpha } from '../theme'
-import { FeedState, Pressable, Skeleton } from './ui'
-import { CATEGORY_EMOJI } from './browse'
+import { t, radius, font, categoryColor, categoryLabel, alpha } from '../theme'
+import { FeedState, PageTitle, Pressable, Skeleton } from './ui'
+import { CategoryIcon } from './Icon'
 
 interface Props {
   onOpenCategory: (name: string) => void
@@ -39,21 +39,19 @@ export default function CategoriesPage({ onOpenCategory }: Props) {
 
   return (
     <div style={{ height: 'calc(100dvh - 64px)', overflowY: 'auto', background: t.bg }}>
-      <div style={{ padding: '22px 16px 6px' }}>
-        <div style={{ color: t.text1, fontWeight: font.weight.heavy, fontSize: font.size.hero, letterSpacing: '-0.02em' }}>
-          Categories
-        </div>
-        <div style={{ color: t.text3, fontSize: font.size.small, marginTop: 2 }}>
-          {categories === null
-            ? 'Shop by what you’re after'
-            : `${total.toLocaleString()} listings across ${categories.length} categories`}
-        </div>
-      </div>
+      <PageTitle
+        style={{ padding: '26px 16px 6px' }}
+        sub={categories === null
+          ? 'Shop by what you’re after'
+          : `${total.toLocaleString()} listings across ${categories.length} categories`}
+      >
+        Shop by category
+      </PageTitle>
 
       {categories === null ? (
         <CategoryGridSkeleton />
       ) : categories.length === 0 ? (
-        <FeedState kind="empty" message="No categories yet" icon="📦" style={{ padding: '48px 16px' }} />
+        <FeedState kind="empty" message="No categories yet" icon="package" style={{ padding: '48px 16px' }} />
       ) : (
         <div style={{
           display: 'grid',
@@ -63,46 +61,46 @@ export default function CategoriesPage({ onOpenCategory }: Props) {
         }}>
           {categories.map(category => {
             const color = categoryColor(category.name)
-            const emoji = CATEGORY_EMOJI[category.name] ?? '📦'
             return (
               <Pressable
                 key={category.name}
                 onClick={() => onOpenCategory(category.name)}
                 lift
                 style={{
-                  background: alpha(color, 0.10),
-                  border: `1px solid ${alpha(color, 0.28)}`,
+                  position: 'relative',
+                  background: `linear-gradient(155deg, ${alpha(color, 0.14)} 0%, ${alpha(color, 0.04)} 60%), ${t.surface1}`,
+                  border: `1px solid ${alpha(color, 0.22)}`,
                   borderRadius: radius.xl,
                   overflow: 'hidden',
                   textAlign: 'left',
+                  padding: '16px 14px 14px',
+                  minHeight: 132,
+                  display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
                 }}
               >
-                <div style={{ position: 'relative', height: 96 }}>
-                  {category.image_url ? (
-                    <img
-                      src={category.image_url}
-                      alt={category.name}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: 0.6 }}
-                      onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-                    />
-                  ) : (
-                    <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 42 }}>
-                      {emoji}
-                    </div>
-                  )}
+                {/* The glyph twice: small as the label's icon, large and faint
+                    as a specimen drawing bled off the corner. */}
+                <CategoryIcon
+                  category={category.name}
+                  size={92}
+                  strokeWidth={1}
+                  style={{ position: 'absolute', right: -14, bottom: -12, opacity: 0.16, pointerEvents: 'none' }}
+                />
+                <span style={{
+                  width: 36, height: 36, borderRadius: radius.md,
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  background: alpha(color, 0.14), border: `1px solid ${alpha(color, 0.3)}`,
+                }}>
+                  <CategoryIcon category={category.name} size={20} />
+                </span>
+                <div style={{ position: 'relative', marginTop: 18 }}>
                   <div style={{
-                    position: 'absolute', inset: 0,
-                    background: `linear-gradient(to bottom, transparent 30%, ${alpha('#000', 0.55)} 100%)`,
-                  }} />
-                </div>
-                <div style={{ padding: '10px 12px 13px' }}>
-                  <div style={{
-                    color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.small + 1,
-                    textTransform: 'capitalize', marginBottom: 3,
+                    color: t.text1, fontFamily: font.family.display, fontWeight: font.weight.semibold,
+                    fontSize: font.size.title + 1, letterSpacing: '-0.01em', marginBottom: 2,
                   }}>
-                    {category.name}
+                    {categoryLabel(category.name)}
                   </div>
-                  <div style={{ color, fontSize: font.size.caption, fontWeight: font.weight.semibold }}>
+                  <div className="num" style={{ color: t.text3, fontFamily: font.family.mono, fontSize: font.size.caption }}>
                     {category.listing_count.toLocaleString()} listings
                   </div>
                 </div>
@@ -124,13 +122,7 @@ function CategoryGridSkeleton() {
       padding: '16px',
     }}>
       {Array.from({ length: 8 }, (_, i) => (
-        <div key={i}>
-          <Skeleton height={96} radius={radius.xl} />
-          <div style={{ padding: '10px 2px' }}>
-            <Skeleton width="60%" height={12} style={{ marginBottom: 7 }} />
-            <Skeleton width="40%" height={10} />
-          </div>
-        </div>
+        <Skeleton key={i} height={132} radius={radius.xl} />
       ))}
     </div>
   )

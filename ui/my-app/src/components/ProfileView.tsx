@@ -15,8 +15,9 @@ import type {
   CustomerProfile, Feedback, Order, PointsSummary, PortalPurchase, PortalDispensary,
 } from '../types'
 import type { Session } from '@supabase/supabase-js'
-import { t, radius, font, categoryColor, alpha } from '../theme'
+import { t, radius, font, categoryColor, categoryLabel } from '../theme'
 import { FeedState, ProductImage, Label } from './ui'
+import { Icon, type IconName } from './Icon'
 import OrderCard from './OrderCard'
 import ReceiptUpload from './ReceiptUpload'
 import EmailEditor from './EmailEditor'
@@ -74,14 +75,14 @@ export default function ProfileView({
           width: 56, height: 56, borderRadius: '50%', flexShrink: 0,
           background: t.surface2, border: `1px solid ${t.border}`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: t.accent, fontWeight: font.weight.heavy, fontSize: 22,
+          color: t.text1, fontFamily: font.family.display, fontWeight: font.weight.semibold, fontSize: 24,
         }}>
           {(profile?.name ?? session.user.email ?? session.user.phone ?? '?').charAt(0).toUpperCase()}
         </div>
         <div style={{ minWidth: 0, flex: 1 }}>
           <div style={{
-            color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.title,
-            letterSpacing: '-0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            color: t.text1, fontFamily: font.family.display, fontWeight: font.weight.semibold, fontSize: font.size.display,
+            letterSpacing: '-0.02em', lineHeight: 1.15, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
           }}>
             {profile?.name || 'Your account'}
           </div>
@@ -94,30 +95,37 @@ export default function ProfileView({
             onClick={() => setPane('points')}
             aria-label={`${points.available} Terpee points`}
             style={{
-              flexShrink: 0, cursor: 'pointer', padding: '8px 14px', borderRadius: radius.pill,
-              background: alpha(t.accent, 0.12), border: `1px solid ${alpha(t.accent, 0.4)}`,
-              color: t.accent, fontWeight: font.weight.heavy, fontSize: font.size.callout,
+              flexShrink: 0, cursor: 'pointer', padding: '7px 12px 7px 10px', borderRadius: radius.pill,
+              background: t.accentTint, border: `1px solid ${t.accentDim}`,
+              color: t.accent, fontWeight: font.weight.bold, fontSize: font.size.callout,
+              display: 'inline-flex', alignItems: 'center', gap: 5,
             }}
           >
-            ★ {points.available.toLocaleString()}
-            <span style={{ fontWeight: font.weight.medium, fontSize: font.size.small, marginLeft: 4 }}>pts</span>
+            <Icon name="drop" size={15} strokeWidth={2} />
+            <span className="num">{points.available.toLocaleString()}</span>
+            <span style={{ fontFamily: font.family.mono, fontWeight: font.weight.medium, fontSize: font.size.caption }}>pts</span>
           </button>
         )}
       </div>
 
       {/* Pane switcher */}
-      <div style={{ display: 'flex', gap: 6, padding: '20px 16px 0' }}>
+      <div role="tablist" style={{
+        display: 'flex', gap: 2, margin: '22px 16px 0', padding: 3,
+        background: t.surface1, border: `1px solid ${t.border}`, borderRadius: radius.md,
+      }}>
         {PANES.map(p => (
           <button
             key={p.key}
+            role="tab"
+            aria-selected={pane === p.key}
             onClick={() => setPane(p.key)}
             style={{
               flex: 1, cursor: 'pointer',
-              background: pane === p.key ? alpha(t.accent, 0.14) : t.surface2,
-              border: `1px solid ${pane === p.key ? t.accent : t.border}`,
-              borderRadius: radius.pill, padding: '9px 0',
-              color: pane === p.key ? t.accent : t.text3,
-              fontSize: font.size.small, fontWeight: pane === p.key ? font.weight.bold : font.weight.medium,
+              background: pane === p.key ? t.surface3 : 'transparent',
+              border: 'none', boxShadow: pane === p.key ? 'var(--e-1)' : 'none',
+              borderRadius: radius.sm, padding: '8px 0',
+              color: pane === p.key ? t.text1 : t.text3,
+              fontSize: font.size.small + 1, fontWeight: pane === p.key ? font.weight.semibold : font.weight.medium,
               transition: 'all var(--t-fast)',
             }}
           >
@@ -169,7 +177,7 @@ function OrdersPane({ orders, loading, error, onCancelOrder, cancellingIds }: {
         kind="empty"
         message="No orders yet"
         hint="Orders you place for pickup show up here with their pickup code."
-        icon="🛍️"
+        icon="bag"
       />
     )
   }
@@ -210,13 +218,14 @@ function PointsPane({ data, error, onUploaded }: {
       }}>
         <div>
           <Label>Available</Label>
-          <div style={{ color: t.accent, fontSize: 34, fontWeight: font.weight.heavy, lineHeight: 1.1, marginTop: 4 }}>
+          <div className="num" style={{ color: t.accent, fontSize: 36, fontWeight: font.weight.bold, lineHeight: 1.1, marginTop: 4, letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Icon name="drop" size={24} strokeWidth={1.75} />
             {data.available.toLocaleString()}
           </div>
         </div>
         <div style={{ paddingBottom: 4 }}>
           <Label>Pending</Label>
-          <div style={{ color: t.text2, fontSize: font.size.title, fontWeight: font.weight.bold, marginTop: 4 }}>
+          <div className="num" style={{ color: t.text2, fontSize: font.size.title, fontWeight: font.weight.bold, marginTop: 4 }}>
             {data.pending.toLocaleString()}
           </div>
         </div>
@@ -234,7 +243,7 @@ function PointsPane({ data, error, onUploaded }: {
           kind="empty"
           message="No points yet"
           hint="Shop at a Terpee partner store and give them your phone number at checkout."
-          icon="✨"
+          icon="drop"
         />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -252,8 +261,8 @@ function PointsPane({ data, error, onUploaded }: {
                   {e.pending && e.points > 0 ? ` · available ${formatDate(e.available_at)}` : ''}
                 </div>
               </div>
-              <div style={{
-                fontWeight: font.weight.bold, fontSize: font.size.callout,
+              <div className="num" style={{
+                fontFamily: font.family.mono, fontWeight: font.weight.medium, fontSize: font.size.callout,
                 color: e.points < 0 ? t.danger : e.pending ? t.text3 : t.success,
               }}>
                 {e.points > 0 ? '+' : ''}{e.points.toLocaleString()}
@@ -314,7 +323,7 @@ function FeedbackPane({ customerId }: { customerId: string }) {
         kind="empty"
         message="Nothing to rate yet"
         hint="Once you've bought something, rate it here and your recommendations start to fit."
-        icon="👍"
+        icon="thumbs-up"
       />
     )
   }
@@ -325,8 +334,8 @@ function FeedbackPane({ customerId }: { customerId: string }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
       <div style={{ color: t.text3, fontSize: font.size.small, lineHeight: 1.5 }}>
-        {rated} of {items.length} rated. Ratings feed your recommendations — a 👎 is as
-        useful as a 👍.
+        {rated} of {items.length} rated. Ratings feed your recommendations — a thumbs-down
+        is as useful as a thumbs-up.
       </div>
 
       {purchases.map(purchase => (
@@ -336,7 +345,7 @@ function FeedbackPane({ customerId }: { customerId: string }) {
             gap: 12, marginBottom: 10,
           }}>
             <Label>{formatDate(purchase.purchased_at)}</Label>
-            <span style={{ color: t.text3, fontSize: font.size.small }}>
+            <span className="num" style={{ color: t.text2, fontFamily: font.family.mono, fontSize: font.size.small }}>
               {purchase.total_amount_cents ? formatDollars(purchase.total_amount_cents) : '—'}
             </span>
           </div>
@@ -369,14 +378,14 @@ function FeedbackPane({ customerId }: { customerId: string }) {
                       {item.product_name}
                     </div>
                     <div style={{
-                      color, fontSize: font.size.caption, fontWeight: font.weight.semibold,
-                      textTransform: 'capitalize', marginTop: 2,
+                      color, fontFamily: font.family.mono, fontSize: font.size.caption,
+                      textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 3,
                     }}>
-                      {item.product_category}
+                      {categoryLabel(item.product_category)}
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: 5, flexShrink: 0 }}>
-                    {RATINGS.map(({ value, glyph, color: ratingColor }) => {
+                    {RATINGS.map(({ value, icon, color: ratingColor }) => {
                       const active = current === value
                       return (
                         <button
@@ -387,13 +396,15 @@ function FeedbackPane({ customerId }: { customerId: string }) {
                           style={{
                             cursor: isSaving ? 'default' : 'pointer',
                             opacity: isSaving ? 0.5 : 1,
-                            background: active ? alpha(ratingColor, 0.18) : t.surface2,
+                            background: active ? `color-mix(in srgb, ${ratingColor} 14%, transparent)` : t.surface2,
                             border: `1px solid ${active ? ratingColor : t.border}`,
-                            borderRadius: radius.md, padding: '6px 9px', fontSize: 14,
+                            color: active ? ratingColor : t.text3,
+                            borderRadius: radius.md, width: 36, height: 34, padding: 0,
+                            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                             transition: 'all var(--t-fast)',
                           }}
                         >
-                          {glyph}
+                          <Icon name={icon} size={17} />
                         </button>
                       )
                     })}
@@ -408,10 +419,10 @@ function FeedbackPane({ customerId }: { customerId: string }) {
   )
 }
 
-const RATINGS: { value: Exclude<Feedback, null>; glyph: string; color: string }[] = [
-  { value: 'like', glyph: '👍', color: 'var(--accent)' },
-  { value: 'neutral', glyph: '😑', color: 'var(--text-3)' },
-  { value: 'dislike', glyph: '👎', color: 'var(--danger)' },
+const RATINGS: { value: Exclude<Feedback, null>; icon: IconName; color: string }[] = [
+  { value: 'like', icon: 'thumbs-up', color: 'var(--success)' },
+  { value: 'neutral', icon: 'face-neutral', color: 'var(--text-2)' },
+  { value: 'dislike', icon: 'thumbs-down', color: 'var(--danger)' },
 ]
 
 /* ── Profile ───────────────────────────────────────────────────────────────── */
@@ -514,7 +525,7 @@ function ProfilePane({ profile, session, onSaved, onSignOut }: {
           changes after a code sent to the new address. */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <ReadOnlyRow label="Phone" value={profile.phone ?? session.user.phone ?? '—'} />
-        <div style={{ color: t.text4, fontSize: font.size.caption, lineHeight: 1.5 }}>
+        <div style={{ color: t.text3, fontSize: font.size.caption, lineHeight: 1.5 }}>
           Your phone number is how you sign in and how stores match your purchases. Ask a
           staff member to change it.
         </div>
@@ -559,8 +570,8 @@ function ProfilePane({ profile, session, onSaved, onSignOut }: {
           style={{
             width: '100%', boxSizing: 'border-box',
             background: dirty && !saving ? t.accent : t.surface2,
-            border: 'none', borderRadius: radius.lg,
-            color: dirty && !saving ? t.accentInk : t.text3,
+            border: 'none', borderRadius: radius.md,
+            color: dirty && !saving ? t.accentInk : t.text4,
             fontWeight: font.weight.bold, fontSize: font.size.callout,
             padding: 13, cursor: dirty && !saving ? 'pointer' : 'default',
           }}
@@ -577,12 +588,14 @@ function ProfilePane({ profile, session, onSaved, onSignOut }: {
       <button
         onClick={onSignOut}
         style={{
-          margin: '0 auto', background: 'transparent', border: `1px solid ${t.border}`,
-          borderRadius: radius.lg, color: t.danger,
+          margin: '0 auto', background: 'transparent', border: `1px solid ${t.borderStrong}`,
+          borderRadius: radius.md, color: t.text1,
           fontSize: font.size.callout, fontWeight: font.weight.semibold,
-          padding: '12px 32px', cursor: 'pointer',
+          padding: '11px 24px', cursor: 'pointer',
+          display: 'inline-flex', alignItems: 'center', gap: 8,
         }}
       >
+        <Icon name="log-out" size={17} color={t.text3} />
         Sign out
       </button>
 
@@ -591,7 +604,7 @@ function ProfilePane({ profile, session, onSaved, onSignOut }: {
         disabled={deleting}
         style={{
           margin: '0 auto', background: 'transparent', border: 'none',
-          color: t.text3, fontSize: font.size.small, textDecoration: 'underline',
+          color: t.danger, fontSize: font.size.small, textDecoration: 'underline', textUnderlineOffset: 3,
           padding: 8, cursor: deleting ? 'default' : 'pointer',
         }}
       >
@@ -621,6 +634,6 @@ function ReadOnlyRow({ label, value }: { label: string; value: string }) {
 
 const nameInputStyle = {
   width: '100%', boxSizing: 'border-box', marginTop: 8,
-  background: t.surface2, border: `1px solid ${t.border}`, borderRadius: radius.lg,
+  background: t.surface2, border: `1px solid ${t.border}`, borderRadius: radius.md,
   color: t.text1, fontSize: font.size.body, padding: '12px 14px', outline: 'none',
 } as const

@@ -1,15 +1,17 @@
 import { Text, View } from 'react-native'
 import type { Order, OrderStatus } from '@web/types'
 import { formatDate, formatDollars } from '@web/utils/format'
-import { Button, styles } from './ui'
-import { t, space, font, radius } from '@/lib/theme'
+import { Button, Label, Pill, StoreBullet, styles, type Tone } from './ui'
+import type { IconName } from './Icon'
+import { t, space, font, fonts, radius, type } from '@/lib/theme'
 
-// Mirrors ORDER_STATUS_STYLE in the web OrderCard.
-const STATUS: Record<OrderStatus, { label: string; color: string; hint: string }> = {
-  submitted: { label: 'Submitted', color: '#f0b93b', hint: 'The store is preparing your order.' },
-  ready: { label: 'Ready', color: '#4ac97e', hint: 'Waiting at the counter — pay when you collect it.' },
-  completed: { label: 'Picked up', color: t.text3, hint: '' },
-  cancelled: { label: 'Cancelled', color: t.danger, hint: '' },
+// Mirrors ORDER_STATUS_STYLE in the web OrderCard: a word, a glyph and a tone,
+// so the state never rests on colour alone.
+const STATUS: Record<OrderStatus, { label: string; tone: Tone; icon: IconName; hint: string }> = {
+  submitted: { label: 'Submitted', tone: 'warning', icon: 'clock', hint: 'The store is preparing your order.' },
+  ready: { label: 'Ready', tone: 'success', icon: 'check-circle', hint: 'Waiting at the counter — pay when you collect it.' },
+  completed: { label: 'Picked up', tone: 'neutral', icon: 'check', hint: '' },
+  cancelled: { label: 'Cancelled', tone: 'danger', icon: 'x-circle', hint: '' },
 }
 
 export default function OrderCard({ order, cancelling, onCancel }: {
@@ -19,31 +21,35 @@ export default function OrderCard({ order, cancelling, onCancel }: {
 }) {
   const s = STATUS[order.status]
   const open = order.status === 'submitted' || order.status === 'ready'
+  const store = order.dispensary_name ?? 'Order'
 
   return (
     <View style={[styles.card, { padding: space[4], gap: space[2] }]}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Text style={[styles.name, { fontSize: font.size.callout }]}>{order.dispensary_name ?? 'Order'}</Text>
-        <Text style={{ color: s.color, fontWeight: font.weight.bold, fontSize: font.size.small }}>{s.label}</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[3] }}>
+        <StoreBullet name={store} address={order.dispensary_address} />
+        <Text style={[type.title, { flex: 1, fontSize: font.size.title, lineHeight: 22 }]} numberOfLines={1}>{store}</Text>
+        <Pill tone={s.tone} icon={s.icon}>{s.label}</Pill>
       </View>
       <Text style={styles.meta}>
-        {formatDate(order.submitted_at)} · {order.items.length} item{order.items.length === 1 ? '' : 's'} · {formatDollars(order.total_amount_cents)}
+        {formatDate(order.submitted_at)} · {order.items.length} item{order.items.length === 1 ? '' : 's'} ·{' '}
+        <Text style={{ fontFamily: fonts.sansSemibold, color: t.text2, fontVariant: ['tabular-nums'] }}>
+          {formatDollars(order.total_amount_cents)}
+        </Text>
       </Text>
 
       {open ? (
-        <View style={{ backgroundColor: t.surface2, borderRadius: radius.md, padding: space[3], marginTop: space[1] }}>
-          <Text style={styles.meta}>Pickup code</Text>
-          <Text style={{ color: t.text1, fontSize: font.size.hero, fontWeight: font.weight.heavy, letterSpacing: 2 }}>
-            {order.pickup_code}
-          </Text>
-          {s.hint ? <Text style={[styles.meta, { marginTop: space[1] }]}>{s.hint}</Text> : null}
+        <View style={{ backgroundColor: t.surface2, borderRadius: radius.md, borderWidth: 1, borderColor: t.border, padding: space[3], marginTop: space[1], gap: space[1] }}>
+          <Label>Pickup code</Label>
+          <Text style={type.code}>{order.pickup_code}</Text>
+          {s.hint ? <Text style={styles.meta}>{s.hint}</Text> : null}
         </View>
       ) : null}
 
       {order.items.map(item => (
-        <Text key={item.id} style={{ color: t.text2, fontSize: font.size.small }} numberOfLines={1}>
-          {item.quantity} × {item.name}
-        </Text>
+        <View key={item.id} style={{ flexDirection: 'row', alignItems: 'baseline', gap: space[2] }}>
+          <Text style={[type.mono, { color: t.text3, minWidth: 24 }]}>{item.quantity}×</Text>
+          <Text style={[type.meta, { color: t.text2, flex: 1 }]} numberOfLines={1}>{item.name}</Text>
+        </View>
       ))}
 
       {open && onCancel ? (

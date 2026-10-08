@@ -1,78 +1,15 @@
 /* ============================================================================
-   Terpenomics — design foundation
-   A single source of truth for the customer-facing dark/lime design language.
-   Tokens are CSS custom properties so they can be referenced from inline
-   styles via var(--token) and from theme.ts (typed accessors).
+   Terpenomics — base styles
+   The tokens themselves (colour, radius, space, motion, type families) are
+   written onto :root at startup from design/tokens.ts by design/css.ts; this
+   file only uses them.
    ========================================================================== */
 
 :root {
-  /* ── Surfaces (dark → light) ───────────────────────────────────────────── */
-  --bg:           #0b0b0d;   /* app background (near-black, faint cool) */
-  --surface-1:    #141418;   /* cards, sheets */
-  --surface-2:    #1c1c21;   /* raised: inputs, chips, hover */
-  --surface-3:    #26262d;   /* pressed / active */
-  --tile:         #f3f2ee;   /* light neutral plate for product photos */
-
-  /* ── Borders / hairlines ───────────────────────────────────────────────── */
-  --border:        #26262d;  /* default hairline */
-  --border-strong: #34343d;  /* emphasized edge */
-
-  /* ── Text ramp (deliberate 4-step hierarchy) ───────────────────────────── */
-  --text-1: #f4f5f7;  /* primary — names, headings */
-  --text-2: #aab0b9;  /* secondary — readable meta, brand */
-  --text-3: #7d828c;  /* muted — labels, captions */
-  --text-4: #585d66;  /* faint — placeholders, disabled, empty states */
-
-  /* ── Accent (brand lime) ───────────────────────────────────────────────── */
-  --accent:        #a8e063;
-  --accent-strong: #baee78;  /* hover / brighter */
-  --accent-dim:    #7faa46;  /* subdued accent text */
-  --accent-ink:    #0c1605;  /* text/icon on accent fills */
-  --accent-tint:   rgba(168, 224, 99, 0.12);  /* faint accent wash */
-
-  /* ── Semantic ──────────────────────────────────────────────────────────── */
-  --danger:  #f0655a;
-  --success: #a8e063;
-  --warning: #ffb454;
-
-  /* ── Radius scale ──────────────────────────────────────────────────────── */
-  --r-xs: 6px;
-  --r-sm: 8px;
-  --r-md: 10px;
-  --r-lg: 14px;
-  --r-xl: 18px;
-  --r-2xl: 22px;
-  --r-pill: 999px;
-
-  /* ── Spacing scale (4pt grid) ──────────────────────────────────────────── */
-  --s-1: 4px;
-  --s-2: 8px;
-  --s-3: 12px;
-  --s-4: 16px;
-  --s-5: 20px;
-  --s-6: 24px;
-  --s-7: 32px;
-  --s-8: 40px;
-
-  /* ── Elevation ─────────────────────────────────────────────────────────── */
-  --e-1: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --e-2: 0 6px 20px rgba(0, 0, 0, 0.40);
-  --e-3: 0 12px 40px rgba(0, 0, 0, 0.55);
-  --ring: 0 0 0 3px rgba(168, 224, 99, 0.35);  /* focus ring */
-
-  /* ── Motion ────────────────────────────────────────────────────────────── */
-  --t-fast: 120ms cubic-bezier(0.4, 0, 0.2, 1);
-  --t-base: 180ms cubic-bezier(0.4, 0, 0.2, 1);
-  --t-slow: 280ms cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
-
-  /* ── Type ──────────────────────────────────────────────────────────────── */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text',
-    'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-
   color-scheme: dark;
   font-family: var(--font-sans);
   font-synthesis: none;
+  font-feature-settings: 'kern', 'liga', 'calt';
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -147,6 +84,13 @@ textarea::placeholder {
   color: var(--text-4);
 }
 
+/* ── Type roles ───────────────────────────────────────────────────────────── */
+
+/* Prices, counts and potency line up in columns. */
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
 /* ── Accessible, on-brand focus ───────────────────────────────────────────── */
 
 :focus { outline: none; }
@@ -159,8 +103,8 @@ textarea::placeholder {
 /* ── Selection ────────────────────────────────────────────────────────────── */
 
 ::selection {
-  background: rgba(168, 224, 99, 0.28);
-  color: #fff;
+  background: rgba(240, 181, 80, 0.32);
+  color: var(--text-1);
 }
 
 /* ── Custom scrollbars (subtle, themed) ───────────────────────────────────── */
@@ -292,7 +236,7 @@ textarea::placeholder {
    system used for store bullets. */
 
 .nyc-map .leaflet-container {
-  background: #0a1020;               /* deep dusk behind un-loaded tiles */
+  background: #0b151c;               /* deep dusk behind un-loaded tiles */
   font-family: var(--font-sans);
   outline: none;
 }
@@ -324,10 +268,10 @@ textarea::placeholder {
   background: var(--pin);
   color: #fff;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.01em;
   box-shadow:
-    0 0 0 2px rgba(9, 12, 20, 0.75),
+    0 0 0 2px rgba(12, 15, 13, 0.75),
     0 4px 12px rgba(0, 0, 0, 0.55);
 }
 
@@ -352,7 +296,7 @@ textarea::placeholder {
 .nyc-pin--active .nyc-pin__disc {
   box-shadow:
     0 0 0 2px var(--accent),
-    0 0 0 5px rgba(168, 224, 99, 0.22),
+    0 0 0 5px rgba(240, 181, 80, 0.24),
     0 6px 16px rgba(0, 0, 0, 0.6);
 }
 
@@ -375,13 +319,14 @@ textarea::placeholder {
 /* ── Leaflet chrome ───────────────────────────────────────────────────────── */
 
 .nyc-map .leaflet-tooltip.nyc-tip {
-  background: rgba(12, 14, 20, 0.92);
+  background: rgba(12, 15, 13, 0.92);
   border: 1px solid var(--border-strong);
   border-radius: var(--r-pill);
   color: var(--text-1);
   font-size: 12px;
   font-weight: 600;
   padding: 5px 11px;
+  font-family: var(--font-sans);
   box-shadow: var(--e-2);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -402,7 +347,7 @@ textarea::placeholder {
   width: 34px;
   height: 34px;
   line-height: 32px;
-  background: rgba(20, 20, 24, 0.86);
+  background: rgba(19, 23, 20, 0.86);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   color: var(--text-2);
@@ -413,7 +358,7 @@ textarea::placeholder {
 .nyc-map .leaflet-bar a:last-child { border-bottom: none; }
 
 .nyc-map .leaflet-control-attribution {
-  background: rgba(10, 12, 18, 0.66);
+  background: rgba(12, 15, 13, 0.66);
   border-radius: var(--r-xs) 0 0 0;
   color: var(--text-4);
   font-size: 10px;

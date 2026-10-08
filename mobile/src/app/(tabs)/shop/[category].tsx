@@ -4,8 +4,9 @@ import type { PortalCategoryProduct } from '@web/types'
 import { formatDollars } from '@web/utils/format'
 import { api } from '@/lib/api'
 import { useFetch } from '@/lib/useFetch'
-import { FeedState, ProductImage, styles } from '@/components/ui'
-import { space } from '@/lib/theme'
+import { FeedState, Label, ProductImage, categoryName, styles } from '@/components/ui'
+import { Icon } from '@/components/Icon'
+import { t, space, type } from '@/lib/theme'
 
 function priceRange(p: PortalCategoryProduct) {
   if (p.min_price_cents == null) return '—'
@@ -19,7 +20,7 @@ export default function Category() {
   const { category } = useLocalSearchParams<{ category: string }>()
   const { data, error, loading, refresh } = useFetch(category, () => api.portal.getCategory(category))
 
-  const header = <Stack.Screen options={{ title: category.charAt(0).toUpperCase() + category.slice(1) }} />
+  const header = <Stack.Screen options={{ title: categoryName(category) }} />
   if (loading || error) return <>{header}<FeedState loading={loading} error={error} onRetry={refresh} /></>
 
   async function open(p: PortalCategoryProduct) {
@@ -54,22 +55,28 @@ export default function Category() {
         contentContainerStyle={{ padding: space[4], gap: space[3] }}
         ListHeaderComponent={
           data ? (
-            <Text style={styles.meta}>
+            <Label>
               {data.product_count.toLocaleString()} products · {data.brand_count} brands · {data.dispensary_count} stores
-            </Text>
+            </Label>
           ) : null
         }
         ListEmptyComponent={<FeedState empty="Nothing in this category right now." />}
         renderItem={({ item }) => (
-          <Pressable onPress={() => open(item)} style={({ pressed }) => [{ flexDirection: 'row', gap: space[3] }, pressed && { opacity: 0.7 }]}>
-            <ProductImage uri={item.image_url} size={72} />
+          <Pressable
+            onPress={() => open(item)}
+            style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'center', gap: space[3] }, pressed && { opacity: 0.7 }]}
+            accessibilityRole="button"
+          >
+            <ProductImage uri={item.image_url} size={72} category={item.category ?? category} />
             <View style={{ flex: 1, justifyContent: 'center' }}>
               <Text numberOfLines={2} style={styles.name}>{item.name}</Text>
-              {item.brand ? <Text numberOfLines={1} style={styles.meta}>{item.brand}</Text> : null}
+              {item.brand ? <Text numberOfLines={1} style={[type.meta, { color: t.text2 }]}>{item.brand}</Text> : null}
               <Text style={[styles.meta, { marginTop: 2 }]}>
-                {priceRange(item)} · {item.dispensary_count} store{item.dispensary_count === 1 ? '' : 's'}
+                <Text style={[type.price, { fontSize: type.meta.fontSize, lineHeight: type.meta.lineHeight }]}>{priceRange(item)}</Text>
+                {' · '}{item.dispensary_count} store{item.dispensary_count === 1 ? '' : 's'}
               </Text>
             </View>
+            <Icon name="chevron-right" size={16} color={t.text4} />
           </Pressable>
         )}
       />

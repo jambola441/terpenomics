@@ -1,12 +1,17 @@
 /* ============================================================================
    ui.tsx — small presentational primitives shared across the customer portal.
-   Encodes the refined design language (tokens from theme.ts) so screens stay
-   consistent: image plates, skeletons, feed states, pills, tactile press.
+   Encodes the design language (tokens from theme.ts, glyphs from Icon.tsx) so
+   screens stay consistent: image plates, skeletons, feed states, tags, store
+   bullets, the terpene profile, tactile press.
    ========================================================================== */
 
 import { useState } from 'react'
 import type { CSSProperties, ReactNode, PointerEvent } from 'react'
-import { t, radius, font, categoryColor, categoryImage, alpha } from '../theme'
+import { t, radius, font, categoryColor, categoryLabel, alpha } from '../theme'
+import { strains, terpeneStyle } from '../design/tokens'
+import { icons } from '../design/icons'
+import { Icon, CategoryIcon, type IconName } from './Icon'
+import { boroughColor, NYC_COLOR } from '../utils/boroughs'
 
 /* ── Spinner ───────────────────────────────────────────────────────────────── */
 
@@ -18,7 +23,7 @@ export function Spinner({ size = 18, color = t.text3 }: { size?: number; color?:
         display: 'inline-block',
         width: size,
         height: size,
-        border: `2px solid ${alpha('#ffffff', 0.12)}`,
+        border: `2px solid ${alpha('#f2f0e9', 0.12)}`,
         borderTopColor: color,
         borderRadius: '50%',
         animation: 'ds-spin 0.7s linear infinite',
@@ -68,9 +73,13 @@ export function FeedState({
   kind: 'loading' | 'error' | 'empty'
   message: string
   hint?: string
-  icon?: ReactNode
+  /** A glyph name from design/icons.ts, or any node. */
+  icon?: IconName | ReactNode
   style?: CSSProperties
 }) {
+  const glyph = typeof icon === 'string' && icon in icons
+    ? <Icon name={icon as IconName} size={22} />
+    : icon ?? <Icon name={kind === 'error' ? 'alert' : 'leaf'} size={22} />
   return (
     <div
       style={{
@@ -78,7 +87,7 @@ export function FeedState({
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 12,
+        gap: 10,
         minHeight: 200,
         padding: '0 32px',
         textAlign: 'center',
@@ -88,11 +97,21 @@ export function FeedState({
       {kind === 'loading' ? (
         <Spinner size={22} />
       ) : (
-        <div style={{ fontSize: 34, lineHeight: 1 }}>{icon ?? (kind === 'error' ? '⚠️' : '✨')}</div>
+        <div
+          style={{
+            width: 48, height: 48, borderRadius: '50%', marginBottom: 4,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: kind === 'error' ? t.dangerTint : t.surface2,
+            border: `1px solid ${kind === 'error' ? t.dangerEdge : t.border}`,
+            color: kind === 'error' ? t.danger : t.text3,
+          }}
+        >
+          {glyph}
+        </div>
       )}
       <div
         style={{
-          color: kind === 'error' ? t.danger : t.text2,
+          color: kind === 'error' ? t.danger : t.text1,
           fontSize: font.size.callout,
           fontWeight: font.weight.semibold,
         }}
@@ -100,7 +119,7 @@ export function FeedState({
         {message}
       </div>
       {hint && (
-        <div style={{ color: t.text4, fontSize: font.size.small, lineHeight: 1.5, maxWidth: 280 }}>
+        <div style={{ color: t.text3, fontSize: font.size.small + 1, lineHeight: 1.5, maxWidth: 300 }}>
           {hint}
         </div>
       )}
@@ -126,7 +145,7 @@ export function Pill({
 }) {
   const c = color ?? (tone === 'accent' ? 'var(--accent)' : null)
   const colored = tone === 'category' || tone === 'accent' || !!color
-  const pad = size === 'md' ? '4px 11px' : '3px 9px'
+  const pad = size === 'md' ? '4px 10px' : '3px 8px'
 
   return (
     <span
@@ -134,12 +153,13 @@ export function Pill({
         display: 'inline-flex',
         alignItems: 'center',
         gap: 5,
-        background: colored && c ? alphaVar(c, 0.14) : 'var(--surface-2)',
-        border: `1px solid ${colored && c ? alphaVar(c, 0.5) : 'var(--border)'}`,
-        color: colored && c ? c : t.text3,
-        fontSize: font.size.micro,
-        fontWeight: font.weight.bold,
-        letterSpacing: '0.05em',
+        background: colored && c ? alphaVar(c, 0.1) : 'var(--surface-2)',
+        border: `1px solid ${colored && c ? alphaVar(c, 0.36) : 'var(--border)'}`,
+        color: colored && c ? c : t.text2,
+        fontFamily: font.family.mono,
+        fontSize: size === 'md' ? font.size.caption : font.size.micro + 0.5,
+        fontWeight: font.weight.medium,
+        letterSpacing: '0.06em',
         textTransform: 'uppercase',
         padding: pad,
         borderRadius: radius.pill,
@@ -165,7 +185,8 @@ function alphaVar(color: string, a: number): string {
 export function CategoryTag({ category, size = 'sm', style }: { category: string; size?: 'sm' | 'md'; style?: CSSProperties }) {
   return (
     <Pill color={categoryColor(category)} tone="category" size={size} style={style}>
-      {category}
+      <CategoryIcon category={category} size={size === 'md' ? 13 : 12} strokeWidth={2} />
+      {categoryLabel(category)}
     </Pill>
   )
 }
@@ -253,9 +274,7 @@ export function ProductImage({
   style?: CSSProperties
 }) {
   const [errored, setErrored] = useState(false)
-  const fallbackImg = categoryImage(category)
   const showSrc = src && !errored ? src : undefined
-  const c = categoryColor(category)
 
   return (
     <div
@@ -266,7 +285,7 @@ export function ProductImage({
         background: 'var(--tile)',
         borderRadius: r,
         overflow: 'hidden',
-        boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.06)',
+        boxShadow: 'inset 0 0 0 1px rgba(34, 21, 5, 0.06)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -286,15 +305,16 @@ export function ProductImage({
           decoding="async"
           style={{ width: '100%', height: '100%', objectFit: 'contain', padding: pad, boxSizing: 'border-box' }}
         />
-      ) : fallbackImg ? (
-        <img
-          src={fallbackImg}
-          alt={alt}
-          decoding="async"
-          style={{ width: '100%', height: '100%', objectFit: 'contain', padding: pad, boxSizing: 'border-box', opacity: 0.92 }}
-        />
       ) : (
-        <span style={{ fontSize: 26, color: c, opacity: 0.85 }}>🌿</span>
+        // No photo: the category's glyph, drawn like a specimen sketch on the
+        // plate, rather than a stock photo of some other product.
+        <CategoryIcon
+          category={category}
+          color={t.tileInk}
+          strokeWidth={1.25}
+          size={typeof height === 'number' ? Math.max(24, Math.min(56, Math.round(height * 0.32))) : 44}
+          style={{ opacity: 0.55 }}
+        />
       )}
     </div>
   )
@@ -330,9 +350,11 @@ export function SectionHeader({
         <span
           style={{
             color: t.text1,
-            fontSize: font.size.title,
-            fontWeight: font.weight.bold,
-            letterSpacing: '-0.01em',
+            fontFamily: font.family.display,
+            fontSize: font.size.heading,
+            fontWeight: font.weight.semibold,
+            letterSpacing: '-0.015em',
+            lineHeight: 1.2,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
@@ -347,34 +369,35 @@ export function SectionHeader({
           style={{
             background: 'none',
             border: 'none',
-            color: t.accent,
-            fontSize: font.size.small,
+            color: t.text2,
+            fontSize: font.size.small + 1,
             fontWeight: font.weight.semibold,
             cursor: 'pointer',
             padding: '4px 0',
             whiteSpace: 'nowrap',
             display: 'inline-flex',
             alignItems: 'center',
-            gap: 4,
+            gap: 2,
             transition: `color var(--t-fast)`,
           }}
         >
-          {action} <span aria-hidden>→</span>
+          {action} <Icon name="chevron-right" size={15} />
         </button>
       )}
     </div>
   )
 }
 
-/* ── Label — uppercase micro section label ─────────────────────────────────── */
+/* ── Label — the mono eyebrow, like the field on a specimen label ──────────── */
 
 export function Label({ children, style }: { children: ReactNode; style?: CSSProperties }) {
   return (
     <div
       style={{
         color: t.text3,
+        fontFamily: font.family.mono,
         fontSize: font.size.caption,
-        fontWeight: font.weight.bold,
+        fontWeight: font.weight.medium,
         textTransform: 'uppercase',
         letterSpacing: '0.08em',
         ...style,
@@ -385,20 +408,79 @@ export function Label({ children, style }: { children: ReactNode; style?: CSSPro
   )
 }
 
-/* ── ClassificationTag — indica / sativa / hybrid pill ─────────────────────── */
+/* ── ClassificationTag — indica / sativa / hybrid as a lettered bullet ─────── */
 
-export const CLASSIFICATION_COLORS: Record<string, string> = {
-  indica: '#9c6ade',
-  sativa: '#f0655a',
-  hybrid: '#5bb85f',
-}
+export const CLASSIFICATION_COLORS: Record<string, string> = Object.fromEntries(
+  Object.entries(strains).map(([k, v]) => [k, v.color]),
+)
 
 export function ClassificationTag({ classification }: { classification: string }) {
+  const s = strains[classification.toLowerCase()]
+  if (!s) return <Pill>{classification}</Pill>
   return (
-    <Pill color={CLASSIFICATION_COLORS[classification] ?? '#7a8a99'} tone="category">
-      {classification}
-    </Pill>
+    <span
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 6,
+        color: t.text2, fontSize: font.size.small, fontWeight: font.weight.medium, lineHeight: 1,
+      }}
+    >
+      <Bullet letter={s.letter} color={s.color} size={17} ink={t.accentInk} />
+      {s.label}
+    </span>
   )
+}
+
+/* ── Bullet — the subway-style disc. Stores wear their borough's MTA colour
+      (as on the map); strain types wear theirs. ───────────────────────────── */
+
+export function Bullet({
+  letter,
+  color,
+  size = 28,
+  ink = '#ffffff',
+  style,
+}: {
+  letter: string
+  color: string
+  size?: number
+  /** letter colour; dark ink on light discs */
+  ink?: string
+  style?: CSSProperties
+}) {
+  return (
+    <span
+      aria-hidden
+      style={{
+        width: size, height: size, borderRadius: '50%', flexShrink: 0,
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        background: color, color: ink,
+        fontFamily: font.family.sans, fontWeight: font.weight.bold,
+        fontSize: Math.round(size * 0.5), lineHeight: 1,
+        ...style,
+      }}
+    >
+      {letter}
+    </span>
+  )
+}
+
+/** The letter a store's bullet carries — its first letter or digit, skipping a
+ *  leading "The" so The Spot and Spot Cannabis don't both read "T". */
+export function storeInitial(name: string): string {
+  return (name.replace(/^the\s+/i, '').match(/[A-Za-z0-9]/)?.[0] ?? '·').toUpperCase()
+}
+
+/** A store's bullet: its initial on its borough's line colour. */
+export function StoreBullet({ name, address, size = 28, style }: {
+  name: string
+  address?: string | null
+  size?: number
+  style?: CSSProperties
+}) {
+  const c = boroughColor(address)
+  const letter = storeInitial(name)
+  // N/Q/R/W yellow carries a black letter on the real signs too.
+  return <Bullet letter={letter} color={c} size={size} ink={c === NYC_COLOR ? '#1a1a1a' : '#ffffff'} style={style} />
 }
 
 /* ── DetailBlock — uppercase-titled content section ─────────────────────────── */
@@ -423,12 +505,12 @@ export function CollapsibleBlock({ title, defaultOpen = false, children, style }
         style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%',
           background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-          color: t.text3, fontWeight: font.weight.bold, fontSize: font.size.caption,
+          color: t.text3, fontFamily: font.family.mono, fontWeight: font.weight.medium, fontSize: font.size.caption,
           textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: open ? 10 : 0,
         }}
       >
         {title}
-        <span style={{ color: t.text4, fontSize: 14, transform: open ? 'rotate(90deg)' : 'none', transition: `transform var(--t-fast)` }}>›</span>
+        <Icon name="chevron-down" size={16} color={t.text3} style={{ transform: open ? 'rotate(180deg)' : 'none', transition: `transform var(--t-fast)` }} />
       </button>
       {open && children}
     </div>
@@ -441,7 +523,152 @@ export function SpecRow({ label, value }: { label: string; value: string }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '8px 0', borderBottom: `1px solid ${t.border}` }}>
       <span style={{ color: t.text3, fontSize: font.size.small }}>{label}</span>
-      <span style={{ color: t.text1, fontSize: font.size.small, fontWeight: font.weight.semibold, textAlign: 'right', textTransform: 'capitalize' }}>{value}</span>
+      <span className="num" style={{ color: t.text1, fontSize: font.size.small, fontWeight: font.weight.semibold, textAlign: 'right', textTransform: 'capitalize' }}>{value}</span>
+    </div>
+  )
+}
+
+/* ── TerpeneProfile — the chart the product is named after ─────────────────── */
+/* One labelled row per terpene, strongest first, with a bar whose length is
+   its share of the strongest one. The name and number carry the identity; the
+   colour (what the terpene smells like) is a second cue, never the only one. */
+
+export function TerpeneProfile({ terpenes }: { terpenes: { name: string; percent?: number | null }[] }) {
+  const rows = [...terpenes].sort((a, b) => (b.percent ?? -1) - (a.percent ?? -1))
+  const max = Math.max(0, ...rows.map(r => r.percent ?? 0))
+  const measured = max > 0
+
+  if (!measured) {
+    return (
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+        {rows.map((tp, i) => {
+          const s = terpeneStyle(tp.name)
+          return (
+            <span key={`${tp.name}-${i}`} title={s.aroma || undefined} style={{
+              display: 'inline-flex', alignItems: 'center', gap: 7,
+              background: t.surface1, border: `1px solid ${t.border}`, borderRadius: radius.pill,
+              padding: '6px 12px 6px 10px', color: t.text1, fontSize: font.size.small,
+            }}>
+              <span aria-hidden style={{ width: 8, height: 8, borderRadius: '50%', background: s.color }} />
+              {s.name}
+            </span>
+          )
+        })}
+      </div>
+    )
+  }
+
+  return (
+    <div role="list" style={{ display: 'grid', gap: 12 }}>
+      {rows.map((tp, i) => {
+        const s = terpeneStyle(tp.name)
+        const share = tp.percent != null ? tp.percent / max : 0
+        return (
+          <div key={`${tp.name}-${i}`} role="listitem" title={tp.percent != null ? `${s.name} ${tp.percent}%` : s.name}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+              <span aria-hidden style={{ width: 8, height: 8, borderRadius: '50%', background: s.color, flexShrink: 0, alignSelf: 'center' }} />
+              <span style={{ color: t.text1, fontSize: font.size.body, fontWeight: font.weight.semibold }}>{s.name}</span>
+              {s.aroma && <span style={{ color: t.text3, fontSize: font.size.small, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.aroma}</span>}
+              <span className="num" style={{ marginLeft: 'auto', color: t.text2, fontFamily: font.family.mono, fontSize: font.size.small }}>
+                {tp.percent != null ? `${tp.percent}%` : '—'}
+              </span>
+            </div>
+            <div aria-hidden style={{ marginTop: 6, height: 4, borderRadius: 4, background: t.surface2, overflow: 'hidden' }}>
+              <div style={{ width: `${Math.max(2, share * 100)}%`, height: '100%', borderRadius: 4, background: s.color }} />
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+/* ── Page chrome ──────────────────────────────────────────────────────────── */
+
+/** The round back control every drill-down screen opens with. `glass` for
+ *  when it floats over a coloured hero or a photo. */
+export function BackButton({ onClick, label = 'Back', glass = false, style }: {
+  onClick: () => void
+  label?: string
+  glass?: boolean
+  style?: CSSProperties
+}) {
+  return (
+    <button
+      onClick={onClick}
+      aria-label={label}
+      style={{
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        width: 38, height: 38, borderRadius: '50%', padding: 0, flexShrink: 0,
+        background: glass ? 'rgba(12, 15, 13, 0.55)' : t.surface2,
+        border: `1px solid ${glass ? 'rgba(242, 240, 233, 0.12)' : t.border}`,
+        color: t.text1, cursor: 'pointer',
+        backdropFilter: glass ? 'blur(10px)' : undefined,
+        WebkitBackdropFilter: glass ? 'blur(10px)' : undefined,
+        ...style,
+      }}
+    >
+      <Icon name="arrow-left" size={18} />
+    </button>
+  )
+}
+
+/** A screen's title: Fraunces at hero size, with an optional quiet line under. */
+export function PageTitle({ children, sub, size = font.size.hero, style }: {
+  children: ReactNode
+  sub?: ReactNode
+  size?: number
+  style?: CSSProperties
+}) {
+  return (
+    <div style={style}>
+      <h1 style={{
+        color: t.text1, fontFamily: font.family.display, fontWeight: font.weight.semibold,
+        fontSize: size, letterSpacing: '-0.02em', lineHeight: 1.08, margin: 0,
+      }}>
+        {children}
+      </h1>
+      {sub && (
+        <div style={{ color: t.text3, fontSize: font.size.small + 1, marginTop: 6 }}>{sub}</div>
+      )}
+    </div>
+  )
+}
+
+/** A brand's avatar: its photo on the same light plate products sit on, or
+ *  its initial set in the display face when there is no photo. */
+export function BrandMark({ name, imageUrl, size = 62, style }: {
+  name: string
+  imageUrl?: string | null
+  size?: number
+  style?: CSSProperties
+}) {
+  const [errored, setErrored] = useState(false)
+  const photo = imageUrl && !errored
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: Math.round(size * 0.24), overflow: 'hidden', flexShrink: 0,
+      background: photo ? t.tile : t.surface2,
+      border: `1px solid ${photo ? 'transparent' : t.border}`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      ...style,
+    }}>
+      {photo ? (
+        <img
+          src={imageUrl!}
+          alt=""
+          loading="lazy"
+          onError={() => setErrored(true)}
+          style={{ width: '100%', height: '100%', objectFit: 'contain', padding: Math.round(size * 0.08), boxSizing: 'border-box' }}
+        />
+      ) : (
+        <span aria-hidden style={{
+          color: t.text2, fontFamily: font.family.display, fontWeight: font.weight.semibold,
+          fontSize: Math.round(size * 0.42), lineHeight: 1,
+        }}>
+          {name.charAt(0).toUpperCase()}
+        </span>
+      )}
     </div>
   )
 }

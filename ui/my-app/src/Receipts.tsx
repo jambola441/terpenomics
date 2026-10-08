@@ -7,6 +7,8 @@ import type {
   AdminReceipt, AdminReceiptDetail, AdminReceiptQueue, ReceiptFlag, ReceiptOrderCandidate, ReceiptReading, ReceiptStatus,
 } from './types'
 import { inputStyle, money, primaryBtn, when } from './utils/partners'
+import { t, font } from './theme'
+import { Icon } from './components/Icon'
 
 /**
  * Receipt review queue.
@@ -59,11 +61,11 @@ export default function Receipts() {
   }
 
   return (
-    <div style={{ padding: 24, fontFamily: "'Inter', system-ui, sans-serif", background: '#080d18', minHeight: '100vh', color: '#f1f5f9' }}>
+    <div style={{ padding: 24, background: t.bg, minHeight: '100vh', color: t.text1 }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
-          <button onClick={() => navigate('/admin')} style={navBtnStyle}>← Admin</button>
-          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>Receipts</h2>
+          <button onClick={() => navigate('/admin')} style={navBtnStyle}><Icon name="arrow-left" size={14} />Admin</button>
+          <h2 style={{ margin: 0, fontFamily: font.family.display, fontSize: font.size.display, fontWeight: 600, letterSpacing: '-0.015em' }}>Receipts</h2>
           <div style={{ display: 'flex', gap: 6 }}>
             {TABS.map(s => (
               <button
@@ -71,7 +73,7 @@ export default function Receipts() {
                 onClick={() => setParams({ status: s })}
                 style={{
                   ...navBtnStyle, textTransform: 'capitalize',
-                  ...(s === tab ? { color: '#e0e7ff', borderColor: '#4338ca', background: '#1e1b4b' } : {}),
+                  ...(s === tab ? { color: t.accent, borderColor: t.accentDim, background: t.accentTint } : {}),
                 }}
               >
                 {s}{queue ? ` · ${queue.counts[s]}` : ''}
@@ -80,14 +82,14 @@ export default function Receipts() {
           </div>
         </div>
 
-        {error && <div style={{ color: '#f87171', marginBottom: 12 }}>Error: {error}</div>}
+        {error && <div style={{ color: t.danger, marginBottom: 12 }}>Error: {error}</div>}
 
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(220px, 300px) 1fr', gap: 20, alignItems: 'start' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {!queue ? (
               <div style={muted}>Loading…</div>
             ) : queue.items.length === 0 ? (
-              <div style={muted}>{tab === 'pending' ? 'Nothing to review. 🎉' : `No ${tab} receipts.`}</div>
+              <div style={muted}>{tab === 'pending' ? 'Nothing to review — all caught up.' : `No ${tab} receipts.`}</div>
             ) : queue.items.map(r => <QueueItem key={r.id} r={r} active={r.id === selected} onClick={() => select(r.id)} />)}
           </div>
 
@@ -108,17 +110,17 @@ function QueueItem({ r, active, onClick }: { r: AdminReceipt; active: boolean; o
       onClick={onClick}
       style={{
         textAlign: 'left', cursor: 'pointer', padding: '10px 12px', borderRadius: 8,
-        background: active ? '#111827' : '#0f172a', border: `1px solid ${active ? '#4338ca' : '#1e293b'}`, color: 'inherit',
+        background: active ? t.surface2 : t.surface1, border: `1px solid ${active ? t.accentDim : t.border}`, color: 'inherit',
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-        <span style={{ fontWeight: 500, color: '#f1f5f9' }}>{r.partner_name}</span>
-        {r.status === 'approved' && <span style={{ color: '#86efac', fontSize: 12 }}>+{r.points ?? 0}</span>}
+        <span style={{ fontWeight: 500, color: t.text1 }}>{r.partner_name}</span>
+        {r.status === 'approved' && <span style={{ color: t.success, fontSize: 12 }}>+{r.points ?? 0}</span>}
       </div>
-      <div style={{ fontSize: 12, color: '#64748b', marginTop: 3 }}>
+      <div style={{ fontSize: 12, color: t.text3, marginTop: 3 }}>
         {r.customer_name || r.customer_phone || 'Customer'} · {r.purchased_on ?? '—'}
       </div>
-      <div style={{ fontSize: 11, color: '#475569', marginTop: 2 }}>
+      <div style={{ fontSize: 11, color: t.text3, marginTop: 2 }}>
         uploaded {when(r.created_at)}
         {r.status === 'pending' && r.read_status !== 'read' ? ` · ${r.read_status === 'failed' ? 'not readable' : 'not read yet'}` : ''}
       </div>
@@ -184,7 +186,7 @@ function ReviewPanel({ id, onDone }: { id: string; onDone: () => void }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'minmax(280px, 1fr) minmax(280px, 380px)', gap: 20, alignItems: 'start' }}>
       {/* Photo */}
-      <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: 10, minHeight: 300 }}>
+      <div style={{ background: t.surface1, border: `1px solid ${t.border}`, borderRadius: 10, padding: 10, minHeight: 300 }}>
         {img ? (
           <a href={img} target="_blank" rel="noreferrer" title="Open full size">
             <img src={img} alt="Receipt" style={{ width: '100%', borderRadius: 6, display: 'block' }} />
@@ -201,8 +203,8 @@ function ReviewPanel({ id, onDone }: { id: string; onDone: () => void }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div>
           <div style={{ fontSize: 16, fontWeight: 600 }}>{r.customer_name || 'Customer'}</div>
-          <div style={{ fontSize: 13, color: '#64748b' }}>{r.customer_phone} · uploaded {when(r.created_at)}</div>
-          {r.customer_note && <div style={{ fontSize: 13, color: '#cbd5e1', marginTop: 8, fontStyle: 'italic' }}>“{r.customer_note}”</div>}
+          <div style={{ fontSize: 13, color: t.text3 }}>{r.customer_phone} · uploaded {when(r.created_at)}</div>
+          {r.customer_note && <div style={{ fontSize: 13, color: t.text2, marginTop: 8, fontStyle: 'italic' }}>“{r.customer_note}”</div>}
         </div>
 
         {pending && reading.flags.map(f => <Flag key={f.code} tone={f.level}>{f.message}</Flag>)}
@@ -252,7 +254,7 @@ function ReviewPanel({ id, onDone }: { id: string; onDone: () => void }) {
               <input type="date" value={day} onChange={e => setDay(e.target.value)} style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} />
             </Field>
             {reading.has_pos && (
-              <div style={{ fontSize: 11, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <div style={{ fontSize: 11, color: t.text3, fontFamily: font.family.mono, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                 Or approve by subtotal
               </div>
             )}
@@ -266,16 +268,16 @@ function ReviewPanel({ id, onDone }: { id: string; onDone: () => void }) {
                 style={{ ...inputStyle, width: '100%', boxSizing: 'border-box', fontSize: 18 }}
               />
             </Field>
-            <div style={{ fontSize: 13, color: '#94a3b8' }}>
+            <div style={{ fontSize: 13, color: t.text2 }}>
               {preview != null
-                ? <>Awards <b style={{ color: '#86efac' }}>{preview} point{preview === 1 ? '' : 's'}</b>, available {r.pending_days} days after the purchase.</>
+                ? <>Awards <b style={{ color: t.success }}>{preview} point{preview === 1 ? '' : 's'}</b>, available {r.pending_days} days after the purchase.</>
                 : 'Enter the subtotal to see the points.'}
             </div>
             <button type="submit" disabled={busy || cents == null} style={primaryBtn(busy || cents == null)}>
               {busy ? 'Saving…' : reading.has_pos ? 'Approve by subtotal' : 'Approve'}
             </button>
 
-            <div style={{ borderTop: '1px solid #1e293b', paddingTop: 12, display: 'flex', gap: 8 }}>
+            <div style={{ borderTop: `1px solid ${t.border}`, paddingTop: 12, display: 'flex', gap: 8 }}>
               <input
                 placeholder="Reason, shown to the customer"
                 value={reason}
@@ -286,7 +288,7 @@ function ReviewPanel({ id, onDone }: { id: string; onDone: () => void }) {
                 type="button"
                 disabled={busy || !reason.trim()}
                 onClick={() => act(() => api.receipts.reject(id, reason))}
-                style={{ ...navBtnStyle, color: '#fca5a5', borderColor: '#7f1d1d', opacity: busy || !reason.trim() ? 0.5 : 1 }}
+                style={{ ...navBtnStyle, color: t.danger, borderColor: t.dangerEdge, opacity: busy || !reason.trim() ? 0.5 : 1 }}
               >
                 Reject
               </button>
@@ -295,27 +297,27 @@ function ReviewPanel({ id, onDone }: { id: string; onDone: () => void }) {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13 }}>
             <div>
-              <span style={{ ...badge, ...(r.status === 'approved' ? { background: '#14532d', color: '#86efac' } : { background: '#450a0a', color: '#fca5a5' }) }}>
+              <span style={{ ...badge, ...(r.status === 'approved' ? { background: t.successTint, color: t.success } : { background: t.dangerTint, color: t.danger }) }}>
                 {r.status}
               </span>
-              <span style={{ color: '#64748b', marginLeft: 8 }}>by {r.reviewed_by} · {when(r.reviewed_at)}</span>
+              <span style={{ color: t.text3, marginLeft: 8 }}>by {r.reviewed_by} · {when(r.reviewed_at)}</span>
             </div>
             {r.status === 'approved' && (
               <div>
-                {r.partner_name} · {r.purchased_on} · subtotal {money(r.subtotal_cents ?? 0)} · <b style={{ color: '#86efac' }}>+{r.points} points</b>
-                {r.pos_order_id && <div style={{ color: '#64748b', marginTop: 4 }}>Approved with the matching Square sale; refunds on it adjust these points.</div>}
+                {r.partner_name} · {r.purchased_on} · subtotal {money(r.subtotal_cents ?? 0)} · <b style={{ color: t.success }}>+{r.points} points</b>
+                {r.pos_order_id && <div style={{ color: t.text3, marginTop: 4 }}>Approved with the matching Square sale; refunds on it adjust these points.</div>}
               </div>
             )}
-            {r.reject_reason && <div style={{ color: '#fca5a5' }}>{r.reject_reason}</div>}
+            {r.reject_reason && <div style={{ color: t.danger }}>{r.reject_reason}</div>}
             {r.status === 'approved' && (
-              <div style={{ display: 'flex', gap: 8, borderTop: '1px solid #1e293b', paddingTop: 12 }}>
+              <div style={{ display: 'flex', gap: 8, borderTop: `1px solid ${t.border}`, paddingTop: 12 }}>
                 <input placeholder="Why void it?" value={reason} onChange={e => setReason(e.target.value)} style={{ ...inputStyle, flex: 1 }} />
                 <button
                   disabled={busy || !reason.trim()}
                   onClick={() => {
                     if (window.confirm(`Void this receipt and take back ${r.points} points?`)) act(() => api.receipts.void(id, reason))
                   }}
-                  style={{ ...navBtnStyle, color: '#fca5a5', borderColor: '#7f1d1d', opacity: busy || !reason.trim() ? 0.5 : 1 }}
+                  style={{ ...navBtnStyle, color: t.danger, borderColor: t.dangerEdge, opacity: busy || !reason.trim() ? 0.5 : 1 }}
                 >
                   Void
                 </button>
@@ -324,15 +326,15 @@ function ReviewPanel({ id, onDone }: { id: string; onDone: () => void }) {
           </div>
         )}
 
-        {error && <div style={{ color: '#f87171', fontSize: 13 }}>{error}</div>}
+        {error && <div style={{ color: t.danger, fontSize: 13 }}>{error}</div>}
 
         {r.nearby_orders.length > 0 && (
           <div>
-            <div style={{ fontSize: 11, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
+            <div style={{ fontSize: 11, color: t.text3, fontFamily: font.family.mono, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
               Synced orders at this store around this date
             </div>
             {r.nearby_orders.map(o => (
-              <div key={o.id} style={{ display: 'flex', gap: 10, fontSize: 12, padding: '4px 0', color: o.same_customer ? '#fbbf24' : '#94a3b8' }}>
+              <div key={o.id} style={{ display: 'flex', gap: 10, fontSize: 12, padding: '4px 0', color: o.same_customer ? t.warning : t.text2 }}>
                 <span style={{ flex: 1 }}>{when(o.ordered_at)}</span>
                 <span>subtotal {money(o.subtotal_cents)}</span>
                 <span>{o.same_customer ? 'this customer' : o.matched ? 'other member' : 'unmatched'}</span>
@@ -345,11 +347,11 @@ function ReviewPanel({ id, onDone }: { id: string; onDone: () => void }) {
   )
 }
 
-const muted: CSSProperties = { color: '#475569', fontSize: 13, lineHeight: 1.7 }
+const muted: CSSProperties = { color: t.text3, fontSize: 13, lineHeight: 1.7 }
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <label style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 12, color: '#94a3b8' }}>
+    <label style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 12, color: t.text2 }}>
       {label}
       {children}
     </label>
@@ -357,9 +359,9 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 }
 
 const FLAG_TONES: Record<ReceiptFlag['level'], CSSProperties> = {
-  bad: { background: '#450a0a', border: '1px solid #7f1d1d', color: '#fca5a5' },
-  warn: { background: '#422006', border: '1px solid #713f12', color: '#fbbf24' },
-  info: { background: '#0f172a', border: '1px solid #1e293b', color: '#94a3b8' },
+  bad: { background: t.dangerTint, border: `1px solid ${t.dangerEdge}`, color: t.danger },
+  warn: { background: t.warningTint, border: `1px solid ${t.warningEdge}`, color: t.warning },
+  info: { background: t.surface1, border: `1px solid ${t.border}`, color: t.text2 },
 }
 
 function Flag({ tone, children }: { tone: ReceiptFlag['level']; children: ReactNode }) {
@@ -370,7 +372,7 @@ function Flag({ tone, children }: { tone: ReceiptFlag['level']; children: ReactN
   )
 }
 
-const label: CSSProperties = { fontSize: 11, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }
+const label: CSSProperties = { fontSize: 11, color: t.text3, fontFamily: font.family.mono, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }
 
 /** What Claude read off the photo, compact, so the reviewer can check it against the image. */
 function ReadSummary({ reading }: { reading: ReceiptReading }) {
@@ -391,8 +393,8 @@ function ReadSummary({ reading }: { reading: ReceiptReading }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '3px 12px', fontSize: 12 }}>
         {rows.map(([k, v]) => (
           <div key={k} style={{ display: 'contents' }}>
-            <span style={{ color: '#64748b' }}>{k}</span>
-            <span style={{ color: '#cbd5e1' }}>{v}</span>
+            <span style={{ color: t.text3 }}>{k}</span>
+            <span style={{ color: t.text2 }}>{v}</span>
           </div>
         ))}
       </div>
@@ -423,14 +425,14 @@ function SquareMatches({ reading, pointsPerDollar, busy, onUse }: {
           return (
             <div key={o.id} style={{
               padding: '8px 10px', borderRadius: 8, fontSize: 12,
-              background: best ? '#052e16' : '#0f172a', border: `1px solid ${best ? '#166534' : '#1e293b'}`,
+              background: best ? t.successTint : t.surface1, border: `1px solid ${best ? t.successEdge : t.border}`,
             }}>
               <div style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
-                <b style={{ color: '#f1f5f9', fontSize: 13 }}>{money(o.total_cents)}</b>
-                <span style={{ color: '#94a3b8', flex: 1 }}>{when(o.ordered_at)}{o.cards.length ? ` · ${o.cards.join(', ')}` : ''}</span>
-                <span style={{ color: o.strength === 'exact' ? '#86efac' : o.strength === 'likely' ? '#fbbf24' : '#64748b' }}>{o.strength}</span>
+                <b style={{ color: t.text1, fontSize: 13 }}>{money(o.total_cents)}</b>
+                <span style={{ color: t.text2, flex: 1 }}>{when(o.ordered_at)}{o.cards.length ? ` · ${o.cards.join(', ')}` : ''}</span>
+                <span style={{ color: o.strength === 'exact' ? t.success : o.strength === 'likely' ? t.warning : t.text3 }}>{o.strength}</span>
               </div>
-              <div style={{ color: '#64748b', marginTop: 3 }}>
+              <div style={{ color: t.text3, marginTop: 3 }}>
                 matches {o.signals.map(sig => SIGNAL_LABEL[sig] ?? sig).join(', ')} · earns {Math.floor(o.subtotal_cents * pointsPerDollar / 100)} pts
                 {o.claimed === 'this_customer' ? ' · already earned by this customer' : o.claimed === 'other_customer' ? ' · already earned by another customer' : ''}
               </div>

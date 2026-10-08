@@ -4,6 +4,8 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { toE164, formatPhoneInput, formatE164ForDisplay } from './utils/phone'
 import api from './api/client'
 import { safeNext, rememberNext } from './utils/redirect'
+import { t, font, radius } from './theme'
+import { Icon, Logo } from './components/Icon'
 
 // Fallback cooldown. The SMS path uses whatever the backend reports instead.
 const RESEND_SECONDS = 60
@@ -51,8 +53,8 @@ export default function Login() {
 
   useEffect(() => {
     if (cooldown <= 0) return
-    const t = setTimeout(() => setCooldown(c => c - 1), 1000)
-    return () => clearTimeout(t)
+    const timer = setTimeout(() => setCooldown(c => c - 1), 1000)
+    return () => clearTimeout(timer)
   }, [cooldown])
 
   function switchChannel(next) {
@@ -221,36 +223,26 @@ export default function Login() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#080d18',
+      background: t.bg,
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      fontFamily: "'Inter', system-ui, sans-serif",
-      padding: '40px 24px',
+      padding: '40px 16px',
     }}>
-      {/* Wordmark */}
-      <div style={{
-        fontSize: 11,
-        fontWeight: 700,
-        letterSpacing: '0.3em',
-        textTransform: 'uppercase',
-        color: '#334155',
-        marginBottom: 48,
-      }}>
-        terpenomics
-      </div>
-
       {/* Card */}
       <div style={{
         width: '100%',
         maxWidth: 400,
-        background: '#0f172a',
-        border: '1px solid #1e293b',
-        borderRadius: 16,
-        padding: '40px 36px',
-        boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
+        background: t.surface1,
+        border: `1px solid ${t.border}`,
+        borderRadius: radius.xl,
+        padding: '36px 32px',
       }}>
+        <div style={{ marginBottom: 28 }}>
+          <Logo size={30} />
+        </div>
+
         {step === 'send' ? (
           <>
             <h2 style={headingStyle}>Sign in</h2>
@@ -342,7 +334,7 @@ export default function Login() {
             </h2>
             <p style={subheadStyle}>
               We sent a 6-digit code to{' '}
-              <span style={{ color: '#94a3b8', fontWeight: 500 }}>
+              <span style={{ color: t.text1, fontWeight: 500 }}>
                 {channel === 'sms' ? formatE164ForDisplay(sentTo) : sentTo}
               </span>
             </p>
@@ -383,7 +375,8 @@ export default function Login() {
               onClick={() => { setStep('send'); setCode(''); setMsg(''); setIsError(false) }}
               style={linkBtnStyle}
             >
-              ← Use a different {channel === 'sms' ? 'number' : 'email'}
+              <Icon name="arrow-left" size={14} />
+              Use a different {channel === 'sms' ? 'number' : 'email'}
             </button>
           </>
         )}
@@ -393,7 +386,7 @@ export default function Login() {
             marginTop: 20,
             marginBottom: 0,
             fontSize: 13,
-            color: isError ? '#f87171' : '#4ade80',
+            color: isError ? t.danger : t.success,
             textAlign: 'center',
             lineHeight: 1.5,
           }}>
@@ -401,7 +394,7 @@ export default function Login() {
           </p>
         )}
 
-        <p style={{ marginTop: 24, marginBottom: 0, fontSize: 12, color: '#6b7280', textAlign: 'center' }}>
+        <p style={{ marginTop: 24, marginBottom: 0, fontSize: 12, color: t.text3, textAlign: 'center' }}>
           <Link to="/terms" style={{ color: 'inherit' }}>Terms</Link>
           {' · '}
           <Link to="/privacy" style={{ color: 'inherit' }}>Privacy</Link>
@@ -426,7 +419,7 @@ function GoogleMark() {
 
 function AppleMark() {
   return (
-    <svg width="16" height="16" viewBox="0 0 384 512" aria-hidden="true" fill="#f1f5f9">
+    <svg width="16" height="16" viewBox="0 0 384 512" aria-hidden="true" fill="currentColor">
       <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/>
     </svg>
   )
@@ -452,10 +445,10 @@ const providerBtnStyle = (disabled) => ({
   justifyContent: 'center',
   gap: 10,
   width: '100%',
-  background: '#0b1220',
-  color: disabled ? '#475569' : '#f1f5f9',
-  border: '1px solid #1e293b',
-  borderRadius: 8,
+  background: t.surface2,
+  color: disabled ? t.text4 : t.text1,
+  border: `1px solid ${t.borderStrong}`,
+  borderRadius: 10,
   padding: '11px 0',
   fontSize: 14,
   fontWeight: 500,
@@ -473,45 +466,48 @@ const dividerRowStyle = {
 const dividerLineStyle = {
   flex: 1,
   height: 1,
-  background: '#1e293b',
+  background: t.border,
 }
 
 const dividerTextStyle = {
+  fontFamily: font.family.mono,
   fontSize: 11,
-  color: '#475569',
+  fontWeight: 500,
+  color: t.text3,
   textTransform: 'uppercase',
-  letterSpacing: '0.1em',
+  letterSpacing: '0.08em',
 }
 
 const headingStyle = {
   margin: '0 0 8px',
-  fontSize: 20,
+  fontFamily: font.family.display,
+  fontSize: font.size.display,
   fontWeight: 600,
-  color: '#f1f5f9',
-  letterSpacing: '-0.01em',
+  color: t.text1,
+  letterSpacing: '-0.015em',
 }
 
 const subheadStyle = {
   margin: '0 0 24px',
   fontSize: 14,
-  color: '#475569',
+  color: t.text2,
   lineHeight: 1.5,
 }
 
 const tabRowStyle = {
   display: 'flex',
   gap: 4,
-  background: '#080d18',
-  border: '1px solid #1e293b',
-  borderRadius: 8,
+  background: t.bg,
+  border: `1px solid ${t.border}`,
+  borderRadius: 10,
   padding: 4,
   marginBottom: 24,
 }
 
 const tabStyle = (active) => ({
   flex: 1,
-  background: active ? '#1e293b' : 'transparent',
-  color: active ? '#f1f5f9' : '#475569',
+  background: active ? t.surface3 : 'transparent',
+  color: active ? t.text1 : t.text3,
   border: 'none',
   borderRadius: 6,
   padding: '8px 0',
@@ -523,10 +519,11 @@ const tabStyle = (active) => ({
 
 const labelStyle = {
   display: 'block',
-  fontSize: 12,
+  fontFamily: font.family.mono,
+  fontSize: 11,
   fontWeight: 500,
-  color: '#475569',
-  letterSpacing: '0.05em',
+  color: t.text3,
+  letterSpacing: '0.06em',
   textTransform: 'uppercase',
   marginBottom: 8,
 }
@@ -534,12 +531,12 @@ const labelStyle = {
 const inputStyle = {
   width: '100%',
   boxSizing: 'border-box',
-  background: '#080d18',
-  border: '1px solid #1e293b',
-  borderRadius: 8,
+  background: t.surface2,
+  border: `1px solid ${t.border}`,
+  borderRadius: 10,
   padding: '12px 14px',
   fontSize: 15,
-  color: '#f1f5f9',
+  color: t.text1,
   marginBottom: 16,
   outline: 'none',
   transition: 'border-color 0.15s',
@@ -547,10 +544,10 @@ const inputStyle = {
 
 const btnStyle = (disabled) => ({
   width: '100%',
-  background: disabled ? '#1e293b' : '#2563eb',
-  color: disabled ? '#475569' : '#fff',
+  background: disabled ? t.surface2 : t.accent,
+  color: disabled ? t.text4 : t.accentInk,
   border: 'none',
-  borderRadius: 8,
+  borderRadius: 10,
   padding: '13px 0',
   fontSize: 14,
   fontWeight: 600,
@@ -562,9 +559,13 @@ const btnStyle = (disabled) => ({
 const linkBtnStyle = {
   marginTop: 8,
   width: '100%',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 6,
   background: 'none',
   border: 'none',
-  color: '#334155',
+  color: t.text3,
   fontSize: 13,
   padding: '6px 0',
   cursor: 'pointer',
@@ -573,7 +574,7 @@ const linkBtnStyle = {
 const fineprintStyle = {
   margin: '20px 0 0',
   fontSize: 11,
-  color: '#334155',
+  color: t.text3,
   textAlign: 'center',
   lineHeight: 1.5,
 }
