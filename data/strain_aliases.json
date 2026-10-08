@@ -241,5 +241,27 @@
     "Indica": "Indica Blend",
     "Sativa": "Sativa Blend",
     "Hybrid": "Hybrid Blend"
+  },
+  "NYCE": {
+    "Jealosy x Soap": "Jealousy x Soap",
+    "Jealously x Soap": "Jealousy x Soap",
+    "Alien Mints": "Alien Mintz",
+    "Papaya Bomb x Trop Cherry": "Papaya Bomb x Tropical Cherries",
+    "Papaya Bomb x Trop Cherries": "Papaya Bomb x Tropical Cherries",
+    "Papaya Bomb x TC": "Papaya Bomb x Tropical Cherries",
+    "Trop trop Cherry x Purple Punch": "Trop Cherry x Purple Punch",
+    "Blueberry Night": "Blueberry",
+    "Mixed Berry (Night)": "Mixed Berry"
+  },
+  "Papa & Barkley": {
+    "Pear Apple": "Recover Pear Apple",
+    "Apple Pear": "Recover Pear Apple",
+    "Recover": "Recover Pear Apple",
+    "Berry Pomegranate": "Sleep Berry Pomegranate",
+    "THC 1000": "THC1000"
+  },
+  "turn": {
+    "Sour Apple Soda": "Sour Apple",
+    "Sour Apple Seltzer": "Sour Apple"
   }
 }

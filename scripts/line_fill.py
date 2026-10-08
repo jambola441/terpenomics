@@ -14,7 +14,8 @@ brands), every size another product of that line comes in. On the labelled match
 (evals/match, 2026-10-08) this gave 7 more right matches, none on a wrong product.
 Lines with no name are left alone: a catalog's line-less products are often several
 real lines it never named, and filling them gave line-less products sizes that won
-listings belonging to a named product.
+listings belonging to a named product. Tinctures and topicals are left alone too: their
+size is the product's strength, not a size the line comes in.
 
 Inferred entries never decide which product a listing is (catalog_match leaves them
 out of a product's sizes and of what Jev is shown); they only give the chosen product
@@ -42,6 +43,10 @@ import sizes  # noqa: E402
 from brand_catalog import norm_name  # noqa: E402
 
 INFERRED = "inferred"
+# Where a product's size is its potency, not a size the line comes in: Papa & Barkley's
+# Releaf balms are a 1:3 at 90/300mg THC and a 3:1 at 45/150mg, and a tincture's mg is
+# its strength. Filling these would give each product the others' strengths.
+POTENCY_SIZED = {"tinctures", "topical"}
 TABLE = "brand_catalog_entries"
 
 
@@ -64,7 +69,7 @@ def wanted(catalog: dict) -> dict[str, dict]:
     lines: dict[tuple, list[str]] = defaultdict(list)
     for key, es in products.items():
         line = (es[0].get("product_line") or "").strip()
-        if line:
+        if line and es[0].get("category") not in POTENCY_SIZED:
             lines[(es[0].get("category"), es[0].get("subtype") or "", norm_name(line))].append(key)
     out: dict[str, dict] = {}
     for (category, _, _), keys in lines.items():

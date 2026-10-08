@@ -19,7 +19,9 @@
     "Package size is dose per tablet times tablets per package, and sizes.py cannot read 'N tablets / package' as a pack. Protab Max names its pack in the title ('2-Pack'), so its size is read: 50 mg x 2-Pack = 2pk 100mg. The others are constants, each guarded by the card's exact Dose and Quantity text, so a changed card falls to unparsed instead of keeping a stale size.",
     "The constants use THC per tablet from each product's own page, because the cards give total cannabinoids for LEVEL 5 and Protab+: LEVEL 5 is 5 mg delta-9 THC (plus THCv, CBG) x 20 = 20pk 100mg; Recover is 10 mg THCa (plus CBDa, CBG, CBC) x 10 = 10pk 100mg; Boost and Lights Out are 20 mg THC x 5 = 5pk 100mg; Protab is 20 mg THC x 5 = 5pk 100mg. Stores sold exactly these on 2026-10-05.",
     "The site writes Boost, Lights Out and Recover's line 'Protab+'. Stores write 'Protab', and the matcher reads '+' as 'and' ('protaband'), so the recipe writes the line 'Protab' for both. They do not collide: Protab is Sativa/Hybrid/Indica, Protab+ is Boost/Lights Out/Recover.",
-    "Stores list LEVEL 5 Slumber as 'Protab Slumber' (20pk 100mg); the brand's line is LEVEL 5, so it shows as store-only in check. A 2pk 20mg 'Protab Slumber' at stores is not on the NY page."
+    "Stores list LEVEL 5 Slumber as 'Protab Slumber' (20pk 100mg); the brand's line is LEVEL 5, so it shows as store-only in check. A 2pk 20mg 'Protab Slumber' at stores is not on the NY page.",
+    "2026-10-08 curation: stores file LEVEL 5 Slumber under 'Protab' ('Level 5 | ProTab - Slumber Tablets', 'Slumber -Rest- ... LEVEL'), so store_aliases names Slumber -> 'Level 5 Slumber' (Protab has no Slumber; Level sells only edibles, so the alias cannot misfire). The stores' 20pk 100mg then is the site product, and their 2-tablet pouch joins it as another size. The pouch is 2 x 5mg = 10mg THC (Dutchie package photos: 'LEVEL 5 SLUMBER ... 2 THC Tablets'; LEVEL 5 is 5 mg delta-9 THC a tablet per its product page), but the two stores' variant field says 20mg, so the joined entry needs an admin edit of its variant to 2pk 10mg.",
+    "2026-10-08 curation: Protab Max is 2 x 50mg = 2pk 100mg; stores type the lab-measured total (92.4mg, 98.1mg, 98.4mg, 99.4mg), and 'Protab Max Indica 2pk 98.4mg' at 2 stores would join the site product as a size of its own. store_skip drops any Protab Max 2pk size other than 100mg."
   ],
   "category": [
     {
@@ -83,6 +85,20 @@
       "set": {
         "size": "5pk 100mg"
       }
+    }
+  ],
+  "store_aliases": {
+    "names": {
+      "Slumber": "Level 5 Slumber"
+    }
+  },
+  "store_skip": [
+    {
+      "when": {
+        "name": "^Protab Max\\b",
+        "size": "^2pk (?!100mg$)"
+      },
+      "why": "Protab Max is 2 x 50mg THC = 2pk 100mg (levelexperience.com/states-ny/: 'Dose 50 mg THC / tablet Quantity 2 tablets / package'); a 2pk of 92-99mg is a store typing the lab-measured total of the same package (rule 10), not a product"
     }
   ]
 }
