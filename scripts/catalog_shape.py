@@ -144,14 +144,22 @@ def _size_order(v: str):
 
 
 def products(entries: list[dict], listings: list[dict] | None = None) -> list[Product]:
+    """The catalog's products as stated. An inferred size (line_fill.py) is derived from
+    the line's shape, so it is left out of the shape; a listing matched to one still
+    counts for its product."""
     by_key: dict[tuple, Product] = {}
+    inferred: dict[str, tuple] = {}
     for e in entries:
         key = (e.get("category") or "?", e.get("subtype") or "", e.get("product_line") or "",
                e.get("strain") or "")
+        if e.get("source") == "inferred":
+            inferred[e["id"]] = key
+            continue
         p = by_key.setdefault(key, Product(*key))
         p.entries.append(e)
     if listings:
         owner = {e["id"]: p for p in by_key.values() for e in p.entries}
+        owner.update({i: by_key[k] for i, k in inferred.items() if k in by_key})
         stores: dict[int, set] = defaultdict(set)
         variant = {e["id"]: e["variant"] or "?" for e in entries}
         for l in listings:
@@ -398,13 +406,21 @@ def leads(prods: list[Product], strain_vocab: dict[str, int] | None = None,
                      for v in q.sizes}
             return any(n >= 3 and v not in lined for v, n in plain.items())
 
+        # Nor where the line is defined by its size: every one of its 3+ products comes
+        # in the one size (STIIIZY's LIIIL is the 0.5g all-in-one; a line-less 1g of the
+        # same strain is the plain all-in-one, not LIIIL's missing size).
+        def one_size_line(q: Product) -> bool:
+            mates = [r for r in everything if r.line == q.line
+                     and (cat not in SUBTYPE_DECIDES or r.subtype == q.subtype)]
+            return len(mates) >= 3 and len({v for r in mates for v in r.sizes}) == 1
+
         for p in lineless:
             homes = [q for q in everything if q.line and p.strain
                      and strain_key(q.strain) == strain_key(p.strain)
                      and (cat not in SUBTYPE_DECIDES or q.subtype == p.subtype)]
             theirs = sorted({v for q in homes for v in q.sizes}, key=_size_order)
             if len({q.line for q in homes}) == 1 and not set(p.sizes) & set(theirs) \
-                    and not own_range(p.subtype):
+                    and not own_range(p.subtype) and not one_size_line(homes[0]):
                 out.append(Lead("split-size", cat, f"{_shown(p)} {' '.join(p.sizes)} has no line; "
                                 f"{_shown(homes[0])} comes only in {' '.join(theirs)}. The line's "
                                 "other size?", 2))
