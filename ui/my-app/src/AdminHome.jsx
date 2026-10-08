@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import supabase from './utils/supabase'
 import { t, font, radius, motion } from './theme'
 import { Icon, Logo } from './components/Icon'
 
@@ -43,10 +44,30 @@ function hover(e, on, accent = false) {
 }
 
 export default function AdminHome() {
+  const navigate = useNavigate()
+
+  async function signOut() {
+    await supabase.auth.signOut()
+    navigate('/staff', { replace: true })
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: t.bg, padding: '56px 24px' }}>
       <div style={{ maxWidth: 640, margin: '0 auto' }}>
-        <div style={{ marginBottom: 40 }}>
+        <div style={{ marginBottom: 40, position: 'relative' }}>
+          <button
+            type="button"
+            onClick={signOut}
+            style={{
+              position: 'absolute', top: 0, right: 0,
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              background: 'transparent', border: `1px solid ${t.borderStrong}`, borderRadius: radius.md,
+              color: t.text2, fontSize: 13, padding: '6px 12px', cursor: 'pointer',
+            }}
+          >
+            <Icon name="log-out" size={15} />
+            Sign out
+          </button>
           <Logo size={26} />
           <div style={{
             marginTop: 10,

@@ -10,8 +10,26 @@ import { Icon, Logo } from './components/Icon'
 // Fallback cooldown. The SMS path uses whatever the backend reports instead.
 const RESEND_SECONDS = 60
 
+/**
+ * Two sign-in pages share this flow.
+ *
+ *   /        Customers. A mobile number and nothing else: the phone is what
+ *            points and order matching key on, so it is the only way in, even
+ *            while Google, Apple or email are switched on in Supabase for staff.
+ *   /staff   Staff. Whatever social providers Supabase has enabled, a work
+ *            email code, and a text code (ADMIN_PHONES admins sign in by text).
+ */
 export default function Login() {
-  const [channel, setChannel] = useState('sms') // 'sms' | 'email'
+  return <SignIn audience="customer" />
+}
+
+export function StaffLogin() {
+  return <SignIn audience="staff" />
+}
+
+function SignIn({ audience }) {
+  const staff = audience === 'staff'
+  const [channel, setChannel] = useState('sms') // 'sms' | 'email' — email is staff-only
   const [step, setStep]       = useState('send')
   const [phone, setPhone]     = useState('')
   const [email, setEmail]     = useState('')
@@ -27,6 +45,7 @@ export default function Login() {
   const location = useLocation()
   // Where the visitor was headed before being bounced here, if anywhere.
   const next = safeNext(location.state?.from)
+  const home = staff ? '/admin' : '/portal'
 
   // Ask Supabase which social providers are live rather than hardcoding them.
   // signInWithOAuth redirects the browser instead of making a request, so a
@@ -34,6 +53,8 @@ export default function Login() {
   // only what is enabled means turning one on in the Supabase dashboard makes
   // the button appear with no code change, and nothing is clickable before then.
   useEffect(() => {
+    // Customers never see a provider button, whatever Supabase has enabled.
+    if (!staff) return
     let cancelled = false
     const url = import.meta.env.VITE_SUPABASE_URL
     const key = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY
@@ -49,7 +70,7 @@ export default function Login() {
       .catch(() => { /* social sign-in simply stays hidden */ })
 
     return () => { cancelled = true }
-  }, [])
+  }, [staff])
 
   useEffect(() => {
     if (cooldown <= 0) return
@@ -101,7 +122,7 @@ export default function Login() {
     })
     if (error) {
       if (/signups? not allowed|not found|user not found/i.test(error.message)) {
-        throw new Error('No staff account uses that email. Customers sign in with their phone number.')
+        throw new Error('No staff account uses that email.')
       }
       throw new Error(error.message)
     }
@@ -158,31 +179,26 @@ export default function Login() {
     setIsError(false)
 
     try {
-      let user
-
       if (channel === 'sms') {
         const session = await api.auth.smsVerify(challengeId, code)
-        const { data, error } = await supabase.auth.setSession({
+        const { error } = await supabase.auth.setSession({
           access_token: session.access_token,
           refresh_token: session.refresh_token,
         })
         if (error) throw new Error(error.message)
-        user = data?.user
       } else {
-        const { data, error } = await supabase.auth.verifyOtp({
+        const { error } = await supabase.auth.verifyOtp({
           email: sentTo,
           token: code,
           type: 'email',
         })
         if (error) throw new Error(error.message)
-        user = data?.user
       }
 
-      // Admins carry role="admin" on the Supabase JWT (see routes/admin/auth.py).
-      // Everyone else who signs in by text lands in the customer portal —
-      // unless they were bounced here from somewhere specific.
-      const fallback = user?.role === 'admin' || channel === 'email' ? '/admin' : '/portal'
-      navigate(next || fallback)
+      // Each page lands where its audience works, unless the visitor was
+      // bounced here from somewhere specific. Whether a staff sign-in may see
+      // /admin is the API's call (routes/admin/auth.py), not this page's.
+      navigate(next || home)
     } catch (err) {
       handleFailure(err)
       setLoading(false)
@@ -200,8 +216,8 @@ export default function Login() {
     setMsg('')
     setLoading(true)
     // The provider round trip discards router state, so hand the destination
-    // to sessionStorage for AuthCallback to pick up.
-    rememberNext(next)
+    // to sessionStorage for AuthCallback to pick up. Only staff get here.
+    rememberNext(next || home)
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: { redirectTo: `${window.location.origin}/auth/callback` },
@@ -239,17 +255,18 @@ export default function Login() {
         borderRadius: radius.xl,
         padding: '36px 32px',
       }}>
-        <div style={{ marginBottom: 28 }}>
+        <div style={{ marginBottom: 28, display: 'flex', alignItems: 'center', gap: 12 }}>
           <Logo size={30} />
+          {staff && <span style={staffTagStyle}>Staff</span>}
         </div>
 
         {step === 'send' ? (
           <>
-            <h2 style={headingStyle}>Sign in</h2>
+            <h2 style={headingStyle}>{staff ? 'Staff sign-in' : 'Sign in'}</h2>
             <p style={subheadStyle}>
               {channel === 'sms'
                 ? "Enter your mobile number and we'll text you a one-time code."
-                : "Staff sign-in. Enter your work email and we'll send a one-time code."}
+                : "Enter your work email and we'll send a one-time code."}
             </p>
 
             {providers.length > 0 && (
@@ -277,14 +294,16 @@ export default function Login() {
               </>
             )}
 
-            <div style={tabRowStyle}>
-              <button type="button" onClick={() => switchChannel('sms')} style={tabStyle(channel === 'sms')}>
-                Text message
-              </button>
-              <button type="button" onClick={() => switchChannel('email')} style={tabStyle(channel === 'email')}>
-                Staff email
-              </button>
-            </div>
+            {staff && (
+              <div style={tabRowStyle}>
+                <button type="button" onClick={() => switchChannel('sms')} style={tabStyle(channel === 'sms')}>
+                  Text message
+                </button>
+                <button type="button" onClick={() => switchChannel('email')} style={tabStyle(channel === 'email')}>
+                  Work email
+                </button>
+              </div>
+            )}
 
             <form onSubmit={sendCode}>
               {channel === 'sms' ? (
@@ -476,6 +495,18 @@ const dividerTextStyle = {
   color: t.text3,
   textTransform: 'uppercase',
   letterSpacing: '0.08em',
+}
+
+const staffTagStyle = {
+  fontFamily: font.family.mono,
+  fontSize: 11,
+  fontWeight: 500,
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  color: t.text2,
+  border: `1px solid ${t.borderStrong}`,
+  borderRadius: radius.pill,
+  padding: '3px 9px',
 }
 
 const headingStyle = {

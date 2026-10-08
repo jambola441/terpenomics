@@ -138,11 +138,21 @@ route keeps verifying ordinary Supabase JWTs through JWKS — `auth.py`,
 
 **Frontend**
 
-- `ui/my-app/src/Login.jsx` — one page, tabbed **Text message** (default) and
-  **Email**. Email still uses Supabase's own OTP; SMS calls our endpoints and
-  then `supabase.auth.setSession()`. Resend cooldown follows the server's
-  `Retry-After` rather than a hardcoded guess, and `autocomplete="one-time-code"`
-  lets phones autofill from the notification.
+- `ui/my-app/src/Login.jsx` — two sign-in pages over one flow:
+  - `/` is the **customer** page: a mobile number and nothing else. It never
+    shows Google, Apple or email, whatever the Supabase project has enabled,
+    because the phone is what points and order matching key on.
+  - `/staff` is the **staff** page: whichever social providers Supabase has
+    enabled, a **Work email** code (Supabase's own OTP, existing accounts only)
+    and a **Text message** code (for admins on `ADMIN_PHONES`).
+
+  SMS calls our endpoints and then `supabase.auth.setSession()`. Resend cooldown
+  follows the server's `Retry-After` rather than a hardcoded guess, and
+  `autocomplete="one-time-code"` lets phones autofill from the notification.
+- `ui/my-app/src/StaffGate.tsx` — wraps every `/admin` route. A signed-out
+  visit is sent to `/staff` and returns afterwards. Whether the account may see
+  the admin is still decided by the API (`routes/admin/auth.py`).
+- The mobile app's sign-in (`mobile/src/app/sign-in.tsx`) is text-only too.
 - `ui/my-app/src/utils/phone.ts` — E.164 normalization and as-you-type
   formatting.
 
@@ -169,11 +179,12 @@ proxy. It is a speed bump, not an authorization check.
 
 ## Routing after sign-in
 
-Admins carry `role="admin"` on the JWT (see `routes/admin/auth.py`) and land on
-`/admin`. Anyone else signing in by text lands on `/portal`; email sign-in still
-goes to `/admin`, preserving the previous behaviour. `CustomerPortal` already
-calls `/me/link-customer` on mount, so the `Customer` row gets created and linked
-on first portal visit — no extra call from the login page.
+Each page lands where its audience works unless the visitor was bounced there
+from a specific page: the customer page goes to `/portal`, the staff page (and
+the Google/Apple callback, which only staff and partners reach) to `/admin`.
+`/partner` keeps its own Google sign-in. `CustomerPortal` already calls
+`/me/link-customer` on mount, so the `Customer` row gets created and linked on
+first portal visit — no extra call from the sign-in page.
 
 ## Tests
 
