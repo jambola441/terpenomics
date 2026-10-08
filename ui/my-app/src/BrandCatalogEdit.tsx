@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { AdminTable, badge, categoryColor, navBtnStyle, selectStyle, Dash, type Column } from './components/AdminTable'
-import { ExportBadge } from './BrandCatalogs'
+import { ExportBadge, OriginBadge } from './BrandCatalogs'
 import api from './api/client'
 import type { BrandCatalog, BrandCatalogEntry, CatalogEntryListings, CatalogExportStatus } from './types'
 
@@ -457,6 +457,7 @@ export default function BrandCatalogEdit() {
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>
             {isNew ? 'New Brand Catalog' : catalog?.brand_name}
           </h2>
+          {!isNew && catalog && <OriginBadge catalog={catalog} />}
           {!isNew && catalog && (
             <span style={{ color: '#475569', fontSize: 13 }}>
               {catalog.active_entry_count} active of {catalog.entry_count} entries ·{' '}

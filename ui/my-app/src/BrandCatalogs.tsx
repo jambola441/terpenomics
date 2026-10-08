@@ -18,6 +18,7 @@ export default function BrandCatalogs() {
   const [catalogs, setCatalogs] = useState<BrandCatalogRow[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [origin, setOrigin] = useState<CatalogOrigin | 'all'>('all')
 
   useEffect(() => { load() }, [])
 
@@ -36,7 +37,7 @@ export default function BrandCatalogs() {
   const columns: Column<BrandCatalogRow>[] = [
     { key: 'brand', header: 'Brand', td: { color: '#f1f5f9', fontWeight: 500 }, render: c => c.brand_name },
     { key: 'slug', header: 'Slug', td: { color: '#64748b', fontFamily: 'monospace' }, render: c => c.brand_slug },
-    { key: 'source', header: 'Source', td: { color: '#94a3b8', fontSize: 12 }, render: c => c.source_method },
+    { key: 'source', header: 'Built from', render: c => <OriginBadge catalog={c} /> },
     {
       key: 'entries', header: 'Entries', align: 'right',
       render: c => (
@@ -60,6 +61,9 @@ export default function BrandCatalogs() {
   ]
 
   const stale = catalogs.filter(c => !c.export.in_sync).length
+  const counts = { site: 0, stores: 0, manual: 0 }
+  catalogs.forEach(c => { counts[catalogOrigin(c.source_method)] += 1 })
+  const shown = origin === 'all' ? catalogs : catalogs.filter(c => catalogOrigin(c.source_method) === origin)
 
   return (
     <div style={{ padding: 24, fontFamily: "'Inter', system-ui, sans-serif", background: '#080d18', minHeight: '100vh', color: '#f1f5f9' }}>
@@ -89,6 +93,24 @@ export default function BrandCatalogs() {
           )}
         </div>
 
+        {catalogs.length > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, fontSize: 12 }}>
+            <span style={{ color: '#64748b' }}>Built from:</span>
+            {(['all', 'site', 'stores', 'manual'] as const).map(o => (
+              <button
+                key={o}
+                onClick={() => setOrigin(o)}
+                style={{
+                  ...navBtnStyle, fontSize: 12, padding: '3px 10px',
+                  ...(origin === o ? { color: '#f1f5f9', borderColor: '#64748b' } : {}),
+                }}
+              >
+                {o === 'all' ? `All ${catalogs.length}` : `${ORIGIN_LABEL[o]} ${counts[o]}`}
+              </button>
+            ))}
+          </div>
+        )}
+
         {error && <div style={{ color: '#f87171', marginBottom: 16 }}>Error: {error}</div>}
 
         {loading ? (
@@ -102,7 +124,7 @@ export default function BrandCatalogs() {
         ) : (
           <AdminTable
             columns={columns}
-            rows={catalogs}
+            rows={shown}
             rowKey={c => c.id}
             onRowClick={c => navigate(`/admin/brand-catalogs/${c.id}`)}
           />
@@ -133,4 +155,50 @@ export function ExportBadge({ status }: { status: CatalogExportStatus }) {
       stale {parts.length ? parts.join(' ') : 'meta'}
     </span>
   )
+}
+
+/**
+ * Where a catalog's entries came from. "site": read from the brand's own product
+ * list by a recipe (scripts/storefront.py), so it has every product and size the brand
+ * lists. "stores": the bootstrap built it from store listings (catalog_bootstrap.py),
+ * and keeps a product in a size only when two or more stores list it, so a size or a
+ * new strain one store carries is missing. "manual": started by hand here.
+ */
+export type CatalogOrigin = 'site' | 'stores' | 'manual'
+
+const ORIGIN_LABEL: Record<CatalogOrigin, string> = { site: 'Brand site', stores: 'Store-built', manual: 'Manual' }
+
+export function catalogOrigin(method: string): CatalogOrigin {
+  if (method === 'listings_bootstrap') return 'stores'
+  if (!method || method === 'manual') return 'manual'
+  return 'site'
+}
+
+export function OriginBadge({ catalog }: { catalog: Pick<BrandCatalogRow, 'source_method' | 'source_url'> }) {
+  const origin = catalogOrigin(catalog.source_method)
+  const style = origin === 'site'
+    ? { background: '#14532d', color: '#86efac' }
+    : origin === 'stores'
+      ? { background: '#422006', color: '#fbbf24' }
+      : { background: '#1e293b', color: '#94a3b8' }
+  const label = <span style={{ ...badge, ...style }} title={catalog.source_method}>{ORIGIN_LABEL[origin]}</span>
+  if (origin === 'site' && catalog.source_url) {
+    let host = catalog.source_url
+    try { host = new URL(catalog.source_url).host } catch { /* keep the raw url */ }
+    return (
+      <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+        {label}
+        <a
+          href={catalog.source_url}
+          target="_blank"
+          rel="noreferrer"
+          onClick={e => e.stopPropagation()}
+          style={{ color: '#64748b', fontSize: 11 }}
+        >
+          {host}
+        </a>
+      </span>
+    )
+  }
+  return label
 }
