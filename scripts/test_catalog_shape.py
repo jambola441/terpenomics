@@ -269,6 +269,25 @@ def test_a_lines_other_size_filed_without_it():
     assert found == ['"Biscotti" 1g has no line; "40\'s Biscotti" comes only in 2.5g. The line\'s other size?']
 
 
+def test_a_product_whose_store_names_say_another_line():
+    """Ruby Farms' White Widow 1.5g was filed under Doobies (one store wrote "Doobies");
+    its other store names say "Rose Petal Infused", a line of its own. The two spellings
+    of that line, one with the brand's name, read as one."""
+    entries = [entry("Doobies", s, "preroll", None, "3.5g") for s in ("Blue Dream", "OG #18", "Wedding Cake")]
+    entries += [entry("Doobies", "White Widow", "preroll", None, "1.5g",
+                      terms=("ruby farms rose petal infused preroll white widow",
+                             "white widow 1 5g rose petal infused pre roll",
+                             "doobies white widow rose petal rolled hash infused preroll 1 5g")),
+                entry("Rose Petals Infused", "Ghost Train Haze", "preroll", None, "1.5g"),
+                entry("Ruby Rose Petal", "Ghost Train Haze #2", "preroll", None, "1.5g")]
+    found = cs.leads(cs.products(entries), brand="Ruby Farms")
+    assert texts(found, "line-disagrees") == [
+        'White Widow (Doobies) 1.5g: 3 of 3 store names say "Ruby Rose Petal", 1 say "Doobies"']
+    assert 'lines "Rose Petals Infused" and "Ruby Rose Petal" may be one line' in texts(found, "similar-lines")
+    # Without the brand's name, "Ruby" is a word of the line and the two differ.
+    assert "similar-lines" not in kinds(cs.leads(cs.products(entries[-2:])))
+
+
 def test_store_names_are_compared_normalised():
     # Match terms are stored normalised: "40's" arrives as "40 s".
     entries = [entry("40's", s, "preroll", None, "1g") for s in ("Gelato", "Runtz", "Zkittlez")]
