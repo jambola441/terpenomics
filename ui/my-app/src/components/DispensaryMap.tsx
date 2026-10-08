@@ -39,6 +39,72 @@ function pinIcon(L: any, d: PortalDispensary, active: boolean) {
   })
 }
 
+/** Pins closer than this on screen are drawn as one count bubble. A pin's
+ *  target is 44px, so two any closer steal each other's taps. */
+const CLUSTER_PX = 44
+/** From here in, stores are a block or more apart; every pin is its own. */
+const CLUSTER_UNTIL_ZOOM = 16
+
+/** The stores whose pins would overlap at the map's current zoom, grouped.
+ *  `apart` (the selected store) always gets a pin of its own, so it never
+ *  disappears into a bubble. Greedy and in list order, so the same zoom
+ *  gives the same groups. */
+function clusterStores(map: any, stores: PortalDispensary[], apart: string | null): PortalDispensary[][] {
+  const zoom = map.getZoom()
+  if (zoom >= CLUSTER_UNTIL_ZOOM) return stores.map(d => [d])
+  const groups: { x: number; y: number; members: PortalDispensary[] }[] = []
+  for (const d of stores) {
+    const p = map.project([d.lat!, d.lng!], zoom)
+    const near = d.id === apart ? undefined : groups.find(g =>
+      g.members[0].id !== apart && Math.hypot(g.x - p.x, g.y - p.y) < CLUSTER_PX)
+    if (near) near.members.push(d)
+    else groups.push({ x: p.x, y: p.y, members: [d] })
+  }
+  return groups.map(g => g.members)
+}
+
+/** A bubble standing in for overlapping stores: their count, in their
+ *  borough's colour when they share one. */
+function clusterIcon(L: any, members: PortalDispensary[]) {
+  const boroughs = new Set(members.map(d => boroughOf(d.address)))
+  const color = boroughs.size === 1 ? colorForBorough([...boroughs][0]) : colorForBorough(null)
+  const size = members.length >= 10 ? 40 : 36
+  return L.divIcon({
+    html: `<div class="nyc-cluster" style="--pin:${color}"><span class="nyc-cluster__disc">${members.length}</span></div>`,
+    className: '',
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+    tooltipAnchor: [0, -size / 2],
+  })
+}
+
+/** Click, and Enter or Space once focused. Leaflet makes a marker a focusable
+ *  role="button" but never turns a key into a click, so without this a
+ *  keyboard could reach a pin and not open it. */
+function onActivate(marker: any, fn: () => void) {
+  marker.on('click', fn)
+  marker.on('keydown', (e: any) => {
+    const key = e.originalEvent?.key
+    if (key !== 'Enter' && key !== ' ') return
+    e.originalEvent.preventDefault()
+    fn()
+  })
+}
+
+/** Tooltip content as text: Leaflet sets a string as HTML, and store names
+ *  come from scraped menus. */
+function tipText(text: string) {
+  const el = document.createElement('span')
+  el.textContent = text
+  return el
+}
+
+/** "Housing Works, Union Square and 3 more" */
+function clusterNames(members: PortalDispensary[]) {
+  const named = members.slice(0, 2).map(d => d.name).join(', ')
+  return members.length > 2 ? `${named} and ${members.length - 2} more` : named
+}
+
 /** A small colour-coded borough chip, shared by the sheet and the store list. */
 function BoroughChip({ borough, style }: { borough: Borough | null; style?: React.CSSProperties }) {
   const color = colorForBorough(borough)
@@ -63,7 +129,12 @@ export default function DispensaryMap({ activeDispensaryId, onAddToCart, cart = 
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<any>(null)
   const LRef = useRef<any>(null)
-  const markersRef = useRef<Record<string, any>>({})
+  // The layer the pins live on, and its markers by the stores they stand for
+  // (one id for a pin, several for a bubble), so a redraw keeps the markers
+  // that didn't change -- and keyboard focus on them.
+  const layerRef = useRef<any>(null)
+  const markersRef = useRef<Map<string, any>>(new Map())
+  const [zoom, setZoom] = useState<number | null>(null)
   const tiles = useMemo(() => tileConfig(), [])
   const [dispensaries, setDispensaries] = useState<PortalDispensary[]>([])
   const [loadingDispensaries, setLoadingDispensaries] = useState(true)
@@ -135,6 +206,9 @@ export default function DispensaryMap({ activeDispensaryId, onAddToCart, cart = 
       // Bottom-right would sit under the store sheet, so the zoom rides top-right.
       L.control.zoom({ position: 'topright' }).addTo(map)
 
+      layerRef.current = L.layerGroup().addTo(map)
+      map.on('zoomend', () => setZoom(map.getZoom()))
+      setZoom(map.getZoom())
       setMapReady(true)
     })
 
@@ -151,68 +225,88 @@ export default function DispensaryMap({ activeDispensaryId, onAddToCart, cart = 
         mapInstanceRef.current.remove()
         mapInstanceRef.current = null
         LRef.current = null
-        markersRef.current = {}
+        layerRef.current = null
+        markersRef.current = new Map()
       }
     }
   }, [tiles])
 
-  // Add markers once both map and dispensaries are ready
+  const located = useMemo(() => dispensaries.filter(d => d.lat != null && d.lng != null), [dispensaries])
+
+  // Frame every store rather than averaging to a point that may fit none.
   useEffect(() => {
-    if (!mapReady || !LRef.current || dispensaries.length === 0) return
-
-    const L = LRef.current
-    const map = mapInstanceRef.current!
-    const coorded = dispensaries.filter(d => d.lat != null && d.lng != null)
-    if (coorded.length === 0) return
-
-    const layer = L.layerGroup().addTo(map)
-    markersRef.current = {}
-
-    coorded.forEach(d => {
-      const marker = L.marker([d.lat!, d.lng!], {
-        icon: pinIcon(L, d, false),
-        title: d.name,
-      })
-        .addTo(layer)
-        .bindTooltip(d.name, { direction: 'top', className: 'nyc-tip', offset: [0, -2] })
-      marker.on('click', () => setSelected(d))
-      markersRef.current[d.id] = marker
-    })
-
-    // Frame every store rather than averaging to a point that may fit none.
+    const L = LRef.current, map = mapInstanceRef.current
+    if (!mapReady || !L || !map || located.length === 0) return
     map.fitBounds(
-      L.latLngBounds(coorded.map(d => [d.lat!, d.lng!] as [number, number])),
+      L.latLngBounds(located.map(d => [d.lat!, d.lng!] as [number, number])),
       { padding: [56, 56], maxZoom: 15 },
     )
+  }, [mapReady, located])
 
-    return () => {
-      layer.remove()
-      markersRef.current = {}
-    }
-  }, [mapReady, dispensaries])
-
-  // Re-skin bullets when the selection changes, and bring the store into view.
+  // Pins, with stores that would overlap at this zoom drawn as one bubble.
+  // Overlapping 30px pins used to leave a sliver of each to tap. A bubble
+  // zooms in on its stores; past CLUSTER_UNTIL_ZOOM every store has its pin.
+  const selectedId = selected?.id ?? null
   useEffect(() => {
-    const L = LRef.current
-    if (!L) return
+    const L = LRef.current, map = mapInstanceRef.current, layer = layerRef.current
+    if (!mapReady || !L || !map || !layer) return
 
-    dispensaries.forEach(d => {
-      const marker = markersRef.current[d.id]
-      if (!marker) return
-      const active = selected?.id === d.id
-      marker.setIcon(pinIcon(L, d, active))
-      marker.setZIndexOffset(active ? 1000 : 0)
-    })
+    const old = markersRef.current
+    const next = new Map<string, any>()
+    for (const members of clusterStores(map, located, selectedId)) {
+      const key = members.map(d => d.id).join(',')
+      let marker = old.get(key)
+      old.delete(key)
+      if (members.length === 1) {
+        const d = members[0]
+        const active = d.id === selectedId
+        if (!marker) {
+          marker = L.marker([d.lat!, d.lng!], { icon: pinIcon(L, d, active), title: d.name })
+            .addTo(layer)
+            .bindTooltip(tipText(d.name), { direction: 'top', className: 'nyc-tip', offset: [0, -2] })
+          onActivate(marker, () => setSelected(d))
+        } else {
+          marker.setIcon(pinIcon(L, d, active))
+        }
+        marker.setZIndexOffset(active ? 1000 : 0)
+      } else if (!marker) {
+        const bounds = L.latLngBounds(members.map(d => [d.lat!, d.lng!] as [number, number]))
+        marker = L.marker(bounds.getCenter(), {
+          icon: clusterIcon(L, members),
+          title: `${members.length} stores here. Zoom in`,
+        })
+          .addTo(layer)
+          .bindTooltip(tipText(clusterNames(members)), { direction: 'top', className: 'nyc-tip', offset: [0, -2] })
+        const bubble = marker
+        onActivate(bubble, () => {
+          // The bubble goes once the map zooms; hand keyboard focus to the map
+          // first, so the next Tab moves through the stores it opened up.
+          if (bubble.getElement()?.contains(document.activeElement)) {
+            map.getContainer().focus({ preventScroll: true })
+          }
+          // Far enough in to pull them apart, at least two steps.
+          const fit = map.getBoundsZoom(bounds.pad(0.5))
+          const to = Math.min(Math.max(fit, map.getZoom() + 2), CLUSTER_UNTIL_ZOOM)
+          map.setView(bounds.getCenter(), to, { animate: !window.matchMedia('(prefers-reduced-motion: reduce)').matches })
+        })
+      }
+      next.set(key, marker)
+    }
+    old.forEach(m => m.remove())
+    markersRef.current = next
+  }, [mapReady, located, zoom, selectedId])
 
-    // Pan the store into the strip of map the sheet doesn't cover, rather than
-    // to dead centre — centring drops it behind the sheet on a short screen.
+  // Bring the selected store into view: into the strip of map the sheet
+  // doesn't cover, rather than dead centre, which drops it behind the sheet
+  // on a short screen.
+  useEffect(() => {
     const map = mapInstanceRef.current
     if (selected?.lat != null && selected.lng != null && map) {
-      const zoom = map.getZoom()
-      const point = map.project([selected.lat, selected.lng], zoom).add([0, SHEET_PAN_OFFSET])
-      map.panTo(map.unproject(point, zoom), { animate: true })
+      const z = map.getZoom()
+      const point = map.project([selected.lat, selected.lng], z).add([0, SHEET_PAN_OFFSET])
+      map.panTo(map.unproject(point, z), { animate: true })
     }
-  }, [selected, dispensaries])
+  }, [selected])
 
   const activeDispensary = activeDispensaryId
     ? dispensaries.find(d => d.id === activeDispensaryId) ?? null
