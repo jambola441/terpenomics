@@ -501,8 +501,8 @@ def validate(recipe: dict, where: str = "recipe") -> dict:
             bad(f"store_aliases.{table}: only lines and names are mapped")
     for i, rule in enumerate(recipe.get("store_skip") or []):
         when = rule.get("when") or {}
-        if not when or set(when) - {"name", "size"} or not rule.get("why"):
-            bad(f"store_skip[{i}] needs a why and a when on name and/or size")
+        if not when or set(when) - {"name", "size", "subtype"} or not rule.get("why"):
+            bad(f"store_skip[{i}] needs a why and a when on name, size and/or subtype")
         for f, pattern in when.items():
             try:
                 re.compile(pattern)
@@ -854,6 +854,10 @@ def _as_site_size(p: dict, names: dict, site: list[tuple]) -> dict:
     own. Otherwise the product stays the stores' own, as before."""
     same = [e for _, n, e in site
             if (p.get("subtype") or None) == (e.get("subtype") or None) and _name_match(names, n) == "exact"]
+    if len({e["product_key"] for e in same}) > 1:
+        # Nanticoke's plain Durban Poison and its oHHo Durban Poison both read as
+        # "Durban Poison": the one in the store product's own line is the one.
+        same = [e for e in same if squash(e.get("product_line")) == squash(p.get("product_line"))]
     if len({e["product_key"] for e in same}) != 1:
         return p
     e = same[0]
@@ -870,7 +874,7 @@ def skip_store_products(only_stores: list[dict], rules: list[dict] | None) -> tu
     kept, dropped = [], []
     for e in only_stores:
         rule = next((r for r in rules or []
-                     if all(re.search(pat, (e.get("name") if f == "name" else e.get("variant")) or "", re.I)
+                     if all(re.search(pat, e.get({"name": "name", "size": "variant"}.get(f, f)) or "", re.I)
                             for f, pat in r["when"].items())), None)
         if rule:
             dropped.append((e, rule["why"]))

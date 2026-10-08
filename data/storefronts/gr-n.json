@@ -16,7 +16,11 @@
     "One New York product has an Illinois slug (mega-1-1-blackberry-il) and repeats mega-1-1-blackberry-ny; it is skipped.",
     "PIXLZ, Grön's gummy-cluster sub-brand that NY stores sell under Grön, is on its own Webflow site (eatpixlz.com: Blue Razzberry 3:1, Tropical Rush, Berry Blast), not in this feed. A recipe reads one source, so PIXLZ stays with the stores' consensus.",
     "Stores call the NY Sour Apple Mega 'Big Apple' (its page: 'gives the term Big Apple a whole new meaning') and the Mini Bars 'Sea Salt' bars; the site's names are kept, so those store names show as only at stores.",
-    "Stores call the Mega Sour Apple 'Big Apple' (store_aliases)."
+    "Stores call the Mega Sour Apple 'Big Apple' (store_aliases).",
+    "2026-10-08 curation: NY stores often write the per-piece 10mg as a Pearls or Mini Bar listing's size; the gap fill turned these into 10mg 'sizes' of the site products (Lychee Limeade, Tangelo, Watermelon, Wildberry). No Grön NY package is 10mg (Pearls 10 x 10mg, bars 10 x 10mg, Mega 1 x 100mg, Pips 20 x 5mg, PIXLZ 20 x 5mg, Pearls 2-pack 2 x 10mg), so store_skip drops every 10mg store size.",
+    "Tart Cherry Pearls' package (Dutchie photo 8f8589fc...) prints '10:1 - 250MG CBN & 25MG THC PER PACKAGE, 25MG CBN & 2.5MG THC PER PEARL': 10pk 25mg is right, and the stores' 10pk 100mg is skipped.",
+    "Stores also write the chocolate's lineage as its name (Indica, Sativa, Sleepy Indica, Daytime Sativa) and call the Mini Bars 'Dark/Milk Chocolate Sea Salt' across THC and ratio bars; none of these is one product, so they are skipped and the matcher decides those listings. 'Milk Chocolate Sativa Full Bar' is the site's THC Milk Chocolate full bar (its page: 'Sativa THC Milk Chocolate', 10 servings), so it is aliased.",
+    "New tarot-themed rosin drops not on the site feed yet (2026-10-08): MEGA 'Mellow Moon' (XVIII, indica, 1 x 100mg, yuzu melon flavour) and Pearls 'Star Spell' (XVII, sativa, 10 pearls, 100mg, star fruit flavour), per their packages on Dutchie. Some stores' enrichment read the flavour as the strain (Yuzu Melon, Star Fruit); those copies are skipped so each product has one store-only entry."
   ],
   "skip": [
     {
@@ -118,7 +122,55 @@
   ],
   "store_aliases": {
     "names": {
-      "Big Apple": "Sour Apple"
+      "Big Apple": "Sour Apple",
+      "Milk Chocolate Sativa": "Milk Chocolate"
     }
-  }
+  },
+  "store_skip": [
+    {
+      "when": {
+        "size": "^10mg$"
+      },
+      "why": "the per-piece dose typed as the size: no Grön NY package is 10mg; the same listing names are 10pk 100mg at other stores, and their descriptions say '10MG OF THC PER PEARL | 10 PEARLS PER PACKAGE'"
+    },
+    {
+      "when": {
+        "name": "^Pearls Tart Cherry$",
+        "size": "100mg"
+      },
+      "why": "Tart Cherry Pearls hold 25mg THC (2.5mg x 10; package photo and store descriptions 'Each Pearl contains 25mg CBN and 2.5mg THC'); 100mg is the stores' default Pearls dose"
+    },
+    {
+      "when": {
+        "name": "^(?:Pearls\\s+)?Lychee Limeade$",
+        "size": "40mg"
+      },
+      "why": "the NY Pearls 2-pack (2 x 10mg THC = 20mg; store name '20mg THC 20mg CBC 20mg THCV Pearls 2 Pack') sized by THC plus another cannabinoid, and filed without its line"
+    },
+    {
+      "when": {
+        "name": "^(?:(?:Pips|Mini Bar|Pearls|Mega)\\s+)?(Indica|Sativa|Sleepy Indica|Daytime Sativa)$"
+      },
+      "why": "a lineage or effect label read as the strain; its listings are several products (Dark/Milk Chocolate Pips, the THC and 3:1 bars, the 1:1 Mini Bars, even the Mellow Moon Mega)"
+    },
+    {
+      "when": {
+        "name": "^(?:(?:Mini Bar|Pips)\\s+)?(Dark|Milk) Chocolate Sea Salt$"
+      },
+      "why": "the stores' name for the Mini Bars ('dusted with Jacobsen sea salt'); its listings are the THC and 1:1 Mini Bars (and one 3:1 full bar), each a site product"
+    },
+    {
+      "when": {
+        "name": "^(?:(?:Mega|Pearls)\\s+)?(Yuzu Melon|Star Fruit)$"
+      },
+      "why": "the flavour read as the strain of the new rosin MEGA Mellow Moon and Pearls Star Spell (package and store copy: 'Soft yuzu melon', 'Crisp star fruit'); the same listings' names say Mellow Moon / Star Spell, which are kept"
+    },
+    {
+      "when": {
+        "name": "^Mega Mellow Moon$",
+        "subtype": "^other$"
+      },
+      "why": "the same MEGA Mellow Moon as the gummy store product: stores whose subtype guess for the single 100mg MEGA piece is 'other'"
+    }
+  ]
 }

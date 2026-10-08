@@ -489,3 +489,26 @@ def test_a_rule_size_written_per_piece_is_refused(size, category):
                              "category": [{"set": {"category": category}}],
                              "title": [{"when": {"category": f"^{category}$"},
                                         "match": "(?P<strain>.+)", "set": {"size": size}}]})
+
+
+def test_a_store_size_joins_the_site_product_in_its_own_line():
+    """Nanticoke sells Durban Poison plain and in its oHHo line; the stores' line-less
+    2.5g pack is the plain one's, not a product of its own."""
+    doc = {"brand_name": "Nanticoke", "entries": [
+        {"external_id": "s1", "product_key": "sf:preroll:::durbanpoison", "name": "Durban Poison", "strain": "Durban Poison",
+         "product_line": None, "category": "preroll", "subtype": None, "variant": "3.5g", "match_terms": []},
+        {"external_id": "s2", "product_key": "sf:preroll::ohho:durbanpoison", "name": "oHHo Durban Poison",
+         "strain": "Durban Poison", "product_line": "oHHo", "category": "preroll", "subtype": None, "variant": "3.5g",
+         "match_terms": []}]}
+    stores = [listing(s, "Nanticoke Durban Poison Preroll 5pk", "Durban Poison", "preroll", "2.5g") for s in ("a", "b")]
+    _, only_stores, _ = storefront.split_store_products(doc, stores)
+    [p] = only_stores
+    assert p["product_key"] == "sf:preroll:::durbanpoison"
+
+
+def test_store_skip_can_test_the_subtype():
+    kept, dropped = storefront.skip_store_products(
+        [{"name": "Mega Mellow Moon", "variant": "100mg", "subtype": "other"},
+         {"name": "Mega Mellow Moon", "variant": "100mg", "subtype": "gummy"}],
+        [{"when": {"name": "^Mega Mellow Moon$", "subtype": "^other$"}, "why": "a subtype guess"}])
+    assert [e["subtype"] for e in kept] == ["gummy"] and len(dropped) == 1

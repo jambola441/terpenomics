@@ -11,7 +11,49 @@
   ],
   "Eaton Botanicals": [
     "Little Pandas",
-    "Chairlifts"
+    "Chairlifts",
+    {
+      "line": "Apple-A-Day",
+      "also": [
+        "Apple A Day"
+      ],
+      "category": "edible"
+    },
+    {
+      "line": "Cool Down",
+      "also": [
+        "Cool-down"
+      ],
+      "category": "edible"
+    },
+    {
+      "line": "Serenity Now",
+      "category": "edible"
+    },
+    {
+      "line": "Gal Pal",
+      "category": "edible"
+    },
+    {
+      "line": "Daily Elevation",
+      "category": "edible"
+    },
+    {
+      "line": "Fixer Upper",
+      "category": "edible"
+    },
+    {
+      "line": "Nightly Nightcap",
+      "also": [
+        "Nighty Nightcap",
+        "Night Cap"
+      ],
+      "category": "edible"
+    },
+    {
+      "line": "Golden Ticket",
+      "category": "edible"
+    }
   ],
   "Papa & Barkley": [
     "Releaf"
@@ -107,9 +149,36 @@
   "_comment_stiiizy": "From the STIIIZY catalog audit (2026-10-05): stores print these on most listings, enrichment recorded them on under 1 in 10 (\"Original\" 8 of 73, \"Liquid Diamonds\" 2 of 68, \"LIIIL\" 3 of 28). The plain 1g all-in-one has no line name. 32 names say \"Liquid Diamond\". With a category, the description settles a name that carries no line: 28 of the 29 pre-roll listings without 40's in the name have it in the description (Hold Up Roll Up: 14).",
   "STIIIZY": [
     "Original",
-    {"line": "Liquid Diamonds", "also": ["Liquid Diamond"], "category": "vaporizers"},
-    {"line": "LIIIL", "category": "vaporizers"},
-    {"line": "40's", "also": ["40s"], "category": "preroll"}
+    {
+      "line": "Liquid Diamonds",
+      "also": [
+        "Liquid Diamond"
+      ],
+      "category": "vaporizers"
+    },
+    {
+      "line": "LIIIL",
+      "category": "vaporizers"
+    },
+    {
+      "line": "40's",
+      "also": [
+        "40s"
+      ],
+      "category": "preroll"
+    },
+    {
+      "line": "Tropical",
+      "category": "edible"
+    },
+    {
+      "line": "Lemonade",
+      "category": "edible"
+    },
+    {
+      "line": "Sour",
+      "category": "edible"
+    }
   ],
   "_comment_1906": "1906 sells its tablets as Drops in effects (Bliss, Boost, Chill, Genius, Go, Love, Sleep): the family is the line, the effect is the product. Stores write \"1906 - Bliss Drops 2pk\".",
   "1906": [
@@ -222,5 +291,190 @@
   "Hashtag Honey": [
     {"line": "Snowballz", "also": ["Snowballs"]},
     "Lites"
+  ],
+  "Off Hours": [
+    {
+      "line": "Effect-Based",
+      "also": [
+        "Effect Based",
+        "Effect-Based Rope",
+        "Effect Based Rope"
+      ]
+    },
+    {
+      "line": "Live Rosin",
+      "also": [
+        "Live Rosin Infused",
+        "Live Rosin Rope",
+        "Live Rosin Gummy Rope",
+        "Rosin Infused"
+      ]
+    },
+    {
+      "line": "Live Resin",
+      "also": [
+        "Live Resin Infused",
+        "Live Resin Rope",
+        "Live Resin Gummy Rope",
+        "Live Resin Ropes"
+      ],
+      "category": "edible"
+    },
+    {
+      "line": "Originals"
+    },
+    {
+      "line": "Off-box",
+      "also": [
+        "Off box",
+        "Offbox"
+      ],
+      "category": "vaporizers"
+    }
+  ],
+  "MFNY": [
+    {
+      "line": "BagelHole",
+      "also": [
+        "Bagel Hole",
+        "Bagel-Hole"
+      ],
+      "category": "preroll"
+    }
+  ],
+  "Grön": [
+    {
+      "line": "Mega",
+      "also": [
+        "MEGA",
+        "Mega Pearl",
+        "Mega Pearls",
+        "Pearl Mega"
+      ],
+      "category": "edible"
+    },
+    {
+      "line": "Pearls",
+      "also": [
+        "Pearl"
+      ],
+      "category": "edible"
+    },
+    {
+      "line": "Pips",
+      "category": "edible"
+    },
+    {
+      "line": "Mini Bar",
+      "category": "edible"
+    },
+    {
+      "line": "PIXLZ",
+      "also": [
+        "Pixels"
+      ],
+      "category": "edible"
+    }
+  ],
+  "Nanticoke": [
+    {
+      "line": "Nanti Nitro Gold",
+      "also": [
+        "Nanti Nitro Gold AIO",
+        "NN Gold"
+      ],
+      "category": "vaporizers"
+    },
+    {
+      "line": "Nanti Nitro",
+      "also": [
+        "Nanti-Nitro"
+      ],
+      "category": "vaporizers"
+    },
+    {
+      "line": "X-Series",
+      "also": [
+        "X Series",
+        "XSeries"
+      ],
+      "category": "vaporizers"
+    },
+    {
+      "line": "Ready 2 Roll",
+      "also": [
+        "Ready to Roll",
+        "Ready2Roll"
+      ],
+      "category": "flower"
+    },
+    {
+      "line": "oHHo",
+      "category": "preroll"
+    },
+    {
+      "line": "The Kingpin",
+      "also": [
+        "Kingpin"
+      ],
+      "category": "preroll"
+    },
+    {
+      "line": "Hiistix",
+      "category": "edible"
+    },
+    {
+      "line": "Entourage",
+      "category": "edible"
+    },
+    {
+      "line": "CQ",
+      "also": [
+        "CQ Shot"
+      ],
+      "category": "edible"
+    }
+  ],
+  "_comment_grassroots": "From the Grassroots curation (2026-10-08). Flower: core whole flower 3.5g and 28g jars (no line), Small Buds 7g jar / 14g bag (subtype smalls), Diamond Infused 3.5g (subtype infused). Pre-rolls: 0.4g shorties in 2pk (0.8g) and 5pk (2g), no line; Diamond Infused 1g singles and 5pk (2g) shorties. Dark Heart Collection is the Grassroots x Dark Heart strain collection (Titan Express, Delphi Diesel, Foreign Kush Mints, Moonbeam Gelato, Triple Stack, Zesty Garlic Cookies, Blackened Blue); stores also write Dark Heart, Dark Heart Genetics, Grassroots x Dark Heart. An infused Dark Heart product is Diamond Infused: the longer 'Dark Heart ... Infused' spellings are here so the longest match picks Diamond Infused.",
+  "Grassroots": [
+    {
+      "line": "Diamond Infused",
+      "also": [
+        "Diamond-Infused",
+        "Infused",
+        "Infused Flower",
+        "Infused Minis",
+        "Diamond Infused Shorties",
+        "Dark Heart Infused",
+        "Dark Heart Genetics Infused",
+        "Dark Heart Collection Infused"
+      ]
+    },
+    {
+      "line": "Dark Heart Collection",
+      "also": [
+        "Dark Heart",
+        "Dark Heart Genetics",
+        "Grassroots x Dark Heart",
+        "Grassroots/Dark Heart"
+      ]
+    }
+  ],
+  "_comment_jeeter": "From the Jeeter curation (2026-10-08). jeeter.com/locations/new-york sells NY pre-rolls as Baby Jeeter (5 x 0.5g, 2.5g total), the 1g Jeeter single (no family name: no line) and Jeeter XL (2g, glass tip). Stores print 'Baby Jeeter' and 'XL' on nearly every 2.5g and 2g listing; enrichment recorded them on 7 of 14 and 1 of 6 catalog products. 'XL' alone covers 'Quad-Infused XL Jeeter Joint' and 'Pina Colada XL'; the category keeps it off the 2g Diamonds XL all-in-ones. Seasonal and limited collections (Summer Essentials, Autumn Essentials, World Cup) run across formats and are not lines.",
+  "Jeeter": [
+    {
+      "line": "Baby Jeeter",
+      "also": [
+        "Baby Jeeters"
+      ],
+      "category": "preroll"
+    },
+    {
+      "line": "Jeeter XL",
+      "also": [
+        "XL"
+      ],
+      "category": "preroll"
+    }
   ]
 }

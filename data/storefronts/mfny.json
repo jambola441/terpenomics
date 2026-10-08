@@ -16,7 +16,7 @@
       "to": 20
     }
   },
-  "learned": "2026-10-05, by an agent pass: 179 products on 15 Webflow pages of 12 (page 16 is empty). No sitemap, no JSON; product pages add nothing but a 'More <Category>' block and, for BagelHole, a description.",
+  "learned": "2026-10-05, by an agent pass: 179 products on 15 Webflow pages of 12 (page 16 is empty). No sitemap, no JSON; product pages add nothing but a 'More <Category>' block and, for BagelHole, a description. 2026-10-08, curation pass: pack sizes rewritten as 'N x unit' (a catalog label 'Npk total' now reads back as written, so '4pk 0.75g' had become a 0.75g total); size-less badders read at 1g; store_aliases added.",
   "notes": [
     "body is the card image's URL, not a description: its file name ('MFNY%20Live%20Resin%20510%20Vape%20Cart%20Honey%20Banana%20.5g.png') is the only place the site states most sizes. About a third of the images are bare 'image.png'.",
     "Sizes, in order: a size in the title, then one in the image name, then a format constant where every sized image and the stores agree: 510 carts 0.5g (the 1g carts say 1g in the title), non-Classics Vape Pens 0.5g, Classics AIOs 1g (UK Cheese's title; stores sell Sour Diesel at 1g only), Mini Pre-Rolls 0.75g and their Four Packs 4 x 0.75g, Two-Fers 2 x 0.5g, gummies 10 x 10mg, BagelHole 2g flower + 0.5g extract (its product page).",
@@ -25,7 +25,12 @@
     "Line is the extract (Live Resin / Live Rosin), with 'Classics' in front for that line; Two-Fer packs get line 'Two-Fer' so a 2 x 0.5g pack is not the same product as a 1g cart. Pre-rolls and gummies have no line but Classics and BagelHole: every MFNY pre-roll is resin-infused, and titles say 'Resin' only sometimes.",
     "A leading 'MFNY' is dropped from single-strain names ('MFNY Skunk' -> 'Skunk'), as stores write them. Titles carry typos ('Gumies', 'Mii Pre-Rolls', double spaces) that the patterns absorb.",
     "Category comes from the title's format word; the all-products cards carry no category. 'Mango x Honey Banana' has no format word and gets edible from its image name.",
-    "Check on 2026-10-05: 135 entries (the site lists five products twice), stores sell 91 products, 48 found. Of the 43 store-only: 12 are products skipped above for want of a size, 23 are not on the site (Sleepy MF-er, Pina Colada, Super Lemon Haze, White Fire OG pre-rolls, the Belafonte Two-Fer...), and 7 are store spellings the matcher misses: stores write the site's 'Hash Burger x Hash Burger' as 'Hash Burger' (also Candy Rain, Gelonade, Honey Banana, Sour Diesel pre-rolls) and some put Candy Rain rosin under a 'Riverway' line."
+    "Check on 2026-10-05: 135 entries (the site lists five products twice), stores sell 91 products, 48 found. Of the 43 store-only: 12 are products skipped above for want of a size, 23 are not on the site (Sleepy MF-er, Pina Colada, Super Lemon Haze, White Fire OG pre-rolls, the Belafonte Two-Fer...), and 7 are store spellings the matcher misses: stores write the site's 'Hash Burger x Hash Burger' as 'Hash Burger' (also Candy Rain, Gelonade, Honey Banana, Sour Diesel pre-rolls) and some put Candy Rain rosin under a 'Riverway' line.",
+    "Pack sizes are written '4 x 0.75g' and '2 x 0.5g' (count x unit). Since sizes.py reads a catalog label back as written (2026-10-05), '4pk 0.75g' means a 0.75g pack, which collapsed every Four Pack into its single and made Two-Fers 0.5g.",
+    "Every MFNY badder or concentrate whose title or image states a size says 1g (18 of them; Classics UK Cheese and Superboof in the title), so a size-less badder reads 1g. Stores also sell 2g jars (Sour Diesel, Skunk, Candy Rain, Chemdog, Lemon Cane, Belafonte); those join the site product as its 2g. A badder title without an extract word is live resin (MFNY: all non-flower products are live resin or rosin; stores write 'Live Resin Badder'), so the line defaults to Live Resin and the subtype to resin. 'Oishii Badder' is the site's second card for Oishii #4 (its page names cultivar 'Oishii #4').",
+    "A Vape Pen title without 'Live Resin' (Honey Banana, Rainbow Beltz 2.0, White Fire) is the same 0.5g Live Resin pen; its line is Live Resin. Stores also sell a 1g Live Resin All-in-One (AVD hardware; package 'riverway Live Resin All-in-One Vape ... Contains 1g'), which joins the pen as its 1g.",
+    "The Classics green apple gummy prints 'Sour Green Apple x Sour Diesel' on the package, as nine stores write it; the site title shortens it to 'Green Apple'. Every gummy pack also prints an effect label on its side (Focused MF-er, Sleepy MF-er, Mellow MF-er); it is not a line.",
+    "store_aliases: 'Riverway' is MFNY's trademark for its extracts (riverway Live Resin / Live Rosin on every package); stores that write 'Riverway Live Rosin Badder' mean the site's Live Rosin badder. 'White Fire OG' is the stores' name for the site's White Fire (site pages give cultivar 'White Fire')."
   ],
   "skip": [
     {
@@ -45,13 +50,6 @@
         "title": "(?i)^(?!.*\\b(?:mini|mii|four pack|classics)\\b).*\\bpre-?rolls?\\b"
       },
       "why": "plain pre-roll: size not on the site"
-    },
-    {
-      "when": {
-        "title": "(?i)^(?!.*\\d\\s*g\\b).*\\b(?:badder|concentrate)\\b",
-        "body": "^(?!.*(?:%20|_)\\.?\\d+(?:\\.\\d+)?g(?![a-z0-9]))"
-      },
-      "why": "concentrate: size not on the site"
     }
   ],
   "category": [
@@ -132,7 +130,8 @@
         "title": "(?i)\\b(?:badder|concentrate)\\b"
       },
       "set": {
-        "category": "concentrate"
+        "category": "concentrate",
+        "subtype": "resin"
       }
     }
   ],
@@ -263,7 +262,19 @@
         "body": "(?:%20|_)(?P<size>\\.?\\d+(?:\\.\\d+)?g)(?![a-z0-9])"
       },
       "set": {
-        "size": "0.5g"
+        "size": "0.5g",
+        "line": "Live Resin"
+      }
+    },
+    {
+      "when": {
+        "category": "^concentrate$"
+      },
+      "match": "^Oishii\\s+Badder$",
+      "set": {
+        "line": "Live Resin",
+        "strain": "Oishii #4",
+        "size": "1g"
       }
     },
     {
@@ -275,7 +286,8 @@
         "body": "(?:%20|_)(?P<size>\\.?\\d+(?:\\.\\d+)?g)(?![a-z0-9])"
       },
       "set": {
-        "line": "Classics Live Rosin"
+        "line": "Classics Live Rosin",
+        "size": "1g"
       }
     },
     {
@@ -287,7 +299,8 @@
         "body": "(?:%20|_)(?P<size>\\.?\\d+(?:\\.\\d+)?g)(?![a-z0-9])"
       },
       "set": {
-        "line": "Classics Live Resin"
+        "line": "Classics Live Resin",
+        "size": "1g"
       }
     },
     {
@@ -297,6 +310,20 @@
       "match": "^(?:MFNY\\s+)?(?P<strain>.+?)\\s+(?:(?P<line>Live\\s+Res[ie]n|Live\\s+Rosin)\\s+)?(?:Badder|Concentrate)(?:\\s+(?P<size>\\d*\\.?\\d+\\s*g))?$",
       "extract": {
         "body": "(?:%20|_)(?P<size>\\.?\\d+(?:\\.\\d+)?g)(?![a-z0-9])"
+      },
+      "set": {
+        "size": "1g",
+        "line": "Live Resin"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "^(?P<line>Classics)\\s+(?:Sour\\s+)?Green\\s+Apple\\s+x\\s+Sour\\s+Diesel\\b",
+      "set": {
+        "strain": "Sour Green Apple x Sour Diesel",
+        "size": "10pk 100mg"
       }
     },
     {
@@ -317,5 +344,13 @@
         "size": "10pk 100mg"
       }
     }
-  ]
+  ],
+  "store_aliases": {
+    "lines": {
+      "Riverway": "Live Rosin"
+    },
+    "names": {
+      "White Fire OG": "White Fire"
+    }
+  }
 }
