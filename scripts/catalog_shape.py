@@ -215,6 +215,21 @@ def _alike(a: str, b: str) -> bool:
     return difflib.SequenceMatcher(None, ka, kb).ratio() >= SIMILAR
 
 
+LINE_FILLER = {"infused", "the", "line", "series", "collection", "by"}
+
+
+def _stems(text: str) -> set[str]:
+    """A name's words, lowercased and singular ("Rose Petals" and "rose petal" agree)."""
+    return {w[:-1] if len(w) > 3 and w.endswith("s") else w
+            for w in re.findall(r"[a-z0-9]+", norm_name(text or "").lower())}
+
+
+def _line_key(line: str, brand: str = "") -> frozenset[str]:
+    """The words that tell a line apart: its name less filler and the brand's own name,
+    so "Ruby Rose Petal" and "Rose Petals Infused" (Ruby Farms) read as one line."""
+    return frozenset(_stems(line) - LINE_FILLER - _stems(brand))
+
+
 def _plausible(category: str, variant: str | None) -> bool | None:
     rule = PLAUSIBLE.get(category)
     if not rule or not variant:
@@ -233,7 +248,7 @@ def _tagged(ps: list[Product]) -> str:
 
 def leads(prods: list[Product], strain_vocab: dict[str, int] | None = None,
           storefront: bool = False, other_brands: dict[str, str] | None = None,
-          listings_known: bool = False) -> list[Lead]:
+          listings_known: bool = False, brand: str = "") -> list[Lead]:
     """Where the catalog's shape looks unlike a brand's. Leads, not verdicts.
 
     strain_vocab: strain_key -> how many other brands' catalogs use it as a strain,
@@ -314,7 +329,8 @@ def leads(prods: list[Product], strain_vocab: dict[str, int] | None = None,
                 out.append(Lead("line-word", cat, f'line "{line}" is a strain type, format or size, '
                                 f"not a named line ({_tagged(ps)})", 2))
             for other in named:
-                if other > line and _alike(line, other):
+                if other > line and (_alike(line, other) or
+                                     (_line_key(line, brand) and _line_key(line, brand) == _line_key(other, brand))):
                     out.append(Lead("similar-lines", cat, f'lines "{line}" and "{other}" may be one line', 2))
 
         # Store names that say a line the product lacks. Per size, since one strain's
@@ -332,6 +348,24 @@ def leads(prods: list[Product], strain_vocab: dict[str, int] | None = None,
         for line, labels in sorted(said.items()):
             out.append(Lead("stray", cat, f'no line, but most of their store names say "{line}": '
                             + ", ".join(sorted(set(labels))), 2))
+
+        # Store names that say another line than the product's. Ruby Farms' White Widow
+        # 1.5g was filed under Doobies because one store wrote "Doobies"; five of its six
+        # store names say "Rose Petal Infused", a line of its own. Per size, as above.
+        keys = {l: _line_key(l, brand) for l in named}
+        for p in everything:
+            if not p.line or not keys.get(p.line):
+                continue
+            for v in p.sizes:
+                names = [_stems(n) for n in p.store_names_at(v)]
+                if len(names) < 2:
+                    continue
+                says = {l: sum(1 for ws in names if k <= ws) for l, k in keys.items() if k}
+                rivals = [l for l in says if l != p.line and not keys[l] <= keys[p.line]]
+                best = max(rivals, key=lambda l: (says[l], len(keys[l]), l), default=None)
+                if best and says[best] * 2 > len(names) and says[p.line] * 2 < len(names):
+                    out.append(Lead("line-disagrees", cat, f'{p.label} ({p.line}) {v}: {says[best]} of '
+                                    f'{len(names)} store names say "{best}", {says[p.line]} say "{p.line}"', 2))
 
         # A line of this category inside a strain: "Live Resin Infused Super Bud" with no
         # line, "Calm Peach" next to line "Calm". One lead per product, the longest line.
@@ -605,7 +639,8 @@ def render_show(catalog: dict, entries: list[dict], listings: list[dict],
         for cat, term, labels in shared:
             out.append(f'  {cat}: "{term}" on {" · ".join(labels)}')
 
-    found = [l for l in leads(prods, strain_vocab, storefront, other_brands, listings_known=True)
+    found = [l for l in leads(prods, strain_vocab, storefront, other_brands, listings_known=True,
+                              brand=catalog["brand_name"])
              if not category or l.category == category]
     for brand, n in sorted((filed_elsewhere or {}).items()):
         found.append(Lead("inside-other-catalog", "*", f'{brand}\'s catalog has a line "{catalog["brand_name"]}" '
@@ -781,7 +816,8 @@ def render_triage(catalogs: list[dict], entries: list[dict], strain_vocab_by: di
         if not prods:
             continue
         vocab = {k: len(ids - {c["id"]}) for k, ids in strain_vocab_by.items()}
-        found = leads(prods, vocab, c["source_method"] != BOOTSTRAP, brands_but(catalogs, c))
+        found = leads(prods, vocab, c["source_method"] != BOOTSTRAP, brands_but(catalogs, c),
+                      brand=c["brand_name"])
         kinds = Counter(l.kind for l in found)
         rows.append((sum(l.weight for l in found), c, prods, kinds))
     out = ["score  brand                          source       products lines no-line  leads by kind"]

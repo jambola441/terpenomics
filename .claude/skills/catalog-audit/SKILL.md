@@ -65,7 +65,11 @@ it. They are rules of thumb, not laws: a break is a question, and evidence answe
    named lines is not fine: stores usually still write the line, and something dropped
    it. A size can give the line away too: when every infused pre-roll is a 5-pack, a
    line-less 5-pack is probably infused.
-   Leads: `mixed-lines` (bootstrap only), `stray`, `line-in-strain`, `size-of-other-line`.
+   A product can also sit in the wrong line: one store's word can file a whole product.
+   Ruby Farms' rose-petal White Widow 1.5g went under Doobies because one of six stores
+   wrote "Doobies"; the other five say "Rose Petal Infused".
+   Leads: `mixed-lines` (bootstrap only), `stray`, `line-disagrees`, `line-in-strain`,
+   `size-of-other-line`.
 5. **One concept, one model.** If a brand's vapes file effects as strains of an
    "Effect-Based" line, its gummies should not file the same effects as lines.
    Leads: `line-is-strain` naming another category, `cross-category`.
@@ -232,6 +236,7 @@ is what you test. If you start from the leads you will only re-describe them.
 | lead | what it suggests | how to confirm |
 | --- | --- | --- |
 | `mixed-lines` | a big line-less group beside named lines; the line was lost for most products | look at their store names (`listings`); do stores write a line word? |
+| `line-disagrees` | a product whose store names (for that size) mostly say another of the catalog's lines, and few say its own | `listings "<Brand>" "<strain>"`: refile it under the line the stores name (rekey), or the line words are a description, not the line |
 | `stray` | line-less products whose store names (for that size) mostly say a line | `listings "<Brand>" "<strain>"`: the same product as the lined one, or a separate plain product? |
 | `size-of-other-line` | a size rare in its own group but typical of another line (a line-less 5-pack where every infused pre-roll is a 5-pack) | store names for that size; the site's listing of that size |
 | `split-size` | a line-less product whose strain is in one line, in sizes that line lacks (line-less Biscotti 1g beside 40's Biscotti 2.5g) | store names: do they say the line? A line defined by its size (a 0.5g-only pen) makes this a false alarm |
@@ -240,7 +245,7 @@ is what you test. If you start from the leads you will only re-describe them.
 | `cross-category` | one name is a line in two categories; it is likely not a line, or products sit in the wrong category | the products in the smaller category: misfiled? Is the name an extraction word or brand-wide name? |
 | `line-word` | the line is a format, strain type or size | almost always a misread; find the real line or set none |
 | `line-is-brand` | the line is another brand we keep a catalog for | `show` that brand: the same products listed under both? |
-| `similar-lines` | two spellings of one line ("Bagel Hole" / "BagelHole") | pick the brand's spelling; resin and rosin are different lines |
+| `similar-lines` | two spellings of one line ("Bagel Hole" / "BagelHole"; "Ruby Rose Petal" / "Rose Petals Infused", the same words once the brand's name is left out) | pick the brand's spelling; resin and rosin are different lines |
 | `near-dup` | two strain spellings in one line ("Skywalker" / "Skywalker OG") | the site's or most stores' spelling; check the sizes match |
 | `line-in-strain` | the line sits inside the strain ("Calm Peach" with no line next to line "Calm") | nearly always the same product as the lined entry |
 | `strain-word` | a format, type or size word inside a strain ("Gelato Cart") | a parsing leftover; the strain should lose the word |
