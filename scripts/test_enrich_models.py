@@ -111,11 +111,12 @@ def priced(model, monkeypatch, tmp_path):
     return usage["cost_usd"]
 
 
+@pytest.mark.parametrize("model", ["luna", "haiku-5.5-or"])
 def test_cache_tokens_are_billed_at_the_entrys_own_rates_and_reasoning_only_once(
-        monkeypatch, tmp_path):
-    # luna: 0.1M x $0.10 + 0.5M x $0.50 + 1M x $0.125 + 2M x $0.01 = $0.405 a call.
+        model, monkeypatch, tmp_path):
+    # Both: 0.1M x $0.10 + 0.5M x $0.50 + 1M x $0.125 + 2M x $0.01 = $0.405 a call.
     # Billing the 0.3M reasoning tokens again would add $0.15 a call.
-    assert priced("luna", monkeypatch, tmp_path) == pytest.approx(2 * 0.405)
+    assert priced(model, monkeypatch, tmp_path) == pytest.approx(2 * 0.405)
 
 
 def test_an_entry_with_no_cache_rates_bills_cache_tokens_as_plain_input(monkeypatch, tmp_path):

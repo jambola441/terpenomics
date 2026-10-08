@@ -271,6 +271,21 @@ def test_store_aliases_map_a_store_line_and_name_to_the_sites():
         storefront.validate({**FLORIST, "store_aliases": {"sizes": {}}})
 
 
+def test_store_skip_drops_a_store_product_the_site_does_not_list():
+    """Hashtag Honey's 1:1 Cotton Candy gummies: most stores size them by THC (50mg),
+    three by THC and CBD together (100mg), which would make a second product."""
+    kept_entry = {"name": "Acai Gelato", "category": "flower", "variant": "28g", "support": 3}
+    total = {"name": "Cotton Candy", "category": "edible", "variant": "100mg", "support": 3}
+    rules = [{"when": {"name": "^Cotton Candy$", "size": "^100mg$"}, "why": "THC and CBD together"}]
+    kept, dropped = storefront.skip_store_products([kept_entry, total], rules)
+    assert kept == [kept_entry] and dropped == [(total, "THC and CBD together")]
+    assert storefront.skip_store_products([total], None) == ([total], [])
+    with pytest.raises(SystemExit, match="store_skip"):
+        storefront.validate({**FLORIST, "store_skip": [{"when": {"title": "x"}, "why": "y"}]})
+    with pytest.raises(SystemExit, match="store_skip"):
+        storefront.validate({**FLORIST, "store_skip": [{"when": {"name": "x"}}]})
+
+
 def test_a_missing_page_costs_its_product_and_most_pages_missing_fails():
     import urllib.error
     pages = {"/p/1": "<h1>A | 1g</h1>", "/p/2": None, "/p/3": "<h1>C | 1g</h1>"}

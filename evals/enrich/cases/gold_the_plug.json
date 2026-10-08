@@ -249,7 +249,8 @@
       "expect": {
         "category": "edible",
         "subtype": "gummy",
-        "strain": "Apple-A-Day"
+        "strain": "Apple",
+        "product_line": "Apple-A-Day"
       }
     },
     {

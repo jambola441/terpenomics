@@ -40,16 +40,19 @@ _MG = re.compile(rf"{_NUM}\s*(?:mg|milligrams?)\b", re.I)
 _PACK = re.compile(r"\b(\d+)\s*[-\s]?(?:pk|pack|packs|ct|count|pcs|pieces|pc)\b", re.I)
 _PACK_X = re.compile(rf"\b(\d+)\s*(?:pk\s*)?x\s*{_NUM}\s*(g|gr|grams?|mg)\b", re.I)
 _EACH = re.compile(rf"{_NUM}\s*(g|mg)\s*(?:each|ea\.?|per\s+\w+)\b", re.I)
-_OZ_FRAC = re.compile(r"\b(\d+)\s*/\s*(\d+)\s*(?:oz|ounce)\b", re.I)
+_OZ_FRAC = re.compile(r"\b(\d+)\s*/\s*(\d+)[\s-]*(?:oz|ounce)\b", re.I)
 # "1/2 Gram Joints" is 0.5g a joint, not the "2 Gram" _GRAMS would read inside it;
 # "Half Gram" likewise.
 _G_FRAC = re.compile(r"\b(\d+)\s*/\s*(\d+)\s*(?:g|gr|gram|grams)\b", re.I)
 _HALF_GRAM = re.compile(r"\bhalf[\s-]*grams?\b", re.I)
-# Compounds first (longest-first below), so "Eighth Ounce" is 3.5g and not also an
-# ounce; a bare "ounce" is 28g only when nothing longer claimed it.
+# Compounds first (longest first), so "Eighth Ounce" is 3.5g and not also an ounce; a
+# bare "ounce" is 28g only when nothing longer claimed it. A compound's words may be
+# hyphenated or run together: "Half-Ounce" and "halfounce" are 14g, not an ounce.
 _OZ_WORDS = {"eighth ounce": 3.5, "eighth oz": 3.5, "quarter ounce": 7.0,
-             "quarter oz": 7.0, "half ounce": 14.0, "half oz": 14.0, "halfounce": 14.0,
+             "quarter oz": 7.0, "half ounce": 14.0, "half oz": 14.0,
              "eighth": 3.5, "quarter": 7.0, "ounce": 28.0}
+_OZ_WORD_RES = [(re.compile(r"\b" + r"[\s-]*".join(word.split()) + r"\b"), g)
+                for word, g in sorted(_OZ_WORDS.items(), key=lambda kv: -len(kv[0]))]
 _FL_OZ = re.compile(rf"{_NUM}\s*fl\.?\s*oz\b", re.I)
 _RATIO = re.compile(r"\b\d+\s*:\s*\d+(?:\s*:\s*\d+)*\b")
 # What Size.label() writes for a pack: the count, then the package total ("2pk 40mg").
@@ -141,8 +144,8 @@ def parse(*texts: str | None, category: str | None = None) -> Size:
     # not also read as "ounce" (28g) — and a fraction already read ("1/8 Ounce") is
     # consumed before the words are, for the same reason.
     lowered = _OZ_FRAC.sub(" ", text).lower()
-    for word, g in sorted(_OZ_WORDS.items(), key=lambda kv: -len(kv[0])):
-        lowered, hits = re.subn(rf"\b{word}\b", " ", lowered)
+    for pattern, g in _OZ_WORD_RES:
+        lowered, hits = pattern.subn(" ", lowered)
         if hits:
             grams.append(g)
     mgs = _floats(_MG, text)
@@ -203,8 +206,8 @@ def weight_mentions(*texts: str | None) -> list[float]:
     grams += [int(m.group(1)) / int(m.group(2)) * OZ_GRAMS
               for m in _OZ_FRAC.finditer(text) if int(m.group(2))]
     lowered = _OZ_FRAC.sub(" ", text).lower()
-    for word, g in sorted(_OZ_WORDS.items(), key=lambda kv: -len(kv[0])):
-        lowered, hits = re.subn(rf"\b{word}\b", " ", lowered)
+    for pattern, g in _OZ_WORD_RES:
+        lowered, hits = pattern.subn(" ", lowered)
         grams += [g] * bool(hits)
     return sorted({round(v, 3) for v in grams if v > 0})
 

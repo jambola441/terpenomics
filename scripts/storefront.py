@@ -446,6 +446,15 @@ def validate(recipe: dict, where: str = "recipe") -> dict:
     for table in (recipe.get("store_aliases") or {}):
         if table not in ("lines", "names"):
             bad(f"store_aliases.{table}: only lines and names are mapped")
+    for i, rule in enumerate(recipe.get("store_skip") or []):
+        when = rule.get("when") or {}
+        if not when or set(when) - {"name", "size"} or not rule.get("why"):
+            bad(f"store_skip[{i}] needs a why and a when on name and/or size")
+        for f, pattern in when.items():
+            try:
+                re.compile(pattern)
+            except re.error as e:
+                bad(f"store_skip[{i}].when.{f}: {e}")
     src = recipe["source"]
     if not (src.get("url") or src.get("urls") or src.get("sitemap") or src.get("discover")):
         bad("source needs url, urls, sitemap or discover")
@@ -763,6 +772,22 @@ def split_store_products(doc: dict, listings: list[dict],
     return found, only_stores, dict(terms)
 
 
+def skip_store_products(only_stores: list[dict], rules: list[dict] | None) -> tuple[list[dict], list[tuple]]:
+    """The recipe's `store_skip`: store products the site does not list that are not
+    products either, such as a 1:1 gummy some stores size by its THC and CBD together.
+    Returns those kept and (product, why) for those dropped."""
+    kept, dropped = [], []
+    for e in only_stores:
+        rule = next((r for r in rules or []
+                     if all(re.search(pat, (e.get("name") if f == "name" else e.get("variant")) or "", re.I)
+                            for f, pat in r["when"].items())), None)
+        if rule:
+            dropped.append((e, rule["why"]))
+        else:
+            kept.append(e)
+    return kept, dropped
+
+
 def with_store_products(doc: dict, only_stores: list[dict], terms: dict | None = None) -> dict:
     """The catalog to push: the site's entries, with the store names that resolve to
     them, then the stores' consensus for products the site does not list. Those keep
@@ -818,7 +843,8 @@ def refusal(report: dict) -> str | None:
     return None
 
 
-def print_check(report: dict, found: list[dict] | None, only_stores: list[dict] | None) -> None:
+def print_check(report: dict, found: list[dict] | None, only_stores: list[dict] | None,
+                dropped: list[tuple] | None = None) -> None:
     print(f"{report['brand']}: {report['items']} items -> {report['entries']} entries, "
           f"{report['products']} products {report['by_category']}"
           + (f" ({report['duplicates_collapsed']} repeats collapsed)" if report["duplicates_collapsed"] else ""))
@@ -833,6 +859,9 @@ def print_check(report: dict, found: list[dict] | None, only_stores: list[dict] 
               f"site, {len(only_stores)} only at stores (kept from the stores' consensus):")
         for e in sorted(only_stores, key=lambda e: e["name"]):
             print(f"    - {e['name']} ({e['category']} {e['variant'] or ''}, {e['support']} stores)")
+        for e, why in dropped or []:
+            print(f"    dropped by store_skip: {e['name']} ({e['category']} {e['variant'] or ''}, "
+                  f"{e['support']} stores): {why}")
 
 
 # --------------------------------------------------------------------------- CLI
@@ -867,12 +896,13 @@ def main() -> None:
             print(f"{recipe['brand']}: fetch failed: {e}")
             failed += 1
             continue
-        found = only_stores = terms = None
+        found = only_stores = terms = dropped = None
         if not args.offline:
             found, only_stores, terms = split_store_products(
                 doc, store_listings(recipe["brand"], args.via_http), recipe.get("store_aliases"))
+            only_stores, dropped = skip_store_products(only_stores, recipe.get("store_skip"))
         if args.command == "check":
-            print_check(report, found, only_stores)
+            print_check(report, found, only_stores, dropped)
         elif args.command == "fetch":
             CATALOG_DIR.mkdir(parents=True, exist_ok=True)
             path = CATALOG_DIR / f"{doc['brand_slug']}.json"

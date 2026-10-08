@@ -1,0 +1,1056 @@
+{
+ "eval_type": "review",
+ "description": "Labelled gold cases (evals/enrich/cases) the review step would get from a Jev-only run on 2026-10-07: 'flagged' = a field below p 0.7 (line aside) or the size left to the store's field, and no trusted catalog match; 'missed' = Jev sure but wrong, no trusted match (outside the queue: a capability check). Labels are read from the gold files by id; price and url from the store's live listing where it still has it.",
+ "cases": [
+  {
+   "id": "cat-cart-as-concentrate",
+   "slice": "flagged",
+   "store": null,
+   "listing": {
+    "brand": "Stiiizy",
+    "name": "Gelato Live Resin Cart 0.5g",
+    "category": "concentrate",
+    "size_field": null,
+    "price_cents": null,
+    "url": null,
+    "description": ""
+   },
+   "first_pass": {
+    "category": "vaporizers",
+    "subtype": "cart",
+    "strain": "Gelato",
+    "product_line": null,
+    "variant": "0.5g"
+   },
+   "p": {
+    "category": 0.99,
+    "product_line": 0.8,
+    "size": 1.0,
+    "strain": 0.65,
+    "subtype": 0.84
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "cat-pod",
+   "slice": "flagged",
+   "store": null,
+   "listing": {
+    "brand": "PAX",
+    "name": "Birthday Cake Era Pod 0.5g",
+    "category": "vaporizers",
+    "size_field": null,
+    "price_cents": null,
+    "url": null,
+    "description": ""
+   },
+   "first_pass": {
+    "category": "vaporizers",
+    "subtype": "pod",
+    "strain": "Birthday Cake",
+    "product_line": null,
+    "variant": "0.5g"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.65,
+    "size": 1.0,
+    "strain": 0.63,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "cat-beverage",
+   "slice": "flagged",
+   "store": null,
+   "listing": {
+    "brand": "Cann",
+    "name": "Grapefruit Rosemary Sparkling Beverage 5mg",
+    "category": "edible",
+    "size_field": null,
+    "price_cents": null,
+    "url": null,
+    "description": "sparkling drink"
+   },
+   "first_pass": {
+    "category": "edible",
+    "subtype": "beverage",
+    "strain": "Grapefruit Rosemary",
+    "product_line": null,
+    "variant": "5mg"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.99,
+    "size": 1.0,
+    "strain": 0.57,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "cat-preroll-pack",
+   "slice": "flagged",
+   "store": null,
+   "listing": {
+    "brand": "Honey King",
+    "name": "Sativa Blend Pre-Roll 7pk 3.5g",
+    "category": "preroll",
+    "size_field": null,
+    "price_cents": null,
+    "url": null,
+    "description": ""
+   },
+   "first_pass": {
+    "category": "preroll",
+    "subtype": "pack",
+    "strain": "Sativa",
+    "product_line": null,
+    "variant": "3.5g"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.95,
+    "size": 1.0,
+    "strain": 0.67,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "coney-013-dr-jekyll-and-mr-high-gelato",
+   "slice": "flagged",
+   "store": "coney-island-cannabis",
+   "listing": {
+    "brand": "Dr. Jekyll and Mr. High",
+    "name": "Dr. Jekyll and Mr. High | Gelato",
+    "category": "flower",
+    "size_field": "1/8oz",
+    "price_cents": null,
+    "url": null,
+    "description": ""
+   },
+   "first_pass": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Gelato",
+    "product_line": null,
+    "variant": "3.5g"
+   },
+   "p": {
+    "category": 0.94,
+    "product_line": 0.79,
+    "size": 1.0,
+    "strain": 0.9,
+    "subtype": 0.55
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "coney-024-moods-ny-minute-mini-aio",
+   "slice": "flagged",
+   "store": "coney-island-cannabis",
+   "listing": {
+    "brand": "MOODS",
+    "name": "Moods | NY Minute Mini | AIO",
+    "category": "vaporizers",
+    "size_field": "1g",
+    "price_cents": null,
+    "url": null,
+    "description": ""
+   },
+   "first_pass": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "NY Minute",
+    "product_line": null,
+    "variant": "1g"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.65,
+    "size": 1.0,
+    "strain": 0.4,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "coney-030-rec-roots-super-candy",
+   "slice": "flagged",
+   "store": "coney-island-cannabis",
+   "listing": {
+    "brand": "Rec Roots",
+    "name": "Rec Roots | Super Candy",
+    "category": "flower",
+    "size_field": "1/8oz",
+    "price_cents": null,
+    "url": null,
+    "description": ""
+   },
+   "first_pass": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Super Candy",
+    "product_line": null,
+    "variant": "3.5g"
+   },
+   "p": {
+    "category": 0.9,
+    "product_line": 0.7,
+    "size": 1.0,
+    "strain": 0.93,
+    "subtype": 0.67
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "coney-038-toke-blueberry-glue-pre-roll",
+   "slice": "flagged",
+   "store": "coney-island-cannabis",
+   "listing": {
+    "brand": "TOKE",
+    "name": "Toke | Blueberry Glue | Pre-Roll",
+    "category": "other",
+    "size_field": ".5g",
+    "price_cents": null,
+    "url": null,
+    "description": ""
+   },
+   "first_pass": {
+    "category": "preroll",
+    "subtype": "single",
+    "strain": "Blueberry Glue",
+    "product_line": null,
+    "variant": "0.5g"
+   },
+   "p": {
+    "category": 0.99,
+    "product_line": 0.98,
+    "size": 1.0,
+    "strain": 0.99,
+    "subtype": 0.66
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "holdup-006-blackberry-kush-2g-starter-kit",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Eureka",
+    "name": "Blackberry Kush - 2g Starter Kit",
+    "category": "other",
+    "size_field": "2.0 grams",
+    "price_cents": null,
+    "url": null,
+    "description": "Discover the EUREKA PRELOAD Blackberry Kush vape, a reusable and rechargeable 2-gram cannabis oil vape designed for eco-conscious consumers. Preloaded with solvent-free distillate and cannabis-derived"
+   },
+   "first_pass": {
+    "category": "vaporizers",
+    "subtype": "all-in-one",
+    "strain": "Blackberry Kush",
+    "product_line": null,
+    "variant": "2g"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.98,
+    "size": 1.0,
+    "strain": 1.0,
+    "subtype": 0.44
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "holdup-027-platinum-life-breath-1g-preroll",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "ADK",
+    "name": "Platinum Life Breath - 1g Preroll",
+    "category": "preroll",
+    "size_field": "1g",
+    "price_cents": null,
+    "url": null,
+    "description": "Platinum Life Breath -Platinum Kush Breath Remix x Lifehack -Dominant Terpenes - Caryophyllene, Limonene, Terpinene Platinum Life Breath is a cannabis strain known for its fuely, chem-like taste and p"
+   },
+   "first_pass": {
+    "category": "preroll",
+    "subtype": "single",
+    "strain": "Platinum Life Breath",
+    "product_line": null,
+    "variant": "1g"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.39,
+    "size": 1.0,
+    "strain": 0.56,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "holdup-034-silly-nice-bubble-hash-1g",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Silly Nice",
+    "name": "Silly Nice | Bubble Hash | 1G",
+    "category": "concentrate",
+    "size_field": "1g",
+    "price_cents": null,
+    "url": null,
+    "description": "Elevate your cannabis experience with Silly Nice 1G Bubble Hash, a premium solventless concentrate renowned for its exceptional potency and purity. This full-spectrum hash delivers a robust, smooth, a"
+   },
+   "first_pass": {
+    "category": "concentrate",
+    "subtype": "hash",
+    "strain": "",
+    "product_line": null,
+    "variant": "1g"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.87,
+    "size": 1.0,
+    "strain": 0.49,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "holdup-035-chem-dawg-1g-cured-resin-crumble",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Blotter",
+    "name": "Chem Dawg - 1G Cured Resin Crumble",
+    "category": "concentrate",
+    "size_field": "1g",
+    "price_cents": null,
+    "url": null,
+    "description": "Chemdog (or Chemdawg) is a legendary, potent hybrid cannabis strain famous for its pungent diesel-gasoline aroma and strong, euphoric, and cerebral effects. Originating in the early 1990s, it is known"
+   },
+   "first_pass": {
+    "category": "concentrate",
+    "subtype": "resin",
+    "strain": "Chem Dawg",
+    "product_line": null,
+    "variant": "1g"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.91,
+    "size": 1.0,
+    "strain": 0.99,
+    "subtype": 0.66
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "holdup-037-biscotti-1g-cured-resin-budder",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Blotter",
+    "name": "Biscotti - 1G Cured Resin Budder",
+    "category": "concentrate",
+    "size_field": "1g",
+    "price_cents": 4000,
+    "url": "https://holduprollup.com/menu/products/blotter-321013/concentrates/biscotti-1g-cured-resin-budder-8036842",
+    "description": "Biscotti is a potent, indica-dominant hybrid (roughly 80% indica/20% sativa) known for its intense sweet, nutty, and diesel cookie flavor. A cross of Gelato 25 and Sour Florida OG, delivering deep rel"
+   },
+   "first_pass": {
+    "category": "concentrate",
+    "subtype": "resin",
+    "strain": "Biscotti",
+    "product_line": null,
+    "variant": "1g"
+   },
+   "p": {
+    "category": 0.98,
+    "product_line": 0.77,
+    "size": 1.0,
+    "strain": 0.82,
+    "subtype": 0.68
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "holdup-043-organic-medium-dog-cbd-oil-600mg-tinctur",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Head & Heal",
+    "name": "Organic Medium Dog CBD Oil - 600mg Tincture",
+    "category": "tinctures",
+    "size_field": "600.0 milligrams",
+    "price_cents": 6200,
+    "url": "https://holduprollup.com/menu/products/head-heal-320973/tinctures/organic-medium-dog-cbd-oil-600mg-tincture-5273287",
+    "description": "With Head & Heal, you're going straight to the source - we grow, process, and bottle all of our products right on our farm. Our philosophy is rooted in supporting the health of both people and the pla"
+   },
+   "first_pass": {
+    "category": "tinctures",
+    "subtype": "tincture",
+    "strain": "",
+    "product_line": null,
+    "variant": "600mg"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.98,
+    "size": 1.0,
+    "strain": 0.54,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "holdup-044-pillow-talk-sleep-drops-300mg-thc-1500mg",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "ayrloom",
+    "name": "Pillow Talk Sleep Drops - 300MG THC:1500MG CBN",
+    "category": "tinctures",
+    "size_field": "",
+    "price_cents": 5700,
+    "url": "https://holduprollup.com/menu/products/ayrloom-316069/tinctures/pillow-talk-sleep-drops-300mg-thc1500mg-cbn-7147727",
+    "description": "1:5 THC:CBN. 1800mg per package/300mg THC per serving/1500mg CBN per serving. INGREDIENTS: ORGANIC COCONUT MCT OIL, CANNABIS EXTRACT."
+   },
+   "first_pass": {
+    "category": "tinctures",
+    "subtype": "tincture",
+    "strain": "Pillow Talk",
+    "product_line": null,
+    "variant": "300mg"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.79,
+    "size": 1.0,
+    "strain": 0.55,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "holdup-047-on-heat-relief-muscle-spray-300mg",
+   "slice": "flagged",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "Head & Heal",
+    "name": "On Heat Relief Muscle Spray - 300mg",
+    "category": "topical",
+    "size_field": "",
+    "price_cents": 4100,
+    "url": "https://holduprollup.com/menu/products/head-heal-320973/topicals/on-heat-relief-muscle-spray-300mg-5273289",
+    "description": "Back by popular demand, our CBD Heat Relief Spray-On is one of the most effective products for muscle and joint relief! With a new leak-proof application spray top, this rapid heat relief formula is r"
+   },
+   "first_pass": {
+    "category": "topical",
+    "subtype": "topical",
+    "strain": "",
+    "product_line": null,
+    "variant": "300mg"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.76,
+    "size": 1.0,
+    "strain": 0.26,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "gold-000-off-hours-razz-lemonade-live-resin-rope",
+   "slice": "flagged",
+   "store": "the-plug-crown-heights",
+   "listing": {
+    "brand": "Off hours",
+    "name": "Off hours - Razz Lemonade | Live Resin Rope",
+    "category": "edible",
+    "size_field": "30g",
+    "price_cents": null,
+    "url": null,
+    "description": ""
+   },
+   "first_pass": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Razz Lemonade",
+    "product_line": null,
+    "variant": ""
+   },
+   "p": {
+    "category": 0.79,
+    "product_line": 0.92,
+    "size": 1.0,
+    "strain": 0.98,
+    "subtype": 0.53
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "gold-003-old-pal-x-babish-thc-infused-sugar-100mg",
+   "slice": "flagged",
+   "store": "the-plug-crown-heights",
+   "listing": {
+    "brand": "Old Pal",
+    "name": "Old Pal x Babish - THC Infused Sugar | 100MG",
+    "category": "edible",
+    "size_field": "",
+    "price_cents": 2260,
+    "url": "https://dutchie.com/dispensary/the-plug-brooklyn/product/old-pal-x-babish-thc-infused-sugar-100mg",
+    "description": ""
+   },
+   "first_pass": {
+    "category": "edible",
+    "subtype": "other",
+    "strain": "Babish",
+    "product_line": null,
+    "variant": "100mg"
+   },
+   "p": {
+    "category": 0.83,
+    "product_line": 0.82,
+    "size": 1.0,
+    "strain": 0.36,
+    "subtype": 0.99
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "gold-016-gr-n-milk-chocolate-mini-bar-daytime-sativa-",
+   "slice": "flagged",
+   "store": "the-plug-crown-heights",
+   "listing": {
+    "brand": "Grön",
+    "name": "Grön- Milk Chocolate Mini Bar- Daytime Sativa (100mg)",
+    "category": "edible",
+    "size_field": "7g",
+    "price_cents": null,
+    "url": null,
+    "description": ""
+   },
+   "first_pass": {
+    "category": "edible",
+    "subtype": "chocolate",
+    "strain": "Sativa",
+    "product_line": null,
+    "variant": "100mg"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.9,
+    "size": 1.0,
+    "strain": 0.48,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "gold-020-camino-recover-freshly-squeezed-1-2-cbg-20pk",
+   "slice": "flagged",
+   "store": "the-plug-crown-heights",
+   "listing": {
+    "brand": "Caminos",
+    "name": "Camino - Recover | Freshly Squeezed 1:2 CBG 20pk",
+    "category": "edible",
+    "size_field": "72g",
+    "price_cents": null,
+    "url": null,
+    "description": "Picture this: You've just wrapped up a hectic workday, your mind is racing with thoughts, and your body is feeling tense. This is the perfect occasion to reach for Camino Freshly Squeezed Recover gummies. Each gummy contains 5MG of THC and 10MG of CBG, along with hybrid-like terpenes that work toget"
+   },
+   "first_pass": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Freshly Squeezed",
+    "product_line": "Recover",
+    "variant": "100mg"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.79,
+    "size": 1.0,
+    "strain": 0.67,
+    "subtype": 1.0
+   },
+   "size_by": "jev",
+   "labels": "gold"
+  },
+  {
+   "id": "gold-040-eaton-botanicals-little-pandas-tropical-cool",
+   "slice": "flagged",
+   "store": "the-plug-crown-heights",
+   "listing": {
+    "brand": "Eaton",
+    "name": "Eaton Botanicals Little Pandas - Tropical Cooler + Mullein Leaf | 5pk Pre-Rolls",
+    "category": "preroll",
+    "size_field": "1.75g",
+    "price_cents": null,
+    "url": null,
+    "description": ""
+   },
+   "first_pass": {
+    "category": "preroll",
+    "subtype": "pack",
+    "strain": "Tropical Cooler Mullein Leaf",
+    "product_line": "Little Pandas",
+    "variant": "1.75g"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.69,
+    "size": 1.0,
+    "strain": 0.5,
+    "subtype": 0.87
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "gold-083-stiiizy-premium-jack-5g-pod",
+   "slice": "flagged",
+   "store": "the-plug-crown-heights",
+   "listing": {
+    "brand": "",
+    "name": "Stiiizy- Premium Jack | .5g Pod",
+    "category": "other",
+    "size_field": "0.5g",
+    "price_cents": null,
+    "url": null,
+    "description": ""
+   },
+   "first_pass": {
+    "category": "vaporizers",
+    "subtype": "pod",
+    "strain": "Premium Jack",
+    "product_line": null,
+    "variant": "0.5g"
+   },
+   "p": {
+    "category": 0.99,
+    "product_line": 0.81,
+    "size": 1.0,
+    "strain": 0.52,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "gold-085-jetty-gdp-1g-concentrate-dablicator",
+   "slice": "flagged",
+   "store": "the-plug-crown-heights",
+   "listing": {
+    "brand": "Jetty",
+    "name": "Jetty - GDP | 1G Concentrate Dablicator",
+    "category": "concentrate",
+    "size_field": "1g",
+    "price_cents": 5989,
+    "url": null,
+    "description": "GDP is a classic NorCal strain. It’s a potent, pure, heavy indica that will surely have you couch-locked. Good earthy flavor with hints of citrus fruit and spice. Dose up a joint. Direct dab without any tools. Add to flower. However you use it, the Jetty Dablicator™ Oil Applicator is a better way to"
+   },
+   "first_pass": {
+    "category": "concentrate",
+    "subtype": "other",
+    "strain": "GDP",
+    "product_line": null,
+    "variant": "1g"
+   },
+   "p": {
+    "category": 0.88,
+    "product_line": 0.74,
+    "size": 1.0,
+    "strain": 0.94,
+    "subtype": 0.63
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "gold-087-blotter-runtz-mintz-1g-live-resin-sugar",
+   "slice": "flagged",
+   "store": "the-plug-crown-heights",
+   "listing": {
+    "brand": "Blotter",
+    "name": "Blotter - Runtz Mintz | 1G Live Resin Sugar",
+    "category": "concentrate",
+    "size_field": "1g",
+    "price_cents": null,
+    "url": null,
+    "description": ""
+   },
+   "first_pass": {
+    "category": "concentrate",
+    "subtype": "resin",
+    "strain": "Runtz Mintz",
+    "product_line": null,
+    "variant": "1g"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.97,
+    "size": 1.0,
+    "strain": 0.99,
+    "subtype": 0.53
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "gold-100-papa-barkley-thc1000-releaf-tincture-30ml",
+   "slice": "flagged",
+   "store": "the-plug-crown-heights",
+   "listing": {
+    "brand": "Papa and Barkley",
+    "name": "Papa & Barkley - THC1000 Releaf Tincture | 30ml",
+    "category": "tinctures",
+    "size_field": "30",
+    "price_cents": 11300,
+    "url": "https://dutchie.com/dispensary/the-plug-brooklyn/product/papa-barkley-thc1000-releaf-tincture-30ml",
+    "description": "Our most potent THC formula, the THC1000 tincture provides powerful relief from discomfort and helps with unwinding and relaxation. Best for highly experienced cannabis consumers. Crafted with only two ingredients, MCT Oil and cannabis oil, and can be felt within 15 minutes, making it a perfect natu"
+   },
+   "first_pass": {
+    "category": "tinctures",
+    "subtype": "tincture",
+    "strain": "THC1000",
+    "product_line": "Releaf",
+    "variant": "1000mg"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.99,
+    "size": 1.0,
+    "strain": 0.53,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "spot-001-dream-star-31-thc-cherry-diesel-34-thc-s",
+   "slice": "flagged",
+   "store": "the-spot-bk",
+   "listing": {
+    "brand": "Alibi",
+    "name": "Dream Star -31% THC / Cherry Diesel -34% THC -Sativa/Hybrid- 1g (Pre-Roll) 4pk | Alibi    -JJ9 BACK",
+    "category": "preroll",
+    "size_field": "4.0 grams",
+    "price_cents": null,
+    "url": null,
+    "description": "Effects: A combination of 2 Sativa prerolls and 2 Hybrid prerolls to match your mood Aromas/Flavors: Dream Star- Sweet Berries & Cherry Diesel - Notes of citrus, berries, earthy pine"
+   },
+   "first_pass": {
+    "category": "preroll",
+    "subtype": "pack",
+    "strain": "Dream Star Cherry Diesel",
+    "product_line": null,
+    "variant": "4g"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.73,
+    "size": 0.99,
+    "strain": 0.5,
+    "subtype": 0.99
+   },
+   "size_by": "jev",
+   "labels": "gold"
+  },
+  {
+   "id": "spot-006-purple-punch-indica-23-75-thc-1g-pre-rol",
+   "slice": "flagged",
+   "store": "the-spot-bk",
+   "listing": {
+    "brand": "Canna Cure Farms LLC",
+    "name": "Purple Punch -Indica- 23.75% THC | 1g (Pre-Roll) | Canna Cure    -x3 front",
+    "category": "preroll",
+    "size_field": "1.0 grams",
+    "price_cents": null,
+    "url": null,
+    "description": "Purple Punch is a rare indica dominant hybrid (80% indica/20% sativa) strain created through crossing the classic Larry OG with the deliciously potent Grand Daddy Purps. With a one-two punch to the head of euphoric lifted effects and a supe"
+   },
+   "first_pass": {
+    "category": "preroll",
+    "subtype": "pack",
+    "strain": "Purple Punch",
+    "product_line": null,
+    "variant": "1g"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.98,
+    "size": 1.0,
+    "strain": 0.99,
+    "subtype": 0.65
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "spot-026-reserve-hybrid-16-45-thc-1-1-thc-cbd-7g-",
+   "slice": "flagged",
+   "store": "the-spot-bk",
+   "listing": {
+    "brand": "Toast",
+    "name": "Reserve -Hybrid- 16.45% THC | 1:1 THC/CBD 7g Infused Ground Flower | Toast     -cc7 back",
+    "category": "other",
+    "size_field": "7.0 grams",
+    "price_cents": null,
+    "url": null,
+    "description": "Float like a butterfly. Small-batch crafted, this top-shelf flower features our most highly sought-after strains. With a TAC 2363.53mg/33.83% 1:1 ratio of CBD to THC, reach for Reserve to promote balanced bliss and full body relaxation."
+   },
+   "first_pass": {
+    "category": "flower",
+    "subtype": "preground",
+    "strain": "CC7 Back",
+    "product_line": "Reserve",
+    "variant": "7g"
+   },
+   "p": {
+    "category": 0.99,
+    "product_line": 0.89,
+    "size": 1.0,
+    "strain": 0.41,
+    "subtype": 0.55
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "spot-032-permanent-marker-hybrid-100mg-10-pack-ne",
+   "slice": "flagged",
+   "store": "the-spot-bk",
+   "listing": {
+    "brand": "nama",
+    "name": "Permanent Marker -Hybrid- 100mg 10 Pack Nectarine Euphoria Live Resin Gummies (Edibles) | nama      -o6 front",
+    "category": "edible",
+    "size_field": "100.0 milligrams",
+    "price_cents": null,
+    "url": null,
+    "description": "100mg THC | 2 gummies | 10 servings Flavor: Nectarine Size: 2 vegan gummies - made with real fruit - all natural vegan ingredients - low sugar | high potency vegan | gluten free | all natural"
+   },
+   "first_pass": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Nectarine Euphoria Live Resin",
+    "product_line": "Permanent Marker",
+    "variant": "100mg"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.67,
+    "size": 1.0,
+    "strain": 0.5,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "spot-049-relief-balm-130mg-cbd-40mg-thc-3-1-15ml-",
+   "slice": "flagged",
+   "store": "the-spot-bk",
+   "listing": {
+    "brand": "Papa & Barkley",
+    "name": "Relief Balm - 130mg CBD | 40mg THC | 3:1 | 15ml (Topical) Papa & Barkley      -yyy7 front",
+    "category": "topical",
+    "size_field": "",
+    "price_cents": 6000,
+    "url": "https://thespotdispensary.com/menu/products/papa-barkley-626056/topicals/relief-balm-130mg-cbd-40mg-thc-31-15ml-topical-papa-barkley-yyy7-front-6576280",
+    "description": "\"CBD-rich balm designed to support joint and muscle comfort and promote healthy joint function and mobility. The 3:1 Releaf Balm is rich in CBD and ideal for easing daily discomfort, as well as supporting muscle and joint care. Our award-wi"
+   },
+   "first_pass": {
+    "category": "topical",
+    "subtype": "topical",
+    "strain": "Relief",
+    "product_line": null,
+    "variant": "40mg"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.47,
+    "size": 1.0,
+    "strain": 0.55,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "var-concentrate-1g",
+   "slice": "flagged",
+   "store": null,
+   "listing": {
+    "brand": "Punch",
+    "name": "GMO Live Rosin Badder 1g",
+    "category": "concentrate",
+    "size_field": null,
+    "price_cents": null,
+    "url": null,
+    "description": ""
+   },
+   "first_pass": {
+    "category": "concentrate",
+    "subtype": "rosin",
+    "strain": "GMO",
+    "product_line": null,
+    "variant": "1g"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.94,
+    "size": 1.0,
+    "strain": 0.5,
+    "subtype": 0.97
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "var-flower-eighth-grams",
+   "slice": "flagged",
+   "store": null,
+   "listing": {
+    "brand": "MFNY",
+    "name": "Papaya Eighth",
+    "category": "flower",
+    "size_field": null,
+    "price_cents": null,
+    "url": null,
+    "description": "3.5 grams"
+   },
+   "first_pass": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Papaya Eighth",
+    "product_line": null,
+    "variant": "3.5g"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.91,
+    "size": 1.0,
+    "strain": 0.48,
+    "subtype": 0.98
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "holdup-017-blue-razzleberry-mega-100mg-gummy",
+   "slice": "missed",
+   "store": "hold-up-roll-up",
+   "listing": {
+    "brand": "GRON",
+    "name": "Blue Razzleberry Mega - 100mg Gummy",
+    "category": "edible",
+    "size_field": "100.0 milligrams",
+    "price_cents": 2000,
+    "url": "https://holduprollup.com/menu/products/gron-360730/edibles/blue-razzleberry-mega-100mg-gummy--3478587",
+    "description": "A blast of berry in an uplifting 1:1 ratio of CBG and THC, the Blue Razzleberry Mega is perfect for kickstarting your next creative project, fueling your outdoor adventure, or boosting your next get-t"
+   },
+   "first_pass": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Blue Razzleberry",
+    "product_line": null,
+    "variant": "100mg"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.75,
+    "size": 1.0,
+    "strain": 0.85,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "gold-006-camino-sleep-midnight-blueberry-5-1-cbn-20pk",
+   "slice": "missed",
+   "store": "the-plug-crown-heights",
+   "listing": {
+    "brand": "Caminos",
+    "name": "Camino - Sleep | Midnight Blueberry 5:1 CBN 20pk",
+    "category": "edible",
+    "size_field": "72g",
+    "price_cents": null,
+    "url": null,
+    "description": "Our top-selling product - and for a reason. When the day's demands set you up for a restless night, there's a perfect companion waiting for you: Midnight Blueberry Camino ‘Sleep’ Gummies, specially crafted to lull you into a deep and tranquil sleep that will leave you feeling truly refreshed. With a"
+   },
+   "first_pass": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Midnight Blueberry",
+    "product_line": "Sleep",
+    "variant": ""
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.55,
+    "size": 1.0,
+    "strain": 0.98,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "labels": "gold"
+  },
+  {
+   "id": "gold-015-eaton-botanicals-apple-a-day-apple-2-5mg-gum",
+   "slice": "missed",
+   "store": "the-plug-crown-heights",
+   "listing": {
+    "brand": "Eaton",
+    "name": "Eaton Botanicals - Apple-A-Day | Apple - 2.5mg gummies",
+    "category": "edible",
+    "size_field": "120g",
+    "price_cents": null,
+    "url": null,
+    "description": "Keep the doc away with Apple-A-Day, an antioxidant packed edible with immunity boosting elderberry, echinacea, zinc and astragalus along with turkey tail mushrooms to keep your body’s natural defense systems on high alert. With a microdose of THC (2.5mg) for a light lift and a healthy amount of calm"
+   },
+   "first_pass": {
+    "category": "edible",
+    "subtype": "gummy",
+    "strain": "Apple",
+    "product_line": null,
+    "variant": "2.5mg"
+   },
+   "p": {
+    "category": 1.0,
+    "product_line": 0.49,
+    "size": 1.0,
+    "strain": 0.73,
+    "subtype": 1.0
+   },
+   "size_by": "code",
+   "labels": "gold"
+  }
+ ]
+}
