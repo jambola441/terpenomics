@@ -805,23 +805,19 @@ def _aliased(entry: dict, aliases: dict) -> dict:
 def split_store_products(doc: dict, listings: list[dict],
                          aliases: dict | None = None) -> tuple[list[dict], list[dict], dict]:
     """The products stores sell under the brand, as catalog_bootstrap.propose() builds
-    them from our listings: those the site's catalog has, those only stores have, and
-    the store names to add to site entries ({external_id: names}).
+    them from our listings: those the site's catalog has, and those only stores have.
+    The third value is always empty: store names are no longer carried onto site
+    entries (2026-10-08), since names no longer match listings; it stays for callers.
 
-    A store product that matches one site product exactly brings its store names
-    along, so those listings keep resolving `exact`, with no model call, as they did
-    against the bootstrap entry. One that matches by spelling only, or matches two
-    (stores' "Mule Fuel 1g" against the site's plain and Live Resin Infused singles),
-    brings none: the model decides those listings one by one. For a vape or an edible,
-    subtype must agree where both say one — a store's "Candy Rain AIO" is not the site's
-    Candy Rain cart, and the format word is in the name. Elsewhere the stores' subtype
-    is too often enrichment's default to overrule a name (Spacebuds' moonrocks are
-    "infused" on the site and "flower" at the stores)."""
+    For a vape or an edible, subtype must agree where both say one — a store's "Candy
+    Rain AIO" is not the site's Candy Rain cart, and the format word is in the name.
+    Elsewhere the stores' subtype is too often enrichment's default to overrule a name
+    (Spacebuds' moonrocks are "infused" on the site and "flower" at the stores)."""
     proposed = catalog_bootstrap.propose(doc["brand_name"], listings)["catalog"]["entries"]
     site = defaultdict(list)
     for e in doc["entries"]:
         site[e["category"]].append((_total(e), _names(e), e))
-    found, only_stores, terms = [], [], defaultdict(set)
+    found, only_stores = [], []
     for p in proposed:
         total, names = _total(p), _names(_aliased(p, aliases or {}))
         hits = []
@@ -837,10 +833,7 @@ def split_store_products(doc: dict, listings: list[dict],
             only_stores.append(_as_site_size(p, names, site[p["category"]]))
             continue
         found.append(p)
-        if len({e["product_key"] for _, e in hits}) == 1 and all(how == "exact" for how, _ in hits):
-            for _, e in hits:
-                terms[e["external_id"]].update(p.get("match_terms") or [])
-    return found, only_stores, dict(terms)
+    return found, only_stores, {}
 
 
 def _as_site_size(p: dict, names: dict, site: list[tuple]) -> dict:
@@ -1015,7 +1008,7 @@ def main() -> None:
                 print(f"  {recipe['brand']}: {len(report['unparsed'])} items no rule handled "
                       f"(run check) — pushing the rest")
             print(f"{recipe['brand']}: {report['entries']} site entries + {len(only_stores or [])} "
-                  f"products only stores sell; store names carried to {len(terms or {})} site entries")
+                  f"products only stores sell")
             brand_catalog.push(with_store_products(doc, only_stores or [], terms),
                                dry_run=args.dry_run, via_http=args.via_http)
             if not args.dry_run and args.via_http:

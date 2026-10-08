@@ -32,18 +32,6 @@ AYRLOOM = catalog(
 )
 
 
-def test_a_store_name_matches_with_or_without_the_brand():
-    """Recorded store names are kept brand-less (catalog_bootstrap); most stores put
-    the brand in. Both are the store's own name for the product."""
-    idx = cm.CatalogIndex(catalog({"name": "mood: bliss", "category": "vaporizers",
-                                   "product_line": "Mood", "strain": "Bliss", "variant": "1g",
-                                   "match_terms": ["mood bliss 1g all in one"]}))
-    for name in ("Mood Bliss 1g All-In-One", "Ayrloom | Mood Bliss 1g All-In-One",
-                 "AYRLOOM - Mood: Bliss 1g All in One"):
-        assert idx.exact(name, "vaporizers")[1] == "exact", name
-    assert idx.exact("Ayrloom Mood Bliss 1g All-In-One Rechargeable", "vaporizers")[1] == "none"
-
-
 class TestSizes:
     @pytest.mark.parametrize("texts,cat,expect", [
         (("0.6g", "FJ-Mini Infused Pre-roll | 0.6G"), "preroll", sizes.Size(grams=0.6)),
@@ -152,35 +140,54 @@ class TestShortlist:
         assert cm.CatalogIndex(AYRLOOM).shortlist("Rose Dry Cider", "edible", "10mg") == []
 
 
-class TestDeterministic:
-    def test_substring_can_be_confidently_wrong(self):
-        """The case that justifies the Jev tier: both titles are substrings and share
-        a category, so the lexical tiers pick the beverage for a gummy."""
-        idx = cm.CatalogIndex(AYRLOOM)
-        key, _, method = idx.deterministic("Island Time Pineapple Mango 2:1 Gummies 100mg", "edible")
-        assert method == "substring"
+STIIIZY = {"brand_name": "STIIIZY", "brand_slug": "stiiizy", "entries": [
+    {"id": f"s{i}", "product_key": pk, "is_active": True, "name": name, "category": "vaporizers",
+     "subtype": sub, "product_line": line, "strain": strain, "variant": v, **extra}
+    for i, (pk, name, sub, line, strain, v, extra) in enumerate([
+        ("liiil-bisc", "LIIIL Biscotti", "all-in-one", "LIIIL", "Biscotti", "0.5g", {}),
+        ("bisc", "Biscotti", "all-in-one", None, "Biscotti", "1g", {}),
+        ("og-bisc", "Original Biscotti", "pod", "Original", "Biscotti", "1g", {}),
+        ("og-bisc", "Original Biscotti", "pod", "Original", "Biscotti", "0.5g", {"source": "inferred"}),
+    ])]}
 
-    def test_exact_requires_whole_name(self):
-        idx = cm.CatalogIndex(AYRLOOM)
-        assert idx.exact("Mood: Bliss", "vaporizers") == ("mood: bliss|vaporizers", "exact")
-        assert idx.exact("Mood Bliss AIO", "vaporizers")[0] is None
 
-    def test_a_store_name_on_unrelated_products_goes_to_the_one_it_names(self):
-        """A store slip recorded Wyld's Raspberry name on Boysenberry too; the longer
-        title must not take it."""
-        def gummy(name, *terms):
-            return {"name": name, "category": "edible", "variant": "10pk 100mg",
-                    "match_terms": list(terms)}
-        idx = cm.CatalogIndex(catalog(
-            gummy("Raspberry", "raspberry sativa enhanced gummies"),
-            gummy("Boysenberry", "raspberry sativa enhanced gummies", "vape cartridge"),
-            gummy("Grapefruit", "vape cartridge"),
-            gummy("Blue Lobster", "hash infused blue lobster"),
-            gummy("Hash Infused Blue Lobster", "hash infused blue lobster")))
-        assert idx.exact("Raspberry Sativa Enhanced Gummies", "edible") == ("Raspberry|edible", "exact")
-        assert idx.exact("Vape Cartridge", "edible") == (None, "ambiguous")     # names neither
-        # One product's title read short and long: the longest still wins.
-        assert idx.exact("Hash Infused Blue Lobster", "edible")[0] == "Hash Infused Blue Lobster|edible"
+def reading(strain, size, line=None, subtype="all-in-one", category="vaporizers"):
+    return {"category": category, "subtype": subtype, "strain": strain, "product_line": line, "size": size}
+
+
+class TestJoin:
+    """The listing's own reading names exactly one product in a size it comes in."""
+
+    def test_the_size_tells_two_products_of_one_strain_apart(self):
+        idx = cm.CatalogIndex(STIIIZY)
+        assert idx.join(reading("Biscotti", "0.5g"))[0] == "liiil-bisc"     # no line read: LIIIL is the 0.5g
+        assert idx.join(reading("Biscotti", "1g"))[0] == "bisc"
+
+    def test_a_size_no_product_comes_in_does_not_join(self):
+        assert cm.CatalogIndex(STIIIZY).join(reading("Biscotti", "2g")) is None   # Jev decides; the audit sees it
+
+    def test_a_line_read_must_agree_and_format_is_compared(self):
+        idx = cm.CatalogIndex(STIIIZY)
+        assert idx.join(reading("Biscotti", "1g", line="LIIIL")) is None
+        assert idx.join(reading("Biscotti", "1g", line="Original", subtype="pod"))[0] == "og-bisc"
+        assert idx.join(reading("Biscotti", "1g", subtype="cart")) is None
+
+    def test_an_inferred_size_counts(self):
+        key, entry = cm.CatalogIndex(STIIIZY).join(reading("Biscotti", "0.5g", line="Original", subtype="pod"))
+        assert key == "og-bisc" and entry["source"] == "inferred"
+
+    def test_no_join_without_a_strain_or_a_size(self):
+        idx = cm.CatalogIndex(STIIIZY)
+        assert idx.join(reading("Biscotti", None)) is None and idx.join(reading("", "1g")) is None
+        assert idx.join(None) is None
+
+    def test_resolve_takes_the_join_and_names_never_decide(self):
+        listings = [{"id": 1, "name": "STIIIZY Biscotti 0.5g", "category": "vaporizers",
+                     "reading": reading("Biscotti", "0.5g")},
+                    {"id": 2, "name": "LIIIL Biscotti", "category": "vaporizers"}]     # no reading
+        a, b = cm.resolve(STIIIZY, listings, use_jev=False)
+        assert (a.method, a.product_key, a.confidence) == ("attributes", "liiil-bisc", 1.0)
+        assert (b.method, b.product_key) == ("none", None)      # its name is a catalog title; still no match
 
 
 def fake_ask_many(answer_for):

@@ -11,20 +11,25 @@ seven stores, with the line recorded as "FJ-Mini", "FJ Mini" or nothing).
 
 How a listing is resolved
 -------------------------
-  exact       its normalised name is a catalog title or a recorded match term.
-              Free, and accepted outright.
-  shortlist   otherwise the brand's products are ranked by token containment and
-              overlap, filtered to the listing's category and — when both sides state
-              one — to a compatible size (sizes.py does the pack math, not the model).
-  jev         Jev picks which shortlisted product the listing IS, or "none", and
-              returns a probability for every option. The probability is the gate:
+  attributes  its own reading (enrichment's category, format, strain, line and size,
+              saved on the listing before any catalog overlay) names exactly one
+              product in a size it comes in. Free, and accepted outright.
+  jev         otherwise the brand's products are ranked by their titles' overlap with
+              the name, filtered to the listing's category and — when both sides state
+              one — to a compatible size (sizes.py does the pack math, not the model),
+              and Jev picks which shortlisted product the listing IS, or "none", with a
+              probability for every option. The probability is the gate:
 
                 p >= AUTO (0.85)     method "jev"          trusted for identity
                 p >= REVIEW (0.50)   method "jev_review"   entry recorded, not trusted
                 otherwise            method "none"
 
-Without --jev the legacy deterministic tiers decide (exact / substring / token, or
-"ambiguous" on a tie) — unchanged, so existing measurements stay reproducible.
+Names never decide a match. The name tiers (a listing's name equal to, or inside, a
+catalog title or a store name recorded on an entry) were removed on 2026-10-08: a store
+name recorded on the wrong entry made a trusted wrong match no model ever saw (MFNY's
+rosin badders on its resin entries). A misread now gets fixed where it is read, with
+a strain alias or a line rule, once for every store. Without --jev only the join
+decides.
 
 **"No match" is a first-class outcome.** With a catalog a wrong answer stops being a
 wrong string and becomes a specific wrong SKU, which reads as more authoritative and
@@ -42,10 +47,11 @@ re-asks that listing and nothing else.
 
 Usage
 -----
-  python scripts/catalog_match.py --brand Ayrloom                  # deterministic only
+  python scripts/catalog_match.py --brand Ayrloom                  # the attribute join only
   python scripts/catalog_match.py --brand Ayrloom --jev --misses   # with the Jev tier
   python scripts/catalog_match.py --brand Ayrloom --eval           # measure Jev's gating
   python scripts/catalog_match.py --all --jev --write              # pipeline step (5432)
+  python scripts/catalog_match.py --all --jev --write --via-http   # from the sandbox
 """
 
 from __future__ import annotations
@@ -62,7 +68,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from brand_catalog import norm_name, strip_brand  # noqa: E402
+from brand_catalog import norm_name  # noqa: E402
+from catalog_bootstrap import squash, strain_key  # noqa: E402
 import canonical  # noqa: E402
 import catalog_store  # noqa: E402
 import jev  # noqa: E402
@@ -76,10 +83,6 @@ CACHE_DIR = ROOT / "data" / "enrich_cache" / "catalog_match"
 # given to a different question.
 QUESTION_VERSION = 2
 
-# Legacy token tier. Set from the Ayrloom miss list: 'rescue 1:1 topical' -> 'rescue
-# balm' shares one of two catalog tokens (0.5) and is correct, but 0.5 also admits
-# unrelated single-word overlaps, so the threshold sits above it.
-THRESHOLD = 0.66
 # Set from the Ayrloom holdout (--eval, 2026-10-04): with the true product removed
 # from the shortlist, Jev still picked a wrong one at p>=0.80 for 5.7% of listings,
 # p>=0.85 for 2.3%, p>=0.90 for 0% — every one a near miss ("Half + Half" lemonade-
@@ -97,14 +100,16 @@ def auto_threshold(catalog: dict) -> float:
     return AUTO_BOOTSTRAP if catalog.get("source_method") == "listings_bootstrap" else AUTO
 SHORTLIST = 25
 
-# Methods counted as resolved in reports (the deterministic tiers included, for
-# comparability with runs made before the Jev tier existed).
-TRUSTED_METHODS = ("exact", "substring", "token", "jev", "manual")
+# Methods counted as resolved in reports.
+# "attributes": the listing's own reading joined the catalog (CatalogIndex.join).
+# "exact", "substring" and "token" were the name tiers, removed 2026-10-08; listings
+# matched by them before keep the method until their next match.
+TRUSTED_METHODS = ("attributes", "exact", "substring", "token", "jev", "manual")
 # Methods whose entry may overwrite a listing's identity at import. Narrower than the
 # above on purpose: a substring hit read a beverage title onto seven gummies on
 # Ayrloom ("Pineapple Mango" vs "Island Time Pineapple Mango"), so on its own it only
 # nominates candidates.
-OVERLAY_METHODS = ("exact", "jev", "manual")
+OVERLAY_METHODS = ("attributes", "exact", "jev", "manual")
 
 # Tokens that carry no identity — they appear in most names and inflate overlap.
 STOPWORDS = {"the", "a", "an", "and", "of", "with", "pack", "pk", "mg", "g",
@@ -151,10 +156,11 @@ class Product:
             # it never helps choose the product, so size_ok and Jev do not see it.
             if not s.is_empty() and e.get("source") != "inferred":
                 p.sizes.append(s)
-            for t in [e.get("name")] + list(e.get("match_terms") or []):
-                n = norm_name(t or "")
-                if n:
-                    p.terms.add(n)
+            # The catalog's own titles only: they rank the shortlist Jev reads. Store
+            # names (match_terms) no longer take part in matching.
+            n = norm_name(e.get("name") or "")
+            if n:
+                p.terms.add(n)
         p.tokens = _tokens(p.title)
         return p
 
@@ -221,59 +227,6 @@ class CatalogIndex:
             if e.get("is_active", True):
                 groups[e.get("product_key") or catalog_store._product_key(e)].append(e)
         self.products = {k: Product.build(k, v) for k, v in groups.items()}
-        self.by_term: dict[str, list[str]] = defaultdict(list)
-        for key, p in self.products.items():
-            for t in p.terms:
-                self.by_term[t].append(key)
-        self.terms = sorted(self.by_term, key=len, reverse=True)
-
-    # -- disambiguation and size resolution --------------------------------------
-    def _disambiguate(self, keys: list[str], category: str | None,
-                      name: str | None = None) -> str | None:
-        """Several products matched. Resolve only when it is genuinely safe.
-
-        Titles repeat across categories — Ayrloom sells 'honeycrisp' as a vape and as
-        a beverage. Category separates them; failing that the unique longest title
-        wins; failing that, None rather than a guess.
-
-        The longest title is a fair pick between one product's titles read short and
-        long ("Blue Lobster", "Hash Infused Blue Lobster"), not between unrelated ones.
-        A store name (`name`, from the exact tier) recorded for products whose titles
-        share no such reading is a slip on all but one of them: Wyld's "Raspberry Sativa
-        Enhanced Gummies" sat on Boysenberry as well as Raspberry, and Boysenberry's
-        longer title took it. It goes to the one product whose title's words it holds,
-        else to none.
-        """
-        keys = list(dict.fromkeys(keys))
-        if len(keys) == 1:
-            return keys[0]
-        if category:
-            on_cat = [k for k in keys if self.products[k].category == category]
-            if len(on_cat) == 1:
-                return on_cat[0]
-            if on_cat:
-                keys = on_cat
-        if name is not None and self.unrelated(keys):
-            named = self.named(keys, name)
-            return named[0] if len(named) == 1 else None
-        longest = max(len(norm_name(self.products[k].title)) for k in keys)
-        top = [k for k in keys if len(norm_name(self.products[k].title)) == longest]
-        if len(top) == 1:
-            return top[0]
-        titled = [k for k in top if self.products[k].category]
-        return titled[0] if len(titled) == 1 else None
-
-    def unrelated(self, keys: list[str]) -> bool:
-        """No product's title words sit inside another's: these are not one product's
-        titles read short and long ("Blue Lobster", "Hash Infused Blue Lobster")."""
-        words = {k: set(norm_name(self.products[k].title).split()) for k in keys}
-        return not any(a != b and words[a] and words[a] <= words[b] for a in keys for b in keys)
-
-    def named(self, keys: list[str], name: str) -> list[str]:
-        """The products whose title's words the (normalised) name holds."""
-        have = set(name.split())
-        return [k for k in keys
-                if (words := set(norm_name(self.products[k].title).split())) and words <= have]
 
     def pick_entry(self, key: str, listing_variant: str | None, category: str | None,
                    name: str = "") -> dict:
@@ -298,48 +251,42 @@ class CatalogIndex:
                     return e
         return product.entries[0]
 
-    # -- tiers -------------------------------------------------------------------
-    def exact(self, name: str, category: str | None) -> tuple[str | None, str]:
-        """The name is a catalog title, or a store name recorded for one product.
+    # -- the attribute join ----------------------------------------------------
+    def join(self, reading: dict | None) -> tuple[str, dict] | None:
+        """The one product, in the one size, the listing's own reading names: the same
+        category, format and strain, the same line where the reading has one, and an
+        entry of the size read. None when no product or several fit, or the reading
+        lacks a strain or a size: Jev decides those.
 
-        Compared with and without the brand's own words: recorded store names are
-        kept brand-less (catalog_bootstrap) and most stores put the brand in, so
-        without the second try a store's own name for a product would not match it.
-        """
-        for ln in dict.fromkeys((norm_name(name), strip_brand(name, self.brand_name))):
-            if ln and ln in self.by_term:
-                chosen = self._disambiguate(self.by_term[ln], category, name=ln)
-                return (chosen, "exact") if chosen else (None, "ambiguous")
-        return None, "none"
+        Exact on purpose (owner's call, 2026-10-08): a size the catalog does not list
+        is not joined to the product's other sizes; the listing goes to Jev, and the
+        audit shows what is left. On the labelled set this tier decided 168 of 295
+        listings, 14 of them against the label, most of those labels stale.
 
-    def deterministic(self, name: str, category: str | None) -> tuple[str | None, float, str]:
-        """The legacy tiers: exact, substring, token. Used when Jev is off."""
-        key, how = self.exact(name, category)
-        if key or how == "ambiguous":
-            return key, (1.0 if key else 0.0), how
-        ln = norm_name(name)
-        hits = [k for t in self.terms if _contained(t, ln) for k in self.by_term[t]]
-        if hits:
-            chosen = self._disambiguate(hits, category)
-            if chosen is None:
-                return None, 0.0, "ambiguous"
-            conf = 0.80 + 0.15 * min(1.0, len(norm_name(self.products[chosen].title).split()) / 4)
-            return chosen, conf, "substring"
-        lt = _tokens(name)
-        if lt:
-            scored = []
-            for key, p in self.products.items():
-                if p.tokens:
-                    cov = len(p.tokens & lt) / len(p.tokens)
-                    if cov >= THRESHOLD:
-                        scored.append((cov, key))
-            if scored:
-                best = max(c for c, _ in scored)
-                chosen = self._disambiguate([k for c, k in scored if c == best], category)
-                if chosen is None:
-                    return None, 0.0, "ambiguous"
-                return chosen, round(0.5 + 0.3 * best, 3), "token"
-        return None, 0.0, "none"
+        Inferred sizes (line_fill.py) count: they are the sizes the product's line
+        comes in. Format is compared wherever both sides state one; a pre-roll keeps
+        none."""
+        if not reading or not reading.get("strain") or not reading.get("size"):
+            return None
+        category = reading.get("category")
+        want = sizes.parse(reading["size"], category=category)
+        if want.is_empty():
+            return None
+        strain, line, subtype = strain_key(reading["strain"]), squash(reading.get("product_line")), \
+            reading.get("subtype")
+        hits = []
+        for key, p in self.products.items():
+            if p.category != category or strain_key(p.strain) != strain:
+                continue
+            if line and squash(p.product_line) != line:
+                continue
+            if subtype and p.subtype and taxonomy.keeps_subtype(category) and subtype != p.subtype:
+                continue
+            for e in p.entries:
+                if sizes.same_size(want, sizes.parse(e.get("variant"), category=category)) is True:
+                    hits.append((key, e))
+                    break
+        return hits[0] if len(hits) == 1 else None
 
     def shortlist(self, name: str, category: str | None, variant: str | None,
                   k: int = SHORTLIST, exclude: str | None = None,
@@ -600,7 +547,6 @@ class Decision:
     confidence: float
     method: str
     candidates: int = 0
-    deterministic: str | None = None      # what the legacy tiers would have said
     probabilities: dict | None = None
 
 
@@ -632,34 +578,26 @@ def resolve(catalog: dict, listings: list[dict], *, use_jev: bool,
 
     for i, l in enumerate(listings):
         name, cat = l.get("name") or "", l.get("category")
-        det_key, det_conf, det_method = index.deterministic(name, cat)
         held_out = (exclude or {}).get(str(l.get("id")))
-        if det_key and infused_veto(index.products[det_key], name, cat, l.get("description")):
-            det_key, det_method = None, "none"
-        if det_method == "exact" and det_key != held_out:
-            decisions[i] = Decision(l, det_key, index.pick_entry(det_key, l.get("variant"), cat, name),
-                                    1.0, "exact", deterministic=det_key)
+        joined = index.join(l.get("reading"))
+        if joined and joined[0] != held_out \
+                and not infused_veto(index.products[joined[0]], name, cat, l.get("description")):
+            decisions[i] = Decision(l, joined[0], joined[1], 1.0, "attributes")
             continue
         if not use_jev:
-            entry = index.pick_entry(det_key, l.get("variant"), cat, name) if det_key else None
-            decisions[i] = Decision(l, det_key, entry, det_conf, det_method, deterministic=det_key)
+            decisions[i] = Decision(l, None, None, 0.0, "none")
             continue
         cands = index.shortlist(name, cat, l.get("variant"), exclude=held_out,
                                 subtype=l.get("subtype"), description=l.get("description"))
-        # Put the deterministic pick right after "none" so the model sees the
-        # strongest lexical candidate first among the products.
-        if det_key in cands:
-            cands.remove(det_key)
-            cands.insert(0, det_key)
         if not cands:
-            decisions[i] = Decision(l, None, None, 0.0, "none", 0, det_key)
+            decisions[i] = Decision(l, None, None, 0.0, "none", 0)
             continue
         key = _cache_key(l, cands, index)
         hit = cache.get(key)
         state, questions, labels = jev_question(brand, l, index, cands)
         if hit is not None:
             decisions[i] = _decide(l, index, labels, hit["pick"], hit["p"], hit.get("probs"),
-                                   len(cands), det_key)
+                                   len(cands))
             continue
         pending.append((i, cands, labels, key))
         jobs.append((state, questions))
@@ -676,18 +614,18 @@ def resolve(catalog: dict, listings: list[dict], *, use_jev: bool,
                 continue
             pick, p, probs = res.choice("product")
             cache.put(key, {"pick": pick, "p": p, "probs": probs, "model": res.model})
-            decisions[i] = _decide(l, index, labels, pick, p, probs, len(cands), None)
+            decisions[i] = _decide(l, index, labels, pick, p, probs, len(cands))
     cache.save()
     return [d for d in decisions if d is not None]
 
 
-def _decide(listing, index, labels, pick, p, probs, n_cands, det_key) -> Decision:
+def _decide(listing, index, labels, pick, p, probs, n_cands) -> Decision:
     method = gate(pick, p, auto_threshold(index.catalog))
     key = labels.get(pick) if method in ("jev", "jev_review") else None
     entry = index.pick_entry(key, listing.get("variant"), listing.get("category"),
                              listing.get("name") or "") if key else None
     conf = p if key else float((probs or {}).get(NONE, 0.0))
-    return Decision(listing, key, entry, round(conf, 3), method, n_cands, det_key, probs)
+    return Decision(listing, key, entry, round(conf, 3), method, n_cands, probs)
 
 
 # ---------------------------------------------------------------------------
@@ -704,10 +642,13 @@ def fetch_listings() -> list[dict]:
     rows = db_http.select_all(
         "listings",
         "select=id,scraped_name,scraped_brand,scraped_category,subtype,variant,description,"
-        "catalog_entry_id,catalog_match_confidence,catalog_match_method&is_active=is.true&order=id")
+        "reading,catalog_entry_id,catalog_match_confidence,catalog_match_method&is_active=is.true&order=id")
     return [{"id": r["id"], "name": r.get("scraped_name") or "", "brand": r.get("scraped_brand"),
              "category": r.get("scraped_category"), "subtype": r.get("subtype"),
              "variant": r.get("variant"), "description": r.get("description"),
+             # The listing's own reading; its category, strain and line columns are the
+             # matched entry's (import_listings._overlay), so the join never reads them.
+             "reading": r.get("reading"),
              "catalog_entry_id": r.get("catalog_entry_id"),
              "catalog_match_confidence": r.get("catalog_match_confidence"),
              "catalog_match_method": r.get("catalog_match_method")} for r in rows]
@@ -810,8 +751,7 @@ def evaluate(catalog: dict, listings: list[dict], usage: jev.Usage,
              cache: AnswerCache) -> dict:
     """How well does the Jev tier gate, measured without hand labels?
 
-    Silver labels: listings where the deterministic tiers and Jev independently pick
-    the same product (or the name is an exact title). Then the holdout: ask again with
+    Silver labels: listings the attribute join decides. Then the holdout: ask Jev with
     that product removed from the shortlist. The right answer is now "none", so any
     product Jev still picks at probability >= t is a false match at threshold t —
     the number that should set AUTO. Only listings that still have candidates after
@@ -819,12 +759,9 @@ def evaluate(catalog: dict, listings: list[dict], usage: jev.Usage,
     """
     index = CatalogIndex(catalog)
     first = resolve(catalog, listings, use_jev=True, cache=cache, usage=usage)
-    silver: dict[str, str] = {}
-    for d in first:
-        det_key, _, _ = index.deterministic(d.listing.get("name") or "", d.listing.get("category"))
-        if d.method == "exact" or (d.method == "jev" and det_key == d.product_key):
-            silver[str(d.listing["id"])] = d.product_key
-    labelled = [l for l in listings if str(l["id"]) in silver]
+    silver = {str(d.listing["id"]): d.product_key for d in first if d.method == "attributes"}
+    # Asked without their reading, so Jev decides them with the true product held out.
+    labelled = [{**l, "reading": None} for l in listings if str(l["id"]) in silver]
     holdout = resolve(catalog, labelled, use_jev=True,
                       cache=AnswerCache("holdout", enabled=False), usage=usage, exclude=silver)
     asked = [d for d in holdout if d.candidates > 0]
@@ -892,7 +829,7 @@ def main() -> None:
             cache = AnswerCache(cat.get("brand_slug") or key, enabled=not args.no_cache)
             res = evaluate(cat, listings, usage, cache)
             print(f"\n{cat['brand_name']}: {res['listings']} listings, first pass {res['first_pass']}")
-            print(f"  silver labels (deterministic and Jev agree): {res['silver']}")
+            print(f"  silver labels (decided by the attribute join): {res['silver']}")
             print(f"  holdout — true product removed, {res['holdout_asked']} still had candidates:")
             for t, r in res["false_match_at"].items():
                 print(f"    would match a WRONG product at p>={t:.1f}: {r:.1%}")

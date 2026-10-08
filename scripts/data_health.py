@@ -41,7 +41,6 @@ CURATED_DAYS = 30   # a curated product no listing has matched this long has sto
 UNSURE = 0.5        # Jev's probability under which an enrichment answer is reviewed
 SECTIONS = [        # (kind, title), in the order the report prints them
     ("stale-store", "Stores the daily run missed"),
-    ("shared-name", "Store names recorded on unrelated products"),
     ("missing-size", "Sizes 2+ stores sell that the matched product lacks"),
     ("review-cluster", "Products with review-only listings at 2+ stores"),
     ("size-sync", "Product-page sizes the last import left behind"),
@@ -159,32 +158,6 @@ def stale_stores(data: Data) -> list[Finding]:
                            f"{d.get('name') or slug}: newest listing seen {when}; {n} listing(s) still active",
                            n, f"Render cron logs (crn-db1fveugekts73dl7s60), search \"{slug}\"",
                            (n,)))
-    return out
-
-
-def cross_wired_names(data: Data) -> list[Finding]:
-    """A store name recorded on two or more products of one category whose titles are
-    unrelated (not one product's titles read short and long). The exact tier gives it
-    to the product it names (catalog_match), so it moves no listings while the right
-    product holds it too; it is still a store's slip on the others."""
-    out = []
-    for catalog in data.catalogs.values():
-        index = cm.CatalogIndex(catalog)
-        for term, keys in index.by_term.items():
-            keys = list(dict.fromkeys(keys))
-            for category in sorted({index.products[k].category or "" for k in keys}):
-                same = [k for k in keys if (index.products[k].category or "") == category]
-                if len(same) < 2 or not index.unrelated(same):
-                    continue
-                titles = [index.products[k].title for k in same]
-                named = index.named(same, term)
-                verdict = (f"names {index.products[named[0]].title}" if len(named) == 1
-                           else "names none of them" if not named else "names several")
-                out.append(Finding(
-                    f"shared-name:{catalog['brand_slug']}:{term}", "shared-name",
-                    f'{catalog["brand_name"]} {category}: "{term}" on {" · ".join(titles)} ({verdict})',
-                    len(same), _entries_look(catalog["brand_name"], titles),
-                    (len(named) == 1, len(same))))
     return out
 
 
@@ -368,7 +341,7 @@ def unsure_answers(data: Data) -> list[Finding]:
             for (brand, field), rows in groups.items()]
 
 
-DETECTORS = (stale_stores, cross_wired_names, missing_sizes, review_clusters, size_sync, brandless,
+DETECTORS = (stale_stores, missing_sizes, review_clusters, size_sync, brandless,
              stale_curated, unsure_answers)
 
 

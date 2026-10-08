@@ -50,20 +50,6 @@ def test_a_store_the_run_missed_is_flagged():
     assert found[0].evidence == 2
 
 
-def test_a_name_on_unrelated_products_is_flagged_but_one_products_titles_are_not():
-    wyld = catalog("Wyld",
-                   {"name": "Raspberry", "category": "edible", "variant": "10pk 100mg",
-                    "match_terms": ["raspberry sativa enhanced gummies"]},
-                   {"name": "Boysenberry", "category": "edible", "variant": "10pk 100mg",
-                    "match_terms": ["raspberry sativa enhanced gummies"]},
-                   {"name": "Blue Lobster", "category": "edible", "match_terms": ["hash infused blue lobster"]},
-                   {"name": "Hash Infused Blue Lobster", "category": "edible",
-                    "match_terms": ["hash infused blue lobster"]})
-    found = dh.cross_wired_names(data([], wyld))
-    assert keys(found) == ["shared-name:wyld:raspberry sativa enhanced gummies"]
-    assert "(names Raspberry)" in found[0].text
-
-
 def test_a_missing_size_needs_two_stores():
     ls = [listing(1, "A", "40's Orange Sunset 5pk - 2.5g", "os1", "jev_review", "2.5g"),
           listing(2, "B", "STIIIZY 40s Orange Sunset 2.5g", "os1", "jev", "2.5g"),

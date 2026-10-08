@@ -81,7 +81,7 @@ def run(tmp_path, rows, *extra, name="scrape.csv"):
 def listings(cur, active_only=True):
     cur.execute(f"""SELECT sku, variant, scraped_brand, scraped_category, subtype, strain,
                            product_line, catalog_entry_id, catalog_match_method,
-                           catalog_match_confidence, is_active, price_cents
+                           catalog_match_confidence, is_active, price_cents, reading
                     FROM listings {'WHERE is_active' if active_only else ''} ORDER BY sku, variant""")
     cols = [d[0] for d in cur.description]
     return [dict(zip(cols, r)) for r in cur.fetchall()]
@@ -192,13 +192,24 @@ def test_empty_csv_and_unknown_store_are_failures(db, tmp_path):
 
 # --- catalogs ---------------------------------------------------------------
 
-def test_exact_catalog_match_overlays_identity(db, tmp_path):
+def test_the_attribute_join_overlays_identity_and_keeps_the_reading(db, tmp_path):
     [eid] = add_catalog(db, [{"name": "acme blue dream", "category": "flower",
                               "strain": "Blue Dream", "product_line": "Gold", "variant": "3.5g"}])
-    run(tmp_path, [row("A", "Acme Blue Dream", strain="Blue Dreem", product_line="")])
+    run(tmp_path, [row("A", "Acme Blue Dream", strain="Blue Dream", product_line="")])
     [r] = listings(db)
-    assert r["catalog_match_method"] == "exact" and str(r["catalog_entry_id"]) == eid
-    assert (r["strain"], r["product_line"]) == ("Blue Dream", "Gold")
+    assert r["catalog_match_method"] == "attributes" and str(r["catalog_entry_id"]) == eid
+    assert (r["strain"], r["product_line"]) == ("Blue Dream", "Gold")     # the entry's, for display
+    assert r["reading"] == {"category": "flower", "subtype": "flower", "strain": "Blue Dream",
+                            "product_line": None, "size": "3.5g"}          # what the listing said
+
+
+def test_a_name_never_matches_on_its_own(db, tmp_path):
+    """The listing's name is the catalog title, but its reading names another strain."""
+    add_catalog(db, [{"name": "acme blue dream", "category": "flower", "strain": "Blue Dream",
+                      "variant": "3.5g"}])
+    run(tmp_path, [row("A", "Acme Blue Dream", strain="Blue Dreem")])
+    [r] = listings(db)
+    assert r["catalog_entry_id"] is None and r["strain"] == "Blue Dreem"
 
 
 def test_a_mistyped_dose_is_stored_with_its_catalog_size(db, tmp_path):
@@ -208,12 +219,17 @@ def test_a_mistyped_dose_is_stored_with_its_catalog_size(db, tmp_path):
                       "strain": "Balance Yuzu Lemon", "product_line": "Gummies",
                       "variant": "20pk 100mg"}], brand="Camino")
     gummy = {"brand": "Camino", "category": "edible", "subtype": "gummy"}
-    run(tmp_path, [row("A", "Balance Yuzu Lemon", variant="50mg",
+    run(tmp_path, [row("A", "Balance Yuzu Lemon", variant="50mg", strain="Balance Yuzu Lemon",
+                       product_line="Gummies",
                        description="5mg THC : 5mg CBD per piece - 100mg THC per package", **gummy),
-                   row("B", "Balance Yuzu Lemon", variant="100mg", **gummy),
+                   row("B", "Balance Yuzu Lemon", variant="100mg", strain="Balance Yuzu Lemon",
+                       product_line="Gummies", **gummy),
                    row("C", "Acme Blue Dream", strain="Blue Dream")])
-    db.execute("SELECT sku, variant, size FROM listings ORDER BY sku")
-    assert db.fetchall() == [("A", "50mg", "100mg"), ("B", "100mg", "100mg"), ("C", "3.5g", "3.5g")]
+    db.execute("SELECT sku, variant, size, catalog_match_method FROM listings ORDER BY sku")
+    # A's 50mg is no size the product comes in: no join (Jev, off here, would decide it,
+    # and a trusted Jev match takes the catalog's size). B joins and keeps its size.
+    assert db.fetchall() == [("A", "50mg", "50mg", None), ("B", "100mg", "100mg", "attributes"),
+                             ("C", "3.5g", "3.5g", None)]
 
 
 def test_only_a_trusted_match_corrects_a_size():
@@ -234,15 +250,6 @@ def test_only_a_trusted_match_corrects_a_size():
             "catalog_entry_id": "e2", "catalog_match_method": "exact"}
     assert import_listings.assign_sizes([same], catalogs) == 0          # already the catalog's
     assert same["size"] == "150mg"
-
-
-def test_substring_without_jev_is_recorded_but_not_overlaid(db, tmp_path):
-    add_catalog(db, [{"name": "blue dream", "category": "flower", "strain": "Blue Dream",
-                      "product_line": "Gold"}])
-    run(tmp_path, [row("A", "Acme | Blue Dream | 3.5g", strain="Blue Dreem")])
-    [r] = listings(db)
-    assert r["catalog_match_method"] == "substring"
-    assert (r["strain"], r["product_line"]) == ("Blue Dreem", None)
 
 
 def _fake_jev(monkeypatch, probability):
@@ -288,7 +295,7 @@ def test_a_format_word_in_the_name_beats_the_entrys_subtype(db, tmp_path):
     run(tmp_path, [row("A", "Acme Blue Dream Cart", category="vaporizers", subtype="pod",
                        variant="1g", strain="Blue Dream")])
     [r] = listings(db)
-    assert r["catalog_match_method"] == "exact" and r["subtype"] == "cart"
+    assert r["catalog_match_method"] == "attributes" and r["subtype"] == "cart"
 
 
 def test_a_preroll_keeps_no_subtype(db, tmp_path):
@@ -304,7 +311,7 @@ def test_a_preroll_keeps_no_subtype(db, tmp_path):
             row("C", "Acme OG Kush", strain="OG Kush")]
     run(tmp_path, rows)
     got = {r["sku"]: r for r in listings(db)}
-    assert got["A"]["catalog_match_method"] == "exact"
+    assert got["A"]["catalog_match_method"] == "attributes"
     assert [got[k]["subtype"] for k in "ABC"] == [None, None, "flower"]
     claim = verification.claim({"subtype": "infused"}, "Acme OG Kush Infused", "tester")
     db.execute("UPDATE listings SET verified_fields=%s WHERE sku='B'", (psycopg2.extras.Json(claim),))
@@ -336,12 +343,12 @@ def test_catalogs_load_over_database_url_when_rest_is_not_configured(db, monkeyp
     assert [e["name"] for e in catalog_store.for_brand(cats, "Acme")["entries"]] == ["acme blue dream"]
 
 
-def test_masked_catalog_strain_is_not_copied(db, tmp_path):
-    add_catalog(db, [{"name": "acme alaskan thunder fu*k", "category": "flower",
-                      "strain": "Alaskan Thunder Fu*K"}])
-    run(tmp_path, [row("A", "Acme Alaskan Thunder Fu*k", strain="Alaskan Thunder Fuck")])
-    [r] = listings(db)
-    assert r["catalog_match_method"] == "exact" and r["strain"] == "Alaskan Thunder Fuck"
+def test_masked_catalog_strain_is_not_copied():
+    from catalog_enricher import _is_masked
+    rec = {"scraped_name": "Acme Alaskan Thunder Fuck", "strain": "Alaskan Thunder Fuck"}
+    stats = {"masked_strain_skipped": 0, "overlaid": 0, "subtype_from_name": 0}
+    import_listings._overlay(rec, {"category": "flower", "strain": "Alaskan Thunder Fu*K"}, stats, _is_masked)
+    assert rec["strain"] == "Alaskan Thunder Fuck" and stats["masked_strain_skipped"] == 1
 
 
 def test_manual_match_survives_reimport(db, tmp_path):
@@ -367,9 +374,10 @@ def test_human_claim_beats_the_catalog(db, tmp_path):
 
 
 def test_no_catalog_flag_leaves_match_columns_alone(db, tmp_path):
-    [eid] = add_catalog(db, [{"name": "acme blue dream", "category": "flower"}])
-    run(tmp_path, [row("A", "Acme Blue Dream")])
-    run(tmp_path, [row("A", "Acme Blue Dream")], "--no-catalog", name="2.csv")
+    [eid] = add_catalog(db, [{"name": "acme blue dream", "category": "flower", "strain": "Blue Dream",
+                              "variant": "3.5g"}])
+    run(tmp_path, [row("A", "Acme Blue Dream", strain="Blue Dream")])
+    run(tmp_path, [row("A", "Acme Blue Dream", strain="Blue Dream")], "--no-catalog", name="2.csv")
     assert str(listings(db)[0]["catalog_entry_id"]) == eid
 
 

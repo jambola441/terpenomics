@@ -159,7 +159,10 @@ first line.
   vote for it at every rebuild, and a lost line stays lost until something outside the
   loop changes: a rule, an alias, an edit or a deactivation.
 - **Match methods.** Every listing's match records how it was made:
-  - `exact`: the name is an entry's name or one of its recorded store names.
+  - `attributes`: the listing's own reading (`listings.reading`: enrichment's category,
+    format, strain, line and size) names exactly one product in a size it comes in.
+    Names never decide a match (2026-10-08). Listings matched before then may still
+    show `exact`, `substring` or `token` until their next match.
   - `jev`: the model picked the entry with p ≥ 0.85, or ≥ 0.90 in a bootstrap catalog.
     Trusted.
   - `jev_review`: p ≥ 0.50. Recorded, not trusted.
@@ -212,14 +215,6 @@ row is the check.
 - Camino's Gummies showed `20pk 72mg 5/1`: one store typing 72mg on five different
   gummies, a store habit no single listing reveals.
 
-`STORE NAMES ON 2+ PRODUCTS`, after the products, lists each store name recorded for more
-than one product of a category. Two readings of one product's title ("Blue Lobster",
-"Hash Infused Blue Lobster") are normal. A name on products with unrelated titles is a
-store's slip on all but one of them:
-- Wyld had "raspberry sativa enhanced gummies" on Boysenberry as well as Raspberry, and
-  eight Raspberry listings sat on Boysenberry's page until it was removed (2026-10-05).
-  The matcher now gives such a name to the product it names, so a slip like this no
-  longer moves listings, but it is still wrong data. Remove it.
 
 For a bootstrap catalog, `python3 scripts/catalog_shape.py preview "<Brand>"` shows
 what a rebuild would propose from today's fresh listings: entries it would add, and
@@ -341,12 +336,12 @@ Fix at the source when three or more entries share a cause. Hand edits are for o
 | storefront: a store-only entry is a site product under the stores' name (or the site renamed it) | `store_aliases` in the recipe (names or lines, confirmed aliases only), then `push`. Aliases apply in every category; when one would misfire elsewhere (a "Kief Coated Gorilla Glue" pre-roll), use a `title` rule's `set` for that category instead |
 | storefront: a store-only entry is a real size the site omits but lost the line | admin edit of its line; if several, propose carrying the site product's naming onto same-name gap fills in `storefront.with_store_products` |
 | bootstrap: stores write the line but enrichment missed it | a few entries: admin edit. Many: a storefront recipe if the brand's site is readable (`data/storefronts/README.md`), else the brand's lines in `data/product_lines.json`. List each spelling stores print (singular, plural, "40's" and "40s"), then preview and rebuild the catalog after the next run |
-| bootstrap: one strain spelled two ways ("Skywalker" / "Skywalker OG") | `data/strain_aliases.json` for the brand; for the entries already split, deactivate one and move its store names |
+| bootstrap: one strain spelled two ways ("Skywalker" / "Skywalker OG") | `data/strain_aliases.json` for the brand; for the entries already split, deactivate one into the other |
 | storefront: two store-only copies of one product | `store_aliases` cannot merge them: aliases change only the comparison with the site. Deactivate all but one, or make the product a site product by exempting its page from a skip rule |
 | storefront: a store-only size that is the site's package written another way (a CBD total, a cannabinoid sum) | deactivate it; if several brands show it, propose a rule in `split_store_products` for dose categories |
 | bootstrap: thin line from coverage (members sold at one store) | nothing to fix; say so |
-| any: two entries for one product | deactivate the wrong one in the admin UI (never delete: listings point at entries), add its store names to the survivor's match terms; the next `catalog_match` moves the listings |
-| any: a store name recorded on a product it does not name (`STORE NAMES ON 2+ PRODUCTS`) | remove it from that entry's match terms in the admin UI; it stays on the product it names |
+| any: two entries for one product | deactivate the wrong one (`catalog_fix.py deactivate --into`, or the admin UI; never delete: listings point at entries); the next `catalog_match` moves the listings |
+| any: listings that are a product but do not join it | their `reading` says why: a strain spelling (alias), a line not read (line rule), a size the catalog lacks (`add-size`) |
 | any: one brand's products inside another brand's catalog | a skip rule in the parent's recipe (or deactivations), plus a proposed name-based sub-brand rule at import, so stores' "Kiva - Camino ..." listings resolve to the sub-brand. `brand_aliases.json` alone cannot: it maps brand strings, not names |
 | any: products in the wrong category | admin edit of `category` (and subtype); if a recipe produced it, fix its `category` rule |
 | any: wrong size form | admin edit of `variant`; if a recipe produced it, fix the rule's size group |
@@ -410,8 +405,8 @@ matches go from 130 to 215 of its 216 listings, and none is lost.
      they are typos or bundles (rule 10).
 4. **Write the plan file** for `python3 scripts/catalog_fix.py plan FILE`. Its docstring
    gives the format. Each edit carries a `why` with its evidence.
-   - `add-product`, with the store names it is sold under as `terms`, so those listings
-     match exactly.
+   - `add-product` for a product the catalog lacks. Its listings join it on their
+     reading; store names are no longer recorded (2026-10-08).
    - `add-size` for each size a product lacks.
    - `deactivate` with `into` for a split spelling whose sizes the survivor has.
    - `rekey` for a product filed under the wrong line, strain or subtype. Herb's
@@ -422,7 +417,6 @@ matches go from 130 to 215 of its 216 listings, and none is lost.
        the survivor lacks is a `rekey` to the survivor's strain.
      - `only` moves just the named entries, such as a 1g that is the line's smalls.
      - A spelling the key cannot see (Passionfruit, Passion Fruit) is renamed in place.
-   - `add-term` and `drop-term` as needed.
 
    Entries made this way are marked "curated". A `--replace` rebuild never retires them,
    and one that proposes the same product updates them in place. Pair the plan with the

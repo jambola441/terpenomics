@@ -37,11 +37,11 @@ catalog edit misfired. That outranks every finding.
 In this order, new before old:
 1. **Stores the daily run missed.** The pipeline is broken for that store; every other
    finding about it is stale data.
-2. **Store names recorded on unrelated products** that name one of them.
-3. **Sizes 2+ stores sell that the product lacks.**
-4. **Product-page sizes left behind** (normally zero right after the 13:00 UTC import).
-5. **Review-only clusters** at 3+ stores, then **brandless listings** by count.
-6. **Curated products no listing has matched for 30 days.** Check that they stopped
+2. **Sizes 2+ stores sell that the product lacks.** Matching joins on size exactly
+   (2026-10-08), so these listings reach the product only through Jev, or not at all.
+3. **Product-page sizes left behind** (normally zero right after the 13:00 UTC import).
+4. **Review-only clusters** at 3+ stores, then **brandless listings** by count.
+5. **Curated products no listing has matched for 30 days.** Check that they stopped
    selling, then retire them.
 
 List the rest in the report as open, without investigating them.
@@ -55,18 +55,16 @@ stores actually sell, and the brand's site settles what exists. Decide what it i
 | finding | what it usually is | the edit |
 | --- | --- | --- |
 | stale store | the store's scraper failed, or the cron did not run | none in the data. Read the Render cron logs (crn-db1fveugekts73dl7s60) for the store and report the error. Never re-run the pipeline or change Render settings without asking |
-| shared name that names one product | a store's slip recorded on the others (Wyld's Raspberry name on Boysenberry) | `catalog_fix.py drop-term ENTRY "<name>"` on each product it does not name |
-| shared name that names none | a generic store name ("vape cartridge", "blossoms"); it goes to Jev and moves nothing | dismiss: generic |
 | size 2+ stores sell | a real size the catalog lacks (STIIIZY's 40's Orange Sunset 5-pack, 2.5g, added 2026-10-05), another product under a similar name (a different line), or a typo stores share | real size: `catalog_fix.py add-size ENTRY SIZE`. Another product: say so (it belongs in the catalog as its own product). Shared typo: dismiss, naming the stores |
 | page sizes left behind | a catalog edit since the last import | `catalog_fix.py size-sync` |
-| review-only cluster | the stores' names leave the model unsure, or the catalog lacks the product | if the listings are that product: `catalog_fix.py add-term ENTRY "<store's name>"` for the names they use. If not: say what they are |
+| review-only cluster | the listings' reading misses the product (a strain spelled another way, a line not read), or the catalog lacks the product | look at the listings' `reading`: a spelling is a strain alias (`data/strain_aliases.json`), a missed line a line rule (`data/product_lines.json`); a missing product or size is `add-product` / `add-size`. Store names no longer match anything (2026-10-08) |
 | brandless listings | one store's feed carries no brand (87 STIIIZY listings did on 2026-10-05) | none in the catalog. Find the store (`look` shows dispensary ids) and report it; fixing the scraper or enrichment is code (step 7) |
 | stale curated product | a product admitted by curation (often on one store's listings) that stores stopped selling, or whose listings now match another product | `listings "<Brand>" "<strain>"`: none at all, retire it (`catalog_fix.py deactivate ENTRY` for each entry the `look` names). Listings matched to another product: decide which product they are; that is the edit |
 
 Entry ids come from `python3 scripts/catalog_shape.py entries "<Brand>" "(?i)<regex>"`.
 
 Evidence rules:
-- One store is not enough to add a size or a name. Need two stores, or the brand's site.
+- One store is not enough to add a size. Need two stores, or the brand's site.
 - A typo is the store's: the catalog stays right. Dose typos already show the catalog's
   size on the product page (`listings.size`); weight typos keep their own page.
 
@@ -88,9 +86,9 @@ that moves nothing is not worth making yet. Super Lemon Haze's 2.5g was like tha
 only store selling the pack typed it as 4.5g, so no listing could use the entry. Dismiss
 the finding with that reason.
 
-`drop-term`, `add-term`, `add-size`, `set-size` and `deactivate` refuse edits that would
-do harm (a name left on no product, a name cross-wired onto a second product, a size the
-product already has) and say why. Do not reach for `--force` unless the refusal's reason
+`add-size`, `set-size` and `deactivate` refuse edits that would do harm (a size the
+product already has, a duplicate left with no survivor) and say why. `add-term` and
+`drop-term` are retired: names no longer match listings. Do not reach for `--force` unless the refusal's reason
 is understood and wrong.
 
 ## 5. Propose, and wait

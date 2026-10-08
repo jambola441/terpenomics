@@ -58,7 +58,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import catalog_match as cm  # noqa: E402
 import catalog_store  # noqa: E402
 import sizes  # noqa: E402
-from brand_catalog import norm_name, strip_brand  # noqa: E402
+from brand_catalog import norm_name  # noqa: E402
 
 BOOTSTRAP = "listings_bootstrap"
 CURATED = "curated"
@@ -127,47 +127,11 @@ def _desc(e: dict) -> str:
 # ---------------------------------------------------------------------------
 
 def plan_drop_term(catalogs: dict, entry_id: str, term: str, force: bool = False) -> Plan:
-    catalog, entry = find(catalogs, entry_id)
-    want = norm_name(term)
-    terms = entry.get("match_terms") or []
-    keep = [t for t in terms if norm_name(t) != want]
-    if len(keep) == len(terms):
-        raise Refused(f'"{term}" is not among {_desc(entry)}\'s store names')
-    owners = [e for e in catalog["entries"] if e.get("is_active", True) and str(e["id"]) != str(entry_id)
-              and any(norm_name(t) == want for t in e.get("match_terms") or [])]
-    if not owners and not force:
-        raise Refused(f'no other entry holds "{term}": its listings would lose their exact match and go '
-                      "to Jev. Check that is wanted, then pass --force")
-    plan = Plan(catalog, _copy_with(catalog, entry_id, match_terms=keep), entry.get("category"))
-    plan.writes.append(("update", TABLE, f"id=eq.{entry['id']}", {"match_terms": keep}))
-    plan.notes.append(f'drop "{term}" from {_desc(entry)}'
-                      + (f"; it stays on {', '.join(_desc(e) for e in owners)}" if owners else ""))
-    return plan
+    raise Refused("Store names no longer match listings (2026-10-08): a listing is matched on what it is — its category, format, strain, line and size — and then by Jev. Fix a misread where it is read: a strain alias (data/strain_aliases.json) or a line rule (data/product_lines.json)")
 
 
 def plan_add_term(catalogs: dict, entry_id: str, name: str, force: bool = False) -> Plan:
-    """Store names are recorded brand-less and normalised, as catalog_bootstrap records
-    them, so a store that writes the brand in still matches."""
-    catalog, entry = find(catalogs, entry_id)
-    term = strip_brand(name, catalog.get("brand_name") or "")
-    if not term:
-        raise Refused(f'"{name}" is empty once normalised')
-    if term in (entry.get("match_terms") or []):
-        raise Refused(f'{_desc(entry)} already holds "{term}"')
-    index = cm.CatalogIndex(catalog)
-    key = entry.get("product_key") or catalog_store._product_key(entry)
-    others = [k for k in index.by_term.get(term, []) if k != key
-              and index.products[k].category == entry.get("category")]
-    if others and index.unrelated(list(dict.fromkeys(others + [key]))) and not force:
-        raise Refused(f'"{term}" is already a store name for '
-                      f'{", ".join(index.products[k].title for k in dict.fromkeys(others))}: recording it here '
-                      "too is how a name gets cross-wired. Pass --force if that product holds it by mistake "
-                      "(and drop-term it there)")
-    terms = sorted(set(entry.get("match_terms") or []) | {term})
-    plan = Plan(catalog, _copy_with(catalog, entry_id, match_terms=terms), entry.get("category"))
-    plan.writes.append(("update", TABLE, f"id=eq.{entry['id']}", {"match_terms": terms}))
-    plan.notes.append(f'record "{term}" as a store name of {_desc(entry)}')
-    return plan
+    raise Refused("Store names no longer match listings (2026-10-08): a listing is matched on what it is — its category, format, strain, line and size — and then by Jev. Fix a misread where it is read: a strain alias (data/strain_aliases.json) or a line rule (data/product_lines.json)")
 
 
 def plan_add_size(catalogs: dict, entry_id: str, size: str, force: bool = False) -> Plan:
@@ -320,16 +284,9 @@ def plan_add_product(catalogs: dict, brand: str, category: str, strain: str, siz
     for x in (_label(x, category) for x in sizes_wanted):
         by_variant.setdefault(_variant(x, category), x)        # "28g" and "1 ounce" are one size
     variants = list(by_variant)
-    recorded = sorted({t for t in (strip_brand(n, catalog.get("brand_name") or "") for n in terms) if t})
+    # Store names (`terms`) are no longer recorded: names do not match listings.
+    recorded: list[str] = []
     name = " ".join(x for x in (line, strain) if x)
-    index, mine = cm.CatalogIndex(catalog), set(norm_name(name).split())
-    for t in recorded:                  # the guard add-term has: a name stays on its own product
-        for k in index.by_term.get(t, []):
-            other = index.products[k]
-            theirs = set(norm_name(other.title).split())
-            if other.category == category and not (theirs <= mine or mine <= theirs):
-                raise Refused(f'"{t}" is already a store name for {other.title}: recording it on {name} '
-                              "too would cross-wire it. Leave it out, or drop-term it there first")
     bootstrap = catalog.get("source_method") == BOOTSTRAP
     taken = {e.get("external_id") for e in catalog["entries"]}
     rows = []
