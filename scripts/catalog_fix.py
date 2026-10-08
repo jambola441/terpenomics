@@ -840,6 +840,11 @@ def main(argv: list[str] | None = None) -> int:
         print(f"{len(todo)} listing(s)" + (" written" if args.write else " (dry run; --write writes)"))
         return 0
     with_inactive(catalogs)
+    # Inferred sizes (line_fill.py) are derived from the stated entries, not edited:
+    # left in, a re-key would copy them to new rows as if stated. The sync after a
+    # write recomputes them.
+    for c in catalogs.values():
+        c["entries"] = [e for e in c.get("entries") or [] if e.get("source") != "inferred"]
     try:
         if args.command == "plan":
             import json
@@ -871,6 +876,8 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if args.write:
             apply(plan)
+            import line_fill                     # inferred sizes follow the edited lines
+            line_fill.sync_brand(plan.catalog.get("brand_name") or "")
         else:
             preflight(plan)
             print("(dry run; --write writes it)")

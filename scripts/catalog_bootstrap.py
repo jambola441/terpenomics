@@ -446,6 +446,9 @@ def main() -> None:
             path = brand_catalog.save(out["catalog"])
             if args.push:
                 brand_catalog.push(out["catalog"], via_http=args.via_http, replace=args.replace)
+                if args.via_http:
+                    import line_fill             # a --replace push retires inferred sizes
+                    line_fill.sync_brand(out["catalog"]["brand_name"])
             print(f"    wrote {path.relative_to(brand_catalog.ROOT)}{' and pushed' if args.push else ''}")
 
     if len(keys) > 1:
