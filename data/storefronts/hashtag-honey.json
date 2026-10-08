@@ -8,7 +8,7 @@
   "learned": "2026-10-08, from the owner's pointer to hashtaghoneys.com (hashtaghoney.com without the s is a parked domain). WooCommerce Store API: 233 products in eleven categories, the size in nearly every title.",
   "notes": [
     "Each product's variations are a wholesale quantity (attribute NUMBER: 1, 5, 10, 25, 50, 100 units), not a size. Only the 1-unit variation is read; the size comes from the title.",
-    "The gummies are listed twice: once with '100mg' in the title and a description ('100mg – 10ct – 10mg/ea'), once without either. All are 10 x 10mg THC. Cotton Candy is 1:1 THC/CBD; one of its pages says '100mg total cannabinoids', the other '100mg THC', and three stores sell it as 100mg, so it is 100mg THC.",
+    "The gummies are listed twice: once with '100mg' in the title and a description ('100mg – 10ct – 10mg/ea'), once without either. All are 10 x 10mg THC except Cotton Candy, which is 1:1: its '10mg THC and CBD per piece' is 5mg + 5mg, as stores write it ('5mg THC/5mg CBD', '50mg THC/50mg CBD'), so the package is 50mg THC.",
     "'Snowballz' (INFUSED FLOWER) is flower coated in diamonds: subtype infused. 'Diamond Infused Pre-rolls 5pk' are 5 x 0.5g. 'Lites Joints 0.9g each 5pk' are 4.5g.",
     "'Disposable ... AIO ... Weed Pen' titles carry a lineage and sometimes 'Live Resin' after the size; neither is part of the strain.",
     "Two site names are misspellings of the strains stores and the brand's other products use: 'Genolade' (Gelonade) and 'Perm Marker' (Permanent Marker). Title rules set the strain for those two.",
@@ -112,7 +112,7 @@
       },
       "match": "(?i)^Hashtag Honey\\s+(?P<strain>Cotton Candy)\\b",
       "set": {
-        "size": "10pk 100mg"
+        "size": "10pk 50mg"
       }
     },
     {
@@ -215,6 +215,15 @@
         "category": "^concentrate$"
       },
       "match": "(?i)^Hashtag Honey\\s+(?P<strain>.+?)\\s+(?P<size>\\d*\\.?\\d+g)\\s+Live\\s+(?:Rosin|Sugar)\\b"
+    }
+  ],
+  "store_skip": [
+    {
+      "when": {
+        "name": "^Cotton Candy$",
+        "size": "^100mg$"
+      },
+      "why": "the 1:1 gummy sized by THC and CBD together; it is 50mg THC (5mg + 5mg a piece), as five stores and the site's own copy say"
     }
   ]
 }
