@@ -2,7 +2,7 @@ import { useCallback, useRef } from 'react'
 import { FlatList, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native'
 import { router, useFocusEffect } from 'expo-router'
 import { FEED_RAILS, type FeedListing, type FeedRail } from '@web/types'
-import { api } from '@/lib/api'
+import { api, HOME_FEED } from '@/lib/api'
 import { useFetch } from '@/lib/useFetch'
 import ListingCard from '@/components/ListingCard'
 import { FeedState, SectionTitle, styles } from '@/components/ui'
@@ -18,7 +18,7 @@ const RAIL_TITLES: Record<FeedRail, string> = {
 /** The combined feed across every store the shopper follows. Stores are
  *  picked in the stores screen (app/stores.tsx). */
 export default function Home() {
-  const { data: feed, error, loading, refreshing, refresh } = useFetch('feed', () => api.me.getFeed({ view: 'combined' }))
+  const { data: feed, error, loading, refreshing, refresh } = useFetch('feed', () => api.me.getFeed(HOME_FEED))
 
   // Back from picking stores, or from a listing where one was followed: show
   // the feed for the stores as they are now. The first focus is the load.

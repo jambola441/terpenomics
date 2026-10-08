@@ -44,6 +44,13 @@ const PER_RAIL = 8
 
 const VIEWS = ['store', 'combined'] as const
 
+/** The parameters Home's first feed request uses for this URL, so the shell
+ *  can start that request beside /me (api.me.startFeed). */
+export function homeFeedParams(params: URLSearchParams) {
+  const category = readOne(params, 'category')
+  return { view: readEnum(params, 'view', VIEWS, 'store'), per_rail: PER_RAIL, category: category ?? undefined }
+}
+
 const RAIL_LABELS: Record<FeedRail, { title: string; blurb: string; icon: IconName }> = {
   featured: { title: 'Featured', blurb: 'Picked by the store', icon: 'star' },
   new: { title: 'New arrivals', blurb: 'Just hit the shelf', icon: 'sparkles' },
