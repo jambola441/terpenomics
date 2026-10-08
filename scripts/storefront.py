@@ -467,6 +467,25 @@ def _validate_source(src: dict, kind: str, bad) -> None:
         bad(f"source.fields: unknown fields {sorted(unknown)} (fields: id, {', '.join(FIELDS)})")
 
 
+def _pack_size_slip(size: str | None, rule: dict) -> str | None:
+    """A rule size written per piece where a package total is meant. A label reads as
+    the total ("4pk 3g" is four 0.75g joints), so "4pk 0.75g" is a 0.75g pack of four,
+    and "20pk 5mg" a 5mg tin of twenty: MFNY's and Nanticoke's recipes said so once,
+    from before labels read that way, and a push would have written those totals."""
+    if not size:
+        return None
+    category = (rule.get("set") or {}).get("category") \
+        or re.sub(r"[^a-z]", "", ((rule.get("when") or {}).get("category") or "").lower()) or None
+    s = sizes.parse(size, category=category)
+    if not s.pack or s.pack < 2:
+        return None
+    if s.grams is not None and s.grams / s.pack < 0.3:
+        return f'"{size}" reads as {s.grams:g}g for all {s.pack}; write the package total'
+    if s.mg is not None and s.mg / s.pack < 1:
+        return f'"{size}" reads as {s.mg:g}mg for all {s.pack}; write the package total'
+    return None
+
+
 def validate(recipe: dict, where: str = "recipe") -> dict:
     """Fail on load, naming the rule, rather than half-way through a fetch."""
     def bad(msg):
@@ -516,6 +535,10 @@ def validate(recipe: dict, where: str = "recipe") -> dict:
         cat = (rule.get("set") or {}).get("category")
         if cat not in taxonomy.SPECS:
             bad(f"category[{i}]: category {cat!r} is not one of {sorted(taxonomy.SPECS)}")
+    for section in ("category", "title"):
+        for i, rule in enumerate(recipe.get(section) or []):
+            if (why := _pack_size_slip((rule.get("set") or {}).get("size"), rule)):
+                bad(f"{section}[{i}].set.size: {why}")
     for i, rule in enumerate(recipe.get("title") or []):
         patterns = {"match": rule.get("match") or "",
                     **{f"extract.{f}": p for f, p in (rule.get("extract") or {}).items()}}
