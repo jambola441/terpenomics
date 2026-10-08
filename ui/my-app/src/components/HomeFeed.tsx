@@ -68,29 +68,43 @@ export default function HomeFeed({ onOpenListing, onOpenDispensary, onOpenProduc
   const scrollRef = useRef<HTMLDivElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [picking, setPicking] = useState(false)
+  // Bumped when the shopper follows or unfollows, so the feed is rebuilt for
+  // the new set of stores.
+  const [followVersion, setFollowVersion] = useState(0)
+  const firstLoadDone = useRef(false)
 
-  useEffect(() => {
-    api.me.listPreferredDispensaries()
-      .then(setPreferred)
-      .catch(() => setError('Could not load your stores.'))
-  }, [])
-
+  // The feed names every store the shopper follows, so the first load takes it
+  // alone instead of asking for the stores first and the feed after: one round
+  // trip before Home shows anything, not two.
+  //
   // Refetch on filter or view change rather than reshaping client-side: each
   // rail is ranked and capped server-side, so a category filtered here would
   // leave whatever survived out of eight rows instead of its own eight.
   useEffect(() => {
-    if (!preferred) return
-    if (preferred.length === 0) {
-      setFeed(null)
-      return
-    }
+    // While the picker is open the feed would only be thrown away; it is
+    // fetched once, for the final set of stores, when the shopper taps Done.
+    if (picking) return
     let live = true
     setFeed(null)
+    setError(null)
     api.me.getFeed({ view, per_rail: PER_RAIL, category: category ?? undefined })
-      .then(res => { if (live) setFeed(res) })
+      .then(res => {
+        if (!live) return
+        setFeed(res)
+        setPreferred(res.dispensaries)
+        // Nobody followed yet: open the picker in its "pick a few, then Done"
+        // mode, rather than closing it after the first Follow.
+        if (!firstLoadDone.current && res.dispensaries.length === 0) setPicking(true)
+        firstLoadDone.current = true
+      })
       .catch(() => { if (live) setError('Could not load your feed.') })
     return () => { live = false }
-  }, [preferred, view, category])
+  }, [view, category, followVersion, picking])
+
+  function changeFollowed(next: PortalDispensary[]) {
+    setPreferred(next)
+    setFollowVersion(v => v + 1)
+  }
 
   // Which categories the followed stores actually carry — a filter offering
   // something none of them stock is a dead end.
@@ -136,7 +150,7 @@ export default function HomeFeed({ onOpenListing, onOpenDispensary, onOpenProduc
     return (
       <StorePicker
         preferred={preferred}
-        onChange={setPreferred}
+        onChange={changeFollowed}
         onDone={picking ? () => setPicking(false) : undefined}
       />
     )
@@ -612,7 +626,7 @@ function StorePicker({ preferred, onChange, onDone }: {
   return (
     <div style={{ height: 'calc(100dvh - 64px)', overflowY: 'auto', background: t.bg }}>
       <div style={{ padding: '26px 16px 6px' }}>
-        <PageTitle>{onDone ? 'Your stores' : 'Pick your stores'}</PageTitle>
+        <PageTitle>{preferred.length === 0 ? 'Pick your stores' : 'Your stores'}</PageTitle>
         <div style={{ color: t.text2, fontSize: font.size.body, marginTop: 8, lineHeight: 1.55, maxWidth: 420 }}>
           Your home feed is built from the stores you follow. Pick the ones you actually shop at —
           you can change this any time.

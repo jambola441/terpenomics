@@ -21,3 +21,14 @@ os.environ["SUPABASE_SERVICE_ROLE_KEY"] = "test-service-key"
 
 def pytest_configure(config):
     config.addinivalue_line("markers", "live: makes real HTTP requests to dispensary APIs")
+
+
+@pytest.fixture(autouse=True)
+def _fresh_response_cache():
+    """Catalogue answers are cached in-process (services/response_cache.py);
+    each test builds its own data, so each starts with nothing cached."""
+    from services import response_cache
+
+    response_cache.clear()
+    yield
+    response_cache.clear()

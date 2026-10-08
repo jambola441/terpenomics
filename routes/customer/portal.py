@@ -15,6 +15,7 @@ from models import (
 from routes.admin.serializers import serialize_purchase_item
 from services.display_name import compose as compose_display_name
 from services.market import context_for, context_or_empty
+from services.response_cache import cached_json
 
 router = APIRouter()
 
@@ -98,6 +99,16 @@ def get_portal_brand(
     session: Session = Depends(get_session),
     in_stock: bool = Query(default=True),
 ):
+    # The same for every shopper until the scrapers run: kept for a few minutes
+    # (services/response_cache.py).
+    return cached_json(
+        ("brand", brand_name, in_stock),
+        lambda s: _build_portal_brand(s, brand_name, in_stock),
+        session,
+    )
+
+
+def _build_portal_brand(session: Session, brand_name: str, in_stock: bool) -> dict:
     stmt = (
         select(Listing, Dispensary)
         .join(Dispensary, Dispensary.id == Listing.dispensary_id)
@@ -331,6 +342,17 @@ def get_portal_category(
     session: Session = Depends(get_session),
     in_stock: bool = Query(default=True),
 ):
+    # Every listing in the category goes into this answer (2-2.7 s in
+    # production), and it is the same for every shopper until the scrapers run,
+    # so it is kept for a few minutes (services/response_cache.py).
+    return cached_json(
+        ("category", category_name, in_stock),
+        lambda s: _build_portal_category(s, category_name, in_stock),
+        session,
+    )
+
+
+def _build_portal_category(session: Session, category_name: str, in_stock: bool) -> dict:
     stmt = (
         select(
             Listing.id, Listing.scraped_brand, Listing.scraped_category, Listing.subtype,

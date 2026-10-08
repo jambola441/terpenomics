@@ -80,6 +80,8 @@ export default function SearchView({ initialCategory, onOpenProduct }: Props) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [truncated, setTruncated] = useState(false)
+  // Later pages still arriving after the first is on screen.
+  const [loadingMore, setLoadingMore] = useState(false)
 
   // Seeded from the URL so returning from a product restores the search the
   // shopper left, rather than an empty one.
@@ -127,10 +129,12 @@ export default function SearchView({ initialCategory, onOpenProduct }: Props) {
   }, [input])
 
   // Page through the matches so the client-side facet counts describe the whole
-  // result set, not just the first slice.
+  // result set, not just the first slice. The first page goes on screen as soon
+  // as it lands and the rest join it as they arrive; waiting for all of them
+  // (up to five round trips) used to hold the skeleton for seconds.
   useEffect(() => {
     let cancelled = false
-    setLoading(true); setError(null); setTruncated(false)
+    setLoading(true); setLoadingMore(false); setError(null); setTruncated(false)
     if (previousQuery.current !== query) {
       previousQuery.current = query
       scrollRef.current?.scrollTo({ top: 0 })
@@ -143,15 +147,19 @@ export default function SearchView({ initialCategory, onOpenProduct }: Props) {
           const page = await api.portal.getProducts({ q: query || undefined, limit: PAGE, offset })
           if (cancelled) return
           acc.push(...page)
-          if (page.length < PAGE) break
+          const more = page.length === PAGE && acc.length < MAX_ROWS
+          setRows([...acc])
+          setLoading(false)
+          setLoadingMore(more)
+          if (!more) break
         }
         if (cancelled) return
-        setRows(acc)
         setTruncated(acc.length >= MAX_ROWS)
       } catch {
-        if (!cancelled) setError('Failed to load products')
-      } finally {
-        if (!cancelled) setLoading(false)
+        if (cancelled) return
+        // A later page failing still leaves the first ones worth showing.
+        if (acc.length) setLoadingMore(false)
+        else { setError('Failed to load products'); setLoading(false) }
       }
     })()
 
@@ -370,6 +378,7 @@ export default function SearchView({ initialCategory, onOpenProduct }: Props) {
             <span style={{ color: t.text2, fontSize: font.size.small + 1, fontWeight: font.weight.medium }}>
               {sorted.length} {sorted.length === 1 ? 'product' : 'products'}
               {sorted.length !== rows.length && <span style={{ color: t.text4 }}> of {rows.length}</span>}
+              {loadingMore && <span style={{ color: t.text4 }}> · loading more…</span>}
             </span>
             {truncated && (
               <span style={{ color: t.text3, fontSize: font.size.caption }}>refine to see more</span>
