@@ -1,0 +1,185 @@
+{
+  "brand": "Fernway",
+  "site": "https://fernway.com",
+  "source": {
+    "kind": "html",
+    "urls": [
+      "https://fernway.com/product/alpine-strawberry-510-cartridge/#1.0g",
+      "https://fernway.com/product/alpine-strawberry-traveler-pro-vape/#1.0g",
+      "https://fernway.com/product/alpine-strawberry-traveler-pro-vape/#2.0g",
+      "https://fernway.com/product/alpine-strawberry-traveler-vape/#0.3g",
+      "https://fernway.com/product/alpine-strawberry-traveler-vape/#1.0g",
+      "https://fernway.com/product/americano-vape-cartridge/#1.0g",
+      "https://fernway.com/product/banana-bread-traveler-pro-vape/#2.0g",
+      "https://fernway.com/product/banana-bread-vape-cartridge/#1.0g",
+      "https://fernway.com/product/berry-haze-510-cartridge/#1.0g",
+      "https://fernway.com/product/berry-haze-traveler-pro-vape/#0.5g",
+      "https://fernway.com/product/berry-haze-traveler-pro-vape/#2.0g",
+      "https://fernway.com/product/black-magic-live-traveler-pro-vape/#1.0g",
+      "https://fernway.com/product/blue-dream-live-510-vape-cartridge/#1.0g",
+      "https://fernway.com/product/champagne-kush-traveler-pro-vape/#2.0g",
+      "https://fernway.com/product/cuban-black-haze-traveler-pro-vape/#1.0g",
+      "https://fernway.com/product/cuban-black-haze-traveler-vape/#1.0g",
+      "https://fernway.com/product/elderflower-traveler-pro-vape/#2.0g",
+      "https://fernway.com/product/elderflower-vape-cartridge/#1.0g",
+      "https://fernway.com/product/gg4-510-cartridge/#1.0g",
+      "https://fernway.com/product/glass-slipper-live-traveler-pro-vape/#1.0g",
+      "https://fernway.com/product/granddaddy-purple-traveler-pro-vape/#1.0g",
+      "https://fernway.com/product/granddaddy-purple-traveler-vape/#1.0g",
+      "https://fernway.com/product/headband-traveler-vape/#1.0g",
+      "https://fernway.com/product/honeycrisp-traveler-pro-vape/#2.0g",
+      "https://fernway.com/product/honeycrisp-traveler-vape/#1.0g",
+      "https://fernway.com/product/jack-herer-live-traveler-pro-vape/#1.0g",
+      "https://fernway.com/product/key-lime-traveler-pro-vape/#2.0g",
+      "https://fernway.com/product/king-louie-traveler-vape/#1.0g",
+      "https://fernway.com/product/lava-cake-510-cartridge/#1.0g",
+      "https://fernway.com/product/mandarin-orange-510-cartridge/#1.0g",
+      "https://fernway.com/product/mandarin-orange-traveler-pro-vape/#2.0g",
+      "https://fernway.com/product/mandarin-orange-traveler-vape/#0.3g",
+      "https://fernway.com/product/mandarin-orange-traveler-vape/#1.0g",
+      "https://fernway.com/product/mango-510-cartridge/#1.0g",
+      "https://fernway.com/product/mochi-live-traveler-pro-vape/#1.0g",
+      "https://fernway.com/product/mountain-girl-510-cartridge/#1.0g",
+      "https://fernway.com/product/night-cap-510-cartridge/#1.0g",
+      "https://fernway.com/product/pickle-traveler-pro-vape/#1.0g",
+      "https://fernway.com/product/pineapple-express-traveler-pro-vape/#1.0g",
+      "https://fernway.com/product/pineapple-express-traveler-vape/#1.0g",
+      "https://fernway.com/product/pineapple-funk-traveler-pro-vape/#2.0g",
+      "https://fernway.com/product/pumpkin-spice-traveler-pro-vape/#1.0g",
+      "https://fernway.com/product/purple-sunset-live-traveler-pro-vape/#1.0g",
+      "https://fernway.com/product/red-headed-stranger-510-cartridge/#1.0g",
+      "https://fernway.com/product/red-headed-stranger-traveler-pro-vape/#2.0g",
+      "https://fernway.com/product/red-headed-stranger-traveler-vape/#0.3g",
+      "https://fernway.com/product/snow-dog-traveler-pro-vape/#2.0g",
+      "https://fernway.com/product/sour-diesel-traveler-pro-vape/#0.5g",
+      "https://fernway.com/product/sour-diesel-traveler-pro-vape/#1.0g",
+      "https://fernway.com/product/sour-diesel-traveler-vape/#1.0g",
+      "https://fernway.com/product/space-queen-510-cartridge/#1.0g",
+      "https://fernway.com/product/space-queen-traveler-pro-vape/#2.0g",
+      "https://fernway.com/product/space-queen-traveler-vape/#1.0g",
+      "https://fernway.com/product/stonefruit-510-cartridge/#1.0g",
+      "https://fernway.com/product/stonefruit-traveler-pro-vape/#2.0g",
+      "https://fernway.com/product/tahoe-og-510-cartridge/#1.0g",
+      "https://fernway.com/product/wedding-cake-live-510-cartridge/#1.0g",
+      "https://fernway.com/product/white-widow-510-vape-cartridge/#1.0g",
+      "https://fernway.com/product/white-widow-traveler-pro-vape/#2.0g",
+      "https://fernway.com/product/white-widow-traveler-vape/#1.0g",
+      "https://fernway.com/product/wintermelon-traveler-pro-vape/#2.0g"
+    ],
+    "fields": {
+      "title": "h1.product-title",
+      "url": "link[rel=canonical]@href",
+      "body": ".product-description p:-soup-contains(\"Available in\") ~ p"
+    }
+  },
+  "learned": "2026-10-08, by hand: fernway.com/vapes/ lists 71 vape pages (WordPress cp_product, not in the REST API, no Store API). Each product page says which sizes it comes in per state under 'Available in:'. 61 New York product-size pairs.",
+  "notes": [
+    "No machine-readable list: /wp-json/wc/store/v1 is absent, cp_product is not in wp/v2, /wp-json/fernway/v1/products is 401 (do not touch fernway/v1). The grid at /vapes/ has no state or size facet. The only place sizes by state are written is the 'Available in:' block of each product page: '<p><b>NY</b>: 1.0g Traveler PRO, 2.0g Traveler PRO</p>', then a 'Coming Soon to:' block for states not yet shipping.",
+    "A page is one item, but a product comes in several sizes, so `urls` holds one entry per product and NY size: the page with '#<size>' on the end. The fragment is not sent to the server; it only lets the rules tell the items apart (extract reads the size from `page`). The skip rules check that size is still in the NY line before 'Coming Soon', so a size the site drops falls out by itself. A NEW product or a NEW NY size on the site needs a new url: regenerate the list from https://fernway.com/vapes/ (71 /product/<slug>/ links) and each page's NY line. 'Coming Soon' NY sizes are left out until they move up to 'Available in' (2026-10-08: Cranberry Jam cart and Pro, Pineapple Express and Sour Diesel Traveler 0.3g).",
+    "Families: 'Traveler' (0.3g and 1.0g all-in-one) and 'Traveler PRO' (0.5g, 1.0g, 2.0g all-in-one) are the brand's named families and the line; the 510 cartridge is a format with no line. '(LIVE)' in a title is live resin, an extract, so it is left out of the strain and is not a line (the site also has a LIVE category).",
+    "Titles: 'X Vape Cartridge', 'X 510 Cartridge Vape', 'X (LIVE) 510 Vape Cartridge', 'X Traveler Vape', 'X Traveler Pro|PRO Vape'. The STYLUS/merch item on the vapes page and the pages with no NY line are not in `urls`.",
+    "Stores name the same products by the site's collections or by shorthand: 'Flavor Line', 'Strain Collection' and 'LIVE' (the site's own collections, shown on /vapes/; they cut across Traveler, Traveler PRO and cartridge, so they are not the entry's line), 'Pro' and 'LIVE Pro' (Traveler PRO). store_aliases map those store lines to the site's. The site's 'GG4' cartridge may be what stores call Gorilla Glue (Florist Farms renamed theirs); no store lists either for Fernway yet, so no alias."
+  ],
+  "skip": [
+    {
+      "when": {
+        "body": "(?s)^(?!(?:(?!Coming Soon).)*\\bNY :)"
+      },
+      "why": "not available in New York"
+    },
+    {
+      "when": {
+        "page": "#0\\.3g$",
+        "body": "(?s)^(?!(?:(?!Coming Soon).)*\\bNY : [^|]*(?<![\\d.])0\\.3g)"
+      },
+      "why": "0.3g is not in the NY line under 'Available in' (not offered in New York, or only 'Coming Soon')"
+    },
+    {
+      "when": {
+        "page": "#0\\.5g$",
+        "body": "(?s)^(?!(?:(?!Coming Soon).)*\\bNY : [^|]*(?<![\\d.])0\\.5g)"
+      },
+      "why": "0.5g is not in the NY line under 'Available in' (not offered in New York, or only 'Coming Soon')"
+    },
+    {
+      "when": {
+        "page": "#1\\.0g$",
+        "body": "(?s)^(?!(?:(?!Coming Soon).)*\\bNY : [^|]*(?<![\\d.])1\\.0g)"
+      },
+      "why": "1.0g is not in the NY line under 'Available in' (not offered in New York, or only 'Coming Soon')"
+    },
+    {
+      "when": {
+        "page": "#2\\.0g$",
+        "body": "(?s)^(?!(?:(?!Coming Soon).)*\\bNY : [^|]*(?<![\\d.])2\\.0g)"
+      },
+      "why": "2.0g is not in the NY line under 'Available in' (not offered in New York, or only 'Coming Soon')"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "title": "(?i)\\btraveler\\b"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "all-in-one"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\bcartridge\\b"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "cart"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "title": "(?i)traveler\\s+pro"
+      },
+      "match": "(?i)^(?P<strain>.+?)(?:\\s+\\(LIVE\\))?\\s+Traveler\\s+Pro\\s+Vape$",
+      "extract": {
+        "page": "#(?P<size>\\d\\.\\dg)$"
+      },
+      "set": {
+        "line": "Traveler Pro"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "title": "(?i)traveler"
+      },
+      "match": "(?i)^(?P<strain>.+?)(?:\\s+\\(LIVE\\))?\\s+Traveler\\s+Vape$",
+      "extract": {
+        "page": "#(?P<size>\\d\\.\\dg)$"
+      },
+      "set": {
+        "line": "Traveler"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$"
+      },
+      "match": "(?i)^(?P<strain>.+?)(?:\\s+\\(LIVE\\))?\\s+(?:510\\s+)?(?:Vape\\s+Cartridge|Cartridge\\s+Vape)$",
+      "extract": {
+        "page": "#(?P<size>\\d\\.\\dg)$"
+      }
+    }
+  ],
+  "store_aliases": {
+    "lines": {
+      "Pro": "Traveler Pro",
+      "LIVE Pro": "Traveler Pro",
+      "Flavor Line": "",
+      "Strain Collection": "",
+      "LIVE": ""
+    }
+  }
+}
