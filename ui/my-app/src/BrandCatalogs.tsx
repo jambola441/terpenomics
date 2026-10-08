@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { AdminTable, badge, navBtnStyle, Dash, type Column, primaryBtnStyle } from './components/AdminTable'
 import api from './api/client'
 import type { BrandCatalogRow, CatalogExportStatus } from './types'
-import { t, font } from './theme'
+import { t, font, tone } from './theme'
 import { Icon } from './components/Icon'
 
 /**
@@ -20,6 +20,7 @@ export default function BrandCatalogs() {
   const [catalogs, setCatalogs] = useState<BrandCatalogRow[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [origin, setOrigin] = useState<CatalogOrigin | 'all'>('all')
 
   useEffect(() => { load() }, [])
 
@@ -38,7 +39,7 @@ export default function BrandCatalogs() {
   const columns: Column<BrandCatalogRow>[] = [
     { key: 'brand', header: 'Brand', td: { color: t.text1, fontWeight: 500 }, render: c => c.brand_name },
     { key: 'slug', header: 'Slug', td: { color: t.text3, fontFamily: font.family.mono }, render: c => c.brand_slug },
-    { key: 'source', header: 'Source', td: { color: t.text2, fontSize: 12 }, render: c => c.source_method },
+    { key: 'source', header: 'Built from', render: c => <OriginBadge catalog={c} /> },
     {
       key: 'entries', header: 'Entries', align: 'right',
       render: c => (
@@ -62,6 +63,9 @@ export default function BrandCatalogs() {
   ]
 
   const stale = catalogs.filter(c => !c.export.in_sync).length
+  const counts = { site: 0, stores: 0, manual: 0 }
+  catalogs.forEach(c => { counts[catalogOrigin(c.source_method)] += 1 })
+  const shown = origin === 'all' ? catalogs : catalogs.filter(c => catalogOrigin(c.source_method) === origin)
 
   return (
     <div style={{ padding: 24, background: t.bg, minHeight: '100vh', color: t.text1 }}>
@@ -91,6 +95,24 @@ export default function BrandCatalogs() {
           )}
         </div>
 
+        {catalogs.length > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, fontSize: 12 }}>
+            <span style={{ color: t.text3, fontFamily: font.family.mono, textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: 11 }}>Built from</span>
+            {(['all', 'site', 'stores', 'manual'] as const).map(o => (
+              <button
+                key={o}
+                onClick={() => setOrigin(o)}
+                style={{
+                  ...navBtnStyle, fontSize: 12, padding: '3px 10px',
+                  ...(origin === o ? { color: t.accent, borderColor: t.accentDim, background: t.accentTint } : {}),
+                }}
+              >
+                {o === 'all' ? `All ${catalogs.length}` : `${ORIGIN_LABEL[o]} ${counts[o]}`}
+              </button>
+            ))}
+          </div>
+        )}
+
         {error && <div style={{ color: t.danger, marginBottom: 16 }}>Error: {error}</div>}
 
         {loading ? (
@@ -104,7 +126,7 @@ export default function BrandCatalogs() {
         ) : (
           <AdminTable
             columns={columns}
-            rows={catalogs}
+            rows={shown}
             rowKey={c => c.id}
             onRowClick={c => navigate(`/admin/brand-catalogs/${c.id}`)}
           />
@@ -135,4 +157,47 @@ export function ExportBadge({ status }: { status: CatalogExportStatus }) {
       stale {parts.length ? parts.join(' ') : 'meta'}
     </span>
   )
+}
+
+/**
+ * Where a catalog's entries came from. "site": read from the brand's own product
+ * list by a recipe (scripts/storefront.py), so it has every product and size the brand
+ * lists. "stores": the bootstrap built it from store listings (catalog_bootstrap.py),
+ * and keeps a product in a size only when two or more stores list it, so a size or a
+ * new strain one store carries is missing. "manual": started by hand here.
+ */
+export type CatalogOrigin = 'site' | 'stores' | 'manual'
+
+const ORIGIN_LABEL: Record<CatalogOrigin, string> = { site: 'Brand site', stores: 'Store-built', manual: 'Manual' }
+
+export function catalogOrigin(method: string): CatalogOrigin {
+  if (method === 'listings_bootstrap') return 'stores'
+  if (!method || method === 'manual') return 'manual'
+  return 'site'
+}
+
+export function OriginBadge({ catalog }: { catalog: Pick<BrandCatalogRow, 'source_method' | 'source_url'> }) {
+  const origin = catalogOrigin(catalog.source_method)
+  const tn = tone[origin === 'site' ? 'success' : origin === 'stores' ? 'warning' : 'neutral']
+  const style = { background: tn.bg, color: tn.fg }
+  const label = <span style={{ ...badge, ...style }} title={catalog.source_method}>{ORIGIN_LABEL[origin]}</span>
+  if (origin === 'site' && catalog.source_url) {
+    let host = catalog.source_url
+    try { host = new URL(catalog.source_url).host } catch { /* keep the raw url */ }
+    return (
+      <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+        {label}
+        <a
+          href={catalog.source_url}
+          target="_blank"
+          rel="noreferrer"
+          onClick={e => e.stopPropagation()}
+          style={{ color: t.text3, fontFamily: font.family.mono, fontSize: 11 }}
+        >
+          {host}
+        </a>
+      </span>
+    )
+  }
+  return label
 }
