@@ -543,12 +543,12 @@ export default function BrandCatalogEdit() {
                   </button>
                 )}
               </form>
-              <select value={category} onChange={e => setCategory(e.target.value)} style={selectStyle}>
+              <select aria-label="Category" value={category} onChange={e => setCategory(e.target.value)} style={selectStyle}>
                 <option value="">All categories</option>
                 {categories.map(c => <option key={c} value={c}>{c}</option>)}
                 <option value="__null__">(uncategorised)</option>
               </select>
-              <select value={status} onChange={e => setStatus(e.target.value)} style={selectStyle}>
+              <select aria-label="Status" value={status} onChange={e => setStatus(e.target.value)} style={selectStyle}>
                 <option value="active">Active</option>
                 <option value="inactive">Removed</option>
                 <option value="all">All</option>

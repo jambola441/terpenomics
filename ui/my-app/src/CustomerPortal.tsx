@@ -26,6 +26,7 @@ import SearchView from './components/SearchView'
 import ListingDetailView from './components/ListingDetail'
 import ProfileView from './components/ProfileView'
 import CartDrawer from './components/CartDrawer'
+import ConfirmSheet from './components/ConfirmSheet'
 import OnboardingScreen from './components/OnboardingScreen'
 import type { CartItem, CustomerProfile, Order } from './types'
 import type { Session } from '@supabase/auth-js'
@@ -200,10 +201,20 @@ export default function CustomerPortal() {
   const [cart, setCart] = useState<CartItem[]>([])
   const [cartOwner, setCartOwner] = useState<string | null>(null)
   const [cartOpen, setCartOpen] = useState(false)
+  // An item from a second store, waiting on "start a new cart?".
+  const [pendingSwitch, setPendingSwitch] = useState<{ item: CartItem; from: string } | null>(null)
+  // A short line over the cart bar ("up to 12 of one item"), gone on its own.
+  const [notice, setNotice] = useState<string | null>(null)
+  useEffect(() => {
+    if (!notice) return
+    const id = setTimeout(() => setNotice(null), 3500)
+    return () => clearTimeout(id)
+  }, [notice])
 
   const [orders, setOrders] = useState<Order[]>([])
   const [ordersLoading, setOrdersLoading] = useState(true)
   const [ordersError, setOrdersError] = useState<string | null>(null)
+  const [ordersAttempt, setOrdersAttempt] = useState(0)
   const [cancellingIds, setCancellingIds] = useState<Set<string>>(new Set())
   // Per order: a failed cancel is that order's problem, and must not hide the
   // others' pickup codes.
@@ -251,12 +262,13 @@ export default function CustomerPortal() {
     if (!userId) return
     let cancelled = false
     setOrdersLoading(true)
+    setOrdersError(null)
     api.orders.list()
       .then(list => { if (!cancelled) { setOrders(list); setOrdersError(null) } })
       .catch(() => { if (!cancelled) setOrdersError('Could not load your orders.') })
       .finally(() => { if (!cancelled) setOrdersLoading(false) })
     return () => { cancelled = true }
-  }, [userId])
+  }, [userId, ordersAttempt])
 
   async function handleCancelOrder(orderId: string) {
     setCancellingIds(prev => new Set(prev).add(orderId))
@@ -300,18 +312,15 @@ export default function CustomerPortal() {
   function handleAddToCart(item: CartItem): boolean {
     const other = cart.find(i => i.dispensaryId !== item.dispensaryId)
     if (other) {
-      const fresh = confirm(
-        `Your cart has items from ${other.dispensaryName}. An order can only be picked up from one store.\n\n`
-        + `Empty your cart and add this from ${item.dispensaryName} instead?`,
-      )
-      if (!fresh) return false
-      setCart([{ ...item, quantity: 1 }])
-      return true
+      // Asked in a sheet with labelled answers; the item goes in only if the
+      // shopper says to start over.
+      setPendingSwitch({ item, from: other.dispensaryName })
+      return false
     }
 
     const existing = cart.find(i => i.listingId === item.listingId)
     if (existing && existing.quantity >= MAX_QTY_PER_LINE) {
-      alert(`You can reserve up to ${MAX_QTY_PER_LINE} of one item per order.`)
+      setNotice(`You can reserve up to ${MAX_QTY_PER_LINE} of one item per order.`)
       return false
     }
 
@@ -392,19 +401,21 @@ export default function CustomerPortal() {
 
   const cartCount = cart.reduce((sum, i) => sum + i.quantity, 0)
   const cartBarShown = cartCount > 0 && !cartOpen
-  // How far up from the bottom the fixed bars reach, for screens that pin
-  // things to the bottom (the map's sheets, the store page). Without the cart
-  // bar, sheets keep sitting just over the nav's top edge, as they always have;
-  // with it, they move above it rather than under it.
+  // Where screens end, so the fixed bars at the bottom never cover what's on
+  // them: every section sizes itself to this, and the map's sheets sit on it.
+  // Without the cart bar it's the old 64px, just over the nav's top edge; with
+  // it, everything moves above the cart bar rather than under it. Both include
+  // the home-indicator inset on a home-screen install.
   const shellStyle = {
     position: 'fixed', inset: 0, background: t.bg, overflow: 'hidden',
-    '--chrome-bottom': cartBarShown ? '138px' : '64px',
+    '--chrome-bottom': `calc(${cartBarShown ? 138 : 64}px + env(safe-area-inset-bottom, 0px))`,
   } as CSSProperties
 
   return (
     <div style={shellStyle}>
       {/* A product or a listing opens over whichever section the shopper is in;
           otherwise the section decides. */}
+      <main>
       {selectedListingId && selectedListingDispensaryId ? (
         <ListingDetailView
           dispensaryId={selectedListingDispensaryId}
@@ -469,11 +480,13 @@ export default function CustomerPortal() {
           ordersLoading={ordersLoading}
           ordersError={ordersError}
           onCancelOrder={handleCancelOrder}
+          onRetryOrders={() => setOrdersAttempt(n => n + 1)}
           cancellingIds={cancellingIds}
           cancelErrors={cancelErrors}
           onSignOut={handleSignOut}
         />
       )}
+      </main>
 
       <CartDrawer
         items={cart}
@@ -498,7 +511,7 @@ export default function CustomerPortal() {
         <button
           onClick={() => setCartOpen(true)}
           style={{
-            position: 'fixed', bottom: 84, left: 12, right: 12, height: 46,
+            position: 'fixed', bottom: 'calc(84px + env(safe-area-inset-bottom, 0px))', left: 12, right: 12, height: 46,
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             background: t.accent, border: 'none', borderRadius: radius.lg,
             color: t.accentInk, fontWeight: font.weight.bold, fontSize: font.size.callout,
@@ -516,9 +529,37 @@ export default function CustomerPortal() {
         </button>
       )}
 
+      {notice && (
+        <div role="status" style={{
+          position: 'fixed', left: 16, right: 16, zIndex: 2150,
+          bottom: `calc(${cartBarShown ? 142 : 88}px + env(safe-area-inset-bottom, 0px))`,
+          background: t.surface3, border: `1px solid ${t.borderStrong}`, borderRadius: radius.md,
+          color: t.text1, fontSize: font.size.body, padding: '10px 14px', boxShadow: 'var(--e-3)',
+          animation: 'ds-fade-in 0.2s ease',
+        }}>
+          {notice}
+        </div>
+      )}
+
+      <ConfirmSheet
+        open={pendingSwitch !== null}
+        title="Start a new cart?"
+        confirmLabel="Start new cart"
+        cancelLabel="Keep my cart"
+        onConfirm={() => {
+          if (pendingSwitch) setCart([{ ...pendingSwitch.item, quantity: 1 }])
+          setPendingSwitch(null)
+          setNotice('Cart started at the new store.')
+        }}
+        onCancel={() => setPendingSwitch(null)}
+      >
+        Your cart has items from {pendingSwitch?.from}. An order is picked up at one store, so adding
+        this from {pendingSwitch?.item.dispensaryName} empties your cart first.
+      </ConfirmSheet>
+
       {/* Floating bottom nav */}
       <nav style={{
-        position: 'fixed', bottom: 16, left: 12, right: 12, height: 60,
+        position: 'fixed', bottom: 'calc(16px + env(safe-area-inset-bottom, 0px))', left: 12, right: 12, height: 60,
         background: 'rgba(19, 23, 20, 0.88)',
         backdropFilter: 'blur(20px) saturate(140%)', WebkitBackdropFilter: 'blur(20px) saturate(140%)',
         borderRadius: radius.xl, border: `1px solid ${t.border}`,

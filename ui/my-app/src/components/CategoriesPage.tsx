@@ -20,17 +20,20 @@ interface Props {
 export default function CategoriesPage({ onOpenCategory }: Props) {
   const [categories, setCategories] = useState<PortalCategory[] | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // Bumped by Try again to rerun the load below.
+  const [attempt, setAttempt] = useState(0)
 
   useEffect(() => {
+    setError(null)
     api.portal.getCategories()
       .then(setCategories)
       .catch(() => setError('Could not load categories.'))
-  }, [])
+  }, [attempt])
 
   if (error) {
     return (
       <div style={{ height: '100dvh', background: t.bg }}>
-        <FeedState kind="error" message={error} style={{ height: '100%' }} />
+        <FeedState kind="error" message={error} style={{ height: '100%' }} onRetry={() => setAttempt(n => n + 1)} />
       </div>
     )
   }
@@ -38,9 +41,9 @@ export default function CategoriesPage({ onOpenCategory }: Props) {
   const total = categories?.reduce((sum, c) => sum + c.listing_count, 0) ?? 0
 
   return (
-    <div style={{ height: 'calc(100dvh - 64px)', overflowY: 'auto', background: t.bg }}>
+    <div style={{ height: 'calc(100dvh - var(--chrome-bottom, 64px))', overflowY: 'auto', background: t.bg }}>
       <PageTitle
-        style={{ padding: '26px 16px 6px' }}
+        style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 26px) 16px 6px' }}
         sub={categories === null
           ? 'Shop by what you’re after'
           : `${total.toLocaleString()} listings across ${categories.length} categories`}

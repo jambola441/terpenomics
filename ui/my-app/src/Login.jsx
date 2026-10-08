@@ -336,7 +336,7 @@ function SignIn({ audience }) {
   if (signedIn === null) return <div style={{ minHeight: '100vh', background: t.bg }} />
 
   return (
-    <div style={{
+    <main style={{
       minHeight: '100vh',
       background: t.bg,
       display: 'flex',
@@ -361,7 +361,7 @@ function SignIn({ audience }) {
 
         {step === 'send' ? (
           <>
-            <h2 style={headingStyle}>{staff ? 'Staff sign-in' : 'Sign in'}</h2>
+            <h1 style={headingStyle}>{staff ? 'Staff sign-in' : 'Sign in'}</h1>
             <p style={subheadStyle}>
               {channel === 'sms'
                 ? "Enter your mobile number and we'll text you a one-time code."
@@ -447,9 +447,9 @@ function SignIn({ audience }) {
           </>
         ) : (
           <>
-            <h2 style={headingStyle}>
+            <h1 style={headingStyle}>
               {channel === 'sms' ? 'Check your texts' : 'Check your email'}
-            </h2>
+            </h1>
             <p style={subheadStyle}>
               We sent a 6-digit code to{' '}
               <span style={{ color: t.text1, fontWeight: 500 }}>
@@ -468,6 +468,7 @@ function SignIn({ audience }) {
                 maxLength={8}
                 autoFocus
                 required
+                data-large
                 style={{ ...inputStyle, letterSpacing: '0.3em', fontSize: 22, textAlign: 'center' }}
               />
               <button type="submit" disabled={loading} style={btnStyle(loading)}>
@@ -518,7 +519,7 @@ function SignIn({ audience }) {
           <Link to="/privacy" style={{ color: 'inherit' }}>Privacy</Link>
         </p>
       </div>
-    </div>
+    </main>
   )
 }
 

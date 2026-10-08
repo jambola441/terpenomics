@@ -120,6 +120,9 @@ export default function AisleView({
 
   // Load the whole aisle once (paginated; API caps limit at 100), then
   // filter/sort/facet entirely on the client for instant UX.
+  // Bumped by Try again to rerun the load below.
+  const [attempt, setAttempt] = useState(0)
+
   useEffect(() => {
     let cancelled = false
     setLoading(true); setError(null); setAll([])
@@ -152,7 +155,7 @@ export default function AisleView({
     })()
 
     return () => { cancelled = true }
-  }, [dispensaryId, category])
+  }, [dispensaryId, category, attempt])
 
   const filters: Filters = { search: search.trim().toLowerCase(), brand, subtype, variant, price }
 
@@ -251,7 +254,7 @@ export default function AisleView({
     const cartQty = cart.filter(i => i.listingId === l.id).reduce((s, i) => s + i.quantity, 0)
     return (
       <button
-        aria-label="Add to cart"
+        aria-label={cartQty > 0 ? `Add another ${l.display_name}, ${cartQty} in cart` : `Add ${l.display_name} to cart`}
         onClick={e => {
           e.stopPropagation()
           onAddToCart({
@@ -262,7 +265,7 @@ export default function AisleView({
           })
         }}
         style={{
-          width: 34, height: 34, borderRadius: '50%',
+          width: 36, height: 36, borderRadius: '50%',
           background: cartQty > 0 ? t.bg : t.accent,
           border: cartQty > 0 ? `1.5px solid ${t.accent}` : 'none', padding: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -278,7 +281,7 @@ export default function AisleView({
   }
 
   return (
-    <div ref={scrollRef} style={{ height: 'calc(100dvh - 64px)', overflowY: 'auto', background: t.bg }}>
+    <div ref={scrollRef} style={{ height: 'calc(100dvh - var(--chrome-bottom, 64px))', overflowY: 'auto', background: t.bg }}>
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <div style={{
@@ -370,7 +373,7 @@ export default function AisleView({
       {loading ? (
         <GridSkeleton />
       ) : error ? (
-        <FeedState kind="error" message={error} />
+        <FeedState kind="error" message={error} onRetry={() => setAttempt(n => n + 1)} />
       ) : all.length === 0 ? (
         <FeedState
           kind="empty"

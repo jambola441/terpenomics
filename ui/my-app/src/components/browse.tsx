@@ -305,10 +305,12 @@ export function BrowseCard({ item, color, suppressSubtype, action, footer, onOpe
     : item.storeName
 
   return (
+    <div style={{ position: 'relative', minWidth: 0, display: 'flex' }}>
     <Pressable
       onClick={onOpen}
       lift
       style={{
+        flex: 1, minWidth: 0,
         background: t.surface1, borderRadius: radius.lg, border: `1px solid ${t.border}`,
         overflow: 'hidden', display: 'flex', flexDirection: 'column',
       }}
@@ -327,9 +329,6 @@ export function BrowseCard({ item, color, suppressSubtype, action, footer, onOpe
           </span>
         )}
 
-        {action && (
-          <div style={{ position: 'absolute', bottom: 8, right: 8 }}>{action}</div>
-        )}
       </div>
 
       <div style={{ padding: '10px 11px 12px', flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -382,6 +381,12 @@ export function BrowseCard({ item, color, suppressSubtype, action, footer, onOpe
         )}
       </div>
     </Pressable>
+    {/* The action sits beside the card, not inside it: a button inside the
+        card's own button is two controls in one, which screen readers and
+        keyboards can't reach separately. A square the size of the photo
+        places it over the photo's corner all the same. */}
+    {action && <PhotoCorner>{action}</PhotoCorner>}
+    </div>
   )
 }
 
@@ -800,6 +805,19 @@ export function GridSkeleton() {
           </div>
         </div>
       ))}
+    </div>
+  )
+}
+
+/** Lays a control over the bottom-right corner of a card's square photo,
+ *  while staying outside the card's own button. */
+export function PhotoCorner({ children }: { children: ReactNode }) {
+  return (
+    <div style={{
+      position: 'absolute', top: 1, left: 1, right: 1, aspectRatio: '1 / 1',
+      pointerEvents: 'none',
+    }}>
+      <div style={{ position: 'absolute', bottom: 8, right: 8, pointerEvents: 'auto' }}>{children}</div>
     </div>
   )
 }

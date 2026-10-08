@@ -185,7 +185,7 @@ export default function Listings() {
           />
 
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-            <select
+            <select aria-label="Dispensary"
               value={filterDispensary}
               onChange={e => setFilter('dispensary_id', e.target.value)}
               style={selectStyle}
@@ -194,7 +194,7 @@ export default function Listings() {
               {filterOpts.dispensaries.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
             </select>
 
-            <select
+            <select aria-label="Category"
               value={filterCategory}
               onChange={e => setFilter('category', e.target.value)}
               style={selectStyle}
@@ -203,7 +203,7 @@ export default function Listings() {
               {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
 
-            <select
+            <select aria-label="Brand"
               value={filterBrand}
               onChange={e => setFilter('brand', e.target.value)}
               style={selectStyle}
@@ -212,7 +212,7 @@ export default function Listings() {
               {filterOpts.brands.map(b => <option key={b} value={b}>{b}</option>)}
             </select>
 
-            <select
+            <select aria-label="Subtype"
               value={filterSubtype}
               onChange={e => setFilter('subtype', e.target.value)}
               style={selectStyle}
@@ -221,7 +221,7 @@ export default function Listings() {
               {filterOpts.subtypes.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
 
-            <select
+            <select aria-label="Strain type"
               value={filterClass}
               onChange={e => setFilter('classification', e.target.value)}
               style={selectStyle}
@@ -230,7 +230,7 @@ export default function Listings() {
               {filterOpts.classifications.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
 
-            <select
+            <select aria-label="Stock"
               value={filterInStock}
               onChange={e => setFilter('in_stock', e.target.value)}
               style={selectStyle}

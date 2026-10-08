@@ -372,7 +372,7 @@ export default function LabReportUpload() {
         </div>
 
         {/* Step 2 */}
-        <div style={{ padding: '16px 20px', border: `1px solid ${t.border}`, borderRadius: 8, marginBottom: 16, background: t.surface1, opacity: step === 2 ? 1 : 0.5 }}>
+        <div style={{ padding: '16px 20px', border: `1px solid ${t.border}`, borderRadius: 8, marginBottom: 16, background: t.surface1, opacity: step === 2 ? 1 : 0.75 }}>
           <h3 style={{ margin: '0 0 12px', fontSize: 15, color: t.text2, fontWeight: 500 }}>Step 2 — Extract Terpenes</h3>
           <button
             onClick={handleProcess}

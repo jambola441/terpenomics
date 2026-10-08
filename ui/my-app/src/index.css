@@ -79,6 +79,20 @@ textarea,
 select {
   font-family: inherit;
 }
+
+/* iOS zooms the page into any field set smaller than 16px when it is focused.
+   Pinch-zoom is allowed (people need it), so the old maximum-scale=1 can't
+   suppress that any more; on touch screens fields are simply 16px. Beats the
+   inline sizes, hence !important. Range sliders have no text and are left be,
+   and a field drawn larger on purpose (the sign-in code) opts out with
+   data-large. */
+@media (pointer: coarse) {
+  input:not([type='range']):not([type='checkbox']):not([type='radio']):not([data-large]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
 input::placeholder,
 textarea::placeholder {
   color: var(--text-4);
@@ -256,6 +270,14 @@ textarea::placeholder {
   width: 30px;
   height: 30px;
   transition: transform var(--t-base);
+}
+
+/* A 44px target around the 30px disc, so a thumb needn't land on it exactly. */
+.nyc-pin::after {
+  content: '';
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
 }
 
 .nyc-pin__disc {

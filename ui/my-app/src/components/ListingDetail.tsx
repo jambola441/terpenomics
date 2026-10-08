@@ -24,7 +24,7 @@ import type { CartItem, ListingDetail, PortalDispensary, SimilarListing } from '
 import { t, radius, font } from '../theme'
 import {
   FeedState, Pill, CategoryTag, Label, ClassificationTag, DetailBlock,
-  CollapsibleBlock, SpecRow, Pressable, ProductImage, StoreBullet, TerpeneProfile,
+  CollapsibleBlock, SpecRow, Pressable, ProductImage, StoreBullet, TerpeneProfile, BackButton,
 } from './ui'
 import { Icon, type IconName } from './Icon'
 import { formatDist, formatDollars, haversineMi } from '../utils/format'
@@ -66,6 +66,8 @@ export default function ListingDetailView({
   const [addedFlash, setAddedFlash] = useState(false)
   const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(null)
 
+  // Bumped by Try again to rerun the load below.
+  const [attempt, setAttempt] = useState(0)
   useEffect(() => {
     setLoading(true)
     setError(null)
@@ -73,7 +75,7 @@ export default function ListingDetailView({
       .then(setListing)
       .catch(() => setError('Failed to load listing'))
       .finally(() => setLoading(false))
-  }, [dispensaryId, listingId])
+  }, [dispensaryId, listingId, attempt])
 
   useEffect(() => {
     navigator.geolocation?.getCurrentPosition(pos => {
@@ -87,7 +89,7 @@ export default function ListingDetailView({
   }, [userPos])
 
   const containerStyle: React.CSSProperties = {
-    height: 'calc(100dvh - 64px)',
+    height: 'calc(100dvh - var(--chrome-bottom, 64px))',
     overflowY: 'auto',
     background: t.bg,
   }
@@ -96,7 +98,21 @@ export default function ListingDetailView({
     return <div style={containerStyle}><FeedState kind="loading" message="Loading…" style={{ height: '100%' }} /></div>
   }
   if (error || !listing) {
-    return <div style={containerStyle}><FeedState kind="error" message={error ?? 'Not found'} style={{ height: '100%' }} /></div>
+    // A way back as well as a way to retry: this screen has no nav of its own
+    // until the listing loads.
+    return (
+      <div style={{ ...containerStyle, position: 'relative' }}>
+        <div style={{ position: 'absolute', top: 'calc(14px + env(safe-area-inset-top, 0px))', left: 14, zIndex: 1 }}>
+          <BackButton onClick={() => navigate(-1)} />
+        </div>
+        <FeedState
+          kind="error"
+          message={error ?? 'Not found'}
+          style={{ height: '100%' }}
+          onRetry={error ? () => setAttempt(n => n + 1) : undefined}
+        />
+      </div>
+    )
   }
 
   const cat = listing.scraped_category ?? 'other'
@@ -137,7 +153,7 @@ export default function ListingDetailView({
       <button
         onClick={() => navigate(-1)}
         style={{
-          position: 'absolute', top: 16, left: 16, zIndex: 10,
+          position: 'absolute', top: 'calc(16px + env(safe-area-inset-top, 0px))', left: 16, zIndex: 10,
           background: 'rgba(12, 15, 13, 0.72)', border: '1px solid rgba(242, 240, 233, 0.12)',
           backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
           borderRadius: radius.pill, color: t.text1, fontSize: font.size.small + 1, fontWeight: font.weight.medium,

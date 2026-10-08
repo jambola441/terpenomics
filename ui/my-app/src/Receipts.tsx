@@ -246,7 +246,7 @@ function ReviewPanel({ id, onDone }: { id: string; onDone: () => void }) {
             style={{ display: 'flex', flexDirection: 'column', gap: 12 }}
           >
             <Field label="Store">
-              <select value={partnerId} onChange={e => setPartnerId(e.target.value)} style={{ ...inputStyle, width: '100%' }}>
+              <select aria-label="Partner" value={partnerId} onChange={e => setPartnerId(e.target.value)} style={{ ...inputStyle, width: '100%' }}>
                 {r.partners.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </Field>

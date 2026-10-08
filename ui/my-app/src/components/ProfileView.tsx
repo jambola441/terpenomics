@@ -21,6 +21,7 @@ import { Icon, type IconName } from './Icon'
 import OrderCard from './OrderCard'
 import ReceiptUpload from './ReceiptUpload'
 import EmailEditor from './EmailEditor'
+import ConfirmSheet from './ConfirmSheet'
 import { formatDate, formatDollars } from '../utils/format'
 
 type Pane = 'orders' | 'points' | 'feedback' | 'profile'
@@ -39,6 +40,8 @@ interface Props {
   ordersLoading: boolean
   ordersError: string | null
   onCancelOrder: (orderId: string) => void
+  /** Load the orders again after a failure. */
+  onRetryOrders: () => void
   cancellingIds: Set<string>
   /** A failed cancel, by order id. Shown on that order's card only. */
   cancelErrors: Record<string, string>
@@ -47,7 +50,7 @@ interface Props {
 
 export default function ProfileView({
   session, customerId, orders, ordersLoading, ordersError,
-  onCancelOrder, cancellingIds, cancelErrors, onSignOut,
+  onCancelOrder, onRetryOrders, cancellingIds, cancelErrors, onSignOut,
 }: Props) {
   // The pane is in the URL (/portal/profile/points), so a link can open one.
   const navigate = useNavigate()
@@ -59,6 +62,7 @@ export default function ProfileView({
   const [pointsError, setPointsError] = useState<string | null>(null)
 
   function loadPoints() {
+    setPointsError(null)
     api.me.getPoints().then(setPoints).catch(err => setPointsError(err.message))
   }
 
@@ -70,9 +74,9 @@ export default function ProfileView({
   const openOrders = orders.filter(o => o.status === 'submitted' || o.status === 'ready').length
 
   return (
-    <div style={{ height: 'calc(100dvh - 64px)', overflowY: 'auto', background: t.bg }}>
+    <div style={{ height: 'calc(100dvh - var(--chrome-bottom, 64px))', overflowY: 'auto', background: t.bg }}>
       {/* Identity */}
-      <div style={{ padding: '28px 20px 0', display: 'flex', alignItems: 'center', gap: 14 }}>
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 28px) 20px 0', display: 'flex', alignItems: 'center', gap: 14 }}>
         <div style={{
           width: 56, height: 56, borderRadius: '50%', flexShrink: 0,
           background: t.surface2, border: `1px solid ${t.border}`,
@@ -144,11 +148,12 @@ export default function ProfileView({
             loading={ordersLoading}
             error={ordersError}
             onCancelOrder={onCancelOrder}
+            onRetry={onRetryOrders}
             cancellingIds={cancellingIds}
             cancelErrors={cancelErrors}
           />
         )}
-        {pane === 'points' && <PointsPane data={points} error={pointsError} onUploaded={loadPoints} />}
+        {pane === 'points' && <PointsPane data={points} error={pointsError} onUploaded={loadPoints} onRetry={loadPoints} />}
         {pane === 'feedback' && <FeedbackPane customerId={customerId} />}
         {pane === 'profile' && (
           <ProfilePane
@@ -165,17 +170,18 @@ export default function ProfileView({
 
 /* ── Orders ────────────────────────────────────────────────────────────────── */
 
-function OrdersPane({ orders, loading, error, onCancelOrder, cancellingIds, cancelErrors }: {
+function OrdersPane({ orders, loading, error, onCancelOrder, onRetry, cancellingIds, cancelErrors }: {
   orders: Order[]
   loading: boolean
   /** Loading the list failed. A failed cancel is per card, not this. */
   error: string | null
   onCancelOrder: (orderId: string) => void
+  onRetry: () => void
   cancellingIds: Set<string>
   cancelErrors: Record<string, string>
 }) {
   if (loading) return <FeedState kind="loading" message="Loading your orders…" />
-  if (error) return <FeedState kind="error" message={error} />
+  if (error) return <FeedState kind="error" message={error} onRetry={onRetry} />
   if (orders.length === 0) {
     return (
       <FeedState
@@ -208,12 +214,13 @@ const POINTS_KIND: Record<string, string> = { earn: 'Earned', receipt: 'Receipt'
 
 /** Terpee points from shopping at partner stores. Earned points sit as pending
  *  for a week (so a return can cancel them) and then become available. */
-function PointsPane({ data, error, onUploaded }: {
+function PointsPane({ data, error, onUploaded, onRetry }: {
   data: PointsSummary | null
   error: string | null
   onUploaded: () => void
+  onRetry: () => void
 }) {
-  if (error) return <FeedState kind="error" message="Couldn't load your points" hint={error} />
+  if (error) return <FeedState kind="error" message="Couldn't load your points" hint={error} onRetry={onRetry} />
   if (!data) return <FeedState kind="loading" message="Loading your points…" />
 
   return (
@@ -290,8 +297,10 @@ function FeedbackPane({ customerId }: { customerId: string }) {
   const [error, setError] = useState<string | null>(null)
   const [feedback, setFeedback] = useState<Record<string, Feedback>>({})
   const [saving, setSaving] = useState<Set<string>>(new Set())
+  const [attempt, setAttempt] = useState(0)
 
   useEffect(() => {
+    setError(null)
     api.portal.getPurchases(customerId)
       .then(data => {
         setPurchases(data)
@@ -302,7 +311,7 @@ function FeedbackPane({ customerId }: { customerId: string }) {
         setFeedback(initial)
       })
       .catch(() => setError('Could not load your purchases.'))
-  }, [customerId])
+  }, [customerId, attempt])
 
   async function rate(itemId: string, value: Feedback) {
     const previous = feedback[itemId] ?? null
@@ -321,7 +330,7 @@ function FeedbackPane({ customerId }: { customerId: string }) {
     }
   }
 
-  if (error) return <FeedState kind="error" message={error} />
+  if (error) return <FeedState kind="error" message={error} onRetry={() => setAttempt(n => n + 1)} />
   if (purchases === null) return <FeedState kind="loading" message="Loading your purchases…" />
   if (purchases.length === 0) {
     return (
@@ -444,6 +453,7 @@ function ProfilePane({ profile, session, onSaved, onSignOut }: {
   const [optIn, setOptIn] = useState(false)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [status, setStatus] = useState<string | null>(null)
   const [stores, setStores] = useState<PortalDispensary[] | null>(null)
 
@@ -463,11 +473,6 @@ function ProfilePane({ profile, session, onSaved, onSignOut }: {
   const dirty = profile != null && (namesChanged || optIn !== profile.marketing_opt_in)
 
   async function deleteAccount() {
-    const ok = confirm(
-      'Delete your account?\n\nThis signs you out everywhere, cancels open pickup orders, and forfeits '
-      + 'your points. Your name, phone number and receipt photos are erased. This cannot be undone.',
-    )
-    if (!ok) return
     setDeleting(true)
     try {
       await api.me.deleteAccount()
@@ -475,6 +480,7 @@ function ProfilePane({ profile, session, onSaved, onSignOut }: {
     } catch (err) {
       setStatus(err instanceof Error && err.message ? err.message : 'Could not delete your account. Try again.')
       setDeleting(false)
+      setConfirmingDelete(false)
     }
   }
 
@@ -606,7 +612,7 @@ function ProfilePane({ profile, session, onSaved, onSignOut }: {
       </button>
 
       <button
-        onClick={deleteAccount}
+        onClick={() => setConfirmingDelete(true)}
         disabled={deleting}
         style={{
           margin: '0 auto', background: 'transparent', border: 'none',
@@ -616,6 +622,20 @@ function ProfilePane({ profile, session, onSaved, onSignOut }: {
       >
         {deleting ? 'Deleting…' : 'Delete account'}
       </button>
+
+      <ConfirmSheet
+        open={confirmingDelete}
+        title="Delete your account?"
+        confirmLabel="Delete account"
+        cancelLabel="Keep my account"
+        destructive
+        busy={deleting}
+        onConfirm={deleteAccount}
+        onCancel={() => setConfirmingDelete(false)}
+      >
+        This signs you out everywhere, cancels open pickup orders and forfeits your points. Your name,
+        phone number and receipt photos are erased. It can't be undone.
+      </ConfirmSheet>
     </div>
   )
 }

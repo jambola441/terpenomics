@@ -143,14 +143,14 @@ export default function Orders() {
         </p>
 
         <div style={{ display: 'flex', gap: 8, marginBottom: 20, alignItems: 'center', flexWrap: 'wrap' }}>
-          <select value={status} onChange={e => setStatus(e.target.value)} style={selectStyle}>
+          <select aria-label="Status" value={status} onChange={e => setStatus(e.target.value)} style={selectStyle}>
             <option value="submitted">Submitted</option>
             <option value="ready">Ready</option>
             <option value="completed">Picked up</option>
             <option value="cancelled">Cancelled</option>
             <option value="">All statuses</option>
           </select>
-          <select value={String(limit)} onChange={e => setLimit(Number(e.target.value))} style={selectStyle}>
+          <select aria-label="Rows per page" value={String(limit)} onChange={e => setLimit(Number(e.target.value))} style={selectStyle}>
             <option value="25">25</option>
             <option value="50">50</option>
             <option value="100">100</option>

@@ -127,6 +127,8 @@ interface Props {
   items: BrowseItem[]
   loading: boolean
   error: string | null
+  /** Shown as Try again on the error state. */
+  onRetry?: () => void
 
   /** Accent for chips, stats and cards. */
   color: string
@@ -161,7 +163,7 @@ interface Props {
 }
 
 export default function BrowseScreen({
-  items, loading, error, color, facets, hero, heroBackground, heroDecoration,
+  items, loading, error, onRetry, color, facets, hero, heroBackground, heroDecoration,
   searchPlaceholder, resetKey, totalCount, truncated, suppressSubtype,
   emptyMessage, emptyHint, emptyIcon, onOpen,
 }: Props) {
@@ -371,7 +373,7 @@ export default function BrowseScreen({
   }))
 
   return (
-    <div ref={scrollRef} style={{ height: 'calc(100dvh - 64px)', overflowY: 'auto', background: t.bg }}>
+    <div ref={scrollRef} style={{ height: 'calc(100dvh - var(--chrome-bottom, 64px))', overflowY: 'auto', background: t.bg }}>
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <div style={{
         position: 'relative',
@@ -446,7 +448,7 @@ export default function BrowseScreen({
       {loading ? (
         <GridSkeleton />
       ) : error ? (
-        <FeedState kind="error" message={error} />
+        <FeedState kind="error" message={error} onRetry={onRetry} />
       ) : items.length === 0 ? (
         <FeedState kind="empty" message={emptyMessage} hint={emptyHint} icon={emptyIcon} />
       ) : (

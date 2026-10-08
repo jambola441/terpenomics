@@ -54,6 +54,9 @@ export default function BrandView({ brandName, onBack, onOpenProduct }: Props) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Bumped by Try again to rerun the load below.
+  const [attempt, setAttempt] = useState(0)
+
   useEffect(() => {
     let cancelled = false
     setLoading(true); setError(null); setData(null)
@@ -64,7 +67,7 @@ export default function BrandView({ brandName, onBack, onOpenProduct }: Props) {
       .finally(() => { if (!cancelled) setLoading(false) })
 
     return () => { cancelled = true }
-  }, [brandName])
+  }, [brandName, attempt])
 
   const c = t.accent
 
@@ -73,6 +76,7 @@ export default function BrandView({ brandName, onBack, onOpenProduct }: Props) {
       items={data ? toItems(data) : []}
       loading={loading}
       error={error}
+      onRetry={() => setAttempt(n => n + 1)}
       color={c}
       // Category leads, in place of the brand facet the category page has:
       // it is the one thing that varies across a brand's whole range.

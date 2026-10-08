@@ -64,6 +64,21 @@ import type {
 // Get API base URL from environment variable or use default
 export const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://sturdy-parakeet-qg59j4pjp9q29j9j-8000.app.github.dev'
 
+/** How long a read may take before it counts as failed. A hung request
+ *  otherwise leaves a skeleton up forever with nothing to press; failing lets
+ *  the screen offer Try again. Generous, because a sleeping API instance takes
+ *  20-30 s to wake.
+ *
+ *  Reads only: giving up on a write in the browser doesn't stop it on the
+ *  server, so a retry could place an order or save a change twice. */
+const REQUEST_TIMEOUT_MS = 30_000
+
+/** The caller's signal if it passed one; for a read, the timeout. */
+function withTimeout(method: string | undefined, signal?: AbortSignal | null): AbortSignal | undefined {
+  if (signal) return signal
+  return !method || method.toUpperCase() === 'GET' ? AbortSignal.timeout(REQUEST_TIMEOUT_MS) : undefined
+}
+
 // Helper function to build query string from params
 function buildQueryString(params?: Record<string, any>): string {
   if (!params) return ''
@@ -106,6 +121,7 @@ async function portalFetch<T>(
 ): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
+    signal: withTimeout(options.method, options.signal),
     headers: {
       'Content-Type': 'application/json',
       ...options.headers,
@@ -129,6 +145,7 @@ async function authenticatedFetch<T>(
   const headers = await getAuthHeaders()
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
+    signal: withTimeout(options.method, options.signal),
     headers: {
       'Content-Type': 'application/json',
       ...headers,

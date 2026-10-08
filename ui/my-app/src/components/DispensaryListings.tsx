@@ -7,7 +7,7 @@ import { useScrollMemory } from '../utils/browseState'
 import { boroughColor } from '../utils/boroughs'
 import { Pressable, Pill, FeedState, Skeleton, ProductImage, StoreBullet } from './ui'
 import { Icon, CategoryIcon } from './Icon'
-import { MarketNote } from './browse'
+import { MarketNote, PhotoCorner } from './browse'
 
 function formatPrice(cents: number | null) {
   if (cents == null) return null
@@ -114,11 +114,11 @@ export default function DispensaryListings({
     const cartQty = cart.filter(i => i.listingId === l.id).reduce((s, i) => s + i.quantity, 0)
 
     return (
+      <div key={l.id} style={{ position: 'relative', width: 132, flexShrink: 0, scrollSnapAlign: 'start', display: 'flex' }}>
       <Pressable
-        key={l.id}
         onClick={() => navigate(`/portal/map/${dispensaryId}/listings/${l.id}`)}
         style={{
-          width: 132, flexShrink: 0, scrollSnapAlign: 'start',
+          flex: 1, minWidth: 0,
           background: t.surface1, borderRadius: radius.lg, border: `1px solid ${t.border}`,
           overflow: 'hidden', display: 'flex', flexDirection: 'column',
         }}
@@ -128,35 +128,6 @@ export default function DispensaryListings({
               110px band with its own copy of the fallback logic; ProductImage
               is the same frame every other product shot on the portal uses. */}
           <ProductImage src={l.image_url} alt={l.display_name} category={cat} radius="0" />
-
-          {acceptsPickup && onAddToCart && (
-            <button
-              aria-label="Add to cart"
-              onClick={e => {
-                e.stopPropagation()
-                onAddToCart({
-                  listingId: l.id, dispensaryId, dispensarySlug, dispensaryName,
-                  name: l.display_name, brand: l.scraped_brand ?? null,
-                  variant: l.variant ?? null, price_cents: l.price_cents ?? null,
-                  url: l.url ?? null, image_url: l.image_url ?? null, quantity: 1,
-                })
-              }}
-              style={{
-                position: 'absolute', bottom: 8, right: 8,
-                width: 32, height: 32, borderRadius: '50%',
-                background: cartQty > 0 ? t.bg : t.accent,
-                border: cartQty > 0 ? `1.5px solid ${t.accent}` : 'none',
-                cursor: 'pointer', padding: 0,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontFamily: font.family.mono, fontSize: 12, fontWeight: font.weight.medium,
-                color: cartQty > 0 ? t.accent : t.accentInk,
-                boxShadow: 'var(--e-2)', flexShrink: 0,
-                transition: `background var(--t-fast), transform var(--t-fast)`,
-              } as React.CSSProperties}
-            >
-              {cartQty > 0 ? cartQty : <Icon name="plus" size={16} strokeWidth={2.25} />}
-            </button>
-          )}
         </div>
         <div style={{ padding: '9px 9px 11px', flex: 1 }}>
           {price && <div className="num" style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.callout, marginBottom: 3 }}>{price}</div>}
@@ -174,6 +145,37 @@ export default function DispensaryListings({
           <MarketNote market={l.market} priceCents={l.price_cents} style={{ marginTop: 5 }} />
         </div>
       </Pressable>
+      {/* Beside the card rather than inside its button (see PhotoCorner). */}
+      {acceptsPickup && onAddToCart && (
+        <PhotoCorner>
+          <button
+            aria-label={cartQty > 0 ? `Add another ${l.display_name}, ${cartQty} in cart` : `Add ${l.display_name} to cart`}
+            onClick={e => {
+              e.stopPropagation()
+              onAddToCart({
+                listingId: l.id, dispensaryId, dispensarySlug, dispensaryName,
+                name: l.display_name, brand: l.scraped_brand ?? null,
+                variant: l.variant ?? null, price_cents: l.price_cents ?? null,
+                url: l.url ?? null, image_url: l.image_url ?? null, quantity: 1,
+              })
+            }}
+            style={{
+              width: 36, height: 36, borderRadius: '50%',
+              background: cartQty > 0 ? t.bg : t.accent,
+              border: cartQty > 0 ? `1.5px solid ${t.accent}` : 'none',
+              cursor: 'pointer', padding: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: font.family.mono, fontSize: 12, fontWeight: font.weight.medium,
+              color: cartQty > 0 ? t.accent : t.accentInk,
+              boxShadow: 'var(--e-2)', flexShrink: 0,
+              transition: `background var(--t-fast), transform var(--t-fast)`,
+            } as React.CSSProperties}
+          >
+            {cartQty > 0 ? cartQty : <Icon name="plus" size={16} strokeWidth={2.25} />}
+          </button>
+        </PhotoCorner>
+      )}
+      </div>
     )
   }
 
@@ -181,7 +183,7 @@ export default function DispensaryListings({
   const line = boroughColor(dispensaryAddress)
 
   return (
-    <div ref={scrollRef} style={{ height: 'calc(100dvh - 64px)', overflowY: 'auto', background: t.bg }}>
+    <div ref={scrollRef} style={{ height: 'calc(100dvh - var(--chrome-bottom, 64px))', overflowY: 'auto', background: t.bg }}>
 
       {/* Banner */}
       <div style={{ position: 'relative', height: 160, background: t.surface1 }}>
@@ -195,7 +197,7 @@ export default function DispensaryListings({
         <button
           onClick={onBack}
           style={{
-            position: 'absolute', top: 14, left: 14,
+            position: 'absolute', top: 'calc(14px + env(safe-area-inset-top, 0px))', left: 14,
             background: 'rgba(12, 15, 13, 0.55)', border: '1px solid rgba(242, 240, 233, 0.12)',
             backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', borderRadius: radius.pill, color: t.text1,
             fontSize: font.size.small + 1, fontWeight: font.weight.medium, padding: '7px 14px 7px 10px', cursor: 'pointer',
@@ -310,7 +312,7 @@ export default function DispensaryListings({
       {loading ? (
         <AisleSkeleton />
       ) : error ? (
-        <FeedState kind="error" message={error} />
+        <FeedState kind="error" message={error} onRetry={load} />
       ) : listingsByCategory.size === 0 ? (
         <FeedState kind="empty" message="Nothing found" hint={search ? `No menu items match “${search}”.` : 'This menu has no items right now.'} icon="search" />
       ) : (

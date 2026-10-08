@@ -77,7 +77,11 @@ export default function DispensaryMap({ activeDispensaryId, onAddToCart, cart = 
     ? dispensaries.find(d => d.id === aisleDispensaryId) ?? null
     : null
 
+  // Bumped by Try again to rerun the load below.
+  const [attempt, setAttempt] = useState(0)
   useEffect(() => {
+    setError(null)
+    setLoadingDispensaries(true)
     api.portal.getDispensaries()
       .then(data => {
         setDispensaries(data)
@@ -87,7 +91,7 @@ export default function DispensaryMap({ activeDispensaryId, onAddToCart, cart = 
         setError('Failed to load dispensaries')
         setLoadingDispensaries(false)
       })
-  }, [])
+  }, [attempt])
 
   // Initialize Leaflet as soon as the container is ready — NYC center, no markers yet
   useEffect(() => {
@@ -248,7 +252,7 @@ export default function DispensaryMap({ activeDispensaryId, onAddToCart, cart = 
   }
 
   if (error) {
-    return <div style={containerStyle}><FeedState kind="error" message={error} style={{ height: '100%' }} /></div>
+    return <div style={containerStyle}><FeedState kind="error" message={error} style={{ height: '100%' }} onRetry={() => setAttempt(n => n + 1)} /></div>
   }
 
   const selectedBorough = selected ? boroughOf(selected.address) : null
