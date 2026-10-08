@@ -228,7 +228,9 @@ class TestCategoryLines:
         name = "Heavy Hitters | Grape Ape Live Rosin AIO Vape"
         assert find_product_line("Heavy Hitters", name, "vaporizers") == "Live Rosin"
         assert find_product_line("Heavy Hitters", "Heavy Hitters Live Rosin 2g - Gelato", "concentrate") is None
-        assert find_product_line("Heavy Hitters", "Strawberry Storm Ultra Gummies | 5pk 100mg", "edible") is None
+        assert find_product_line("Heavy Hitters", "Heavy Hitters Diamonds AIO 1g - Gelato", "vaporizers") is None
+        # Ultra is the brand's line in vapes and gummies alike (heavyhitters.co "Ultra Gummies")
+        assert find_product_line("Heavy Hitters", "Strawberry Storm Ultra Gummies | 5pk 100mg", "edible") == "Ultra"
         assert find_product_line("Heavy Hitters", name) == "Live Rosin"      # no category given: as before
 
     def test_canonicalize_reads_the_rows_category(self):

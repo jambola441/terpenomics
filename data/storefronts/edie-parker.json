@@ -5,7 +5,7 @@
     "kind": "shopify_json",
     "url": "https://edieparkerflower.com/products.json"
   },
-  "learned": "2026-10-05, agent pass: 66 Shopify products (display only, prices 0.00), state availability in tags; 21 carry NY, 14 with a stated size. Check: 2 of the 7 products NY stores sell are on the site; the other 5 name a batch strain or flavour the site does not list.",
+  "learned": "2026-10-05, agent pass: 66 Shopify products (display only, prices 0.00), state availability in tags; 21 carry NY, 14 with a stated size. Check: 2 of the 7 products NY stores sell are on the site; the other 5 name a batch strain or flavour the site does not list. 2026-10-08, curation pass: the Flower Pot, Blossoms and Best Buds products are the three effect blends and NY stores name the current batch strain (Early Bird = Sour Jack, Happiest Hour = Sugar Breath, Nightcap = Ice Cream Mintz), so store_aliases fold those into the site's products; vapes take the brand's effect family (For a Good Morning / Afternoon / Night, printed on the Petal Puffer tin) as their line, from the site's product_type.",
   "notes": [
     "New York is the 'NY' tag. /collections/new-york is misconfigured (13 items, most tagged only OH), so the whole feed is read and filtered.",
     "Titles are the product line only ('Vape Cartridge', 'Petal Puffer', 'Blossoms', 'Best Buds', 'Flower Pot'); the flavour or effect blend is in the variant SKU after the line ('Vape Cartridge-Le Freak - Golden Yuzu', 'Flower Pot MAP-Nightcap'). product_type is the strain type, not a category.",
@@ -13,7 +13,9 @@
     "The proxy sometimes resets the connection to this host; a retry works.",
     "Petal Puffers (and the Lemon Watermelon cart) say 'Available in 0.5g and 1g (varies by state)' and never which is New York's; NY stores list a 0.5g Lemon Watermelon, so they are skipped rather than guessed.",
     "Limited-edition flavours are 'Edition - Flavour' in the SKU ('Le Freak - Golden Yuzu'); the strain is the edition name, as stores write it ('Edie Parker - Le Freak Cartridge - 1g').",
-    "Blossoms, Best Buds and Flower Pot come in three effect blends (Nightcap = indica, Happiest Hour = hybrid, Early Bird = sativa) and the site never names the strain in a batch, while NY stores add it ('Early Bird Sour Jack', 'Happiest Hour Sugar Breath 2 Pack'); those stay as store-consensus products."
+    "Blossoms, Best Buds and Flower Pot come in three effect blends (Early Bird = sativa, Happiest Hour = hybrid, Nightcap = indica) and the site never names the batch strain ('Strains vary by availability and state'). The blend is the product, as the site and Leafly ('Flower Pot | Early Bird | Sativa') name it. NY stores write the blend with the batch strain ('Early Bird Sour Jack', 'Sour Jack | Early Bird | Sativa') or the strain alone ('Edie Parker | Sour Jack'); store_aliases map the strain and the blend-as-line to the site's blend. When the batch rotates, add the new strain to store_aliases.names.",
+    "Vapes: the brand's effect families are Good Morning (sativa), Good Afternoon (hybrid) and Good Night (indica); the tin reads 'Petal Puffer / For a Good Afternoon' and NY stores write 'Lavender Vanilla (Good Night) Cartridge - 1g'. Carts and Petal Puffers share them, so the line is set from the site's product_type (Indica/Hybrid/Sativa). 'Petal Puffer' is the brand's name for its all-in-one format, not a line.",
+    "Blossoms in NY is 7 x 0.5g (the tin: 'SEVEN 0.5 GRAM PRE-ROLLS, Net Wt 3.5g'); the 5-pack is other states'. Best Buds is a twin pack of 0.5g (1g)."
   ],
   "skip": [
     {
@@ -67,6 +69,48 @@
   "title": [
     {
       "when": {
+        "category": "^vaporizers$",
+        "product_type": "^Indica$"
+      },
+      "match": "^Vape Cartridge$",
+      "extract": {
+        "meta": "\"sku\": \"Vape Cartridge-(?P<strain>[^\"]+?)(?: - [^\"]*)?\"",
+        "body": "^(?P<size>\\d+(?:\\.\\d+)?\\s*g)\\b"
+      },
+      "set": {
+        "line": "Good Night"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "product_type": "^Hybrid$"
+      },
+      "match": "^Vape Cartridge$",
+      "extract": {
+        "meta": "\"sku\": \"Vape Cartridge-(?P<strain>[^\"]+?)(?: - [^\"]*)?\"",
+        "body": "^(?P<size>\\d+(?:\\.\\d+)?\\s*g)\\b"
+      },
+      "set": {
+        "line": "Good Afternoon"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "product_type": "^Sativa$"
+      },
+      "match": "^Vape Cartridge$",
+      "extract": {
+        "meta": "\"sku\": \"Vape Cartridge-(?P<strain>[^\"]+?)(?: - [^\"]*)?\"",
+        "body": "^(?P<size>\\d+(?:\\.\\d+)?\\s*g)\\b"
+      },
+      "set": {
+        "line": "Good Morning"
+      }
+    },
+    {
+      "when": {
         "category": "^vaporizers$"
       },
       "match": "^Vape Cartridge$",
@@ -108,5 +152,22 @@
         "body": "^(?P<size>\\d+/\\d+\\s*oz)\\b"
       }
     }
-  ]
+  ],
+  "store_aliases": {
+    "lines": {
+      "Early Bird": "",
+      "Happiest Hour": "",
+      "Nightcap": "",
+      "Night Cap": ""
+    },
+    "names": {
+      "Sour Jack": "Early Bird",
+      "Early Bird Sour Jack": "Early Bird",
+      "Blossom Sour Jack": "Early Bird",
+      "Sugar Breath": "Happiest Hour",
+      "Happiest Hour Sugar Breath": "Happiest Hour",
+      "Ice Cream Mintz": "Nightcap",
+      "Nightcap Ice Cream Mintz": "Nightcap"
+    }
+  }
 }
