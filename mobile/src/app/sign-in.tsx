@@ -15,19 +15,26 @@ export default function SignIn() {
   const [sentTo, setSentTo] = useState<string | null>(null)
   const [challengeId, setChallengeId] = useState<string | null>(null)
   const [code, setCode] = useState('')
-  const [resendIn, setResendIn] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // The last code sent. It outlives "Change number", so going back to the same
+  // number returns to that code instead of sending another text while the
+  // resend clock is still running; that used to be a way round the cooldown.
+  const [lastSent, setLastSent] = useState<{ to: string; challengeId: string; resendAt: number } | null>(null)
+  const [now, setNow] = useState(() => Date.now())
+  const resendIn = lastSent && lastSent.to === sentTo ? Math.max(0, Math.ceil((lastSent.resendAt - now) / 1000)) : 0
 
   useEffect(() => {
-    if (resendIn <= 0) return
-    const id = setTimeout(() => setResendIn(s => s - 1), 1000)
+    if (!lastSent || lastSent.resendAt <= now) return
+    const id = setTimeout(() => setNow(Date.now()), 1000)
     return () => clearTimeout(id)
-  }, [resendIn])
+  }, [lastSent, now])
 
   function fail(err: unknown) {
     if (err instanceof ApiError && err.retryAfter) {
-      setResendIn(err.retryAfter)
+      const resendAt = Date.now() + err.retryAfter * 1000
+      setLastSent(prev => (prev ? { ...prev, resendAt } : prev))
+      setNow(Date.now())
     }
     setError(err instanceof Error ? err.message : String(err))
   }
@@ -38,13 +45,22 @@ export default function SignIn() {
       setError('Enter a 10-digit US phone number.')
       return
     }
+    if (lastSent && lastSent.to === e164 && lastSent.resendAt > Date.now()) {
+      setSentTo(e164)
+      setChallengeId(lastSent.challengeId)
+      setCode('')
+      setError(null)
+      setNow(Date.now())
+      return
+    }
     setLoading(true)
     setError(null)
     try {
       const res = await api.auth.smsStart(e164)
       setChallengeId(res.challenge_id)
       setSentTo(e164)
-      setResendIn(res.resend_in)
+      setLastSent({ to: e164, challengeId: res.challenge_id, resendAt: Date.now() + res.resend_in * 1000 })
+      setNow(Date.now())
       setCode('')
     } catch (err) {
       fail(err)

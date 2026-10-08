@@ -9,7 +9,7 @@
    ========================================================================== */
 
 import { useEffect, useState } from 'react'
-import type { Session } from '@supabase/supabase-js'
+import type { Session } from '@supabase/auth-js'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import supabase from './utils/supabase'
 import { t } from './theme'

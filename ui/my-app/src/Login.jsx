@@ -9,6 +9,38 @@ import { Icon, Logo } from './components/Icon'
 
 // Fallback cooldown. The SMS path uses whatever the backend reports instead.
 const RESEND_SECONDS = 60
+// How long an email code is offered back after a reload; Supabase's own
+// expiry decides whether it still works.
+const EMAIL_CODE_SECONDS = 600
+
+/*
+ * A sent code, kept in sessionStorage until it expires. Every text costs
+ * money, and a reload, or iOS discarding the tab while the shopper reads the
+ * message, used to drop the code step and the resend cooldown with it, so the
+ * only way on was to send another. Session storage is per tab and gone when
+ * the tab closes, which is about how long a code is worth keeping.
+ *
+ *   { channel, sentTo, challengeId, expiresAt, cooldownUntil }  (times in ms)
+ */
+const pendingKey = audience => `terpee:signin:${audience}`
+
+function readPending(audience) {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(pendingKey(audience)) ?? 'null')
+    return saved && saved.expiresAt > Date.now() ? saved : null
+  } catch {
+    return null
+  }
+}
+
+function writePending(audience, pending) {
+  try {
+    if (pending) sessionStorage.setItem(pendingKey(audience), JSON.stringify(pending))
+    else sessionStorage.removeItem(pendingKey(audience))
+  } catch {
+    // Storage blocked: the flow still works, it just won't survive a reload.
+  }
+}
 
 /**
  * Two sign-in pages share this flow.
@@ -29,17 +61,23 @@ export function StaffLogin() {
 
 function SignIn({ audience }) {
   const staff = audience === 'staff'
-  const [channel, setChannel] = useState('sms') // 'sms' | 'email' — email is staff-only
-  const [step, setStep]       = useState('send')
-  const [phone, setPhone]     = useState('')
-  const [email, setEmail]     = useState('')
-  const [sentTo, setSentTo]   = useState('')   // E.164 or email actually used for the send
-  const [challengeId, setChallengeId] = useState('')  // backend handle for the SMS code
+  // A code sent before a reload picks up where it left off.
+  const [restored] = useState(() => readPending(audience))
+  const [channel, setChannel] = useState(restored?.channel ?? 'sms') // 'sms' | 'email' — email is staff-only
+  const [step, setStep]       = useState(restored ? 'verify' : 'send')
+  const [phone, setPhone]     = useState(restored?.channel === 'sms' ? formatE164ForDisplay(restored.sentTo) : '')
+  const [email, setEmail]     = useState(restored?.channel === 'email' ? restored.sentTo : '')
+  const [sentTo, setSentTo]   = useState(restored?.sentTo ?? '')   // E.164 or email actually used for the send
+  const [challengeId, setChallengeId] = useState(restored?.challengeId ?? '')  // backend handle for the SMS code
   const [code, setCode]       = useState('')
-  const [msg, setMsg]         = useState('')
+  const [msg, setMsg]         = useState(restored ? (restored.channel === 'sms' ? 'Code sent by text.' : 'Check your email for a 6-digit code.') : '')
   const [loading, setLoading] = useState(false)
   const [isError, setIsError] = useState(false)
-  const [cooldown, setCooldown] = useState(0)
+  // When a resend is next allowed, as a time rather than a countdown, so it
+  // survives a reload and stays tied to the number it was for.
+  const [cooldownUntil, setCooldownUntil] = useState(restored?.cooldownUntil ?? 0)
+  const [now, setNow] = useState(() => Date.now())
+  const cooldown = Math.max(0, Math.ceil((cooldownUntil - now) / 1000))
   const [providers, setProviders] = useState([])  // OAuth providers actually enabled
   // Null until we know whether this browser already has a session.
   const [signedIn, setSignedIn] = useState(null)
@@ -91,10 +129,18 @@ function SignIn({ audience }) {
   }, [staff])
 
   useEffect(() => {
-    if (cooldown <= 0) return
-    const timer = setTimeout(() => setCooldown(c => c - 1), 1000)
+    if (cooldownUntil <= now) return
+    const timer = setTimeout(() => setNow(Date.now()), 1000)
     return () => clearTimeout(timer)
-  }, [cooldown])
+  }, [cooldownUntil, now])
+
+  /** Start the resend clock for this destination, and remember both. */
+  function startCooldown(seconds, pending) {
+    const until = Date.now() + seconds * 1000
+    setNow(Date.now())
+    setCooldownUntil(until)
+    if (pending) writePending(audience, { ...pending, cooldownUntil: until })
+  }
 
   function switchChannel(next) {
     setChannel(next)
@@ -103,6 +149,8 @@ function SignIn({ audience }) {
     setChallengeId('')
     setMsg('')
     setIsError(false)
+    setCooldownUntil(0)
+    writePending(audience, null)
   }
 
   function fail(message) {
@@ -113,12 +161,13 @@ function SignIn({ audience }) {
   function handleFailure(err) {
     // A 429 carries Retry-After; mirror it in the UI so the button reflects the
     // server's actual cooldown rather than our guess at it.
-    if (err?.status === 429 && err.retryAfter) setCooldown(err.retryAfter)
+    if (err?.status === 429 && err.retryAfter) startCooldown(err.retryAfter, readPending(audience))
     fail(err?.message || 'Something went wrong. Try again.')
   }
 
   /**
-   * Request a code and return how many seconds until a resend is allowed.
+   * Request a code. Returns the challenge (SMS only), how many seconds until a
+   * resend is allowed, and how long the code stays valid.
    *
    * The two channels take different routes: email OTP is Supabase's own, while
    * SMS goes through our backend, which drives the SMS provider and hands back
@@ -126,9 +175,9 @@ function SignIn({ audience }) {
    */
   async function requestCode(destination) {
     if (channel === 'sms') {
-      const { challenge_id, resend_in } = await api.auth.smsStart(destination)
+      const { challenge_id, resend_in, expires_in } = await api.auth.smsStart(destination)
       setChallengeId(challenge_id)
-      return resend_in || RESEND_SECONDS
+      return { challengeId: challenge_id, wait: resend_in || RESEND_SECONDS, valid: expires_in || RESEND_SECONDS * 5 }
     }
 
     // Email is for staff accounts that already exist. Customers sign up by
@@ -144,7 +193,19 @@ function SignIn({ audience }) {
       }
       throw new Error(error.message)
     }
-    return RESEND_SECONDS
+    return { challengeId: '', wait: RESEND_SECONDS, valid: EMAIL_CODE_SECONDS }
+  }
+
+  /** Record a sent code so a reload lands back on the code step. */
+  function rememberSent(destination, sent) {
+    const pending = {
+      channel,
+      sentTo: destination,
+      challengeId: sent.challengeId,
+      expiresAt: Date.now() + sent.valid * 1000,
+      cooldownUntil: 0,
+    }
+    startCooldown(sent.wait, pending)
   }
 
   async function sendCode(e) {
@@ -161,12 +222,27 @@ function SignIn({ audience }) {
       if (!destination) return fail('Enter your email address.')
     }
 
+    // Back on the send step with the same number while its code is still
+    // good and the resend clock still running: go back to that code rather
+    // than texting again. ("Use a different number" used to be a way round the
+    // cooldown.)
+    const pending = readPending(audience)
+    if (pending && pending.channel === channel && pending.sentTo === destination && pending.cooldownUntil > Date.now()) {
+      setSentTo(pending.sentTo)
+      setChallengeId(pending.challengeId)
+      setCooldownUntil(pending.cooldownUntil)
+      setNow(Date.now())
+      setStep('verify')
+      setMsg(channel === 'sms' ? 'We already texted a code to this number. Enter it below.' : 'We already emailed a code to this address. Enter it below.')
+      return
+    }
+
     setLoading(true)
     try {
-      const wait = await requestCode(destination)
+      const sent = await requestCode(destination)
       setSentTo(destination)
       setStep('verify')
-      setCooldown(wait)
+      rememberSent(destination, sent)
       setMsg(channel === 'sms' ? 'Code sent by text.' : 'Check your email for a 6-digit code.')
     } catch (err) {
       handleFailure(err)
@@ -181,7 +257,7 @@ function SignIn({ audience }) {
     setIsError(false)
     setLoading(true)
     try {
-      setCooldown(await requestCode(sentTo))
+      rememberSent(sentTo, await requestCode(sentTo))
       setMsg('New code sent.')
     } catch (err) {
       handleFailure(err)
@@ -213,6 +289,7 @@ function SignIn({ audience }) {
         if (error) throw new Error(error.message)
       }
 
+      writePending(audience, null)
       // Each page lands where its audience works, unless the visitor was
       // bounced here from somewhere specific. Whether a staff sign-in may see
       // /admin is the API's call (routes/admin/auth.py), not this page's.

@@ -1,5 +1,7 @@
-import { createContext, use, useState, type PropsWithChildren } from 'react'
+import { createContext, use, useEffect, useState, type PropsWithChildren } from 'react'
+import { Platform } from 'react-native'
 import type { CartItem, ListingDetail } from '@web/types'
+import { keychainStorage } from './supabase'
 
 // Mirrors the limits in routes/orders.py, so the app stops the shopper before
 // the backend has to reject the order.
@@ -44,8 +46,60 @@ function toItem(l: ListingDetail): CartItem {
   }
 }
 
-export function CartProvider({ children }: PropsWithChildren) {
+/* The cart is saved per shopper on the device, so closing the app, or the
+   system killing it in the background, doesn't empty it. Prices and stock are
+   checked again when the order is placed; a cart older than a day is dropped
+   rather than shown with prices that may have moved. Same rule as the web. */
+const CART_TTL_MS = 24 * 60 * 60 * 1000
+const cartKey = (userId: string) => `terpee.cart.${userId}`
+const cartStorage = Platform.OS === 'web'
+  ? {
+      getItem: async (k: string) => globalThis.localStorage?.getItem(k) ?? null,
+      setItem: async (k: string, v: string) => globalThis.localStorage?.setItem(k, v),
+      removeItem: async (k: string) => globalThis.localStorage?.removeItem(k),
+    }
+  : keychainStorage
+
+async function readCart(userId: string): Promise<CartItem[]> {
+  try {
+    const saved = JSON.parse((await cartStorage.getItem(cartKey(userId))) ?? 'null')
+    if (!saved || !Array.isArray(saved.items) || Date.now() - saved.savedAt > CART_TTL_MS) return []
+    return saved.items
+  } catch {
+    return []
+  }
+}
+
+function writeCart(userId: string, items: CartItem[]) {
+  const write = items.length
+    ? cartStorage.setItem(cartKey(userId), JSON.stringify({ savedAt: Date.now(), items }))
+    : cartStorage.removeItem(cartKey(userId))
+  // A failed save leaves the cart working for this session; nothing to tell the shopper.
+  write.catch(() => {})
+}
+
+/** Mounted per signed-in user (the layout keys it on the user id). */
+export function CartProvider({ userId, children }: PropsWithChildren<{ userId?: string }>) {
   const [items, setItems] = useState<CartItem[]>([])
+  // Nothing is saved until the saved cart has been read, so an empty first
+  // render can't overwrite it.
+  const [loaded, setLoaded] = useState(!userId)
+
+  useEffect(() => {
+    if (!userId) return
+    let cancelled = false
+    readCart(userId).then(saved => {
+      if (cancelled) return
+      // Something added in the moment before the read finished wins.
+      setItems(current => (current.length ? current : saved))
+      setLoaded(true)
+    })
+    return () => { cancelled = true }
+  }, [userId])
+
+  useEffect(() => {
+    if (userId && loaded) writeCart(userId, items)
+  }, [userId, loaded, items])
 
   function add(l: ListingDetail): 'added' | 'other-store' | 'full' {
     if (items.length && items[0].dispensaryId !== l.dispensary_id) return 'other-store'

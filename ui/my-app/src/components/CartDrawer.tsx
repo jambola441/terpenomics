@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import Checkout from './Checkout'
 import type { CartItem, Order } from '../types'
 import { t, radius, font } from '../theme'
@@ -10,12 +10,18 @@ interface CartDrawerProps {
   open: boolean
   onClose: () => void
   onRemove: (listingId: string) => void
+  /** Zero removes the line. */
+  onSetQuantity: (listingId: string, quantity: number) => void
+  /** The backend's per-line limit. */
+  maxQuantity: number
   onClear: () => void
   onPlaced: (order: Order) => void
   onViewOrders: () => void
 }
 
-export default function CartDrawer({ items, open, onClose, onRemove, onClear, onPlaced, onViewOrders }: CartDrawerProps) {
+export default function CartDrawer({
+  items, open, onClose, onRemove, onSetQuantity, maxQuantity, onClear, onPlaced, onViewOrders,
+}: CartDrawerProps) {
   const [checkingOut, setCheckingOut] = useState(false)
   const total = items.reduce((sum, i) => sum + (i.price_cents ?? 0) * i.quantity, 0)
   const dispensaryName = items[0]?.dispensaryName ?? ''
@@ -128,22 +134,24 @@ export default function CartDrawer({ items, open, onClose, onRemove, onClear, on
                       <div style={{ color: t.text3, fontFamily: font.family.mono, fontSize: font.size.caption, marginTop: 2 }}>{item.variant}</div>
                     )}
                     {item.price_cents != null && (
-                      <div className="num" style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.body, marginTop: 3 }}>
-                        ${(item.price_cents / 100).toFixed(2)}
+                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', columnGap: 6, marginTop: 3 }}>
+                        <span className="num" style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.body }}>
+                          ${((item.price_cents * item.quantity) / 100).toFixed(2)}
+                        </span>
+                        {item.quantity > 1 && (
+                          <span className="num" style={{ color: t.text3, fontSize: font.size.small, whiteSpace: 'nowrap' }}>
+                            ${(item.price_cents / 100).toFixed(2)} each
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>
-                  <button
-                    onClick={() => onRemove(item.listingId)}
-                    aria-label="Remove item"
-                    style={{
-                      background: 'transparent', border: 'none',
-                      color: t.text3, cursor: 'pointer',
-                      padding: 6, flexShrink: 0, display: 'flex',
-                    }}
-                  >
-                    <Icon name="trash" size={17} />
-                  </button>
+                  <QuantityStepper
+                    name={item.name}
+                    quantity={item.quantity}
+                    max={maxQuantity}
+                    onChange={q => (q <= 0 ? onRemove(item.listingId) : onSetQuantity(item.listingId, q))}
+                  />
                 </div>
               ))}
             </div>
@@ -179,5 +187,50 @@ export default function CartDrawer({ items, open, onClose, onRemove, onClear, on
         <div style={{ height: 'env(safe-area-inset-bottom, 0px)' }} />
       </div>
     </>
+  )
+}
+
+/** − n + for one cart line. At one, minus becomes remove, so there is one way
+ *  to take a line out rather than a second button beside the stepper. */
+function QuantityStepper({ name, quantity, max, onChange }: {
+  name: string
+  quantity: number
+  max: number
+  onChange: (quantity: number) => void
+}) {
+  const atMax = quantity >= max
+  const button = (disabled: boolean): CSSProperties => ({
+    width: 40, height: 40, borderRadius: radius.pill, border: 'none', background: 'transparent',
+    color: disabled ? t.text4 : t.text1, cursor: disabled ? 'default' : 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0,
+  })
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', flexShrink: 0,
+      background: t.surface3, border: `1px solid ${t.borderStrong}`, borderRadius: radius.pill, padding: 2,
+    }}>
+      <button
+        onClick={() => onChange(quantity - 1)}
+        aria-label={quantity <= 1 ? `Remove ${name}` : `One fewer ${name}`}
+        style={button(false)}
+      >
+        <Icon name={quantity <= 1 ? 'trash' : 'minus'} size={16} strokeWidth={2} />
+      </button>
+      <span className="num" aria-live="polite" style={{
+        minWidth: 22, textAlign: 'center', color: t.text1,
+        fontWeight: font.weight.bold, fontSize: font.size.body,
+      }}>
+        {quantity}
+      </span>
+      <button
+        onClick={() => !atMax && onChange(quantity + 1)}
+        disabled={atMax}
+        aria-label={atMax ? `${max} is the most per order` : `One more ${name}`}
+        title={atMax ? `Up to ${max} of one item per order` : undefined}
+        style={button(atMax)}
+      >
+        <Icon name="plus" size={16} strokeWidth={2} />
+      </button>
+    </div>
   )
 }

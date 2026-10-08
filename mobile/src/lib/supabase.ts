@@ -7,11 +7,12 @@ import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config'
 /**
  * Session storage in the iOS Keychain. A Supabase session (two JWTs plus the
  * user record) can run past the ~2KB SecureStore advises per value, so it is
- * split into chunks with the chunk count stored under the key itself.
+ * split into chunks with the chunk count stored under the key itself. The cart
+ * is saved the same way (lib/cart.tsx).
  */
 const CHUNK = 1800
 
-const keychainStorage = {
+export const keychainStorage = {
   async getItem(key: string): Promise<string | null> {
     const count = await SecureStore.getItemAsync(key)
     if (count === null) return null

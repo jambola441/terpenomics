@@ -11,9 +11,9 @@
    browse the catalogue the two hardest to find.
    ========================================================================== */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type CSSProperties } from 'react'
 import { useNavigate, useSearchParams, useMatch, Navigate, useLocation } from 'react-router-dom'
-import api from './api/client'
+import api, { ApiError } from './api/client'
 import supabase from './utils/supabase'
 import DispensaryMap from './components/DispensaryMap'
 import HomeFeed from './components/HomeFeed'
@@ -28,7 +28,7 @@ import ProfileView from './components/ProfileView'
 import CartDrawer from './components/CartDrawer'
 import OnboardingScreen from './components/OnboardingScreen'
 import type { CartItem, CustomerProfile, Order } from './types'
-import type { Session } from '@supabase/supabase-js'
+import type { Session } from '@supabase/auth-js'
 import { t, radius, font, motion } from './theme'
 import { FeedState } from './components/ui'
 import { Icon, type IconName } from './components/Icon'
@@ -59,7 +59,27 @@ const SECTION_OF: Record<string, Tab> = {
   home: 'home',
 }
 
-function NotLinkedScreen({ message, onSignOut }: { message: string; onSignOut: () => void }) {
+type AccountProblem = 'not_linked' | 'unreachable'
+
+/** /me, linking the sign-in to a customer first if this is its first visit.
+ *  Only a 404 means "not linked yet". A timeout or a 500 is an outage, and
+ *  linking on one used to turn a blip into "your account isn't connected". */
+async function loadProfile(): Promise<CustomerProfile> {
+  try {
+    return await api.me.getProfile()
+  } catch (err) {
+    if (!(err instanceof ApiError) || err.status !== 404) throw err
+  }
+  await api.me.linkCustomer()
+  return api.me.getProfile()
+}
+
+function AccountProblemScreen({ problem, onRetry, onSignOut }: {
+  problem: AccountProblem
+  onRetry: () => void
+  onSignOut: () => void
+}) {
+  const unreachable = problem === 'unreachable'
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -70,31 +90,69 @@ function NotLinkedScreen({ message, onSignOut }: { message: string; onSignOut: (
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         background: t.surface2, border: `1px solid ${t.border}`, color: t.text3,
       }}>
-        <Icon name="unlink" size={22} />
+        <Icon name={unreachable ? 'alert' : 'unlink'} size={22} />
       </div>
       <div style={{
         color: t.text1, fontFamily: font.family.display, fontWeight: font.weight.semibold,
         fontSize: font.size.display, marginBottom: 10, letterSpacing: '-0.015em',
       }}>
-        Couldn't open your account
+        {unreachable ? "Can't reach Terpee right now" : "Couldn't open your account"}
       </div>
       <div style={{ color: t.text3, fontSize: font.size.body, lineHeight: 1.6, maxWidth: 300 }}>
-        {message === 'not_linked'
-          ? "Your sign-in isn't connected to a customer account yet."
-          : message}
-        {' '}Customers sign in with their phone number.
+        {unreachable
+          ? "Check your connection and try again. You're still signed in."
+          : "Your sign-in isn't connected to a customer account yet. Customers sign in with their phone number."}
       </div>
       <button
-        onClick={onSignOut}
+        onClick={onRetry}
         style={{
-          marginTop: 22, background: 'none', border: `1px solid ${t.borderStrong}`, borderRadius: radius.md,
-          color: t.text1, fontSize: font.size.body, fontWeight: font.weight.semibold, padding: '10px 18px', cursor: 'pointer',
+          marginTop: 22, minWidth: 160, background: t.accent, border: 'none', borderRadius: radius.md,
+          color: t.accentInk, fontSize: font.size.body, fontWeight: font.weight.bold, padding: '12px 18px', cursor: 'pointer',
         }}
       >
-        Sign out
+        Try again
       </button>
+      {/* Signing back in costs a text and can't fix an outage, so it is only
+          offered when the account itself is the problem. */}
+      {!unreachable && (
+        <button
+          onClick={onSignOut}
+          style={{
+            marginTop: 10, minWidth: 160, background: 'none', border: `1px solid ${t.borderStrong}`, borderRadius: radius.md,
+            color: t.text1, fontSize: font.size.body, fontWeight: font.weight.semibold, padding: '11px 18px', cursor: 'pointer',
+          }}
+        >
+          Sign out
+        </button>
+      )}
     </div>
   )
+}
+
+/* The cart is kept per shopper on this device, so a refresh, the browser
+   discarding a background tab, or closing it doesn't empty it. Prices and stock
+   are checked again when the order is placed; a cart older than a day is
+   dropped rather than shown with prices that may have moved. */
+const CART_TTL_MS = 24 * 60 * 60 * 1000
+const cartKey = (userId: string) => `terpee:cart:${userId}`
+
+function readCart(userId: string): CartItem[] {
+  try {
+    const saved = JSON.parse(localStorage.getItem(cartKey(userId)) ?? 'null')
+    if (!saved || !Array.isArray(saved.items) || Date.now() - saved.savedAt > CART_TTL_MS) return []
+    return saved.items
+  } catch {
+    return []
+  }
+}
+
+function writeCart(userId: string, items: CartItem[]) {
+  try {
+    if (items.length) localStorage.setItem(cartKey(userId), JSON.stringify({ savedAt: Date.now(), items }))
+    else localStorage.removeItem(cartKey(userId))
+  } catch {
+    // Storage full or blocked (private mode): the cart still works for this visit.
+  }
 }
 
 export default function CustomerPortal() {
@@ -133,17 +191,34 @@ export default function CustomerPortal() {
   const activeTab: Tab = SECTION_OF[section] ?? 'home'
 
   const [session, setSession] = useState<Session | null | undefined>(undefined)
+  const userId = session?.user.id ?? null
   const [profile, setProfile] = useState<CustomerProfile | null>(null)
-  const [profileError, setProfileError] = useState<string | null>(null)
+  const [profileProblem, setProfileProblem] = useState<AccountProblem | null>(null)
+  const [profileAttempt, setProfileAttempt] = useState(0)
   const customerId = profile?.id ?? null
 
   const [cart, setCart] = useState<CartItem[]>([])
+  const [cartOwner, setCartOwner] = useState<string | null>(null)
   const [cartOpen, setCartOpen] = useState(false)
 
   const [orders, setOrders] = useState<Order[]>([])
   const [ordersLoading, setOrdersLoading] = useState(true)
   const [ordersError, setOrdersError] = useState<string | null>(null)
   const [cancellingIds, setCancellingIds] = useState<Set<string>>(new Set())
+  // Per order: a failed cancel is that order's problem, and must not hide the
+  // others' pickup codes.
+  const [cancelErrors, setCancelErrors] = useState<Record<string, string>>({})
+
+  // Pick up this shopper's saved cart as soon as we know who they are. Done
+  // while rendering rather than in an effect so the first save below already
+  // sees it, and never writes an empty cart over the saved one.
+  if (userId && cartOwner !== userId) {
+    setCartOwner(userId)
+    setCart(readCart(userId))
+  }
+  useEffect(() => {
+    if (cartOwner) writeCart(cartOwner, cart)
+  }, [cartOwner, cart])
 
   // Track Supabase session
   useEffect(() => {
@@ -152,37 +227,54 @@ export default function CustomerPortal() {
     return () => subscription.unsubscribe()
   }, [])
 
-  // Resolve customer ID once session is available, auto-linking on first login
+  // The account and orders are keyed on the user, not the session object:
+  // onAuthStateChange hands over a new object for the same session (at start
+  // and on every token refresh), which used to load both two or three times.
   useEffect(() => {
-    if (!session) return
-    api.me.getProfile()
-      .then(setProfile)
-      .catch(() =>
-        api.me.linkCustomer()
-          .then(() => api.me.getProfile())
-          .then(setProfile)
-          .catch(err => setProfileError(err.message ?? 'not_linked'))
-      )
-  }, [session])
+    if (!userId) return
+    let cancelled = false
+    setProfileProblem(null)
+    loadProfile()
+      .then(p => { if (!cancelled) setProfile(p) })
+      .catch(err => {
+        if (cancelled) return
+        // A 4xx is about this account; anything else (5xx, offline) is an outage.
+        const aboutAccount = err instanceof ApiError && err.status >= 400 && err.status < 500
+        setProfileProblem(aboutAccount ? 'not_linked' : 'unreachable')
+      })
+    return () => { cancelled = true }
+  }, [userId, profileAttempt])
 
   // Orders come from /me/orders, which identifies the customer by token, so this
-  // waits on the session rather than on customerId.
+  // waits on the sign-in rather than on customerId.
   useEffect(() => {
-    if (!session) return
+    if (!userId) return
+    let cancelled = false
     setOrdersLoading(true)
     api.orders.list()
-      .then(setOrders)
-      .catch(() => setOrdersError('Could not load your orders.'))
-      .finally(() => setOrdersLoading(false))
-  }, [session])
+      .then(list => { if (!cancelled) { setOrders(list); setOrdersError(null) } })
+      .catch(() => { if (!cancelled) setOrdersError('Could not load your orders.') })
+      .finally(() => { if (!cancelled) setOrdersLoading(false) })
+    return () => { cancelled = true }
+  }, [userId])
 
   async function handleCancelOrder(orderId: string) {
     setCancellingIds(prev => new Set(prev).add(orderId))
+    setCancelErrors(prev => {
+      const next = { ...prev }
+      delete next[orderId]
+      return next
+    })
     try {
       const updated = await api.orders.cancel(orderId)
       setOrders(prev => prev.map(o => (o.id === orderId ? updated : o)))
-    } catch {
-      setOrdersError('Could not cancel that order.')
+    } catch (err) {
+      // The API's 4xx details are written for people ("already picked up");
+      // anything else gets a plain line.
+      const message = err instanceof ApiError && err.status >= 400 && err.status < 500 && err.message
+        ? err.message
+        : "Couldn't cancel this order. Check your connection and try again."
+      setCancelErrors(prev => ({ ...prev, [orderId]: message }))
     } finally {
       setCancellingIds(prev => {
         const next = new Set(prev)
@@ -239,6 +331,13 @@ export default function CustomerPortal() {
     setCart(prev => prev.filter(i => i.listingId !== listingId))
   }
 
+  /** The cart's stepper. Zero removes the line; the cap is the backend's. */
+  function handleSetQuantity(listingId: string, quantity: number) {
+    setCart(prev => quantity <= 0
+      ? prev.filter(i => i.listingId !== listingId)
+      : prev.map(i => (i.listingId === listingId ? { ...i, quantity: Math.min(quantity, MAX_QTY_PER_LINE) } : i)))
+  }
+
   // Drill-downs stay in the section the shopper is browsing.
   const openProduct = (brand: string | null, key: string) =>
     navigate(
@@ -259,7 +358,15 @@ export default function CustomerPortal() {
   if (!session) {
     return <Navigate to="/" replace state={{ from: location.pathname + location.search }} />
   }
-  if (profileError) return <NotLinkedScreen message={profileError} onSignOut={handleSignOut} />
+  if (profileProblem) {
+    return (
+      <AccountProblemScreen
+        problem={profileProblem}
+        onRetry={() => setProfileAttempt(n => n + 1)}
+        onSignOut={handleSignOut}
+      />
+    )
+  }
   if (!profile || !customerId) {
     return <div style={{ height: '100dvh', background: t.bg }}><FeedState kind="loading" message="Loading…" style={{ height: '100%' }} /></div>
   }
@@ -284,9 +391,18 @@ export default function CustomerPortal() {
   }
 
   const cartCount = cart.reduce((sum, i) => sum + i.quantity, 0)
+  const cartBarShown = cartCount > 0 && !cartOpen
+  // How far up from the bottom the fixed bars reach, for screens that pin
+  // things to the bottom (the map's sheets, the store page). Without the cart
+  // bar, sheets keep sitting just over the nav's top edge, as they always have;
+  // with it, they move above it rather than under it.
+  const shellStyle = {
+    position: 'fixed', inset: 0, background: t.bg, overflow: 'hidden',
+    '--chrome-bottom': cartBarShown ? '138px' : '64px',
+  } as CSSProperties
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: t.bg, overflow: 'hidden' }}>
+    <div style={shellStyle}>
       {/* A product or a listing opens over whichever section the shopper is in;
           otherwise the section decides. */}
       {selectedListingId && selectedListingDispensaryId ? (
@@ -354,6 +470,7 @@ export default function CustomerPortal() {
           ordersError={ordersError}
           onCancelOrder={handleCancelOrder}
           cancellingIds={cancellingIds}
+          cancelErrors={cancelErrors}
           onSignOut={handleSignOut}
         />
       )}
@@ -363,6 +480,8 @@ export default function CustomerPortal() {
         open={cartOpen}
         onClose={() => setCartOpen(false)}
         onRemove={handleRemoveFromCart}
+        onSetQuantity={handleSetQuantity}
+        maxQuantity={MAX_QTY_PER_LINE}
         onClear={() => setCart([])}
         onPlaced={(order) => {
           // The cart is now an order; keep the list fresh without a refetch.
@@ -375,7 +494,7 @@ export default function CustomerPortal() {
       {/* Cart bar — above the nav, and only once there is something in it. Six
           sections leave no room for a permanent cart button, and an empty cart
           is not worth a permanent slot anyway. */}
-      {cartCount > 0 && !cartOpen && (
+      {cartBarShown && (
         <button
           onClick={() => setCartOpen(true)}
           style={{

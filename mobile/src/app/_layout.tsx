@@ -48,7 +48,7 @@ function RootNavigator() {
   const signedUp = !!profile?.onboarding.complete
   // Keyed by user so signing out (or in as someone else) starts an empty cart.
   return (
-    <CartProvider key={session?.user.id ?? 'signed-out'}>
+    <CartProvider key={session?.user.id ?? 'signed-out'} userId={session?.user.id}>
     <Stack
       screenOptions={{
         headerStyle: { backgroundColor: t.bg },

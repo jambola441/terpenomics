@@ -1,37 +1,45 @@
+import { lazy, Suspense } from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+
 import Login, { StaffLogin } from './Login'
 import StaffGate from './StaffGate'
 import AuthCallback from './AuthCallback'
-import AdminHome from './AdminHome'
-import Products from './Products'
-import ProductDetail from './ProductDetail'
-import Customers from './Customers'
-import CustomerEdit from './CustomerEdit'
-import Purchases from './Purchases'
-import Orders from './Orders'
-import BrandCatalogs from './BrandCatalogs'
-import BrandCatalogEdit from './BrandCatalogEdit'
-import Dispensaries from './Dispensaries'
-import DispensaryEdit from './DispensaryEdit'
-import DispensaryListingsAdmin from './DispensaryListingsAdmin'
-import CustomerRegister from './CustomerRegister'
 import CustomerPortal from './CustomerPortal'
-import LabReportUpload from './LabReportUpload'
-import LabReportDetail from './LabReportDetail'
-import Listings from './Listings'
-import AdminListingDetail from './AdminListingDetail'
-import Partners from './Partners'
-import PartnerDetail from './PartnerDetail'
-import PosOAuthForward from './PosOAuthForward'
-import PartnerPortal from './PartnerPortal'
-import Receipts from './Receipts'
-import { TermsPage, PrivacyPage } from './Legal'
+import { t } from './theme'
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+// Shoppers never open the staff, partner or legal pages, so those load on
+// demand instead of riding in the bundle every customer downloads first.
+const AdminHome = lazy(() => import('./AdminHome'))
+const Products = lazy(() => import('./Products'))
+const ProductDetail = lazy(() => import('./ProductDetail'))
+const Customers = lazy(() => import('./Customers'))
+const CustomerEdit = lazy(() => import('./CustomerEdit'))
+const Purchases = lazy(() => import('./Purchases'))
+const Orders = lazy(() => import('./Orders'))
+const BrandCatalogs = lazy(() => import('./BrandCatalogs'))
+const BrandCatalogEdit = lazy(() => import('./BrandCatalogEdit'))
+const Dispensaries = lazy(() => import('./Dispensaries'))
+const DispensaryEdit = lazy(() => import('./DispensaryEdit'))
+const DispensaryListingsAdmin = lazy(() => import('./DispensaryListingsAdmin'))
+const CustomerRegister = lazy(() => import('./CustomerRegister'))
+const LabReportUpload = lazy(() => import('./LabReportUpload'))
+const LabReportDetail = lazy(() => import('./LabReportDetail'))
+const Listings = lazy(() => import('./Listings'))
+const AdminListingDetail = lazy(() => import('./AdminListingDetail'))
+const Partners = lazy(() => import('./Partners'))
+const PartnerDetail = lazy(() => import('./PartnerDetail'))
+const PosOAuthForward = lazy(() => import('./PosOAuthForward'))
+const PartnerPortal = lazy(() => import('./PartnerPortal'))
+const Receipts = lazy(() => import('./Receipts'))
+const TermsPage = lazy(() => import('./Legal').then(m => ({ default: m.TermsPage })))
+const PrivacyPage = lazy(() => import('./Legal').then(m => ({ default: m.PrivacyPage })))
 
 function App() {
   return (
     <>
       <BrowserRouter>
+      {/* The ground colour while a lazy page arrives, so it never flashes white. */}
+      <Suspense fallback={<div style={{ minHeight: '100vh', background: t.bg }} />}>
       <Routes>
         {/* Customers sign in by text at "/"; staff have their own page. */}
         <Route path="/" element={<Login />} />
@@ -66,6 +74,7 @@ function App() {
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
       </Routes>
+      </Suspense>
       </BrowserRouter>
   </>
   )

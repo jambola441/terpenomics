@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { Order, OrderStatus } from '../types'
 import { t, radius, font, tone, type Tone } from '../theme'
 import { formatDate, formatDollars } from '../utils/format'
@@ -10,13 +11,18 @@ const ORDER_STATUS_STYLE: Record<OrderStatus, { label: string; tone: Tone; icon:
   cancelled: { label: 'Cancelled', tone: 'danger', icon: 'x-circle', hint: '' },
 }
 
-export default function OrderCard({ order, onCancel, cancelling }: {
+export default function OrderCard({ order, onCancel, cancelling, cancelError = null }: {
   order: Order
   onCancel: (orderId: string) => void
   cancelling: boolean
+  /** Why the last cancel failed, if it did. */
+  cancelError?: string | null
 }) {
   const style = ORDER_STATUS_STYLE[order.status]
   const open = order.status === 'submitted' || order.status === 'ready'
+  // Cancelling can't be undone and the button sits right under the pickup code
+  // someone is showing at the counter, so it takes a second, deliberate tap.
+  const [confirming, setConfirming] = useState(false)
 
   return (
     <div style={{
@@ -123,12 +129,12 @@ export default function OrderCard({ order, onCancel, cancelling }: {
         </div>
       )}
 
-      {open && (
+      {open && !confirming && (
         <button
-          onClick={() => onCancel(order.id)}
+          onClick={() => setConfirming(true)}
           disabled={cancelling}
           style={{
-            width: '100%', marginTop: 12, boxSizing: 'border-box',
+            width: '100%', minHeight: 44, marginTop: 12, boxSizing: 'border-box',
             background: 'transparent', border: `1px solid ${t.borderStrong}`,
             borderRadius: radius.md, color: t.text2,
             fontSize: font.size.small + 1, fontWeight: font.weight.medium,
@@ -137,6 +143,48 @@ export default function OrderCard({ order, onCancel, cancelling }: {
         >
           {cancelling ? 'Cancelling…' : 'Cancel order'}
         </button>
+      )}
+
+      {open && confirming && (
+        <div style={{
+          marginTop: 12, padding: 12, borderRadius: radius.md,
+          background: tone.danger.bg, border: `1px solid ${tone.danger.edge}`,
+        }}>
+          <div style={{ color: t.text1, fontSize: font.size.body, fontWeight: font.weight.semibold }}>
+            Cancel this order?
+          </div>
+          <div style={{ color: t.text2, fontSize: font.size.small, marginTop: 3, lineHeight: 1.5 }}>
+            The store stops preparing it. To get these items you'd need to order again.
+          </div>
+          <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+            <button
+              onClick={() => setConfirming(false)}
+              style={{
+                flex: 1, minHeight: 44, background: t.surface2, border: `1px solid ${t.borderStrong}`,
+                borderRadius: radius.md, color: t.text1, fontSize: font.size.body,
+                fontWeight: font.weight.semibold, cursor: 'pointer',
+              }}
+            >
+              Keep order
+            </button>
+            <button
+              onClick={() => { setConfirming(false); onCancel(order.id) }}
+              style={{
+                flex: 1, minHeight: 44, background: 'transparent', border: `1px solid ${tone.danger.edge}`,
+                borderRadius: radius.md, color: tone.danger.fg, fontSize: font.size.body,
+                fontWeight: font.weight.semibold, cursor: 'pointer',
+              }}
+            >
+              Yes, cancel it
+            </button>
+          </div>
+        </div>
+      )}
+
+      {open && cancelError && (
+        <div role="alert" style={{ color: tone.danger.fg, fontSize: font.size.small, marginTop: 8, lineHeight: 1.5 }}>
+          {cancelError}
+        </div>
       )}
     </div>
   )

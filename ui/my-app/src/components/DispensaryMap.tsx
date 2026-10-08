@@ -134,7 +134,15 @@ export default function DispensaryMap({ activeDispensaryId, onAddToCart, cart = 
       setMapReady(true)
     })
 
+    // Leaflet only notices window resizes. The container also changes height
+    // when the cart bar comes and goes, so tell the map, or its tiles and
+    // centre drift from what's on screen.
+    const container = mapRef.current
+    const resize = new ResizeObserver(() => mapInstanceRef.current?.invalidateSize())
+    resize.observe(container)
+
     return () => {
+      resize.disconnect()
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove()
         mapInstanceRef.current = null
@@ -217,7 +225,9 @@ export default function DispensaryMap({ activeDispensaryId, onAddToCart, cart = 
   }, [dispensaries])
 
   const containerStyle: React.CSSProperties = {
-    height: 'calc(100dvh - 64px)',
+    // The shell sets --chrome-bottom to clear its fixed bars, including the
+    // cart bar when there is one, so the sheets' buttons are never under it.
+    height: 'calc(100dvh - var(--chrome-bottom, 64px))',
     position: 'relative',
     background: t.bg,
   }
