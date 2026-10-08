@@ -115,7 +115,35 @@ async function errorMessage(res: Response): Promise<string> {
 }
 
 // Unauthenticated fetch for customer portal (no Supabase session needed)
+/* Recent answers to public catalogue reads, reused for a minute, so going to
+   another tab and back doesn't fetch and redraw the same page again. Nothing
+   about the shopper is kept: their purchases are excluded, and /me goes
+   through authenticatedFetch. A failed read is dropped at once, so Try again
+   really tries again. The server caches the heavy ones too
+   (services/response_cache.py); this saves the trip. */
+const CATALOGUE_TTL_MS = 60_000
+const CATALOGUE_MAX = 100
+const catalogue = new Map<string, { at: number; answer: Promise<unknown> }>()
+
 async function portalFetch<T>(
+  path: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const cacheable = (!options.method || options.method === 'GET') && !path.includes('/purchases')
+  if (!cacheable) return portalRequest<T>(path, options)
+
+  const hit = catalogue.get(path)
+  if (hit && Date.now() - hit.at < CATALOGUE_TTL_MS) return hit.answer as Promise<T>
+  const answer = portalRequest<T>(path, options)
+  catalogue.delete(path)
+  catalogue.set(path, { at: Date.now(), answer })
+  answer.catch(() => { if (catalogue.get(path)?.answer === answer) catalogue.delete(path) })
+  // Oldest first in insertion order; drop it once the map is full.
+  if (catalogue.size > CATALOGUE_MAX) catalogue.delete(catalogue.keys().next().value!)
+  return answer
+}
+
+async function portalRequest<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {

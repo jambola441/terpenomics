@@ -69,6 +69,8 @@ export default function ProductView({ brandName, productKey, onBack, onListingCl
         : null,
     }))
     withDist.sort((a, b) => {
+      // Somewhere you can buy it today comes before somewhere you can't.
+      if (a.offering.in_stock !== b.offering.in_stock) return a.offering.in_stock ? -1 : 1
       if (a.dist != null && b.dist != null) return a.dist - b.dist
       if (a.dist != null) return -1
       if (b.dist != null) return 1
@@ -82,7 +84,11 @@ export default function ProductView({ brandName, productKey, onBack, onListingCl
     return withDist
   }, [product, userPos])
 
-  const prices = (product?.offerings ?? []).map(o => o.price_cents).filter((p): p is number => p != null)
+  // Lowest and average among stores that have it in stock: a price you can't
+  // pay isn't the lowest price. Everything, if nobody has it right now.
+  const stocked = (product?.offerings ?? []).filter(o => o.in_stock)
+  const priced = stocked.length ? stocked : (product?.offerings ?? [])
+  const prices = priced.map(o => o.price_cents).filter((p): p is number => p != null)
   const minPrice = prices.length ? Math.min(...prices) : null
   const maxPrice = prices.length ? Math.max(...prices) : null
   const avgPrice = prices.length ? Math.round(prices.reduce((s, p) => s + p, 0) / prices.length) : null
@@ -178,6 +184,59 @@ export default function ProductView({ brandName, productKey, onBack, onListingCl
             </div>
           )}
 
+          {/* Where to buy comes first: it is what the page is for. Lab data
+              and details follow for anyone weighing it up. */}
+          {/* Availability heading */}
+          <div style={{ padding: '8px 16px 4px' }}>
+            <Label style={{ marginBottom: 2 }}>Where to buy</Label>
+            <div style={{ color: t.text1, fontFamily: font.family.display, fontWeight: font.weight.semibold, fontSize: font.size.heading, letterSpacing: '-0.015em' }}>
+              {product.dispensary_count === 1
+                ? 'Available at 1 dispensary'
+                : `Available at ${product.dispensary_count} dispensaries`}
+            </div>
+          </div>
+          {!userPos && (
+            <div style={{ color: t.text3, fontSize: font.size.caption, padding: '2px 16px 6px', display: 'flex', alignItems: 'center', gap: 5 }}>
+              <Icon name="locate" size={13} /> Turn on location to sort by distance
+            </div>
+          )}
+
+          {/* Dispensary list */}
+          <div style={{ padding: '4px 16px 22px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {offerings.map(({ offering: o, dist }) => {
+              const isCheapest = o.price_cents != null && o.price_cents === minPrice && minPrice !== maxPrice
+              return (
+                <Pressable
+                  key={o.listing_id}
+                  onClick={() => onListingClick(o.dispensary_id, o.listing_id)}
+                  style={{
+                    background: t.surface1, borderRadius: radius.lg, padding: 14, display: 'flex', gap: 12,
+                    alignItems: 'center', border: `1px solid ${t.border}`,
+                  }}
+                >
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ color: t.text1, fontWeight: font.weight.semibold, fontSize: font.size.callout, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {o.dispensary_name}
+                    </div>
+                    <div style={{ color: t.text3, fontSize: font.size.small, marginTop: 3, display: 'flex', alignItems: 'center', gap: 4 }}>
+                      {dist != null && <><Icon name="pin" size={12} /><span className="num">{formatDist(dist)}</span><span aria-hidden>·</span></>}
+                      <span style={{ color: o.in_stock ? t.success : t.warning }}>{o.in_stock ? 'In stock' : 'Out of stock'}</span>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
+                    {o.price_cents != null && (
+                      <div className="num" style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.callout }}>{formatDollars(o.price_cents)}</div>
+                    )}
+                    {isCheapest && (
+                      <div style={{ color: t.success, fontFamily: font.family.mono, fontSize: font.size.micro + 0.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>lowest</div>
+                    )}
+                  </div>
+                  <Icon name="chevron-right" size={18} color={t.text3} />
+                </Pressable>
+              )
+            })}
+          </div>
+
           {/* Cannabinoids */}
           {cannabinoids.length > 0 && (
             <DetailBlock title="Cannabinoids" style={{ padding: '0 16px 18px' }}>
@@ -225,58 +284,8 @@ export default function ProductView({ brandName, productKey, onBack, onListingCl
               </p>
             </CollapsibleBlock>
           )}
+          <div style={{ height: 28 }} />
 
-          {/* Availability heading */}
-          <div style={{ padding: '8px 16px 4px' }}>
-            <Label style={{ marginBottom: 2 }}>Where to buy</Label>
-            <div style={{ color: t.text1, fontFamily: font.family.display, fontWeight: font.weight.semibold, fontSize: font.size.heading, letterSpacing: '-0.015em' }}>
-              {product.dispensary_count === 1
-                ? 'Available at 1 dispensary'
-                : `Available at ${product.dispensary_count} dispensaries`}
-            </div>
-          </div>
-          {!userPos && (
-            <div style={{ color: t.text3, fontSize: font.size.caption, padding: '2px 16px 6px', display: 'flex', alignItems: 'center', gap: 5 }}>
-              <Icon name="locate" size={13} /> Turn on location to sort by distance
-            </div>
-          )}
-
-          {/* Dispensary list */}
-          <div style={{ padding: '4px 16px 92px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {offerings.map(({ offering: o, dist }) => {
-              const isCheapest = o.price_cents != null && o.price_cents === minPrice && minPrice !== maxPrice
-              return (
-                <Pressable
-                  key={o.listing_id}
-                  onClick={() => onListingClick(o.dispensary_id, o.listing_id)}
-                  style={{
-                    background: t.surface1, borderRadius: radius.lg, padding: 14, display: 'flex', gap: 12,
-                    alignItems: 'center', border: `1px solid ${t.border}`,
-                  }}
-                >
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ color: t.text1, fontWeight: font.weight.semibold, fontSize: font.size.callout, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {o.dispensary_name}
-                    </div>
-                    <div style={{ color: t.text3, fontSize: font.size.small, marginTop: 3, display: 'flex', alignItems: 'center', gap: 4 }}>
-                      {dist != null
-                        ? <><Icon name="pin" size={12} /><span className="num">{formatDist(dist)}</span></>
-                        : (o.in_stock ? 'In stock' : 'Out of stock')}
-                    </div>
-                  </div>
-                  <div style={{ textAlign: 'right', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
-                    {o.price_cents != null && (
-                      <div className="num" style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.callout }}>{formatDollars(o.price_cents)}</div>
-                    )}
-                    {isCheapest && (
-                      <div style={{ color: t.success, fontFamily: font.family.mono, fontSize: font.size.micro + 0.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>lowest</div>
-                    )}
-                  </div>
-                  <Icon name="chevron-right" size={18} color={t.text3} />
-                </Pressable>
-              )
-            })}
-          </div>
         </>
       )}
     </div>
