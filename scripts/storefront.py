@@ -433,6 +433,40 @@ def all_recipes() -> list[dict]:
             for p in sorted(RECIPE_DIR.glob("*.json"))]
 
 
+def sources(source: dict) -> list[dict]:
+    """The recipe's source, then the source with each of `also`'s overrides laid over it:
+    a page that holds two product lists (Jetpacks' FJ and Big Bang series, two
+    `extract`s) or a second listing of the same kind."""
+    base = {k: v for k, v in source.items() if k != "also"}
+    return [base] + [{**base, **o} for o in source.get("also") or []]
+
+
+def _validate_source(src: dict, kind: str, bad) -> None:
+    if not (src.get("url") or src.get("urls") or src.get("sitemap") or src.get("discover")):
+        bad("source needs url, urls, sitemap or discover")
+    if src.get("discover"):
+        d = src["discover"]
+        try:
+            if not (d.get("url") and re.compile(d.get("match") or "").groups >= 1):
+                bad("source.discover needs url, and a match with a group for the data URL")
+        except re.error as e:
+            bad(f"source.discover.match: {e}")
+    if src.get("split"):
+        sp = src["split"]
+        try:
+            if sp.get("field") not in FIELDS or not re.compile(sp.get("find") or ""):
+                bad(f"source.split needs a field ({', '.join(FIELDS)}) and a find regex")
+        except re.error as e:
+            bad(f"source.split.find: {e}")
+    if kind in ("html", "json") and not (src.get("fields") or {}).get("title"):
+        bad(f"source.fields.title is required for {kind}")
+    if kind == "json" and not src.get("items"):
+        bad("source.items (the dot path to the products) is required for json")
+    unknown = set(src.get("fields") or {}) - set(FIELDS) - {"id"}
+    if unknown:
+        bad(f"source.fields: unknown fields {sorted(unknown)} (fields: id, {', '.join(FIELDS)})")
+
+
 def validate(recipe: dict, where: str = "recipe") -> dict:
     """Fail on load, naming the rule, rather than half-way through a fetch."""
     def bad(msg):
@@ -455,27 +489,16 @@ def validate(recipe: dict, where: str = "recipe") -> dict:
                 re.compile(pattern)
             except re.error as e:
                 bad(f"store_skip[{i}].when.{f}: {e}")
-    src = recipe["source"]
-    if not (src.get("url") or src.get("urls") or src.get("sitemap") or src.get("discover")):
-        bad("source needs url, urls, sitemap or discover")
-    if src.get("discover"):
-        d = src["discover"]
-        try:
-            if not (d.get("url") and re.compile(d.get("match") or "").groups >= 1):
-                bad("source.discover needs url, and a match with a group for the data URL")
-        except re.error as e:
-            bad(f"source.discover.match: {e}")
+    also = recipe["source"].get("also")
+    if also is not None and not (isinstance(also, list) and all(
+            isinstance(o, dict) and not {"kind", "also"} & set(o) for o in also)):
+        bad("source.also is a list of overrides, each without kind or also")
+    for src in sources(recipe["source"]):
+        _validate_source(src, kind, bad)
     for i, rule in enumerate(recipe.get("skip") or []):
         old = rule.get("older_than")
         if old is not None and (old.get("field") not in FIELDS or not isinstance(old.get("days"), int)):
             bad(f"skip[{i}].older_than needs a field and whole days")
-    if kind in ("html", "json") and not (src.get("fields") or {}).get("title"):
-        bad(f"source.fields.title is required for {kind}")
-    if kind == "json" and not src.get("items"):
-        bad("source.items (the dot path to the products) is required for json")
-    unknown = set(src.get("fields") or {}) - set(FIELDS) - {"id"}
-    if unknown:
-        bad(f"source.fields: unknown fields {sorted(unknown)} (fields: id, {', '.join(FIELDS)})")
     for section in ("skip", "category", "title"):
         fields = TITLE_FIELDS if section == "title" else FIELDS
         for i, rule in enumerate(recipe.get(section) or []):
@@ -509,18 +532,43 @@ def validate(recipe: dict, where: str = "recipe") -> dict:
 
 
 def fetch(recipe: dict) -> list[Item]:
-    """The site's items. A source with `discover` ({"url": page, "match": regex}) reads
-    that page first and takes the data URL from the regex's first group, for a site
-    whose data file is renamed on every upload (Dank By Definition's lab-results file)."""
-    source = dict(recipe["source"])
-    if source.get("discover"):
-        d = source["discover"]
-        m = re.search(d["match"], _get_text(d["url"]))
-        if not m:
-            raise ValueError(f"discover: {d['match']!r} found nothing on {d['url']}")
-        source["url"] = urllib.parse.urljoin(d["url"], m.group(1))
-    reader, _ = SOURCES[source["kind"]]
-    return reader(source)
+    """The site's items, from the source and each of its `also` overrides. A source
+    with `discover` ({"url": page, "match": regex}) reads that page first and takes the
+    data URL from the regex's first group, for a site whose data file is renamed on
+    every upload (Dank By Definition's lab-results file)."""
+    items = []
+    for source in sources(recipe["source"]):
+        if source.get("discover"):
+            d = source["discover"]
+            m = re.search(d["match"], _get_text(d["url"]))
+            if not m:
+                raise ValueError(f"discover: {d['match']!r} found nothing on {d['url']}")
+            source["url"] = urllib.parse.urljoin(d["url"], m.group(1))
+        reader, _ = SOURCES[source["kind"]]
+        items += split_items(reader(source), source.get("split"))
+    return items
+
+
+def split_items(items: list[Item], spec: dict | None) -> list[Item]:
+    """`split` ({"field": "variant", "find": regex}): an item whose field holds two or
+    more of `find`'s matches is one item per match, the field set to that match. One
+    page for a product in several sizes ("0.5G, 1G, and 2G Pax Era Pods") is then an
+    item per size, which title rules read as usual. An item with fewer matches is
+    left as it is."""
+    if not spec:
+        return items
+    out = []
+    for it in items:
+        found = re.findall(spec["find"], it.fields.get(spec["field"]) or "")
+        if len(found) < 2:
+            out.append(it)
+            continue
+        for piece in found:
+            piece = piece if isinstance(piece, str) else piece[0]
+            out.append(Item(f"{it.id}:{squash(piece)}", it.title,
+                            piece if spec["field"] == "variant" else it.variant,
+                            {**it.fields, spec["field"]: piece}))
+    return out
 
 
 # --------------------------------------------------------------------------- build

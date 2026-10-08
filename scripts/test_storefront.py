@@ -437,3 +437,39 @@ def test_store_listings_leave_a_sub_brand_to_its_own_catalog(monkeypatch):
             {"id": 2, "dispensary_id": 1, "scraped_name": "Kiva Bar - Churro Milk Chocolate", "scraped_brand": "Kiva"}]
     monkeypatch.setattr(db_http, "select_all", lambda table, query: rows)
     assert [l["name"] for l in storefront.store_listings("Kiva", via_http=True)] == ["Kiva Bar - Churro Milk Chocolate"]
+
+
+def test_split_makes_one_item_per_size_a_page_lists():
+    items = [storefront.Item("p1", "Pax Blue Dream Live Rosin Pod", "0.5G, 1G, and 2G Pax Era Pods",
+                             {"title": "Pax Blue Dream Live Rosin Pod", "variant": "0.5G, 1G, and 2G Pax Era Pods"}),
+             storefront.Item("p2", "Pax Lychee Pax Trip", "1G Pax Era Pods",
+                             {"title": "Pax Lychee Pax Trip", "variant": "1G Pax Era Pods"})]
+    out = storefront.split_items(items, {"field": "variant", "find": r"(?<![\d.])[\d.]+G\b"})
+    assert [(i.id, i.variant, i.fields["variant"]) for i in out] == [
+        ("p1:05g", "0.5G", "0.5G"), ("p1:1g", "1G", "1G"), ("p1:2g", "2G", "2G"),
+        ("p2", "1G Pax Era Pods", "1G Pax Era Pods")]
+
+
+def test_also_reads_a_second_list_from_the_same_page(monkeypatch):
+    page = "<script>const FJ = [{n:'Gelato'}]; const BB = [{n:'Chernobyl'},{n:'Empire OG'}];</script>"
+    monkeypatch.setattr(storefront, "_get_text", lambda url, post=None: page)
+    recipe = storefront.validate({
+        "brand": "Jet", "source": {"kind": "json", "url": "https://j.example/#fj", "lenient": True,
+                                   "extract": r"const FJ\s*=\s*(\[.*?\]);", "items": "*", "fields": {"title": "n"},
+                                   "also": [{"url": "https://j.example/#bb",
+                                             "extract": r"const BB\s*=\s*(\[.*?\]);"}]},
+        "category": [{"set": {"category": "preroll"}}],
+        "title": [{"when": {"page": "#fj$"}, "match": "^(?P<strain>.+)$", "set": {"line": "FJ1", "size": "1g"}},
+                  {"when": {"page": "#bb$"}, "match": "^(?P<strain>.+)$", "set": {"line": "Bigger Bang", "size": "1g"}}]})
+    doc, report = storefront.build(recipe, storefront.fetch(recipe))
+    assert sorted((e["product_line"], e["strain"]) for e in doc["entries"]) == [
+        ("Bigger Bang", "Chernobyl"), ("Bigger Bang", "Empire OG"), ("FJ1", "Gelato")]
+
+
+@pytest.mark.parametrize("source", [
+    {"also": {"url": "x"}}, {"also": [{"kind": "html"}]},
+    {"split": {"field": "nope", "find": "x"}}, {"split": {"field": "variant", "find": "("}}])
+def test_a_bad_also_or_split_fails_on_load(source):
+    with pytest.raises(SystemExit):
+        storefront.validate({"brand": "B", "source": {"kind": "json", "url": "u", "items": "*",
+                                                      "fields": {"title": "n"}, **source}})

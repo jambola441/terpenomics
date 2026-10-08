@@ -60,6 +60,19 @@ parameters to every page of a `urls` or `sitemap` source, for a site that shows 
 sizes only in that state's view. One missing page of a list costs that product; most of
 them missing fails the fetch.
 
+`split` (`{"field": "variant", "find": "(?<![\\d.])[\\d.]+G\\b"}`) makes an item whose field
+holds two or more matches of `find` into one item per match, with the field set to that
+match: a page for one product in several sizes ("0.5G, 1G, and 2G Pax Era Pods") becomes an
+item per size, and title rules read each as usual. `also` is a list of overrides laid over
+the source, each read as a source of its own and added to the items: a page that holds two
+product lists (`[{"urls": [...], "extract": "const BB_FLAVORS\\s*=\\s*(\\[.*?\\])"}]`), or a
+second listing of the same kind. An override cannot change `kind`.
+
+For a page that states several sizes but where `split` cannot pull them apart (the sizes
+are in prose, or each size is a separate format), list the page once per size in `urls`
+with a `#<size>` fragment. The fragment never reaches the server; a title rule reads it
+from `page` and sets the size.
+
 **Fields** rules can test: `title`, `product_type`, `tags`, `vendor`, `url`, `body`,
 `variant`, `meta`, `page` (the page an html/json item was read from) — and in a title
 rule, `category`. Each is a regex (`re.search`; anchor
