@@ -142,9 +142,11 @@ changed shape, and the recipe needs another pass.
 
 The bootstrap groups a brand's listings across stores by (category, subtype, strain,
 line, size) — a strain's cart, pod and all-in-one are three products, and a format
-word in the name ("Cart", "AIO") beats the model's subtype. It folds the product_line
-split (a line-less group joins the one lined group that matches it on everything
-else) and keeps products at least two stores carry. On the top 300 brands it proposes
+word in the name ("Cart", "AIO") beats the model's subtype. A line-less group stays
+its own product even beside a lined group of the same strain and size: a brand may
+sell both (Herb's plain and Hash Infused pre-ground), and the matcher settles, listing
+by listing, which one a store that left the line out meant. It keeps products at
+least two stores carry. On the top 300 brands it proposes
 3,122 products covering 61% of their listings. Each entry records its `support` (how
 many stores) and the store names it was built from, so those listings resolve
 exactly — no model call — on every later run, at enrichment and at import.
@@ -331,7 +333,7 @@ its reason gets noticed.
 ```bash
 python scripts/catalog_match.py --all --jev --write     # re-match every listing to current catalogs
 python scripts/storefront.py push --all                   # refresh storefront catalogs
-python scripts/catalog_bootstrap.py --rebuild --push       # refresh bootstrap catalogs (additive)
+python scripts/catalog_bootstrap.py --rebuild --push       # one-off; later fixes go through catalog_fix plans
 python scripts/catalog_bootstrap.py --top 50 --push        # propose catalogs for the next brands
 python scripts/catalog_shape.py triage                     # which catalogs to spot check
 python evals/enrich/audit.py --db                         # suspects per store
