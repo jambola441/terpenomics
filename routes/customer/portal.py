@@ -506,9 +506,22 @@ def get_dispensary_filter_options(
         .order_by(LISTING_PRODUCT_SIZE)
     ).all()
 
+    # What the store has on its shelves, by category, so its page can show one
+    # rail per category it carries and nothing for the ones it doesn't.
+    category_rows = session.exec(
+        select(Listing.scraped_category, func.count(Listing.id))
+        .where(Listing.dispensary_id == dispensary_id)
+        .where(Listing.is_active == True)  # noqa: E712
+        .where(Listing.in_stock == True)  # noqa: E712
+        .where(Listing.scraped_category.isnot(None))
+        .group_by(Listing.scraped_category)
+        .order_by(func.count(Listing.id).desc())
+    ).all()
+
     return {
         "brands": [b for b in brands if b],
         "variants": [v for v in variants if v],
+        "categories": [{"name": name, "count": count} for name, count in category_rows if name],
     }
 
 

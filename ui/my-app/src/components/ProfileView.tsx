@@ -23,6 +23,7 @@ import ReceiptUpload from './ReceiptUpload'
 import EmailEditor from './EmailEditor'
 import ConfirmSheet from './ConfirmSheet'
 import { formatDate, formatDollars } from '../utils/format'
+import { formatE164ForDisplay } from '../utils/phone'
 
 type Pane = 'orders' | 'points' | 'feedback' | 'profile'
 
@@ -93,7 +94,7 @@ export default function ProfileView({
             {profile?.name || 'Your account'}
           </div>
           <div style={{ color: t.text3, fontSize: font.size.small, marginTop: 2 }}>
-            {profile?.phone ?? session.user.phone ?? profile?.email ?? session.user.email}
+            {displayPhone(profile?.phone ?? session.user.phone) ?? profile?.email ?? session.user.email}
           </div>
         </div>
         {points && (
@@ -536,7 +537,7 @@ function ProfilePane({ profile, session, onSaved, onSignOut }: {
           purchase matching find this account. Email is contact only, and
           changes after a code sent to the new address. */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <ReadOnlyRow label="Phone" value={profile.phone ?? session.user.phone ?? '—'} />
+        <ReadOnlyRow label="Phone" value={displayPhone(profile.phone ?? session.user.phone) ?? '—'} />
         <div style={{ color: t.text3, fontSize: font.size.caption, lineHeight: 1.5 }}>
           Your phone number is how you sign in and how stores match your purchases. Ask a
           staff member to change it.
@@ -663,3 +664,10 @@ const nameInputStyle = {
   background: t.surface2, border: `1px solid ${t.border}`, borderRadius: radius.md,
   color: t.text1, fontSize: font.size.body, padding: '12px 14px', outline: 'none',
 } as const
+
+/** (718) 555-0142 rather than +17185550142. Supabase writes the session's
+ *  number without the "+", so it is put back before formatting. */
+function displayPhone(phone: string | null | undefined): string | null {
+  if (!phone) return null
+  return formatE164ForDisplay(phone.startsWith('+') ? phone : `+${phone}`)
+}

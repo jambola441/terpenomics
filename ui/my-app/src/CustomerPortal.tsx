@@ -270,6 +270,26 @@ export default function CustomerPortal() {
     return () => { cancelled = true }
   }, [userId, ordersAttempt])
 
+  // Orders change on the store's side (Preparing becomes Ready), so refresh
+  // them quietly when the shopper comes back to the tab, and every 30 s while
+  // one is still open. They used to load once per visit.
+  const hasOpenOrder = orders.some(o => o.status === 'submitted' || o.status === 'ready')
+  useEffect(() => {
+    if (!userId) return
+    const refresh = () => {
+      if (document.visibilityState !== 'visible') return
+      api.orders.list()
+        .then(list => { setOrders(list); setOrdersError(null) })
+        .catch(() => { /* keep what's on screen; the next tick tries again */ })
+    }
+    document.addEventListener('visibilitychange', refresh)
+    const timer = hasOpenOrder ? window.setInterval(refresh, 30_000) : undefined
+    return () => {
+      document.removeEventListener('visibilitychange', refresh)
+      window.clearInterval(timer)
+    }
+  }, [userId, hasOpenOrder])
+
   async function handleCancelOrder(orderId: string) {
     setCancellingIds(prev => new Set(prev).add(orderId))
     setCancelErrors(prev => {

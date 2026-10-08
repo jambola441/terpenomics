@@ -16,6 +16,12 @@ function formatPrice(cents: number | null) {
 
 const CATEGORIES = ['flower', 'preroll', 'vaporizers', 'edible', 'concentrate', 'tinctures', 'topical', 'merch', 'other']
 
+/** Categories in the store's usual order, any unknown ones after. */
+export function inShelfOrder(names: string[]): string[] {
+  const known = CATEGORIES.filter(c => names.includes(c))
+  return [...known, ...names.filter(n => !CATEGORIES.includes(n))]
+}
+
 
 interface Props {
   dispensaryId: string
@@ -55,8 +61,28 @@ export default function DispensaryListings({
   const [distanceMi, setDistanceMi] = useState<number | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   useScrollMemory(scrollRef, listings.length > 0)
-  const offset = useRef(0)
   const LIMIT = 100
+  /** Cards per category rail on the store page. */
+  const RAIL = 10
+
+  // What the store has in stock, by category: the strip shows these, and the
+  // page draws one rail each. Fetched once per store and shared by both.
+  const [shelf, setShelf] = useState<{ name: string; count: number }[] | null>(null)
+  const optionsRef = useRef<{ id: string; promise: ReturnType<typeof api.portal.getDispensaryFilterOptions> } | null>(null)
+  function filterOptions() {
+    if (optionsRef.current?.id !== dispensaryId) {
+      optionsRef.current = { id: dispensaryId, promise: api.portal.getDispensaryFilterOptions(dispensaryId) }
+    }
+    return optionsRef.current.promise
+  }
+  useEffect(() => {
+    let live = true
+    filterOptions().then(o => { if (live) setShelf(o.categories ?? null) }).catch(() => {})
+    return () => { live = false }
+    // filterOptions reads dispensaryId itself.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispensaryId])
+  const shelfCount = useMemo(() => new Map((shelf ?? []).map(c => [c.name, c.count])), [shelf])
 
   const search = searchParams.get('q') ?? ''
 
@@ -85,22 +111,35 @@ export default function DispensaryListings({
   }, [dispensaryLat, dispensaryLng])
 
   useEffect(() => {
-    offset.current = 0
     setListings([])
     load()
-  }, [search])
+    // load reads search and dispensaryId itself.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, dispensaryId])
 
   async function load() {
     setLoading(true)
     setError(null)
     try {
-      const data = await api.portal.getDispensaryListings(dispensaryId, {
-        q: search || undefined,
-        limit: LIMIT,
-        offset: 0,
-      })
-      setListings(data)
+      if (search) {
+        setListings(await api.portal.getDispensaryListings(dispensaryId, { q: search, limit: LIMIT, offset: 0 }))
+        return
+      }
+      // One rail per category the store carries, each with its own first
+      // ten. A single 100-row page used to fill up with one category at a big
+      // store, and the others never appeared at all.
+      const options = await filterOptions()
+      // An API from before categories were added: one page, as it used to be.
+      if (!options.categories) {
+        setListings(await api.portal.getDispensaryListings(dispensaryId, { limit: LIMIT, offset: 0 }))
+        return
+      }
+      setShelf(options.categories)
+      const rails = await Promise.all(options.categories.map(c =>
+        api.portal.getDispensaryListings(dispensaryId, { category: c.name, limit: RAIL, offset: 0 })))
+      setListings(rails.flat())
     } catch {
+      optionsRef.current = null // let Try again ask afresh
       setError('Failed to load menu')
     } finally {
       setLoading(false)
@@ -285,9 +324,10 @@ export default function DispensaryListings({
         </div>
       </div>
 
-      {/* Category icon strip */}
+      {/* Category icon strip: only what this store carries. */}
+      {shelf && shelf.length > 0 && (
       <div className="no-scrollbar" style={{ display: 'flex', overflowX: 'auto', gap: 0, padding: '16px 8px 8px' }}>
-        {CATEGORIES.map(cat => {
+        {inShelfOrder(shelf.map(c => c.name)).map(cat => {
           const c = categoryColor(cat)
           return (
             <Pressable
@@ -307,6 +347,7 @@ export default function DispensaryListings({
           )
         })}
       </div>
+      )}
 
       {/* Aisle rows */}
       {loading ? (
@@ -330,7 +371,7 @@ export default function DispensaryListings({
                     onClick={() => navigate(`/portal/map/${dispensaryId}/aisle/${encodeURIComponent(catKey)}`)}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.text2, fontSize: font.size.small + 1, fontWeight: font.weight.semibold, padding: '2px 0', display: 'flex', alignItems: 'center', gap: 2 }}
                   >
-                    See all <Icon name="chevron-right" size={15} />
+                    See all{!search && shelfCount.get(catKey) ? ` ${shelfCount.get(catKey)}` : ''} <Icon name="chevron-right" size={15} />
                   </button>
                 </div>
                 <div className="no-scrollbar" style={{ display: 'flex', overflowX: 'auto', gap: 10, padding: '0 16px 12px', scrollSnapType: 'x proximity' }}>

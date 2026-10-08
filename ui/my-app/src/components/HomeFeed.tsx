@@ -281,7 +281,7 @@ function StoreSection({ section, category, onOpenListing, onOpenDispensary, onOp
           background: t.surface2, border: `1px solid ${t.border}`, borderRadius: radius.lg,
           color: t.text3, fontSize: font.size.small,
         }}>
-          {category ? `No ${category} in stock here right now.` : 'Nothing in stock here right now.'}
+          {category ? `No ${categoryLabel(category).toLowerCase()} in stock here right now.` : 'Nothing in stock here right now.'}
         </div>
       ) : (
         FEED_RAILS.map(rail => (
@@ -311,7 +311,7 @@ function CombinedFeed({ rails, storesById, category, onOpenListing, onOpenProduc
     return (
       <FeedState
         kind="empty"
-        message={category ? `No ${category} across your stores right now.` : 'Nothing in stock across your stores.'}
+        message={category ? `No ${categoryLabel(category).toLowerCase()} across your stores right now.` : 'Nothing in stock across your stores.'}
         icon={category ? <CategoryIcon category={category} size={22} /> : 'leaf'}
         style={{ padding: '48px 16px' }}
       />
@@ -368,7 +368,7 @@ function Rail({ rail, items, storesById, onOpenListing, onOpenProduct }: {
           background: 'transparent', border: `1px dashed ${t.borderStrong}`, borderRadius: radius.lg,
           color: t.text3, fontSize: font.size.caption, textAlign: 'center',
         }}>
-          Nothing featured here yet.
+          No picks from this store right now.
         </div>
       ) : (
         // Two rows, filled column by column, so a swipe moves through pairs.
