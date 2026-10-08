@@ -381,6 +381,20 @@ function PriceContextLine({ listing }: { listing: ListingDetail }) {
   const gap = context.avg_cents - price
   const stores = `${context.other_store_count} other ${context.other_store_count === 1 ? 'store' : 'stores'}`
 
+  // Somewhere cheaper is the thing to say first. "Below the average" used to
+  // lead even when one of those stores was $5 less.
+  if (!context.is_cheapest && context.min_cents != null && context.min_cents < price) {
+    const cheapest = (listing.also_available_at ?? []).find(a => a.price_cents === context.min_cents)
+    return (
+      <div style={{ marginTop: 10, color: t.text2, fontSize: font.size.small + 1, lineHeight: 1.5 }}>
+        <span style={{ color: t.warning, fontWeight: font.weight.semibold }}>
+          {formatDollars(price - context.min_cents)} less at {cheapest ? cheapest.dispensary.name : 'another store'}
+        </span>
+        {' · '}average at {stores} {formatDollars(context.avg_cents)}
+      </div>
+    )
+  }
+
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
       {context.is_cheapest && (
