@@ -409,3 +409,41 @@ def test_a_description_that_states_infused_flower_vetoes_plain_flower():
     [d] = cm.resolve(cat, [{"id": 1, "name": name, "category": "flower", "variant": "3.5g",
                             "description": "the Infused Atomic Breath"}], use_jev=True)
     assert d.product_key is None
+
+
+def test_write_over_rest_changes_only_moved_matches_and_never_a_manual_one(fresh_db, via_rest):
+    """The sandbox has no 5432 path, so --write --via-http writes through PostgREST: only
+    listings whose match changed, and each conditioned on the method it read."""
+    import uuid as _uuid
+    cur = fresh_db.cursor()
+    via_rest(fresh_db)
+    store, cat = str(_uuid.uuid4()), str(_uuid.uuid4())
+    cur.execute("INSERT INTO dispensaries (id, name, slug, pos_type, created_at, updated_at) "
+                "VALUES (%s, 'S', 's', 'none', now(), now())", (store,))
+    cur.execute("INSERT INTO brand_catalogs (id, brand_slug, brand_name, source_method) "
+                "VALUES (%s, 'b', 'B', 'curated')", (cat,))
+    old_e, new_e = str(_uuid.uuid4()), str(_uuid.uuid4())
+    for e in (old_e, new_e):
+        cur.execute("INSERT INTO brand_catalog_entries (id, catalog_id, name) VALUES (%s, %s, 'x')", (e, cat))
+    ids = [str(_uuid.uuid4()) for _ in range(4)]
+    stored = [(old_e, 1.0, "exact"), (new_e, 1.0, "exact"), (old_e, 1.0, "manual"), (None, None, None)]
+    for i, (e, c, m) in zip(ids, stored):
+        cur.execute("INSERT INTO listings (id, dispensary_id, scraped_name, in_stock, is_active, created_at, "
+                    "updated_at, catalog_entry_id, catalog_match_confidence, catalog_match_method) "
+                    "VALUES (%s, %s, 'n', true, true, now(), now(), %s, %s, %s)", (i, store, e, c, m))
+
+    def dec(i, e, c, m):
+        listing = {"id": i, "catalog_entry_id": stored[ids.index(i)][0],
+                   "catalog_match_confidence": stored[ids.index(i)][1],
+                   "catalog_match_method": stored[ids.index(i)][2]}
+        return cm.Decision(listing, "p" if e else None, {"id": e} if e else None, c, m)
+
+    decisions = [dec(ids[0], new_e, 0.97, "jev"),      # moved: written
+                 dec(ids[1], new_e, 1.0, "exact"),     # unchanged: not sent
+                 dec(ids[2], new_e, 1.0, "exact"),     # a person's match: never touched
+                 dec(ids[3], new_e, 1.0, "exact")]     # newly matched: written
+    assert cm.write_decisions_http(decisions) == 2
+    cur.execute("SELECT id::text, catalog_entry_id::text, catalog_match_method FROM listings")
+    got = {i: (e, m) for i, e, m in cur.fetchall()}
+    assert got[ids[0]] == (new_e, "jev") and got[ids[3]] == (new_e, "exact")
+    assert got[ids[2]] == (old_e, "manual") and got[ids[1]] == (new_e, "exact")

@@ -704,11 +704,12 @@ def fetch_listings() -> list[dict]:
     rows = db_http.select_all(
         "listings",
         "select=id,scraped_name,scraped_brand,scraped_category,subtype,variant,description,"
-        "catalog_entry_id,catalog_match_method&is_active=is.true&order=id")
+        "catalog_entry_id,catalog_match_confidence,catalog_match_method&is_active=is.true&order=id")
     return [{"id": r["id"], "name": r.get("scraped_name") or "", "brand": r.get("scraped_brand"),
              "category": r.get("scraped_category"), "subtype": r.get("subtype"),
              "variant": r.get("variant"), "description": r.get("description"),
              "catalog_entry_id": r.get("catalog_entry_id"),
+             "catalog_match_confidence": r.get("catalog_match_confidence"),
              "catalog_match_method": r.get("catalog_match_method")} for r in rows]
 
 
@@ -747,6 +748,44 @@ def write_decisions(decisions: list[Decision]) -> int:
         return cur.rowcount
     finally:
         conn.close()
+
+
+def write_decisions_http(decisions: list[Decision], workers: int = 8) -> int:
+    """write_decisions over Supabase's REST API, for a host without the 5432 path (the
+    sandbox). Only a listing whose match changed is written. Each update is conditioned
+    on the method this run read, so a listing matched by hand meanwhile ('manual'), or
+    rewritten by another run, is left alone. Listings that get the same new values go
+    in one request."""
+    import db_http
+    from concurrent.futures import ThreadPoolExecutor
+
+    groups: dict[tuple, list[str]] = defaultdict(list)
+    for d in decisions:
+        old = d.listing.get("catalog_match_method")
+        if d.method == "error" or old == "manual":
+            continue
+        entry = (d.entry or {}).get("id")
+        conf = round(d.confidence, 4) if d.entry else None
+        was = d.listing.get("catalog_match_confidence")
+        same_conf = (conf is None and was is None) or \
+            (conf is not None and was is not None and abs(conf - was) < 1e-3)
+        if entry == d.listing.get("catalog_entry_id") and d.method == old and same_conf:
+            continue
+        groups[(entry, conf, d.method, old)].append(str(d.listing["id"]))
+
+    def send(item) -> int:
+        (entry, conf, method, old), ids = item
+        n = 0
+        guard = f"catalog_match_method=eq.{old}" if old else "catalog_match_method=is.null"
+        for i in range(0, len(ids), 100):
+            rows = db_http.update("listings", f"id=in.({','.join(ids[i:i + 100])})&{guard}",
+                                  {"catalog_entry_id": entry, "catalog_match_confidence": conf,
+                                   "catalog_match_method": method})
+            n += len(rows)
+        return n
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        return sum(pool.map(send, groups.items()))
 
 
 # ---------------------------------------------------------------------------
@@ -817,6 +856,8 @@ def main() -> None:
     ap.add_argument("--source", choices=["auto", "db", "file"], default="auto",
                     help="Where catalogs come from (default: DB when reachable)")
     ap.add_argument("--no-cache", action="store_true", help="Ignore cached Jev answers")
+    ap.add_argument("--via-http", action="store_true",
+                    help="--write over Supabase's REST API instead of DATABASE_URL")
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--misses", action="store_true", help="Print unresolved listings")
     ap.add_argument("--sample", type=int, default=0, help="Print N decisions to hand-check")
@@ -893,8 +934,12 @@ def main() -> None:
         Path(args.json).write_text(json.dumps(dump, indent=1, ensure_ascii=False), encoding="utf-8")
         print(f"wrote {len(dump)} decisions to {args.json}")
     if args.write and everything:
-        n = write_decisions(everything)
-        print(f"wrote match columns on {n} listings")
+        if args.via_http:
+            n = write_decisions_http(everything, workers=args.workers)
+            print(f"wrote match columns on {n} listings (the ones whose match changed)")
+        else:
+            n = write_decisions(everything)
+            print(f"wrote match columns on {n} listings")
 
 
 if __name__ == "__main__":
