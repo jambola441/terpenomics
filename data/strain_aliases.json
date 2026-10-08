@@ -43,7 +43,8 @@
   "Herb": {
     "Cookies Dough": "Cookie Dough",
     "Jetfuel": "Jet Fuel OG",
-    "Wifi OG": "WiFi OG"
+    "Wifi OG": "WiFi OG",
+    "Chem Dawg": "Chemdawg"
   },
   "Select": {
     "Hint of Sweetness": "Hint of Sweet",
@@ -160,5 +161,85 @@
     "Pina Colada": "Piña Colada",
     "American Pl": "American Pi",
     "Grandaddy Purp": "Granddaddy Purp"
+  },
+  "_comment_lost_farm": "Lost Farm strains are 'Fruit x Strain' as Kiva titles them; stores reverse the pair, put one half in brackets, or drop the x. Kiva renamed NY's Citrus Spritz x Napa to Strawberry Lemonade x Napa (see the recipe's notes).",
+  "Lost Farm": {
+    "Citrus Spritz x Napa": "Strawberry Lemonade x Napa",
+    "Napa x Strawberry Lemonade": "Strawberry Lemonade x Napa",
+    "Strawberry Lemonade x Napa Resin": "Strawberry Lemonade x Napa",
+    "Napa (Strawberry Lemonade)": "Strawberry Lemonade x Napa",
+    "Dragon Fruit x Frose": "Dragonfruit x Frose",
+    "Frose (Dragonfruit)": "Dragonfruit x Frose",
+    "Mimosa (Juicy Peach)": "Juicy Peach x Mimosa",
+    "Peach x Mimosa": "Juicy Peach x Mimosa",
+    "Wedding Cake (Raspberry)": "Raspberry x Wedding Cake",
+    "Fatso x Watermelon": "Watermelon x Fatso",
+    "Fatso (Watermelon)": "Watermelon x Fatso",
+    "Ztrawberry Guava x Tropical Lemonade": "Tropical Lemonade x Ztrawberry Guava",
+    "Ztrawberry Guava (Tropical Lemonade)": "Tropical Lemonade x Ztrawberry Guava",
+    "Trop Cherries Very Cherry": "Very Cherry x Tropicana Cherries",
+    "Very Cherry x Trop Cherries": "Very Cherry x Tropicana Cherries",
+    "Very Cherry Trop Cherries": "Very Cherry x Tropicana Cherries",
+    "Moroccan Peaches Pink Pineapple": "Pink Pineapple x Moroccan Peaches",
+    "Moroccan Peaches x Pink Pineapple": "Pink Pineapple x Moroccan Peaches",
+    "Pink Pineapple Moroccan Peaches": "Pink Pineapple x Moroccan Peaches",
+    "Grape x Mendo Purp": "Grape x Mendo Purps",
+    "Grape x Mendo Purp I": "Grape x Mendo Purps",
+    "Mendo Purps (Grape)": "Grape x Mendo Purps"
+  },
+  "Dank By Definition": {
+    "Strawnana": "Straw Nana",
+    "Illumaniti OG": "Illuminati OG",
+    "Mango Sherbet": "Mango Sherbert",
+    "LA Confidiential": "LA Confidential",
+    "Gary Payton OG": "Gary Payton",
+    "Gorilla Glue #4": "Gorilla Glue",
+    "Alaskan Thunder Fuck": "Alaskan Thunderfuck",
+    "Hawaiian Thunder Fuck": "Hawaiian Thunderfuck",
+    "Cherry Thunder Fuck": "Cherry Thunderfuck",
+    "Sungrown Cherry Thunderfuck": "Cherry Thunderfuck",
+    "Dank N Donuts": "Dank N' Donuts"
+  },
+  "Cannabals": {
+    "Grand Daddy Purple": "Granddaddy Purple",
+    "Grandaddy Purp": "Granddaddy Purple",
+    "Granddaddy Purp": "Granddaddy Purple",
+    "Alcapulco Gold": "Acapulco Gold",
+    "Strawbery Kush": "Strawberry Kush",
+    "LCG": "Lemon Cherry Gelato",
+    "Blueberry Dream": "Blueberry Dreams",
+    "Dragon Fruit": "Dragonfruit",
+    "Dragon Fruit Lemonade": "Dragonfruit Lemonade",
+    "Dragonfruit Lemonades": "Dragonfruit Lemonade",
+    "Frosé": "Frose",
+    "Pineapple Passion Fruit": "Pineapple Passionfruit",
+    "Pinacolada": "Pina Colada",
+    "Blue Razz": "Blue Raspberry",
+    "Pumpkin Spice": "Pumpkin Spice Latte",
+    "White Chocalate": "White Chocolate",
+    "White Chocoalte": "White Chocolate",
+    "White Belgian Chocolate": "White Chocolate",
+    "Strawberry Belgian Chocolate": "Strawberry Chocolate",
+    "Mint Chocolate": "Mint",
+    "Caramel Espresso Chocolate": "Caramel Espresso",
+    "Chocolate Caramel Espresso": "Caramel Espresso",
+    "Cookies and Cream": "Cookies & Cream",
+    "Cookies n Cream": "Cookies & Cream"
+  },
+  "Bonanza": {
+    "Mowie Wowie": "Maui Wowie"
+  },
+  "Edie Parker": {
+    "Lavender Vanilla Good Night": "Lavender Vanilla",
+    "Blossom Sour Jack": "Sour Jack"
+  },
+  "Anthem": {
+    "King Louis": "King Louis XIII",
+    "King Louis Xlll": "King Louis XIII",
+    "King Louis 13": "King Louis XIII",
+    "Black Cherry": "Black Cherry Maduro",
+    "Indica": "Indica Blend",
+    "Sativa": "Sativa Blend",
+    "Hybrid": "Hybrid Blend"
   }
 }

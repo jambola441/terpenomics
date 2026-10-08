@@ -17,16 +17,55 @@
   "notes": [
     "Elementor page with a custom widget: each product is <article class=\"bnz-card\" data-location=\"new-york\" data-type=\"cartridges|all-in-one\" data-strain data-strength=\"1000-mg\">, name in h3.bnz-card__title, size in span.bnz-card__mg ('1000 mg', read as 1g for a vape). The other states are /colorado/, /nevada/, /new-mexico/; data-location is checked too.",
     "Titles are bare strain names repeated per format, so the format comes from data-type. The cards link only to /find-shops/, so there is no product URL; the entry id is the strain, kept apart by format and size.",
-    "Not on the NY page (2026-10-05): the new 1G Live Resin 510 'Live Series' carts stores sell (Strawberry Sherbet)."
+    "Not on the NY page (2026-10-05): the new 1G Live Resin 510 'Live Series' carts stores sell (Strawberry Sherbet).",
+    "2026-10-08 curation: 4000 mg all-in-ones are real single devices (package photo Maui-Wowie-4G: '4,000 mg All In One Vape'; Hoodie Analytics lists 'Northern Lights Disposables 4000 Mg'). Milk & Cookies and Peppermint Kush are seasonal and sold only as carts, so the missing all-in-one half is the brand's design. Live Series (1g live resin wood-tip carts, rotating strains) is a line on the CO/NV pages; stores spell Maui Wowie 'Mowie Wowie'."
   ],
   "skip": [
-    {"when": {"tags": "^(?!new-york$)"}, "why": "another state's card"}
+    {
+      "when": {
+        "tags": "^(?!new-york$)"
+      },
+      "why": "another state's card"
+    },
+    {
+      "when": {
+        "product_type": "^live-series$"
+      },
+      "why": "Live Series cards are rotating placeholders titled by lineage ('Live Series Sativa'), not strain products (CO/NV pages, 2026-10-08); the NY page has a Live Series filter but no cards yet. Store products of the line take line 'Live Series' from data/product_lines.json."
+    }
   ],
   "category": [
-    {"when": {"product_type": "^cartridges$"}, "set": {"category": "vaporizers", "subtype": "cart"}},
-    {"when": {"product_type": "^all-in-one$"}, "set": {"category": "vaporizers", "subtype": "all-in-one"}}
+    {
+      "when": {
+        "product_type": "^cartridges$"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "cart"
+      }
+    },
+    {
+      "when": {
+        "product_type": "^all-in-one$"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "all-in-one"
+      }
+    }
   ],
   "title": [
-    {"when": {"category": "^vaporizers$", "variant": "^\\d+\\s*mg$"}, "match": "^(?P<strain>.+)$"}
-  ]
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "variant": "^\\d+\\s*mg$"
+      },
+      "match": "^(?P<strain>.+)$"
+    }
+  ],
+  "store_aliases": {
+    "names": {
+      "Mowie Wowie": "Maui Wowie"
+    }
+  }
 }

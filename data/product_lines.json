@@ -184,6 +184,7 @@
   "1906": [
     "Drops"
   ],
+  "_comment_herb": "Herb (1off Manufacturing, OCM-PROC-000062) prints HASH INFUSED on its infused Ready to Roll 7g bag ('5.6 flower / 1.4 dry sift hash'; ingredients 'cannabis flower, dry sifted hash') and on its infused pre-roll tube ('1 GRAM HASH INFUSED'). Stores write 'Infused Ground Flower', 'Pre Ground Infused Flower', 'Hash Infused Pre roll'. Plain flower, pre-ground and pre-rolls carry no line. 'Ready to Roll' is printed on both plain and infused pre-ground, so it is the format (subtype preground), not a line. Keep this rule without a category: the stock pre-roll blurb stores paste ('can be rolled with flower, shake ... infused with concentrates') would otherwise file plain pre-rolls as Hash Infused.",
   "Herb": [
     {
       "line": "Hash Infused",
@@ -253,18 +254,56 @@
     "Diamonds",
     "High Purity"
   ],
+  "_comment_heavy_hitters": "From the Heavy Hitters curation (2026-10-08); replaces the brand's list. heavyhitters.co/states/new-york: vapes are Ultra (0.5g and 1g Twin Turbo all-in-ones, 2g all-in-one, 1g 510 cart), Slow Cured Resin 1g all-in-one and Live Rosin Solventless 1g all-in-one; gummies (5 x 20mg, 100mg) are Ultra Gummies (Atomic Apple, Holy Grape, Strawberry Storm), Solventless Live Rosin Gummies (Blackberry Lemon, Guava Strawberry, Papaya Mango), Lights Out (CBN sleep: Midnight Cherry; Cloudberry vape) and Lights On (THCV energy: Green Crack); pre-rolls are Diamond Infused (1g 'Diamond Pre-Roll' and 5 x 0.5g 'Diamond Pre-Roll 5ct'), beside the brand's Jelly Roll rosin-infused pre-rolls (CA); 2g Pure Live Rosin jars and 7g Slow Cured Indoor Flower carry no line. Ultra, Live Rosin, Lights On and Lights Out are printed by the brand across formats. Every Heavy Hitters CBN product is Lights Out and every THCV product Lights On, so those words name the line where a store leaves it out ('CBN Cloudberry - 0.5G AIO Vape', 'Green Crack 2:1 THC:THCV Gummies'). Live Rosin stays off the concentrate category: the rosin jars say Live Rosin too and are line-less.",
   "Heavy Hitters": [
     {
       "line": "Ultra",
       "category": "vaporizers"
+    },
+    {
+      "line": "Ultra",
+      "also": [
+        "Ultra Gummies",
+        "Ultra Gummy"
+      ],
+      "category": "edible"
     },
     "Slow Cured Resin",
     {
       "line": "Live Rosin",
       "category": "vaporizers"
     },
-    "Lights Out",
-    "Lights On"
+    {
+      "line": "Live Rosin",
+      "also": [
+        "Rosin Gummies",
+        "Rosin Gummy"
+      ],
+      "category": "edible"
+    },
+    {
+      "line": "Diamond Infused",
+      "also": [
+        "Infused Diamond",
+        "Infused Diamonds",
+        "Diamonds",
+        "Diamond Pre-Roll",
+        "Diamond Pre-Rolls"
+      ],
+      "category": "preroll"
+    },
+    {
+      "line": "Lights Out",
+      "also": [
+        "CBN"
+      ]
+    },
+    {
+      "line": "Lights On",
+      "also": [
+        "THCV"
+      ]
+    }
   ],
   "Rove": [
     {
@@ -475,6 +514,114 @@
         "XL"
       ],
       "category": "preroll"
+    }
+  ],
+  "_comment_lost_farm": "Lost Farm (Kiva) gummies: the brand prints the extract on every pack as the family ('Made with Live Resin', 'Solventless Live Rosin'), and the kivaconfections.com recipe reads it as the line. Stores write it in the name; without these rules enrichment took the brand ('Lost Farms'), the strain ('Napa', 'Moroccan Peaches') or the fruit+strain pair ('Trop Cherries') as the line. Bare 'Resin'/'Rosin' are left out on purpose: two stores write 'Rosin' on the Live Resin Raspberry x Wedding Cake.",
+  "Lost Farm": [
+    {
+      "line": "Live Resin",
+      "also": [
+        "Live Resin Infused"
+      ],
+      "category": "edible"
+    },
+    {
+      "line": "Live Rosin",
+      "also": [
+        "Solventless Live Rosin"
+      ],
+      "category": "edible"
+    }
+  ],
+  "_comment_dank": "From the Dank By Definition curation (2026-10-08). Infused pre-rolls (the brand's INFUSED PRE-ROLLS; packages print 'INFUSED JOINT(S)' / 'Infused Blunt') are line Infused: 1g and 1.1g joints, 1.35g blunts, 5 x 0.55g packs (2.75g). Name-only on purpose (no category): store descriptions of Dank's PLAIN pre-rolls often carry the boilerplate 'Pre-Rolls come in many different forms and can be rolled with flower, shake, \"b-buds\", infused with concentrates, and more', which a description rule would read as infused.",
+  "Dank By Definition": [
+    "Infused"
+  ],
+  "_comment_cannabals": "From the Cannabals curation (2026-10-08), checked against Cirona's NYS Wholesale Catalog (Winter-Spring 2025) and the CANNABALS Fall 2026 sheet. Puffs are the diamond infused 7 x 0.5g pre-rolls (catalog p9, 'PUFFS by Cannabals'); one store writes 'Puff'. Chubby Puff is the 6g all-in-one (package 'CHUBBY PUFF 1200'); one store writes 'Chubby Puffy'. Brick is the 100mg scored gummy bar (catalog p4, 'BRICK by Cannabals'). Mood State is the brand's family across vapes and gummies (catalog p6, p7), so it takes no category. A category keeps 'Puff' and 'Brick' from firing on vape descriptions ('1200+ puffs').",
+  "Cannabals": [
+    {
+      "line": "Puffs",
+      "also": [
+        "Puff"
+      ],
+      "category": "preroll"
+    },
+    {
+      "line": "Chubby Puff",
+      "also": [
+        "Chubby Puffy"
+      ],
+      "category": "vaporizers"
+    },
+    {
+      "line": "Brick",
+      "also": [
+        "Bricks"
+      ],
+      "category": "edible"
+    },
+    "Mood State"
+  ],
+  "Bonanza": [
+    {
+      "line": "Live Series",
+      "category": "vaporizers"
+    }
+  ],
+  "_comment_edie_parker": "From the Edie Parker curation (2026-10-08). Vapes (1g carts and Petal Puffer all-in-ones) come in the brand's effect families Good Morning (sativa), Good Afternoon (hybrid) and Good Night (indica): the Petal Puffer tin prints 'For a Good Afternoon' and NY stores write 'Lavender Vanilla (Good Night) Cartridge - 1g'. Pre-rolls are Blossoms (7 x 0.5g, 3.5g; stores also write 'Blossom') and Best Buds (twin pack of 0.5g, 1g); flower is the Flower Pot 1/8oz jar, a name stores leave out of the title but paste into descriptions ('1/8 oz Flower Pot Premium indoor whole flower'). Early Bird, Happiest Hour and Nightcap are the blends inside those lines (the product), not lines.",
+  "Edie Parker": [
+    {
+      "line": "Good Morning",
+      "category": "vaporizers"
+    },
+    {
+      "line": "Good Afternoon",
+      "category": "vaporizers"
+    },
+    {
+      "line": "Good Night",
+      "category": "vaporizers"
+    },
+    {
+      "line": "Blossoms",
+      "also": [
+        "Blossom"
+      ],
+      "category": "preroll"
+    },
+    {
+      "line": "Best Buds",
+      "category": "preroll"
+    },
+    {
+      "line": "Flower Pot",
+      "category": "flower"
+    }
+  ],
+  "_comment_anthem": "From the Anthem curation (2026-10-08). Anthem (Curaleaf) sells only pre-rolls: the core 0.35g cigarette-style blends (Indica / Sativa / Hybrid Blend, 5 and 10 packs, no line) and the Bold infused pre-rolls (1g glass- or wood-tip single, 5 x 0.5g = 2.5g pack). Every Anthem infused, glass-tip or wood-tip pre-roll is Bold (anthemcannabisusa.com; Weedmaps brand catalog), so those words assign Bold. The first entry has a category so descriptions that say 'Anthem Bold' file a line-less name; 'Infused' sits in a second entry without a category so it works on names only: generic Dutchie blurbs on Blend 10-packs say 'infused with concentrates'.",
+  "Anthem": [
+    {
+      "line": "Bold",
+      "also": [
+        "Anthem Bold",
+        "Glass Tip",
+        "GlassTip",
+        "Glass-Tip",
+        "Wood Tip",
+        "Wood-Tip",
+        "Sweet Wood Tip"
+      ],
+      "category": "preroll"
+    },
+    {
+      "line": "Bold",
+      "also": [
+        "Infused",
+        "Infused Pre-Roll",
+        "Infused Pre-Rolls",
+        "Infused Preroll",
+        "Infused Prerolls"
+      ]
     }
   ]
 }

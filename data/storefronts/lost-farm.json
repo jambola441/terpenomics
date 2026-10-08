@@ -18,13 +18,15 @@
       "tags": ".kv-mkt"
     }
   },
-  "learned": "2026-10-05, by an agent pass: kivaconfections.com/products holds 121 Kiva-family cards over two Webflow pages; 56 are Lost Farm, 6 of them with the NY market code.",
+  "learned": "2026-10-05, by an agent pass: kivaconfections.com/products holds 121 Kiva-family cards over two Webflow pages; 56 are Lost Farm, 6 of them with the NY market code. 2026-10-08, curation pass: the site still tags the same 6 flavors NY; NY stores sell 6 more (Ztrawberry Guava, Fatso, Thorny Berry x OG Kush, Very Cherry x Tropicana Cherries, Grape x Mendo Purps, Pink Pineapple x Moroccan Peaches), all 10pk 100mg, Live Resin or Live Rosin by the pack.",
   "notes": [
     "Lost Farm is a Kiva brand with no site of its own (lostfarm.com is unrelated). Kiva's /products grid holds every Kiva brand and state: each card's a.kv-pcard has data-brand (lost-farm, camino, kiva, petra, terra) and data-type (gummies, chews, vape), and a nested list of .kv-mkt market codes (NY, CA, MA...). The skip rules keep data-brand lost-farm with an NY code. The same title exists per state under different slugs, so the url is the id.",
     "Titles are '<dose per piece> <Fruit> x <Strain> Live Resin|Live Rosin Gummies|Chews', with typos ('Gumies') and double spaces elsewhere. The line is Live Resin or Live Rosin and the strain is the 'Fruit x Strain' pair, as NY stores write them ('Lost Farm 'Dragonfruit x Frose' Live Resin Gummies [10pk]').",
     "The card gives the dose per piece only. The flavor page gives the pack: 'THC per serving 10mg THC per pack 100mg Available in: NY' (lf-tropical-lemonade-do-si-dos-ny), and NY stores sell them as 10pk / 100mg, so a 10mg NY gummy is 10pk 100mg. Any other dose or a CBN/CBG ratio falls through to unparsed on purpose.",
     "The NY card and flavor page still say 'Citrus Spritz x Napa', but Kiva has renamed that flavor Strawberry Lemonade (the AZ card 'Strawberry Lemonade x Joel's Lemonade' is slug lf-citrus-spritz-az, the OH 'Strawberry Lemonade x Lemon Slushee' is lf-citrus-splash-...), and NY stores sell it only as Strawberry Lemonade x Napa (four spellings, nine listings). The entry takes the current name; the site's is kept in its match terms.",
-    "NY stores also sell Lost Farm flavors the site does not tag NY (Thorny Berry x OG Kush 10mg THC:10mg CBN, Tropical Lemonade x Ztrawberry Guava live rosin on 2026-10-05); they come from the stores' consensus."
+    "NY stores also sell Lost Farm flavors the site does not tag NY (Thorny Berry x OG Kush 10mg THC:10mg CBN, Tropical Lemonade x Ztrawberry Guava live rosin on 2026-10-05); they come from the stores' consensus.",
+    "Store-only products take line and strain from the stores' names, so they need the Lost Farm lines in data/product_lines.json (Live Resin, Live Rosin, category edible) and the strain spellings in data/strain_aliases.json. Without them enrichment filed Ztrawberry Guava under line 'Lost Farms' (the brand), Strawberry Lemonade under 'Napa', and Very Cherry x Tropicana Cherries / Pink Pineapple x Moroccan Peaches under 'Trop Cherries' / 'Moroccan Peaches' (the strain), and left Fatso and Thorny Berry x OG Kush with no line. Apply those rules with this recipe, never this recipe alone: the 'Lost Farms' skip below would otherwise drop the only Ztrawberry Guava product.",
+    "The packs settle the line (photos 2026-10-08): Very Cherry x Trop. Cherries 'Solventless Live Rosin', Pink Pineapple x Moroccan Peaches 'Live Rosin', Watermelon x Fatso 'Solventless Live Rosin', Tropical Lemonade x Ztrawberry Guava 'Solventless Live Rosin', Grape x Mendo Purps 'Live Resin' (pack also says 'The Purps Collection', a Kiva limited edition; no NY store writes it), Thorny Berry x OG Kush 'with CBN, Made with Live Resin' 10mg THC + 10mg CBN a piece (size is THC only: 10pk 100mg). Raspberry x Wedding Cake is Live Resin (site and pack) though two stores write 'Rosin'."
   ],
   "skip": [
     {
@@ -78,6 +80,20 @@
       "set": {
         "size": "10pk 100mg"
       }
+    }
+  ],
+  "store_skip": [
+    {
+      "when": {
+        "name": "^Lost Farms\\b"
+      },
+      "why": "the brand's name read as the line: listings whose name has no extract word kept 'Lost Farms' from the old entry; the product is Live Rosin Tropical Lemonade x Ztrawberry Guava, which the stores' Live Rosin names build"
+    },
+    {
+      "when": {
+        "name": "^Live Resin Pink Pineapple x Moroccan Peaches$"
+      },
+      "why": "one store's template writes 'Live Resin' on it (with Thorny Berry's description and photo); the pack (tymber photo) and Sparkboro's menu say Live Rosin"
     }
   ]
 }
