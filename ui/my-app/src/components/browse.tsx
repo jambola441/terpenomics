@@ -239,6 +239,8 @@ export type BrowseCardItem = {
   distanceMi: number | null
   /** Shown when the product sits at exactly one dispensary. */
   storeName: string | null
+  /** No store has it in stock right now. Search lists these too, so it says so. */
+  outOfStock?: boolean
 }
 
 /**
@@ -320,6 +322,12 @@ export function BrowseCard({ item, color, suppressSubtype, action, footer, onOpe
 
         {item.variant && (
           <span style={plateBadge}>{item.variant}</span>
+        )}
+
+        {item.outOfStock && (
+          <span style={{ ...plateBadge, top: 'auto', bottom: 8, color: t.warning, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            Out of stock
+          </span>
         )}
 
         {item.distanceMi != null && (

@@ -15,8 +15,7 @@ import {
   readEnum, readRange, readSet, useFilterParams, useScrollMemory, writeOne, writeRange, writeSet,
 } from '../utils/browseState'
 
-/** Aisles a shopper can switch to from within one dispensary. */
-const CATEGORIES = ['flower', 'preroll', 'vaporizers', 'edible', 'concentrate', 'tinctures', 'topical', 'merch', 'other']
+import { inShelfOrder } from './DispensaryListings'
 
 type Filters = {
   search: string
@@ -88,6 +87,24 @@ export default function AisleView({
   acceptsPickup = false, onAddToCart, cart = [],
 }: Props) {
   const navigate = useNavigate()
+  // The aisles this store has stock in; the switcher offers only those, so no
+  // chip leads to "No tinctures in stock".
+  const [carried, setCarried] = useState<string[] | null>(null)
+  useEffect(() => {
+    let live = true
+    api.portal.getDispensaryFilterOptions(dispensaryId)
+      .then(o => { if (live && o.categories) setCarried(inShelfOrder(o.categories.map(c => c.name))) })
+      .catch(() => { if (live) setCarried(null) })
+    return () => { live = false }
+  }, [dispensaryId])
+  // Back to wherever the shopper came from (the store, Home, a listing),
+  // rather than pushing the store page on top: that used to loop store ->
+  // aisle -> store -> aisle. Opened from a link, there is nothing to go back
+  // to, so it goes to the store.
+  const goBack = () => {
+    if ((window.history.state?.idx ?? 0) > 0) navigate(-1)
+    else navigate(`/portal/map/${dispensaryId}`, { replace: true })
+  }
   const [all, setAll] = useState<DispensaryListing[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -298,7 +315,7 @@ export default function AisleView({
           style={{ position: 'absolute', right: -26, top: -18, opacity: 0.2, pointerEvents: 'none' }}
         />
 
-        <BackButton onClick={() => navigate(`/portal/map/${dispensaryId}`)} glass />
+        <BackButton onClick={goBack} glass />
 
         <div style={{ position: 'relative', marginTop: 18 }}>
           <PageTitle size={34}>{categoryLabel(category)}</PageTitle>
@@ -325,7 +342,7 @@ export default function AisleView({
           <SearchField
             value={search}
             onChange={setSearch}
-            placeholder={`Search ${category}…`}
+            placeholder={`Search ${categoryLabel(category).toLowerCase()}…`}
             focused={searchFocus}
             onFocus={() => setSearchFocus(true)}
             onBlur={() => setSearchFocus(false)}
@@ -342,7 +359,7 @@ export default function AisleView({
         quickRail={
           /* Aisle switcher — jump to another category in the same dispensary */
           <div className="no-scrollbar" style={{ display: 'flex', overflowX: 'auto', gap: 8, padding: '10px 14px 10px' }}>
-            {CATEGORIES.map(cat => (
+            {(carried ?? [category]).map(cat => (
               <FacetChip
                 key={cat}
                 label={categoryLabel(cat)}
@@ -350,7 +367,8 @@ export default function AisleView({
                 capitalize={false}
                 active={category === cat}
                 color={categoryColor(cat)}
-                onClick={() => navigate(`/portal/map/${dispensaryId}/aisle/${encodeURIComponent(cat)}`)}
+                // Replace: switching aisles is a filter, not a step Back should retrace.
+                onClick={() => navigate(`/portal/map/${dispensaryId}/aisle/${encodeURIComponent(cat)}`, { replace: true })}
               />
             ))}
           </div>
@@ -377,7 +395,7 @@ export default function AisleView({
       ) : all.length === 0 ? (
         <FeedState
           kind="empty"
-          message={`No ${category} in stock`}
+          message={`No ${categoryLabel(category).toLowerCase()} in stock`}
           hint="Check back soon — menus update regularly."
           icon={<CategoryIcon category={category} size={22} />}
         />

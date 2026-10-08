@@ -24,7 +24,9 @@ export default function OnboardingScreen({ profile, onDone, onSignOut }: {
 
   const [first, setFirst] = useState(profile.first_name ?? onboarding.prefill.first_name ?? '')
   const [last, setLast] = useState(profile.last_name ?? onboarding.prefill.last_name ?? '')
-  const [age, setAge] = useState(false)
+  // Already confirmed on an earlier sign-up: a terms change shouldn't make
+  // them tick it again.
+  const [age, setAge] = useState(!onboarding.missing.includes('age_21'))
   const [terms, setTerms] = useState(false)
   // Off unless they turn it on; anyone already opted in sees their choice.
   const [marketing, setMarketing] = useState(profile.marketing_opt_in)
@@ -69,7 +71,7 @@ export default function OnboardingScreen({ profile, onDone, onSignOut }: {
           <p style={{ color: t.text2, fontSize: font.size.body, lineHeight: 1.55, margin: '8px 0 0' }}>
             {returning
               ? 'Please review and accept them to keep ordering.'
-              : 'A few details before you can reserve products for pickup.'}
+              : "A few details and you're in."}
           </p>
         </div>
 

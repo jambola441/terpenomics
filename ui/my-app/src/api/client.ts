@@ -810,7 +810,8 @@ export const api = {
       portalFetch<PortalDispensary[]>(`/customer/dispensaries`),
 
     getDispensaryFilterOptions: (dispensaryId: string) =>
-      portalFetch<{ brands: string[]; variants: string[] }>(`/customer/dispensaries/${dispensaryId}/filter-options`),
+      // `categories` is missing from an API that predates it.
+      portalFetch<{ brands: string[]; variants: string[]; categories?: { name: string; count: number }[] }>(`/customer/dispensaries/${dispensaryId}/filter-options`),
 
     getDispensaryListings: (dispensaryId: string, params?: { category?: string; brand?: string; variant?: string; q?: string; inStock?: boolean; limit?: number; offset?: number }) =>
       portalFetch<DispensaryListing[]>(`/customer/dispensaries/${dispensaryId}/listings${buildQueryString(params)}`),

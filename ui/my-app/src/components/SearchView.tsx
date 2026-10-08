@@ -64,6 +64,7 @@ function toCard(p: PortalProduct): BrowseCardItem {
     // The aggregate rows carry no coordinates, so search can't show distance.
     distanceMi: null,
     storeName: null,
+    outOfStock: !p.any_in_stock,
   }
 }
 
@@ -352,7 +353,7 @@ export default function SearchView({ initialCategory, onOpenProduct }: Props) {
               onRemove={() => setPrice(null)}
             />
           )}
-          {[...category].map(v => <ActiveChip key={'c' + v} label={v} onRemove={() => toggle(setCategory, v)} />)}
+          {[...category].map(v => <ActiveChip key={'c' + v} label={categoryLabel(v)} onRemove={() => toggle(setCategory, v)} />)}
           {[...subtype].map(v => <ActiveChip key={'s' + v} label={v} onRemove={() => toggle(setSubtype, v)} />)}
           {[...brand].map(v => <ActiveChip key={'b' + v} label={v} onRemove={() => toggle(setBrand, v)} />)}
           {[...variant].map(v => <ActiveChip key={'v' + v} label={v} capitalize={false} onRemove={() => toggle(setVariant, v)} />)}

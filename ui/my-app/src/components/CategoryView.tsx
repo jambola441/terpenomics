@@ -83,11 +83,11 @@ export default function CategoryView({ categoryName, onBack, onOpenProduct }: Pr
       // No category facet: every product here is already this category.
       facets={['subtype', 'brand', 'variant']}
       resetKey={categoryName}
-      searchPlaceholder={`Search ${categoryName}…`}
+      searchPlaceholder={`Search ${categoryLabel(categoryName).toLowerCase()}…`}
       totalCount={data?.product_count ?? 0}
       truncated={data?.truncated}
       suppressSubtype={categoryName}
-      emptyMessage={`No ${categoryName} in stock`}
+      emptyMessage={`No ${categoryLabel(categoryName).toLowerCase()} in stock`}
       emptyHint="Check back soon — menus update regularly."
       emptyIcon={<CategoryIcon category={categoryName} size={22} />}
       onOpen={item => onOpenProduct(item.brand ?? null, item.key)}

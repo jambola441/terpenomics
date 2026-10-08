@@ -16,9 +16,23 @@ import { Icon } from './Icon'
 import { formatDate, formatDollars } from '../utils/format'
 import { shrinkReceipt } from '../utils/receiptImage'
 
-function today(): string {
-  const d = new Date()
+function isoDay(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+function today(): string {
+  return isoDay(new Date())
+}
+
+/** Matches CLAIM_WINDOW_DAYS in connectors/receipts.py: older receipts are
+ *  flagged to the reviewer, so the picker doesn't offer them (the app's
+ *  picker stops at the same day). */
+const DAYS_BACK = 30
+
+function earliestDay(): string {
+  const d = new Date()
+  d.setDate(d.getDate() - DAYS_BACK)
+  return isoDay(d)
 }
 
 const field = {
@@ -117,7 +131,7 @@ export default function ReceiptUpload({ onUploaded }: { onUploaded?: () => void 
 
           <div>
             <Label>Date of purchase</Label>
-            <input type="date" value={day} max={today()} onChange={e => setDay(e.target.value)} style={{ ...field, marginTop: 6 }} aria-label="Date of purchase" />
+            <input type="date" value={day} min={earliestDay()} max={today()} onChange={e => setDay(e.target.value)} style={{ ...field, marginTop: 6 }} aria-label="Date of purchase" />
           </div>
 
           <div>
@@ -126,7 +140,6 @@ export default function ReceiptUpload({ onUploaded }: { onUploaded?: () => void 
               ref={input}
               type="file"
               accept="image/*"
-              capture="environment"
               onChange={e => pick(e.target.files?.[0] ?? null)}
               style={{ display: 'none' }}
               aria-label="Receipt photo"
