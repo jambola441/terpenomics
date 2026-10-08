@@ -23,8 +23,8 @@ export function safeNext(value: unknown): string | null {
   if (path.startsWith('//') || path.startsWith('/\\')) return null
   if (CONTROL_CHARS.test(path)) return null
 
-  // Returning to the login page after logging in would loop.
-  if (path === '/' || path.startsWith('/auth/callback')) return null
+  // Returning to a sign-in page after signing in would loop.
+  if (path === '/' || path === '/staff' || path.startsWith('/auth/callback')) return null
 
   return path
 }
@@ -42,11 +42,10 @@ export function rememberNext(value: string | null): void {
   }
 }
 
-export function takeNext(): string | null {
+/** Read the remembered destination without claiming it. */
+export function peekNext(): string | null {
   try {
-    const stored = sessionStorage.getItem(KEY)
-    sessionStorage.removeItem(KEY)
-    return safeNext(stored)
+    return safeNext(sessionStorage.getItem(KEY))
   } catch {
     return null
   }

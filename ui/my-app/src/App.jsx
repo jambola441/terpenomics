@@ -1,4 +1,5 @@
-import Login from './Login'
+import Login, { StaffLogin } from './Login'
+import StaffGate from './StaffGate'
 import AuthCallback from './AuthCallback'
 import AdminHome from './AdminHome'
 import Products from './Products'
@@ -32,28 +33,32 @@ function App() {
     <>
       <BrowserRouter>
       <Routes>
+        {/* Customers sign in by text at "/"; staff have their own page. */}
         <Route path="/" element={<Login />} />
+        <Route path="/staff" element={<StaffLogin />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route path="/admin" element={<AdminHome />} />
-        <Route path="/admin/products" element={<Products />} />
-        <Route path="/admin/products/detail" element={<ProductDetail />} />
-        <Route path="/admin/customers" element={<Customers />} />
-        <Route path="/admin/customers/new" element={<CustomerRegister />} />
-        <Route path="/admin/customers/:customerId" element={<CustomerEdit />} />
-        <Route path="/admin/purchases" element={<Purchases />} />
-        <Route path="/admin/orders" element={<Orders />} />
-        <Route path="/admin/lab-reports" element={<LabReportUpload />} />
-        <Route path="/admin/lab-reports/:reportId" element={<LabReportDetail />} />
-        <Route path="/admin/brand-catalogs" element={<BrandCatalogs />} />
-        <Route path="/admin/brand-catalogs/:catalogId" element={<BrandCatalogEdit />} />
-        <Route path="/admin/dispensaries" element={<Dispensaries />} />
-        <Route path="/admin/dispensaries/:dispensaryId" element={<DispensaryEdit />} />
-        <Route path="/admin/dispensaries/:dispensaryId/listings" element={<DispensaryListingsAdmin />} />
-        <Route path="/admin/listings" element={<Listings />} />
-        <Route path="/admin/listings/:listingId" element={<AdminListingDetail />} />
-        <Route path="/admin/partners" element={<Partners />} />
-        <Route path="/admin/partners/:partnerId" element={<PartnerDetail />} />
-        <Route path="/admin/receipts" element={<Receipts />} />
+        <Route element={<StaffGate />}>
+          <Route path="/admin" element={<AdminHome />} />
+          <Route path="/admin/products" element={<Products />} />
+          <Route path="/admin/products/detail" element={<ProductDetail />} />
+          <Route path="/admin/customers" element={<Customers />} />
+          <Route path="/admin/customers/new" element={<CustomerRegister />} />
+          <Route path="/admin/customers/:customerId" element={<CustomerEdit />} />
+          <Route path="/admin/purchases" element={<Purchases />} />
+          <Route path="/admin/orders" element={<Orders />} />
+          <Route path="/admin/lab-reports" element={<LabReportUpload />} />
+          <Route path="/admin/lab-reports/:reportId" element={<LabReportDetail />} />
+          <Route path="/admin/brand-catalogs" element={<BrandCatalogs />} />
+          <Route path="/admin/brand-catalogs/:catalogId" element={<BrandCatalogEdit />} />
+          <Route path="/admin/dispensaries" element={<Dispensaries />} />
+          <Route path="/admin/dispensaries/:dispensaryId" element={<DispensaryEdit />} />
+          <Route path="/admin/dispensaries/:dispensaryId/listings" element={<DispensaryListingsAdmin />} />
+          <Route path="/admin/listings" element={<Listings />} />
+          <Route path="/admin/listings/:listingId" element={<AdminListingDetail />} />
+          <Route path="/admin/partners" element={<Partners />} />
+          <Route path="/admin/partners/:partnerId" element={<PartnerDetail />} />
+          <Route path="/admin/receipts" element={<Receipts />} />
+        </Route>
         <Route path="/pos/oauth/:provider/callback" element={<PosOAuthForward />} />
         <Route path="/partner" element={<PartnerPortal />} />
         <Route path="/partner/:partnerId" element={<PartnerPortal />} />

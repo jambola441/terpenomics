@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import supabase from './utils/supabase'
-import { takeNext } from './utils/redirect'
+import { peekNext, rememberNext } from './utils/redirect'
 import { t } from './theme'
 import { Logo } from './components/Icon'
 
@@ -28,32 +28,34 @@ function providerError() {
 
 export default function AuthCallback() {
   const [error, setError] = useState(providerError)
+  // Read once, not claimed until landing: a remount (StrictMode does one) must
+  // still find it.
+  const [next] = useState(peekNext)
   const navigate = useNavigate()
+
+  // Only staff (/staff) and partners (/partner) sign in through a provider;
+  // customers sign in by text and never come through here. A failure goes
+  // back to the page it started from.
+  const signInPage = next?.startsWith('/partner') ? '/partner' : '/staff'
 
   useEffect(() => {
     if (error) return
     let cancelled = false
 
-    // Claimed once: a second read would find it already cleared.
-    const next = takeNext()
-
-    async function land(user) {
+    function land() {
       if (cancelled) return
-      // Mirrors the rule in Login.jsx: admins carry role="admin" on the JWT,
-      // everyone else belongs in the customer portal — unless they were headed
-      // somewhere specific before signing in.
-      const fallback = user?.role === 'admin' ? '/admin' : '/portal'
-      navigate(next || fallback, { replace: true })
+      rememberNext(null)
+      navigate(next || '/admin', { replace: true })
     }
 
     // The session may already be in place by the time this mounts, so check
     // once before waiting on the event.
     supabase.auth.getSession().then(({ data }) => {
-      if (data?.session) land(data.session.user)
+      if (data?.session) land()
     })
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) land(session.user)
+      if (session) land()
     })
 
     // Don't hang forever if the session never materializes.
@@ -66,7 +68,7 @@ export default function AuthCallback() {
       clearTimeout(timer)
       sub?.subscription?.unsubscribe()
     }
-  }, [navigate, error])
+  }, [navigate, error, next])
 
   return (
     <div style={wrapStyle}>
@@ -74,7 +76,7 @@ export default function AuthCallback() {
       {error ? (
         <>
           <p style={errStyle}>{error}</p>
-          <button type="button" onClick={() => navigate('/', { replace: true })} style={linkStyle}>
+          <button type="button" onClick={() => navigate(signInPage, { replace: true })} style={linkStyle}>
             Back to sign in
           </button>
         </>
