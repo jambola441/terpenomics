@@ -389,3 +389,18 @@ def test_show_lists_store_names_recorded_on_two_products():
     assert "STORE NAMES ON 2+ PRODUCTS · 1" in text
     assert 'edible: "raspberry sativa enhanced gummies" on Boysenberry · Raspberry' in text
     assert "boysenberry gummies" not in text.split("STORE NAMES")[1]
+
+
+def test_no_split_size_where_the_line_is_defined_by_its_size():
+    # STIIIZY: LIIIL is the 0.5g all-in-one; the line-less 1g all-in-ones are the plain range.
+    entries = [entry("LIIIL", s, "vaporizers", "all-in-one", "0.5g") for s in ("Biscotti", "Gelato", "Runtz")]
+    entries += [entry(None, s, "vaporizers", "all-in-one", "1g") for s in ("Biscotti", "Gelato")]
+    entries += [entry("Liquid Diamonds", "Tahoe", "vaporizers", "all-in-one", "1g")]
+    assert texts(cs.leads(cs.products(entries)), "split-size") == []
+
+
+def test_inferred_sizes_stay_out_of_the_shape():
+    entries = [entry("Original", "OG", "vaporizers", "pod", "1g"),
+               {**entry("Original", "OG", "vaporizers", "pod", "0.5g"), "source": "inferred"}]
+    [p] = cs.products(entries)
+    assert p.sizes == ["1g"]
