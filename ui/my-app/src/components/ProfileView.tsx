@@ -391,7 +391,9 @@ function ProfilePane({ profile, session, onSaved, onSignOut }: {
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
-  const [status, setStatus] = useState<string | null>(null)
+  const [confirmingSignOut, setConfirmingSignOut] = useState(false)
+  // "Saved" and a failure used to be the same grey; now they look different.
+  const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null)
   const [stores, setStores] = useState<PortalDispensary[] | null>(null)
 
   useEffect(() => {
@@ -415,7 +417,7 @@ function ProfilePane({ profile, session, onSaved, onSignOut }: {
       await api.me.deleteAccount()
       onSignOut()
     } catch (err) {
-      setStatus(err instanceof Error && err.message ? err.message : 'Could not delete your account. Try again.')
+      setStatus({ ok: false, text: err instanceof Error && err.message ? err.message : 'Could not delete your account. Try again.' })
       setDeleting(false)
       setConfirmingDelete(false)
     }
@@ -433,9 +435,9 @@ function ProfilePane({ profile, session, onSaved, onSignOut }: {
         platform: 'web',
       })
       onSaved(updated)
-      setStatus('Saved')
+      setStatus({ ok: true, text: 'Saved' })
     } catch (err) {
-      setStatus(err instanceof Error && err.message ? err.message : 'Could not save. Try again.')
+      setStatus({ ok: false, text: err instanceof Error && err.message ? err.message : 'Could not save. Try again.' })
     } finally {
       setSaving(false)
     }
@@ -527,15 +529,17 @@ function ProfilePane({ profile, session, onSaved, onSignOut }: {
         >
           {saving ? 'Saving…' : 'Save changes'}
         </button>
-        {status && (
-          <div style={{ color: t.text3, fontSize: font.size.small, textAlign: 'center', marginTop: 10 }}>
-            {status}
-          </div>
-        )}
+        <div role="status" style={{
+          color: status?.ok ? t.success : t.danger, fontSize: font.size.small, textAlign: 'center',
+          marginTop: status ? 10 : 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+        }}>
+          {status?.ok && <Icon name="check" size={15} />}
+          {status?.text}
+        </div>
       </div>
 
       <button
-        onClick={onSignOut}
+        onClick={() => setConfirmingSignOut(true)}
         style={{
           margin: '0 auto', background: 'transparent', border: `1px solid ${t.borderStrong}`,
           borderRadius: radius.md, color: t.text1,
@@ -559,6 +563,17 @@ function ProfilePane({ profile, session, onSaved, onSignOut }: {
       >
         {deleting ? 'Deleting…' : 'Delete account'}
       </button>
+
+      <ConfirmSheet
+        open={confirmingSignOut}
+        title="Sign out?"
+        confirmLabel="Sign out"
+        cancelLabel="Stay signed in"
+        onConfirm={onSignOut}
+        onCancel={() => setConfirmingSignOut(false)}
+      >
+        Signing back in takes a code sent to your phone.
+      </ConfirmSheet>
 
       <ConfirmSheet
         open={confirmingDelete}

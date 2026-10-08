@@ -34,6 +34,14 @@ export default function Profile() {
     }
   }
 
+  // Signing back in costs a text and a code, so ask first.
+  function confirmSignOut() {
+    Alert.alert('Sign out?', "Signing back in takes a code sent to your phone.", [
+      { text: 'Stay signed in', style: 'cancel' },
+      { text: 'Sign out', onPress: () => { signOut() } },
+    ])
+  }
+
   function confirmDelete() {
     Alert.alert(
       'Delete your account?',
@@ -102,7 +110,7 @@ export default function Profile() {
         )}
       </View>
 
-      <Button title="Sign out" icon="log-out" variant="secondary" onPress={signOut} style={{ margin: space[4], marginTop: space[7] }} />
+      <Button title="Sign out" icon="log-out" variant="secondary" onPress={confirmSignOut} style={{ margin: space[4], marginTop: space[7] }} />
       <Button title="Delete account" icon="trash" variant="danger" onPress={confirmDelete} style={{ marginHorizontal: space[4] }} />
     </ScrollView>
   )

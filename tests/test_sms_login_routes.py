@@ -99,6 +99,12 @@ def test_start_normalizes_to_e164_before_sending(client, provider):
     UUID(resp.json()["challenge_id"])  # a real uuid, not an echo of the phone
 
 
+def test_start_says_how_long_the_code_is(client, provider):
+    # The sign-in page sizes its code field from this and submits when full.
+    resp = start(client)
+    assert resp.json()["code_length"] == provider.sent[0][1] == 6
+
+
 def test_start_rejects_an_unusable_number(client, provider):
     resp = start(client, phone="555")
     assert resp.status_code == 400

@@ -23,7 +23,9 @@ export default function SignUp() {
 
   const [first, setFirst] = useState(profile!.first_name ?? onboarding.prefill.first_name ?? '')
   const [last, setLast] = useState(profile!.last_name ?? onboarding.prefill.last_name ?? '')
-  const [age, setAge] = useState(false)
+  // Already confirmed on an earlier sign-up: a terms change shouldn't make
+  // them confirm their age again.
+  const [age, setAge] = useState(!onboarding.missing.includes('age_21'))
   const [terms, setTerms] = useState(false)
   // Off unless they turn it on; already-consented customers see their choice.
   const [marketing, setMarketing] = useState(profile!.marketing_opt_in)

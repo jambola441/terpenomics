@@ -54,6 +54,9 @@ class StartResponse(BaseModel):
     challenge_id: str
     expires_in: int
     resend_in: int
+    # How many digits the texted code has, so the code field can stop there
+    # and submit by itself rather than guess.
+    code_length: int
 
 
 class VerifyRequest(BaseModel):
@@ -168,6 +171,7 @@ def start_sms_login(
         challenge_id=str(challenge.id),
         expires_in=CHALLENGE_TTL,
         resend_in=RESEND_SECONDS,
+        code_length=OTP_LENGTH,
     )
 
 
