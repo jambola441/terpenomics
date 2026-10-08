@@ -141,15 +141,22 @@ def test_stores_fill_in_only_what_the_site_lacks():
         # A longer strain name is a different product, not a spelling.
         *[listing(s, "Jealousy Haze AIO 1g", "Jealousy Haze", "vaporizers", "1g", "Live Resin",
                   "all-in-one") for s in ("a", "b")],
-        # Same name, a size the site does not list.
+        # Same name, a size the site does not list: one more size of the site's product.
         *[listing(s, "Mule Fuel 14g", "Mule Fuel", "flower", "14g", subtype="flower") for s in ("a", "b")],
+        # Same name, but infused: not the site's plain flower in another size.
+        *[listing(s, "Mule Fuel Infused 28g", "Mule Fuel", "flower", "28g", subtype="infused") for s in ("a", "b")],
     ]
     found, only_stores, terms = storefront.split_store_products(doc, stores)
     assert sorted(e["name"] for e in found) == ["Mandarin Dog", "Strawberries & Cream"]
     assert sorted((e["name"], e["variant"]) for e in only_stores) == \
-        [("Gorilla Glue", "1g"), ("Live Resin Jealousy Haze", "1g"), ("Mule Fuel", "14g")]
+        [("Gorilla Glue", "1g"), ("Live Resin Jealousy Haze", "1g"), ("Mule Fuel", "14g"), ("Mule Fuel", "28g")]
+    site_fuel = entry(doc, "Mule Fuel", "3.5g")
+    fuel = {e["variant"]: e for e in only_stores if e["strain"] == "Mule Fuel"}
+    assert fuel["14g"]["product_key"] == site_fuel["product_key"]
+    assert fuel["14g"]["external_id"] == f"{site_fuel['product_key']}:14g:stores"
+    assert fuel["28g"]["product_key"] != site_fuel["product_key"]
     pushed = storefront.with_store_products(doc, only_stores, terms)
-    assert len(pushed["entries"]) == len(doc["entries"]) + 3
+    assert len(pushed["entries"]) == len(doc["entries"]) + 4
     assert {e["source"] for e in pushed["entries"]} == {"shopify_products_json", "listings_bootstrap"}
     # Store names travel with an exact match only: "Mandarin Dog" is a spelling of the
     # site's "Mandarine Dog" — or a different strain; the model decides those listings.
