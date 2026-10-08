@@ -75,6 +75,7 @@ function RootNavigator() {
         />
         <Stack.Screen name="cart" options={{ presentation: 'modal', title: 'Your cart' }} />
         <Stack.Screen name="receipt" options={{ presentation: 'modal', title: 'Upload a receipt' }} />
+        <Stack.Screen name="stores" options={{ presentation: 'modal', title: 'Your stores' }} />
       </Stack.Protected>
     </Stack>
     </CartProvider>

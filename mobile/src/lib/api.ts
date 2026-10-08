@@ -121,6 +121,12 @@ export const api = {
 
     listPreferredDispensaries: () => authed<PortalDispensary[]>(`/me/preferred-dispensaries`),
 
+    /** Follow or unfollow a store; both answer with the followed list. */
+    addPreferredDispensary: (dispensaryId: string) =>
+      authed<PortalDispensary[]>(`/me/preferred-dispensaries/${dispensaryId}`, { method: 'POST' }),
+    removePreferredDispensary: (dispensaryId: string) =>
+      authed<PortalDispensary[]>(`/me/preferred-dispensaries/${dispensaryId}`, { method: 'DELETE' }),
+
     getFeed: (params?: { view?: FeedView; per_rail?: number; category?: string }) =>
       authed<Feed>(`/me/feed${query(params)}`),
 
