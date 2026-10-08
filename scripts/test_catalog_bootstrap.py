@@ -21,7 +21,8 @@ def L(store, name, strain, line=None, variant="0.6g", category="preroll", subtyp
 
 JETPACKS = [
     # No line in the name, so the curated lines (data/product_lines.json) cannot set
-    # one: the fold into the one lined group of the same strain and size must.
+    # one. It stays its own group: the matcher, not the bootstrap, decides whether it
+    # is FJ-Mini Afghani.
     L("s1", "Afghani Infused Pre-roll | 0.6G", "Afghani"),
     L("s2", "Jetpacks - FJ Mini Afghani Infused Preroll - .6g", "Afghani", "FJ Mini"),
     L("s3", "Infused Pre-Rolls | Jetpacks - FJ Mini | Afghani", "Afghani", "FJ-Mini"),
@@ -45,11 +46,24 @@ def by_name(doc):
     return {e["name"]: e for e in doc["catalog"]["entries"]}
 
 
-def test_line_spellings_converge_and_line_less_rows_fold_in():
+def test_line_spellings_converge_and_line_less_rows_stay_apart():
     out = cb.propose("Jetpacks", JETPACKS)
     e = by_name(out)["FJ-Mini Afghani"]
-    assert e["support"] == 4 and e["product_line"] == "FJ-Mini" and e["variant"] == "0.6g"
-    assert out["report"]["line_splits_folded"] >= 1
+    assert e["support"] == 3 and e["product_line"] == "FJ-Mini" and e["variant"] == "0.6g"
+    assert "Afghani" not in by_name(out)          # one store, no line: not folded in, not an entry
+
+
+def test_a_line_less_product_beside_a_lined_one_is_its_own_product():
+    """Herb sells plain and Hash Infused 7g pre-ground of the same strains; one store
+    lists both ($30 and $40). The plain one is not the infused one with its line left out."""
+    rows = [dict(L(s, n, "Sour Diesel", line, "7g", "flower", "preground"), brand="Herb")
+            for s, n, line in [("a", "Herb | Ready to Roll | Sour Diesel | 7g", None),
+                               ("b", "Herb - Sour Diesel Ready to Roll - 7g", None),
+                               ("a", "Herb | Hash Infused Ready to Roll | Sour Diesel | 7g", "Hash Infused"),
+                               ("b", "Herb - Sour Diesel Hash Infused Ready to Roll - 7g", "Hash Infused")]]
+    names = by_name(cb.propose("Herb", rows))
+    assert {"Sour Diesel", "Hash Infused Sour Diesel"} <= set(names)
+    assert names["Sour Diesel"]["support"] == 2 and names["Hash Infused Sour Diesel"]["support"] == 2
 
 
 def test_pack_sizes_are_their_own_product():
@@ -94,17 +108,6 @@ def test_strain_spellings_with_doubled_letters_are_one_strain():
         [("Granddaddy Purple", 4), ("RS1", 2), ("RS11", 2)]     # digits are not collapsed
 
 
-def test_a_one_store_line_spelling_does_not_block_the_line_fold():
-    rows = [L("s1", "Doobies Sour Tangie 7pk", "Sour Tangie", "Doobies", "7pk 3.5g", subtype="pack"),
-            L("s2", "Doobies Sour Tangie 7pk", "Sour Tangie", "Doobies", "7pk 3.5g", subtype="pack"),
-            L("s3", "Ruby Doobies Sour Tangie", "Sour Tangie", "Ruby Doobies", "7pk 3.5g",
-              subtype="pack"),
-            L("s4", "Sour Tangie Pre Rolls 7pk", "Sour Tangie", None, "7pk 3.5g", subtype="pack"),
-            L("s5", "Sour Tangie 7pk", "Sour Tangie", None, "7pk 3.5g", subtype="pack")]
-    entries = cb.propose("Ruby Farms", rows)["catalog"]["entries"]
-    assert [(e["name"], e["support"]) for e in entries] == [("Doobies Sour Tangie", 4)]
-
-
 def test_dosed_categories_keep_their_pack():
     rows = [L(s, "Electric Love Mandarin Rose 20pk 100mg", "Mandarin Rose", "Electric Love",
               "20pk 100mg", "edible", "gummy") for s in ("s1", "s2")]
@@ -125,11 +128,10 @@ def test_a_line_written_into_the_strain_is_one_product_written_the_majority_way(
     def got(entries):
         return [(e["product_line"], e["strain"], e["variant"], e["support"]) for e in entries]
 
-    # Florist Farms on 2026-10-05: one store records line "Calm", one writes only
-    # "Peach" (the line fold puts it with the lined group), two write "Calm Peach".
-    # Two stores each way: the lined way wins the tie.
+    # Florist Farms on 2026-10-05: two stores record line "Calm", strain "Peach", two
+    # write "Calm Peach". Two stores each way: the lined way wins the tie.
     calm = gummies("Florist Farms", [("s1", "Peach", "Calm", "10pk 100mg"),
-                                     ("s2", "Peach", None, "10pk 100mg"),
+                                     ("s2", "Peach", "Calm", "10pk 100mg"),
                                      ("s3", "Calm Peach", None, "10pk 100mg"),
                                      ("s4", "Calm Peach", None, "10pk 100mg")])
     assert got(calm) == [("Calm", "Peach", "10pk 100mg", 4)]
@@ -245,7 +247,7 @@ def test_push_then_load_groups_by_product_key(push, fresh_db):
     cur.execute("SELECT count(*), count(DISTINCT product_key), min(source), max(support) "
                 "FROM brand_catalog_entries")
     n, products, source, support = cur.fetchone()
-    assert n == len(doc["entries"]) and source == "listings_bootstrap" and support == 4
+    assert n == len(doc["entries"]) and source == "listings_bootstrap" and support == 3
     cats = catalog_store.load_from_cursor(cur)
     cat = catalog_store.for_brand(cats, "Jetpacks")
     assert cat["source_method"] == "listings_bootstrap"

@@ -31,13 +31,13 @@ How a group is formed
              infused listings of one strain and total are one product.
   sizes      groups of one product whose totals sizes.same_size calls equal merge:
              "7pk 4.9g" (7 x 0.7g) is the "7pk 5g" stores write.
-  line fix   a group with no line folds into the one group that has the same
-             category, strain and size *with* a line — the product_line split that is
-             12% of the products view, removed by construction. A lined group too
-             small to be an entry does not count against that "one". A group whose
-             strain is another's line and strain written together ("Calm Peach" vs
-             line "Calm", strain "Peach") merges with it, written the way more stores
-             write it.
+  line fix   a group whose strain is another's line and strain written together
+             ("Calm Peach" vs line "Calm", strain "Peach") merges with it, written
+             the way more stores write it. A group with no line is never folded into
+             a lined group of the same strain and size: a brand may sell both (Herb's
+             plain and Hash Infused pre-ground, one store listing both at $30 and
+             $40), and a listing whose store left the line out reaches the lined
+             product through the matcher, which decides listing by listing.
   variant    for a category measured by weight (taxonomy.py), the package total
              alone: "3.5g", not "7pk 3.5g". Stores state the pack count unevenly, and
              a listing keeps its own label; the entry's size is what identifies it.
@@ -229,26 +229,6 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
                 groups[into].listings.extend(groups.pop(k).listings)
                 sizes_merged += 1
 
-    # The product_line split: fold a line-less group into the single lined group that
-    # matches it on everything else. Two candidate lines means it is ambiguous which
-    # product the store meant, so it is left alone.
-    lined: dict[tuple, list[tuple]] = defaultdict(list)
-    for key in groups:
-        if key[3]:
-            lined[key[:3]].append(key)
-    folded = 0
-    for key in list(groups):
-        if key[3]:
-            continue
-        targets = [t for t in lined.get(key[:3], []) if _same_total(key[4], t[4])]
-        if len(targets) > 1:
-            # A lined group too small to become an entry (one store's own line
-            # spelling) does not make the choice ambiguous.
-            targets = [t for t in targets if groups[t].stores >= min_stores]
-        if len(targets) == 1:
-            groups[targets[0]].listings.extend(groups.pop(key).listings)
-            folded += 1
-
     # A line written into the strain at some stores and recorded as a line at others:
     # "Calm Peach" with no line beside line "Calm", strain "Peach". With category,
     # subtype and size agreeing too, that is one product. The way more stores write it
@@ -326,7 +306,7 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
                                 for l in rows if id(l) not in covered})
     report = {
         "brand": brand, "listings": len(listings), "eligible": len(rows),
-        "groups": len(groups), "line_splits_folded": folded, "strains_delined": delined,
+        "groups": len(groups), "strains_delined": delined,
         "lines_in_strain_merged": lines_in_strain,
         "sizes_merged": sizes_merged,
         "curated_lines_set": curated["product_line_set"] + curated["product_line_corrected"],
@@ -427,8 +407,7 @@ def main() -> None:
         totals.update({k: v for k, v in r.items() if isinstance(v, int)})
         print(f"{brand:28} {r['listings']:>5} listings  {r['entries']:>4} entries "
               f"(support>={args.min_stores})  covers {r['listings_covered']:>5}  "
-              f"product rows {r['product_rows_before']:>4} -> {r['product_rows_after']:>4}  "
-              f"line splits folded {r['line_splits_folded']}")
+              f"product rows {r['product_rows_before']:>4} -> {r['product_rows_after']:>4}")
         for e in out["catalog"]["entries"][:args.show]:
             print(f"    [{e['support']}] {e['category']:10} {e['name'][:40]:40} {e['variant'] or '':10} "
                   f"line={e['product_line']!r}")
