@@ -338,6 +338,55 @@ textarea::placeholder {
   100% { transform: scale(2.1);  opacity: 0; }
 }
 
+/* ── Clusters: stores too close to tap apart at this zoom ──────────────────── */
+
+.nyc-cluster {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform var(--t-base);
+}
+
+/* At least 44px to tap, whatever the bubble's size. */
+.nyc-cluster::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+}
+
+.nyc-cluster__disc {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--pin);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  /* A second ring in the same colour reads as "more than one". The first
+     line is for browsers without color-mix(). */
+  box-shadow:
+    0 0 0 2px rgba(12, 15, 13, 0.75),
+    0 4px 12px rgba(0, 0, 0, 0.55);
+  box-shadow:
+    0 0 0 2px rgba(12, 15, 13, 0.75),
+    0 0 0 6px color-mix(in srgb, var(--pin) 38%, transparent),
+    0 4px 12px rgba(0, 0, 0, 0.55);
+}
+
+.nyc-cluster:hover { transform: scale(1.06); }
+
+.nyc-map--light .nyc-cluster__disc {
+  box-shadow:
+    0 0 0 2.5px rgba(255, 255, 255, 0.95),
+    0 0 0 6.5px color-mix(in srgb, var(--pin) 34%, transparent),
+    0 3px 10px rgba(20, 30, 50, 0.3);
+}
+
 /* ── Leaflet chrome ───────────────────────────────────────────────────────── */
 
 .nyc-map .leaflet-tooltip.nyc-tip {
