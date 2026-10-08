@@ -101,7 +101,7 @@ export default function DispensaryEdit() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 32 }}>
           <button onClick={() => navigate('/admin/dispensaries')} style={navBtnStyle}><Icon name="arrow-left" size={14} />Dispensaries</button>
-          <h2 style={{ margin: 0, fontFamily: font.family.display, fontSize: font.size.display, fontWeight: 600, letterSpacing: '-0.015em' }}>{isNew ? 'New Dispensary' : 'Edit Dispensary'}</h2>
+          <h1 style={{ margin: 0, fontFamily: font.family.display, fontSize: font.size.display, fontWeight: 600, letterSpacing: '-0.015em' }}>{isNew ? 'New Dispensary' : 'Edit Dispensary'}</h1>
           {!isNew && (
             <button
               onClick={() => navigate(`/admin/dispensaries/${dispensaryId}/listings`)}

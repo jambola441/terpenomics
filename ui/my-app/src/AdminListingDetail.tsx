@@ -97,9 +97,9 @@ export default function AdminListingDetail() {
 
           {/* Main card */}
           <div style={{ background: t.surface1, border: `1px solid ${t.border}`, borderRadius: 10, padding: 24 }}>
-            <h2 style={{ margin: '0 0 4px', fontFamily: font.family.display, fontSize: font.size.display, fontWeight: 600, letterSpacing: '-0.015em', color: t.text1 }}>
+            <h1 style={{ margin: '0 0 4px', fontFamily: font.family.display, fontSize: font.size.display, fontWeight: 600, letterSpacing: '-0.015em', color: t.text1 }}>
               {l.scraped_name ?? <span style={{ color: t.text3 }}>Unnamed listing</span>}
-            </h2>
+            </h1>
             {l.scraped_brand && (
               <div style={{ fontSize: 13, color: t.text2, marginBottom: 20 }}>{l.scraped_brand}</div>
             )}

@@ -69,7 +69,7 @@ export default function ProductDetail() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
           <button onClick={() => navigate('/admin/products')} style={navBtnStyle}><Icon name="arrow-left" size={14} />Products</button>
-          <h2 style={{ margin: 0, fontFamily: font.family.display, fontSize: font.size.display, fontWeight: 600, letterSpacing: '-0.015em' }}>Product Detail</h2>
+          <h1 style={{ margin: 0, fontFamily: font.family.display, fontSize: font.size.display, fontWeight: 600, letterSpacing: '-0.015em' }}>Product Detail</h1>
         </div>
 
         {loading && <div style={{ color: t.text3 }}>Loading…</div>}

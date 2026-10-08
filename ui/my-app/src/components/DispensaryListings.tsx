@@ -8,6 +8,7 @@ import { boroughColor } from '../utils/boroughs'
 import { Pressable, Pill, FeedState, Skeleton, ProductImage, StoreBullet } from './ui'
 import { Icon, CategoryIcon } from './Icon'
 import { MarketNote, PhotoCorner } from './browse'
+import { aislePath, listingPath } from '../utils/storePaths'
 
 function formatPrice(cents: number | null) {
   if (cents == null) return null
@@ -34,6 +35,10 @@ interface Props {
   dispensaryBannerUrl?: string | null
   acceptsPickup?: boolean
   onBack: () => void
+  /** The tab the store was opened from; its aisles and listings stay there. */
+  section?: string
+  /** Names where Back goes ("Map", "Home"). */
+  backLabel?: string
   onAddToCart?: (item: CartItem) => void
   cart?: CartItem[]
 }
@@ -49,7 +54,7 @@ function haversineMi(lat1: number, lng1: number, lat2: number, lng2: number): nu
 export default function DispensaryListings({
   dispensaryId, dispensaryName, dispensarySlug = '', dispensaryAddress,
   dispensaryLat, dispensaryLng, dispensaryLogoUrl, dispensaryBannerUrl,
-  acceptsPickup = false, onBack, onAddToCart, cart = [],
+  acceptsPickup = false, onBack, section = 'map', backLabel = 'Map', onAddToCart, cart = [],
 }: Props) {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -155,7 +160,7 @@ export default function DispensaryListings({
     return (
       <div key={l.id} style={{ position: 'relative', width: 132, flexShrink: 0, scrollSnapAlign: 'start', display: 'flex' }}>
       <Pressable
-        onClick={() => navigate(`/portal/map/${dispensaryId}/listings/${l.id}`)}
+        onClick={() => navigate(listingPath(section, dispensaryId, l.id))}
         style={{
           flex: 1, minWidth: 0,
           background: t.surface1, borderRadius: radius.lg, border: `1px solid ${t.border}`,
@@ -242,7 +247,7 @@ export default function DispensaryListings({
             fontSize: font.size.small + 1, fontWeight: font.weight.medium, padding: '7px 14px 7px 10px', cursor: 'pointer',
             display: 'inline-flex', alignItems: 'center', gap: 6,
           }}
-        ><Icon name="arrow-left" size={16} /> Map</button>
+        ><Icon name="arrow-left" size={16} /> {backLabel}</button>
       </div>
 
       {/* Identity block */}
@@ -332,7 +337,7 @@ export default function DispensaryListings({
           return (
             <Pressable
               key={cat}
-              onClick={() => navigate(`/portal/map/${dispensaryId}/aisle/${encodeURIComponent(cat)}`)}
+              onClick={() => navigate(aislePath(section, dispensaryId, cat))}
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, flexShrink: 0, padding: '0 9px' }}
             >
               <div style={{
@@ -368,7 +373,7 @@ export default function DispensaryListings({
                     {categoryLabel(catKey)}
                   </span>
                   <button
-                    onClick={() => navigate(`/portal/map/${dispensaryId}/aisle/${encodeURIComponent(catKey)}`)}
+                    onClick={() => navigate(aislePath(section, dispensaryId, catKey))}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.text2, fontSize: font.size.small + 1, fontWeight: font.weight.semibold, padding: '2px 0', display: 'flex', alignItems: 'center', gap: 2 }}
                   >
                     See all{!search && shelfCount.get(catKey) ? ` ${shelfCount.get(catKey)}` : ''} <Icon name="chevron-right" size={15} />

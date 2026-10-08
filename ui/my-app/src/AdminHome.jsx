@@ -71,8 +71,8 @@ export default function AdminHome() {
             Sign out
           </button>
           <Logo size={26} />
-          <div style={{
-            marginTop: 10,
+          <h1 style={{
+            margin: '10px 0 0',
             fontFamily: font.family.mono,
             fontSize: font.size.caption,
             fontWeight: 500,
@@ -81,7 +81,7 @@ export default function AdminHome() {
             color: t.text3,
           }}>
             Admin
-          </div>
+          </h1>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
