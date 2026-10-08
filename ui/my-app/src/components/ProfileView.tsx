@@ -12,23 +12,22 @@ import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import type {
-  CustomerProfile, Feedback, Order, PointsSummary, PortalPurchase, PortalDispensary,
+  CustomerProfile, Feedback, PointsSummary, PortalPurchase, PortalDispensary,
 } from '../types'
 import type { Session } from '@supabase/auth-js'
 import { t, radius, font, categoryColor, categoryLabel } from '../theme'
 import { FeedState, ProductImage, Label } from './ui'
 import { Icon, type IconName } from './Icon'
-import OrderCard from './OrderCard'
 import ReceiptUpload from './ReceiptUpload'
 import EmailEditor from './EmailEditor'
 import ConfirmSheet from './ConfirmSheet'
 import { formatDate, formatDollars } from '../utils/format'
 import { formatE164ForDisplay } from '../utils/phone'
 
-type Pane = 'orders' | 'points' | 'feedback' | 'profile'
+// Orders have their own tab (OrdersScreen); /portal/profile/orders redirects there.
+type Pane = 'points' | 'feedback' | 'profile'
 
 const PANES: { key: Pane; label: string }[] = [
-  { key: 'orders', label: 'Orders' },
   { key: 'points', label: 'Points' },
   { key: 'feedback', label: 'Feedback' },
   { key: 'profile', label: 'Profile' },
@@ -37,26 +36,16 @@ const PANES: { key: Pane; label: string }[] = [
 interface Props {
   session: Session
   customerId: string
-  orders: Order[]
-  ordersLoading: boolean
-  ordersError: string | null
-  onCancelOrder: (orderId: string) => void
-  /** Load the orders again after a failure. */
-  onRetryOrders: () => void
-  cancellingIds: Set<string>
-  /** A failed cancel, by order id. Shown on that order's card only. */
-  cancelErrors: Record<string, string>
   onSignOut: () => void
 }
 
 export default function ProfileView({
-  session, customerId, orders, ordersLoading, ordersError,
-  onCancelOrder, onRetryOrders, cancellingIds, cancelErrors, onSignOut,
+  session, customerId, onSignOut,
 }: Props) {
   // The pane is in the URL (/portal/profile/points), so a link can open one.
   const navigate = useNavigate()
   const segment = useLocation().pathname.split('/')[3]
-  const pane: Pane = PANES.some(p => p.key === segment) ? segment as Pane : 'orders'
+  const pane: Pane = PANES.some(p => p.key === segment) ? segment as Pane : 'points'
   const setPane = (next: Pane) => navigate(`/portal/profile/${next}`, { replace: true })
   const [profile, setProfile] = useState<CustomerProfile | null>(null)
   const [points, setPoints] = useState<PointsSummary | null>(null)
@@ -72,7 +61,6 @@ export default function ProfileView({
     loadPoints()
   }, [])
 
-  const openOrders = orders.filter(o => o.status === 'submitted' || o.status === 'ready').length
 
   return (
     <div style={{ height: 'calc(100dvh - var(--chrome-bottom, 64px))', overflowY: 'auto', background: t.bg }}>
@@ -137,23 +125,11 @@ export default function ProfileView({
             }}
           >
             {p.label}
-            {p.key === 'orders' && openOrders > 0 ? ` · ${openOrders}` : ''}
           </button>
         ))}
       </div>
 
       <div style={{ padding: '18px 16px 28px', maxWidth: 560, margin: '0 auto' }}>
-        {pane === 'orders' && (
-          <OrdersPane
-            orders={orders}
-            loading={ordersLoading}
-            error={ordersError}
-            onCancelOrder={onCancelOrder}
-            onRetry={onRetryOrders}
-            cancellingIds={cancellingIds}
-            cancelErrors={cancelErrors}
-          />
-        )}
         {pane === 'points' && <PointsPane data={points} error={pointsError} onUploaded={loadPoints} onRetry={loadPoints} />}
         {pane === 'feedback' && <FeedbackPane customerId={customerId} />}
         {pane === 'profile' && (
@@ -165,46 +141,6 @@ export default function ProfileView({
           />
         )}
       </div>
-    </div>
-  )
-}
-
-/* ── Orders ────────────────────────────────────────────────────────────────── */
-
-function OrdersPane({ orders, loading, error, onCancelOrder, onRetry, cancellingIds, cancelErrors }: {
-  orders: Order[]
-  loading: boolean
-  /** Loading the list failed. A failed cancel is per card, not this. */
-  error: string | null
-  onCancelOrder: (orderId: string) => void
-  onRetry: () => void
-  cancellingIds: Set<string>
-  cancelErrors: Record<string, string>
-}) {
-  if (loading) return <FeedState kind="loading" message="Loading your orders…" />
-  if (error) return <FeedState kind="error" message={error} onRetry={onRetry} />
-  if (orders.length === 0) {
-    return (
-      <FeedState
-        kind="empty"
-        message="No orders yet"
-        hint="Orders you place for pickup show up here with their pickup code."
-        icon="bag"
-      />
-    )
-  }
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      {orders.map(order => (
-        <OrderCard
-          key={order.id}
-          order={order}
-          onCancel={onCancelOrder}
-          cancelling={cancellingIds.has(order.id)}
-          cancelError={cancelErrors[order.id] ?? null}
-        />
-      ))}
     </div>
   )
 }
