@@ -1,7 +1,7 @@
 /* ============================================================================
    AdminTable.tsx — the one table used across every admin screen.
 
-   Owns ONLY the table chrome: header row, sortable header affordance (↑/↓),
+   Owns ONLY the table chrome: header row, sortable header affordance (arrows),
    row hover, row-click navigation, and the shared dark-admin style tokens.
 
    It does NOT own filtering or pagination — those stay custom per page. Each
@@ -21,33 +21,28 @@
 
 import { Fragment } from 'react'
 import type { CSSProperties, ReactNode, Key } from 'react'
+import { t, font, alpha, categoryColor as categoryHex } from '../theme'
+import { Icon } from './Icon'
 
 /* ── Shared admin style tokens (previously copy-pasted into every page) ─────── */
 
-export const pageWrap: CSSProperties = { padding: 24, fontFamily: "'Inter', system-ui, sans-serif", background: '#080d18', minHeight: '100vh', color: '#f1f5f9' }
-export const thStyle: CSSProperties = { padding: '8px 12px', fontWeight: 500, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }
-export const tdStyle: CSSProperties = { padding: '10px 12px', color: '#cbd5e1' }
-export const navBtnStyle: CSSProperties = { padding: '6px 12px', background: '#0f172a', border: '1px solid #1e293b', borderRadius: 6, color: '#94a3b8', cursor: 'pointer', fontSize: 13 }
-export const selectStyle: CSSProperties = { fontSize: 13, padding: '5px 8px', borderRadius: 4, background: '#0f172a', border: '1px solid #1e293b', color: '#94a3b8' }
+export const pageWrap: CSSProperties = { padding: 24, background: t.bg, minHeight: '100vh', color: t.text1 }
+export const thStyle: CSSProperties = { padding: '8px 12px', fontFamily: font.family.mono, fontWeight: 500, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em', color: t.text3 }
+export const tdStyle: CSSProperties = { padding: '10px 12px', color: t.text2 }
+export const navBtnStyle: CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', background: t.surface2, border: `1px solid ${t.border}`, borderRadius: 8, color: t.text2, cursor: 'pointer', fontSize: 13 }
+/** The page's one primary action (New, Save, Upload…): a resin fill. */
+export const primaryBtnStyle: CSSProperties = { ...navBtnStyle, background: t.accent, border: `1px solid ${t.accent}`, color: t.accentInk, fontWeight: 600 }
+export const selectStyle: CSSProperties = { fontSize: 13, padding: '5px 8px', borderRadius: 6, background: t.surface2, border: `1px solid ${t.border}`, color: t.text2 }
 export const badge: CSSProperties = { padding: '2px 7px', borderRadius: 4, fontSize: 11, fontWeight: 500 }
 
 /** The muted em-dash used for empty cells everywhere. */
-export const Dash = () => <span style={{ color: '#475569' }}>—</span>
+export const Dash = () => <span style={{ color: t.text4 }}>—</span>
 
-const CATEGORY_COLORS: Record<string, { background: string; color: string }> = {
-  flower:      { background: '#14532d', color: '#86efac' },
-  preroll:     { background: '#1a2e05', color: '#a3e635' },
-  vaporizers:  { background: '#1e1b4b', color: '#a5b4fc' },
-  concentrate: { background: '#431407', color: '#fdba74' },
-  edible:      { background: '#4a1942', color: '#f0abfc' },
-  tinctures:   { background: '#0c4a6e', color: '#7dd3fc' },
-  topical:     { background: '#3b3a2a', color: '#fde68a' },
-  merch:       { background: '#1c1917', color: '#a8a29e' },
-}
-
-/** Badge background/foreground for a category (falls back to slate). */
-export function categoryColor(cat: string) {
-  return CATEGORY_COLORS[cat] ?? { background: '#1e293b', color: '#94a3b8' }
+/** Badge background/foreground for a category: its hue from the design
+ *  tokens, on a 12% wash of itself. Unknown categories get the neutral hue. */
+export function categoryColor(cat: string): { background: string; color: string } {
+  const c = categoryHex(cat)
+  return { background: alpha(c, 0.12), color: c }
 }
 
 /* ── Types ──────────────────────────────────────────────────────────────────── */
@@ -124,7 +119,7 @@ export function AdminTable<T>({
   return (
     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
       <thead>
-        <tr style={{ color: '#475569', textAlign: 'left', borderBottom: '1px solid #1e293b' }}>
+        <tr style={{ color: t.text3, textAlign: 'left', borderBottom: `1px solid ${t.borderStrong}` }}>
           {selection && (
             <th style={{ ...thStyle, width: 30, paddingRight: 0 }}>
               <input
@@ -150,7 +145,7 @@ export function AdminTable<T>({
                   onClick={() => sorting.onSort(col.key)}
                 >
                   {col.header}
-                  {active && <span style={{ marginLeft: 4, color: '#6366f1' }}>{sorting.order === 'asc' ? '↑' : '↓'}</span>}
+                  {active && <Icon name={sorting.order === 'asc' ? 'arrow-up' : 'arrow-down'} size={12} color={t.text1} style={{ marginLeft: 4, verticalAlign: '-1px' }} />}
                 </th>
               )
             }
@@ -166,13 +161,13 @@ export function AdminTable<T>({
         {rows.map((row, i) => {
           const key = rowKey(row, i)
           const isSelected = selection?.selected.has(key) ?? false
-          const restingBg = isSelected ? '#111c33' : 'transparent'
+          const restingBg = isSelected ? t.surface3 : 'transparent'
           return (
           <Fragment key={key}>
           <tr
-            style={{ borderBottom: '1px solid #0f172a', cursor: onRowClick ? 'pointer' : 'default', background: restingBg }}
+            style={{ borderBottom: `1px solid ${t.border}`, cursor: onRowClick ? 'pointer' : 'default', background: restingBg }}
             onClick={onRowClick ? () => onRowClick(row) : undefined}
-            onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#0f172a'}
+            onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = t.surface2}
             onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = restingBg}
           >
             {selection && (
@@ -206,7 +201,7 @@ export function AdminTable<T>({
           {expansion?.expanded.has(key) && (
             <tr>
               <td colSpan={columns.length + (selection ? 1 : 0)}
-                  style={{ padding: 0, borderBottom: '1px solid #0f172a' }}>
+                  style={{ padding: 0, borderBottom: `1px solid ${t.border}` }}>
                 {expansion.render(row)}
               </td>
             </tr>

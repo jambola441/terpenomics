@@ -1,8 +1,18 @@
 /* ============================================================================
-   theme.ts — typed accessors for the design tokens declared in index.css.
-   Values are `var(--token)` strings so the CSS file stays the single source of
-   truth; these can be dropped straight into inline `style={{...}}` props.
+   theme.ts — typed accessors for the design tokens.
+
+   The values live in design/tokens.ts and reach the page as CSS custom
+   properties (design/css.ts). Everything here is a `var(--token)` string, so it
+   drops straight into an inline `style={{...}}` prop and follows the tokens.
    ========================================================================== */
+
+import {
+  color as palette,
+  categoryStyle,
+  fontSize,
+  fontWeight,
+  alpha as tint,
+} from './design/tokens'
 
 export const t = {
   // Surfaces
@@ -11,6 +21,9 @@ export const t = {
   surface2: 'var(--surface-2)',
   surface3: 'var(--surface-3)',
   tile: 'var(--tile)',
+  tileLine: 'var(--tile-line)',
+  tileInk: 'var(--tile-ink)',
+  scrim: 'var(--scrim)',
 
   // Borders
   border: 'var(--border)',
@@ -22,18 +35,39 @@ export const t = {
   text3: 'var(--text-3)',
   text4: 'var(--text-4)',
 
-  // Accent
+  // Accent (Resin)
   accent: 'var(--accent)',
   accentStrong: 'var(--accent-strong)',
   accentDim: 'var(--accent-dim)',
   accentInk: 'var(--accent-ink)',
   accentTint: 'var(--accent-tint)',
 
-  // Semantic
+  // Signals
   danger: 'var(--danger)',
+  dangerTint: 'var(--danger-tint)',
+  dangerEdge: 'var(--danger-edge)',
   success: 'var(--success)',
+  successTint: 'var(--success-tint)',
+  successEdge: 'var(--success-edge)',
   warning: 'var(--warning)',
+  warningTint: 'var(--warning-tint)',
+  warningEdge: 'var(--warning-edge)',
+  info: 'var(--info)',
+  infoTint: 'var(--info-tint)',
+  infoEdge: 'var(--info-edge)',
 } as const
+
+/** Status tones for badges and callouts: foreground, wash, edge. */
+export type Tone = 'neutral' | 'accent' | 'success' | 'danger' | 'warning' | 'info'
+
+export const tone: Record<Tone, { fg: string; bg: string; edge: string }> = {
+  neutral: { fg: t.text2, bg: t.surface2, edge: t.border },
+  accent: { fg: t.accent, bg: t.accentTint, edge: 'color-mix(in srgb, var(--accent) 40%, transparent)' },
+  success: { fg: t.success, bg: t.successTint, edge: t.successEdge },
+  danger: { fg: t.danger, bg: t.dangerTint, edge: t.dangerEdge },
+  warning: { fg: t.warning, bg: t.warningTint, edge: t.warningEdge },
+  info: { fg: t.info, bg: t.infoTint, edge: t.infoEdge },
+}
 
 /** Border-radius scale */
 export const radius = {
@@ -74,69 +108,33 @@ export const motion = {
   spring: 'var(--ease-spring)',
 } as const
 
-/** Type scale — semantic sizes (px) + weights. */
+/** Type — families, semantic sizes (px) and weights. */
 export const font = {
-  size: {
-    micro: 10,
-    caption: 11,
-    small: 12,
-    body: 14,
-    callout: 15,
-    title: 17,
-    heading: 20,
-    display: 24,
-    hero: 28,
+  family: {
+    display: 'var(--font-display)',
+    sans: 'var(--font-sans)',
+    mono: 'var(--font-mono)',
   },
-  weight: {
-    regular: 400,
-    medium: 500,
-    semibold: 600,
-    bold: 700,
-    heavy: 800,
-  },
+  size: fontSize,
+  weight: fontWeight,
 } as const
 
 /* ── Category system ───────────────────────────────────────────────────────── */
 
-export const CATEGORY_COLORS: Record<string, string> = {
-  flower: '#5bb85f',
-  cart: '#3b9bf0',
-  vaporizers: '#3b9bf0',
-  edible: '#ff9f43',
-  concentrate: '#a958d8',
-  preroll: '#22c3d6',
-  tincture: '#8bc34a',
-  topical: '#f0655a',
-  merch: '#7a8a99',
-  other: '#9aa0a6',
-}
-
-export const CATEGORY_IMAGES: Record<string, string> = {
-  flower: '/flower.png',
-  cart: '/cart.png',
-  vaporizers: '/cart.png',
-  preroll: '/preroll.png',
-  tincture: '/tincture.png',
-  edible: '/edible.png',
-  concentrate: '/concentrate.png',
-}
-
+/** Real hex (not a var) so callers can derive tints with alpha(). */
 export function categoryColor(category: string | null | undefined): string {
-  if (!category) return CATEGORY_COLORS.other
-  return CATEGORY_COLORS[category] ?? CATEGORY_COLORS.other
+  return categoryStyle(category).color
 }
 
-export function categoryImage(category: string | null | undefined): string | undefined {
-  if (!category) return undefined
-  return CATEGORY_IMAGES[category]
+export function categoryLabel(category: string | null | undefined): string {
+  return category ? categoryStyle(category).label : 'Other'
 }
+
+export { categoryStyle }
 
 /** Translate `#rrggbb` + alpha (0..1) into an rgba() string for tints. */
-export function alpha(hex: string, a: number): string {
-  const h = hex.replace('#', '')
-  const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h
-  const r = parseInt(full.slice(0, 2), 16)
-  const g = parseInt(full.slice(2, 4), 16)
-  const b = parseInt(full.slice(4, 6), 16)
-  return `rgba(${r}, ${g}, ${b}, ${a})`
-}
+export const alpha = tint
+
+/** The raw role values, for the few places that need a real colour (canvas,
+ *  map markers, meta tags) rather than a CSS variable. */
+export const raw = palette

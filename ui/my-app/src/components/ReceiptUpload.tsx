@@ -10,8 +10,9 @@
 import { useEffect, useRef, useState } from 'react'
 import api from '../api/client'
 import type { MyReceipt, PartnerOption } from '../types'
-import { t, radius, font, alpha } from '../theme'
+import { t, radius, font } from '../theme'
 import { Label, Spinner } from './ui'
+import { Icon } from './Icon'
 import { formatDate, formatDollars } from '../utils/format'
 import { shrinkReceipt } from '../utils/receiptImage'
 
@@ -86,14 +87,18 @@ export default function ReceiptUpload({ onUploaded }: { onUploaded?: () => void 
           onClick={() => { setOpen(true); setDone(false) }}
           style={{
             padding: '13px 16px', borderRadius: radius.lg, cursor: 'pointer',
-            background: alpha('#ffffff', 0.04), border: `1px dashed ${t.borderStrong}`,
+            background: 'transparent', border: `1px dashed ${t.borderStrong}`,
             color: t.text1, fontSize: font.size.callout, fontWeight: font.weight.semibold, textAlign: 'left',
+            display: 'flex', alignItems: 'flex-start', gap: 12,
           }}
         >
-          🧾 Upload a receipt
-          <div style={{ color: t.text3, fontSize: font.size.small, fontWeight: font.weight.medium, marginTop: 3 }}>
-            Didn't give your number at a partner store? Send us the receipt and we'll add the points.
-          </div>
+          <Icon name="receipt" size={20} color={t.text3} style={{ marginTop: 1 }} />
+          <span>
+            Upload a receipt
+            <span style={{ display: 'block', color: t.text3, fontSize: font.size.small, fontWeight: font.weight.regular, marginTop: 3, lineHeight: 1.45 }}>
+              Didn't give your number at a partner store? Send us the receipt and we'll add the points.
+            </span>
+          </span>
         </button>
       ) : (
         <div style={{

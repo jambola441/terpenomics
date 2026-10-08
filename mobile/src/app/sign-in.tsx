@@ -4,8 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { api, ApiError } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import { formatE164ForDisplay, formatPhoneInput, toE164 } from '@/lib/phone'
-import { Button } from '@/components/ui'
-import { t, radius, space, font } from '@/lib/theme'
+import { Button, Label, styles } from '@/components/ui'
+import { Icon, Logo } from '@/components/Icon'
+import { t, space, font, fonts, type } from '@/lib/theme'
 
 /** Phone number, then the code. Mirrors the SMS half of the web Login page. */
 export default function SignIn() {
@@ -69,13 +70,14 @@ export default function SignIn() {
   return (
     <SafeAreaView style={s.screen}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={s.body}>
-        <Text style={s.brand}>terpenomics</Text>
+        <Logo size={32} style={s.logo} />
 
         {sentTo === null ? (
           <>
-            <Text style={s.label}>Sign in with your phone number</Text>
+            <Text style={type.display} accessibilityRole="header">Sign in</Text>
+            <Label style={s.eyebrow}>Phone number</Label>
             <TextInput
-              style={s.input}
+              style={styles.input}
               value={phone}
               onChangeText={v => setPhone(formatPhoneInput(v))}
               placeholder="(555) 123-4567"
@@ -89,9 +91,10 @@ export default function SignIn() {
           </>
         ) : (
           <>
-            <Text style={s.label}>Enter the code we sent to {formatE164ForDisplay(sentTo)}</Text>
+            <Text style={type.display} accessibilityRole="header">Enter the code</Text>
+            <Text style={type.copy}>We sent it to {formatE164ForDisplay(sentTo)}.</Text>
             <TextInput
-              style={[s.input, s.code]}
+              style={[styles.input, s.code]}
               value={code}
               onChangeText={v => setCode(v.replace(/\D/g, '').slice(0, 8))}
               placeholder="123456"
@@ -105,13 +108,13 @@ export default function SignIn() {
             <View style={s.row}>
               <Button
                 title="Change number"
-                variant="ghost"
+                variant="secondary"
                 onPress={() => { setSentTo(null); setChallengeId(null); setError(null) }}
                 style={{ flex: 1 }}
               />
               <Button
                 title={resendIn > 0 ? `Resend in ${resendIn}s` : 'Resend code'}
-                variant="ghost"
+                variant="secondary"
                 onPress={sendCode}
                 disabled={resendIn > 0 || loading}
                 style={{ flex: 1 }}
@@ -120,7 +123,12 @@ export default function SignIn() {
           </>
         )}
 
-        {error ? <Text style={s.error}>{error}</Text> : null}
+        {error ? (
+          <View style={s.error}>
+            <Icon name="alert" size={16} color={t.danger} style={{ marginTop: 2 }} />
+            <Text style={[type.body, { color: t.danger, flex: 1 }]}>{error}</Text>
+          </View>
+        ) : null}
       </KeyboardAvoidingView>
     </SafeAreaView>
   )
@@ -129,19 +137,9 @@ export default function SignIn() {
 const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: t.bg },
   body: { flex: 1, justifyContent: 'center', padding: space[6], gap: space[4] },
-  brand: { color: t.accent, fontSize: font.size.hero, fontWeight: font.weight.heavy, marginBottom: space[6] },
-  label: { color: t.text2, fontSize: font.size.callout },
-  input: {
-    backgroundColor: t.surface2,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: t.border,
-    color: t.text1,
-    fontSize: font.size.title,
-    paddingHorizontal: space[4],
-    minHeight: 52,
-  },
-  code: { letterSpacing: 6, fontSize: font.size.display },
+  logo: { marginBottom: space[6] },
+  eyebrow: { marginTop: space[2], marginBottom: -space[2] },
+  code: { fontFamily: fonts.monoMedium, fontSize: font.size.display, letterSpacing: 6, fontVariant: ['tabular-nums'] },
   row: { flexDirection: 'row', gap: space[3] },
-  error: { color: t.danger, fontSize: font.size.body },
+  error: { flexDirection: 'row', alignItems: 'flex-start', gap: space[2] },
 })

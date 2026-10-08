@@ -10,13 +10,15 @@ import type { CSSProperties, ReactNode } from 'react'
 import { AdminTable, badge, navBtnStyle, Dash, type Column } from './AdminTable'
 import type { PartnerLocation, PosConnection, PosOrderBase, PosSyncRun } from '../types'
 import { ago, money, primaryBtn, when } from '../utils/partners'
+import { Icon } from './Icon'
+import { t, font } from '../theme'
 /* ── Connection card ───────────────────────────────────────────────────────── */
 
 export const STATUS_STYLE: Record<string, CSSProperties> = {
-  active:   { background: '#14532d', color: '#86efac' },
-  disabled: { background: '#1e293b', color: '#94a3b8' },
-  error:    { background: '#450a0a', color: '#fca5a5' },
-  revoked:  { background: '#1e293b', color: '#64748b' },
+  active:   { background: t.successTint, color: t.success },
+  disabled: { background: t.surface2, color: t.text2 },
+  error:    { background: t.dangerTint, color: t.danger },
+  revoked:  { background: t.surface2, color: t.text3 },
 }
 
 export function ConnectionCard({ connection: c, busy, loadRuns, onPause, onResume, onReconnect, onDisconnect }: {
@@ -40,12 +42,12 @@ export function ConnectionCard({ connection: c, busy, loadRuns, onPause, onResum
   const needsReconnect = c.status === 'error' && /AuthError/.test(c.last_error ?? '')
 
   return (
-    <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: 16 }}>
+    <div style={{ background: t.surface1, border: `1px solid ${t.border}`, borderRadius: 10, padding: 16 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
         <span style={{ fontWeight: 600, textTransform: 'capitalize' }}>{c.provider}</span>
         <span style={{ ...badge, ...STATUS_STYLE[c.status] }}>{c.status}</span>
-        {c.syncing && <span style={{ ...badge, background: '#1e1b4b', color: '#a5b4fc' }}>syncing</span>}
-        <span style={{ color: '#475569', fontSize: 12, fontFamily: 'monospace' }}>merchant {c.external_merchant_id}</span>
+        {c.syncing && <span style={{ ...badge, background: t.infoTint, color: t.info }}>syncing</span>}
+        <span style={{ color: t.text3, fontSize: 12, fontFamily: font.family.mono }}>merchant {c.external_merchant_id}</span>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
           {needsReconnect ? (
             <button onClick={onReconnect} disabled={busy !== null} style={primaryBtn(busy !== null)}>Reconnect</button>
@@ -54,7 +56,7 @@ export function ConnectionCard({ connection: c, busy, loadRuns, onPause, onResum
           ) : (
             <button onClick={onResume} disabled={busy !== null} style={navBtnStyle}>{c.status === 'error' ? 'Retry' : 'Resume'}</button>
           )}
-          <button onClick={onDisconnect} disabled={busy !== null} style={{ ...navBtnStyle, color: '#fca5a5', borderColor: '#7f1d1d' }}>
+          <button onClick={onDisconnect} disabled={busy !== null} style={{ ...navBtnStyle, color: t.danger, borderColor: t.dangerEdge }}>
             Disconnect
           </button>
         </div>
@@ -68,7 +70,7 @@ export function ConnectionCard({ connection: c, busy, loadRuns, onPause, onResum
       </div>
 
       {c.last_error && (
-        <div style={{ marginTop: 12, fontSize: 12, color: '#fca5a5', fontFamily: 'monospace', wordBreak: 'break-word' }}>
+        <div style={{ marginTop: 12, fontSize: 12, color: t.danger, fontFamily: font.family.mono, wordBreak: 'break-word' }}>
           {c.last_error}
         </div>
       )}
@@ -78,7 +80,7 @@ export function ConnectionCard({ connection: c, busy, loadRuns, onPause, onResum
 
       {runs && runs.length > 0 && (
         <div style={{ marginTop: 16 }}>
-          <div style={{ fontSize: 11, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>Recent syncs</div>
+          <div style={{ fontSize: 11, color: t.text3, fontFamily: font.family.mono, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Recent syncs</div>
           <AdminTable
             columns={runColumns}
             rows={runs}
@@ -94,13 +96,13 @@ export const runColumns: Column<PosSyncRun>[] = [
   { key: 'started', header: 'Started', td: { fontSize: 12 }, render: r => when(r.started_at) },
   {
     key: 'status', header: 'Result',
-    render: r => <span style={{ ...badge, ...(r.status === 'ok' ? STATUS_STYLE.active : r.status === 'error' ? STATUS_STYLE.error : { background: '#1e1b4b', color: '#a5b4fc' }) }}>{r.status}</span>,
+    render: r => <span style={{ ...badge, ...(r.status === 'ok' ? STATUS_STYLE.active : r.status === 'error' ? STATUS_STYLE.error : { background: t.infoTint, color: t.info }) }}>{r.status}</span>,
   },
   { key: 'fetched', header: 'Fetched', align: 'right', render: r => r.orders_fetched },
   { key: 'new', header: 'New', align: 'right', render: r => r.orders_inserted },
   { key: 'updated', header: 'Updated', align: 'right', render: r => r.orders_updated },
   { key: 'matched', header: 'Matched', align: 'right', render: r => r.orders_matched },
-  { key: 'error', header: 'Error', td: { fontSize: 12, color: '#fca5a5', maxWidth: 280 }, render: r => r.error ?? <Dash /> },
+  { key: 'error', header: 'Error', td: { fontSize: 12, color: t.danger, maxWidth: 280 }, render: r => r.error ?? <Dash /> },
 ]
 
 /* ── Locations ─────────────────────────────────────────────────────────────── */
@@ -112,9 +114,9 @@ export function LocationsTable({ locations, busy = false, onToggle }: {
   onToggle?: (loc: PartnerLocation) => void
 }) {
   const columns: Column<PartnerLocation>[] = [
-    { key: 'name', header: 'Store', td: { color: '#f1f5f9', fontWeight: 500 }, render: l => l.name },
+    { key: 'name', header: 'Store', td: { color: t.text1, fontWeight: 500 }, render: l => l.name },
     { key: 'address', header: 'Address', render: l => l.address ?? <Dash /> },
-    { key: 'tz', header: 'Timezone', td: { fontSize: 12, color: '#64748b' }, render: l => l.timezone ?? <Dash /> },
+    { key: 'tz', header: 'Timezone', td: { fontSize: 12, color: t.text3 }, render: l => l.timezone ?? <Dash /> },
     {
       key: 'active', header: 'Earns points', stopPropagation: true,
       render: l => onToggle ? (
@@ -170,7 +172,7 @@ export function OrdersTable<T extends PosOrderBase>({ load, reloadKey, locations
     {
       key: 'total', header: 'Total', align: 'right',
       render: o => (
-        <span style={{ color: o.kind === 'return' ? '#fca5a5' : '#f1f5f9' }}>
+        <span style={{ color: o.kind === 'return' ? t.danger : t.text1 }}>
           {o.kind === 'return' ? '−' : ''}{money(o.total_cents, o.currency)}
         </span>
       ),
@@ -179,9 +181,9 @@ export function OrdersTable<T extends PosOrderBase>({ load, reloadKey, locations
       key: 'state', header: 'State',
       render: o => (
         <span style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-          {o.kind === 'return' && <span style={{ ...badge, background: '#450a0a', color: '#fca5a5' }}>return</span>}
+          {o.kind === 'return' && <span style={{ ...badge, background: t.dangerTint, color: t.danger }}>return</span>}
           <span style={{ ...badge, ...(o.state === 'completed' ? STATUS_STYLE.active : o.state === 'canceled' ? STATUS_STYLE.revoked : STATUS_STYLE.disabled) }}>{o.state}</span>
-          {o.refunded_cents > 0 && <span style={{ ...badge, background: '#422006', color: '#fbbf24' }}>refunded {money(o.refunded_cents, o.currency)}</span>}
+          {o.refunded_cents > 0 && <span style={{ ...badge, background: t.warningTint, color: t.warning }}>refunded {money(o.refunded_cents, o.currency)}</span>}
         </span>
       ),
     },
@@ -193,23 +195,23 @@ export function OrdersTable<T extends PosOrderBase>({ load, reloadKey, locations
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10, fontSize: 13, color: '#94a3b8' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10, fontSize: 13, color: t.text2 }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
           <input type="checkbox" checked={unmatched} onChange={e => { setUnmatched(e.target.checked); setOffset(0) }} />
           {filterLabel}
         </label>
-        <span style={{ marginLeft: 'auto', color: '#475569' }}>
+        <span style={{ marginLeft: 'auto', color: t.text3 }}>
           {total ? `${offset + 1}–${Math.min(offset + PAGE, total)} of ${total.toLocaleString()}` : ''}
         </span>
         {total > PAGE && (
           <>
-            <button onClick={() => setOffset(Math.max(0, offset - PAGE))} disabled={offset === 0} style={navBtnStyle}>←</button>
-            <button onClick={() => setOffset(offset + PAGE)} disabled={offset + PAGE >= total} style={navBtnStyle}>→</button>
+            <button onClick={() => setOffset(Math.max(0, offset - PAGE))} disabled={offset === 0} style={navBtnStyle}><Icon name="arrow-left" size={14} label="Previous page" /></button>
+            <button onClick={() => setOffset(offset + PAGE)} disabled={offset + PAGE >= total} style={navBtnStyle}><Icon name="arrow-right" size={14} label="Next page" /></button>
           </>
         )}
       </div>
 
-      {error && <div style={{ color: '#f87171', marginBottom: 8 }}>Error: {error}</div>}
+      {error && <div style={{ color: t.danger, marginBottom: 8 }}>Error: {error}</div>}
 
       {!data ? (
         <div style={muted}>Loading…</div>
@@ -222,17 +224,17 @@ export function OrdersTable<T extends PosOrderBase>({ load, reloadKey, locations
             const o = data.items.find(x => x.id === open)
             if (!o) return null
             return (
-              <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: 8, padding: 14, marginTop: 10, fontSize: 13 }}>
-                <div style={{ color: '#64748b', fontFamily: 'monospace', fontSize: 12, marginBottom: 8 }}>
+              <div style={{ background: t.surface1, border: `1px solid ${t.border}`, borderRadius: 8, padding: 14, marginTop: 10, fontSize: 13 }}>
+                <div style={{ color: t.text3, fontFamily: font.family.mono, fontSize: 12, marginBottom: 8 }}>
                   {o.external_order_id}{o.source_external_order_id ? ` · returns ${o.source_external_order_id}` : ''}
                 </div>
                 {o.items.map((i, n) => (
-                  <div key={n} style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', color: '#cbd5e1' }}>
+                  <div key={n} style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', color: t.text2 }}>
                     <span>{i.quantity !== '1' ? `${i.quantity} × ` : ''}{i.name}{i.variation ? ` (${i.variation})` : ''}</span>
                     <span>{money(i.total_cents, o.currency)}</span>
                   </div>
                 ))}
-                <div style={{ display: 'flex', gap: 18, marginTop: 10, color: '#64748b', fontSize: 12 }}>
+                <div style={{ display: 'flex', gap: 18, marginTop: 10, color: t.text3, fontSize: 12 }}>
                   <span>tax {money(o.tax_cents, o.currency)}</span>
                   <span>tip {money(o.tip_cents, o.currency)}</span>
                   <span>discounts {money(o.discount_cents, o.currency)}</span>
@@ -248,15 +250,15 @@ export function OrdersTable<T extends PosOrderBase>({ load, reloadKey, locations
 
 /* ── Bits ──────────────────────────────────────────────────────────────────── */
 
-export const page: CSSProperties = { padding: 24, fontFamily: "'Inter', system-ui, sans-serif", background: '#080d18', minHeight: '100vh', color: '#f1f5f9' }
+export const page: CSSProperties = { padding: 24, background: t.bg, minHeight: '100vh', color: t.text1 }
 export const wrap: CSSProperties = { maxWidth: 1000, margin: '0 auto' }
-export const muted: CSSProperties = { color: '#475569', fontSize: 13, lineHeight: 1.7 }
+export const muted: CSSProperties = { color: t.text3, fontSize: 13, lineHeight: 1.7 }
 
 export function Section({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
   return (
     <section style={{ marginBottom: 32 }}>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12, minHeight: 34 }}>
-        <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#cbd5e1' }}>{title}</h3>
+        <h3 style={{ margin: 0, fontFamily: font.family.display, fontSize: font.size.title, fontWeight: 600, color: t.text1 }}>{title}</h3>
         <div style={{ marginLeft: 'auto' }}>{action}</div>
       </div>
       {children}
@@ -267,20 +269,21 @@ export function Section({ title, action, children }: { title: string; action?: R
 export function Stat({ label, value, title }: { label: string; value: string; title?: string }) {
   return (
     <div title={title}>
-      <div style={{ fontSize: 11, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>{label}</div>
-      <div style={{ color: '#cbd5e1' }}>{value}</div>
+      <div style={{ fontSize: 11, color: t.text3, fontFamily: font.family.mono, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>{label}</div>
+      <div style={{ color: t.text2 }}>{value}</div>
     </div>
   )
 }
 
 export function Banner({ tone, children, onClose }: { tone: 'ok' | 'error'; children: ReactNode; onClose: () => void }) {
   const s = tone === 'ok'
-    ? { background: '#052e16', border: '1px solid #166534', color: '#86efac' }
-    : { background: '#450a0a', border: '1px solid #7f1d1d', color: '#fca5a5' }
+    ? { background: t.successTint, border: `1px solid ${t.successEdge}`, color: t.success }
+    : { background: t.dangerTint, border: `1px solid ${t.dangerEdge}`, color: t.danger }
   return (
-    <div style={{ ...s, borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, display: 'flex', gap: 12 }}>
+    <div style={{ ...s, borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+      <Icon name={tone === 'ok' ? 'check-circle' : 'alert'} size={16} style={{ marginTop: 1 }} />
       <span style={{ flex: 1 }}>{children}</span>
-      <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>×</button>
+      <button onClick={onClose} aria-label="Dismiss" style={{ display: 'inline-flex', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0 }}><Icon name="close" size={16} /></button>
     </div>
   )
 }

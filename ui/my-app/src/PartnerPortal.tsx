@@ -8,6 +8,8 @@ import { rememberNext } from './utils/redirect'
 import type { Partner, PartnerPortalDetail, PartnerPosOrder } from './types'
 import { primaryBtn } from './utils/partners'
 import { Banner, ConnectionCard, LocationsTable, OrdersTable, Section, muted, page, wrap } from './components/partnerUi'
+import { t, font } from './theme'
+import { Logo } from './components/Icon'
 
 /**
  * The partner's own dashboard: /partner and /partner/:partnerId.
@@ -59,10 +61,11 @@ function SignIn() {
   return (
     <Shell>
       <div style={{ maxWidth: 420, margin: '12vh auto 0', textAlign: 'center' }}>
-        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#334155', marginBottom: 28 }}>
-          terpee for partners
+        <Logo size={30} />
+        <div style={{ ...eyebrow, marginTop: 10, marginBottom: 28 }}>
+          Terpee for partners
         </div>
-        <h1 style={{ fontSize: 24, fontWeight: 600, margin: '0 0 10px' }}>Partner dashboard</h1>
+        <h1 style={{ fontFamily: font.family.display, fontSize: font.size.display, fontWeight: 600, letterSpacing: '-0.015em', margin: '0 0 10px' }}>Partner dashboard</h1>
         <p style={{ ...muted, margin: '0 0 28px' }}>
           Connect your point of sale so your customers earn Terpee points when they shop with you.
         </p>
@@ -70,14 +73,14 @@ function SignIn() {
           onClick={google}
           disabled={loading}
           style={{
-            display: 'inline-flex', alignItems: 'center', gap: 10, padding: '11px 20px', borderRadius: 8,
-            background: '#f8fafc', color: '#0f172a', border: 'none', fontSize: 14, fontWeight: 500,
+            display: 'inline-flex', alignItems: 'center', gap: 10, padding: '11px 20px', borderRadius: 10,
+            background: t.surface2, color: t.text1, border: `1px solid ${t.borderStrong}`, fontSize: 14, fontWeight: 500,
             cursor: loading ? 'default' : 'pointer', opacity: loading ? 0.7 : 1,
           }}
         >
           <GoogleMark /> {loading ? 'Opening Google…' : 'Continue with Google'}
         </button>
-        {error && <div style={{ color: '#fca5a5', fontSize: 13, marginTop: 16 }}>{error}</div>}
+        {error && <div style={{ color: t.danger, fontSize: 13, marginTop: 16 }}>{error}</div>}
         <p style={{ ...muted, fontSize: 12, marginTop: 28 }}>
           Use the Google account Terpee invited. Need access? Contact your Terpee rep.
         </p>
@@ -110,9 +113,8 @@ function Portal() {
 
   const header = (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
-      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#334155' }}>
-        terpee for partners
-      </div>
+      <Logo size={22} />
+      <div style={eyebrow}>Terpee for partners</div>
       {me && me.partners.length > 1 && selected && (
         <select
           value={selected}
@@ -123,7 +125,7 @@ function Portal() {
           {me.partners.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>
       )}
-      <span style={{ marginLeft: 'auto', color: '#64748b', fontSize: 13 }}>{me?.email}</span>
+      <span style={{ marginLeft: 'auto', color: t.text3, fontSize: 13 }}>{me?.email}</span>
       <button onClick={signOut} style={navBtnStyle}>Sign out</button>
     </div>
   )
@@ -136,9 +138,9 @@ function Portal() {
       <Shell>
         {header}
         <div style={{ maxWidth: 520, margin: '8vh auto 0', textAlign: 'center' }}>
-          <h2 style={{ fontSize: 18, fontWeight: 600 }}>This Google account isn't linked to a partner</h2>
+          <h2 style={{ fontFamily: font.family.display, fontSize: font.size.heading, fontWeight: 600, letterSpacing: '-0.01em', margin: '0 0 10px' }}>This Google account isn't linked to a partner</h2>
           <p style={muted}>
-            You're signed in as <b style={{ color: '#cbd5e1' }}>{me.email ?? 'an account without an email'}</b>.
+            You're signed in as <b style={{ color: t.text1 }}>{me.email ?? 'an account without an email'}</b>.
             Ask your Terpee rep to add this address to your store, or sign out and use the account they invited.
           </p>
         </div>
@@ -233,7 +235,7 @@ function Dashboard({ partnerId, pos, reason, clearPos }: {
 
   return (
     <>
-      <h2 style={{ margin: '0 0 20px', fontSize: 22, fontWeight: 600 }}>{partner.name}</h2>
+      <h2 style={{ margin: '0 0 20px', fontFamily: font.family.display, fontSize: font.size.display, fontWeight: 600, letterSpacing: '-0.015em' }}>{partner.name}</h2>
       {banners}
 
       <Section
@@ -293,8 +295,8 @@ function Dashboard({ partnerId, pos, reason, clearPos }: {
           customerColumn={{
             key: 'member', header: 'Terpee member',
             render: o => o.is_member
-              ? <span style={{ color: '#86efac' }}>yes</span>
-              : <span style={{ color: '#475569' }}>—</span>,
+              ? <span style={{ color: t.success }}>yes</span>
+              : <span style={{ color: t.text3 }}>—</span>,
           } satisfies Column<PartnerPosOrder>}
         />
       </Section>
@@ -303,6 +305,11 @@ function Dashboard({ partnerId, pos, reason, clearPos }: {
 }
 
 /* ── Bits ──────────────────────────────────────────────────────────────────── */
+
+const eyebrow: React.CSSProperties = {
+  fontFamily: font.family.mono, fontSize: font.size.caption, fontWeight: 500,
+  letterSpacing: '0.08em', textTransform: 'uppercase', color: t.text3,
+}
 
 function Shell({ children }: { children: React.ReactNode }) {
   return <div style={page}><div style={wrap}>{children}</div></div>

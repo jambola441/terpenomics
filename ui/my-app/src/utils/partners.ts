@@ -1,17 +1,19 @@
 import type { CSSProperties } from 'react'
+import { t } from '../theme'
 
 /** Shared bits for the partner-store admin pages. */
 
 export const inputStyle: CSSProperties = {
-  fontSize: 13, padding: '8px 10px', borderRadius: 6,
-  background: '#0f172a', border: '1px solid #1e293b', color: '#f1f5f9', outline: 'none',
+  fontSize: 13, padding: '8px 10px', borderRadius: 8,
+  background: t.surface2, border: `1px solid ${t.border}`, color: t.text1, outline: 'none',
 }
 
 export function primaryBtn(disabled = false): CSSProperties {
   return {
-    padding: '8px 14px', borderRadius: 6, fontSize: 13, fontWeight: 500,
-    background: disabled ? '#1e293b' : '#3730a3', border: '1px solid #4338ca',
-    color: disabled ? '#64748b' : '#e0e7ff', cursor: disabled ? 'default' : 'pointer',
+    display: 'inline-flex', alignItems: 'center', gap: 6,
+    padding: '8px 14px', borderRadius: 8, fontSize: 13, fontWeight: 600,
+    background: disabled ? t.surface2 : t.accent, border: `1px solid ${disabled ? t.border : t.accent}`,
+    color: disabled ? t.text4 : t.accentInk, cursor: disabled ? 'default' : 'pointer',
   }
 }
 

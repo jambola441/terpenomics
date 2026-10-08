@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { API_BASE } from './api/client'
+import { t } from './theme'
 
 /**
  * The POS OAuth redirect URL can be registered on this site's own domain
@@ -22,7 +23,7 @@ export default function PosOAuthForward() {
   }, [provider])
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080d18', color: '#94a3b8', fontFamily: "'Inter', system-ui, sans-serif", display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>
+    <div style={{ minHeight: '100vh', background: t.bg, color: t.text2, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>
       Finishing the connection…
     </div>
   )

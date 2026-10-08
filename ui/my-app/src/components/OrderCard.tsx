@@ -1,12 +1,13 @@
 import type { Order, OrderStatus } from '../types'
-import { t, radius, font, alpha } from '../theme'
+import { t, radius, font, tone, type Tone } from '../theme'
 import { formatDate, formatDollars } from '../utils/format'
+import { Icon, type IconName } from './Icon'
 
-const ORDER_STATUS_STYLE: Record<OrderStatus, { label: string; color: string; hint: string }> = {
-  submitted: { label: 'Submitted', color: '#f0b93b', hint: 'The store is preparing your order.' },
-  ready:     { label: 'Ready',     color: '#4ac97e', hint: 'Waiting at the counter — pay when you collect it.' },
-  completed: { label: 'Picked up', color: 'var(--text-3)', hint: '' },
-  cancelled: { label: 'Cancelled', color: 'var(--danger)', hint: '' },
+const ORDER_STATUS_STYLE: Record<OrderStatus, { label: string; tone: Tone; icon: IconName; hint: string }> = {
+  submitted: { label: 'Preparing', tone: 'warning', icon: 'clock', hint: 'The store is preparing your order.' },
+  ready:     { label: 'Ready',     tone: 'success', icon: 'check-circle', hint: 'Waiting at the counter — pay when you collect it.' },
+  completed: { label: 'Picked up', tone: 'neutral', icon: 'check', hint: '' },
+  cancelled: { label: 'Cancelled', tone: 'danger', icon: 'x-circle', hint: '' },
 }
 
 export default function OrderCard({ order, onCancel, cancelling }: {
@@ -19,13 +20,13 @@ export default function OrderCard({ order, onCancel, cancelling }: {
 
   return (
     <div style={{
-      background: t.surface2, border: `1px solid ${t.border}`,
+      background: t.surface1, border: `1px solid ${t.border}`,
       borderRadius: radius.lg, padding: 16,
     }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
         <div style={{ minWidth: 0 }}>
           <div style={{
-            color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.body,
+            color: t.text1, fontFamily: font.family.display, fontWeight: font.weight.semibold, fontSize: font.size.title,
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
           }}>
             {order.dispensary_name}
@@ -35,11 +36,14 @@ export default function OrderCard({ order, onCancel, cancelling }: {
           </div>
         </div>
         <span style={{
-          flexShrink: 0, borderRadius: radius.pill, padding: '4px 10px',
-          fontSize: font.size.small, fontWeight: font.weight.bold,
-          color: style.color, background: alpha(style.color, 0.12),
-          border: `1px solid ${alpha(style.color, 0.3)}`,
+          flexShrink: 0, borderRadius: radius.pill, padding: '4px 10px 4px 8px',
+          display: 'inline-flex', alignItems: 'center', gap: 5,
+          fontFamily: font.family.mono, fontSize: font.size.caption, fontWeight: font.weight.medium,
+          textTransform: 'uppercase', letterSpacing: '0.06em',
+          color: tone[style.tone].fg, background: tone[style.tone].bg,
+          border: `1px solid ${tone[style.tone].edge}`,
         }}>
+          <Icon name={style.icon} size={13} strokeWidth={2} />
           {style.label}
         </span>
       </div>
@@ -48,25 +52,26 @@ export default function OrderCard({ order, onCancel, cancelling }: {
       {open && (
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          gap: 12, marginTop: 12, padding: '10px 12px',
-          background: t.surface1, border: `1px solid ${t.border}`, borderRadius: radius.md,
+          gap: 12, marginTop: 14, padding: '12px 14px',
+          // A ticket stub: the code is what gets shown at the counter.
+          background: t.bg, border: `1px dashed ${t.borderStrong}`, borderRadius: radius.md,
         }}>
           <div>
             <div style={{
-              color: t.text3, fontSize: font.size.small,
-              textTransform: 'uppercase', letterSpacing: '0.07em',
+              color: t.text3, fontFamily: font.family.mono, fontSize: font.size.caption,
+              textTransform: 'uppercase', letterSpacing: '0.08em',
             }}>
               Pickup code
             </div>
             <div style={{
-              color: t.accent, fontWeight: font.weight.bold, fontSize: 20,
-              letterSpacing: '0.12em', fontVariantNumeric: 'tabular-nums', marginTop: 2,
+              color: t.text1, fontFamily: font.family.mono, fontWeight: font.weight.medium, fontSize: 24,
+              letterSpacing: '0.14em', fontVariantNumeric: 'tabular-nums', marginTop: 2,
             }}>
               {order.pickup_code}
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ color: t.text3, fontSize: font.size.small }}>Due at pickup</div>
+            <div style={{ color: t.text3, fontFamily: font.family.mono, fontSize: font.size.caption, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Due at pickup</div>
             <div style={{
               color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.callout,
               fontVariantNumeric: 'tabular-nums', marginTop: 2,
@@ -124,9 +129,9 @@ export default function OrderCard({ order, onCancel, cancelling }: {
           disabled={cancelling}
           style={{
             width: '100%', marginTop: 12, boxSizing: 'border-box',
-            background: 'transparent', border: `1px solid ${t.border}`,
-            borderRadius: radius.md, color: t.text3,
-            fontSize: font.size.small, fontWeight: font.weight.semibold,
+            background: 'transparent', border: `1px solid ${t.borderStrong}`,
+            borderRadius: radius.md, color: t.text2,
+            fontSize: font.size.small + 1, fontWeight: font.weight.medium,
             padding: '9px 0', cursor: cancelling ? 'default' : 'pointer',
           }}
         >

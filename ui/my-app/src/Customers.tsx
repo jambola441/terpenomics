@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { usePagination } from './hooks/usePagination'
 import { useSearch } from './hooks/useSearch'
 import { SearchBar } from './components/SearchBar'
-import { AdminTable, navBtnStyle, Dash, type Column } from './components/AdminTable'
+import { AdminTable, navBtnStyle, Dash, type Column, primaryBtnStyle } from './components/AdminTable'
 import api from './api/client'
 import type { Customer } from './types'
+import { t, font } from './theme'
+import { Icon } from './components/Icon'
 
 export default function Customers() {
   const [customers, setCustomers] = useState<Customer[]>([])
@@ -38,28 +40,28 @@ export default function Customers() {
   }
 
   const columns: Column<Customer>[] = [
-    { key: 'name', header: 'Name', td: { color: '#f1f5f9', fontWeight: 500 },
+    { key: 'name', header: 'Name', td: { color: t.text1, fontWeight: 500 },
       render: c => c.name ?? <Dash /> },
     { key: 'email', header: 'Email', render: c => c.email ?? <Dash /> },
     { key: 'phone', header: 'Phone', render: c => c.phone ?? <Dash /> },
     { key: 'marketing', header: 'Marketing',
-      render: c => c.marketing_opt_in ? <span style={{ color: '#86efac' }}>Yes</span> : <span style={{ color: '#475569' }}>No</span> },
+      render: c => c.marketing_opt_in ? <span style={{ color: t.success }}>Yes</span> : <span style={{ color: t.text3 }}>No</span> },
     { key: 'last_visit', header: 'Last Visit',
       render: c => c.last_visit_at ? new Date(c.last_visit_at).toLocaleString() : <Dash /> },
   ]
 
   return (
-    <div style={{ padding: 24, fontFamily: "'Inter', system-ui, sans-serif", background: '#080d18', minHeight: '100vh', color: '#f1f5f9' }}>
+    <div style={{ padding: 24, background: t.bg, minHeight: '100vh', color: t.text1 }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
-          <button onClick={() => navigate('/admin')} style={navBtnStyle}>← Admin</button>
-          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>Customers</h2>
+          <button onClick={() => navigate('/admin')} style={navBtnStyle}><Icon name="arrow-left" size={14} />Admin</button>
+          <h2 style={{ margin: 0, fontFamily: font.family.display, fontSize: font.size.display, fontWeight: 600, letterSpacing: '-0.015em' }}>Customers</h2>
           <button
             onClick={() => navigate('/admin/customers/new')}
-            style={{ ...navBtnStyle, color: '#a5b4fc', borderColor: '#3730a3' }}
+            style={primaryBtnStyle}
           >
-            + Register
+            <Icon name="plus" size={14} />Register
           </button>
           <div style={{ marginLeft: 'auto' }}>
             <SearchBar
@@ -74,17 +76,17 @@ export default function Customers() {
           </div>
         </div>
 
-        {error && <div style={{ color: '#f87171', marginBottom: 16 }}>Error: {error}</div>}
+        {error && <div style={{ color: t.danger, marginBottom: 16 }}>Error: {error}</div>}
 
-        <p style={{ fontSize: 13, color: '#475569', marginBottom: 12 }}>
-          {search ? <>Searching: <strong style={{ color: '#94a3b8' }}>{search}</strong> — </> : null}
+        <p style={{ fontSize: 13, color: t.text3, marginBottom: 12 }}>
+          {search ? <>Searching: <strong style={{ color: t.text2 }}>{search}</strong> — </> : null}
           Showing {customers.length} customer(s)
         </p>
 
         {loading && customers.length === 0 ? (
-          <div style={{ color: '#475569', padding: 16 }}>Loading…</div>
+          <div style={{ color: t.text3, padding: 16 }}>Loading…</div>
         ) : customers.length === 0 ? (
-          <div style={{ color: '#475569', padding: 16 }}>No customers found.</div>
+          <div style={{ color: t.text3, padding: 16 }}>No customers found.</div>
         ) : (
           <AdminTable
             columns={columns}
@@ -95,7 +97,7 @@ export default function Customers() {
         )}
 
         {loading && customers.length > 0 && (
-          <div style={{ padding: 16, color: '#475569', textAlign: 'center' }}>Loading more…</div>
+          <div style={{ padding: 16, color: t.text3, textAlign: 'center' }}>Loading more…</div>
         )}
 
         {!loading && hasMore && customers.length > 0 && (

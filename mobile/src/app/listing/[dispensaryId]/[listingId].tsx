@@ -1,27 +1,28 @@
-import { Alert, Linking, Pressable, ScrollView, Text, View } from 'react-native'
+import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { router, useLocalSearchParams } from 'expo-router'
-import type { ListingDetail, Terpene } from '@web/types'
+import type { Cannabinoid, ListingDetail } from '@web/types'
 import { formatDollars } from '@web/utils/format'
 import { api } from '@/lib/api'
 import { useFetch } from '@/lib/useFetch'
 import { useCart } from '@/lib/cart'
-import { Button, FeedState, Price, ProductImage, SectionTitle, styles } from '@/components/ui'
-import { t, space, font, radius } from '@/lib/theme'
+import {
+  Button, CategoryTag, ClassificationTag, FeedState, Pill, Price, ProductImage, SectionTitle, StoreBullet,
+  TerpeneProfile, formatPercent, styles,
+} from '@/components/ui'
+import { Icon } from '@/components/Icon'
+import { t, space, font, radius, type } from '@/lib/theme'
 
-function Bars({ items }: { items: Terpene[] }) {
-  const shown = items.filter(i => i.percent != null).sort((a, b) => (b.percent ?? 0) - (a.percent ?? 0)).slice(0, 8)
-  const max = Math.max(...shown.map(i => i.percent ?? 0), 0.01)
-  if (!shown.length) return <Text style={[styles.meta, { paddingHorizontal: space[4] }]}>No lab data yet.</Text>
+/** Measured cannabinoids as small specimen tiles: name, then the figure. */
+function Cannabinoids({ items }: { items: Cannabinoid[] }) {
+  const shown = items.filter(i => i.percent != null).sort((a, b) => (b.percent ?? 0) - (a.percent ?? 0))
+  if (!shown.length) return <Text style={[styles.meta, s.gutter]}>No lab data yet.</Text>
   return (
-    <View style={{ paddingHorizontal: space[4], gap: space[2] }}>
-      {shown.map(i => (
-        <View key={i.name} style={{ flexDirection: 'row', alignItems: 'center', gap: space[3] }}>
-          <Text style={[styles.meta, { width: 110, color: t.text2 }]} numberOfLines={1}>{i.name}</Text>
-          <View style={{ flex: 1, height: 8, backgroundColor: t.surface2, borderRadius: radius.pill }}>
-            <View style={{ width: `${((i.percent ?? 0) / max) * 100}%`, height: 8, backgroundColor: t.accent, borderRadius: radius.pill }} />
-          </View>
-          <Text style={[styles.meta, { width: 48, textAlign: 'right' }]}>{(i.percent ?? 0).toFixed(2)}%</Text>
+    <View style={[s.gutter, { flexDirection: 'row', flexWrap: 'wrap', gap: space[2] }]}>
+      {shown.map(c => (
+        <View key={c.name} style={s.tile}>
+          <Text style={type.bodyStrong}>{c.name}</Text>
+          <Text style={type.mono}>{formatPercent(c.percent!)}</Text>
         </View>
       ))}
     </View>
@@ -39,56 +40,78 @@ export default function ListingScreen() {
   if (loading || error || !l) return <FeedState loading={loading} error={error} onRetry={refresh} />
   const ctx = l.price_context
   const listing = l
+  const detail = [l.subtype, l.strain].filter(Boolean).join(' · ')
 
   return (
     <View style={styles.screen}>
     <ScrollView style={styles.screen} contentContainerStyle={{ paddingBottom: space[8] }}>
       <View style={{ alignItems: 'center', padding: space[4] }}>
-        <ProductImage uri={l.image_url} size={240} />
+        <ProductImage uri={l.image_url} size={240} category={l.scraped_category} radius={radius.xl} />
       </View>
 
-      <View style={{ paddingHorizontal: space[4], gap: space[1] }}>
-        {l.scraped_brand ? <Text style={[styles.meta, { color: t.text2 }]}>{l.scraped_brand}</Text> : null}
-        <Text style={{ color: t.text1, fontSize: font.size.heading, fontWeight: font.weight.heavy }}>{l.display_name}</Text>
-        <Text style={styles.meta}>{[l.variant, l.subtype, l.strain].filter(Boolean).join(' · ')}</Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[3], marginTop: space[2] }}>
-          <Price cents={l.price_cents} />
-          {!l.in_stock ? <Text style={{ color: t.danger, fontSize: font.size.small }}>Out of stock</Text> : null}
+      <View style={[s.gutter, { gap: space[1] }]}>
+        <View style={s.tags}>
+          {l.scraped_category ? <CategoryTag category={l.scraped_category} /> : null}
+          {l.classification ? <ClassificationTag classification={l.classification} /> : null}
+          {l.variant ? <Pill>{l.variant}</Pill> : null}
+          {!l.in_stock ? <Pill tone="danger">Out of stock</Pill> : null}
         </View>
+        {l.scraped_brand ? <Text style={[type.body, { color: t.text2 }]}>{l.scraped_brand}</Text> : null}
+        <Text style={s.name} accessibilityRole="header">{l.display_name}</Text>
+        {detail ? <Text style={styles.meta}>{detail}</Text> : null}
+        <Price cents={l.price_cents} style={s.price} />
         {ctx.other_store_count > 0 && ctx.avg_cents != null ? (
           <Text style={styles.meta}>
-            {ctx.is_cheapest ? 'Cheapest of ' : 'Compared with '}
+            {ctx.is_cheapest ? (
+              <Text style={{ color: t.success }}>Cheapest of </Text>
+            ) : 'Compared with '}
             {ctx.other_store_count} other store{ctx.other_store_count === 1 ? '' : 's'} · avg {formatDollars(ctx.avg_cents)}
           </Text>
         ) : null}
-        <Text style={[styles.meta, { marginTop: space[2] }]}>At {l.dispensary_name}</Text>
+
+        <View style={s.store}>
+          <StoreBullet name={l.dispensary_name} address={l.dispensary?.address} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.name}>{l.dispensary_name}</Text>
+            {l.dispensary?.address ? <Text style={styles.meta} numberOfLines={1}>{l.dispensary.address}</Text> : null}
+          </View>
+        </View>
       </View>
 
       <SectionTitle>Terpenes</SectionTitle>
-      <Bars items={l.terpenes} />
+      <View style={s.gutter}>
+        {l.terpenes.length ? (
+          <TerpeneProfile terpenes={l.terpenes} />
+        ) : (
+          <Text style={styles.meta}>No lab data yet.</Text>
+        )}
+      </View>
 
       <SectionTitle>Cannabinoids</SectionTitle>
-      <Bars items={l.cannabinoids} />
+      <Cannabinoids items={l.cannabinoids} />
 
       {l.description ? (
         <>
           <SectionTitle>About</SectionTitle>
-          <Text style={[styles.meta, { paddingHorizontal: space[4], color: t.text2, lineHeight: 20 }]}>{l.description}</Text>
+          <Text style={[type.body, s.gutter, { color: t.text2 }]}>{l.description}</Text>
         </>
       ) : null}
 
       {l.also_available_at.length ? (
         <>
           <SectionTitle>Also at</SectionTitle>
-          <View style={{ paddingHorizontal: space[4], gap: space[2] }}>
+          <View style={[s.gutter, { gap: space[2] }]}>
             {l.also_available_at.map(alt => (
               <Pressable
                 key={alt.listing_id}
                 onPress={() => router.push(`/listing/${alt.dispensary.id}/${alt.listing_id}`)}
-                style={({ pressed }) => [styles.card, { padding: space[3], flexDirection: 'row' }, pressed && { opacity: 0.7 }]}
+                style={({ pressed }) => [styles.card, s.altRow, pressed && { backgroundColor: t.surface2 }]}
+                accessibilityRole="button"
               >
-                <Text style={[styles.name, { flex: 1 }]}>{alt.dispensary.name}</Text>
+                <StoreBullet name={alt.dispensary.name} address={alt.dispensary.address} size={24} />
+                <Text style={[styles.name, { flex: 1 }]} numberOfLines={1}>{alt.dispensary.name}</Text>
                 <Price cents={alt.price_cents} />
+                <Icon name="chevron-right" size={16} color={t.text3} />
               </Pressable>
             ))}
           </View>
@@ -96,8 +119,13 @@ export default function ListingScreen() {
       ) : null}
 
       {l.url ? (
-        <Pressable onPress={() => Linking.openURL(l.url!)} style={{ padding: space[4], marginTop: space[4] }}>
-          <Text style={{ color: t.accent, textAlign: 'center' }}>{"View on the store's site"}</Text>
+        <Pressable
+          onPress={() => Linking.openURL(l.url!)}
+          style={({ pressed }) => [s.external, pressed && { backgroundColor: t.surface1 }]}
+          accessibilityRole="link"
+        >
+          <Text style={type.link}>{"View on the store's site"}</Text>
+          <Icon name="arrow-up-right" size={16} color={t.text2} />
         </Pressable>
       ) : null}
     </ScrollView>
@@ -128,8 +156,30 @@ function AddToCart({ listing }: { listing: ListingDetail }) {
   }
 
   return (
-    <SafeAreaView edges={['bottom']} style={{ padding: space[4], borderTopWidth: 1, borderTopColor: t.border, backgroundColor: t.bg }}>
-      <Button title={inCart ? `Add another · ${inCart} in cart` : 'Add to cart'} onPress={add} />
+    <SafeAreaView edges={['bottom']} style={s.footer}>
+      <Button icon="bag" title={inCart ? `Add another · ${inCart} in cart` : 'Add to cart'} onPress={add} />
     </SafeAreaView>
   )
 }
+
+const s = StyleSheet.create({
+  gutter: { paddingHorizontal: space[4] },
+  tags: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space[2], marginBottom: space[2] },
+  name: { ...type.title, fontSize: font.size.display, lineHeight: 30 },
+  price: { fontSize: font.size.heading, lineHeight: 26, marginTop: space[2] },
+  store: {
+    flexDirection: 'row', alignItems: 'center', gap: space[3], marginTop: space[4],
+    paddingTop: space[4], borderTopWidth: 1, borderTopColor: t.border,
+  },
+  tile: {
+    minWidth: 74, alignItems: 'center', gap: 3, paddingVertical: 9, paddingHorizontal: 14,
+    backgroundColor: t.surface1, borderWidth: 1, borderColor: t.border, borderRadius: radius.md,
+  },
+  altRow: { flexDirection: 'row', alignItems: 'center', gap: space[3], padding: space[3] },
+  external: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space[1],
+    marginHorizontal: space[4], marginTop: space[6], padding: space[3],
+    borderWidth: 1, borderColor: t.border, borderRadius: radius.md,
+  },
+  footer: { padding: space[4], borderTopWidth: 1, borderTopColor: t.border, backgroundColor: t.bg },
+})

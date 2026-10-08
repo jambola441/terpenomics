@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import api from './api/client'
 import type { Dispensary } from './types'
+import { t, font, tone } from './theme'
+import { Icon } from './components/Icon'
+import { navBtnStyle } from './components/AdminTable'
 
 const POS_TYPES = ['none', 'alleaves', 'leaflogix']
 
@@ -90,27 +93,27 @@ export default function DispensaryEdit() {
     }
   }
 
-  if (loading) return <div style={{ padding: 24, background: '#080d18', minHeight: '100vh', color: '#475569' }}>Loading…</div>
+  if (loading) return <div style={{ padding: 24, background: t.bg, minHeight: '100vh', color: t.text3 }}>Loading…</div>
 
   return (
-    <div style={{ padding: 24, fontFamily: "'Inter', system-ui, sans-serif", background: '#080d18', minHeight: '100vh', color: '#f1f5f9' }}>
+    <div style={{ padding: 24, background: t.bg, minHeight: '100vh', color: t.text1 }}>
       <div style={{ maxWidth: 560, margin: '0 auto' }}>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 32 }}>
-          <button onClick={() => navigate('/admin/dispensaries')} style={navBtnStyle}>← Dispensaries</button>
-          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>{isNew ? 'New Dispensary' : 'Edit Dispensary'}</h2>
+          <button onClick={() => navigate('/admin/dispensaries')} style={navBtnStyle}><Icon name="arrow-left" size={14} />Dispensaries</button>
+          <h2 style={{ margin: 0, fontFamily: font.family.display, fontSize: font.size.display, fontWeight: 600, letterSpacing: '-0.015em' }}>{isNew ? 'New Dispensary' : 'Edit Dispensary'}</h2>
           {!isNew && (
             <button
               onClick={() => navigate(`/admin/dispensaries/${dispensaryId}/listings`)}
-              style={{ ...navBtnStyle, marginLeft: 'auto', color: '#a5b4fc', borderColor: '#3730a3' }}
+              style={{ ...navBtnStyle, marginLeft: 'auto', color: tone.accent.fg, borderColor: tone.accent.edge }}
             >
-              View listings →
+              View listings<Icon name="arrow-right" size={14} />
             </button>
           )}
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: 24, display: 'flex', flexDirection: 'column', gap: 18 }}>
+          <div style={{ background: t.surface1, border: `1px solid ${t.border}`, borderRadius: 10, padding: 24, display: 'flex', flexDirection: 'column', gap: 18 }}>
 
             <Field label="Name *">
               <input
@@ -130,7 +133,7 @@ export default function DispensaryEdit() {
                 value={slug}
                 onChange={e => setSlug(e.target.value)}
                 placeholder="brooklyn-organic-buds"
-                style={{ ...inputStyle, fontFamily: 'monospace' }}
+                style={{ ...inputStyle, fontFamily: font.family.mono }}
                 disabled={saving}
               />
             </Field>
@@ -145,8 +148,8 @@ export default function DispensaryEdit() {
               />
             </Field>
 
-            <div style={{ borderTop: '1px solid #1e293b', paddingTop: 18 }}>
-              <div style={{ ...labelStyle, marginBottom: 14, color: '#64748b', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Location</div>
+            <div style={{ borderTop: `1px solid ${t.border}`, paddingTop: 18 }}>
+              <div style={{ ...labelStyle, marginBottom: 14, color: t.text3, fontSize: 11, fontFamily: font.family.mono, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Location</div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <Field label="Address">
@@ -196,8 +199,8 @@ export default function DispensaryEdit() {
               </div>
             </div>
 
-            <div style={{ borderTop: '1px solid #1e293b', paddingTop: 18 }}>
-              <div style={{ ...labelStyle, marginBottom: 14, color: '#64748b', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em' }}>POS Integration</div>
+            <div style={{ borderTop: `1px solid ${t.border}`, paddingTop: 18 }}>
+              <div style={{ ...labelStyle, marginBottom: 14, color: t.text3, fontSize: 11, fontFamily: font.family.mono, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em' }}>POS Integration</div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <Field label="POS Type">
@@ -207,7 +210,7 @@ export default function DispensaryEdit() {
                     style={{ ...inputStyle, cursor: 'pointer' }}
                     disabled={saving}
                   >
-                    {POS_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                    {POS_TYPES.map(pt => <option key={pt} value={pt}>{pt}</option>)}
                   </select>
                 </Field>
 
@@ -225,14 +228,14 @@ export default function DispensaryEdit() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #1e293b', paddingTop: 18 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: `1px solid ${t.border}`, paddingTop: 18 }}>
               <span style={labelStyle}>Active</span>
               <Toggle checked={isActive} onChange={setIsActive} disabled={saving} />
             </div>
           </div>
 
-          {error && <div style={{ color: '#f87171', fontSize: 13, marginTop: 12 }}>{error}</div>}
-          {msg && <div style={{ color: '#86efac', fontSize: 13, marginTop: 12 }}>{msg}</div>}
+          {error && <div style={{ color: t.danger, fontSize: 13, marginTop: 12 }}>{error}</div>}
+          {msg && <div style={{ color: t.success, fontSize: 13, marginTop: 12 }}>{msg}</div>}
 
           <div style={{ marginTop: 20, display: 'flex', gap: 10 }}>
             <button
@@ -240,10 +243,10 @@ export default function DispensaryEdit() {
               disabled={saving}
               style={{
                 padding: '10px 24px',
-                background: saving ? '#1e293b' : '#4f46e5',
+                background: saving ? t.surface2 : t.accent,
                 border: 'none',
                 borderRadius: 8,
-                color: saving ? '#475569' : '#fff',
+                color: saving ? t.text4 : t.accentInk,
                 fontSize: 14,
                 fontWeight: 600,
                 cursor: saving ? 'default' : 'pointer',
@@ -277,26 +280,22 @@ function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: (
       onClick={() => !disabled && onChange(!checked)}
       style={{
         width: 44, height: 24, borderRadius: 12, border: 'none',
-        background: checked ? '#4f46e5' : '#1e293b',
+        background: checked ? t.accent : t.surface3,
         position: 'relative', cursor: disabled ? 'default' : 'pointer', transition: 'background 0.2s', flexShrink: 0,
       }}
     >
       <span style={{
         position: 'absolute', top: 3, left: checked ? 23 : 3,
         width: 18, height: 18, borderRadius: '50%',
-        background: checked ? '#fff' : '#475569', transition: 'left 0.2s',
+        background: checked ? t.accentInk : t.text3, transition: 'left 0.2s',
       }} />
     </button>
   )
 }
 
-const labelStyle: React.CSSProperties = { fontSize: 13, color: '#94a3b8', fontWeight: 500 }
+const labelStyle: React.CSSProperties = { fontSize: 13, color: t.text2, fontWeight: 500 }
 const inputStyle: React.CSSProperties = {
-  width: '100%', background: '#080d18', border: '1px solid #1e293b',
-  borderRadius: 8, color: '#f1f5f9', fontSize: 14, padding: '10px 12px',
+  width: '100%', background: t.surface2, border: `1px solid ${t.border}`,
+  borderRadius: 8, color: t.text1, fontSize: 14, padding: '10px 12px',
   outline: 'none', boxSizing: 'border-box',
-}
-const navBtnStyle: React.CSSProperties = {
-  padding: '6px 12px', background: '#0f172a', border: '1px solid #1e293b',
-  borderRadius: 6, color: '#94a3b8', cursor: 'pointer', fontSize: 13,
 }

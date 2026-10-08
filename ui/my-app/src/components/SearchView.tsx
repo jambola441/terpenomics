@@ -2,8 +2,9 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import api from '../api/client'
 import type { PortalProduct } from '../types'
-import { t, font, categoryColor, alpha } from '../theme'
-import { FeedState } from './ui'
+import { t, font, categoryColor, categoryLabel, alpha, raw } from '../theme'
+import { FeedState, PageTitle } from './ui'
+import { Icon, CategoryIcon } from './Icon'
 import {
   readEnum, readRange, readSet, useFilterParams, useScrollMemory, writeOne, writeRange, writeSet,
 } from '../utils/browseState'
@@ -267,24 +268,20 @@ export default function SearchView({ initialCategory, onOpenProduct }: Props) {
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <div style={{
         position: 'relative',
-        background: `linear-gradient(160deg, ${alpha('#a8e063', 0.22)} 0%, ${alpha('#a8e063', 0.06)} 45%, ${t.bg} 100%)`,
-        padding: 'calc(env(safe-area-inset-top, 0px) + 20px) 16px 18px',
+        background: `linear-gradient(165deg, ${alpha(raw.accent, 0.14)} 0%, ${alpha(raw.accent, 0.04)} 50%, ${t.bg} 100%)`,
+        padding: 'calc(env(safe-area-inset-top, 0px) + 24px) 16px 18px',
         overflow: 'hidden',
       }}>
-        <div aria-hidden style={{
-          position: 'absolute', right: -16, top: -20, fontSize: 132, lineHeight: 1,
-          opacity: 0.10, transform: 'rotate(-12deg)', pointerEvents: 'none', userSelect: 'none',
-        }}>
-          🔍
-        </div>
+        <Icon
+          name="search"
+          size={168}
+          strokeWidth={0.75}
+          color={t.accent}
+          style={{ position: 'absolute', right: -30, top: -26, opacity: 0.12, pointerEvents: 'none' }}
+        />
 
         <div style={{ position: 'relative' }}>
-          <div style={{
-            color: t.text1, fontWeight: font.weight.heavy, fontSize: font.size.hero + 4,
-            letterSpacing: '-0.03em', lineHeight: 1.05,
-          }}>
-            Search
-          </div>
+          <PageTitle size={34}>Search</PageTitle>
 
           {!loading && !error && rows.length > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 9, flexWrap: 'wrap' }}>
@@ -326,7 +323,9 @@ export default function SearchView({ initialCategory, onOpenProduct }: Props) {
             {categoryFacet.map(f => (
               <FacetChip
                 key={f.value}
-                label={f.value}
+                label={categoryLabel(f.value)}
+                icon={<CategoryIcon category={f.value} size={15} color={category.has(f.value) ? undefined : t.text3} />}
+                capitalize={false}
                 count={f.count}
                 active={category.has(f.value)}
                 color={categoryColor(f.value)}
@@ -360,7 +359,7 @@ export default function SearchView({ initialCategory, onOpenProduct }: Props) {
           kind="empty"
           message="No products found"
           hint={query ? `Nothing matches “${query}”.` : 'Try a different search.'}
-          icon="🔍"
+          icon="search"
         />
       ) : (
         <>
@@ -373,7 +372,7 @@ export default function SearchView({ initialCategory, onOpenProduct }: Props) {
               {sorted.length !== rows.length && <span style={{ color: t.text4 }}> of {rows.length}</span>}
             </span>
             {truncated && (
-              <span style={{ color: t.text4, fontSize: font.size.caption }}>refine to see more</span>
+              <span style={{ color: t.text3, fontSize: font.size.caption }}>refine to see more</span>
             )}
           </div>
 
@@ -384,7 +383,7 @@ export default function SearchView({ initialCategory, onOpenProduct }: Props) {
               hint={query
                 ? `Nothing matches “${query}” with these filters.`
                 : 'Try removing a filter or widening the price range.'}
-              icon="🔍"
+              icon="search"
               style={{ minHeight: 260 }}
             />
           ) : (

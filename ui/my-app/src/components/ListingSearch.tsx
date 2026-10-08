@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import api from '../api/client'
 import type { Listing } from '../types'
 import { formatDollars } from '../utils/format'
+import { t, shadow } from '../theme'
 
 /**
  * Pick a store listing by name. Listings, not products, are what purchases and
@@ -75,7 +76,7 @@ export function ListingSearch({ onSelect, disabled, placeholder = 'Search listin
         onChange={(e) => setQuery(e.target.value)}
         placeholder={placeholder}
         disabled={disabled}
-        style={{ width: '100%', padding: 8 }}
+        style={{ width: '100%', padding: 8, fontSize: 13, borderRadius: 8, background: t.surface2, border: `1px solid ${t.border}`, color: t.text1, outline: 'none' }}
       />
       
       {loading && (
@@ -85,14 +86,14 @@ export function ListingSearch({ onSelect, disabled, placeholder = 'Search listin
           top: '50%', 
           transform: 'translateY(-50%)',
           fontSize: 12,
-          opacity: 0.6,
+          color: t.text3,
         }}>
           Searching...
         </div>
       )}
 
       {error && (
-        <div style={{ color: 'crimson', fontSize: 12, marginTop: 4 }}>
+        <div style={{ color: t.danger, fontSize: 12, marginTop: 4 }}>
           {error}
         </div>
       )}
@@ -103,14 +104,14 @@ export function ListingSearch({ onSelect, disabled, placeholder = 'Search listin
           top: '100%',
           left: 0,
           right: 0,
-          backgroundColor: 'darkgray',
-          border: '1px solid #ccc',
-          borderRadius: 4,
+          backgroundColor: t.surface2,
+          border: `1px solid ${t.borderStrong}`,
+          borderRadius: 8,
           maxHeight: 300,
           overflowY: 'auto',
           zIndex: 1000,
           marginTop: 4,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          boxShadow: shadow.e2,
         }}>
           {results.map((listing) => (
             <div
@@ -119,20 +120,20 @@ export function ListingSearch({ onSelect, disabled, placeholder = 'Search listin
               style={{
                 padding: '8px 12px',
                 cursor: 'pointer',
-                borderBottom: '1px solid #eee',
+                borderBottom: `1px solid ${t.border}`,
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'gray'
+                e.currentTarget.style.backgroundColor = t.surface3
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'darkgray'
+                e.currentTarget.style.backgroundColor = 'transparent'
               }}
             >
-              <div style={{ fontWeight: 500 }}>{listing.scraped_name ?? '(unnamed listing)'}</div>
+              <div style={{ fontWeight: 500, color: t.text1 }}>{listing.scraped_name ?? '(unnamed listing)'}</div>
               {listing.scraped_brand && (
-                <div style={{ fontSize: 12, color: 'white' }}>{listing.scraped_brand}</div>
+                <div style={{ fontSize: 12, color: t.text2 }}>{listing.scraped_brand}</div>
               )}
-              <div style={{ fontSize: 11, color: '#eee' }}>
+              <div style={{ fontSize: 11, color: t.text3 }}>
                 {[listing.dispensary_name, listing.variant, listing.price_cents != null ? formatDollars(listing.price_cents) : null]
                   .filter(Boolean).join(' · ')}
               </div>
@@ -147,13 +148,13 @@ export function ListingSearch({ onSelect, disabled, placeholder = 'Search listin
           top: '100%',
           left: 0,
           right: 0,
-          backgroundColor: 'darkgray',
-          border: '1px solid #ccc',
-          borderRadius: 4,
+          backgroundColor: t.surface2,
+          border: `1px solid ${t.borderStrong}`,
+          borderRadius: 8,
           padding: '12px',
           marginTop: 4,
           fontSize: 14,
-          color: 'white',
+          color: t.text3,
           zIndex: 1000,
         }}>
           No listings found

@@ -9,8 +9,10 @@
 import { useEffect, useState } from 'react'
 import api from '../api/client'
 import type { PortalCategoryDetail } from '../types'
-import { t, font, categoryColor, alpha } from '../theme'
-import { CATEGORY_EMOJI, Dot, Stat } from './browse'
+import { t, categoryColor, categoryLabel, alpha } from '../theme'
+import { Dot, Stat } from './browse'
+import { BackButton, PageTitle } from './ui'
+import { CategoryIcon } from './Icon'
 import BrowseScreen, { type BrowseItem } from './BrowseScreen'
 
 /** The category endpoint sends its stores once and has offerings index into
@@ -67,7 +69,6 @@ export default function CategoryView({ categoryName, onBack, onOpenProduct }: Pr
   }, [categoryName])
 
   const c = categoryColor(categoryName)
-  const emoji = CATEGORY_EMOJI[categoryName] ?? '📦'
 
   return (
     <BrowseScreen
@@ -84,40 +85,23 @@ export default function CategoryView({ categoryName, onBack, onOpenProduct }: Pr
       suppressSubtype={categoryName}
       emptyMessage={`No ${categoryName} in stock`}
       emptyHint="Check back soon — menus update regularly."
-      emptyIcon={emoji}
+      emptyIcon={<CategoryIcon category={categoryName} size={22} />}
       onOpen={item => onOpenProduct(item.brand ?? null, item.key)}
-      heroBackground={`linear-gradient(160deg, ${alpha(c, 0.30)} 0%, ${alpha(c, 0.08)} 45%, ${t.bg} 100%)`}
+      heroBackground={`linear-gradient(165deg, ${alpha(c, 0.22)} 0%, ${alpha(c, 0.06)} 50%, ${t.bg} 100%)`}
       heroDecoration={
-        /* Oversized category glyph, bled off the right edge */
-        <div aria-hidden style={{
-          position: 'absolute', right: -18, top: -14, fontSize: 132, lineHeight: 1,
-          opacity: 0.13, transform: 'rotate(-12deg)', pointerEvents: 'none', userSelect: 'none',
-        }}>
-          {emoji}
-        </div>
+        /* The category glyph as a specimen drawing, bled off the right edge */
+        <CategoryIcon
+          category={categoryName}
+          size={168}
+          strokeWidth={0.75}
+          style={{ position: 'absolute', right: -26, top: -18, opacity: 0.2, pointerEvents: 'none' }}
+        />
       }
       hero={<>
-        <button
-          onClick={onBack}
-          aria-label="Back"
-          style={{
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-            width: 36, height: 36, borderRadius: '50%',
-            background: alpha('#000', 0.35), border: `1px solid ${t.border}`,
-            color: t.text1, fontSize: 19, lineHeight: 1, padding: 0,
-            backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
-          }}
-        >
-          ←
-        </button>
+        <BackButton onClick={onBack} glass />
 
-        <div style={{ position: 'relative', marginTop: 16 }}>
-          <div style={{
-            color: t.text1, fontWeight: font.weight.heavy, fontSize: font.size.hero + 4,
-            letterSpacing: '-0.03em', lineHeight: 1.05, textTransform: 'capitalize',
-          }}>
-            {categoryName}
-          </div>
+        <div style={{ position: 'relative', marginTop: 18 }}>
+          <PageTitle size={34}>{categoryLabel(categoryName)}</PageTitle>
 
           {data && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 9, flexWrap: 'wrap' }}>

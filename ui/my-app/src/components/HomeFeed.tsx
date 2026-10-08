@@ -31,9 +31,10 @@ import type {
   Feed, FeedListing, FeedRail, FeedRails, FeedSection, FeedView, PortalDispensary,
 } from '../types'
 import { FEED_RAILS } from '../types'
-import { t, radius, font, categoryColor, alpha } from '../theme'
-import { FeedState, Pressable, Skeleton, Pill, ProductImage } from './ui'
-import { CATEGORY_EMOJI, MarketNote, productKey } from './browse'
+import { t, radius, font, categoryColor, categoryLabel, alpha } from '../theme'
+import { FeedState, Pressable, Skeleton, Pill, ProductImage, PageTitle, StoreBullet } from './ui'
+import { MarketNote, productKey } from './browse'
+import { Icon, CategoryIcon, type IconName } from './Icon'
 import { formatDist, formatDollars, haversineMi } from '../utils/format'
 import { readEnum, readOne, useFilterParams, useScrollMemory, writeOne } from '../utils/browseState'
 
@@ -43,11 +44,11 @@ const PER_RAIL = 8
 
 const VIEWS = ['store', 'combined'] as const
 
-const RAIL_LABELS: Record<FeedRail, { title: string; blurb: string; icon: string }> = {
-  featured: { title: 'Featured', blurb: 'Picked by the store', icon: '★' },
-  new: { title: 'New arrivals', blurb: 'Just hit the shelf', icon: '✦' },
-  recommended: { title: 'For you', blurb: 'Based on what you buy', icon: '◆' },
-  deals: { title: 'Deals', blurb: 'Cheaper than elsewhere', icon: '↓' },
+const RAIL_LABELS: Record<FeedRail, { title: string; blurb: string; icon: IconName }> = {
+  featured: { title: 'Featured', blurb: 'Picked by the store', icon: 'star' },
+  new: { title: 'New arrivals', blurb: 'Just hit the shelf', icon: 'sparkles' },
+  recommended: { title: 'For you', blurb: 'Based on what you buy', icon: 'heart' },
+  deals: { title: 'Deals', blurb: 'Cheaper than elsewhere', icon: 'tag' },
 }
 
 interface Props {
@@ -143,29 +144,32 @@ export default function HomeFeed({ onOpenListing, onOpenDispensary, onOpenProduc
 
   return (
     <div ref={scrollRef} style={{ height: 'calc(100dvh - 64px)', overflowY: 'auto', background: t.bg }}>
-      <div style={{ padding: '22px 16px 6px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-        <div style={{ minWidth: 0 }}>
-          <div style={{ color: t.text1, fontWeight: font.weight.heavy, fontSize: font.size.hero, letterSpacing: '-0.02em' }}>
-            Your stores
-          </div>
-          <div style={{ color: t.text3, fontSize: font.size.small, marginTop: 2 }}>
-            {preferred.length} {preferred.length === 1 ? 'store' : 'stores'} · what&apos;s on the shelf now
-          </div>
-        </div>
+      <div style={{ padding: '26px 16px 6px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+        <PageTitle
+          style={{ minWidth: 0 }}
+          sub={<>{preferred.length} {preferred.length === 1 ? 'store' : 'stores'} · what&apos;s on the shelf now</>}
+        >
+          Your stores
+        </PageTitle>
         <button
           onClick={() => setPicking(true)}
           style={{
-            flexShrink: 0, background: t.surface2, border: `1px solid ${t.border}`,
-            borderRadius: radius.pill, color: t.text2, cursor: 'pointer',
-            fontSize: font.size.small, fontWeight: font.weight.semibold, padding: '7px 14px',
+            flexShrink: 0, background: 'transparent', border: `1px solid ${t.borderStrong}`,
+            borderRadius: radius.md, color: t.text1, cursor: 'pointer', marginTop: 4,
+            fontSize: font.size.small + 1, fontWeight: font.weight.semibold, padding: '7px 12px',
+            display: 'inline-flex', alignItems: 'center', gap: 6,
           }}
         >
+          <Icon name="edit" size={14} />
           Edit
         </button>
       </div>
 
-      {/* View toggle */}
-      <div style={{ display: 'flex', gap: 6, padding: '14px 16px 0' }}>
+      {/* View toggle — a segmented control, not two buttons */}
+      <div role="group" aria-label="Feed view" style={{
+        display: 'flex', gap: 2, margin: '14px 16px 0', padding: 3,
+        background: t.surface1, border: `1px solid ${t.border}`, borderRadius: radius.md,
+      }}>
         <ViewTab label="By store" active={view === 'store'} onClick={() => setView('store')} />
         <ViewTab label="Combined" active={view === 'combined'} onClick={() => setView('combined')} />
       </div>
@@ -180,7 +184,8 @@ export default function HomeFeed({ onOpenListing, onOpenDispensary, onOpenProduc
           {categories.map(name => (
             <CategoryChip
               key={name}
-              label={`${CATEGORY_EMOJI[name] ?? '📦'} ${name}`}
+              label={categoryLabel(name)}
+              category={name}
               color={categoryColor(name)}
               active={category === name}
               onClick={() => setCategory(category === name ? null : name)}
@@ -239,17 +244,18 @@ function StoreSection({ section, category, onOpenListing, onOpenDispensary, onOp
         <StoreAvatar dispensary={dispensary} size={38} />
         <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
           <div style={{
-            color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.title,
-            letterSpacing: '-0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            color: t.text1, fontFamily: font.family.display, fontWeight: font.weight.semibold,
+            fontSize: font.size.heading, letterSpacing: '-0.015em', lineHeight: 1.2,
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
           }}>
             {dispensary.name}
           </div>
-          <div style={{ color: t.text3, fontSize: font.size.caption, marginTop: 1 }}>
+          <div className="num" style={{ color: t.text3, fontSize: font.size.caption, marginTop: 2 }}>
             {total.toLocaleString()} in stock{dispensary.accepts_pickup ? ' · pickup' : ''}
           </div>
         </div>
-        <span style={{ color: t.accent, fontSize: font.size.small, fontWeight: font.weight.semibold, flexShrink: 0 }}>
-          See all ›
+        <span style={{ color: t.text2, fontSize: font.size.small + 1, fontWeight: font.weight.semibold, flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 2 }}>
+          See all <Icon name="chevron-right" size={15} />
         </span>
       </Pressable>
 
@@ -290,7 +296,7 @@ function CombinedFeed({ rails, storesById, category, onOpenListing, onOpenProduc
       <FeedState
         kind="empty"
         message={category ? `No ${category} across your stores right now.` : 'Nothing in stock across your stores.'}
-        icon="🌿"
+        icon={category ? <CategoryIcon category={category} size={22} /> : 'leaf'}
         style={{ padding: '48px 16px' }}
       />
     )
@@ -332,18 +338,18 @@ function Rail({ rail, items, storesById, onOpenListing, onOpenProduct }: {
 
   return (
     <div style={{ marginTop: 14 }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '0 16px 9px' }}>
-        <span style={{ color: t.accent, fontSize: font.size.small }} aria-hidden>{icon}</span>
-        <span style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.callout, letterSpacing: '-0.01em' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '0 16px 10px' }}>
+        <Icon name={icon} size={15} color={t.text3} />
+        <span style={{ color: t.text1, fontWeight: font.weight.semibold, fontSize: font.size.callout }}>
           {title}
         </span>
-        <span style={{ color: t.text4, fontSize: font.size.caption }}>{blurb}</span>
+        <span style={{ color: t.text3, fontSize: font.size.caption }}>{blurb}</span>
       </div>
 
       {items.length === 0 ? (
         <div style={{
           margin: '0 16px', padding: '14px 16px',
-          background: t.surface2, border: `1px dashed ${t.border}`, borderRadius: radius.lg,
+          background: 'transparent', border: `1px dashed ${t.borderStrong}`, borderRadius: radius.lg,
           color: t.text3, fontSize: font.size.caption, textAlign: 'center',
         }}>
           Nothing featured here yet.
@@ -416,11 +422,11 @@ function FeedCard({ listing, rail, store, onOpen, onOpenBrand }: {
         {/* Only the deals rail earns a badge: elsewhere the saving is a fact
             about the product, not the reason it is on screen. */}
         {rail === 'deals' && saving != null && saving > 0 && (
-          <span style={{
+          <span className="num" style={{
             position: 'absolute', top: 8, right: 8,
-            background: t.accent, color: t.accentInk,
-            fontSize: font.size.micro, fontWeight: font.weight.bold,
-            borderRadius: radius.pill, padding: '3px 8px',
+            background: t.success, color: t.accentInk,
+            fontFamily: font.family.mono, fontSize: font.size.micro + 0.5, fontWeight: font.weight.medium,
+            borderRadius: radius.sm, padding: '3px 7px',
           }}>
             Save {formatDollars(saving)}
           </span>
@@ -429,10 +435,10 @@ function FeedCard({ listing, rail, store, onOpen, onOpenBrand }: {
 
       <div style={{ padding: '10px 11px 12px', display: 'flex', flexDirection: 'column', flex: 1 }}>
         {/* Price first, then name, then brand -- a browse card's order. */}
-        <div style={{
-          color: t.accent, fontWeight: font.weight.heavy, fontSize: font.size.callout,
-          marginBottom: 4,
-        }}>
+        <div className="num" style={listing.price_cents != null ? {
+          color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.callout + 1,
+          letterSpacing: '-0.01em', marginBottom: 4,
+        } : { color: t.text3, fontSize: font.size.caption, marginBottom: 4 }}>
           {listing.price_cents != null ? formatDollars(listing.price_cents) : 'Price not listed'}
         </div>
 
@@ -458,14 +464,7 @@ function FeedCard({ listing, rail, store, onOpen, onOpenBrand }: {
 
         {listing.subtype && (
           <div style={{ marginTop: 8 }}>
-            <span style={{
-              background: alpha(color, 0.13), color, border: `1px solid ${alpha(color, 0.3)}`,
-              fontSize: font.size.micro, fontWeight: font.weight.bold,
-              padding: '2px 8px', borderRadius: radius.pill,
-              textTransform: 'capitalize', letterSpacing: '0.03em',
-            }}>
-              {listing.subtype}
-            </span>
+            <Pill color={color} tone="category">{listing.subtype}</Pill>
           </div>
         )}
 
@@ -475,7 +474,7 @@ function FeedCard({ listing, rail, store, onOpen, onOpenBrand }: {
               how many of the shopper's other stores also have it. */}
           {store && (
             <div style={{
-              color: t.text3, fontSize: font.size.micro, marginBottom: 2,
+              color: t.text2, fontSize: font.size.caption, marginBottom: 2,
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             }}>
               {store.name}
@@ -494,10 +493,10 @@ function CornerTag({ label, side }: { label: string; side: 'left' | 'right' }) {
   return (
     <span style={{
       position: 'absolute', top: 8, [side]: 8,
-      background: alpha('#000', 0.62), color: '#fff',
+      background: 'rgba(12, 15, 13, 0.78)', color: t.text1,
       backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
-      fontSize: font.size.micro, fontWeight: font.weight.bold,
-      padding: '3px 8px', borderRadius: radius.pill,
+      fontFamily: font.family.mono, fontSize: font.size.micro + 0.5, fontWeight: font.weight.medium,
+      padding: '3px 7px', borderRadius: radius.sm,
     }}>
       {label}
     </span>
@@ -511,11 +510,11 @@ function ViewTab({ label, active, onClick }: { label: string; active: boolean; o
       aria-pressed={active}
       style={{
         flex: 1, cursor: 'pointer',
-        background: active ? alpha(t.accent, 0.14) : t.surface2,
-        border: `1px solid ${active ? t.accent : t.border}`,
-        borderRadius: radius.pill, padding: '9px 0',
-        color: active ? t.accent : t.text3,
-        fontSize: font.size.small, fontWeight: active ? font.weight.bold : font.weight.medium,
+        background: active ? t.surface3 : 'transparent',
+        border: 'none', boxShadow: active ? 'var(--e-1)' : 'none',
+        borderRadius: radius.sm, padding: '8px 0',
+        color: active ? t.text1 : t.text3,
+        fontSize: font.size.small + 1, fontWeight: active ? font.weight.semibold : font.weight.medium,
         transition: 'all var(--t-fast)',
       }}
     >
@@ -612,11 +611,9 @@ function StorePicker({ preferred, onChange, onDone }: {
 
   return (
     <div style={{ height: 'calc(100dvh - 64px)', overflowY: 'auto', background: t.bg }}>
-      <div style={{ padding: '22px 16px 6px' }}>
-        <div style={{ color: t.text1, fontWeight: font.weight.heavy, fontSize: font.size.hero, letterSpacing: '-0.02em' }}>
-          {onDone ? 'Your stores' : 'Pick your stores'}
-        </div>
-        <div style={{ color: t.text3, fontSize: font.size.small, marginTop: 4, lineHeight: 1.5 }}>
+      <div style={{ padding: '26px 16px 6px' }}>
+        <PageTitle>{onDone ? 'Your stores' : 'Pick your stores'}</PageTitle>
+        <div style={{ color: t.text2, fontSize: font.size.body, marginTop: 8, lineHeight: 1.55, maxWidth: 420 }}>
           Your home feed is built from the stores you follow. Pick the ones you actually shop at —
           you can change this any time.
         </div>
@@ -634,8 +631,8 @@ function StorePicker({ preferred, onChange, onDone }: {
             style={{
               width: '100%', boxSizing: 'border-box',
               background: preferred.length === 0 ? t.surface2 : t.accent,
-              border: 'none', borderRadius: radius.lg,
-              color: preferred.length === 0 ? t.text3 : t.accentInk,
+              border: 'none', borderRadius: radius.md,
+              color: preferred.length === 0 ? t.text4 : t.accentInk,
               fontWeight: font.weight.bold, fontSize: font.size.callout,
               padding: 13, cursor: preferred.length === 0 ? 'default' : 'pointer',
             }}
@@ -662,7 +659,7 @@ function StorePicker({ preferred, onChange, onDone }: {
                 style={{
                   display: 'flex', alignItems: 'center', gap: 12, padding: 12,
                   background: t.surface1, borderRadius: radius.lg,
-                  border: `1px solid ${isFollowed ? alpha(t.accent, 0.35) : t.border}`,
+                  border: `1px solid ${isFollowed ? t.accentDim : t.border}`,
                 }}
               >
                 <StoreAvatar dispensary={d} size={44} />
@@ -676,9 +673,9 @@ function StorePicker({ preferred, onChange, onDone }: {
                   <div style={{ color: t.text3, fontSize: font.size.caption, marginTop: 2 }}>
                     {d.address ?? '—'}{dist != null ? ` · ${formatDist(dist)}` : ''}
                   </div>
-                  <div style={{ marginTop: 6 }}>
+                  <div style={{ marginTop: 7 }}>
                     {d.accepts_pickup
-                      ? <Pill color={categoryColor('flower')} tone="category">🛒 Pickup</Pill>
+                      ? <Pill color={t.success}><Icon name="bag" size={11} strokeWidth={2} />Pickup</Pill>
                       : <Pill>In-store only</Pill>}
                   </div>
                 </div>
@@ -687,14 +684,16 @@ function StorePicker({ preferred, onChange, onDone }: {
                   disabled={pending.has(d.id)}
                   style={{
                     flexShrink: 0, cursor: pending.has(d.id) ? 'default' : 'pointer',
-                    background: isFollowed ? alpha(t.accent, 0.14) : 'transparent',
-                    border: `1px solid ${isFollowed ? t.accent : t.border}`,
-                    borderRadius: radius.pill, padding: '8px 14px',
-                    color: isFollowed ? t.accent : t.text2,
-                    fontSize: font.size.small, fontWeight: font.weight.semibold,
+                    background: isFollowed ? t.accentTint : 'transparent',
+                    border: `1px solid ${isFollowed ? t.accentDim : t.borderStrong}`,
+                    borderRadius: radius.md, padding: '8px 12px',
+                    color: isFollowed ? t.accent : t.text1,
+                    fontSize: font.size.small + 1, fontWeight: font.weight.semibold,
+                    display: 'inline-flex', alignItems: 'center', gap: 5,
                   }}
                 >
-                  {isFollowed ? '✓ Following' : 'Follow'}
+                  <Icon name={isFollowed ? 'check' : 'plus'} size={14} strokeWidth={2} />
+                  {isFollowed ? 'Following' : 'Follow'}
                 </button>
               </div>
             )
@@ -702,11 +701,13 @@ function StorePicker({ preferred, onChange, onDone }: {
           <button
             onClick={() => navigate('/portal/map')}
             style={{
-              marginTop: 4, background: 'transparent', border: `1px solid ${t.border}`,
-              borderRadius: radius.lg, color: t.text3, fontSize: font.size.small,
+              marginTop: 4, background: 'transparent', border: `1px dashed ${t.borderStrong}`,
+              borderRadius: radius.lg, color: t.text2, fontSize: font.size.small + 1, fontWeight: font.weight.medium,
               padding: 12, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
             }}
           >
+            <Icon name="map" size={15} />
             Find stores on the map
           </button>
         </div>
@@ -719,48 +720,43 @@ function StorePicker({ preferred, onChange, onDone }: {
 
 function StoreAvatar({ dispensary, size }: { dispensary: PortalDispensary; size: number }) {
   const logo = dispensary.logo_url || dispensary.banner_url
+  const [broken, setBroken] = useState(false)
+  // No logo: the store's subway bullet, the same disc it wears on the map.
+  if (!logo || broken) return <StoreBullet name={dispensary.name} address={dispensary.address} size={size} />
   return (
     <div style={{
-      width: size, height: size, borderRadius: radius.md, flexShrink: 0, overflow: 'hidden',
+      width: size, height: size, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
       background: t.surface2, border: `1px solid ${t.border}`,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
-      {logo ? (
-        <img
-          src={logo}
-          alt=""
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-        />
-      ) : (
-        <span style={{ color: t.accent, fontWeight: font.weight.heavy, fontSize: size * 0.45 }}>
-          {dispensary.name.charAt(0).toUpperCase()}
-        </span>
-      )}
+      <img src={logo} alt="" onError={() => setBroken(true)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
     </div>
   )
 }
 
-function CategoryChip({ label, active, color, onClick }: {
+function CategoryChip({ label, active, color, category, onClick }: {
   label: string
   active: boolean
   color?: string
+  category?: string
   onClick: () => void
 }) {
   const accent = color ?? t.accent
+  const tint = (a: number) => accent.startsWith('#') ? alpha(accent, a) : `color-mix(in srgb, ${accent} ${a * 100}%, transparent)`
   return (
     <button
       onClick={onClick}
       style={{
-        flexShrink: 0, cursor: 'pointer', whiteSpace: 'nowrap', textTransform: 'capitalize',
-        fontSize: font.size.small, fontWeight: active ? font.weight.bold : font.weight.medium,
-        padding: '7px 13px', borderRadius: radius.pill,
-        background: active ? alpha(accent, 0.14) : t.surface2,
-        border: `1px solid ${active ? accent : t.border}`,
-        color: active ? accent : t.text3,
+        flexShrink: 0, cursor: 'pointer', whiteSpace: 'nowrap',
+        fontSize: font.size.small + 1, fontWeight: active ? font.weight.semibold : font.weight.medium,
+        padding: category ? '7px 13px 7px 10px' : '7px 13px', borderRadius: radius.pill,
+        background: active ? tint(0.12) : t.surface2,
+        border: `1px solid ${active ? tint(0.6) : t.border}`,
+        color: active ? accent : t.text2,
+        display: 'inline-flex', alignItems: 'center', gap: 6,
         transition: 'all var(--t-fast)',
       }}
     >
+      {category && <CategoryIcon category={category} size={15} color={active ? accent : undefined} />}
       {label}
     </button>
   )

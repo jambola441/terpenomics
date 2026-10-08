@@ -15,6 +15,7 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { t, font } from './theme'
+import { Logo } from './components/Icon'
 
 const EFFECTIVE = 'October 5, 2026'
 const CONTACT = 'jambola441@gmail.com'
@@ -263,13 +264,13 @@ function Page({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div style={{ minHeight: '100dvh', background: t.bg, padding: '40px 16px 64px', boxSizing: 'border-box' }}>
       <article style={{ maxWidth: 680, margin: '0 auto', color: t.text2, fontSize: font.size.body, lineHeight: 1.65 }}>
-        <Link to="/" style={{ color: t.accent, fontWeight: font.weight.heavy, fontSize: font.size.heading, textDecoration: 'none' }}>
-          terpenomics
+        <Link to="/" aria-label="Terpenomics home" style={{ display: 'inline-flex', textDecoration: 'none' }}>
+          <Logo size={24} />
         </Link>
-        <h1 style={{ color: t.text1, fontSize: 30, fontWeight: font.weight.heavy, margin: '24px 0 4px', letterSpacing: '-0.01em' }}>
+        <h1 style={{ color: t.text1, fontFamily: font.family.display, fontSize: font.size.hero, fontWeight: font.weight.semibold, margin: '24px 0 4px', letterSpacing: '-0.015em' }}>
           {title}
         </h1>
-        <div style={{ color: t.text3, fontSize: font.size.small, marginBottom: 24 }}>Effective {EFFECTIVE}</div>
+        <div style={{ color: t.text3, fontFamily: font.family.mono, fontSize: font.size.small, marginBottom: 24 }}>Effective {EFFECTIVE}</div>
         {children}
         <div style={{ marginTop: 40, color: t.text3, fontSize: font.size.small, display: 'flex', gap: 16 }}>
           <Link to="/terms" style={{ color: t.text3 }}>Terms of Service</Link>
@@ -281,7 +282,7 @@ function Page({ title, children }: { title: string; children: ReactNode }) {
 }
 
 function H({ children }: { children: ReactNode }) {
-  return <h2 style={{ color: t.text1, fontSize: font.size.heading, fontWeight: font.weight.bold, margin: '28px 0 8px' }}>{children}</h2>
+  return <h2 style={{ color: t.text1, fontFamily: font.family.display, fontSize: font.size.heading, fontWeight: font.weight.semibold, letterSpacing: '-0.01em', margin: '28px 0 8px' }}>{children}</h2>
 }
 
 function P({ children }: { children: ReactNode }) {

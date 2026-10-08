@@ -25,6 +25,7 @@ import {
   writeOne, writeRange, writeSet,
 } from '../utils/browseState'
 import { FeedState } from './ui'
+import { Icon, type IconName } from './Icon'
 import {
   ActiveChip, BrowseCard, BrowseGrid, BrowseToolbar, FacetChip, FilterSheet, GridSkeleton,
   SORTS, SORTS_NO_LOCATION, SORT_KEYS, SearchField, formatDollarsShort,
@@ -153,7 +154,8 @@ interface Props {
 
   emptyMessage: string
   emptyHint?: string
-  emptyIcon?: string
+  /** A glyph name from design/icons.ts, or a node (e.g. a category glyph). */
+  emptyIcon?: IconName | ReactNode
 
   onOpen: (item: BrowseItem) => void
 }
@@ -453,18 +455,19 @@ export default function BrowseScreen({
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             gap: 12, padding: '14px 16px 4px',
           }}>
-            <span style={{ color: t.text2, fontSize: font.size.small + 1, fontWeight: font.weight.medium }}>
+            <span className="num" style={{ color: t.text2, fontFamily: font.family.mono, fontSize: font.size.caption, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               {sorted.length} {sorted.length === 1 ? 'product' : 'products'}
-              {sorted.length !== totalCount && <span style={{ color: t.text4 }}> of {totalCount}</span>}
+              {sorted.length !== totalCount && <span style={{ color: t.text3 }}> of {totalCount}</span>}
             </span>
             {truncated && (
-              <span style={{ color: t.text4, fontSize: font.size.caption }}>showing top matches</span>
+              <span style={{ color: t.text3, fontSize: font.size.caption }}>showing top matches</span>
             )}
           </div>
 
           {!hasLocation && (
-            <div style={{ color: t.text3, fontSize: font.size.caption, padding: '2px 18px 0' }}>
-              📍 {locationDenied
+            <div style={{ color: t.text3, fontSize: font.size.caption, padding: '2px 16px 0', display: 'flex', alignItems: 'center', gap: 5 }}>
+              <Icon name="locate" size={13} />
+              {locationDenied
                 ? 'Turn on location to filter and sort by distance'
                 : 'Finding your location to show distances…'}
             </div>
@@ -477,7 +480,7 @@ export default function BrowseScreen({
               hint={search
                 ? `Nothing matches “${search}” with these filters.`
                 : 'Try widening the distance or price range.'}
-              icon="🔍"
+              icon="search"
               style={{ minHeight: 260 }}
             />
           ) : (

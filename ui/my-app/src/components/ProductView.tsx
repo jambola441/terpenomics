@@ -4,7 +4,9 @@ import type { PortalProductDetail, ListingDetail } from '../types'
 import { t, radius, font } from '../theme'
 import {
   Pressable, CategoryTag, ClassificationTag, DetailBlock, CollapsibleBlock, SpecRow,
+  BackButton, FeedState, ProductImage, TerpeneProfile, Label,
 } from './ui'
+import { Icon } from './Icon'
 import { haversineMi, formatDist, formatDollars } from '../utils/format'
 
 interface ProductViewProps {
@@ -96,56 +98,47 @@ export default function ProductView({ brandName, productKey, onBack, onListingCl
   return (
     <div style={{ height: '100dvh', overflowY: 'auto', background: t.bg }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '20px 16px 8px' }}>
-        <button
-          onClick={onBack}
-          style={{ background: 'none', border: 'none', color: t.accent, fontSize: 24, cursor: 'pointer', padding: 0, lineHeight: 1 }}
-        >
-          ‹
-        </button>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '18px 16px 8px' }}>
+        <BackButton onClick={onBack} />
         {/* The header draws before the fetch resolves, and an unbranded product
             never gets a brand line at all. */}
         {product?.brand && (
-          <div style={{ color: t.text3, fontSize: font.size.small, fontWeight: font.weight.semibold }}>{product.brand}</div>
+          <div style={{ color: t.text2, fontSize: font.size.small + 1, fontWeight: font.weight.medium }}>{product.brand}</div>
         )}
       </div>
 
       {loading ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
-          <span style={{ color: t.text3, fontSize: 14 }}>Loading…</span>
-        </div>
+        <FeedState kind="loading" message="Loading…" />
       ) : error ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
-          <span style={{ color: t.danger, fontSize: 14 }}>{error}</span>
-        </div>
+        <FeedState kind="error" message={error} />
       ) : !product ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
-          <span style={{ color: t.text3, fontSize: 14 }}>Product not found</span>
-        </div>
+        <FeedState kind="empty" message="Product not found" icon="package" />
       ) : (
         <>
           {/* Product hero */}
           <div style={{ display: 'flex', gap: 16, padding: '8px 16px 16px', alignItems: 'center' }}>
-            <div style={{
-              width: 88, height: 88, borderRadius: radius.lg, overflow: 'hidden', flexShrink: 0,
-              background: t.tile, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              {product.image_url
-                ? <img src={product.image_url} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 8, boxSizing: 'border-box' }}
-                    onError={ev => { (ev.target as HTMLImageElement).style.display = 'none' }} />
-                : <span style={{ fontSize: 32, opacity: 0.6 }}>🌿</span>}
-            </div>
+            <ProductImage
+              src={product.image_url}
+              alt={product.name}
+              category={product.category}
+              height={96}
+              pad={8}
+              style={{ width: 96, flexShrink: 0 }}
+            />
             <div style={{ minWidth: 0, flex: 1 }}>
-              <div style={{ color: t.text1, fontWeight: font.weight.heavy, fontSize: font.size.heading, lineHeight: 1.15 }}>
+              <h1 style={{
+                color: t.text1, fontFamily: font.family.display, fontWeight: font.weight.semibold,
+                fontSize: font.size.display, lineHeight: 1.15, letterSpacing: '-0.02em', margin: 0,
+              }}>
                 {product.name}
-              </div>
-              <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 7, flexWrap: 'wrap' }}>
+              </h1>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
                 {product.category && <CategoryTag category={product.category} />}
                 {classification && <ClassificationTag classification={classification} />}
-                {product.variant && <span style={{ color: t.text3, fontSize: font.size.caption }}>{product.variant}</span>}
+                {product.variant && <span style={{ color: t.text3, fontFamily: font.family.mono, fontSize: font.size.caption }}>{product.variant}</span>}
               </div>
               {minPrice != null && (
-                <div style={{ color: t.text2, fontSize: font.size.small, marginTop: 8 }}>
+                <div className="num" style={{ color: t.text2, fontSize: font.size.small + 1, marginTop: 8 }}>
                   {minPrice === maxPrice
                     ? formatDollars(minPrice)
                     : `${formatDollars(minPrice)} – ${formatDollars(maxPrice!)}`}
@@ -170,13 +163,13 @@ export default function ProductView({ brandName, productKey, onBack, onListingCl
                     flex: 1, padding: '12px 8px', textAlign: 'center',
                     borderLeft: i > 0 ? `1px solid ${t.border}` : 'none',
                   }}>
-                    <div style={{ color: cell.accent ? t.accent : t.text1, fontWeight: font.weight.heavy, fontSize: font.size.callout }}>{cell.value}</div>
-                    <div style={{ color: t.text3, fontSize: font.size.micro, marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{cell.label}</div>
+                    <div className="num" style={{ color: cell.accent ? t.success : t.text1, fontWeight: font.weight.bold, fontSize: font.size.title }}>{cell.value}</div>
+                    <div style={{ color: t.text3, fontFamily: font.family.mono, fontSize: font.size.micro + 0.5, marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{cell.label}</div>
                   </div>
                 ))}
               </div>
               {savings > 0 && (
-                <div style={{ color: t.accent, fontSize: font.size.caption, fontWeight: font.weight.semibold, marginTop: 8, textAlign: 'center' }}>
+                <div style={{ color: t.success, fontSize: font.size.small, fontWeight: font.weight.medium, marginTop: 10, textAlign: 'center' }}>
                   Save up to {formatDollars(savings)} by choosing the lowest-priced store
                 </div>
               )}
@@ -186,16 +179,16 @@ export default function ProductView({ brandName, productKey, onBack, onListingCl
           {/* Cannabinoids */}
           {cannabinoids.length > 0 && (
             <DetailBlock title="Cannabinoids" style={{ padding: '0 16px 18px' }}>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(84px, 1fr))', gap: 8 }}>
                 {cannabinoids.map((c, i) => (
                   <div key={`${c.name}-${i}`} style={{
                     background: t.surface1, border: `1px solid ${t.border}`, borderRadius: radius.md,
-                    padding: '8px 12px', minWidth: 64,
+                    padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 4,
                   }}>
-                    <div style={{ color: t.text1, fontWeight: font.weight.heavy, fontSize: font.size.body }}>
+                    <div className="num" style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.title, letterSpacing: '-0.01em' }}>
                       {c.percent != null ? `${c.percent}%` : '—'}
                     </div>
-                    <div style={{ color: t.text3, fontSize: font.size.micro, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{c.name}</div>
+                    <div style={{ color: t.text3, fontFamily: font.family.mono, fontSize: font.size.caption, letterSpacing: '0.04em' }}>{c.name}</div>
                   </div>
                 ))}
               </div>
@@ -204,17 +197,8 @@ export default function ProductView({ brandName, productKey, onBack, onListingCl
 
           {/* Terpenes */}
           {terpenes.length > 0 && (
-            <DetailBlock title="Terpenes" style={{ padding: '0 16px 18px' }}>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {terpenes.map((tp, i) => (
-                  <span key={`${tp.name}-${i}`} style={{
-                    background: t.surface1, border: `1px solid ${t.border}`, borderRadius: radius.pill,
-                    padding: '6px 12px', color: t.text2, fontSize: font.size.small,
-                  }}>
-                    {tp.name}{tp.percent != null ? ` · ${tp.percent}%` : ''}
-                  </span>
-                ))}
-              </div>
+            <DetailBlock title="Terpene profile" style={{ padding: '0 16px 22px' }}>
+              <TerpeneProfile terpenes={terpenes} />
             </DetailBlock>
           )}
 
@@ -241,14 +225,17 @@ export default function ProductView({ brandName, productKey, onBack, onListingCl
           )}
 
           {/* Availability heading */}
-          <div style={{ color: t.text2, fontWeight: font.weight.bold, fontSize: font.size.callout, padding: '8px 16px 4px' }}>
-            {product.dispensary_count === 1
-              ? 'Available at 1 dispensary'
-              : `Available at ${product.dispensary_count} dispensaries`}
+          <div style={{ padding: '8px 16px 4px' }}>
+            <Label style={{ marginBottom: 2 }}>Where to buy</Label>
+            <div style={{ color: t.text1, fontFamily: font.family.display, fontWeight: font.weight.semibold, fontSize: font.size.heading, letterSpacing: '-0.015em' }}>
+              {product.dispensary_count === 1
+                ? 'Available at 1 dispensary'
+                : `Available at ${product.dispensary_count} dispensaries`}
+            </div>
           </div>
           {!userPos && (
-            <div style={{ color: t.text3, fontSize: font.size.caption, padding: '0 16px 6px' }}>
-              📍 Turn on location to sort by distance
+            <div style={{ color: t.text3, fontSize: font.size.caption, padding: '2px 16px 6px', display: 'flex', alignItems: 'center', gap: 5 }}>
+              <Icon name="locate" size={13} /> Turn on location to sort by distance
             </div>
           )}
 
@@ -266,22 +253,24 @@ export default function ProductView({ brandName, productKey, onBack, onListingCl
                   }}
                 >
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.callout, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div style={{ color: t.text1, fontWeight: font.weight.semibold, fontSize: font.size.callout, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {o.dispensary_name}
                     </div>
-                    <div style={{ color: t.text3, fontSize: font.size.small, marginTop: 3 }}>
-                      {dist != null ? `📍 ${formatDist(dist)}` : (o.in_stock ? 'In stock' : 'Out of stock')}
+                    <div style={{ color: t.text3, fontSize: font.size.small, marginTop: 3, display: 'flex', alignItems: 'center', gap: 4 }}>
+                      {dist != null
+                        ? <><Icon name="pin" size={12} /><span className="num">{formatDist(dist)}</span></>
+                        : (o.in_stock ? 'In stock' : 'Out of stock')}
                     </div>
                   </div>
                   <div style={{ textAlign: 'right', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
                     {o.price_cents != null && (
-                      <div style={{ color: t.text1, fontWeight: font.weight.heavy, fontSize: font.size.callout }}>{formatDollars(o.price_cents)}</div>
+                      <div className="num" style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.callout }}>{formatDollars(o.price_cents)}</div>
                     )}
                     {isCheapest && (
-                      <div style={{ color: t.accent, fontSize: font.size.micro, fontWeight: font.weight.semibold }}>lowest</div>
+                      <div style={{ color: t.success, fontFamily: font.family.mono, fontSize: font.size.micro + 0.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>lowest</div>
                     )}
                   </div>
-                  <span style={{ color: t.text4, fontSize: 18, marginLeft: 2 }}>›</span>
+                  <Icon name="chevron-right" size={18} color={t.text3} />
                 </Pressable>
               )
             })}

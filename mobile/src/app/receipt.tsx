@@ -6,8 +6,8 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { api } from '@/lib/api'
 import { useFetch } from '@/lib/useFetch'
 import { pickReceipt, type ReceiptPhoto } from '@/lib/receiptImage'
-import { Button, FeedState, styles } from '@/components/ui'
-import { t, space, font, radius } from '@/lib/theme'
+import { Button, FeedState, Label, styles } from '@/components/ui'
+import { t, space, font, fonts, radius, type } from '@/lib/theme'
 
 /** Matches CLAIM_WINDOW_DAYS in connectors/receipts.py: older receipts are
  *  flagged to the reviewer, so the picker doesn't offer them. */
@@ -32,11 +32,15 @@ function Chip({ label, selected, onPress }: { label: string; selected: boolean; 
   return (
     <Pressable
       onPress={onPress}
-      style={[s.chip, selected && { backgroundColor: t.accentTint, borderColor: t.accent }]}
+      style={({ pressed }) => [
+        s.chip,
+        pressed && { backgroundColor: t.surface3 },
+        selected && { backgroundColor: t.accentTint, borderColor: t.accent },
+      ]}
       accessibilityRole="button"
       accessibilityState={{ selected }}
     >
-      <Text style={[s.chipText, selected && { color: t.accent, fontWeight: font.weight.bold }]}>{label}</Text>
+      <Text style={[s.chipText, selected && { color: t.accent, fontFamily: fonts.sansSemibold }]}>{label}</Text>
     </Pressable>
   )
 }
@@ -87,13 +91,13 @@ export default function ReceiptUpload() {
   if (partners.loading || partners.error) {
     return <FeedState loading={partners.loading} error={partners.error} onRetry={partners.refresh} />
   }
-  if (!partners.data?.length) return <FeedState empty="There are no partner stores yet." />
+  if (!partners.data?.length) return <FeedState icon="store" empty="There are no partner stores yet." />
 
   return (
     <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={{ padding: space[4], gap: space[5] }} keyboardShouldPersistTaps="handled">
         <View style={{ gap: space[2] }}>
-          <Text style={s.label}>Store</Text>
+          <Label>Store</Label>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: space[2] }}>
             {partners.data.map(p => (
               <Chip key={p.id} label={p.name} selected={partnerId === p.id} onPress={() => setPartnerId(p.id)} />
@@ -102,38 +106,38 @@ export default function ReceiptUpload() {
         </View>
 
         <View style={{ gap: space[2] }}>
-          <Text style={s.label}>Date of purchase</Text>
+          <Label>Date of purchase</Label>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space[2] }}>
             {days.map(d => <Chip key={d.value} label={d.label} selected={day === d.value} onPress={() => setDay(d.value)} />)}
           </ScrollView>
         </View>
 
         <View style={{ gap: space[2] }}>
-          <Text style={s.label}>Photo of the receipt</Text>
+          <Label>Photo of the receipt</Label>
           {photo ? (
             <Image
               source={{ uri: photo.uri }}
-              style={{ width: '100%', aspectRatio: photo.width / photo.height, maxHeight: 360, borderRadius: radius.md }}
+              style={{ width: '100%', aspectRatio: photo.width / photo.height, maxHeight: 360, borderRadius: radius.md, backgroundColor: t.tile }}
               contentFit="contain"
               accessibilityLabel="Receipt photo"
             />
           ) : null}
           <View style={{ flexDirection: 'row', gap: space[2] }}>
-            <Button title={photo ? 'Retake' : 'Take photo'} variant="ghost" onPress={() => choose('camera')} disabled={picking} style={{ flex: 1 }} />
-            <Button title="Choose photo" variant="ghost" onPress={() => choose('library')} disabled={picking} style={{ flex: 1 }} />
+            <Button title={photo ? 'Retake' : 'Take photo'} icon="camera" variant="secondary" onPress={() => choose('camera')} disabled={picking} style={{ flex: 1 }} />
+            <Button title="Choose photo" icon="image" variant="secondary" onPress={() => choose('library')} disabled={picking} style={{ flex: 1 }} />
           </View>
           <Text style={styles.meta}>Make sure the store name, date and total are readable.</Text>
         </View>
 
         <View style={{ gap: space[2] }}>
-          <Text style={s.label}>Note (optional)</Text>
+          <Label>Note (optional)</Label>
           <TextInput
             value={note}
             onChangeText={setNote}
             maxLength={500}
             placeholder="Anything we should know"
             placeholderTextColor={t.text4}
-            style={s.input}
+            style={[styles.input, s.input]}
           />
         </View>
 
@@ -146,7 +150,6 @@ export default function ReceiptUpload() {
 }
 
 const s = StyleSheet.create({
-  label: { color: t.text2, fontSize: font.size.small, fontWeight: font.weight.semibold },
   chip: {
     paddingVertical: space[2],
     paddingHorizontal: space[3],
@@ -155,14 +158,6 @@ const s = StyleSheet.create({
     borderColor: t.border,
     backgroundColor: t.surface2,
   },
-  chipText: { color: t.text2, fontSize: font.size.body },
-  input: {
-    backgroundColor: t.surface2,
-    borderWidth: 1,
-    borderColor: t.border,
-    borderRadius: radius.md,
-    padding: space[3],
-    color: t.text1,
-    fontSize: font.size.callout,
-  },
+  chipText: { ...type.body, color: t.text2 },
+  input: { fontSize: font.size.callout, paddingHorizontal: space[3], minHeight: 48 },
 })

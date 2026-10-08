@@ -51,8 +51,10 @@ export default function Orders() {
       data={data ?? []}
       keyExtractor={o => o.id}
       contentContainerStyle={{ padding: space[4], gap: space[3], flexGrow: 1 }}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={t.accent} />}
-      ListEmptyComponent={<FeedState empty="No orders yet. Reserve something for pickup and it shows up here." />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={t.text3} />}
+      ListEmptyComponent={
+        <FeedState icon="bag" empty="No orders yet" hint="Reserve something for pickup and it shows up here." />
+      }
       renderItem={({ item }) => (
         <OrderCard order={item} cancelling={cancelling === item.id} onCancel={() => confirmCancel(item.id)} />
       )}

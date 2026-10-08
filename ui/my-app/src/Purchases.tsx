@@ -5,6 +5,8 @@ import type { PurchaseRow } from './types'
 import { SearchBar } from './components/SearchBar'
 import { AdminTable, navBtnStyle, selectStyle, Dash, type Column } from './components/AdminTable'
 import { useSearch } from './hooks/useSearch'
+import { t, font } from './theme'
+import { Icon } from './components/Icon'
 
 function dollars(cents: number | null | undefined) {
   if (cents == null) return '—'
@@ -58,21 +60,21 @@ export default function Purchases() {
     { key: 'total', header: 'Total', align: 'right', th: { textAlign: 'right' }, td: { fontVariantNumeric: 'tabular-nums' },
       render: r => dollars(r.total_amount_cents) },
     { key: 'source', header: 'Source', render: r => r.source },
-    { key: 'customer', header: 'Customer', td: { color: '#f1f5f9', fontWeight: 500 },
+    { key: 'customer', header: 'Customer', td: { color: t.text1, fontWeight: 500 },
       render: r => r.customer_name ?? r.customer_id },
     { key: 'phone', header: 'Phone', render: r => r.customer_phone ?? <Dash /> },
     { key: 'items', header: 'Items', align: 'right', th: { textAlign: 'right' }, render: r => r.item_count ?? <Dash /> },
-    { key: 'external', header: 'External', td: { color: '#475569', fontSize: 11 },
+    { key: 'external', header: 'External', td: { color: t.text3, fontSize: 11 },
       render: r => r.external_id ?? '—' },
   ]
 
   return (
-    <div style={{ padding: 24, fontFamily: "'Inter', system-ui, sans-serif", background: '#080d18', minHeight: '100vh', color: '#f1f5f9' }}>
+    <div style={{ padding: 24, background: t.bg, minHeight: '100vh', color: t.text1 }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
-          <button onClick={() => navigate('/admin')} style={navBtnStyle}>← Admin</button>
-          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>Purchases</h2>
+          <button onClick={() => navigate('/admin')} style={navBtnStyle}><Icon name="arrow-left" size={14} />Admin</button>
+          <h2 style={{ margin: 0, fontFamily: font.family.display, fontSize: font.size.display, fontWeight: 600, letterSpacing: '-0.015em' }}>Purchases</h2>
           <button onClick={() => load(true)} disabled={loading} style={{ ...navBtnStyle, marginLeft: 'auto' }}>
             {loading ? 'Refreshing…' : 'Refresh'}
           </button>
@@ -101,16 +103,16 @@ export default function Purchases() {
           </select>
         </div>
 
-        {error && <div style={{ color: '#f87171', marginBottom: 16 }}>Error: {error}</div>}
+        {error && <div style={{ color: t.danger, marginBottom: 16 }}>Error: {error}</div>}
 
         {rows.length > 0 && (
-          <p style={{ fontSize: 13, color: '#475569', marginBottom: 12 }}>Showing {rows.length} purchase(s)</p>
+          <p style={{ fontSize: 13, color: t.text3, marginBottom: 12 }}>Showing {rows.length} purchase(s)</p>
         )}
 
         {loading && rows.length === 0 ? (
-          <div style={{ color: '#475569', padding: 16 }}>Loading…</div>
+          <div style={{ color: t.text3, padding: 16 }}>Loading…</div>
         ) : rows.length === 0 ? (
-          <div style={{ color: '#475569', padding: 16 }}>No purchases found.</div>
+          <div style={{ color: t.text3, padding: 16 }}>No purchases found.</div>
         ) : (
           <AdminTable
             columns={columns}
@@ -121,7 +123,7 @@ export default function Purchases() {
         )}
 
         {loading && rows.length > 0 && (
-          <div style={{ padding: 16, color: '#475569', textAlign: 'center' }}>Loading more…</div>
+          <div style={{ padding: 16, color: t.text3, textAlign: 'center' }}>Loading more…</div>
         )}
 
         {!loading && hasMorePurchases && rows.length > 0 && (

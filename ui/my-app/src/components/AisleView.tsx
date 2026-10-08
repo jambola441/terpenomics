@@ -3,10 +3,11 @@ import { useSearchParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import type { CartItem, DispensaryListing } from '../types'
-import { t, font, categoryColor, alpha } from '../theme'
-import { FeedState } from './ui'
+import { t, font, categoryColor, categoryLabel, alpha } from '../theme'
+import { BackButton, FeedState, PageTitle } from './ui'
+import { Icon, CategoryIcon } from './Icon'
 import {
-  ActiveChip, BrowseCard, BrowseToolbar, CATEGORY_EMOJI, Dot, FacetChip, FilterSheet, MarketNote,
+  ActiveChip, BrowseCard, BrowseToolbar, Dot, FacetChip, FilterSheet, MarketNote,
   GridSkeleton, SORTS_NO_LOCATION, SORT_KEYS, SearchField, Stat, formatDollarsShort, variantWeight,
   type BrowseCardItem, type SheetGroup, type SortKey,
 } from './browse'
@@ -104,7 +105,6 @@ export default function AisleView({
   const [sheet, setSheet] = useState(false)
 
   const c = categoryColor(category)
-  const emoji = CATEGORY_EMOJI[category] ?? '📦'
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useFilterParams({
@@ -262,21 +262,17 @@ export default function AisleView({
           })
         }}
         style={{
-          width: 32, height: 32, borderRadius: '50%',
-          background: cartQty > 0 ? t.accent : '#fff',
-          border: 'none', padding: 0,
+          width: 34, height: 34, borderRadius: '50%',
+          background: cartQty > 0 ? t.bg : t.accent,
+          border: cartQty > 0 ? `1.5px solid ${t.accent}` : 'none', padding: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 13, fontWeight: font.weight.bold, color: 'var(--accent-ink)',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.45)',
+          fontFamily: font.family.mono, fontSize: 13, fontWeight: font.weight.medium,
+          color: cartQty > 0 ? t.accent : t.accentInk,
+          boxShadow: 'var(--e-2)',
           transition: 'background var(--t-fast)',
         }}
       >
-        {cartQty > 0 ? cartQty : (
-          <span style={{ position: 'relative', width: 10, height: 10, display: 'block' }}>
-            <span style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: 2, marginTop: -1, background: '#0a0a0a', borderRadius: 1 }} />
-            <span style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 2, marginLeft: -1, background: '#0a0a0a', borderRadius: 1 }} />
-          </span>
-        )}
+        {cartQty > 0 ? cartQty : <Icon name="plus" size={17} strokeWidth={2.25} />}
       </button>
     )
   }
@@ -287,39 +283,22 @@ export default function AisleView({
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <div style={{
         position: 'relative',
-        background: `linear-gradient(160deg, ${alpha(c, 0.30)} 0%, ${alpha(c, 0.08)} 45%, ${t.bg} 100%)`,
+        background: `linear-gradient(165deg, ${alpha(c, 0.22)} 0%, ${alpha(c, 0.06)} 50%, ${t.bg} 100%)`,
         padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 16px 18px',
         overflow: 'hidden',
       }}>
-        {/* Oversized category glyph, bled off the right edge */}
-        <div aria-hidden style={{
-          position: 'absolute', right: -18, top: -14, fontSize: 132, lineHeight: 1,
-          opacity: 0.13, transform: 'rotate(-12deg)', pointerEvents: 'none', userSelect: 'none',
-        }}>
-          {emoji}
-        </div>
+        {/* The category glyph as a specimen drawing, bled off the right edge */}
+        <CategoryIcon
+          category={category}
+          size={168}
+          strokeWidth={0.75}
+          style={{ position: 'absolute', right: -26, top: -18, opacity: 0.2, pointerEvents: 'none' }}
+        />
 
-        <button
-          onClick={() => navigate(`/portal/map/${dispensaryId}`)}
-          aria-label="Back"
-          style={{
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-            width: 36, height: 36, borderRadius: '50%',
-            background: alpha('#000', 0.35), border: `1px solid ${t.border}`,
-            color: t.text1, fontSize: 19, lineHeight: 1, padding: 0,
-            backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
-          }}
-        >
-          ←
-        </button>
+        <BackButton onClick={() => navigate(`/portal/map/${dispensaryId}`)} glass />
 
-        <div style={{ position: 'relative', marginTop: 16 }}>
-          <div style={{
-            color: t.text1, fontWeight: font.weight.heavy, fontSize: font.size.hero + 4,
-            letterSpacing: '-0.03em', lineHeight: 1.05, textTransform: 'capitalize',
-          }}>
-            {category}
-          </div>
+        <div style={{ position: 'relative', marginTop: 18 }}>
+          <PageTitle size={34}>{categoryLabel(category)}</PageTitle>
 
           {dispensaryName && (
             <div style={{
@@ -363,7 +342,9 @@ export default function AisleView({
             {CATEGORIES.map(cat => (
               <FacetChip
                 key={cat}
-                label={`${CATEGORY_EMOJI[cat] ?? '📦'} ${cat}`}
+                label={categoryLabel(cat)}
+                icon={<CategoryIcon category={cat} size={15} color={category === cat ? undefined : t.text3} />}
+                capitalize={false}
                 active={category === cat}
                 color={categoryColor(cat)}
                 onClick={() => navigate(`/portal/map/${dispensaryId}/aisle/${encodeURIComponent(cat)}`)}
@@ -395,7 +376,7 @@ export default function AisleView({
           kind="empty"
           message={`No ${category} in stock`}
           hint="Check back soon — menus update regularly."
-          icon={emoji}
+          icon={<CategoryIcon category={category} size={22} />}
         />
       ) : (
         <>
@@ -416,7 +397,7 @@ export default function AisleView({
               hint={search
                 ? `Nothing matches “${search}” with these filters.`
                 : 'Try removing a filter or widening the price range.'}
-              icon="🔍"
+              icon="search"
               style={{ minHeight: 240 }}
             />
           ) : (

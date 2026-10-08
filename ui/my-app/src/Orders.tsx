@@ -12,12 +12,14 @@ import { useNavigate } from 'react-router-dom'
 import api, { type AdminOrderRow, type AdminOrderDetail } from './api/client'
 import type { OrderStatus } from './types'
 import { AdminTable, navBtnStyle, selectStyle, badge, pageWrap, Dash, type Column } from './components/AdminTable'
+import { t, font } from './theme'
+import { Icon } from './components/Icon'
 
 const STATUS_COLORS: Record<OrderStatus, { background: string; color: string }> = {
-  submitted: { background: '#422006', color: '#fcd34d' },
-  ready:     { background: '#052e16', color: '#86efac' },
-  completed: { background: '#1e293b', color: '#94a3b8' },
-  cancelled: { background: '#450a0a', color: '#fca5a5' },
+  submitted: { background: t.warningTint, color: t.warning },
+  ready:     { background: t.successTint, color: t.success },
+  completed: { background: t.surface2, color: t.text2 },
+  cancelled: { background: t.dangerTint, color: t.danger },
 }
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
@@ -98,7 +100,7 @@ export default function Orders() {
   const columns: Column<AdminOrderRow>[] = [
     {
       key: 'code', header: 'Code',
-      td: { fontFamily: 'ui-monospace, monospace', color: '#f1f5f9', fontWeight: 600, letterSpacing: '0.05em' },
+      td: { fontFamily: font.family.mono, color: t.text1, fontWeight: 600, letterSpacing: '0.05em' },
       render: r => r.pickup_code,
     },
     {
@@ -110,7 +112,7 @@ export default function Orders() {
     { key: 'placed', header: 'Placed', render: r => new Date(r.submitted_at).toLocaleString() },
     { key: 'dispensary', header: 'Dispensary', render: r => r.dispensary_name ?? <Dash /> },
     {
-      key: 'customer', header: 'Customer', td: { color: '#f1f5f9', fontWeight: 500 },
+      key: 'customer', header: 'Customer', td: { color: t.text1, fontWeight: 500 },
       render: r => r.customer_name ?? r.customer_id,
     },
     { key: 'phone', header: 'Phone', render: r => r.customer_phone ?? <Dash /> },
@@ -130,13 +132,13 @@ export default function Orders() {
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 8 }}>
-          <button onClick={() => navigate('/admin')} style={navBtnStyle}>← Admin</button>
-          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>Pickup orders</h2>
+          <button onClick={() => navigate('/admin')} style={navBtnStyle}><Icon name="arrow-left" size={14} />Admin</button>
+          <h2 style={{ margin: 0, fontFamily: font.family.display, fontSize: font.size.display, fontWeight: 600, letterSpacing: '-0.015em' }}>Pickup orders</h2>
           <button onClick={() => load(true)} disabled={loading} style={{ ...navBtnStyle, marginLeft: 'auto' }}>
             {loading ? 'Refreshing…' : 'Refresh'}
           </button>
         </div>
-        <p style={{ fontSize: 13, color: '#475569', margin: '0 0 20px' }}>
+        <p style={{ fontSize: 13, color: t.text3, margin: '0 0 20px' }}>
           Customers pay in store. Marking an order picked up records collection, not payment.
         </p>
 
@@ -156,16 +158,16 @@ export default function Orders() {
           </select>
         </div>
 
-        {error && <div style={{ color: '#f87171', marginBottom: 16 }}>Error: {error}</div>}
+        {error && <div style={{ color: t.danger, marginBottom: 16 }}>Error: {error}</div>}
 
         {rows.length > 0 && (
-          <p style={{ fontSize: 13, color: '#475569', marginBottom: 12 }}>Showing {rows.length} order(s)</p>
+          <p style={{ fontSize: 13, color: t.text3, marginBottom: 12 }}>Showing {rows.length} order(s)</p>
         )}
 
         {loading && rows.length === 0 ? (
-          <div style={{ color: '#475569', padding: 16 }}>Loading…</div>
+          <div style={{ color: t.text3, padding: 16 }}>Loading…</div>
         ) : rows.length === 0 ? (
-          <div style={{ color: '#475569', padding: 16 }}>No orders found.</div>
+          <div style={{ color: t.text3, padding: 16 }}>No orders found.</div>
         ) : (
           <AdminTable
             columns={columns}
@@ -176,7 +178,7 @@ export default function Orders() {
         )}
 
         {loading && rows.length > 0 && (
-          <div style={{ padding: 16, color: '#475569', textAlign: 'center' }}>Loading more…</div>
+          <div style={{ padding: 16, color: t.text3, textAlign: 'center' }}>Loading more…</div>
         )}
 
         {!loading && hasMore && rows.length > 0 && (
@@ -208,18 +210,18 @@ function OrderDrawer({ order, updating, onAdvance, onClose }: {
     <>
       <div
         onClick={onClose}
-        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 40 }}
+        style={{ position: 'fixed', inset: 0, background: t.scrim, zIndex: 40 }}
       />
       <div style={{
         position: 'fixed', top: 0, right: 0, bottom: 0, width: 'min(460px, 100%)',
-        background: '#0b1220', borderLeft: '1px solid #1e293b', zIndex: 50,
+        background: t.surface1, borderLeft: `1px solid ${t.borderStrong}`, zIndex: 50,
         overflowY: 'auto', padding: 24, boxSizing: 'border-box',
       }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
           <div>
             <div style={{
-              fontFamily: 'ui-monospace, monospace', fontSize: 26, fontWeight: 700,
-              color: '#f1f5f9', letterSpacing: '0.08em',
+              fontFamily: font.family.mono, fontSize: 26, fontWeight: 700,
+              color: t.text1, letterSpacing: '0.08em',
             }}>
               {order.pickup_code}
             </div>
@@ -230,9 +232,9 @@ function OrderDrawer({ order, updating, onAdvance, onClose }: {
           <button onClick={onClose} style={navBtnStyle}>Close</button>
         </div>
 
-        <dl style={{ margin: '22px 0 0', fontSize: 13, color: '#94a3b8', display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '8px 16px' }}>
+        <dl style={{ margin: '22px 0 0', fontSize: 13, color: t.text2, display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '8px 16px' }}>
           <dt>Customer</dt>
-          <dd style={{ margin: 0, color: '#f1f5f9' }}>{order.customer_name ?? '—'}</dd>
+          <dd style={{ margin: 0, color: t.text1 }}>{order.customer_name ?? '—'}</dd>
           <dt>Phone</dt>
           <dd style={{ margin: 0 }}>{order.customer_phone ?? '—'}</dd>
           <dt>Email</dt>
@@ -245,11 +247,11 @@ function OrderDrawer({ order, updating, onAdvance, onClose }: {
 
         {order.note && (
           <div style={{
-            marginTop: 18, padding: 12, borderRadius: 6,
-            background: '#0f172a', border: '1px solid #1e293b',
-            fontSize: 13, color: '#cbd5e1', lineHeight: 1.5,
+            marginTop: 18, padding: 12, borderRadius: 8,
+            background: t.surface2, border: `1px solid ${t.border}`,
+            fontSize: 13, color: t.text2, lineHeight: 1.5,
           }}>
-            <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#475569', marginBottom: 5 }}>
+            <div style={{ fontSize: 11, fontFamily: font.family.mono, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', color: t.text3, marginBottom: 5 }}>
               Customer note
             </div>
             {order.note}
@@ -257,36 +259,36 @@ function OrderDrawer({ order, updating, onAdvance, onClose }: {
         )}
 
         <div style={{ marginTop: 22 }}>
-          <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#475569', marginBottom: 10 }}>
+          <div style={{ fontSize: 11, fontFamily: font.family.mono, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', color: t.text3, marginBottom: 10 }}>
             Items
           </div>
           {order.items.map(item => (
             <div key={item.id} style={{
               display: 'flex', justifyContent: 'space-between', gap: 12,
-              padding: '9px 0', borderTop: '1px solid #1e293b', fontSize: 13,
+              padding: '9px 0', borderTop: `1px solid ${t.border}`, fontSize: 13,
             }}>
               <div style={{ minWidth: 0 }}>
-                <div style={{ color: '#f1f5f9' }}>
+                <div style={{ color: t.text1 }}>
                   {item.quantity > 1 ? `${item.quantity}× ` : ''}{item.name}
                 </div>
-                <div style={{ color: '#475569', fontSize: 12, marginTop: 2 }}>
+                <div style={{ color: t.text3, fontSize: 12, marginTop: 2 }}>
                   {[item.brand, item.variant].filter(Boolean).join(' · ') || '—'}
                 </div>
               </div>
-              <div style={{ color: '#cbd5e1', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
+              <div style={{ color: t.text2, fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
                 {dollars(item.line_amount_cents)}
               </div>
             </div>
           ))}
           <div style={{
             display: 'flex', justifyContent: 'space-between',
-            padding: '12px 0 0', marginTop: 4, borderTop: '1px solid #1e293b',
-            fontSize: 14, fontWeight: 600, color: '#f1f5f9',
+            padding: '12px 0 0', marginTop: 4, borderTop: `1px solid ${t.border}`,
+            fontSize: 14, fontWeight: 600, color: t.text1,
           }}>
             <span>Due at pickup</span>
             <span style={{ fontVariantNumeric: 'tabular-nums' }}>{dollars(order.total_amount_cents)}</span>
           </div>
-          <div style={{ fontSize: 12, color: '#475569', marginTop: 6 }}>
+          <div style={{ fontSize: 12, color: t.text3, marginTop: 6 }}>
             Collected in store — this app never charges a card.
           </div>
         </div>
@@ -294,7 +296,7 @@ function OrderDrawer({ order, updating, onAdvance, onClose }: {
         {/* The server decides what is legal; this only renders what it allows. */}
         <div style={{ marginTop: 26, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {order.allowed_transitions.length === 0 ? (
-            <div style={{ fontSize: 13, color: '#475569' }}>
+            <div style={{ fontSize: 13, color: t.text3 }}>
               This order is {STATUS_LABELS[order.status].toLowerCase()} — nothing left to do.
             </div>
           ) : (
@@ -308,8 +310,10 @@ function OrderDrawer({ order, updating, onAdvance, onClose }: {
                   padding: '9px 16px',
                   cursor: updating ? 'default' : 'pointer',
                   ...(next === 'cancelled'
-                    ? { color: '#fca5a5', borderColor: '#450a0a' }
-                    : { background: '#14532d', borderColor: '#166534', color: '#86efac', fontWeight: 600 }),
+                    ? { color: t.danger, borderColor: t.dangerEdge }
+                    : updating
+                      ? { color: t.text4 }
+                      : { background: t.accent, borderColor: t.accent, color: t.accentInk, fontWeight: 600 }),
                 }}
               >
                 {updating ? 'Saving…' : next === 'ready' ? 'Mark ready'

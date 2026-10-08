@@ -5,7 +5,8 @@ import DispensaryListings from './DispensaryListings'
 import AisleView from './AisleView'
 import type { CartItem, PortalDispensary } from '../types'
 import { t, radius, font, alpha } from '../theme'
-import { FeedState, Spinner, Label } from './ui'
+import { FeedState, Spinner, Label, StoreBullet, storeInitial } from './ui'
+import { Icon } from './Icon'
 import { boroughOf, boroughColor, colorForBorough, boroughLabel, type Borough } from '../utils/boroughs'
 import { tileConfig } from '../utils/mapTiles'
 
@@ -21,12 +22,6 @@ interface Props {
   cart?: CartItem[]
 }
 
-/** First letter/digit of a store name — the glyph inside its subway bullet. */
-function initial(name: string): string {
-  const match = name.match(/[a-z0-9]/i)
-  return (match ? match[0] : '•').toUpperCase()
-}
-
 /** A store's map bullet: an MTA-style disc in its borough's line colour.
  *  Built as a divIcon so the pins inherit the design tokens instead of
  *  pulling Leaflet's blue marker PNGs off a CDN. */
@@ -35,7 +30,7 @@ function pinIcon(L: any, d: PortalDispensary, active: boolean) {
   return L.divIcon({
     html:
       `<div class="${cls}" style="--pin:${boroughColor(d.address)}">` +
-      `<span class="nyc-pin__disc">${initial(d.name)}</span>` +
+      `<span class="nyc-pin__disc">${storeInitial(d.name)}</span>` +
       `</div>`,
     className: '',
     iconSize: [30, 30],
@@ -52,8 +47,8 @@ function BoroughChip({ borough, style }: { borough: Borough | null; style?: Reac
       display: 'inline-flex', alignItems: 'center', gap: 5,
       background: alpha(color, 0.16), border: `1px solid ${alpha(color, 0.4)}`,
       borderRadius: radius.pill, padding: '3px 9px 3px 7px',
-      color, fontSize: font.size.caption, fontWeight: font.weight.bold,
-      letterSpacing: '0.02em', textTransform: 'uppercase', whiteSpace: 'nowrap',
+      color, fontFamily: font.family.mono, fontSize: font.size.caption, fontWeight: font.weight.medium,
+      letterSpacing: '0.06em', textTransform: 'uppercase', whiteSpace: 'nowrap',
       ...style,
     }}>
       <span style={{ width: 7, height: 7, borderRadius: '50%', background: color, flexShrink: 0 }} />
@@ -257,7 +252,7 @@ export default function DispensaryMap({ activeDispensaryId, onAddToCart, cart = 
       {!tiles.light && (
         <div style={{
           position: 'absolute', top: 0, left: 0, right: 0, height: 96, zIndex: 500,
-          background: `linear-gradient(${alpha('#07090f', 0.62)}, transparent)`,
+          background: 'linear-gradient(rgba(12, 15, 13, 0.62), transparent)',
           pointerEvents: 'none',
         }} />
       )}
@@ -275,7 +270,7 @@ export default function DispensaryMap({ activeDispensaryId, onAddToCart, cart = 
                 key={borough ?? 'nyc'}
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 6,
-                  background: alpha('#0b0d14', 0.78), border: `1px solid ${alpha(color, 0.45)}`,
+                  background: 'rgba(12, 15, 13, 0.8)', border: `1px solid ${alpha(color, 0.45)}`,
                   backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
                   borderRadius: radius.pill, padding: '5px 10px 5px 8px',
                   color: t.text1, fontSize: font.size.caption, fontWeight: font.weight.semibold,
@@ -284,7 +279,7 @@ export default function DispensaryMap({ activeDispensaryId, onAddToCart, cart = 
               >
                 <span style={{ width: 8, height: 8, borderRadius: '50%', background: color, flexShrink: 0 }} />
                 {boroughLabel(borough)}
-                <span style={{ color: t.text3, fontWeight: font.weight.bold }}>{count}</span>
+                <span className="num" style={{ color: t.text3, fontFamily: font.family.mono, fontWeight: font.weight.medium }}>{count}</span>
               </span>
             )
           })}
@@ -333,24 +328,25 @@ export default function DispensaryMap({ activeDispensaryId, onAddToCart, cart = 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingTop: 14 }}>
             <div style={{ flex: 1, minWidth: 0 }}>
               <BoroughChip borough={selectedBorough} style={{ marginBottom: 8 }} />
-              <div style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.title, marginBottom: 4, letterSpacing: '-0.01em' }}>
+              <div style={{ color: t.text1, fontFamily: font.family.display, fontWeight: font.weight.semibold, fontSize: font.size.heading + 2, marginBottom: 6, letterSpacing: '-0.015em', lineHeight: 1.15 }}>
                 {selected.name}
               </div>
               {selected.address && (
-                <div style={{ color: t.text3, fontSize: font.size.small + 1, marginBottom: 14 }}>
-                  📍 {selected.address}
+                <div style={{ color: t.text2, fontSize: font.size.small + 1, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <Icon name="pin" size={14} color={t.text3} /> {selected.address}
                 </div>
               )}
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <button
                   onClick={() => navigate('/portal/map/' + selected.id)}
                   style={{
-                    background: t.accent, border: 'none', borderRadius: radius.sm,
-                    color: '#0a0a0a', fontSize: font.size.small + 1, fontWeight: font.weight.bold,
-                    padding: '9px 16px', cursor: 'pointer', boxShadow: 'var(--e-1)',
+                    background: t.accent, border: 'none', borderRadius: radius.md,
+                    color: t.accentInk, fontSize: font.size.small + 2, fontWeight: font.weight.bold,
+                    padding: '10px 14px 10px 16px', cursor: 'pointer',
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
                   }}
                 >
-                  View menu →
+                  View menu <Icon name="arrow-right" size={16} strokeWidth={2} />
                 </button>
                 {selected.website_url && (
                   <a
@@ -358,13 +354,13 @@ export default function DispensaryMap({ activeDispensaryId, onAddToCart, cart = 
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
-                      display: 'inline-block', background: t.surface2,
-                      border: `1px solid ${t.border}`, borderRadius: radius.sm,
-                      color: t.text2, fontSize: font.size.small + 1, fontWeight: font.weight.medium,
-                      padding: '9px 16px', textDecoration: 'none',
+                      display: 'inline-flex', alignItems: 'center', gap: 6, background: 'transparent',
+                      border: `1px solid ${t.borderStrong}`, borderRadius: radius.md,
+                      color: t.text1, fontSize: font.size.small + 2, fontWeight: font.weight.medium,
+                      padding: '10px 14px', textDecoration: 'none',
                     }}
                   >
-                    Website
+                    Website <Icon name="arrow-up-right" size={15} />
                   </a>
                 )}
               </div>
@@ -374,11 +370,11 @@ export default function DispensaryMap({ activeDispensaryId, onAddToCart, cart = 
               aria-label="Close"
               style={{
                 background: t.surface2, border: `1px solid ${t.border}`, borderRadius: radius.pill,
-                color: t.text3, fontSize: 16, width: 32, height: 32,
+                color: t.text2, width: 34, height: 34,
                 cursor: 'pointer', marginLeft: 12, flexShrink: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
-            >✕</button>
+            ><Icon name="close" size={16} /></button>
           </div>
         </div>
       )}
@@ -395,18 +391,13 @@ export default function DispensaryMap({ activeDispensaryId, onAddToCart, cart = 
               onClick={() => navigate('/portal/map/' + d.id)}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 11, minWidth: 0 }}>
-                <span style={{
-                  width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
-                  background: boroughColor(d.address), color: '#fff',
-                  fontSize: font.size.small, fontWeight: font.weight.heavy,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>{initial(d.name)}</span>
+                <StoreBullet name={d.name} address={d.address} size={28} />
                 <div style={{ minWidth: 0 }}>
                   <div style={{ color: t.text1, fontSize: font.size.body, fontWeight: font.weight.semibold }}>{d.name}</div>
                   {d.address && <div style={{ color: t.text3, fontSize: font.size.small, marginTop: 2 }}>{d.address}</div>}
                 </div>
               </div>
-              <span style={{ color: t.accent, fontSize: font.size.small + 1, fontWeight: font.weight.bold, marginLeft: 12 }}>→</span>
+              <Icon name="chevron-right" size={18} color={t.text3} style={{ marginLeft: 12 }} />
             </div>
           ))}
         </div>
@@ -415,7 +406,7 @@ export default function DispensaryMap({ activeDispensaryId, onAddToCart, cart = 
       {loadingDispensaries && (
         <div style={{
           position: 'absolute', top: 16, left: '50%', transform: 'translateX(-50%)',
-          background: alpha('#000', 0.7), border: `1px solid ${t.border}`, backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+          background: 'rgba(12, 15, 13, 0.82)', border: `1px solid ${t.border}`, backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
           borderRadius: radius.pill, padding: '8px 16px', zIndex: 999,
           display: 'flex', alignItems: 'center', gap: 9,
         }}>
