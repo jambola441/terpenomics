@@ -1,0 +1,220 @@
+{
+  "brand": "Hashtag Honey",
+  "site": "https://hashtaghoneys.com",
+  "source": {
+    "kind": "wc_store_api",
+    "url": "https://hashtaghoneys.com/wp-json/wc/store/v1/products"
+  },
+  "learned": "2026-10-08, from the owner's pointer to hashtaghoneys.com (hashtaghoney.com without the s is a parked domain). WooCommerce Store API: 233 products in eleven categories, the size in nearly every title.",
+  "notes": [
+    "Each product's variations are a wholesale quantity (attribute NUMBER: 1, 5, 10, 25, 50, 100 units), not a size. Only the 1-unit variation is read; the size comes from the title.",
+    "The gummies are listed twice: once with '100mg' in the title and a description ('100mg – 10ct – 10mg/ea'), once without either. All are 10 x 10mg THC. Cotton Candy is 1:1 THC/CBD; one of its pages says '100mg total cannabinoids', the other '100mg THC', and three stores sell it as 100mg, so it is 100mg THC.",
+    "'Snowballz' (INFUSED FLOWER) is flower coated in diamonds: subtype infused. 'Diamond Infused Pre-rolls 5pk' are 5 x 0.5g. 'Lites Joints 0.9g each 5pk' are 4.5g.",
+    "'Disposable ... AIO ... Weed Pen' titles carry a lineage and sometimes 'Live Resin' after the size; neither is part of the strain.",
+    "Two site names are misspellings of the strains stores and the brand's other products use: 'Genolade' (Gelonade) and 'Perm Marker' (Permanent Marker). Title rules set the strain for those two.",
+    "'Snowballz' is the brand's family name for infused flower across strains, so it is the line."
+  ],
+  "skip": [
+    {
+      "when": {
+        "variant": "^(?!1$)."
+      },
+      "why": "wholesale quantity variation (5 to 100 units) of a product already read at 1"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "product_type": "INFUSED FLOWER"
+      },
+      "set": {
+        "category": "flower",
+        "subtype": "infused"
+      }
+    },
+    {
+      "when": {
+        "product_type": "BIG BUDS FLOWER"
+      },
+      "set": {
+        "category": "flower",
+        "subtype": "flower"
+      }
+    },
+    {
+      "when": {
+        "product_type": "PRE.?ROLLS"
+      },
+      "set": {
+        "category": "preroll"
+      }
+    },
+    {
+      "when": {
+        "product_type": "ALL IN ONE"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "all-in-one"
+      }
+    },
+    {
+      "when": {
+        "product_type": "CART"
+      },
+      "set": {
+        "category": "vaporizers",
+        "subtype": "cart"
+      }
+    },
+    {
+      "when": {
+        "product_type": "ROSIN CONCENTRATES"
+      },
+      "set": {
+        "category": "concentrate",
+        "subtype": "rosin"
+      }
+    },
+    {
+      "when": {
+        "product_type": "SUGAR CONCENTRATES"
+      },
+      "set": {
+        "category": "concentrate",
+        "subtype": "resin"
+      }
+    },
+    {
+      "when": {
+        "product_type": "GUMMIES"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "gummy"
+      }
+    },
+    {
+      "when": {
+        "product_type": "THC DRINKS"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "beverage"
+      }
+    }
+  ],
+  "title": [
+    {
+      "when": {
+        "category": "^edible$",
+        "title": "(?i)cotton candy"
+      },
+      "match": "(?i)^Hashtag Honey\\s+(?P<strain>Cotton Candy)\\b",
+      "set": {
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "title": "(?i)gummies"
+      },
+      "match": "(?i)^Hashtag Honey\\s+(?P<strain>.+?)\\s+Live Resin Gummies",
+      "set": {
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "(?i)^Hashtag Honey\\s+(?P<strain>.+?)\\s+(?P<size>\\d+mg)$"
+    },
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "title": "(?i)genolade"
+      },
+      "match": "(?i)^Hashtag Honey\\s+Genolade\\s+(?P<size>\\d*\\.?\\d+g)\\s+Rosin\\s+Cart\\b",
+      "set": {
+        "strain": "Gelonade"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "title": "(?i)perm marker"
+      },
+      "match": "(?i)^Hashtag Honey\\s+Perm Marker\\s+(?P<size>\\d*\\.?\\d+g)\\s+Rosin\\s+Cart\\b",
+      "set": {
+        "strain": "Permanent Marker"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$",
+        "title": "(?i)lites"
+      },
+      "match": "(?i)^Hashtag Honey\\s+(?:Pre Rolls\\s+)?(?P<strain>.+?)\\s+(?P<line>Lites)\\s+Joints",
+      "set": {
+        "size": "4.5g"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$",
+        "title": "(?i)5pk"
+      },
+      "match": "(?i)^Hashtag Honey\\s+(?P<strain>.+?)\\s+0\\.5g\\s+(?:Diamond\\s+)?(?:Infused\\s+)?Pre-rolls",
+      "set": {
+        "size": "2.5g"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$",
+        "title": "(?i)infused"
+      },
+      "match": "(?i)^Hashtag Honey\\s+(?P<strain>.+?)\\s+(?P<size>\\d*\\.?\\d+g)\\s+(?:Diamond\\s+)?Infused Pre-rolls"
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^Hashtag Honey\\s+(?P<strain>.+?)\\s+(?P<size>\\d*\\.?\\d+g)\\s+Pre\\s?-?Rolls?$"
+    },
+    {
+      "when": {
+        "category": "^flower$",
+        "title": "(?i)snowballz"
+      },
+      "match": "(?i)^Hashtag Honey\\s+(?P<strain>.+?)\\s+(?P<line>Snowballz)\\s+(?P<size>\\d*\\.?\\d+g)\\b"
+    },
+    {
+      "when": {
+        "category": "^flower$"
+      },
+      "match": "(?i)^Hashtag Honey\\s+(?P<strain>.+?)\\s+(?:Big Buds\\s+)?(?P<size>\\d*\\.?\\d+g)\\b"
+    },
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "title": "(?i)disposable"
+      },
+      "match": "(?i)^Hashtag Honey\\s+Disposable\\s+(?P<strain>.+?)\\s+(?P<size>\\d*\\.?\\d+g)\\s+(?:Live Resin\\s+)?AIO\\b"
+    },
+    {
+      "when": {
+        "category": "^vaporizers$"
+      },
+      "match": "(?i)^Hashtag Honey\\s+(?P<strain>.+?)\\s+(?P<size>\\d*\\.?\\d+g)\\s+(?:Liquid Diamond\\s+|Rosin\\s+)?Cart\\b"
+    },
+    {
+      "when": {
+        "category": "^concentrate$"
+      },
+      "match": "(?i)^Hashtag Honey\\s+(?P<strain>.+?)\\s+(?P<size>\\d*\\.?\\d+g)\\s+Live\\s+(?:Rosin|Sugar)\\b"
+    }
+  ]
+}
