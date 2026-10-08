@@ -35,8 +35,14 @@
     "X Bites"
   ],
   "Ruby Farms": [
-    "Classics"
+    {"line": "Classics", "also": ["Ruby Classics"]},
+    {"line": "Doobies", "also": ["Ruby Doobies", "Ruby Doobie"], "category": "preroll"},
+    {"line": "Hash Infused", "also": ["Hash Infused Doobies", "Doobies Hash Infused", "Ruby Hash Infused", "Hash Doobies", "Hash Classics", "Hash-Infused", "Bubble Hash Infused"], "category": "preroll"},
+    {"line": "Rose Petal", "also": ["Rose Petals", "Rose Petals Infused", "Rose Petal Infused", "Ruby Rose Petal", "Rose Petals Hash Infused", "Hash Infused Rose Petal", "Rose Petal Rolled Hash Infused", "Rose Petal Bubble Hash Infused", "Hash Infused Rose Pedal", "Rose Pedal", "Hash Infused Rose", "Rose Infused", "Hash Infused Rose Blunt"], "category": "preroll"},
+    {"line": "Roosevelt", "also": ["Ruby Roosevelt", "Hash Infused Rose Petal Cigar", "Hash Infused Cigar"], "category": "preroll"},
+    {"line": "Rosettas", "category": "preroll"}
   ],
+  "_comment_ruby_farms": "From the Ruby Farms curation (2026-10-08). Pre-rolls: Doobies are 0.5g joints in 2pk (1g) and 7pk (3.5g); Classics are 7 x 0.7g (5g); Hash Infused are hash-infused 0.5g joints in 2pk (1g) and 10pk (5g), which stores call Hash Infused Doobies or Hash Classics; Rose Petal is the 1.5g hash-infused single rolled in rose petals; Roosevelt is the 3g hash-infused rose-petal cigar; Rosettas a 5 x 0.5g infused pack. The longer spellings exist so the longest match wins: 'Rose Petal Rolled Hash Infused' is Rose Petal, not Hash Infused, and 'Hash Infused Rose Petal Cigar' is Roosevelt.",
   "To The Moon": [
     "Essentials",
     {
