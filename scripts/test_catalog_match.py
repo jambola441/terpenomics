@@ -389,3 +389,23 @@ def test_infused_flower_never_matches_the_plain_flower_of_its_strain():
     [d] = cm.resolve(cat, [{"id": 1, "name": "Atomic Breath 3.5g Diamond Infused Flower", "category": "flower",
                             "variant": "3.5g"}], use_jev=True)
     assert d.product_key is None
+
+
+def test_a_description_that_states_infused_flower_vetoes_plain_flower():
+    """Stores sell Grassroots' infused Atomic Breath as "Atomic Breath Whole Flower 3.5g"
+    and say so only in the description. Figurative uses do not count."""
+    cat = catalog({"name": "Atomic Breath", "category": "flower", "subtype": "flower", "strain": "Atomic Breath",
+                   "variant": "3.5g"})
+    idx = cm.CatalogIndex(cat)
+    name = "Atomic Breath Whole Flower 3.5g"
+    for desc in ["Brace yourself for the explosive potency of the Infused Atomic Breath.",
+                 "<p>This premium flower is diamond-infused for an extra punch.</p>",
+                 "Premium flower infused with 4 grams of kief per bag.",
+                 "Infused with both bubble hash and diamonds."]:
+        assert idx.shortlist(name, "flower", "3.5g", description=desc) == [], desc
+    for desc in [None, "A 3.5g hybrid infused with the irresistible taste of maraschino cherries.",
+                 "A smooth, gas-infused cherry finish.", "Drenched in rosin and infused with a terpene blend."]:
+        assert idx.shortlist(name, "flower", "3.5g", description=desc) == ["Atomic Breath|flower"], desc
+    [d] = cm.resolve(cat, [{"id": 1, "name": name, "category": "flower", "variant": "3.5g",
+                            "description": "the Infused Atomic Breath"}], use_jev=True)
+    assert d.product_key is None

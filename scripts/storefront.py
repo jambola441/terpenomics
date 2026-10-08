@@ -1018,6 +1018,9 @@ def main() -> None:
                   f"products only stores sell; store names carried to {len(terms or {})} site entries")
             brand_catalog.push(with_store_products(doc, only_stores or [], terms),
                                dry_run=args.dry_run, via_http=args.via_http)
+            if not args.dry_run and args.via_http:
+                import line_fill                 # the push retired the inferred sizes; restore them
+                line_fill.sync_brand(recipe["brand"])
     sys.exit(1 if failed else 0)
 
 

@@ -201,6 +201,7 @@ def test_a_line_that_is_only_the_brand_is_no_line():
 def test_push_skips_an_empty_catalog_and_passes_via_http(monkeypatch, tmp_path):
     import brand_catalog
     import catalog_store
+    import line_fill
 
     papers = [dict(L(s, "Rolling Papers", "", None, "", "merch", "papers"), brand="RAW")
               for s in ("s1", "s2")]
@@ -210,9 +211,12 @@ def test_push_skips_an_empty_catalog_and_passes_via_http(monkeypatch, tmp_path):
     monkeypatch.setattr(brand_catalog, "ROOT", tmp_path)
     pushed = []
     monkeypatch.setattr(brand_catalog, "push", lambda cat, **kw: pushed.append((cat["brand_name"], kw)))
+    synced = []
+    monkeypatch.setattr(line_fill, "sync_brand", synced.append)
     monkeypatch.setattr(sys, "argv", ["catalog_bootstrap.py", "--top", "5", "--push", "--via-http"])
     cb.main()
     assert pushed == [("Jetpacks", {"via_http": True, "replace": False})]   # RAW: nothing to write
+    assert synced == ["Jetpacks"]                                            # inferred sizes follow the push
 
 
 # --- push round trip -------------------------------------------------------

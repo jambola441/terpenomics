@@ -147,7 +147,9 @@ class Product:
                 product_line=first.get("product_line"), strain=first.get("strain"))
         for e in entries:
             s = sizes.parse(e.get("variant"), category=p.category)
-            if not s.is_empty():
+            # An inferred size (line_fill.py) gives a chosen product the listing's size;
+            # it never helps choose the product, so size_ok and Jev do not see it.
+            if not s.is_empty() and e.get("source") != "inferred":
                 p.sizes.append(s)
             for t in [e.get("name")] + list(e.get("match_terms") or []):
                 n = norm_name(t or "")
@@ -174,7 +176,8 @@ class Product:
             bits.append(f"product line {self.product_line}")
         if self.strain and norm_name(self.strain) != norm_name(self.title):
             bits.append(f"strain/flavor {self.strain}")
-        labels = sorted({e.get("variant") for e in self.entries if e.get("variant")})
+        labels = sorted({e.get("variant") for e in self.entries
+                         if e.get("variant") and e.get("source") != "inferred"})
         if labels:
             bits.append("sizes " + ", ".join(labels[:6]))
         return " · ".join(bits)
@@ -185,13 +188,26 @@ class Product:
 # Grassroots' "Atomic Breath Diamond Infused 3.5g" went to plain Atomic Breath at p=0.96
 # once that product gained a 3.5g. Stores' subtype guesses are too loose to veto with
 # (shortlist only prunes by them), but the word in the name is not a guess.
+# A description counts only when it states the infusion outright ("the Infused Atomic
+# Breath", "diamond infused", "infused with THCa diamonds"): stores also write
+# "infused with the taste of cherries" of plain flower.
 PLAIN_FLOWER = {"flower", "smalls"}
+INFUSED_DESCRIPTION = re.compile(
+    r"(?i)\bthe infused\b|\b(?:diamonds?|hash|kief|rosin|resin|distillate)[- ]infused\b"
+    r"|\binfused (?:(?:indoor|whole|ground|pre-?ground)\s+)*(?:flower|buds?|nugs?)\b"
+    r"|\binfus(?:ed|ing it) with (?:[\w-]+\s+){0,4}?"
+    r"(?:diamonds?|resin|rosin|distillate|kief|hash|concentrates?|crystals?)\b")
 
 
-def infused_veto(product: "Product", name: str | None, category: str | None) -> bool:
-    """True when the name states infused flower and the product is plain flower."""
-    return (category or product.category) == "flower" and product.subtype in PLAIN_FLOWER \
-        and taxonomy.token_subtype("flower", name) == "infused"
+def infused_veto(product: "Product", name: str | None, category: str | None,
+                 description: str | None = None) -> bool:
+    """True when the name or description states infused flower and the product is plain flower."""
+    if (category or product.category) != "flower" or product.subtype not in PLAIN_FLOWER:
+        return False
+    if taxonomy.token_subtype("flower", name) == "infused":
+        return True
+    text = html.unescape(re.sub(r"<[^>]+>", " ", description or ""))
+    return bool(INFUSED_DESCRIPTION.search(" ".join(text.split())))
 
 
 class CatalogIndex:
@@ -327,7 +343,7 @@ class CatalogIndex:
 
     def shortlist(self, name: str, category: str | None, variant: str | None,
                   k: int = SHORTLIST, exclude: str | None = None,
-                  subtype: str | None = None) -> list[str]:
+                  subtype: str | None = None, description: str | None = None) -> list[str]:
         """Products worth asking about, best first. Possibly empty.
 
         Containment of a title or match term scores highest; otherwise token overlap.
@@ -355,7 +371,7 @@ class CatalogIndex:
                 continue
             if category and p.category and p.category != category:
                 continue
-            if infused_veto(p, name, category):
+            if infused_veto(p, name, category, description):
                 continue
             best = 0.0
             for t in p.terms:
@@ -618,7 +634,7 @@ def resolve(catalog: dict, listings: list[dict], *, use_jev: bool,
         name, cat = l.get("name") or "", l.get("category")
         det_key, det_conf, det_method = index.deterministic(name, cat)
         held_out = (exclude or {}).get(str(l.get("id")))
-        if det_key and infused_veto(index.products[det_key], name, cat):
+        if det_key and infused_veto(index.products[det_key], name, cat, l.get("description")):
             det_key, det_method = None, "none"
         if det_method == "exact" and det_key != held_out:
             decisions[i] = Decision(l, det_key, index.pick_entry(det_key, l.get("variant"), cat, name),
@@ -629,7 +645,7 @@ def resolve(catalog: dict, listings: list[dict], *, use_jev: bool,
             decisions[i] = Decision(l, det_key, entry, det_conf, det_method, deterministic=det_key)
             continue
         cands = index.shortlist(name, cat, l.get("variant"), exclude=held_out,
-                                subtype=l.get("subtype"))
+                                subtype=l.get("subtype"), description=l.get("description"))
         # Put the deterministic pick right after "none" so the model sees the
         # strongest lexical candidate first among the products.
         if det_key in cands:
