@@ -24,6 +24,7 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -34,6 +35,7 @@ import db_http  # noqa: E402
 import enrich  # noqa: E402
 import import_listings  # noqa: E402
 
+BATCH = 500
 COLS = "id,scraped_name,scraped_brand,scraped_category,subtype,variant,description,reading"
 
 
@@ -43,29 +45,37 @@ def pending(everything: bool) -> list[dict]:
     return rows if everything else [r for r in rows if not r.get("reading")]
 
 
-def read(listings: list[dict], batch: int = 500) -> dict[str, dict]:
+def read(listings: list[dict]) -> dict[str, dict]:
+    rows = [{"id": l["id"], "name": l.get("scraped_name") or "", "brand": l.get("scraped_brand") or "",
+             "category": l.get("scraped_category") or "", "subtype": "", "strain": "",
+             "description": l.get("description") or "", "variant": l.get("variant") or "",
+             "dispensary_slug": "backfill-reading"} for l in listings]
+    enrich.enrich(rows)
     out: dict[str, dict] = {}
-    for i in range(0, len(listings), batch):
-        rows = [{"id": l["id"], "name": l.get("scraped_name") or "", "brand": l.get("scraped_brand") or "",
-                 "category": l.get("scraped_category") or "", "subtype": "", "strain": "",
-                 "description": l.get("description") or "", "variant": l.get("variant") or "",
-                 "dispensary_slug": "backfill-reading"} for l in listings[i:i + batch]]
-        enrich.enrich(rows)
-        for r in rows:
-            if r.get("enrich_failed"):
-                continue
-            rec = {"scraped_category": r.get("category"), "subtype": r.get("subtype"),
-                   "strain": r.get("strain"), "product_line": r.get("product_line"),
-                   "variant": r.get("variant")}
-            out[r["id"]] = {k: rec.get(col) or None for k, col in import_listings.READING}
-        print(f"  read {min(i + batch, len(listings))} of {len(listings)}", flush=True)
+    for r in rows:
+        if r.get("enrich_failed"):
+            continue
+        rec = {"scraped_category": r.get("category"), "subtype": r.get("subtype"),
+               "strain": r.get("strain"), "product_line": r.get("product_line"),
+               "variant": r.get("variant")}
+        out[r["id"]] = {k: rec.get(col) or None for k, col in import_listings.READING}
     return out
 
 
-def write(readings: dict[str, dict], workers: int = 8) -> int:
+def write(readings: dict[str, dict], workers: int = 8, tries: int = 4) -> int:
+    """One PATCH a listing. A dropped connection is retried with backoff (2026-10-08: one
+    reset 6,000 rows into a run lost the rest of it); a listing still failing after
+    that is left without a reading for the next run."""
     def one(item):
         lid, reading = item
-        return len(db_http.update("listings", f"id=eq.{lid}", {"reading": reading}))
+        for attempt in range(tries):
+            try:
+                return len(db_http.update("listings", f"id=eq.{lid}", {"reading": reading}))
+            except db_http.DbHttpError as exc:
+                if attempt == tries - 1:
+                    print(f"  [WARN] {lid}: {exc}", file=sys.stderr)
+                    return 0
+                time.sleep(2 ** attempt)
     with ThreadPoolExecutor(max_workers=workers) as pool:
         return sum(pool.map(one, readings.items()))
 
@@ -82,14 +92,20 @@ def main(argv: list[str] | None = None) -> int:
     print(f"{len(listings)} listing(s) to read")
     if not listings:
         return 0
-    readings = read(listings)
-    print(f"{len(readings)} read ({len(listings) - len(readings)} failed, left without one)")
     if not args.write:
+        readings = read(listings[:args.limit or 500])
         for l in listings[:15]:
             print(f"  {(l.get('scraped_name') or '')[:60]:60} -> {readings.get(l['id'])}")
         print("(dry run; --write writes them)")
         return 0
-    print(f"wrote {write(readings)} reading(s)")
+    # Read and write a batch at a time, so a failure loses one batch at most.
+    read_n = wrote = 0
+    for i in range(0, len(listings), BATCH):
+        readings = read(listings[i:i + BATCH])
+        read_n += len(readings)
+        wrote += write(readings)
+        print(f"  {min(i + BATCH, len(listings))} of {len(listings)}: {read_n} read, {wrote} written", flush=True)
+    print(f"wrote {wrote} reading(s); {len(listings) - wrote} left without one")
     return 0
 
 
