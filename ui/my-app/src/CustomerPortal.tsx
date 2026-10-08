@@ -16,7 +16,7 @@ import { useNavigate, useSearchParams, useMatch, Navigate, useLocation } from 'r
 import api, { ApiError } from './api/client'
 import supabase from './utils/supabase'
 import DispensaryMap from './components/DispensaryMap'
-import HomeFeed from './components/HomeFeed'
+import HomeFeed, { homeFeedParams } from './components/HomeFeed'
 import BrandsPage from './components/BrandsPage'
 import BrandView from './components/BrandView'
 import ProductView from './components/ProductView'
@@ -253,10 +253,18 @@ export default function CustomerPortal() {
   // The account and orders are keyed on the user, not the session object:
   // onAuthStateChange hands over a new object for the same session (at start
   // and on every token refresh), which used to load both two or three times.
+  // Opening on Home, its feed and category chips are asked for alongside /me
+  // rather than after it; HomeFeed's own requests pick them up (the category
+  // list through the catalogue cache). Read once, at sign-in.
+  const opensOnHome = view === 'home' && !productKey && !selectedListingId && !storeId
   useEffect(() => {
     if (!userId) return
     let cancelled = false
     setProfileProblem(null)
+    if (opensOnHome && profileAttempt === 0) {
+      api.me.startFeed(homeFeedParams(searchParams))
+      api.portal.getCategories().catch(() => { /* Home asks again */ })
+    }
     loadProfile()
       .then(p => { if (!cancelled) setProfile(p) })
       .catch(err => {
@@ -265,7 +273,7 @@ export default function CustomerPortal() {
         const aboutAccount = err instanceof ApiError && err.status >= 400 && err.status < 500
         setProfileProblem(aboutAccount ? 'not_linked' : 'unreachable')
       })
-    return () => { cancelled = true }
+    return () => { cancelled = true; api.me.dropFeedHeadStart() }
   }, [userId, profileAttempt])
 
   // Orders come from /me/orders, which identifies the customer by token, so this

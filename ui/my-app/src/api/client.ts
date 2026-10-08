@@ -289,6 +289,11 @@ export type AdminOrderDetail = Omit<Order, 'dispensary_slug' | 'dispensary_addre
   allowed_transitions: OrderStatus[]
 }
 
+/** A feed request started early by api.me.startFeed, until Home claims it. */
+let feedHeadStart: { url: string; at: number; promise: Promise<Feed> } | null = null
+/** Older than this, Home asks again rather than show what it fetched. */
+const FEED_HEAD_START_MS = 15_000
+
 export const api = {
   customers: {
     list: (params?: ListParams) =>
@@ -792,8 +797,31 @@ export const api = {
     /** The home feed. `store` keeps the followed stores separate, `combined`
      *  pools and dedupes them; both are ranked server-side because two of the
      *  four rails compare against every store we track. */
-    getFeed: (params?: { view?: FeedView; per_rail?: number; category?: string }) =>
-      authenticatedFetch<Feed>(`/me/feed${buildQueryString(params)}`),
+    getFeed: (params?: { view?: FeedView; per_rail?: number; category?: string }) => {
+      const url = `/me/feed${buildQueryString(params)}`
+      const early = feedHeadStart
+      feedHeadStart = null
+      if (early && early.url === url && Date.now() - early.at < FEED_HEAD_START_MS) {
+        // A failed head start (say, a first sign-in not linked yet) gets a
+        // fresh request rather than an error.
+        return early.promise.catch(() => authenticatedFetch<Feed>(url))
+      }
+      return authenticatedFetch<Feed>(url)
+    },
+
+    /** Ask for the feed now, beside /me, instead of after it: Home's first
+     *  getFeed with the same parameters takes this request over, which saves
+     *  it a round trip on every visit that opens on Home. */
+    startFeed: (params?: { view?: FeedView; per_rail?: number; category?: string }) => {
+      const url = `/me/feed${buildQueryString(params)}`
+      const promise = authenticatedFetch<Feed>(url)
+      promise.catch(() => { /* handed to getFeed, which retries */ })
+      feedHeadStart = { url, at: Date.now(), promise }
+    },
+
+    /** Forget a head start, when the signed-in user changes: it was fetched
+     *  as whoever started it. */
+    dropFeedHeadStart: () => { feedHeadStart = null },
   },
 
   /**

@@ -2,7 +2,7 @@ import { createContext, use, useCallback, useEffect, useState, type PropsWithChi
 import type { Session } from '@supabase/supabase-js'
 import type { CustomerProfile } from '@web/types'
 import supabase from './supabase'
-import { api, ApiError } from './api'
+import { api, ApiError, HOME_FEED } from './api'
 import { confirmAge as storeAgeConfirmation, isAgeConfirmed } from './ageGate'
 
 type AuthState = {
@@ -59,7 +59,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
   // app proper opens. Keyed on the user, not the session: token refreshes
   // replace the session object without changing who is signed in.
   useEffect(() => {
-    if (userId) fetchProfile(userId)
+    if (!userId) return
+    // The app opens on Home: ask for its feed beside /me rather than after it.
+    api.me.startFeed(HOME_FEED)
+    fetchProfile(userId)
+    return () => api.me.dropFeedHeadStart()
   }, [userId, fetchProfile])
 
   const current = userId && loaded?.userId === userId ? loaded : null

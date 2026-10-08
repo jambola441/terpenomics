@@ -82,6 +82,14 @@ const pub = <T,>(path: string, init?: RequestInit) => request<T>(path, init, fal
 const authed = <T,>(path: string, init?: RequestInit) => request<T>(path, init, true)
 const post = (body?: unknown): RequestInit => ({ method: 'POST', body: body === undefined ? undefined : JSON.stringify(body) })
 
+/** What Home asks the feed for; also what sign-in starts early. */
+export const HOME_FEED: { view: FeedView } = { view: 'combined' }
+
+/** A feed request started early by api.me.startFeed, until Home claims it. */
+let feedHeadStart: { url: string; at: number; promise: Promise<Feed> } | null = null
+/** Older than this, Home asks again rather than show what it fetched. */
+const FEED_HEAD_START_MS = 15_000
+
 export const api = {
   auth: {
     smsStart: (phone: string) =>
@@ -127,8 +135,29 @@ export const api = {
     removePreferredDispensary: (dispensaryId: string) =>
       authed<PortalDispensary[]>(`/me/preferred-dispensaries/${dispensaryId}`, { method: 'DELETE' }),
 
-    getFeed: (params?: { view?: FeedView; per_rail?: number; category?: string }) =>
-      authed<Feed>(`/me/feed${query(params)}`),
+    getFeed: (params?: { view?: FeedView; per_rail?: number; category?: string }) => {
+      const url = `/me/feed${query(params)}`
+      const early = feedHeadStart
+      feedHeadStart = null
+      if (early && early.url === url && Date.now() - early.at < FEED_HEAD_START_MS) {
+        // A failed head start (a first sign-in not linked yet) gets a fresh try.
+        return early.promise.catch(() => authed<Feed>(url))
+      }
+      return authed<Feed>(url)
+    },
+
+    /** Ask for the feed beside /me at sign-in instead of after it; Home's
+     *  first getFeed with the same parameters takes this request over. */
+    startFeed: (params?: { view?: FeedView; per_rail?: number; category?: string }) => {
+      const url = `/me/feed${query(params)}`
+      const promise = authed<Feed>(url)
+      promise.catch(() => { /* handed to getFeed, which retries */ })
+      feedHeadStart = { url, at: Date.now(), promise }
+    },
+
+    /** Forget a head start, when the signed-in user changes: it was fetched
+     *  as whoever started it. */
+    dropFeedHeadStart: () => { feedHeadStart = null },
 
     /** Terpee points earned at partner stores. */
     getPoints: () => authed<PointsSummary>(`/me/points`),
