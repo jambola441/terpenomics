@@ -26,6 +26,7 @@ import SearchView from './components/SearchView'
 import ListingDetailView from './components/ListingDetail'
 import ProfileView from './components/ProfileView'
 import OrdersScreen from './components/OrdersScreen'
+import StoreScreen from './components/StoreScreen'
 import CartDrawer from './components/CartDrawer'
 import ConfirmSheet from './components/ConfirmSheet'
 import OnboardingScreen from './components/OnboardingScreen'
@@ -34,6 +35,7 @@ import type { Session } from '@supabase/auth-js'
 import { t, radius, font, motion } from './theme'
 import { FeedState } from './components/ui'
 import { Icon, type IconName } from './components/Icon'
+import { storePath } from './utils/storePaths'
 import 'leaflet/dist/leaflet.css'
 
 /** Mirrors MAX_QTY_PER_LINE in routes/orders.py. */
@@ -173,6 +175,10 @@ export default function CustomerPortal() {
   const matchCategory = useMatch('/portal/categories/:category')
   const matchAisle = useMatch('/portal/map/:dispensaryId/aisle/:category')
   const matchDispensary = useMatch('/portal/map/:dispensaryId')
+  // A store opened from anywhere but the map sits in that section, so the nav
+  // doesn't jump to Map (see utils/storePaths).
+  const matchStore = useMatch('/portal/:section/stores/:dispensaryId')
+  const matchStoreAisle = useMatch('/portal/:section/stores/:dispensaryId/aisle/:category')
   // Products were addressed under their brand before they could exist without
   // one, and a listing was addressed under the store before sections could hold
   // one; both are kept so older links still resolve.
@@ -189,6 +195,8 @@ export default function CustomerPortal() {
   const selectedListingId = matchListing?.params.listingId ?? null
   const selectedListingDispensaryId = matchListing?.params.dispensaryId ?? null
   const selectedDispensaryId = (matchDispensary ?? matchAisle)?.params.dispensaryId ?? null
+  const storeId = (matchStore ?? matchStoreAisle)?.params.dispensaryId ?? null
+  const storeAisle = matchStoreAisle?.params.category ?? null
 
   const section = location.pathname.split('/')[2] ?? ''
   // What's on screen, and which tab lights up for it.
@@ -442,8 +450,8 @@ export default function CustomerPortal() {
 
   return (
     <div style={shellStyle}>
-      {/* A product or a listing opens over whichever section the shopper is in;
-          otherwise the section decides. */}
+      {/* A product, a listing or a store opens over whichever section the
+          shopper is in; otherwise the section decides. */}
       <main>
       {selectedListingId && selectedListingDispensaryId ? (
         <ListingDetailView
@@ -452,7 +460,7 @@ export default function CustomerPortal() {
           onAddToCart={handleAddToCart}
           cartQuantity={cart.filter(i => i.listingId === selectedListingId).reduce((s, i) => s + i.quantity, 0)}
           onOpenListing={openListing}
-          onOpenDispensary={id => navigate(`/portal/map/${id}`)}
+          onOpenDispensary={id => navigate(storePath(view, id))}
           onOpenProduct={openProduct}
         />
       ) : productKey ? (
@@ -462,10 +470,18 @@ export default function CustomerPortal() {
           onBack={() => navigate(-1)}
           onListingClick={openListing}
         />
+      ) : storeId && view !== 'map' ? (
+        <StoreScreen
+          section={view}
+          dispensaryId={storeId}
+          category={storeAisle}
+          onAddToCart={handleAddToCart}
+          cart={cart}
+        />
       ) : view === 'home' ? (
         <HomeFeed
           onOpenListing={openListing}
-          onOpenDispensary={dispensaryId => navigate(`/portal/map/${dispensaryId}`)}
+          onOpenDispensary={dispensaryId => navigate(storePath('home', dispensaryId))}
           onOpenProduct={openProduct}
         />
       ) : view === 'brands' ? (

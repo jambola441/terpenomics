@@ -87,9 +87,9 @@ export default function PartnerDetail() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
           <button onClick={() => navigate('/admin/partners')} style={navBtnStyle}><Icon name="arrow-left" size={14} />Partners</button>
           {editingName === null ? (
-            <h2 style={{ margin: 0, fontFamily: font.family.display, fontSize: font.size.display, fontWeight: 600, letterSpacing: '-0.015em', cursor: 'text' }} title="Click to rename" onClick={() => setEditingName(partner.name)}>
+            <h1 style={{ margin: 0, fontFamily: font.family.display, fontSize: font.size.display, fontWeight: 600, letterSpacing: '-0.015em', cursor: 'text' }} title="Click to rename" onClick={() => setEditingName(partner.name)}>
               {partner.name}
-            </h2>
+            </h1>
           ) : (
             <form
               onSubmit={e => {

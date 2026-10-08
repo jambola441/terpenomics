@@ -456,9 +456,9 @@ export default function BrandCatalogEdit() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
           <button onClick={() => navigate('/admin/brand-catalogs')} style={navBtnStyle}><Icon name="arrow-left" size={14} />Brand Catalogs</button>
-          <h2 style={{ margin: 0, fontFamily: font.family.display, fontSize: font.size.display, fontWeight: 600, letterSpacing: '-0.015em' }}>
+          <h1 style={{ margin: 0, fontFamily: font.family.display, fontSize: font.size.display, fontWeight: 600, letterSpacing: '-0.015em' }}>
             {isNew ? 'New Brand Catalog' : catalog?.brand_name}
-          </h2>
+          </h1>
           {!isNew && catalog && <OriginBadge catalog={catalog} />}
           {!isNew && catalog && (
             <span style={{ color: t.text3, fontSize: 13 }}>

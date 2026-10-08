@@ -313,7 +313,7 @@ export default function LabReportUpload() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
           <button onClick={() => navigate('/admin')} style={navBtnStyle}><Icon name="arrow-left" size={14} />Admin</button>
           <div>
-            <h2 style={{ margin: 0, fontFamily: font.family.display, fontSize: font.size.display, fontWeight: 600, letterSpacing: '-0.015em' }}>Lab Reports</h2>
+            <h1 style={{ margin: 0, fontFamily: font.family.display, fontSize: font.size.display, fontWeight: 600, letterSpacing: '-0.015em' }}>Lab Reports</h1>
             <p style={{ margin: '3px 0 0', fontSize: 13, color: t.text3 }}>Upload COA PDFs — Claude extracts terpene data via vision API</p>
           </div>
         </div>

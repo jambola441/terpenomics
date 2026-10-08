@@ -16,6 +16,7 @@ import {
 } from '../utils/browseState'
 
 import { inShelfOrder } from './DispensaryListings'
+import { aislePath, listingPath, storePath } from '../utils/storePaths'
 
 type Filters = {
   search: string
@@ -78,13 +79,15 @@ interface Props {
   dispensarySlug?: string
   category: string
   acceptsPickup?: boolean
+  /** The tab the store was opened from; links stay in it. */
+  section?: string
   onAddToCart?: (item: CartItem) => void
   cart?: CartItem[]
 }
 
 export default function AisleView({
   dispensaryId, dispensaryName, dispensarySlug = '', category,
-  acceptsPickup = false, onAddToCart, cart = [],
+  acceptsPickup = false, section = 'map', onAddToCart, cart = [],
 }: Props) {
   const navigate = useNavigate()
   // The aisles this store has stock in; the switcher offers only those, so no
@@ -103,7 +106,7 @@ export default function AisleView({
   // to, so it goes to the store.
   const goBack = () => {
     if ((window.history.state?.idx ?? 0) > 0) navigate(-1)
-    else navigate(`/portal/map/${dispensaryId}`, { replace: true })
+    else navigate(storePath(section, dispensaryId), { replace: true })
   }
   const [all, setAll] = useState<DispensaryListing[]>([])
   const [loading, setLoading] = useState(true)
@@ -368,7 +371,7 @@ export default function AisleView({
                 active={category === cat}
                 color={categoryColor(cat)}
                 // Replace: switching aisles is a filter, not a step Back should retrace.
-                onClick={() => navigate(`/portal/map/${dispensaryId}/aisle/${encodeURIComponent(cat)}`, { replace: true })}
+                onClick={() => navigate(aislePath(section, dispensaryId, cat), { replace: true })}
               />
             ))}
           </div>
@@ -434,7 +437,7 @@ export default function AisleView({
                   // buy -- but plenty to say about whether this is the price to
                   // pay. Same line as the store page this aisle opened from.
                   footer={<MarketNote market={l.market} priceCents={l.price_cents} />}
-                  onOpen={() => navigate(`/portal/map/${dispensaryId}/listings/${l.id}`)}
+                  onOpen={() => navigate(listingPath(section, dispensaryId, l.id))}
                 />
               ))}
             </div>
