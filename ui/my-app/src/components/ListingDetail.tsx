@@ -202,7 +202,7 @@ export default function ListingDetailView({
               }}
             >
               <Icon name={addedFlash ? 'check' : 'bag'} size={17} strokeWidth={2} />
-              {addedFlash ? 'Added' : cartQuantity > 0 ? `In cart (${cartQuantity})` : 'Add to cart'}
+              {addedFlash ? 'Added' : cartQuantity > 0 ? `Add another · ${cartQuantity} in cart` : 'Add to cart'}
             </button>
           )}
         </div>

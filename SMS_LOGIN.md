@@ -196,6 +196,12 @@ customer signing out.
 - **The sign-in pages check first.** `/` and `/staff` look for a session
   before showing the form and go straight on if there is one; the app's
   router already keeps a signed-in user off its sign-in screen.
+- **A sent code survives a reload.** The web sign-in pages keep the challenge,
+  the number and when a resend is allowed in `sessionStorage` until the code
+  expires, so a reload, or iOS discarding the tab while the customer reads the
+  text, lands back on the code step instead of asking for another text. Going
+  back to the same number while the resend clock runs returns to that code
+  (web and app) rather than asking the server, which would refuse it anyway.
 - **Tokens refresh on their own.** Both clients persist the session (browser
   `localStorage`; the iOS Keychain in the app) and refresh the access token from
   the refresh token, so a visit after weeks away still counts as signed in.

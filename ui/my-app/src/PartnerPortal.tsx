@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { Session } from '@supabase/supabase-js'
+import type { Session } from '@supabase/auth-js'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { navBtnStyle, selectStyle, type Column } from './components/AdminTable'
 import api from './api/client'

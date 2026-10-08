@@ -113,7 +113,7 @@ async function portalFetch<T>(
   })
 
   if (!res.ok) {
-    throw new Error(await errorMessage(res))
+    throw new ApiError(await errorMessage(res), res.status)
   }
 
   // DELETE /me and other no-content responses have no body to parse.
@@ -137,7 +137,7 @@ async function authenticatedFetch<T>(
   })
 
   if (!res.ok) {
-    throw new Error(await errorMessage(res))
+    throw new ApiError(await errorMessage(res), res.status)
   }
 
   // DELETE /me and other no-content responses have no body to parse.
@@ -162,9 +162,8 @@ async function authenticatedUpload<T>(path: string, form: FormData): Promise<T> 
   return res.json()
 }
 
-// SMS login endpoints. Unauthenticated by definition, and their errors go
-// straight on screen, so surface FastAPI's `detail` string rather than the raw
-// JSON body that portalFetch would throw.
+/** A failed API call. `status` lets a caller tell "no such thing" (404) from an
+ *  outage, which call for different answers; every fetch helper throws one. */
 export class ApiError extends Error {
   status: number
   retryAfter?: number
@@ -177,6 +176,9 @@ export class ApiError extends Error {
   }
 }
 
+// SMS login endpoints. Unauthenticated by definition, and their errors go
+// straight on screen, so surface FastAPI's `detail` string rather than the raw
+// JSON body that portalFetch would throw.
 async function authFetch<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
     method: 'POST',

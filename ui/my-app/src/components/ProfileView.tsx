@@ -14,7 +14,7 @@ import api from '../api/client'
 import type {
   CustomerProfile, Feedback, Order, PointsSummary, PortalPurchase, PortalDispensary,
 } from '../types'
-import type { Session } from '@supabase/supabase-js'
+import type { Session } from '@supabase/auth-js'
 import { t, radius, font, categoryColor, categoryLabel } from '../theme'
 import { FeedState, ProductImage, Label } from './ui'
 import { Icon, type IconName } from './Icon'
@@ -40,12 +40,14 @@ interface Props {
   ordersError: string | null
   onCancelOrder: (orderId: string) => void
   cancellingIds: Set<string>
+  /** A failed cancel, by order id. Shown on that order's card only. */
+  cancelErrors: Record<string, string>
   onSignOut: () => void
 }
 
 export default function ProfileView({
   session, customerId, orders, ordersLoading, ordersError,
-  onCancelOrder, cancellingIds, onSignOut,
+  onCancelOrder, cancellingIds, cancelErrors, onSignOut,
 }: Props) {
   // The pane is in the URL (/portal/profile/points), so a link can open one.
   const navigate = useNavigate()
@@ -143,6 +145,7 @@ export default function ProfileView({
             error={ordersError}
             onCancelOrder={onCancelOrder}
             cancellingIds={cancellingIds}
+            cancelErrors={cancelErrors}
           />
         )}
         {pane === 'points' && <PointsPane data={points} error={pointsError} onUploaded={loadPoints} />}
@@ -162,12 +165,14 @@ export default function ProfileView({
 
 /* ── Orders ────────────────────────────────────────────────────────────────── */
 
-function OrdersPane({ orders, loading, error, onCancelOrder, cancellingIds }: {
+function OrdersPane({ orders, loading, error, onCancelOrder, cancellingIds, cancelErrors }: {
   orders: Order[]
   loading: boolean
+  /** Loading the list failed. A failed cancel is per card, not this. */
   error: string | null
   onCancelOrder: (orderId: string) => void
   cancellingIds: Set<string>
+  cancelErrors: Record<string, string>
 }) {
   if (loading) return <FeedState kind="loading" message="Loading your orders…" />
   if (error) return <FeedState kind="error" message={error} />
@@ -190,6 +195,7 @@ function OrdersPane({ orders, loading, error, onCancelOrder, cancellingIds }: {
           order={order}
           onCancel={onCancelOrder}
           cancelling={cancellingIds.has(order.id)}
+          cancelError={cancelErrors[order.id] ?? null}
         />
       ))}
     </div>
