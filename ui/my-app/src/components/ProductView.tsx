@@ -27,6 +27,8 @@ export default function ProductView({ brandName, productKey, onBack, onListingCl
   // One product, not the whole brand: this page used to download every product
   // a brand makes just to pick one out of it, and had nothing at all to fetch
   // for a product with no brand.
+  // Bumped by Try again to rerun the load below.
+  const [attempt, setAttempt] = useState(0)
   useEffect(() => {
     setLoading(true)
     setError(null)
@@ -34,7 +36,7 @@ export default function ProductView({ brandName, productKey, onBack, onListingCl
       .then(setProduct)
       .catch(() => setError('Failed to load product'))
       .finally(() => setLoading(false))
-  }, [brandName, productKey])
+  }, [brandName, productKey, attempt])
 
   useEffect(() => {
     navigator.geolocation?.getCurrentPosition(pos => {
@@ -110,7 +112,7 @@ export default function ProductView({ brandName, productKey, onBack, onListingCl
       {loading ? (
         <FeedState kind="loading" message="Loading…" />
       ) : error ? (
-        <FeedState kind="error" message={error} />
+        <FeedState kind="error" message={error} onRetry={() => setAttempt(n => n + 1)} />
       ) : !product ? (
         <FeedState kind="empty" message="Product not found" icon="package" />
       ) : (

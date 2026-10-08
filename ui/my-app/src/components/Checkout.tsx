@@ -137,11 +137,18 @@ interface CheckoutProps {
   onPlaced: (order: Order) => void
   onViewOrders: () => void
   onClose: () => void
+  /** Told when an order starts and stops being placed, so the drawer can hold
+   *  still: closing it mid-request used to lose the pickup code. */
+  onSubmittingChange?: (submitting: boolean) => void
 }
 
-export default function Checkout({ items, onBack, onPlaced, onViewOrders, onClose }: CheckoutProps) {
+export default function Checkout({ items, onBack, onPlaced, onViewOrders, onClose, onSubmittingChange }: CheckoutProps) {
   const [note, setNote] = useState('')
-  const [submitting, setSubmitting] = useState(false)
+  const [submitting, setSubmittingState] = useState(false)
+  const setSubmitting = (value: boolean) => {
+    setSubmittingState(value)
+    onSubmittingChange?.(value)
+  }
   const [error, setError] = useState<string | null>(null)
   const [placed, setPlaced] = useState<Order | null>(null)
 

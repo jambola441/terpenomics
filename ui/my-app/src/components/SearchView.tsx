@@ -80,6 +80,8 @@ export default function SearchView({ initialCategory, onOpenProduct }: Props) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [truncated, setTruncated] = useState(false)
+  // Bumped by Try again to rerun the load below.
+  const [attempt, setAttempt] = useState(0)
   // Later pages still arriving after the first is on screen.
   const [loadingMore, setLoadingMore] = useState(false)
 
@@ -164,7 +166,7 @@ export default function SearchView({ initialCategory, onOpenProduct }: Props) {
     })()
 
     return () => { cancelled = true }
-  }, [query])
+  }, [query, attempt])
 
   const filters: Filters = { category, subtype, brand, variant, price }
 
@@ -271,7 +273,7 @@ export default function SearchView({ initialCategory, onOpenProduct }: Props) {
   const brandCount = useMemo(() => new Set(rows.map(p => p.brand).filter(Boolean)).size, [rows])
 
   return (
-    <div ref={scrollRef} style={{ height: 'calc(100dvh - 64px)', overflowY: 'auto', background: t.bg }}>
+    <div ref={scrollRef} style={{ height: 'calc(100dvh - var(--chrome-bottom, 64px))', overflowY: 'auto', background: t.bg }}>
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <div style={{
@@ -361,7 +363,7 @@ export default function SearchView({ initialCategory, onOpenProduct }: Props) {
       {loading ? (
         <GridSkeleton />
       ) : error ? (
-        <FeedState kind="error" message={error} />
+        <FeedState kind="error" message={error} onRetry={() => setAttempt(n => n + 1)} />
       ) : rows.length === 0 ? (
         <FeedState
           kind="empty"

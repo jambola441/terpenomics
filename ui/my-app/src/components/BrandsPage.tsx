@@ -52,9 +52,12 @@ export default function BrandsPage({ onOpenBrand }: Props) {
     return () => clearTimeout(id)
   }, [input])
 
+  // Bumped by Try again to rerun the load below.
+  const [attempt, setAttempt] = useState(0)
   useEffect(() => {
     let live = true
     setLoading(true)
+    setError(null)
     setExhausted(false)
     api.portal.getBrands({ q: query || undefined, sort, limit: PAGE })
       .then(rows => {
@@ -65,7 +68,7 @@ export default function BrandsPage({ onOpenBrand }: Props) {
       .catch(() => { if (live) setError('Could not load brands.') })
       .finally(() => { if (live) setLoading(false) })
     return () => { live = false }
-  }, [query, sort])
+  }, [query, sort, attempt])
 
   function loadMore() {
     if (loadingMore || exhausted || loading) return
@@ -98,14 +101,14 @@ export default function BrandsPage({ onOpenBrand }: Props) {
   if (error) {
     return (
       <div style={{ height: '100dvh', background: t.bg }}>
-        <FeedState kind="error" message={error} style={{ height: '100%' }} />
+        <FeedState kind="error" message={error} style={{ height: '100%' }} onRetry={() => setAttempt(n => n + 1)} />
       </div>
     )
   }
 
   return (
-    <div ref={scrollRef} style={{ height: 'calc(100dvh - 64px)', overflowY: 'auto', background: t.bg }}>
-      <PageTitle style={{ padding: '26px 16px 6px' }} sub="Every brand stocked across the stores we track">
+    <div ref={scrollRef} style={{ height: 'calc(100dvh - var(--chrome-bottom, 64px))', overflowY: 'auto', background: t.bg }}>
+      <PageTitle style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 26px) 16px 6px' }} sub="Every brand stocked across the stores we track">
         Brands
       </PageTitle>
 

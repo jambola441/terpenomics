@@ -191,17 +191,17 @@ export default function Products() {
           />
 
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-            <select value={filterBrand} onChange={e => setFilter('brand', e.target.value)} style={selectStyle}>
+            <select aria-label="Brand" value={filterBrand} onChange={e => setFilter('brand', e.target.value)} style={selectStyle}>
               <option value="">All brands</option>
               {brands.map(b => <option key={b} value={b}>{b}</option>)}
             </select>
 
-            <select value={filterCategory} onChange={e => setFilter('category', e.target.value)} style={selectStyle}>
+            <select aria-label="Category" value={filterCategory} onChange={e => setFilter('category', e.target.value)} style={selectStyle}>
               <option value="">All categories</option>
               {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
 
-            <select value={filterInStock} onChange={e => setFilter('in_stock', e.target.value)} style={selectStyle}>
+            <select aria-label="Stock" value={filterInStock} onChange={e => setFilter('in_stock', e.target.value)} style={selectStyle}>
               <option value="">All availability</option>
               <option value="true">In stock</option>
               <option value="false">Out of stock</option>

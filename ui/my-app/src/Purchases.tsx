@@ -90,12 +90,12 @@ export default function Purchases() {
             disabled={loading}
             showClearButton={!!search}
           />
-          <select value={source} onChange={e => setSource(e.target.value)} style={selectStyle}>
+          <select aria-label="Source" value={source} onChange={e => setSource(e.target.value)} style={selectStyle}>
             <option value="">All sources</option>
             <option value="manual">manual</option>
             <option value="pos_import">pos_import</option>
           </select>
-          <select value={String(limit)} onChange={e => setLimit(Number(e.target.value))} style={selectStyle}>
+          <select aria-label="Rows per page" value={String(limit)} onChange={e => setLimit(Number(e.target.value))} style={selectStyle}>
             <option value="25">25</option>
             <option value="50">50</option>
             <option value="100">100</option>

@@ -72,6 +72,8 @@ export default function HomeFeed({ onOpenListing, onOpenDispensary, onOpenProduc
   // the new set of stores.
   const [followVersion, setFollowVersion] = useState(0)
   const firstLoadDone = useRef(false)
+  // Bumped by Try again to rerun the load below.
+  const [attempt, setAttempt] = useState(0)
 
   // The feed names every store the shopper follows, so the first load takes it
   // alone instead of asking for the stores first and the feed after: one round
@@ -99,7 +101,7 @@ export default function HomeFeed({ onOpenListing, onOpenDispensary, onOpenProduc
       })
       .catch(() => { if (live) setError('Could not load your feed.') })
     return () => { live = false }
-  }, [view, category, followVersion, picking])
+  }, [view, category, followVersion, picking, attempt])
 
   function changeFollowed(next: PortalDispensary[]) {
     setPreferred(next)
@@ -137,13 +139,13 @@ export default function HomeFeed({ onOpenListing, onOpenDispensary, onOpenProduc
   if (error) {
     return (
       <div style={{ height: '100dvh', background: t.bg }}>
-        <FeedState kind="error" message={error} style={{ height: '100%' }} />
+        <FeedState kind="error" message={error} style={{ height: '100%' }} onRetry={() => setAttempt(n => n + 1)} />
       </div>
     )
   }
 
   if (!preferred) {
-    return <div style={{ height: 'calc(100dvh - 64px)', background: t.bg }}><HomeSkeleton /></div>
+    return <div style={{ height: 'calc(100dvh - var(--chrome-bottom, 64px))', background: t.bg }}><HomeSkeleton /></div>
   }
 
   if (preferred.length === 0 || picking) {
@@ -157,8 +159,8 @@ export default function HomeFeed({ onOpenListing, onOpenDispensary, onOpenProduc
   }
 
   return (
-    <div ref={scrollRef} style={{ height: 'calc(100dvh - 64px)', overflowY: 'auto', background: t.bg }}>
-      <div style={{ padding: '26px 16px 6px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+    <div ref={scrollRef} style={{ height: 'calc(100dvh - var(--chrome-bottom, 64px))', overflowY: 'auto', background: t.bg }}>
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 26px) 16px 6px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
         <PageTitle
           style={{ minWidth: 0 }}
           sub={<>{preferred.length} {preferred.length === 1 ? 'store' : 'stores'} · what&apos;s on the shelf now</>}
@@ -624,8 +626,8 @@ function StorePicker({ preferred, onChange, onDone }: {
   }
 
   return (
-    <div style={{ height: 'calc(100dvh - 64px)', overflowY: 'auto', background: t.bg }}>
-      <div style={{ padding: '26px 16px 6px' }}>
+    <div style={{ height: 'calc(100dvh - var(--chrome-bottom, 64px))', overflowY: 'auto', background: t.bg }}>
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 26px) 16px 6px' }}>
         <PageTitle>{preferred.length === 0 ? 'Pick your stores' : 'Your stores'}</PageTitle>
         <div style={{ color: t.text2, fontSize: font.size.body, marginTop: 8, lineHeight: 1.55, maxWidth: 420 }}>
           Your home feed is built from the stores you follow. Pick the ones you actually shop at —

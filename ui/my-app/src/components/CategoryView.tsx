@@ -56,6 +56,9 @@ export default function CategoryView({ categoryName, onBack, onOpenProduct }: Pr
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Bumped by Try again to rerun the load below.
+  const [attempt, setAttempt] = useState(0)
+
   useEffect(() => {
     let cancelled = false
     setLoading(true); setError(null); setData(null)
@@ -66,7 +69,7 @@ export default function CategoryView({ categoryName, onBack, onOpenProduct }: Pr
       .finally(() => { if (!cancelled) setLoading(false) })
 
     return () => { cancelled = true }
-  }, [categoryName])
+  }, [categoryName, attempt])
 
   const c = categoryColor(categoryName)
 
@@ -75,6 +78,7 @@ export default function CategoryView({ categoryName, onBack, onOpenProduct }: Pr
       items={data ? toItems(data) : []}
       loading={loading}
       error={error}
+      onRetry={() => setAttempt(n => n + 1)}
       color={c}
       // No category facet: every product here is already this category.
       facets={['subtype', 'brand', 'variant']}

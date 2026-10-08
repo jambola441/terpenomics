@@ -1,9 +1,10 @@
-import { useState, type CSSProperties } from 'react'
+import { useId, useRef, useState, type CSSProperties } from 'react'
 import Checkout from './Checkout'
 import type { CartItem, Order } from '../types'
 import { t, radius, font } from '../theme'
 import { Icon } from './Icon'
 import { FeedState, ProductImage } from './ui'
+import { useDialog } from '../hooks/useDialog'
 
 interface CartDrawerProps {
   items: CartItem[]
@@ -23,15 +24,25 @@ export default function CartDrawer({
   items, open, onClose, onRemove, onSetQuantity, maxQuantity, onClear, onPlaced, onViewOrders,
 }: CartDrawerProps) {
   const [checkingOut, setCheckingOut] = useState(false)
+  // While an order is being placed the drawer can't be closed: the request
+  // would finish behind it, empty the cart and never show the pickup code.
+  const [placing, setPlacing] = useState(false)
+  const [placed, setPlaced] = useState(false)
   const total = items.reduce((sum, i) => sum + (i.price_cents ?? 0) * i.quantity, 0)
   const dispensaryName = items[0]?.dispensaryName ?? ''
+  const drawer = useRef<HTMLDivElement>(null)
+  const titleId = useId()
 
   // The drawer is reused for checkout, so reopening it must always land on the
   // cart rather than on a stale checkout step.
   function close() {
+    if (placing) return
     setCheckingOut(false)
+    setPlaced(false)
     onClose()
   }
+
+  useDialog(drawer, open, { onEscape: close })
 
   return (
     <>
@@ -39,6 +50,7 @@ export default function CartDrawer({
       {open && (
         <div
           onClick={close}
+          aria-hidden
           style={{
             position: 'fixed', inset: 0, background: t.scrim,
             zIndex: 2200, backdropFilter: 'blur(2px)',
@@ -46,8 +58,15 @@ export default function CartDrawer({
         />
       )}
 
-      {/* Drawer */}
-      <div style={{
+      {/* Drawer. Inert while closed: it stays mounted for the slide, and its
+          buttons must not be reachable by Tab off-screen. */}
+      <div
+        ref={drawer}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        inert={!open}
+        style={{
         position: 'fixed',
         bottom: 0, left: 0, right: 0,
         background: t.surface1,
@@ -55,7 +74,12 @@ export default function CartDrawer({
         borderRadius: `${radius['2xl']} ${radius['2xl']} 0 0`,
         zIndex: 2300,
         transform: open ? 'translateY(0)' : 'translateY(100%)',
-        transition: 'transform 0.32s cubic-bezier(0.32, 0.72, 0, 1)',
+        // Hidden once it has slid away, so it leaves the accessibility tree
+        // too; shown at once when opening.
+        visibility: open ? 'visible' : 'hidden',
+        transition: open
+          ? 'transform 0.32s cubic-bezier(0.32, 0.72, 0, 1)'
+          : 'transform 0.32s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s linear 0.32s',
         maxHeight: '80dvh',
         display: 'flex',
         flexDirection: 'column',
@@ -69,9 +93,9 @@ export default function CartDrawer({
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px 0' }}>
           <div>
-            <div style={{ color: t.text1, fontFamily: font.family.display, fontWeight: font.weight.semibold, fontSize: font.size.display, letterSpacing: '-0.02em' }}>
-              {checkingOut ? 'Confirm pickup order' : 'Your cart'}
-            </div>
+            <h2 id={titleId} style={{ margin: 0, color: t.text1, fontFamily: font.family.display, fontWeight: font.weight.semibold, fontSize: font.size.display, letterSpacing: '-0.02em' }}>
+              {placed ? 'Order placed' : checkingOut ? 'Confirm pickup order' : 'Your cart'}
+            </h2>
             {dispensaryName && (
               <div style={{ color: t.text3, fontSize: font.size.small, marginTop: 2 }}>{dispensaryName}</div>
             )}
@@ -91,6 +115,7 @@ export default function CartDrawer({
             )}
             <button
               onClick={close}
+              disabled={placing}
               aria-label="Close cart"
               style={{
                 background: t.surface2, border: `1px solid ${t.border}`,
@@ -108,7 +133,8 @@ export default function CartDrawer({
           <Checkout
             items={items}
             onBack={() => setCheckingOut(false)}
-            onPlaced={onPlaced}
+            onPlaced={order => { setPlaced(true); onPlaced(order) }}
+            onSubmittingChange={setPlacing}
             onViewOrders={() => { setCheckingOut(false); onViewOrders() }}
             onClose={close}
           />

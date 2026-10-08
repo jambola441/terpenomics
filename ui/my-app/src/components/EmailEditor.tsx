@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react'
 import api from '../api/client'
 import type { CustomerProfile } from '../types'
 import { t, radius, font } from '../theme'
+import ConfirmSheet from './ConfirmSheet'
 
 type Step = 'view' | 'enter' | 'code'
 
@@ -24,6 +25,7 @@ export default function EmailEditor({ profile, onSaved }: {
   const [resendIn, setResendIn] = useState(0)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [confirmingRemove, setConfirmingRemove] = useState(false)
 
   useEffect(() => {
     if (resendIn <= 0) return
@@ -57,10 +59,13 @@ export default function EmailEditor({ profile, onSaved }: {
     setStep('view')
   })
 
-  const remove = () => {
-    if (!confirm('Remove your email from your account?')) return
-    run(async () => onSaved(await api.me.removeEmail()))
-  }
+  const remove = () => run(async () => {
+    try {
+      onSaved(await api.me.removeEmail())
+    } finally {
+      setConfirmingRemove(false)
+    }
+  })
 
   const cancel = () => {
     setStep('view')
@@ -85,7 +90,7 @@ export default function EmailEditor({ profile, onSaved }: {
             <LinkButton onClick={() => { setEmail(''); setStep('enter') }}>
               {profile.email ? 'Change' : 'Add'}
             </LinkButton>
-            {profile.email && <LinkButton onClick={remove} disabled={busy}>Remove</LinkButton>}
+            {profile.email && <LinkButton onClick={() => setConfirmingRemove(true)} disabled={busy}>Remove</LinkButton>}
           </span>
         )}
       </div>
@@ -139,6 +144,18 @@ export default function EmailEditor({ profile, onSaved }: {
       )}
 
       {error && <div role="alert" style={{ color: t.danger, fontSize: font.size.small }}>{error}</div>}
+      <ConfirmSheet
+        open={confirmingRemove}
+        title="Remove your email?"
+        confirmLabel="Remove email"
+        cancelLabel="Keep it"
+        destructive
+        busy={busy}
+        onConfirm={remove}
+        onCancel={() => setConfirmingRemove(false)}
+      >
+        {profile.email} comes off your account. You can add an address again any time.
+      </ConfirmSheet>
     </div>
   )
 }

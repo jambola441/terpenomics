@@ -69,6 +69,7 @@ export function FeedState({
   hint,
   icon,
   style,
+  onRetry,
 }: {
   kind: 'loading' | 'error' | 'empty'
   message: string
@@ -76,12 +77,16 @@ export function FeedState({
   /** A glyph name from design/icons.ts, or any node. */
   icon?: IconName | ReactNode
   style?: CSSProperties
+  /** Offers "Try again". An error with nothing to press is a dead end. */
+  onRetry?: () => void
 }) {
   const glyph = typeof icon === 'string' && icon in icons
     ? <Icon name={icon as IconName} size={22} />
     : icon ?? <Icon name={kind === 'error' ? 'alert' : 'leaf'} size={22} />
   return (
     <div
+      // Announced, so a screen reader hears that loading finished or failed.
+      role={kind === 'error' ? 'alert' : 'status'}
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -122,6 +127,20 @@ export function FeedState({
         <div style={{ color: t.text3, fontSize: font.size.small + 1, lineHeight: 1.5, maxWidth: 300 }}>
           {hint}
         </div>
+      )}
+      {onRetry && (
+        <button
+          onClick={onRetry}
+          style={{
+            marginTop: 6, minHeight: 44, padding: '0 20px', borderRadius: radius.md,
+            background: t.surface2, border: `1px solid ${t.borderStrong}`, color: t.text1,
+            fontSize: font.size.body, fontWeight: font.weight.semibold, cursor: 'pointer',
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+          }}
+        >
+          <Icon name="refresh" size={16} />
+          Try again
+        </button>
       )}
     </div>
   )

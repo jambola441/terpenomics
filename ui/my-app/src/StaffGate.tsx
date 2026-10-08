@@ -28,5 +28,5 @@ export default function StaffGate() {
   if (!session) {
     return <Navigate to="/staff" replace state={{ from: location.pathname + location.search }} />
   }
-  return <Outlet />
+  return <main><Outlet /></main>
 }
