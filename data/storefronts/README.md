@@ -101,8 +101,9 @@ name with a `title` rule for the one category instead.
 
 **`store_skip`** drops a product only stores list when it is not a product either: a size
 some stores give a product the site lists in another (`{"when": {"name": "^Cotton Candy$",
-"size": "^100mg$"}, "why": "..."}`; `name` and `size` are regexes on the store product's name
-and size). `check` prints what it dropped and why.
+"size": "^100mg$"}, "why": "..."}`; `name`, `size` and `subtype` are regexes on the store
+product's name, size and subtype: the name carries the line where a line rule gave it one,
+"Pips Sativa" rather than "Sativa"). `check` prints what it dropped and why.
 
 **`title_case`: true** for a site that writes names in capitals ("UPLIFTING Pineapple"):
 capitalised words longer than three letters become Title case, shorter ones (OG, GSC,

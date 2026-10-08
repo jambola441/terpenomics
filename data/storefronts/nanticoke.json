@@ -21,7 +21,9 @@
     "Titles without a weight: 'X Pre-Roll Joints' are 0.5g singles (their images are single tubes, eleven of the strains sell at 0.5g at NY stores, and our listings say '0.5g (Pre-Roll) Joint'); 'Sour Diesel 5 pack Pre-Roll Tin' gives no unit weight, and its image is in the series of the 0.7g five-packs while the site's other tin is 5 x 0.5g, so it is skipped (stores sell it as 2.5g; their consensus keeps it). 'Amnesia Haze Vape' states no size on the card or its product page and is skipped too.",
     "Vapes: 'Gold Vape' is Nanti Nitro Gold (1g AIO; stores write 'Nanti Nitro Gold AIO'). The 2 Gram AIOs and .5 Gram carts are Nanti Nitro: their images are in the Nanti Nitro folder or named NN_. 'Ceramic' or 'Cart' is a 1g cart ('1G Ceramic Vape' included); any other '1G Vape' / '1 Gram Vape' is the 1g AIO pen.",
     "Edible doses are in the card description: '10 x 10mg' gummies, '100mg THC Makes 20 Drinks' shots, '5 - 10MG Flavored Stick Packs' Hiistix with the pack in the title. '20 – 5MG Tablets', '20 - 5MG Mint tablets' and the unflavored '2 - 10MG' / '2 - 50MG' Hiistix give a count without a pack word sizes.py reads, so those rules are guarded on that text and state it as '20pk 5mg' etc. Chocolates (bars and mini coins) give no dose on the card; all seven product pages say 'Total THC: 100mg' (2026-10-05).",
-    "Some titles are in capitals ('ALIBI - PERMANENT MARKER X PRIZMATIC ...', 'STRAWBERRY LEMONADE SHOT ...'), so title_case is on; no strain here has a capitalised acronym longer than three letters."
+    "Some titles are in capitals ('ALIBI - PERMANENT MARKER X PRIZMATIC ...', 'STRAWBERRY LEMONADE SHOT ...'), so title_case is on; no strain here has a capitalised acronym longer than three letters.",
+    "2026-10-08 curation (scratch draft): pre-rolls come in 0.5g singles ('Pre-Roll Joints'), 5 x 0.5g tins (2.5g, 'Five Half Gram Pre-Roll Joints'; the site lists only Memory Loss OG's, stores sell Blue Dream, Durban Poison, Jack Herer, Pineapple Runtz, Pluto, Sour Diesel) and 5 x 0.7g tins (3.5g, 'Five .7 Gram Joints'). 'Sour Diesel 5 pack Pre-Roll Tin' is the 0.7g tin: its image (prerolls/Sour Diesel_5pk) prints 'Five .7 Gram Joints, Net Wt 3.5g'. 'Amnesia Haze Vape' is the 1g Cured Resin AIO: its image prints 'Premium Rechargeable Vape Pen, 1g'. 'Memory Loss 1/4 oz Flower' is Memory Loss OG (the jar prints 'Memory Loss OG 1/4 oz'); the infused 'Memory Loss' is the same cultivar (same description). The shots are CQ (the bottle's brand mark, 'Live Resin Infused Cannabis Drink'); CQ has no catalog of its own, so it is the line. 'Sleep' chocolates take Sleep as the line, as the Sleep gummies do.",
+    "2026-10-08: sizes.py now reads a catalog label as written ('20pk 5mg' is a 5mg total), so the tablet, mint and unflavored Hiistix rules state the package total: 20pk 100mg (20 x 5mg), 2pk 20mg (2 x 10mg), 2pk 100mg (2 x 50mg), the sizes the live entries already have."
   ],
   "skip": [
     {
@@ -41,18 +43,6 @@
         "meta": "(?i)/MILKWEED/"
       },
       "why": "Milkweed, its own brand"
-    },
-    {
-      "when": {
-        "title": "^Amnesia Haze Vape$"
-      },
-      "why": "no size on the card or product page"
-    },
-    {
-      "when": {
-        "title": "(?i)\\b5 pack Pre-Roll Tin$"
-      },
-      "why": "no unit weight in the title or on the product page"
     }
   ],
   "category": [
@@ -175,6 +165,26 @@
     },
     {
       "when": {
+        "category": "^preroll$"
+      },
+      "match": "^lilac Diesel\\s+(?P<size>1 Gram)\\s+Infused Pre-Roll$",
+      "set": {
+        "line": "Infused",
+        "strain": "Lilac Diesel"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "(?i)^Memory Loss\\s+(?P<size>\\d*\\.?\\d+\\s*Gram)\\s+Infused Pre-Roll$",
+      "set": {
+        "line": "Infused",
+        "strain": "Memory Loss OG"
+      }
+    },
+    {
+      "when": {
         "category": "^preroll$",
         "title": "(?i)\\binfused\\b"
       },
@@ -193,9 +203,27 @@
       "when": {
         "category": "^preroll$"
       },
+      "match": "(?i)^(?P<strain>.+?)\\s+5 pack Pre-Roll Tin$",
+      "set": {
+        "size": "3.5g"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
       "match": "(?i)^(?P<strain>.+?)\\s+Pre-Roll Joints$",
       "set": {
         "size": "0.5g"
+      }
+    },
+    {
+      "when": {
+        "category": "^flower$"
+      },
+      "match": "(?i)^Memory Loss\\s+(?P<size>\\d+/\\d+\\s*oz)\\s+Flower$",
+      "set": {
+        "strain": "Memory Loss OG"
       }
     },
     {
@@ -220,6 +248,16 @@
       "match": "(?i)^(?P<strain>Hybrid|Indica|Sativa)\\s+(?P<size>\\d+\\s*G)\\s+Ground Flower Pouch$",
       "set": {
         "line": "Ready 2 Roll"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$"
+      },
+      "match": "^(?P<strain>Amnesia Haze) Vape$",
+      "set": {
+        "size": "1g",
+        "subtype": "all-in-one"
       }
     },
     {
@@ -298,7 +336,7 @@
         "body": "(?i)(?P<size>\\d+\\s*mg)\\s*THC"
       },
       "set": {
-        "line": "Live Resin"
+        "line": "CQ"
       }
     },
     {
@@ -308,6 +346,16 @@
       "match": "^(?P<strain>.+?)\\s+Gummies(?:\\s*-\\s*(?P<line>.+?))?\\s*$",
       "extract": {
         "body": "(?i)(?P<size>\\d+\\s*x\\s*\\d+\\s*mg)"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "title": "(?i)\\bchocolate\\b"
+      },
+      "match": "^(?P<line>Sleep)\\s+(?P<strain>.+?)\\s*$",
+      "set": {
+        "size": "100mg"
       }
     },
     {
@@ -327,7 +375,7 @@
       },
       "match": "^(?P<line>Entourage)\\s+(?P<strain>.+?)\\s+Tablets$",
       "set": {
-        "size": "20 x 5mg"
+        "size": "20pk 100mg"
       }
     },
     {
@@ -337,7 +385,7 @@
       },
       "match": "^Nanticoke\\s+(?P<strain>Mints)$",
       "set": {
-        "size": "20 x 5mg"
+        "size": "20pk 100mg"
       }
     },
     {
@@ -357,7 +405,7 @@
       "match": "^(?P<line>Hiistix) Pack$",
       "set": {
         "strain": "Unflavored",
-        "size": "2 x 10mg"
+        "size": "2pk 20mg"
       }
     },
     {
@@ -368,8 +416,14 @@
       "match": "^(?P<line>Hiistix) Pack 100 MG$",
       "set": {
         "strain": "Unflavored",
-        "size": "2 x 50mg"
+        "size": "2pk 100mg"
       }
     }
-  ]
+  ],
+  "store_aliases": {
+    "names": {
+      "Memory Loss": "Memory Loss OG",
+      "Cherry Koff Drop": "Cherry Koff Dropz"
+    }
+  }
 }

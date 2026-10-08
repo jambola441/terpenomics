@@ -17,30 +17,161 @@
   "notes": [
     "One product page per product, read through the sitemap; the match leaves out the site's non-product pages (about, faq, products-* listings...). A new page that is not a product shows up in check as 'no category rule'.",
     "A gummy page states THC per gummy, in 'Inside the Tin' ('THC (5MG)' or 'THC (2.5MG)'), but never the pack. Every gummy tin NY stores sell is a 20-pack (Gal Pal, Daily Elevation, Fixer Upper 20pk 100mg; Cool Down, Serenity Now, Apple-A-Day 20pk 50mg), so the category rules turn the page's per-gummy dose into the 20-pack total. Any other dose falls through to unparsed on purpose.",
-    "Golden Ticket has no 'Inside the Tin' block; its page says 'Crafted with 5mg solventless Papa Smurf Live Rosin', and four stores sell it as 100mg, so it is 20 x 5mg. The page calls it an edible, not a gummy, so no subtype is set.",
     "Each gummy has exactly one flavour, named only in the page's prose ('With a refreshing watermelon flavor', 'a unique Blueberry Coconut edible', 'Peachy and powerful'), which no single pattern reads cleanly. The title rules carry each product's flavour as the strain, transcribed from its page, so entries are named the way stores write them ('Gal Pal Watermelon'). A new gummy has no rule yet and shows in check as 'no title rule': add its flavour from its page.",
-    "Little Pandas' page states '5 pack size of .5g pre-rolls' (2.5g). Chairlifts' page says only '3 Pack of Chairlifts Pre-Rolls', with no weight, so it is skipped until the site states one.",
-    "Stores also list 'Apple A Day' with no flavour (3 stores): the same tin as 'Apple-A-Day Apple'. The other store-only sizes (Gal Pal 50mg, Cool Down 2.5mg/100mg, Daily Elevation 5mg, Serenity Now 2.5mg, 'Lemon Lavender' 200mg) are stores writing a per-gummy dose or a CBD figure as the size."
+    "Golden Ticket has no 'Inside the Tin' block; its page says 'Crafted with 5mg solventless Papa Smurf Live Rosin', and stores sell it as 100mg, so it is 20 x 5mg. The page calls it an edible, but the tin prints '20 FUNCTIONAL GUMMIES ... PER PACKAGE 100MG THC LIVE ROSIN' (Dutchie photo 0de0897667308897d509213639c32c85) and every store writes 'Live Rosin Gummies', so the rule sets subtype gummy like the other tins (2026-10-08).",
+    "Little Pandas' page states '5 pack size of .5g pre-rolls' (2.5g). Chairlifts' page says only '3 Pack of Chairlifts Pre-Rolls', with no weight, so it is skipped; the brand's copy on store menus and Weedmaps says 'Chairlifts now include three 0.5g pre-rolls per tube' (1.5g; the older Chairlifts were 2 x 0.35g). Neither page names a cultivar: the cultivars (Little Pandas Guzzlerz, Chairlifts Papa Smurf, ...) come in from the stores as store-only products.",
+    "Stores write 'Apple-A-Day' (or 'Apple A Day') with no flavour: the same tin as the site's 'Apple-A-Day Apple' (the tin prints APPLE / APPLE-A-DAY), so store_aliases maps that name to the site's flavour. Before it, a store-only 'Apple A Day' 20pk 50mg duplicated the site product.",
+    "Stores often size a tin by one gummy (2.5mg, 5mg, '5mg THC + 5mg CBD' read as 10mg) or by its CBD/CBC total (Apple-A-Day and Serenity Now 200mg CBD, Cool Down 100mg CBD + 100mg CBC); store_skip drops those, so they no longer come back as store-only sizes."
   ],
   "skip": [
-    {"when": {"title": "^Chairlifts$"}, "why": "pre-roll 3-pack; the page gives no weight"}
+    {
+      "when": {
+        "title": "^Chairlifts$"
+      },
+      "why": "pre-roll 3-pack; the page gives no weight"
+    }
   ],
   "category": [
-    {"when": {"body": "THC\\s*\\(\\s*2\\.5\\s*MG\\s*\\)"}, "set": {"category": "edible", "subtype": "gummy", "size": "20pk 50mg"}},
-    {"when": {"body": "THC\\s*\\(\\s*5\\s*MG\\s*\\)"}, "set": {"category": "edible", "subtype": "gummy", "size": "20pk 100mg"}},
-    {"when": {"body": "(?i)\\b5\\s*mg solventless\\b[^|]*\\blive rosin\\b"}, "set": {"category": "edible", "size": "20pk 100mg"}},
-    {"when": {"body": "(?i)\\bpre-?rolls?\\b"}, "set": {"category": "preroll"}}
+    {
+      "when": {
+        "body": "THC\\s*\\(\\s*2\\.5\\s*MG\\s*\\)"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "gummy",
+        "size": "20pk 50mg"
+      }
+    },
+    {
+      "when": {
+        "body": "THC\\s*\\(\\s*5\\s*MG\\s*\\)"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "gummy",
+        "size": "20pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "body": "(?i)\\b5\\s*mg solventless\\b[^|]*\\blive rosin\\b"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "gummy",
+        "size": "20pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "body": "(?i)\\bpre-?rolls?\\b"
+      },
+      "set": {
+        "category": "preroll"
+      }
+    }
   ],
   "title": [
-    {"when": {"category": "^edible$"}, "match": "^(?P<line>Gal Pal)$", "set": {"strain": "Watermelon"}},
-    {"when": {"category": "^edible$"}, "match": "^(?P<line>Daily Elevation)$", "set": {"strain": "Peach"}},
-    {"when": {"category": "^edible$"}, "match": "^(?P<line>Fixer Upper)$", "set": {"strain": "Mango Ginger"}},
-    {"when": {"category": "^edible$"}, "match": "^(?P<line>Nightly Nightcap)$", "set": {"strain": "Dark Cherry"}},
-    {"when": {"category": "^edible$"}, "match": "^(?P<line>Serenity Now)$", "set": {"strain": "Lemon Lavender"}},
-    {"when": {"category": "^edible$"}, "match": "^(?P<line>Cool Down)$", "set": {"strain": "Blueberry Coconut"}},
-    {"when": {"category": "^edible$"}, "match": "^(?P<line>Apple-A-Day)$", "set": {"strain": "Apple"}},
-    {"when": {"category": "^edible$"}, "match": "^(?P<line>Golden Ticket)$", "set": {"strain": "Cinnamon Cacao"}},
-    {"when": {"category": "^preroll$"}, "match": "^(?P<line>.+)$",
-     "extract": {"body": "(?i)\\b(?P<size>\\d+\\s*pack)\\s*size of\\s*(?P<size2>\\d*\\.?\\d+\\s*g)\\b"}}
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "^(?P<line>Gal Pal)$",
+      "set": {
+        "strain": "Watermelon"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "^(?P<line>Daily Elevation)$",
+      "set": {
+        "strain": "Peach"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "^(?P<line>Fixer Upper)$",
+      "set": {
+        "strain": "Mango Ginger"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "^(?P<line>Nightly Nightcap)$",
+      "set": {
+        "strain": "Dark Cherry"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "^(?P<line>Serenity Now)$",
+      "set": {
+        "strain": "Lemon Lavender"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "^(?P<line>Cool Down)$",
+      "set": {
+        "strain": "Blueberry Coconut"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "^(?P<line>Apple-A-Day)$",
+      "set": {
+        "strain": "Apple"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$"
+      },
+      "match": "^(?P<line>Golden Ticket)$",
+      "set": {
+        "strain": "Cinnamon Cacao"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "^(?P<line>.+)$",
+      "extract": {
+        "body": "(?i)\\b(?P<size>\\d+\\s*pack)\\s*size of\\s*(?P<size2>\\d*\\.?\\d+\\s*g)\\b"
+      }
+    }
+  ],
+  "store_aliases": {
+    "names": {
+      "Apple-A-Day": "Apple"
+    }
+  },
+  "store_skip": [
+    {
+      "when": {
+        "size": "^(0?\\.5|2\\.5|5|10|12\\.5)mg$"
+      },
+      "why": "a per-gummy dose (or one gummy's THC + CBD) typed as the size; every Eaton tin is 20 gummies (site 'Inside the Tin' states THC per gummy; tins print '20 FUNCTIONAL GUMMIES')"
+    },
+    {
+      "when": {
+        "name": "^(Apple-A-Day Apple|Cool Down Blueberry Coconut|Serenity Now Lemon Lavender)$",
+        "size": "^(20pk )?(100|200)mg$"
+      },
+      "why": "a 50mg-THC tin (20 x 2.5mg) sized by its CBD or CBC: Apple-A-Day and Serenity Now 200mg CBD, Cool Down 100mg CBD + 100mg CBC (site 'Inside the Tin'; Apple tin prints 'PER PACKAGE 50MG THC 200MG CBD')"
+    }
   ]
 }
