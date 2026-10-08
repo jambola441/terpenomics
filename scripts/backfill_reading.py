@@ -101,7 +101,16 @@ def main(argv: list[str] | None = None) -> int:
     # Read and write a batch at a time, so a failure loses one batch at most.
     read_n = wrote = 0
     for i in range(0, len(listings), BATCH):
-        readings = read(listings[i:i + BATCH])
+        chunk = listings[i:i + BATCH]
+        readings = read(chunk)
+        for wait in (60, 300, 900):
+            # A batch the model mostly failed is an outage or a rate limit (2026-10-08:
+            # once Jev's breaker opened, every later batch failed at once): wait, retry.
+            if len(readings) >= len(chunk) // 2:
+                break
+            print(f"  only {len(readings)} of {len(chunk)} read; waiting {wait}s and retrying", flush=True)
+            time.sleep(wait)
+            readings = read(chunk)
         read_n += len(readings)
         wrote += write(readings)
         print(f"  {min(i + BATCH, len(listings))} of {len(listings)}: {read_n} read, {wrote} written", flush=True)
