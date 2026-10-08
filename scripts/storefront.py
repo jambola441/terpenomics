@@ -811,13 +811,33 @@ def split_store_products(doc: dict, listings: list[dict],
             if (how := _name_match(names, n)):
                 hits.append((how, e))
         if not hits:
-            only_stores.append(p)
+            only_stores.append(_as_site_size(p, names, site[p["category"]]))
             continue
         found.append(p)
         if len({e["product_key"] for _, e in hits}) == 1 and all(how == "exact" for how, _ in hits):
             for _, e in hits:
                 terms[e["external_id"]].update(p.get("match_terms") or [])
     return found, only_stores, dict(terms)
+
+
+def _as_site_size(p: dict, names: dict, site: list[tuple]) -> dict:
+    """A store product the site lists in other sizes is that product in one more size,
+    not a product of its own: Nanticoke's site lists Blue Dream pre-rolls as 0.5g
+    singles and 5 x 0.7g packs, and stores also sell the 5 x 0.5g pack (2.5g). Kept as
+    its own product it was a second Blue Dream beside the site's, and the matcher had
+    to pick between the two. So when one site product has the name exactly, with the
+    same subtype (a store's infused flower is not the site's plain flower of the
+    strain), the store size joins it: the site product's key and fields, an id of its
+    own. Otherwise the product stays the stores' own, as before."""
+    same = [e for _, n, e in site
+            if (p.get("subtype") or None) == (e.get("subtype") or None) and _name_match(names, n) == "exact"]
+    if len({e["product_key"] for e in same}) != 1:
+        return p
+    e = same[0]
+    return {**p, "product_key": e["product_key"], "name": e["name"], "product_line": e["product_line"],
+            "strain": e["strain"], "subtype": e["subtype"],
+            "external_id": f"{e['product_key']}:{squash(p.get('variant')) or 'nosize'}:stores",
+            "joins": e["name"]}
 
 
 def skip_store_products(only_stores: list[dict], rules: list[dict] | None) -> tuple[list[dict], list[tuple]]:
@@ -906,7 +926,8 @@ def print_check(report: dict, found: list[dict] | None, only_stores: list[dict] 
         print(f"  stores sell {len(found) + len(only_stores)} products (2+ stores): {len(found)} on the "
               f"site, {len(only_stores)} only at stores (kept from the stores' consensus):")
         for e in sorted(only_stores, key=lambda e: e["name"]):
-            print(f"    - {e['name']} ({e['category']} {e['variant'] or ''}, {e['support']} stores)")
+            print(f"    - {e['name']} ({e['category']} {e['variant'] or ''}, {e['support']} stores)"
+                  + (" — another size of the site's product" if e.get("joins") else ""))
         for e, why in dropped or []:
             print(f"    dropped by store_skip: {e['name']} ({e['category']} {e['variant'] or ''}, "
                   f"{e['support']} stores): {why}")
