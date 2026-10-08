@@ -10,7 +10,8 @@ import { useEffect, useState } from 'react'
 import api from '../api/client'
 import type { PortalCategory } from '../types'
 import { t, radius, font, categoryColor, categoryLabel, alpha } from '../theme'
-import { FeedState, PageTitle, Pressable, Skeleton } from './ui'
+import { FeedState, Pressable, Skeleton } from './ui'
+import ShopHeader from './ShopHeader'
 import { CategoryIcon } from './Icon'
 
 interface Props {
@@ -42,14 +43,12 @@ export default function CategoriesPage({ onOpenCategory }: Props) {
 
   return (
     <div style={{ height: 'calc(100dvh - var(--chrome-bottom, 64px))', overflowY: 'auto', background: t.bg }}>
-      <PageTitle
-        style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 26px) 16px 6px' }}
+      <ShopHeader
+        active="categories"
         sub={categories === null
           ? 'Shop by what you’re after'
           : `${total.toLocaleString()} listings across ${categories.length} categories`}
-      >
-        Shop by category
-      </PageTitle>
+      />
 
       {categories === null ? (
         <CategoryGridSkeleton />

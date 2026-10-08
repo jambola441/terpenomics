@@ -5,10 +5,10 @@
    only what is genuinely shared: the auth gate, the cart, and which of the six
    sections is on screen.
 
-   The sections are Home (a feed of the stores you follow), Brands, Categories,
-   Search, Map and Profile. Brands and Categories used to be reachable only by
-   scrolling a rail on the home screen, which made the two biggest ways to
-   browse the catalogue the two hardest to find.
+   The tabs are Home (a feed of the stores you follow), Shop, Map, Orders and
+   You. Shop holds the three ways to find a product: categories, brands and
+   search, which used to be three tabs of their own. Orders has its own tab
+   because the pickup code is what a shopper needs at the counter.
    ========================================================================== */
 
 import { useState, useEffect, type CSSProperties } from 'react'
@@ -25,6 +25,7 @@ import CategoryView from './components/CategoryView'
 import SearchView from './components/SearchView'
 import ListingDetailView from './components/ListingDetail'
 import ProfileView from './components/ProfileView'
+import OrdersScreen from './components/OrdersScreen'
 import CartDrawer from './components/CartDrawer'
 import ConfirmSheet from './components/ConfirmSheet'
 import OnboardingScreen from './components/OnboardingScreen'
@@ -38,26 +39,27 @@ import 'leaflet/dist/leaflet.css'
 /** Mirrors MAX_QTY_PER_LINE in routes/orders.py. */
 const MAX_QTY_PER_LINE = 12
 
-type Tab = 'home' | 'brands' | 'categories' | 'search' | 'map' | 'profile'
+type Tab = 'home' | 'categories' | 'map' | 'orders' | 'profile'
 
 const TABS: { key: Tab; label: string; icon: IconName }[] = [
   { key: 'home', label: 'Home', icon: 'home' },
-  { key: 'brands', label: 'Brands', icon: 'tag' },
   { key: 'categories', label: 'Shop', icon: 'grid' },
-  { key: 'search', label: 'Search', icon: 'search' },
   { key: 'map', label: 'Map', icon: 'pin' },
+  { key: 'orders', label: 'Orders', icon: 'bag' },
   { key: 'profile', label: 'You', icon: 'user' },
 ]
 
-/** Detail screens sit inside a section rather than beside it, so the nav keeps
+/** Which tab a section belongs to. Brands and Search live under Shop; detail
+ *  screens sit inside a section rather than beside it, so the nav keeps
  *  showing where the shopper is while they drill down. */
 const SECTION_OF: Record<string, Tab> = {
-  brands: 'brands',
-  categories: 'categories',
-  search: 'search',
-  map: 'map',
-  profile: 'profile',
   home: 'home',
+  categories: 'categories',
+  brands: 'categories',
+  search: 'categories',
+  map: 'map',
+  orders: 'orders',
+  profile: 'profile',
 }
 
 type AccountProblem = 'not_linked' | 'unreachable'
@@ -189,7 +191,9 @@ export default function CustomerPortal() {
   const selectedDispensaryId = (matchDispensary ?? matchAisle)?.params.dispensaryId ?? null
 
   const section = location.pathname.split('/')[2] ?? ''
-  const activeTab: Tab = SECTION_OF[section] ?? 'home'
+  // What's on screen, and which tab lights up for it.
+  const view = section in SECTION_OF ? section : 'home'
+  const activeTab: Tab = SECTION_OF[view]
 
   const [session, setSession] = useState<Session | null | undefined>(undefined)
   const userId = session?.user.id ?? null
@@ -273,7 +277,8 @@ export default function CustomerPortal() {
   // Orders change on the store's side (Preparing becomes Ready), so refresh
   // them quietly when the shopper comes back to the tab, and every 30 s while
   // one is still open. They used to load once per visit.
-  const hasOpenOrder = orders.some(o => o.status === 'submitted' || o.status === 'ready')
+  const openOrders = orders.filter(o => o.status === 'submitted' || o.status === 'ready').length
+  const hasOpenOrder = openOrders > 0
   useEffect(() => {
     if (!userId) return
     const refresh = () => {
@@ -370,11 +375,11 @@ export default function CustomerPortal() {
   // Drill-downs stay in the section the shopper is browsing.
   const openProduct = (brand: string | null, key: string) =>
     navigate(
-      `/portal/${activeTab}/products/${encodeURIComponent(key)}`
+      `/portal/${view}/products/${encodeURIComponent(key)}`
       + (brand ? `?brand=${encodeURIComponent(brand)}` : ''),
     )
   const openListing = (dispensaryId: string, listingId: string) =>
-    navigate(`/portal/${activeTab}/listings/${dispensaryId}/${listingId}`)
+    navigate(`/portal/${view}/listings/${dispensaryId}/${listingId}`)
 
   // Auth / loading gates
   if (session === undefined) {
@@ -409,6 +414,10 @@ export default function CustomerPortal() {
   // account details; old links and bookmarks still point at it.
   if (section === 'account') {
     return <Navigate to="/portal/profile" replace />
+  }
+  // Orders were a pane of You before they had a tab.
+  if (section === 'profile' && location.pathname.split('/')[3] === 'orders') {
+    return <Navigate to="/portal/orders" replace />
   }
   if (matchLegacyBrandProduct?.params.brandName && matchLegacyBrandProduct.params.productKey) {
     const { brandName, productKey: legacyKey } = matchLegacyBrandProduct.params
@@ -453,13 +462,13 @@ export default function CustomerPortal() {
           onBack={() => navigate(-1)}
           onListingClick={openListing}
         />
-      ) : activeTab === 'home' ? (
+      ) : view === 'home' ? (
         <HomeFeed
           onOpenListing={openListing}
           onOpenDispensary={dispensaryId => navigate(`/portal/map/${dispensaryId}`)}
           onOpenProduct={openProduct}
         />
-      ) : activeTab === 'brands' ? (
+      ) : view === 'brands' ? (
         selectedBrandName ? (
           <BrandView
             brandName={selectedBrandName}
@@ -469,7 +478,7 @@ export default function CustomerPortal() {
         ) : (
           <BrandsPage onOpenBrand={name => navigate('/portal/brands/' + encodeURIComponent(name))} />
         )
-      ) : activeTab === 'categories' ? (
+      ) : view === 'categories' ? (
         selectedCategory ? (
           <CategoryView
             categoryName={selectedCategory}
@@ -481,28 +490,31 @@ export default function CustomerPortal() {
             onOpenCategory={name => navigate('/portal/categories/' + encodeURIComponent(name))}
           />
         )
-      ) : activeTab === 'search' ? (
+      ) : view === 'search' ? (
         <SearchView
           initialCategory={searchParams.get('category')}
           onOpenProduct={openProduct}
         />
-      ) : activeTab === 'map' ? (
+      ) : view === 'map' ? (
         <DispensaryMap
           activeDispensaryId={selectedDispensaryId}
           onAddToCart={handleAddToCart}
           cart={cart}
         />
+      ) : view === 'orders' ? (
+        <OrdersScreen
+          orders={orders}
+          loading={ordersLoading}
+          error={ordersError}
+          onCancelOrder={handleCancelOrder}
+          onRetry={() => setOrdersAttempt(n => n + 1)}
+          cancellingIds={cancellingIds}
+          cancelErrors={cancelErrors}
+        />
       ) : (
         <ProfileView
           session={session}
           customerId={customerId}
-          orders={orders}
-          ordersLoading={ordersLoading}
-          ordersError={ordersError}
-          onCancelOrder={handleCancelOrder}
-          onRetryOrders={() => setOrdersAttempt(n => n + 1)}
-          cancellingIds={cancellingIds}
-          cancelErrors={cancelErrors}
           onSignOut={handleSignOut}
         />
       )}
@@ -521,7 +533,7 @@ export default function CustomerPortal() {
           setCart([])
           setOrders(prev => [order, ...prev])
         }}
-        onViewOrders={() => { setCartOpen(false); navigate('/portal/profile/orders') }}
+        onViewOrders={() => { setCartOpen(false); navigate('/portal/orders') }}
       />
 
       {/* Cart bar — above the nav, and only once there is something in it. Six
@@ -602,15 +614,27 @@ export default function CustomerPortal() {
               }}
             >
               <span style={{
+                position: 'relative',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 width: 40, height: 26, borderRadius: radius.pill,
                 background: active ? t.accentTint : 'transparent',
                 transition: `background ${motion.fast}`,
               }}>
                 <Icon name={tab.icon} size={19} strokeWidth={active ? 2 : 1.75} />
+                {tab.key === 'orders' && openOrders > 0 && (
+                  // Drawn only; the label below says the count in words.
+                  <span className="num" aria-hidden style={{
+                    position: 'absolute', top: -4, right: 2, minWidth: 16, height: 16, padding: '0 4px',
+                    boxSizing: 'border-box', borderRadius: radius.pill, background: t.accent, color: t.accentInk,
+                    fontSize: 10, fontWeight: font.weight.bold, lineHeight: '16px', textAlign: 'center',
+                  }}>
+                    {openOrders}
+                  </span>
+                )}
               </span>
-              <span style={{ fontSize: 10, fontWeight: active ? font.weight.semibold : font.weight.medium, letterSpacing: '0.01em' }}>
+              <span style={{ fontSize: font.size.caption, fontWeight: active ? font.weight.semibold : font.weight.medium, letterSpacing: '0.01em' }}>
                 {tab.label}
+                {tab.key === 'orders' && openOrders > 0 && <span style={visuallyHidden}>, {openOrders} open</span>}
               </span>
             </button>
           )
@@ -618,4 +642,10 @@ export default function CustomerPortal() {
       </nav>
     </div>
   )
+}
+
+/** Read by screen readers, not drawn. */
+const visuallyHidden: CSSProperties = {
+  position: 'absolute', width: 1, height: 1, padding: 0, margin: -1,
+  overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap', border: 0,
 }

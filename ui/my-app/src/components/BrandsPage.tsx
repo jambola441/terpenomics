@@ -12,7 +12,8 @@ import { useSearchParams } from 'react-router-dom'
 import api from '../api/client'
 import type { PortalBrand } from '../types'
 import { t, radius, font } from '../theme'
-import { BrandMark, FeedState, PageTitle, Pressable, Skeleton } from './ui'
+import { BrandMark, FeedState, Pressable, Skeleton } from './ui'
+import ShopHeader from './ShopHeader'
 import { SearchField } from './browse'
 import { readEnum, useFilterParams, useScrollMemory, writeOne } from '../utils/browseState'
 
@@ -108,15 +109,13 @@ export default function BrandsPage({ onOpenBrand }: Props) {
 
   return (
     <div ref={scrollRef} style={{ height: 'calc(100dvh - var(--chrome-bottom, 64px))', overflowY: 'auto', background: t.bg }}>
-      <PageTitle style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 26px) 16px 6px' }} sub="Every brand stocked across the stores we track">
-        Brands
-      </PageTitle>
+      <ShopHeader active="brands" sub="Every brand stocked across the stores we track" />
 
       <div style={{ padding: '12px 16px 0' }}>
         <SearchField
           value={input}
           onChange={setInput}
-          placeholder="Search brands"
+          placeholder="Filter brands"
           focused={focused}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}

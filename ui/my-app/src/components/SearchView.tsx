@@ -90,6 +90,9 @@ export default function SearchView({ initialCategory, onOpenProduct }: Props) {
   // shopper left, rather than an empty one.
   const [initialParams] = useSearchParams()
   const [input, setInput] = useState(() => initialParams.get('q') ?? '')
+  // Arriving from Shop's search box, the shopper meant to type: focus the
+  // field. Not when a link brought a query or a category with it.
+  const [focusOnOpen] = useState(() => !initialParams.get('q') && !initialCategory)
   const [query, setQuery] = useState(() => initialParams.get('q') ?? '')
   const [searchFocus, setSearchFocus] = useState(false)
 
@@ -317,6 +320,7 @@ export default function SearchView({ initialCategory, onOpenProduct }: Props) {
             focused={searchFocus}
             onFocus={() => setSearchFocus(true)}
             onBlur={() => setSearchFocus(false)}
+            autoFocus={focusOnOpen}
           />
         </div>
       </div>
