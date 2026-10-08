@@ -86,6 +86,11 @@ category: `{"Gorilla Glue": "GG4"}` for a site that renamed its vapes would also
 stores' "Kief Coated Gorilla Glue" pre-roll into GG4. When that would be wrong, set the
 name with a `title` rule for the one category instead.
 
+**`store_skip`** drops a product only stores list when it is not a product either: a size
+some stores give a product the site lists in another (`{"when": {"name": "^Cotton Candy$",
+"size": "^100mg$"}, "why": "..."}`; `name` and `size` are regexes on the store product's name
+and size). `check` prints what it dropped and why.
+
 **`title_case`: true** for a site that writes names in capitals ("UPLIFTING Pineapple"):
 capitalised words longer than three letters become Title case, shorter ones (OG, GSC,
 MAC) stay.
