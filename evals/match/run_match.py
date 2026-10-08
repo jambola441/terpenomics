@@ -46,7 +46,7 @@ def usable(case: dict) -> bool:
 
 
 def trusted(d: dict, bar: float) -> bool:
-    return d["method"] == "exact" or (d["method"] in ("jev", "jev_review") and (d["p"] or 0) >= bar)
+    return d["method"] in ("attributes", "exact") or (d["method"] in ("jev", "jev_review") and (d["p"] or 0) >= bar)
 
 
 def score(rows: list[tuple[dict, dict]], bars: list[float] = BARS) -> dict:
@@ -75,13 +75,24 @@ def score(rows: list[tuple[dict, dict]], bars: list[float] = BARS) -> dict:
     return out
 
 
+def readings(ids: list[str]) -> dict[str, dict]:
+    """Each listing's own reading (listings.reading), which the attribute join reads."""
+    import db_http
+    out = {}
+    for i in range(0, len(ids), 100):
+        for r in db_http.select("listings", f"select=id,reading&id=in.({','.join(ids[i:i + 100])})"):
+            out[str(r["id"])] = r.get("reading")
+    return out
+
+
 def decide(cases: list[dict], catalogs: dict, usage: jev.Usage) -> dict[str, dict]:
     by_brand = defaultdict(list)
+    read = readings([c["id"] for c in cases])
     for c in cases:
         l = c["listing"]
         by_brand[catalog_store.brand_key(c["brand"])].append(
             {"id": c["id"], "name": l.get("name") or "", "category": l.get("category"), "subtype": l.get("subtype"),
-             "variant": l.get("size_field"), "description": l.get("description")})
+             "variant": l.get("size_field"), "description": l.get("description"), "reading": read.get(c["id"])})
     out = {}
     for key, listings in by_brand.items():
         for d in catalog_match.resolve(catalogs[key], listings, use_jev=True, cache=None, usage=usage):

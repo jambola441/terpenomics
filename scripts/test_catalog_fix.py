@@ -58,21 +58,12 @@ def test_a_size_the_product_has_is_refused():
         cf.plan_add_size(catalogs(), "os1", "large")
 
 
-def test_dropping_a_name_needs_it_to_stay_on_another_product():
-    plan = cf.plan_drop_term(catalogs(), "boys", "raspberry sativa enhanced gummies")
-    assert plan.writes == [("update", "brand_catalog_entries", "id=eq.boys",
-                            {"match_terms": ["boysenberry gummies"]})]
-    assert "it stays on Raspberry" in plan.notes[0]
-    with pytest.raises(cf.Refused, match="no other entry holds"):
-        cf.plan_drop_term(catalogs(), "boys", "boysenberry gummies")
-    assert cf.plan_drop_term(catalogs(), "boys", "boysenberry gummies", force=True).writes
-
-
-def test_a_name_already_on_an_unrelated_product_is_refused():
-    with pytest.raises(cf.Refused, match="cross-wired"):
-        cf.plan_add_term(catalogs(), "pm", "STIIIZY | Raspberry Sativa Enhanced Gummies")
-    plan = cf.plan_add_term(catalogs(), "pm", "STIIIZY | Pink Lemonade Gummies 10-Piece")
-    assert plan.writes[0][3] == {"match_terms": ["pink lemonade gummies 10 piece"]}   # brand-less
+def test_store_names_are_no_longer_recorded_or_dropped():
+    """Names no longer match listings (2026-10-08): a misread is fixed where it is read."""
+    for plan in (lambda: cf.plan_drop_term(catalogs(), "boys", "raspberry sativa enhanced gummies"),
+                 lambda: cf.plan_add_term(catalogs(), "pm", "STIIIZY | Pink Lemonade Gummies 10-Piece")):
+        with pytest.raises(cf.Refused, match="strain alias"):
+            plan()
 
 
 def test_deactivating_a_duplicate_moves_its_names():
@@ -118,8 +109,7 @@ def test_a_new_product_takes_the_bootstraps_keys_and_is_curated():
     assert [r["external_id"] for r in rows] == ["lb:flower:flower::outofoffice:3.5g",
                                                 "lb:flower:flower::outofoffice:28g"]
     assert {r["source"] for r in rows} == {"curated"}       # a --replace rebuild keeps it
-    assert rows[0]["match_terms"] == ["out of office 3 5g flower", "out of office hybrid"]   # brand-less
-    assert rows[1]["match_terms"] == []
+    assert [r["match_terms"] for r in rows] == [[], []]      # store names are not recorded
 
 
 def test_a_storefront_product_gets_no_id_and_its_own_key():
@@ -178,13 +168,10 @@ def test_a_plan_applies_its_edits_in_order_and_stops_at_a_refusal():
         cf.apply_plan(find_catalogs(), bad)
 
 
-def test_add_product_folds_one_size_written_twice_and_guards_its_store_names():
+def test_add_product_folds_one_size_written_twice():
     (_, _, _, rows), = cf.plan_add_product(find_catalogs(), "Find.", "flower", "Zangria",
                                            ["28g", "1 ounce", "3.5g"], subtype="flower").writes
     assert [(r["variant"], r["external_id"].rsplit(":", 1)[1]) for r in rows] == [("28g", "28g"), ("3.5g", "3.5g")]
-    with pytest.raises(cf.Refused, match="cross-wire"):
-        cf.plan_add_product(find_catalogs(), "Find.", "flower", "Shock Mints", ["28g"], subtype="flower",
-                            terms=["Find. - Mint Snacks 28g"])           # Mint Snacks' own store name
 
 
 def with_an_inactive_entry():

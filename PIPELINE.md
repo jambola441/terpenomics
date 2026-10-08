@@ -55,7 +55,7 @@ every time one was made.
 | --- | --- | --- |
 | scraper | name, brand, raw category, price, stock, raw size | `prototypes/*/scrape*.py` |
 | enrichment | category, subtype, strain, product_line, variant | `scripts/enrich.py` (+ curated maps in `data/`) |
-| **brand catalog** | subtype, strain, product_line — when the listing resolves to an entry by `exact`, `jev` (p ≥ threshold) or `manual` | `scripts/import_listings.py` via `catalog_match.resolve` |
+| **brand catalog** | subtype, strain, product_line — when the listing resolves to an entry by `attributes`, `jev` (p ≥ threshold) or `manual` | `scripts/import_listings.py` via `catalog_match.resolve` |
 | human claim | any verified field, bound to the scraped name | `scripts/verify_listing.py` |
 
 A listing whose enrichment failed (`enrich_failed` in the CSV — a batch error, or no
@@ -69,7 +69,7 @@ typed: it is part of the row's key, and orders, purchases and lab reports hang o
 row. `size` is what product pages and price comparisons group on
 (`Listing.product_size`; NULL reads as `variant`). The importer sets it to the store's
 size, or to the catalog's when a dose product (edible, tincture, topical) matched by
-`exact`, `jev` or `manual` states a size it does not come in, and the listing backs the
+`attributes`, `jev` or `manual` states a size it does not come in, and the listing backs the
 catalog: its name or description states the catalog's total, or its figure is that
 size's per-piece dose (`catalog_match.catalog_size`). A figure given for another
 cannabinoid backs nothing: Wana's Fast Asleep says "20mg THC" and "100mg CBD", and the
@@ -133,8 +133,7 @@ are written the same way.
 rule handled, and the products stores sell that the site does not. A push is the
 site's entries plus the stores' consensus for those products only (Florist Farms'
 site does not list the Gorilla Glue vapes four stores carry), with spelling allowed
-for ("Mandarin Dog" at the stores is the site's "Mandarine Dog"). Store names that
-resolve to a site product travel with it, so those listings stay `exact`. The push
+for ("Mandarin Dog" at the stores is the site's "Mandarine Dog"). The push
 retires everything else, the brand's old bootstrap entries included, and records the
 site as the source, so `catalog_bootstrap.py --rebuild` leaves the brand alone. A
 recipe that leaves more than 10% of the site unhandled is not pushed: the site has
@@ -148,11 +147,10 @@ sell both (Herb's plain and Hash Infused pre-ground), and the matcher settles, l
 by listing, which one a store that left the line out meant. It keeps products at
 least two stores carry. On the top 300 brands it proposes
 3,122 products covering 61% of their listings. Each entry records its `support` (how
-many stores) and the store names it was built from, so those listings resolve
-exactly — no model call — on every later run, at enrichment and at import.
+many stores).
 
 **Pushing is additive.** `brand_catalog.py push` and `catalog_bootstrap.py --push`
-insert new products and refresh metadata (store names, support, last seen), but never
+insert new products and refresh metadata (support, last seen), but never
 overwrite a field you curated and never reactivate an entry you took out — a Shopify
 re-fetch used to do both. Storefront products that vanish are deactivated; bootstrap
 entries are not, since one quiet week at the stores is not a discontinuation.
@@ -160,7 +158,7 @@ entries are not, since one quiet week at the stores is not a discontinuation.
 **The daily audit.** Type `/audit-terpee-listings` in a new Claude Code conversation on
 this repo. Scripts detect and the agent judges:
 - `scripts/data_health.py report --save` runs the deterministic detectors: stores the
-  daily run missed, store names recorded on unrelated products, sizes 2+ stores sell
+  daily run missed, sizes 2+ stores sell
   that the matched product lacks, review-only clusters, product-page sizes left
   behind, brandless listings named after a catalog brand, and curated products no
   listing has matched for 30 days.
@@ -169,8 +167,9 @@ this repo. Scripts detect and the agent judges:
 - `dismiss` (`data_health_dismissals`) hides a judged false positive until its evidence
   grows.
 - The agent investigates a few findings with the catalog-audit views, then proposes data
-  edits made with `scripts/catalog_fix.py`: `drop-term`, `add-term`, `add-size`,
-  `set-size`, `deactivate`, `reactivate`, `add-product`, `rekey` and `size-sync`.
+  edits made with `scripts/catalog_fix.py` (`add-size`, `set-size`, `deactivate`,
+  `reactivate`, `add-product`, `rekey`, `size-sync`) and rule-file fixes (a strain
+  alias, a line rule) for listings whose reading is wrong.
 - `rekey` moves a product filed under the wrong line, strain or subtype. The old rows
   are deactivated and keep their external ids, so a rebuild cannot add the old product
   back, and the listings follow at the next import.
@@ -200,16 +199,16 @@ product a listing is.
 
 [`scripts/catalog_match.py`](scripts/catalog_match.py) resolves each listing:
 
-1. **exact** — its normalised name is a catalog title or a recorded store name. Free.
-   A name recorded for several products of the listing's category goes to the longest
-   title when the titles are one product's read short and long ("Blue Lobster", "Hash
-   Infused Blue Lobster"). Otherwise it goes to the one product whose title's words it
-   holds, or, when it names none or several, on to the shortlist and Jev. So a store's
-   slip recorded on an unrelated product beside the right one (Wyld's Raspberry name on
-   Boysenberry) does not move listings. A slip recorded on the wrong product alone still
-   does, as a recorded misspelling ("Mightnight Mint") must still match: the audit's
-   `STORE NAMES ON 2+ PRODUCTS` and `entries` views are where those show.
-2. **shortlist** — products ranked by token containment/overlap, filtered to the
+1. **attributes** — the listing's own reading (enrichment's category, format, strain,
+   line and size with the rule files applied, saved in `listings.reading` before the
+   catalog overlay) names exactly one product, in a size it comes in (inferred sizes
+   included). The line counts only where the reading has one; format only where the
+   category keeps one. Free. A size the catalog lacks does not join: Jev decides it, and
+   the audit shows what is left. Names never decide a match (2026-10-08): a store name
+   recorded on the wrong entry made a trusted wrong match no model saw, so store names
+   are no longer recorded, and a misread is fixed where it is read, with a strain alias
+   or a line rule.
+2. **shortlist** — otherwise, products ranked by their titles' containment/overlap, filtered to the
    listing's category, softly to its subtype and size (a filter never empties the
    list on its own), with a hard veto when subtype *and* size both contradict.
 3. **Jev** ([`scripts/jev.py`](scripts/jev.py)) picks which shortlisted product the

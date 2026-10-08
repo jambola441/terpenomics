@@ -380,17 +380,6 @@ def test_show_prints_the_sizes_stores_write_per_line():
     assert "stores write: 1g 3/3 · 2.5g 2/2 · 5pk 4.5g 2/1 (no product)" in text
 
 
-def test_show_lists_store_names_recorded_on_two_products():
-    catalog = {"id": "c1", "brand_name": "Wyld", "brand_slug": "wyld", "source_method": "listings_bootstrap",
-               "fetched_at": "2026-10-05T05:00:00Z", "source_url": None}
-    raspberry = entry(None, "Raspberry", terms=["raspberry sativa enhanced gummies"])
-    boysenberry = entry(None, "Boysenberry", terms=["raspberry sativa enhanced gummies", "boysenberry gummies"])
-    text = cs.render_show(catalog, [raspberry, boysenberry], [], {})
-    assert "STORE NAMES ON 2+ PRODUCTS · 1" in text
-    assert 'edible: "raspberry sativa enhanced gummies" on Boysenberry · Raspberry' in text
-    assert "boysenberry gummies" not in text.split("STORE NAMES")[1]
-
-
 def test_no_split_size_where_the_line_is_defined_by_its_size():
     # STIIIZY: LIIIL is the 0.5g all-in-one; the line-less 1g all-in-ones are the plain range.
     entries = [entry("LIIIL", s, "vaporizers", "all-in-one", "0.5g") for s in ("Biscotti", "Gelato", "Runtz")]

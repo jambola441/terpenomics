@@ -158,12 +158,10 @@ def test_stores_fill_in_only_what_the_site_lacks():
     pushed = storefront.with_store_products(doc, only_stores, terms)
     assert len(pushed["entries"]) == len(doc["entries"]) + 4
     assert {e["source"] for e in pushed["entries"]} == {"shopify_products_json", "listings_bootstrap"}
-    # Store names travel with an exact match only: "Mandarin Dog" is a spelling of the
-    # site's "Mandarine Dog" — or a different strain; the model decides those listings.
-    dog = next(e for e in pushed["entries"] if e["strain"] == "Mandarine Dog")
-    assert "mandarin dog lri 5pk" not in dog["match_terms"]
+    # Store names are not carried onto site entries: names do not match listings.
+    assert terms == {}
     cream = next(e for e in pushed["entries"] if e["strain"] == "Strawberries and Cream")
-    assert "strawberries and cream 7pk" in cream["match_terms"]
+    assert "strawberries and cream 7pk" not in cream["match_terms"]
 
 
 def test_a_store_product_matching_two_site_products_brings_no_names():
@@ -349,7 +347,7 @@ def test_store_products_need_the_same_subtype_and_a_repeat_name_is_one():
               *[listing(s, "Hash Burger 1g", "Hash Burger", "preroll", "1g") for s in ("a", "b")]]
     found, only_stores, terms = storefront.split_store_products(doc, stores)
     assert [e["name"] for e in only_stores] == ["Northern Lights"]     # the site's is a cart
-    assert [e["name"] for e in found] == ["Hash Burger"] and len(terms) == 1
+    assert [e["name"] for e in found] == ["Hash Burger"] and terms == {}
 
 
 def test_paged_sources_stop_at_the_first_missing_page_and_can_post_the_page():

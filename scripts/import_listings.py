@@ -68,7 +68,7 @@ COLUMNS = [
     "id", "dispensary_id", "sku", "batch_id", "price_cents", "variant", "size", "url", "image_url",
     "in_stock", "is_active", "scraped_at", "scraped_name", "scraped_brand", "scraped_category",
     "subtype", "strain", "classification", "description", "product_line", "attributes",
-    "catalog_entry_id", "catalog_match_confidence", "catalog_match_method",
+    "reading", "catalog_entry_id", "catalog_match_confidence", "catalog_match_method",
     "created_at", "updated_at", "last_seen_at",
 ]
 # Identity fields a failed enrichment must not overwrite.
@@ -189,6 +189,7 @@ def build_record(row: dict, dispensary_id: str, now: datetime) -> dict | None:
         # and flavour today. Derived from the name, so computed here rather than
         # carried through the CSV.
         "attributes": attributes.for_category(category, name) or None,
+        "reading": None,                 # record_reading, before the catalog overlay
         "catalog_entry_id": None,
         "catalog_match_confidence": None,
         "catalog_match_method": None,
@@ -217,7 +218,7 @@ def fetch_existing(cur, dispensary_id: str, skus: list[str]) -> dict[tuple, dict
         SELECT sku, COALESCE(variant, '') AS variant_key, variant, in_stock, price_cents,
                image_url, scraped_name, scraped_brand, scraped_category, subtype, strain,
                url, product_line, verified_fields, catalog_entry_id,
-               catalog_match_confidence, catalog_match_method, is_active
+               catalog_match_confidence, catalog_match_method, is_active, reading
         FROM listings
         WHERE dispensary_id = %s AND sku = ANY(%s)
         """,
@@ -230,6 +231,24 @@ def fetch_existing(cur, dispensary_id: str, skus: list[str]) -> dict[tuple, dict
 # ---------------------------------------------------------------------------
 # Overlays
 # ---------------------------------------------------------------------------
+
+READING = (("category", "scraped_category"), ("subtype", "subtype"), ("strain", "strain"),
+           ("product_line", "product_line"), ("size", "variant"))
+
+
+def record_reading(records: list[dict], existing: dict[tuple, dict]) -> None:
+    """Save each record's own reading — enrichment's category, subtype, strain, line and
+    size — before anything overwrites those fields: the catalog overlay replaces them
+    with the matched entry's, and the matcher joins on the reading, so a later re-match
+    reads what the store wrote, not the last answer. A row whose enrichment failed
+    keeps the reading on file."""
+    for rec in records:
+        if rec["_enrich_failed"]:
+            stored = existing.get((rec["sku"], rec["variant"] or ""))
+            rec["reading"] = (stored or {}).get("reading")
+        else:
+            rec["reading"] = {k: rec.get(col) or None for k, col in READING}
+
 
 def protect_failed_enrichment(records: list[dict], existing: dict[tuple, dict]) -> int:
     """Keep the stored identity of listings whose enrichment failed this run.
@@ -305,7 +324,8 @@ def apply_catalog(records: list[dict], existing: dict[tuple, dict], catalogs: di
                      "category": records[i]["scraped_category"],
                      "subtype": records[i]["subtype"],
                      "variant": records[i]["variant"],
-                     "description": records[i].get("description")} for i in idxs]
+                     "description": records[i].get("description"),
+                     "reading": records[i].get("reading")} for i in idxs]
         cache = catalog_match.AnswerCache(catalog.get("brand_slug") or key)
         decisions = catalog_match.resolve(catalog, listings, use_jev=use_jev, cache=cache,
                                           usage=usage)
@@ -564,6 +584,7 @@ def _upsert_sql(with_catalog: bool) -> str:
             description      = EXCLUDED.description,
             product_line     = EXCLUDED.product_line,
             attributes       = EXCLUDED.attributes,
+            reading          = COALESCE(EXCLUDED.reading, listings.reading),
             size             = EXCLUDED.size,
             {catalog}
             -- A scrape that found no link (a store without one, a lookup that failed)
@@ -576,7 +597,7 @@ def _upsert_sql(with_catalog: bool) -> str:
 
 
 def _as_tuple(rec: dict) -> tuple:
-    return tuple(Json(rec[c]) if c == "attributes" and rec[c] else rec[c] for c in COLUMNS)
+    return tuple(Json(rec[c]) if c in ("attributes", "reading") and rec[c] else rec[c] for c in COLUMNS)
 
 
 class PostgresStore:
@@ -648,7 +669,7 @@ class RestStore:
     COLUMNS_READ = ("id,sku,variant,in_stock,price_cents,image_url,scraped_name,"
                     "scraped_brand,scraped_category,subtype,strain,url,product_line,"
                     "verified_fields,catalog_entry_id,catalog_match_confidence,"
-                    "catalog_match_method,is_active,created_at")
+                    "catalog_match_method,is_active,created_at,reading")
     CATALOG = ("catalog_entry_id", "catalog_match_confidence", "catalog_match_method")
 
     def __init__(self):
@@ -698,6 +719,7 @@ class RestStore:
             # active, and a match a human made is never overwritten.
             row.update(id=stored["id"], variant=stored["variant"],
                        created_at=stored["created_at"], is_active=True)
+            row["reading"] = row["reading"] or stored.get("reading")   # as _upsert_sql
             row["url"] = row["url"] or stored.get("url")  # as _upsert_sql: keep a recorded link
             if not with_catalog or stored.get("catalog_match_method") == "manual":
                 row.update({c: stored[c] for c in self.CATALOG})
@@ -844,6 +866,7 @@ def main(argv=None) -> int:
         # brand-new SKUs cannot inflate the denominator of the partial-scrape guard.
         active_before = store.active_count(dispensary_id)
 
+        record_reading(records, existing)
         kept = protect_failed_enrichment(records, existing)
         if kept:
             print(f"  enrichment failed on {kept} known listing(s); kept their stored identity")
