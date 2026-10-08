@@ -480,9 +480,9 @@ def _pack_size_slip(size: str | None, rule: dict) -> str | None:
     if not s.pack or s.pack < 2:
         return None
     if s.grams is not None and s.grams / s.pack < 0.3:
-        return f'"{size}" reads as {s.grams:g}g for all {s.pack}; write the package total'
+        return f'"{size}" reads as {s.grams:g}g for all {s.pack}; write it per piece ("4 x 0.75g") or as the total'
     if s.mg is not None and s.mg / s.pack < 1:
-        return f'"{size}" reads as {s.mg:g}mg for all {s.pack}; write the package total'
+        return f'"{size}" reads as {s.mg:g}mg for all {s.pack}; write it per piece ("4 x 0.75g") or as the total'
     return None
 
 

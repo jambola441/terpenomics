@@ -153,7 +153,7 @@
       },
       "match": "^(?:(?P<line>Classics)\\s+)?(?P<strain>.+?)\\s+(?:(?:Live\\s+)?Resin\\s+)?(?:(?i:mini|mii)[\\s-]*)?(?i:pre-?rolls?\\s+four\\s+pack)",
       "set": {
-        "size": "3g"
+        "size": "4 x 0.75g"
       }
     },
     {
@@ -163,7 +163,7 @@
       },
       "match": "^(?P<strain>.+?)\\s+(?:(?:Live\\s+)?Resin\\s+)?(?i:mini|mii)[\\s-]*Pre-?Rolls?$",
       "set": {
-        "size": "3g"
+        "size": "4 x 0.75g"
       }
     },
     {
@@ -191,7 +191,7 @@
       "match": "^Classics\\s+(?P<strain>.+?)\\s+Live\\s+Resin\\s+510\\s+(?:Vape\\s+)?Cart\\s+(?i:Two-?Fer)",
       "set": {
         "line": "Classics Two-Fer",
-        "size": "1g"
+        "size": "2 x 0.5g"
       }
     },
     {
@@ -201,7 +201,7 @@
       "match": "^(?:MFNY\\s+)?(?P<strain>.+?)\\s+Live\\s+Resin\\s+510\\s+(?:Vape\\s+)?Cart\\s+(?i:Two-?Fer)",
       "set": {
         "line": "Two-Fer",
-        "size": "1g"
+        "size": "2 x 0.5g"
       }
     },
     {

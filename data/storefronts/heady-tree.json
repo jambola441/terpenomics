@@ -81,7 +81,7 @@
       },
       "match": "^(?P<strain>.+?)\\s+(?:(?P<line>Infused)\\s+)?Shorty['’]?s(?:\\s+\\d+(?:st|nd|rd|th)\\s+Run)?$",
       "set": {
-        "size": "3.5g"
+        "size": "7 x 0.5g"
       }
     },
     {
