@@ -56,7 +56,12 @@
     }
   ],
   "Papa & Barkley": [
-    "Releaf"
+    {
+      "line": "Releaf",
+      "also": [
+        "Relief"
+      ]
+    }
   ],
   "Ayrloom": [
     "UP"
@@ -622,6 +627,65 @@
         "Infused Preroll",
         "Infused Prerolls"
       ]
+    }
+  ],
+  "_comment_dogwalkers": "From the Dogwalkers curation (2026-10-08). Dogwalkers (Curaleaf) sells only pre-rolls. Plain range, no line: Big Dog 0.75g single, Mini Dogs 5 x 0.35g = 1.75g and 12 x 0.35g = 4.2g. Show Dog is the infused line (diamonds/crumble): Big Show Dog 1g single, Mini Show Dogs 5 x 0.45g = 2.25g and 12 x 0.45g = 5.4g. Sit / Stay / Play are the brand's indica / hybrid / sativa labels across every format, never a line (no rule can clear a line enrichment invents, so they are listed nowhere here). The first entry has a category so descriptions that say 'Infused Show Dog' file a line-less name (every Dogwalkers description that says Show Dog is an infused product); 'Infused' sits in a second entry without a category so it works on names only: generic store blurbs say 'infused with concentrates'.",
+  "Dogwalkers": [
+    {
+      "line": "Show Dog",
+      "also": [
+        "Show Dogs",
+        "Big Show Dog",
+        "Mini Show Dog",
+        "Mini Show Dogs",
+        "Infused Show Dog"
+      ],
+      "category": "preroll"
+    },
+    {
+      "line": "Show Dog",
+      "also": [
+        "Infused",
+        "Infused Pre-Roll",
+        "Infused Pre-Rolls",
+        "Infused Preroll",
+        "Infused Prerolls",
+        "Infused Joint"
+      ]
+    }
+  ],
+  "_comment_nyce": "From the NYCE curation (2026-10-08). NYCE (be-nyce.com, OCM-PROC-24-000205) prints one of DAY (sun), NIGHT (moon) or ANYTIME (clock) under the logo on every 0.5g Ceramic AIO and every 10 x 10mg gummy tin/pouch; it is the only family name, so it is the line, in both categories (a family the brand prints across formats). 510 carts and 1g rosin/hash jars carry no line. No category on purpose: 'day', 'night' and 'anytime' are blurb words ('perfect \"anytime\" vape' on a DAY pen, 'evening ... night'), and a category-scoped rule is also read from descriptions. 'Daytime' and 'Sleep' are single stores' words for Day and Night. Known side effect: store 3a02cf9a writes 'GMO x Oreoz Night ... Cartridge'; the cart package has no line, and the curated cart entry holds that name as a term.",
+  "NYCE": [
+    {
+      "line": "Day",
+      "also": [
+        "Daytime",
+        "Day Time"
+      ]
+    },
+    {
+      "line": "Night",
+      "also": [
+        "Night-Time",
+        "Night Time",
+        "Sleep"
+      ]
+    },
+    {
+      "line": "Anytime",
+      "also": [
+        "Any Time"
+      ]
+    }
+  ],
+  "Level": [
+    {
+      "line": "Level 5",
+      "category": "edible"
+    },
+    {
+      "line": "Protab Max",
+      "category": "edible"
     }
   ]
 }

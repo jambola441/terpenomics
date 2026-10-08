@@ -21,7 +21,9 @@
     "The sitemap lists the-mandarin-dispo-NY and the-mandarin-dispo-ny, the same page; the match drops the lowercase twin. A new case-twin would be collapsed by the script (one entry per product and size).",
     "Names on the site are lowercase ('gdp', 'pb & j', 'dragon fruit açaí'); '(21+)' after 'unicorn party' is dropped.",
     "NY stores often record turn's 'Up' and 'Down' effect labels as the product line ('Up GMO Funk', 'Down Banana OG'), which the site never uses; those store products show as only at stores although the site has them under Live Resin or Botanica Blends.",
-    "Stores put turn's Up/Down effect labels in the line field; store_aliases drops them, so those products are the site's (confirmed: GMO Funk, Banana OG, GDP, Cherry Bomb, Mango x Guava)."
+    "Stores put turn's Up/Down effect labels in the line field; store_aliases drops them, so those products are the site's (confirmed: GMO Funk, Banana OG, GDP, Cherry Bomb, Mango x Guava).",
+    "2026-10-08 curation: stores sell turn's NY 'sour apple' botanica blends AIO as 'Sour Apple Soda' (the NY pack reads 'sour apple soda'; the site's sour-apple-dispo-NY page carries the same taste/feeling/memory as sour-apple-seltzer-dispo: sweet & tart, bubbly, weekend vibes; Weedmaps' turn page slug turn-sour-apple-seltzer-s-hybrid-1g-pod is titled 'Sour Apple'). store_aliases.names maps it to the site's Sour Apple.",
+    "2026-10-08 curation: up/down is the effect label printed on every turn pack ('up | sativa', 'down | indica') beside the 'botanica blends' or 'live resin' badge; it is never a line. Store-only pods the stores record as Up/Down are botanica blends pods (Cherry Bomb, Hot Girl Summer, Blue Dream, Mango x Guava) and need their line set by admin edit: aliases only change the comparison with the site. turn also sells a Straincraft pod line (King Louis XIII) that has no NY page on the site."
   ],
   "category": [
     {
@@ -73,6 +75,9 @@
     "lines": {
       "Up": "",
       "Down": ""
+    },
+    "names": {
+      "Sour Apple Soda": "Sour Apple"
     }
   },
   "title_case": true

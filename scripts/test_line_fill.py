@@ -63,3 +63,13 @@ def test_a_push_syncs_only_a_brand_line_fill_was_turned_on_for(monkeypatch):
     monkeypatch.setattr(line_fill, "load", lambda brand: [filled])
     line_fill.sync_brand("STIIIZY")
     assert synced == ["c1"]
+
+
+def test_tinctures_and_topicals_are_not_filled():
+    balm = {"id": "c2", "brand_name": "Papa & Barkley", "entries": [
+        e("tr", "Releaf 1:3 THC Rich", "Releaf", "90mg", "topical", "balm"),
+        e("tr", "Releaf 1:3 THC Rich", "Releaf", "300mg", "topical", "balm"),
+        e("cr", "Releaf 3:1 CBD Rich", "Releaf", "45mg", "topical", "balm"),
+        e("sl", "Releaf Sleep", "Releaf", "500mg", "tinctures", None),
+        e("t1", "Releaf THC1000", "Releaf", "1000mg", "tinctures", None)]}
+    assert line_fill.wanted(balm) == {}
