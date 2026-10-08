@@ -370,3 +370,22 @@ class TestCatalogSize:
         assert cm.catalog_size("50mg", "Gummies 100mg", two[0], two) is None                   # two sizes left
         flower = self.entries("3.5g", category="flower")
         assert cm.catalog_size("14g", "Gelato Half Ounce", flower[0], flower) is None           # a real size
+
+
+def test_infused_flower_never_matches_the_plain_flower_of_its_strain():
+    """Grassroots sells Atomic Breath as plain and as diamond-infused flower at 3.5g; with
+    only the plain one in the catalog, the infused listing must find no product rather
+    than the plain one. Infused pre-ground is its own subtype and is left alone."""
+    cat = catalog({"name": "Atomic Breath", "category": "flower", "subtype": "flower", "strain": "Atomic Breath",
+                   "variant": "3.5g", "match_terms": ["atomic breath 3 5g diamond infused flower"]},
+                  {"name": "Golden Goat", "category": "flower", "subtype": "preground", "strain": "Golden Goat",
+                   "variant": "14g"})
+    idx = cm.CatalogIndex(cat)
+    infused = "Atomic Breath | 3.5g Diamond Infused (Flower)"
+    assert idx.shortlist(infused, "flower", "3.5g") == []
+    assert idx.shortlist("Atomic Breath | 3.5g (Flower)", "flower", "3.5g") == ["Atomic Breath|flower"]
+    assert idx.shortlist("Pre Ground Infused Flower | Golden Goat | 14g", "flower", "14g") == ["Golden Goat|flower"]
+    # A store name recorded on the plain product does not carry an infused listing to it.
+    [d] = cm.resolve(cat, [{"id": 1, "name": "Atomic Breath 3.5g Diamond Infused Flower", "category": "flower",
+                            "variant": "3.5g"}], use_jev=True)
+    assert d.product_key is None
