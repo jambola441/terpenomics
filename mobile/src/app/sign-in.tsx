@@ -8,6 +8,9 @@ import { Button, Label, styles } from '@/components/ui'
 import { Icon, Logo } from '@/components/Icon'
 import { t, space, font, fonts, type } from '@/lib/theme'
 
+/** A texted code's length when the API doesn't say (SMS_OTP_LENGTH). */
+const DEFAULT_CODE_LENGTH = 6
+
 /** Phone number, then the code. Mirrors the SMS half of the web Login page. */
 export default function SignIn() {
   const { signInWithSms } = useAuth()
@@ -15,12 +18,14 @@ export default function SignIn() {
   const [sentTo, setSentTo] = useState<string | null>(null)
   const [challengeId, setChallengeId] = useState<string | null>(null)
   const [code, setCode] = useState('')
+  // The field stops at the code's length and signs in by itself when it's full.
+  const [codeLength, setCodeLength] = useState(DEFAULT_CODE_LENGTH)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   // The last code sent. It outlives "Change number", so going back to the same
   // number returns to that code instead of sending another text while the
   // resend clock is still running; that used to be a way round the cooldown.
-  const [lastSent, setLastSent] = useState<{ to: string; challengeId: string; resendAt: number } | null>(null)
+  const [lastSent, setLastSent] = useState<{ to: string; challengeId: string; codeLength: number; resendAt: number } | null>(null)
   const [now, setNow] = useState(() => Date.now())
   const resendIn = lastSent && lastSent.to === sentTo ? Math.max(0, Math.ceil((lastSent.resendAt - now) / 1000)) : 0
 
@@ -48,6 +53,7 @@ export default function SignIn() {
     if (lastSent && lastSent.to === e164 && lastSent.resendAt > Date.now()) {
       setSentTo(e164)
       setChallengeId(lastSent.challengeId)
+      setCodeLength(lastSent.codeLength)
       setCode('')
       setError(null)
       setNow(Date.now())
@@ -57,9 +63,11 @@ export default function SignIn() {
     setError(null)
     try {
       const res = await api.auth.smsStart(e164)
+      const length = res.code_length || DEFAULT_CODE_LENGTH
       setChallengeId(res.challenge_id)
+      setCodeLength(length)
       setSentTo(e164)
-      setLastSent({ to: e164, challengeId: res.challenge_id, resendAt: Date.now() + res.resend_in * 1000 })
+      setLastSent({ to: e164, challengeId: res.challenge_id, codeLength: length, resendAt: Date.now() + res.resend_in * 1000 })
       setNow(Date.now())
       setCode('')
     } catch (err) {
@@ -69,14 +77,21 @@ export default function SignIn() {
     }
   }
 
-  async function verify() {
+  function enterCode(value: string) {
+    const digits = value.replace(/\D/g, '').slice(0, codeLength)
+    setCode(digits)
+    // Including when iOS fills it from the text.
+    if (digits.length === codeLength && !loading) verify(digits)
+  }
+
+  async function verify(entered = code) {
     if (!challengeId) return
     setLoading(true)
     setError(null)
     try {
       // On success the auth listener flips the session and the router moves
       // us into the tabs, so there is nothing to navigate to here.
-      await signInWithSms(challengeId, code.trim())
+      await signInWithSms(challengeId, entered)
     } catch (err) {
       fail(err)
       setLoading(false)
@@ -112,15 +127,17 @@ export default function SignIn() {
             <TextInput
               style={[styles.input, s.code]}
               value={code}
-              onChangeText={v => setCode(v.replace(/\D/g, '').slice(0, 8))}
-              placeholder="123456"
+              onChangeText={enterCode}
+              maxLength={codeLength}
+              accessibilityLabel={`${codeLength}-digit code`}
+              placeholder={'0'.repeat(codeLength)}
               placeholderTextColor={t.text4}
               keyboardType="number-pad"
               textContentType="oneTimeCode"
               autoComplete="sms-otp"
               autoFocus
             />
-            <Button title="Sign in" onPress={verify} loading={loading} disabled={code.length < 4} />
+            <Button title="Sign in" onPress={() => verify()} loading={loading} disabled={code.length < codeLength} />
             <View style={s.row}>
               <Button
                 title="Change number"

@@ -691,7 +691,8 @@ export const api = {
 
   auth: {
     smsStart: (phone: string) =>
-      authFetch<{ challenge_id: string; expires_in: number; resend_in: number }>(
+      // code_length is missing from an API that predates it.
+      authFetch<{ challenge_id: string; expires_in: number; resend_in: number; code_length?: number }>(
         `/auth/sms/start`,
         { phone },
       ),

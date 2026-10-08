@@ -85,7 +85,7 @@ const post = (body?: unknown): RequestInit => ({ method: 'POST', body: body === 
 export const api = {
   auth: {
     smsStart: (phone: string) =>
-      pub<{ challenge_id: string; expires_in: number; resend_in: number }>(`/auth/sms/start`, post({ phone })),
+      pub<{ challenge_id: string; expires_in: number; resend_in: number; code_length?: number }>(`/auth/sms/start`, post({ phone })),
 
     smsVerify: (challengeId: string, code: string) =>
       pub<{ access_token: string; refresh_token: string; token_type: string; expires_in?: number; user_id: string }>(

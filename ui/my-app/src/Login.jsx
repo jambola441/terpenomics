@@ -9,6 +9,12 @@ import { Icon, Logo } from './components/Icon'
 
 // Fallback cooldown. The SMS path uses whatever the backend reports instead.
 const RESEND_SECONDS = 60
+/** A texted code's length when the API doesn't say (routes/auth_sms.py,
+ *  SMS_OTP_LENGTH). An emailed code's length is a Supabase project setting
+ *  (6-10) the page can't read, so that field takes up to the most and
+ *  doesn't submit by itself. */
+const DEFAULT_CODE_LENGTH = 6
+const MAX_CODE_LENGTH = 10
 // How long an email code is offered back after a reload; Supabase's own
 // expiry decides whether it still works.
 const EMAIL_CODE_SECONDS = 600
@@ -70,7 +76,10 @@ function SignIn({ audience }) {
   const [sentTo, setSentTo]   = useState(restored?.sentTo ?? '')   // E.164 or email actually used for the send
   const [challengeId, setChallengeId] = useState(restored?.challengeId ?? '')  // backend handle for the SMS code
   const [code, setCode]       = useState('')
-  const [msg, setMsg]         = useState(restored ? (restored.channel === 'sms' ? 'Code sent by text.' : 'Check your email for a 6-digit code.') : '')
+  // How long the code is, when known (texted codes); the field stops there
+  // and submits by itself.
+  const [codeLength, setCodeLength] = useState(restored?.codeLength ?? (restored?.channel === 'email' ? null : DEFAULT_CODE_LENGTH))
+  const [msg, setMsg]         = useState(restored ? (restored.channel === 'sms' ? 'Code sent by text.' : 'Check your email for the code.') : '')
   const [loading, setLoading] = useState(false)
   const [isError, setIsError] = useState(false)
   // When a resend is next allowed, as a time rather than a countdown, so it
@@ -175,9 +184,12 @@ function SignIn({ audience }) {
    */
   async function requestCode(destination) {
     if (channel === 'sms') {
-      const { challenge_id, resend_in, expires_in } = await api.auth.smsStart(destination)
+      const { challenge_id, resend_in, expires_in, code_length } = await api.auth.smsStart(destination)
       setChallengeId(challenge_id)
-      return { challengeId: challenge_id, wait: resend_in || RESEND_SECONDS, valid: expires_in || RESEND_SECONDS * 5 }
+      return {
+        challengeId: challenge_id, wait: resend_in || RESEND_SECONDS, valid: expires_in || RESEND_SECONDS * 5,
+        length: code_length || DEFAULT_CODE_LENGTH,
+      }
     }
 
     // Email is for staff accounts that already exist. Customers sign up by
@@ -193,7 +205,7 @@ function SignIn({ audience }) {
       }
       throw new Error(error.message)
     }
-    return { challengeId: '', wait: RESEND_SECONDS, valid: EMAIL_CODE_SECONDS }
+    return { challengeId: '', wait: RESEND_SECONDS, valid: EMAIL_CODE_SECONDS, length: null }
   }
 
   /** Record a sent code so a reload lands back on the code step. */
@@ -202,9 +214,11 @@ function SignIn({ audience }) {
       channel,
       sentTo: destination,
       challengeId: sent.challengeId,
+      codeLength: sent.length,
       expiresAt: Date.now() + sent.valid * 1000,
       cooldownUntil: 0,
     }
+    setCodeLength(sent.length)
     startCooldown(sent.wait, pending)
   }
 
@@ -230,6 +244,7 @@ function SignIn({ audience }) {
     if (pending && pending.channel === channel && pending.sentTo === destination && pending.cooldownUntil > Date.now()) {
       setSentTo(pending.sentTo)
       setChallengeId(pending.challengeId)
+      setCodeLength(pending.codeLength ?? (pending.channel === 'email' ? null : DEFAULT_CODE_LENGTH))
       setCooldownUntil(pending.cooldownUntil)
       setNow(Date.now())
       setStep('verify')
@@ -243,7 +258,7 @@ function SignIn({ audience }) {
       setSentTo(destination)
       setStep('verify')
       rememberSent(destination, sent)
-      setMsg(channel === 'sms' ? 'Code sent by text.' : 'Check your email for a 6-digit code.')
+      setMsg(channel === 'sms' ? 'Code sent by text.' : 'Check your email for the code.')
     } catch (err) {
       handleFailure(err)
     } finally {
@@ -266,15 +281,29 @@ function SignIn({ audience }) {
     }
   }
 
-  async function verifyCode(e) {
+  const codeComplete = code.length >= (codeLength ?? DEFAULT_CODE_LENGTH)
+
+  function verifyCode(e) {
     e.preventDefault()
+    if (codeComplete && !loading) submitCode(code)
+  }
+
+  /** The field submits by itself once the code is complete, including when
+   *  the phone fills it from the text. */
+  function enterCode(value) {
+    const digits = value.replace(/\D/g, '').slice(0, codeLength ?? MAX_CODE_LENGTH)
+    setCode(digits)
+    if (codeLength && digits.length === codeLength && !loading) submitCode(digits)
+  }
+
+  async function submitCode(entered) {
     setLoading(true)
     setMsg('')
     setIsError(false)
 
     try {
       if (channel === 'sms') {
-        const session = await api.auth.smsVerify(challengeId, code)
+        const session = await api.auth.smsVerify(challengeId, entered)
         const { error } = await supabase.auth.setSession({
           access_token: session.access_token,
           refresh_token: session.refresh_token,
@@ -283,7 +312,7 @@ function SignIn({ audience }) {
       } else {
         const { error } = await supabase.auth.verifyOtp({
           email: sentTo,
-          token: code,
+          token: entered,
           type: 'email',
         })
         if (error) throw new Error(error.message)
@@ -451,7 +480,7 @@ function SignIn({ audience }) {
               {channel === 'sms' ? 'Check your texts' : 'Check your email'}
             </h1>
             <p style={subheadStyle}>
-              We sent a 6-digit code to{' '}
+              We sent a {codeLength ? `${codeLength}-digit ` : ''}code to{' '}
               <span style={{ color: t.text1, fontWeight: 500 }}>
                 {channel === 'sms' ? formatE164ForDisplay(sentTo) : sentTo}
               </span>
@@ -460,18 +489,19 @@ function SignIn({ audience }) {
               <label style={labelStyle}>Code</label>
               <input
                 value={code}
-                onChange={e => setCode(e.target.value.replace(/\D/g, ''))}
-                placeholder="000000"
+                onChange={e => enterCode(e.target.value)}
+                placeholder={'0'.repeat(codeLength ?? DEFAULT_CODE_LENGTH)}
                 inputMode="numeric"
                 pattern="[0-9]*"
                 autoComplete="one-time-code"
-                maxLength={8}
+                maxLength={codeLength ?? MAX_CODE_LENGTH}
+                aria-label={codeLength ? `${codeLength}-digit code` : 'Code'}
                 autoFocus
                 required
                 data-large
                 style={{ ...inputStyle, letterSpacing: '0.3em', fontSize: 22, textAlign: 'center' }}
               />
-              <button type="submit" disabled={loading} style={btnStyle(loading)}>
+              <button type="submit" disabled={loading || !codeComplete} style={btnStyle(loading || !codeComplete)}>
                 {loading ? 'Verifying…' : 'Continue'}
               </button>
             </form>
@@ -698,6 +728,8 @@ const linkBtnStyle = {
   border: 'none',
   color: t.text3,
   fontSize: 13,
+  // 44px to tap, though it reads as a line of text.
+  minHeight: 44,
   padding: '6px 0',
   cursor: 'pointer',
 }

@@ -202,6 +202,12 @@ customer signing out.
   text, lands back on the code step instead of asking for another text. Going
   back to the same number while the resend clock runs returns to that code
   (web and app) rather than asking the server, which would refuse it anyway.
+- **The code field is as long as the code.** `/auth/sms/start` returns
+  `code_length` (`SMS_OTP_LENGTH`, default 6). The web and app code fields take
+  that many digits and sign in by themselves once the code is complete, which
+  includes the phone filling it from the text. Staff email codes are Supabase's,
+  whose length is a project setting the page can't read, so that field takes
+  up to 10 digits and waits for Continue.
 - **Tokens refresh on their own.** Both clients persist the session (browser
   `localStorage`; the iOS Keychain in the app) and refresh the access token from
   the refresh token, so a visit after weeks away still counts as signed in.
