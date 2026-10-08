@@ -55,7 +55,7 @@
       "match": "(?i)^5-pack mini pre-?rolls?:.*\\bSG\\b",
       "set": {
         "strain": "Silly Goofy",
-        "size": "5pk 0.5g"
+        "size": "5 x 0.5g"
       }
     },
     {
@@ -65,7 +65,7 @@
       "match": "(?i)^5-pack mini pre-?rolls?:.*\\bLB\\b",
       "set": {
         "strain": "Lobotomy",
-        "size": "5pk 0.5g"
+        "size": "5 x 0.5g"
       }
     },
     {
@@ -75,7 +75,7 @@
       "match": "(?i)^5-pack mini pre-?rolls?:.*\\bPNC\\b",
       "set": {
         "strain": "P.N.C.",
-        "size": "5pk 0.5g"
+        "size": "5 x 0.5g"
       }
     },
     {
@@ -85,7 +85,7 @@
       "match": "(?i)^5-pack mini pre-?rolls?:.*\\bSCK\\b",
       "set": {
         "strain": "Sasha Colby Kush",
-        "size": "5pk 0.5g"
+        "size": "5 x 0.5g"
       }
     },
     {

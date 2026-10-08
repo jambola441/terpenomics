@@ -480,3 +480,12 @@ def test_a_bad_also_or_split_fails_on_load(source):
     with pytest.raises(SystemExit):
         storefront.validate({"brand": "B", "source": {"kind": "json", "url": "u", "items": "*",
                                                       "fields": {"title": "n"}, **source}})
+
+
+@pytest.mark.parametrize("size,category", [("4pk 0.75g", "preroll"), ("5pk 0.5g", "preroll"), ("20pk 5mg", "edible")])
+def test_a_rule_size_written_per_piece_is_refused(size, category):
+    with pytest.raises(SystemExit, match="per piece"):
+        storefront.validate({"brand": "B", "source": {"kind": "json", "url": "u", "items": "*", "fields": {"title": "n"}},
+                             "category": [{"set": {"category": category}}],
+                             "title": [{"when": {"category": f"^{category}$"},
+                                        "match": "(?P<strain>.+)", "set": {"size": size}}]})

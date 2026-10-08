@@ -327,7 +327,7 @@
       },
       "match": "^(?P<line>Entourage)\\s+(?P<strain>.+?)\\s+Tablets$",
       "set": {
-        "size": "20pk 5mg"
+        "size": "20 x 5mg"
       }
     },
     {
@@ -337,7 +337,7 @@
       },
       "match": "^Nanticoke\\s+(?P<strain>Mints)$",
       "set": {
-        "size": "20pk 5mg"
+        "size": "20 x 5mg"
       }
     },
     {
@@ -357,7 +357,7 @@
       "match": "^(?P<line>Hiistix) Pack$",
       "set": {
         "strain": "Unflavored",
-        "size": "2pk 10mg"
+        "size": "2 x 10mg"
       }
     },
     {
@@ -368,7 +368,7 @@
       "match": "^(?P<line>Hiistix) Pack 100 MG$",
       "set": {
         "strain": "Unflavored",
-        "size": "2pk 50mg"
+        "size": "2 x 50mg"
       }
     }
   ]
