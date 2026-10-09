@@ -289,21 +289,41 @@ class TestResolve:
         assert cm.auto_threshold({"source_method": "shopify_products_json"}) == cm.AUTO
         assert cm.gate("x", 0.87, cm.AUTO_BOOTSTRAP) == "jev_review"
 
-    def test_jev_overrides_a_wrong_substring_pick(self, monkeypatch, tmp_path):
+    def test_jev_picks_an_entry_one_attribute_away(self, monkeypatch, tmp_path):
+        """STIIIZY's 4.5g listing of a strain the catalog has in 1g and 0.5g: Jev chooses
+        among those sizes (or none); its pick is the entry, size and all."""
         monkeypatch.setattr(cm, "CACHE_DIR", tmp_path)
-        monkeypatch.setattr(jev, "ask_many", fake_ask_many(
-            lambda state, options: ("island time", 0.97)))
-        [d] = cm.resolve(AYRLOOM, [{"id": "1", "name": "Island Time Pineapple Mango Gummies 100mg",
-                                    "category": "edible", "variant": "100mg"}], use_jev=True)
-        assert (d.method, d.product_key) == ("jev", "island time|edible")
+        seen = {}
+
+        def answer(state, options):
+            seen["options"] = options
+            return next(o for o in options if o.endswith("— 1g")), 0.95
+
+        monkeypatch.setattr(jev, "ask_many", fake_ask_many(answer))
+        [d] = cm.resolve(STIIIZY, [{"id": "1", "name": "Biscotti AIO 4.5g", "category": "vaporizers",
+                                    "variant": "4.5g", "reading": reading("Biscotti", "4.5g")}], use_jev=True)
+        assert (d.method, d.product_key, d.entry["variant"]) == ("jev", "bisc", "1g")
+        # Same strain and format, another size; the LIIIL 0.5g is one attribute away too.
+        assert sorted(seen["options"][1:]) == ["Biscotti — 1g", "LIIIL Biscotti — 0.5g"]
+
+    def test_entries_two_attributes_away_are_not_offered(self):
+        idx = cm.CatalogIndex(STIIIZY)
+        far = {"name": "Gelato Pod 4.5g", "category": "vaporizers", "reading": reading("Gelato", "4.5g", subtype="pod")}
+        assert cm.near_entries(idx, far, "STIIIZY") == []
+        # A strain the reading lacks is the one miss: every pod of that size is offered.
+        blank = {"name": "Original Pod 1g", "category": "vaporizers",
+                 "reading": reading(None, "1g", line="Original", subtype="pod")}
+        assert [(k, e["variant"]) for k, e, _ in cm.near_entries(idx, blank, "STIIIZY")] == [("og-bisc", "1g")]
 
     def test_abstain_and_review(self, monkeypatch, tmp_path):
         monkeypatch.setattr(cm, "CACHE_DIR", tmp_path)
         monkeypatch.setattr(jev, "ask_many", fake_ask_many(
             lambda state, options: (cm.NONE, 0.9) if "Rest" in state["listing_name"] else (options[1], 0.6)))
         ds = cm.resolve(AYRLOOM, [
-            {"id": "1", "name": "Ayrloom Mood Rest AIO 1g", "category": "vaporizers", "variant": "1g"},
-            {"id": "2", "name": "Bliss AIO 1g", "category": "vaporizers", "variant": "1g"}], use_jev=True)
+            {"id": "1", "name": "Ayrloom Mood Rest AIO 1g", "category": "vaporizers", "variant": "1g",
+             "reading": reading("Rest", "1g", line="Mood", subtype=None)},
+            {"id": "2", "name": "Bliss AIO 2g", "category": "vaporizers", "variant": "2g",
+             "reading": reading("Bliss", "2g", subtype=None)}], use_jev=True)
         assert [d.method for d in ds] == ["none", "jev_review"]
         assert ds[0].entry is None and ds[1].entry is not None
 
@@ -311,8 +331,8 @@ class TestResolve:
         monkeypatch.setattr(cm, "CACHE_DIR", tmp_path)
         monkeypatch.setattr(jev, "ask_many", lambda jobs, **kw: [None] * len(jobs))
         cache = cm.AnswerCache("ayrloom")
-        [d] = cm.resolve(AYRLOOM, [{"id": "1", "name": "Bliss AIO", "category": "vaporizers",
-                                    "variant": "1g"}], use_jev=True, cache=cache)
+        [d] = cm.resolve(AYRLOOM, [{"id": "1", "name": "Bliss AIO", "category": "vaporizers", "variant": "2g",
+                                    "reading": reading("Bliss", "2g", subtype=None)}], use_jev=True, cache=cache)
         assert d.method == "error" and d.entry is None and cache.data == {}
 
     def test_cache_is_keyed_by_candidates(self, monkeypatch, tmp_path):
@@ -324,31 +344,52 @@ class TestResolve:
             return fake_ask_many(lambda s, o: (o[1], 0.95))(jobs)
 
         monkeypatch.setattr(jev, "ask_many", counting)
-        listing = [{"id": "1", "name": "Bliss AIO 1g", "category": "vaporizers", "variant": "1g"}]
+        listing = [{"id": "1", "name": "Bliss AIO 2g", "category": "vaporizers", "variant": "2g",
+                    "reading": reading("Bliss", "2g", subtype=None)}]
         cm.resolve(AYRLOOM, listing, use_jev=True, cache=cm.AnswerCache("ayrloom"))
         cm.resolve(AYRLOOM, listing, use_jev=True, cache=cm.AnswerCache("ayrloom"))
         assert calls["n"] == 1                       # second run served from cache
-        grown = catalog(*AYRLOOM["entries"], {"name": "bliss", "category": "vaporizers", "variant": "1g"})
+        grown = catalog(*AYRLOOM["entries"], {"name": "mood: bliss", "category": "vaporizers",
+                                               "product_line": "Mood", "strain": "Bliss", "variant": "3g"})
         cm.resolve(grown, listing, use_jev=True, cache=cm.AnswerCache("ayrloom"))
-        assert calls["n"] == 2                       # a new candidate means a new question
+        assert calls["n"] == 2                       # a new option means a new question
 
     def test_holdout_removes_the_true_product(self, monkeypatch, tmp_path):
         monkeypatch.setattr(cm, "CACHE_DIR", tmp_path)
         seen = {}
 
         def capture(jobs, **kw):
-            seen["options"] = list(jobs[0][1]["product"].criteria)
+            seen["options"] = list(jobs[0][1]["product"].criteria) if jobs else []
             return fake_ask_many(lambda s, o: (cm.NONE, 0.9))(jobs)
 
         monkeypatch.setattr(jev, "ask_many", capture)
-        cm.resolve(AYRLOOM, [{"id": "1", "name": "Lychee Dream Pre-Roll", "category": "preroll",
-                              "variant": "1g"}], use_jev=True, exclude={"1": "ld-1"})
-        # The true 1g product is gone, so the 3g five-pack is no longer filtered out by
-        # size — exactly what a catalog missing the 1g would look like.
-        assert "lychee dream" in seen["options"]
-        assert len(seen["options"]) == 2             # none + the one remaining product
+        listing = {"id": "1", "name": "Bliss AIO 2g", "category": "vaporizers", "variant": "2g",
+                   "reading": reading("Bliss", "2g", line="Mood", subtype=None)}
+        cm.resolve(AYRLOOM, [listing], use_jev=True)
+        assert any(o.startswith("mood: bliss") for o in seen["options"])
+        seen.clear()
+        [d] = cm.resolve(AYRLOOM, [listing], use_jev=True, exclude={"1": "mood: bliss|vaporizers"})
+        assert d.method == "none" and not any(o.startswith("mood: bliss") for o in seen.get("options", []))
 
+    def test_papers_keep_width_and_tips(self, monkeypatch, tmp_path):
+        """OCB's 'Bamboo Rolling Papers KS - 24ct' (24 is the display count): of Bamboo's
+        sizes only the king size booklet without tips is offered."""
+        monkeypatch.setattr(cm, "CACHE_DIR", tmp_path)
+        ocb = {"brand_name": "OCB", "brand_slug": "ocb", "entries": [
+            {"id": f"b{i}", "product_key": "bamboo", "name": "Bamboo Papers", "product_line": "Bamboo",
+             "category": "merch", "subtype": "paper", "variant": v, "is_active": True}
+            for i, v in enumerate(["1 1/4 50ct", "1 1/4 50ct w/tips", "king size 32ct", "king size 32ct w/tips"])]}
+        seen = {}
 
+        def answer(state, options):
+            seen["options"] = options
+            return options[1], 0.9
+
+        monkeypatch.setattr(jev, "ask_many", fake_ask_many(answer))
+        [d] = cm.resolve(ocb, [{"id": "1", "name": "OCB - Bamboo Rolling Papers KS - 24ct", "category": "merch",
+                                "subtype": "paper"}], use_jev=True)
+        assert seen["options"][1:] == ["Bamboo Papers — king size 32ct"]
+        assert d.entry["variant"] == "king size 32ct"
 
 
 class TestDescribedLine:
@@ -393,7 +434,7 @@ class TestDescribedLine:
 
     def test_it_goes_into_the_question_and_its_cache_key(self):
         idx = cm.CatalogIndex(self.STIIIZY)
-        cands = idx.shortlist(self.KLX["name"], "preroll", "1g")
+        cands = [("40-klx", idx.products["40-klx"].entries[0], [])]
         state, _, _ = cm.jev_question("STIIIZY", self.KLX, idx, cands)
         assert state["product_line_in_description"] == "40's"
         plain = {**self.KLX, "description": "Elevate your game."}

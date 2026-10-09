@@ -271,8 +271,8 @@ def _fake_jev(monkeypatch, probability):
 def test_confident_jev_match_overlays(db, tmp_path, monkeypatch):
     _fake_jev(monkeypatch, 0.95)
     add_catalog(db, [{"name": "blue dream", "category": "flower", "strain": "Blue Dream",
-                      "product_line": "Gold", "subtype": "smalls"}])
-    run(tmp_path, [row("A", "Acme | Blue Dream Smalls | 3.5g", strain="Blue Dream Smalls")])
+                      "product_line": "Gold", "subtype": "smalls", "variant": "3.5g"}])
+    run(tmp_path, [row("A", "Acme | Blue Dream Smalls | 3.5g", strain="Blue Dream Smalls", subtype="smalls")])
     [r] = listings(db)
     assert r["catalog_match_method"] == "jev" and r["catalog_match_confidence"] == pytest.approx(0.95)
     assert (r["strain"], r["product_line"], r["subtype"]) == ("Blue Dream", "Gold", "smalls")
@@ -281,7 +281,7 @@ def test_confident_jev_match_overlays(db, tmp_path, monkeypatch):
 def test_unsure_jev_match_goes_to_review_without_overlay(db, tmp_path, monkeypatch):
     _fake_jev(monkeypatch, 0.6)
     add_catalog(db, [{"name": "blue dream", "category": "flower", "strain": "Blue Dream",
-                      "product_line": "Gold"}])
+                      "product_line": "Gold", "variant": "3.5g"}])
     run(tmp_path, [row("A", "Acme | Blue Dream | 3.5g", strain="Blue Dreem")])
     [r] = listings(db)
     assert r["catalog_match_method"] == "jev_review" and r["catalog_entry_id"] is not None

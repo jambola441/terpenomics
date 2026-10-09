@@ -455,3 +455,44 @@ def join(entries: list[dict], r: dict) -> dict | None:
         hits = ([e for e in hits if not e.get("variant")] if want.is_empty()
                 else [e for e in hits if e.get("variant")]) or hits
     return hits[0] if len(hits) == 1 else None
+
+
+# ---------------------------------------------------------------------------
+# Jev's options for a merch listing the join leaves (catalog_match.resolve)
+# ---------------------------------------------------------------------------
+
+def misses(entry: dict, r: dict) -> list[str]:
+    """The attributes on which one merch entry disagrees with a merch reading: format,
+    line, colour and (a paper's) size. A line the reading lacks is no disagreement when
+    the entry has none either; a size the reading lacks is one for a sized format."""
+    out = []
+    if entry.get("subtype") != r.get("subtype"):
+        out.append("format")
+    if _key(entry.get("product_line")) != _key(r.get("product_line")):
+        out.append("line")
+    if _key(entry_colour(entry)) != _key(r.get("colour")):
+        out.append("colour")
+    if r.get("subtype") in PAPERS:
+        want, got = parse_size(r.get("size")), parse_size(entry.get("variant"))
+        if (r.get("subtype") in SIZED and want.is_empty()) or \
+                (not want.is_empty() and entry.get("variant") and not same_size(want, got)):
+            out.append("size")
+    return out
+
+
+def near_entries(entries: list[dict], r: dict) -> list[tuple[dict, list[str]]]:
+    """The active merch entries that miss the reading on at most one attribute, for Jev
+    to choose among. Of those that miss only on size, the ones agreeing on width and
+    tips are kept when there are any: a store's "KS 24ct" (OCB's display count) is the
+    king size 32-leaf booklet, not the brand's 1¼ or its booklet with tips."""
+    out = [(e, m) for e in entries if e.get("is_active", True) and e.get("category") == "merch"
+           for m in [misses(e, r)] if len(m) <= 1]
+    want = parse_size(r.get("size"))
+    def close(e):
+        got = parse_size(e.get("variant"))
+        return got.tips == want.tips and (not want.width or not got.width or got.width == want.width)
+    sized = [(e, m) for e, m in out if m == ["size"]]
+    if sized and any(close(e) for e, _ in sized):
+        out = [(e, m) for e, m in out if m != ["size"] or close(e)]
+    return out
+
