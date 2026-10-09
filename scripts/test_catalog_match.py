@@ -183,7 +183,7 @@ class TestJoin:
         idx = cm.CatalogIndex(STIIIZY)
         assert idx.join(reading("Biscotti", "1g", line="LIIIL")) is None
         assert idx.join(reading("Biscotti", "1g", line="Original", subtype="pod"))[0] == "og-bisc"
-        assert idx.join(reading("Biscotti", "1g", subtype="cart")) is None
+        assert idx.join(reading("Biscotti", "1g", subtype="battery")) is None          # a cart would be the pod (FORMAT_SYNONYMS)
 
     def test_an_inferred_size_counts(self):
         key, entry = cm.CatalogIndex(STIIIZY).join(reading("Biscotti", "0.5g", line="Original", subtype="pod"))
@@ -524,3 +524,38 @@ def test_write_over_rest_changes_only_moved_matches_and_never_a_manual_one(fresh
     got = {i: (e, m) for i, e, m in cur.fetchall()}
     assert got[ids[0]] == (new_e, "jev") and got[ids[3]] == (new_e, "exact")
     assert got[ids[2]] == (old_e, "manual") and got[ids[1]] == (new_e, "exact")
+
+
+class TestFormatSynonyms:
+    """A pod and a cart are one format (the owner's call, 2026-10-09)."""
+
+    PAX = {"brand_name": "PAX", "entries": [
+        {"id": "nl-pod", "product_key": "nl-pod", "name": "Live Rosin Northern Lights", "product_line": "Live Rosin",
+         "category": "vaporizers", "subtype": "pod", "strain": "Northern Lights", "variant": "1g"},
+        {"id": "nl-aio", "product_key": "nl-aio", "name": "Live Rosin Northern Lights", "product_line": "Live Rosin",
+         "category": "vaporizers", "subtype": "all-in-one", "strain": "Northern Lights", "variant": "1g"}]}
+
+    def test_a_cart_reading_joins_the_pod(self):
+        r = {"category": "vaporizers", "subtype": "cart", "strain": "Northern Lights",
+             "product_line": "Live Rosin", "size": "1g"}
+        assert cm.CatalogIndex(self.PAX).join(r)[1]["id"] == "nl-pod"
+        # An AIO is still another format.
+        assert cm.CatalogIndex(self.PAX).join(dict(r, subtype="all-in-one"))[1]["id"] == "nl-aio"
+
+    def test_the_overlay_keeps_the_pod(self):
+        pod = self.PAX["entries"][0]
+        assert cm.matched_subtype(pod, "Northern Lights | Live Rosin w Diamonds | Cart") == "pod"
+        assert cm.matched_subtype(pod, "Northern Lights | AIO") == "all-in-one"
+
+    def test_a_brand_selling_both_keeps_them_apart(self):
+        select = {"brand_name": "Select", "entries": [
+            {"id": "cliq", "product_key": "cliq", "name": "Cliq Gelato", "product_line": "Cliq",
+             "category": "vaporizers", "subtype": "pod", "strain": "Gelato", "variant": "1g"},
+            {"id": "elite", "product_key": "elite", "name": "Elite Gelato", "product_line": "Elite",
+             "category": "vaporizers", "subtype": "cart", "strain": "Gelato", "variant": "1g"}]}
+        idx = cm.CatalogIndex(select)
+        assert idx.synonyms is False and cm.CatalogIndex(self.PAX).synonyms is True
+        r = {"category": "vaporizers", "subtype": "cart", "strain": "Gelato", "size": "1g"}
+        assert idx.join(r)[1]["id"] == "elite"                  # a cart is the cart, not either
+        assert idx.join(dict(r, subtype="pod"))[1]["id"] == "cliq"
+        assert cm.matched_subtype(select["entries"][0], "Select Gelato Cart", synonyms=False) == "cart"

@@ -42,13 +42,13 @@ def test_sync_adds_brings_back_and_takes_back():
     assert (inserts, revive, retire) == ([], ["x1"], ["x2"])
 
 
-def test_an_inferred_size_never_helps_choose_the_product():
+def test_an_inferred_size_counts_as_the_products_size():
+    # The owner's rule (2026-10-09): a line's sizes are the rule, for the shortlist too.
     catalog = {**CATALOG, "entries": CATALOG["entries"] + list(line_fill.wanted(CATALOG).values())}
     idx = cm.CatalogIndex(catalog)
     jack = idx.products["jack"]
-    assert [s.label() for s in jack.sizes] == ["1g"]
-    assert "0.5g" not in jack.describe()
-    # ...but once the product is chosen, the listing gets its size.
+    assert sorted(s.label() for s in jack.sizes) == ["0.5g", "1g"]
+    assert "0.5g" in jack.describe()
     assert idx.pick_entry("jack", "0.5g", "vaporizers")["variant"] == "0.5g"
 
 

@@ -17,9 +17,10 @@ real lines it never named, and filling them gave line-less products sizes that w
 listings belonging to a named product. Tinctures and topicals are left alone too: their
 size is the product's strength, not a size the line comes in.
 
-Inferred entries never decide which product a listing is (catalog_match leaves them
-out of a product's sizes and of what Jev is shown); they only give the chosen product
-the listing's size. They are derived: a sync recomputes them from the stated entries,
+Inferred sizes count as the product's sizes wherever a size is compared: the attribute
+join, Jev's shortlist and the options Jev is shown (the owner's rule, 2026-10-09: a
+line's sizes are the rule, and a shortlist that ignored them dropped the right product).
+They are derived: a sync recomputes them from the stated entries,
 adds what is missing, takes back what no longer follows (the line stopped carrying
 the size, or the product now states it) and brings back one a push retired.
 

@@ -182,8 +182,8 @@ first line.
   - Inferred entries are derived. A sync recomputes them on every push or plan for the
     brands that have them, and `line_fill.py --brand "<Brand>"` shows what one would
     change.
-  - They never decide which product a listing is. They only give the chosen product
-    the listing's size.
+  - They count as the product's sizes wherever a size is compared: the attribute join,
+    Jev's shortlist and the options Jev reads.
   - `show` leaves them out (its sizes are the stated ones), and `entries` lists them.
     So an uneven line in `show` is not by itself a missing size: check `entries` before
     proposing `add-size`. Never add a size line fill already infers.

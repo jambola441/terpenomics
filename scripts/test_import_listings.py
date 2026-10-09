@@ -289,13 +289,13 @@ def test_unsure_jev_match_goes_to_review_without_overlay(db, tmp_path, monkeypat
 
 
 def test_a_format_word_in_the_name_beats_the_entrys_subtype(db, tmp_path):
-    """A bootstrap merged a strain's cart and pod; the listing that says Cart stays a cart."""
-    add_catalog(db, [{"name": "acme blue dream cart", "category": "vaporizers",
+    """A bootstrap merged a strain's AIO and pod; the listing that says AIO stays an AIO."""
+    add_catalog(db, [{"name": "acme blue dream aio", "category": "vaporizers",
                       "subtype": "pod", "strain": "Blue Dream", "variant": "1g"}])
-    run(tmp_path, [row("A", "Acme Blue Dream Cart", category="vaporizers", subtype="pod",
+    run(tmp_path, [row("A", "Acme Blue Dream AIO", category="vaporizers", subtype="pod",
                        variant="1g", strain="Blue Dream")])
     [r] = listings(db)
-    assert r["catalog_match_method"] == "attributes" and r["subtype"] == "cart"
+    assert r["catalog_match_method"] == "attributes" and r["subtype"] == "all-in-one"
 
 
 def test_a_preroll_keeps_no_subtype(db, tmp_path):

@@ -188,6 +188,27 @@ def spec(category: str | None) -> CategorySpec | None:
     return SPECS.get((category or "").strip().lower())
 
 
+# Formats stores use for each other (the owner's call, 2026-10-09): a pod is a cartridge
+# for a brand's own battery, and stores call PAX's Era pods "Cart" and Rove's carts
+# "Reload Pods". But a brand can sell both (Select: Cliq pods and 510 carts), and there
+# the words name two products. So a synonym holds only in a catalog that does not carry
+# both formats of its group (synonyms_hold), and readers keep the word they saw.
+FORMAT_SYNONYMS = (frozenset({"cart", "pod"}),)
+
+
+def synonyms_hold(formats) -> bool:
+    """Whether FORMAT_SYNONYMS apply to a brand whose catalog carries `formats`: not when
+    it sells every format of a group, where the words are two products."""
+    formats = set(formats)
+    return not any(group <= formats for group in FORMAT_SYNONYMS)
+
+
+def same_format(a: str | None, b: str | None, synonyms: bool = True) -> bool:
+    """Whether two subtypes name one format: equal, or synonyms when `synonyms` holds
+    for the brand (synonyms_hold)."""
+    return a == b or synonyms and any(a in group and b in group for group in FORMAT_SYNONYMS)
+
+
 def keeps_subtype(category: str | None) -> bool:
     """Whether a listing or catalog entry of this category keeps a subtype: only where
     the subtype is part of the product's identity. A pre-roll's is not (its spec's
