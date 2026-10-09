@@ -170,6 +170,25 @@ first line.
 - **Brand names.** `data/brand_aliases.json` maps scraped brand strings only. A
   sub-brand that stores file under its parent ("KIVA - Camino ...") lands in the parent's
   catalog, which then holds a second copy of the sub-brand.
+- **Inferred sizes.** `scripts/line_fill.py` gives every product of a named line the
+  sizes its line comes in (same brand, category, format and line), as entries with
+  source `inferred`.
+  - The owner's rule (2026-10-09): a brand's line sizes are the rule. Brand sites
+    and store menus both miss sizes. PAX's New York pages list White Widow's High Purity
+    AIO in 2G only, while stores sell the 1g.
+  - Two cases are left out:
+    - lines with no name;
+    - tinctures and topicals, where the size is the product's strength.
+  - Inferred entries are derived. A sync recomputes them on every push or plan for the
+    brands that have them, and `line_fill.py --brand "<Brand>"` shows what one would
+    change.
+  - They never decide which product a listing is. They only give the chosen product
+    the listing's size.
+  - `show` leaves them out (its sizes are the stated ones), and `entries` lists them.
+    So an uneven line in `show` is not by itself a missing size: check `entries` before
+    proposing `add-size`. Never add a size line fill already infers.
+  - An inferred size that is wrong (the line does not really come in it) is fixed at
+    the stated entry that carries it into the line.
 - **Edits survive.** A re-push never rewrites the name, line, category, subtype, strain or
   variant of an existing entry (`brand_catalog.push`), so an admin edit sticks. A fixed
   recipe or rule creates entries with new external ids, and the next push retires the old
@@ -346,7 +365,7 @@ Fix at the source when three or more entries share a cause. Hand edits are for o
 | any: products in the wrong category | admin edit of `category` (and subtype); if a recipe produced it, fix its `category` rule |
 | any: wrong size form | admin edit of `variant`; if a recipe produced it, fix the rule's size group |
 | any: a store mistyped a size (rule 10) | nothing in the catalog, which is right. A dose product matched with trust already shows on its product's page (`listings.size`, `catalog_match.catalog_size`). A weight typo, or a review-only match, keeps its own page: report the store and the size |
-| any: a size 2+ stores agree on that the catalog lacks | it arrives by itself: a store-only size at the next storefront push, an entry at the next bootstrap rebuild. One store's bundle ("2PK 1G Pods") stays out on purpose |
+| any: a size 2+ stores agree on that the catalog lacks | if another product of its line states the size, line fill already infers it (check `entries`). Otherwise it arrives by itself: a store-only size at the next storefront push, an entry at the next bootstrap rebuild. One store's bundle ("2PK 1G Pods") stays out on purpose |
 
 ### 6. Report
 
