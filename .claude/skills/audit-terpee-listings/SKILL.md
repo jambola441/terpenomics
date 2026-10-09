@@ -71,6 +71,7 @@ stores actually sell, and the brand's site settles what exists. Decide what it i
 Entry ids come from `python3 scripts/catalog_shape.py entries "<Brand>" "(?i)<regex>"`.
 
 Evidence rules:
+- A size another product of the line states is already inferred (line fill), so never add it by hand.
 - One store is not enough to add a size. Need two stores, or the brand's site.
 - A typo is the store's: the catalog stays right. Dose typos already show the catalog's
   size on the product page (`listings.size`); weight typos keep their own page.
