@@ -10,7 +10,8 @@
     "The site's categories name the line: RAW Classic, RAW Black, RAW Organic Hemp, RAW Ethereal (papers); Classic Cones, Black Cones, Organic Hemp Cones; RAW Classic Tips, RAW Filters. Connoisseur, Artesano, Creaseless and Masterpiece are ranges inside a line. Lines are read by the rules in data/product_lines.json (merch_catalog.reading), the same rules that read a store's listing, so the two agree by construction.",
     "A page has no size variants. The width is in the title ('RAW Classic Kingsize', 'RAW Classic 1¼ Cones') or the SKUs (RAWKSWIDE, RAWK-SSLIM: the wide and the slim); the retail pack counts are in the copy ('available in a 6 Cone Pack, 32 Cone Pack, 500 bulk box', '50 leaves per pack'). merch_catalog.site_sizes reads both and leaves out bulk and display boxes (a distributor's unit). A page that names no count gives its widths with the count open, so a store's '32ct' of it joins.",
     "Out: parchment, glass tips and holders (gear, not papers), and everything outside Papers, Cones and Tips.",
-    "Retail counts per width (merch_counts), 2026-10-09, from the site's copy checked against retailers (smokecartel.com, Costco, Leafly): papers 1¼ 50, 1½ 33, single wide 50 or 100 (double feed; Black only 100), king size slim and wide 32, Creaseless 1¼ 300/500 (Organic 300) and Supreme 40; cones 1¼ 6/20/32 and king size 3/20/32 (Black has no 32, Ethereal only 6 and 3). An empty list (Artesano and Masterpiece 1¼) means no count was found: the page's own count, if any, is kept. A page names its widths and counts separately ('available in 1¼ and King Size... 50 and 32 leaves'), so without the table they multiply into sizes RAW does not sell."
+    "Retail counts per width (merch_counts), 2026-10-09, from the site's copy checked against retailers (smokecartel.com, Costco, Leafly): papers 1¼ 50, 1½ 33, single wide 50 or 100 (double feed; Black only 100), king size slim and wide 32, Creaseless 1¼ 300/500 (Organic 300) and Supreme 40; cones 1¼ 6/20/32 and king size 3/20/32 (Black has no 32, Ethereal only 6 and 3). An empty list (Artesano and Masterpiece 1¼) means no count was found: the page's own count, if any, is kept. A page names its widths and counts separately ('available in 1¼ and King Size... 50 and 32 leaves'), so without the table they multiply into sizes RAW does not sell.",
+    "Sizes the site's pages leave out (merch_sizes): Artesano in king size slim, 32 leaves + tips + tray. The Classic Artesano page shows only its 1¼ SKU though its copy says King Size Slim; the pack is sold as 'Classic Artesano Kingsize Slim' (amazon.com/dp/B0773BJPMQ, owner 2026-10-09), and Organic Hemp Artesano KSS 32ct at stores (Kaya Bliss) and smokecartel.com."
   ],
   "skip": [
     {
@@ -124,6 +125,16 @@
       ],
       "Ethereal king size": [
         3
+      ]
+    }
+  },
+  "merch_sizes": {
+    "paper": {
+      "Classic Artesano": [
+        "king size 32ct w/tips"
+      ],
+      "Organic Hemp Artesano": [
+        "king size 32ct w/tips"
       ]
     }
   }

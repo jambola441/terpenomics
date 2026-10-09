@@ -496,6 +496,10 @@ def validate(recipe: dict, where: str = "recipe") -> dict:
     kind = (recipe.get("source") or {}).get("kind")
     if kind not in SOURCES:
         bad(f"source.kind {kind!r} is not one of {sorted(SOURCES)}")
+    for fmt, lines in (recipe.get("merch_sizes") or {}).items():
+        if not isinstance(lines, dict) or not all(isinstance(v, list) and all(isinstance(x, str) for x in v)
+                                                  for v in lines.values()):
+            bad(f"merch_sizes.{fmt}: a line to a list of sizes (\"king size 32ct w/tips\")")
     for fmt, table in (recipe.get("merch_counts") or {}).items():
         if not isinstance(table, dict) or not all(
                 isinstance(v, list) and all(isinstance(n, int) and n > 0 for n in v) for v in table.values()):
@@ -683,6 +687,29 @@ def _fold_merch(entries: list[dict]) -> list[dict]:
     return [e for e in entries if id(e) not in drop]
 
 
+def _merch_extra_sizes(entries: list[dict], extra: dict | None) -> list[dict]:
+    """Sizes a brand sells that its site's pages leave out, from the recipe's
+    `merch_sizes` ({format: {line: [size, ...]}}): RAW's Classic Artesano page shows only
+    the 1¼ SKU, and the pack sells in king size slim too. Each is one more entry of the
+    site's product of that format and line (copied from its first entry), never a new
+    product: a line the site does not list gets nothing."""
+    import merch_catalog
+    out = []
+    for fmt, lines in (extra or {}).items():
+        for line, labels in lines.items():
+            mine = [e for e in entries if e["category"] == "merch" and e.get("subtype") == fmt
+                    and merch_catalog._key(e.get("product_line")) == merch_catalog._key(line)]
+            for label in labels:
+                want = merch_catalog.parse_size(label)
+                if not mine or any(e.get("variant") and merch_catalog.parse_size(e["variant"]) == want for e in mine):
+                    continue
+                e = mine[0]
+                variant = want.label()
+                out.append({**e, "variant": variant,
+                            "external_id": f"{e['product_key']}:{squash(variant)}:recipe"})
+    return out
+
+
 def build(recipe: dict, items: list[Item]) -> tuple[dict, dict]:
     """The catalog document for the recipe's brand, and what happened to each item."""
     brand = recipe["brand"]
@@ -758,7 +785,7 @@ def build(recipe: dict, items: list[Item]) -> tuple[dict, dict]:
             "match_terms": sorted({t for t in (strip_brand(it.title, brand), norm_name(it.title)) if t}),
             "source": method,
         })
-    entries = _fold_merch(entries)
+    entries = _fold_merch(entries) + _merch_extra_sizes(entries, recipe.get("merch_sizes"))
     # One entry per product and size. A lab-results list repeats a product once per lot
     # (7 SEAZ: 198 rows, 142 products), and a store that lists a product twice would
     # otherwise be two rows in the admin; the first keeps its id, all names are kept.

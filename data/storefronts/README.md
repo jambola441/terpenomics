@@ -114,6 +114,11 @@ names. `{"paper": {"1 1/4": [50], "king size": [32], "Classic Creaseless 1 1/4":
 where that line differs; `[]` means no count is known (the page's own stands). A count in
 the title ("Unbleached 1¼ Cones 32 Pack") always wins. See raw.json and ocb.json.
 
+**`merch_sizes`** for papers sizes a brand sells that its pages leave out: `{"paper":
+{"Classic Artesano": ["king size 32ct w/tips"]}}`, a line of the site to the sizes to add
+(each one more entry of that product; a line the site does not list gets nothing). Cite
+the evidence in `notes`. See raw.json.
+
 **`title_case`: true** for a site that writes names in capitals ("UPLIFTING Pineapple"):
 capitalised words longer than three letters become Title case, shorter ones (OG, GSC,
 MAC) stay.
