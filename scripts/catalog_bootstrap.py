@@ -298,6 +298,12 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
             "support": g.stores,
         })
 
+    # Hardware and papers (merch_catalog.py): their identity is read by rules, not by
+    # the strain grouping above, which merch never enters (no strain).
+    import merch_catalog
+    merch = merch_catalog.propose_entries(brand, listings, min_stores)
+    entries += merch
+
     before = len({(l.get("category"), l.get("subtype"), l.get("product_line"), l.get("strain"),
                    l.get("variant")) for l in rows})
     covered = {id(l) for g in groups.values() if g.stores >= min_stores for l in g.listings}
@@ -311,7 +317,7 @@ def propose(brand: str, listings: list[dict], min_stores: int = 2) -> dict:
         "sizes_merged": sizes_merged,
         "curated_lines_set": curated["product_line_set"] + curated["product_line_corrected"],
         "curated_strains": curated["strain_aliased"],
-        "entries": len(entries), "listings_covered": kept_listings,
+        "entries": len(entries), "merch_entries": len(merch), "listings_covered": kept_listings,
         "product_rows_before": before, "product_rows_after": after,
     }
     doc = {

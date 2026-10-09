@@ -1,4 +1,5 @@
 {
+  "_comment_hardware": "Hardware lines (2026-10-09, merch_catalog.py): a merch line may declare a subtype, the format its products are (PAX Flow and Plus are dry-herb devices, Era Go a pod battery; STIIIZY Pro, Pro XL, BIIIG and Lite are pod batteries). merch_catalog reads it where the name has no format word ('PAX Flow | Onyx').",
   "_comment": "Curated brand -> product lines. A line is assigned when its text appears in the product name (word-boundary match, spacing/punctuation insensitive); longest match wins. Keys starting with _ are ignored; the key \"*\" applies to every brand. Grow this from `python evals/enrich/audit.py --db` — it is the cheapest, most durable accuracy fix available, since assignment becomes a string fact instead of a model judgment. Seeded from The Plug (Crown Heights) product names.",
   "Claybourne Co.": [
     "Flyers",
@@ -158,7 +159,8 @@
       "line": "Liquid Diamonds",
       "also": [
         "Liquid Diamond"
-      ],
+    
+  ],
       "category": "vaporizers"
     },
     {
@@ -183,6 +185,29 @@
     {
       "line": "Sour",
       "category": "edible"
+    },
+    {
+      "line": "Pro XL",
+      "category": "merch",
+      "subtype": "battery"
+    },
+    {
+      "line": "Pro",
+      "category": "merch",
+      "subtype": "battery"
+    },
+    {
+      "line": "BIIIG",
+      "also": [
+        "Biiig"
+      ],
+      "category": "merch",
+      "subtype": "battery"
+    },
+    {
+      "line": "Lite",
+      "category": "merch",
+      "subtype": "battery"
     }
   ],
   "_comment_1906": "1906 sells its tablets as Drops in effects (Bliss, Boost, Chill, Genius, Go, Love, Sleep): the family is the line, the effect is the product. Stores write \"1906 - Bliss Drops 2pk\".",
@@ -257,7 +282,41 @@
       "category": "vaporizers"
     },
     "Diamonds",
-    "High Purity"
+    "High Purity",
+    {
+      "line": "Era Go",
+      "also": [
+        "ERA GO",
+        "EraGo",
+        "Era-Go"
+      ],
+      "category": "merch",
+      "subtype": "battery"
+    },
+    {
+      "line": "Flow",
+      "category": "merch",
+      "subtype": "battery"
+    },
+    {
+      "line": "Plus",
+      "category": "merch",
+      "subtype": "battery"
+    },
+    {
+      "line": "Mini",
+      "also": [
+        "Mini 2",
+        "Mini II"
+      ],
+      "category": "merch",
+      "subtype": "battery"
+    },
+    {
+      "line": "Four",
+      "category": "merch",
+      "subtype": "battery"
+    }
   ],
   "_comment_heavy_hitters": "From the Heavy Hitters curation (2026-10-08); replaces the brand's list. heavyhitters.co/states/new-york: vapes are Ultra (0.5g and 1g Twin Turbo all-in-ones, 2g all-in-one, 1g 510 cart), Slow Cured Resin 1g all-in-one and Live Rosin Solventless 1g all-in-one; gummies (5 x 20mg, 100mg) are Ultra Gummies (Atomic Apple, Holy Grape, Strawberry Storm), Solventless Live Rosin Gummies (Blackberry Lemon, Guava Strawberry, Papaya Mango), Lights Out (CBN sleep: Midnight Cherry; Cloudberry vape) and Lights On (THCV energy: Green Crack); pre-rolls are Diamond Infused (1g 'Diamond Pre-Roll' and 5 x 0.5g 'Diamond Pre-Roll 5ct'), beside the brand's Jelly Roll rosin-infused pre-rolls (CA); 2g Pure Live Rosin jars and 7g Slow Cured Indoor Flower carry no line. Ultra, Live Rosin, Lights On and Lights Out are printed by the brand across formats. Every Heavy Hitters CBN product is Lights Out and every THCV product Lights On, so those words name the line where a store leaves it out ('CBN Cloudberry - 0.5G AIO Vape', 'Green Crack 2:1 THC:THCV Gummies'). Live Rosin stays off the concentrate category: the rosin jars say Live Rosin too and are line-less.",
   "Heavy Hitters": [

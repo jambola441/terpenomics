@@ -74,6 +74,7 @@ from catalog_bootstrap import squash, strain_key  # noqa: E402
 import canonical  # noqa: E402
 import catalog_store  # noqa: E402
 import jev  # noqa: E402
+import merch_catalog  # noqa: E402
 import sizes  # noqa: E402
 import taxonomy  # noqa: E402
 
@@ -710,6 +711,15 @@ def resolve(catalog: dict, listings: list[dict], *, use_jev: bool,
     for i, l in enumerate(listings):
         name, cat = l.get("name") or "", l.get("category")
         held_out = (exclude or {}).get(str(l.get("id")))
+        if merch_catalog.is_merch(cat, l.get("subtype"), name, brand):
+            # Hardware and papers: their reading is the rules', computed here (merch_catalog).
+            hit = merch_catalog.join(catalog.get("entries") or [],
+                                     merch_catalog.reading(name, brand, l.get("subtype"), cat))
+            if hit is not None:
+                key = hit.get("product_key") or catalog_store._product_key(hit)
+                if key in index.products and key != held_out:
+                    decisions[i] = Decision(l, key, hit, 1.0, "attributes")
+                    continue
         joined = index.join(l.get("reading"), name)
         if joined and joined[0] != held_out \
                 and not infused_veto(index.products[joined[0]], name, cat, l.get("description")):

@@ -41,6 +41,8 @@ _MERCH_COLOURS = [
     "rose gold", "gun metal", "unbleached", "assorted", "rainbow", "natural",
     "purple", "silver", "yellow", "orange", "clear", "black", "green", "white",
     "onyx", "gold", "rose", "pink", "blue", "teal", "red",
+    # Hardware finishes (PAX Era Go, Flow, Plus): each is the colour of its own SKU.
+    "greenstone", "periwinkle", "lavender", "oxblood", "sage", "sky",
 ]
 
 # Flavours seen on wraps and papers. Distinct from colour: "Blueberry" wraps are
