@@ -169,3 +169,13 @@ def test_a_range_sold_with_tips_is_papers_even_when_named_for_its_tips():
     assert (r["subtype"], r["product_line"], r["size"]) == ("paper", "Classic Masterpiece", "1 1/4 w/tips")
     # Tips named as tips stay tips.
     assert mc.reading("RAW | Perfecto Pre-Rolled Tips | 21-Pack", "RAW", "filter-tip")["subtype"] == "filter-tip"
+
+
+def test_a_recipe_adds_sizes_the_site_leaves_out():
+    import storefront as sf
+    site = [{"external_id": "k:114wtips:1", "product_key": "k", "name": "Classic Artesano Papers",
+             "product_line": "Classic Artesano", "category": "merch", "subtype": "paper",
+             "variant": "1 1/4 w/tips", "attributes": None, "match_terms": [], "source": "wc_store_api"}]
+    extra = {"paper": {"Classic Artesano": ["king size 32ct w/tips", "1 1/4 w/tips"], "Unlisted": ["king size"]}}
+    got = sf._merch_extra_sizes(site, extra)
+    assert [(e["product_key"], e["variant"]) for e in got] == [("k", "king size 32ct w/tips")]
