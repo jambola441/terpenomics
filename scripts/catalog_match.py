@@ -172,9 +172,11 @@ class Product:
                 product_line=first.get("product_line"), strain=first.get("strain"))
         for e in entries:
             s = sizes.parse(e.get("variant"), category=p.category)
-            # An inferred size (line_fill.py) gives a chosen product the listing's size;
-            # it never helps choose the product, so size_ok and Jev do not see it.
-            if not s.is_empty() and e.get("source") != "inferred":
+            # An inferred size (line_fill.py) counts like a stated one: it is a size the
+            # product's line comes in (the owner's rule, 2026-10-09), and a shortlist that
+            # ignored it dropped the right product (a Live Rosin 0.5g pod read only off the
+            # line) for whichever products state 0.5g.
+            if not s.is_empty():
                 p.sizes.append(s)
             # The catalog's own titles only: they rank the shortlist Jev reads. Store
             # names (match_terms) no longer take part in matching.
@@ -202,8 +204,7 @@ class Product:
             bits.append(f"product line {self.product_line}")
         if self.strain and norm_name(self.strain) != norm_name(self.title):
             bits.append(f"strain/flavor {self.strain}")
-        labels = sorted({e.get("variant") for e in self.entries
-                         if e.get("variant") and e.get("source") != "inferred"})
+        labels = sorted({e.get("variant") for e in self.entries if e.get("variant")})
         if labels:
             bits.append("sizes " + ", ".join(labels[:6]))
         return " · ".join(bits)
