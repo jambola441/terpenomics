@@ -162,3 +162,10 @@ def test_a_cones_length_is_its_width():
     assert mc.reading("OCB - Organic Bamboo Cones 8pk - 78mm Small", "OCB", "cone")["size"] == "1 1/4 8pk"
     assert mc.cone_width("109mm 3pk") == "king size 3pk"
     assert mc.cone_width("98mm 20pk") == "98mm 20pk"        # RAW's 98 Special is a line, not a width
+
+
+def test_a_range_sold_with_tips_is_papers_even_when_named_for_its_tips():
+    r = mc.reading("1 1/4 Pre-Rolling Tips Masterpiece Classic - Accessories - Raw", "RAW", "filter-tip")
+    assert (r["subtype"], r["product_line"], r["size"]) == ("paper", "Classic Masterpiece", "1 1/4 w/tips")
+    # Tips named as tips stay tips.
+    assert mc.reading("RAW | Perfecto Pre-Rolled Tips | 21-Pack", "RAW", "filter-tip")["subtype"] == "filter-tip"
