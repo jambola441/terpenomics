@@ -156,3 +156,9 @@ def test_a_stores_count_takes_the_brands_retail_count():
     assert sf._merch_retail_count(p, counts)["variant"] == "king size 32ct w/tips"
     assert sf._merch_count_ruled_out({**p, "variant": "1 1/4 33ct w/tips"}, counts)
     assert not sf._merch_count_ruled_out({**p, "variant": "1 1/4 50ct"}, counts)
+
+
+def test_a_cones_length_is_its_width():
+    assert mc.reading("OCB - Organic Bamboo Cones 8pk - 78mm Small", "OCB", "cone")["size"] == "1 1/4 8pk"
+    assert mc.cone_width("109mm 3pk") == "king size 3pk"
+    assert mc.cone_width("98mm 20pk") == "98mm 20pk"        # RAW's 98 Special is a line, not a width
