@@ -81,7 +81,9 @@ class Size:
     def label(self) -> str:
         """A compact, stable rendering — the form written into `variant`."""
         parts = []
-        if self.pack and self.pack > 1:
+        # A single is written "1pk" only where parse() keeps it: a dose, whose single
+        # and 10-pack of the same total are different products.
+        if self.pack and (self.pack > 1 or self.grams is None and self.mg is not None):
             parts.append(f"{self.pack}pk")
         if self.grams is not None:
             parts.append(f"{self.grams:g}g")
@@ -172,7 +174,10 @@ def parse(*texts: str | None, category: str | None = None) -> Size:
         if total_g is None and total_mg is not None and total_mg >= 100:
             total_g = total_mg / 1000   # "500mg" cart -> 0.5g
         total_mg = alt_mg = None
-    if pack == 1:
+    # A stated single counts for a dose: Flav's 100mg Mega Belt ("1pk - 100mg") is not
+    # its 10-pack of 100mg, and same_size can tell them apart only if the 1 survives.
+    # A weight's "1pk" says nothing a size check needs.
+    if pack == 1 and cat not in DOSE_CATEGORIES:
         pack = None
     return Size(grams=_round(total_g), mg=_round(total_mg), pack=pack,
                 unit_g=_round(unit_g), unit_mg=_round(unit_mg), alt_mg=_round(alt_mg))
@@ -250,6 +255,10 @@ def same_size(a: Size, b: Size, either_reading: bool = True) -> bool | None:
     None is not False: a store that omits the size is not selling a different product.
     `either_reading=False` compares only each side's first reading of a dose (alt_mg).
     """
+    # Two stated pack counts that differ are two packages, whatever the totals: a 100mg
+    # single is not a 10-pack of 100mg. A side that states no count leaves it open.
+    if a.pack is not None and b.pack is not None and a.pack != b.pack:
+        return False
     if a.grams is not None and b.grams is not None:
         return abs(a.grams - b.grams) <= max(0.02, 0.03 * max(a.grams, b.grams))
     if a.mg is not None and b.mg is not None:

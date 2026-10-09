@@ -95,6 +95,19 @@ class TestSizes:
         assert idx.pick_entry("db", "", "edible", "Dreamberry | 20mg | 2pk")["variant"] == "2pk 40mg"
         assert idx.pick_entry("db", "20mg", "edible", "Dreamberry")["variant"] == "2pk 20mg"
 
+    def test_a_dose_single_is_not_a_pack_of_the_same_total(self):
+        single = sizes.parse("Flav - Strawberry Belts Mega Dosed Gummy 1pk - 100mg", category="edible")
+        assert single == sizes.Size(mg=100.0, pack=1) and single.label() == "1pk 100mg"
+        assert sizes.parse("1pk 100mg", category="edible") == single          # the label reads back
+        assert sizes.same_size(single, sizes.parse("10pk 100mg", category="edible")) is False
+        # A count left open still fits either; a weight's "1pk" is no count at all.
+        assert sizes.same_size(sizes.parse("100mg", category="edible"), single) is True
+        assert sizes.parse("1pk 1g", category="preroll") == sizes.Size(grams=1.0)
+
+    def test_two_stated_counts_that_differ_are_two_packages(self):
+        assert sizes.same_size(sizes.parse("5pk 2.5g", category="preroll"),
+                               sizes.parse("10pk 2.5g", category="preroll")) is False
+
     def test_same_size(self):
         assert sizes.same_size(sizes.parse("5pk x 0.6g", category="preroll"),
                                sizes.parse("3g", category="preroll"))
@@ -180,6 +193,39 @@ class TestJoin:
         idx = cm.CatalogIndex(STIIIZY)
         assert idx.join(reading("Biscotti", None)) is None and idx.join(reading("", "1g")) is None
         assert idx.join(None) is None
+
+    def test_a_lone_dose_beside_a_pack_joins_either_reading(self):
+        # 1906 writes the package total ("2pk - 10mg" is 10mg in all); the parser's
+        # guess is per piece (20mg), which is what the reading stores.
+        cat = {"brand_name": "1906", "entries": [
+            {"id": "a", "product_key": "chill", "name": "Drops Chill", "product_line": "Drops",
+             "category": "edible", "subtype": "tablet", "strain": "Chill", "variant": "2pk 10mg"},
+            {"id": "b", "product_key": "chill", "name": "Drops Chill", "product_line": "Drops",
+             "category": "edible", "subtype": "tablet", "strain": "Chill", "variant": "20pk 100mg"}]}
+        idx = cm.CatalogIndex(cat)
+        r = {"category": "edible", "subtype": "tablet", "strain": "Chill", "product_line": "Drops",
+             "size": "20mg"}
+        assert idx.join(r) is None                                      # the bare figure alone
+        assert idx.join(r, "1906 - Chill Drops 2pk - 10mg")[1]["id"] == "a"
+        # Only when the name agrees with the reading's figure: otherwise the reading's
+        # own figure decides. And the other reading counts only against the same pack
+        # count, so a 20-pack name never reaches the 2-pack.
+        assert idx.join(dict(r, size="100mg"), "1906 - Chill Drops 2pk - 10mg")[1]["id"] == "b"
+        assert idx.join(dict(r, size="100mg"), "1906 - Chill Drops 20pk - 100mg")[1]["id"] == "b"
+        assert idx.join(r, "1906 - Chill Drops 20pk - 100mg") is None
+
+    def test_a_count_left_open_does_not_pick_between_a_single_and_a_pack(self):
+        cat = {"brand_name": "Flav", "entries": [
+            {"id": "one", "product_key": "belts-straw", "name": "Belts Strawberry", "product_line": "Belts",
+             "category": "edible", "subtype": "gummy", "strain": "Strawberry", "variant": "1pk 100mg"},
+            {"id": "ten", "product_key": "belts-straw", "name": "Belts Strawberry", "product_line": "Belts",
+             "category": "edible", "subtype": "gummy", "strain": "Strawberry", "variant": "10pk 100mg"}]}
+        idx = cm.CatalogIndex(cat)
+        r = {"category": "edible", "subtype": "gummy", "strain": "Strawberry", "size": "100mg"}
+        assert idx.join(r, "Strawberry Belts - 100mg") is None                 # single or 10-pack: Jev decides
+        assert idx.join(r, "Strawberry Belts Mega Dosed Gummy 1pk - 100mg")[1]["id"] == "one"
+        assert idx.join(r, "Flav | 10pk Gummy Belts | 100mg | Strawberry")[1]["id"] == "ten"
+        assert idx.join(dict(r, size="10pk 100mg"))[1]["id"] == "ten"
 
     def test_resolve_takes_the_join_and_names_never_decide(self):
         listings = [{"id": 1, "name": "STIIIZY Biscotti 0.5g", "category": "vaporizers",

@@ -253,7 +253,7 @@ class CatalogIndex:
         return product.entries[0]
 
     # -- the attribute join ----------------------------------------------------
-    def join(self, reading: dict | None) -> tuple[str, dict] | None:
+    def join(self, reading: dict | None, name: str | None = None) -> tuple[str, dict] | None:
         """The one product, in the one size, the listing's own reading names: the same
         category, format and strain, the same line where the reading has one, and an
         entry of the size read. None when no product or several fit, or the reading
@@ -266,11 +266,14 @@ class CatalogIndex:
 
         Inferred sizes (line_fill.py) count: they are the sizes the product's line
         comes in. Format is compared wherever both sides state one; a pre-roll keeps
-        none."""
+        none.
+
+        `name` is the listing's own name, read for one thing only: the other reading
+        of a lone dose beside a pack (reading_size)."""
         if not reading or not reading.get("strain") or not reading.get("size"):
             return None
         category = reading.get("category")
-        want = sizes.parse(reading["size"], category=category)
+        want = reading_size(reading, name)
         if want.is_empty():
             return None
         strain, line, subtype = strain_key(reading["strain"]), squash(reading.get("product_line")), \
@@ -283,11 +286,10 @@ class CatalogIndex:
                 continue
             if subtype and p.subtype and taxonomy.keeps_subtype(category) and subtype != p.subtype:
                 continue
-            for e in p.entries:
-                if sizes.same_size(want, sizes.parse(e.get("variant"), category=category)) is True:
-                    hits.append((key, e))
-                    break
-        return hits[0] if len(hits) == 1 else None
+            entry = fitting_entry(p.entries, want, category)
+            if entry is not False:
+                hits.append((key, entry))
+        return hits[0] if len(hits) == 1 and hits[0][1] is not None else None
 
     def shortlist(self, name: str, category: str | None, variant: str | None,
                   k: int = SHORTLIST, exclude: str | None = None,
@@ -357,6 +359,56 @@ class CatalogIndex:
         return [key for _, key in scored[:k]]
 
 
+def fitting_entry(entries: list[dict], want: sizes.Size, category: str | None) -> dict | None | bool:
+    """The one entry of a product in the size wanted: False when none fits, None when
+    two sizes fit and nothing tells them apart.
+
+    A size that leaves its pack count open fits a product's single and its 10-pack of
+    the same total alike ("100mg" against Flav's "1pk 100mg" and "10pk 100mg"). The
+    entry stating the same count wins; otherwise the product is a match whose size is
+    unknown, and the join leaves the listing to Jev rather than take whichever entry
+    came first. Two entries of one size (a stated one and an inferred one) are one fit.
+    """
+    fits = [(e, sizes.parse(e.get("variant"), category=category)) for e in entries]
+    fits = [(e, s) for e, s in fits if sizes.same_size(want, s) is True]
+    if not fits:
+        return False
+    if len({s for _, s in fits}) > 1:
+        fits = [(e, s) for e, s in fits if s.pack == want.pack] or fits
+    if len({s for _, s in fits}) > 1:
+        return None
+    return next((e for e, _ in fits if e.get("source") != "inferred"), fits[0][0])
+
+
+def reading_size(reading: dict, name: str | None = None) -> sizes.Size:
+    """The size the reading names, with the pack count the listing's name states.
+
+    The reading stores one label ("20mg", "100mg"), which can drop what the name says
+    about the package. Two things matter to a size check:
+      - the count: "1pk - 100mg" is Flav's single Mega Belt, not its 10-pack of 100mg
+        (fitting_entry tells them apart only when the count is known);
+      - the other reading of a lone dose beside a pack (sizes.alt_mg): the parser takes
+        "2pk - 10mg" as 10mg a piece, as most brands mean it (81 of 104 such listings
+        on brand-site catalogs, 2026-10-09), but 1906 means the package total and sells
+        "2pk 10mg". same_size accepts either reading against an entry of the same
+        count, so the 2-pack joins and the 20-pack does not.
+    So when the reading states no count and the name read alone gives the same total
+    with one, the name's Size is used. The name gives a size here, never an identity.
+    """
+    category = reading.get("category")
+    want = sizes.parse(reading.get("size"), category=category)
+    if not name or want.pack is not None:
+        return want
+    own = sizes.parse(name, category=category)
+    if own.pack is None:
+        return want
+    if want.mg is not None and own.mg is not None and abs(own.mg - want.mg) <= 0.5:
+        return own
+    if want.grams is not None and own.grams is not None and sizes.same_size(own, want):
+        return own
+    return want
+
+
 def matched_subtype(entry: dict, name: str | None) -> str | None:
     """The subtype a listing resolved to `entry` takes.
 
@@ -408,13 +460,13 @@ def catalog_size(variant: str | None, name: str | None, entry: dict,
     if len({s.mg for s in own}) != 1:
         return None
     target = own[0]
-    if not target.pack and target.mg <= 10 < mine.mg:
+    if (target.pack or 1) == 1 and target.mg <= 10 < mine.mg:
         return None
     # A figure the text gives for another cannabinoid corroborates nothing: Wana's Fast
     # Asleep is "20mg THC", and its "100mg CBD" must not move it to a 100mg entry.
     stated = any(abs(m - target.mg) <= 0.5 for m in sizes.mg_mentions(name, html.unescape(
         re.sub(r"<[^>]+>", " ", description or "")), non_thc=False))
-    per_piece = bool(target.pack) and not mine.pack and abs(mine.mg * target.pack - target.mg) <= 0.5
+    per_piece = (target.pack or 1) > 1 and not mine.pack and abs(mine.mg * target.pack - target.mg) <= 0.5
     return f"{target.mg:g}mg" if stated or per_piece else None
 
 
@@ -580,7 +632,7 @@ def resolve(catalog: dict, listings: list[dict], *, use_jev: bool,
     for i, l in enumerate(listings):
         name, cat = l.get("name") or "", l.get("category")
         held_out = (exclude or {}).get(str(l.get("id")))
-        joined = index.join(l.get("reading"))
+        joined = index.join(l.get("reading"), name)
         if joined and joined[0] != held_out \
                 and not infused_veto(index.products[joined[0]], name, cat, l.get("description")):
             decisions[i] = Decision(l, joined[0], joined[1], 1.0, "attributes")
