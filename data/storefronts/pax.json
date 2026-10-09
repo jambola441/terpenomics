@@ -14,22 +14,25 @@
       "title": "head > title",
       "tags": "[role=tab][aria-selected=true], div.space-x-2 > p.font-semibold",
       "variant": "h1 + div p",
-      "meta": "div:has(+ h1) > div"
+      "meta": "div:has(+ h1) > div",
+      "body": "img[fetchpriority=high]@alt"
     },
     "split": {
       "field": "variant",
       "find": "(?<![\\d.])[\\d.]+G\\b"
     }
   },
-  "learned": "2026-10-08, by an agent: pax.com is a Shopify Hydrogen storefront with no products.json (404) and no Store API; the earlier pass's 'products.json' lead is dead. The sitemap lists one server-rendered page per pod, all-in-one and gummy; each page says which states carry it and, at ?geocode=us-ny, New York's sizes. 187 product pages in the sitemap, 61 sold in New York (42 more flagged No Longer Available).",
+  "learned": "2026-10-08, by an agent: pax.com is a Shopify Hydrogen storefront with no products.json (404) and no Store API; the earlier pass's 'products.json' lead is dead. The sitemap lists one server-rendered page per pod, all-in-one and gummy; each page says which states carry it and, at ?geocode=us-ny, New York's sizes. 187 product pages in the sitemap, 61 sold in New York (42 more flagged No Longer Available). 2026-10-09: AIO families read from the main image caption; see notes.",
   "notes": [
     "pax.com is a brand site, not a shop: no prices, no store API. Each product page is read at ?geocode=us-ny. A page lists its states as 'Available in' tabs (the selected tab at ?geocode=us-ny is NY) or, for one state, a plain label ('New York'). Only those two forms count as New York; every other page is skipped.",
     "The sitemap has several pages for one strain (Superboof has four), one per set of states and sizes, so a strain can appear on two New York pages in different sizes (Blue Zushi all-in-one: 'Blue Zushi 2G' and 'Blue Zushi 0.5G and 1G').",
-    "Pods: the family is in the title tag and the 'Back to' crumb: Live Rosin (with Diamonds), Diamonds, High Purity THC (-> line 'High Purity'), and Sleep. The Sleep pod is 'Sweet Berry Sleep' with no other family named, so it has no line and the effect stays in the name. PAX Trip all-in-ones name no extract line on the site (stores write Live Rosin, High Purity or Diamonds), so they have none.",
+    "Pods: the family is in the title tag and the 'Back to' crumb: Live Rosin (with Diamonds), Diamonds, High Purity THC (-> line 'High Purity'), and Sleep. The Sleep pod is 'Sweet Berry Sleep' with no other family named, so it has no line and the effect stays in the name.",
+    "PAX Trip all-in-ones name no family in the title ('Pax London Pound Cake Pax Trip'), but the page's main image caption does (field body: the fetchpriority=high image's alt): 'London Pound Cake High Purity THC AIO', 'Blue Zushi HP AIO', 'Superboof Diamonds AIO', 'Purple Afghani Live Rosin AIO' (23 of 32 New York AIO pages, 2026-10-09). A page captioned only 'Packaging & Device' names nothing; a 2G one is High Purity: across every state's pages each 2G product with a named family is High Purity (5 AIO, 2 pod pages), no Live Rosin or Diamonds page sells 2G, and all 20 store listings of a 2g PAX vape name High Purity or a High Purity strain. The six captionless 1G pages (Blueberry Blast 1G, Lychee, Pineapple Whip, Rainbow Belts, Stoned Fruit, Sleep) keep no line.",
     "Pages flagged No Longer Available (the badge next to the strain type) are skipped: PAX keeps them on a separate pod-archive page. No store sells any of them in 2+ stores, so skipping them changes nothing in the store comparison.",
     "Gummies: New York's Live Rosin Gummies are '10mg THC edible, 10 Edibles per Bag' (10 x 10mg = 100mg, at New York's cap). Live Rosin there is the extract, not a family, so no line. The 10mg 'High Purity THC Gummies' on /consumables and /edibles are hemp-derived, ship to 18 non-cannabis states and are in no state tab, so they are skipped by the New York rule.",
     "Hardware (ERA, PAX Flow, Four, Mini, Plus, batteries, bundles, accessories), the limited pages and the Puck Press are outside the sitemap match; the catalog is cannabis products only.",
-    "A page that lists several New York sizes ('0.5G, 1G, and 2G Pax Era Pods') is one item per size, by source.split on the variant."
+    "A page that lists several New York sizes ('0.5G, 1G, and 2G Pax Era Pods') is one item per size, by source.split on the variant.",
+    "The site lists each strain's New York sizes page by page, and misses sizes stores sell (1g High Purity AIOs of Lemon Cherry Gelato, Super Lemon Haze, White Widow; the site's New York pages show 2G only). line_fill.py gives every product of a line the line's sizes (High Purity 0.5/1/2g in both formats, Live Rosin pods 0.5/1g); the owner's call, 2026-10-09: the site is incomplete, the line's sizes are the rule."
   ],
   "skip": [
     {
@@ -122,6 +125,46 @@
       "match": "^Pax\\s+(?P<strain>.+?)\\s+Sleep Pod$",
       "extract": {
         "variant": "^(?P<size>[\\d.]+G)\\b"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "title": "Pax Trip$",
+        "body": "^[^|]*?\\b(HP|High Purity)\\b[^|]*\\bAIO\\b"
+      },
+      "match": "^Pax\\s+(?P<strain>.+?)\\s+Pax Trip$",
+      "extract": {
+        "variant": "^(?P<size>[\\d.]+G)\\b"
+      },
+      "set": {
+        "line": "High Purity"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "title": "Pax Trip$",
+        "body": "^[^|]*?\\b(Live Rosin|Diamonds)\\b[^|]*\\bAIO\\b"
+      },
+      "match": "^Pax\\s+(?P<strain>.+?)\\s+Pax Trip$",
+      "extract": {
+        "variant": "^(?P<size>[\\d.]+G)\\b",
+        "body": "^[^|]*?\\b(?P<line>Live Rosin|Diamonds)\\b"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$",
+        "title": "Pax Trip$",
+        "variant": "^2G\\b"
+      },
+      "match": "^Pax\\s+(?P<strain>.+?)\\s+Pax Trip$",
+      "extract": {
+        "variant": "^(?P<size>[\\d.]+G)\\b"
+      },
+      "set": {
+        "line": "High Purity"
       }
     },
     {
