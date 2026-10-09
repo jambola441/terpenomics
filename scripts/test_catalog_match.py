@@ -600,3 +600,15 @@ class TestFormatSynonyms:
         assert idx.join(r)[1]["id"] == "elite"                  # a cart is the cart, not either
         assert idx.join(dict(r, subtype="pod"))[1]["id"] == "cliq"
         assert cm.matched_subtype(select["entries"][0], "Select Gelato Cart", synonyms=False) == "cart"
+
+
+def test_exact_entries_first_and_too_many_options_trimmed_by_name():
+    idx = cm.CatalogIndex(catalog(*[{"name": f"Strain {i}", "category": "flower", "strain": f"Strain {i}",
+                                     "variant": "3.5g"} for i in range(30)],
+                                  {"name": "Alley Oop", "category": "flower", "strain": "Alley Oop", "variant": "3.5g"}))
+    listing = {"name": "Alley - OOP (H) 3.5g Flower", "category": "flower",
+               "reading": reading("Alley", "3.5g", subtype=None, category="flower")}
+    cands = cm.closest(cm.near_entries(idx, listing, "Ayrloom"), listing["name"], idx)
+    assert len(cands) == cm.MAX_OPTIONS and cands[0][0] == "Alley Oop|flower"
+    exact = [("a", {}, []), ("b", {}, ["size"])]
+    assert cm.closest(exact, "x", idx) == [("a", {}, [])]

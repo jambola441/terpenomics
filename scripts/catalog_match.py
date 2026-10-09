@@ -19,8 +19,9 @@ How a listing is resolved
               (near_entries; papers by merch_catalog's width and tips), or "none", with
               a probability for every option. Its pick is the entry, so the size comes
               with it: Jev never picks a product without its size (owner, 2026-10-09).
-              A reading two attributes from everything gets no question. The
-              probability is the gate:
+              A reading two attributes from everything gets no question; of more
+              than 25 options, those whose titles share most words with the name.
+              The probability is the gate:
 
                 p >= AUTO (0.85)     method "jev"          trusted for identity
                 p >= REVIEW (0.50)   method "jev_review"   entry recorded, not trusted
@@ -558,8 +559,8 @@ def catalog_size(variant: str | None, name: str | None, entry: dict,
 NONE = "none"
 
 
-# Most entries a question may offer. A listing whose reading misses that many entries
-# by one attribute says too little to choose from; it goes unmatched (and to the audit).
+# Most entries a question may offer; beyond it, those whose product title shares most
+# words with the listing's name (closest).
 MAX_OPTIONS = 25
 
 # A candidate: (product key, entry, the attributes it misses the reading on — none or one).
@@ -597,6 +598,25 @@ def near_entries(index: "CatalogIndex", listing: dict, brand: str,
             if len(m) <= 1:
                 out.append((key, e, m))
     return out
+
+
+def closest(candidates: list[Candidate], name: str, index: "CatalogIndex") -> list[Candidate]:
+    """The options a question offers: the entries that miss nothing when there are any
+    (a reading that fits several products exactly, which the join leaves), else the
+    near entries, at most MAX_OPTIONS of them, those whose product's title shares the
+    most words with the listing's name first. A strain read short ("Alley" for Alley
+    Oop) is one attribute from every flower of its size; the name tells which."""
+    exact = [c for c in candidates if not c[2]]
+    if exact:
+        candidates = exact
+    if len(candidates) <= MAX_OPTIONS:
+        return candidates
+    words = set(norm_name(name).split())
+    def overlap(c):
+        p = index.products[c[0]]
+        title = set(norm_name(" ".join(x for x in (p.title, p.strain, p.product_line) if x)).split())
+        return len(words & title) / (len(title) or 1)
+    return sorted(candidates, key=overlap, reverse=True)[:MAX_OPTIONS]
 
 
 def option_text(product: "Product", entry: dict) -> str:
@@ -790,8 +810,8 @@ def resolve(catalog: dict, listings: list[dict], *, use_jev: bool,
         if not use_jev:
             decisions[i] = Decision(l, None, None, 0.0, "none")
             continue
-        cands = near_entries(index, l, brand, exclude=held_out)
-        if not cands or len(cands) > MAX_OPTIONS:
+        cands = closest(near_entries(index, l, brand, exclude=held_out), name, index)
+        if not cands:
             decisions[i] = Decision(l, None, None, 0.0, "none", len(cands))
             continue
         key = _cache_key(l, cands, index)
