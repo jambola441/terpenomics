@@ -76,7 +76,11 @@ def test_a_preroll_keeps_no_subtype():
     assert catalog_match.matched_subtype({"category": "preroll", "subtype": "pack"},
                                          "Acme Blue Dream Infused 5pk") is None
     assert catalog_match.matched_subtype({"category": "vaporizers", "subtype": "pod"},
-                                         "Acme Blue Dream Cart") == "cart"
+                                         "Acme Blue Dream AIO") == "all-in-one"
+    # A synonym is no disagreement (taxonomy.FORMAT_SYNONYMS): the pod stays a pod.
+    assert catalog_match.matched_subtype({"category": "vaporizers", "subtype": "pod"},
+                                         "Acme Blue Dream Cart") == "pod"
+    assert taxonomy.same_format("cart", "pod") and not taxonomy.same_format("cart", "all-in-one")
     # The classify prompt's rail is unchanged: a rail edit is a prompt edit.
     assert taxonomy.rails()["preroll"] == ["single", "infused", "pack"]
 

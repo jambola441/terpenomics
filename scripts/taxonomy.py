@@ -188,6 +188,18 @@ def spec(category: str | None) -> CategorySpec | None:
     return SPECS.get((category or "").strip().lower())
 
 
+# Formats that are one format under two names (the owner's call, 2026-10-09): a pod is a
+# cartridge for a brand's own battery. Stores call PAX's Era pods "Cart" and STIIIZY's
+# pods "carts"; no catalog sells one product as both (Select's Elite GMO 1g was the only
+# pair, a duplicate). Readers keep the word they saw; comparisons use same_format.
+FORMAT_SYNONYMS = ({"cart", "pod"},)
+
+
+def same_format(a: str | None, b: str | None) -> bool:
+    """Whether two subtypes name one format: equal, or synonyms (FORMAT_SYNONYMS)."""
+    return a == b or any(a in group and b in group for group in FORMAT_SYNONYMS)
+
+
 def keeps_subtype(category: str | None) -> bool:
     """Whether a listing or catalog entry of this category keeps a subtype: only where
     the subtype is part of the product's identity. A pre-roll's is not (its spec's

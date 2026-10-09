@@ -825,7 +825,7 @@ def split_store_products(doc: dict, listings: list[dict],
             if not catalog_bootstrap._same_total(total, t):
                 continue
             if p["category"] in SUBTYPE_DECIDES and p.get("subtype") and e.get("subtype") \
-                    and p["subtype"] != e["subtype"]:
+                    and not taxonomy.same_format(p["subtype"], e["subtype"]):
                 continue
             if (how := _name_match(names, n)):
                 hits.append((how, e))
@@ -846,7 +846,8 @@ def _as_site_size(p: dict, names: dict, site: list[tuple]) -> dict:
     strain), the store size joins it: the site product's key and fields, an id of its
     own. Otherwise the product stays the stores' own, as before."""
     same = [e for _, n, e in site
-            if (p.get("subtype") or None) == (e.get("subtype") or None) and _name_match(names, n) == "exact"]
+            if taxonomy.same_format(p.get("subtype") or None, e.get("subtype") or None)
+            and _name_match(names, n) == "exact"]
     if len({e["product_key"] for e in same}) > 1:
         # Nanticoke's plain Durban Poison and its oHHo Durban Poison both read as
         # "Durban Poison": the one in the store product's own line is the one.

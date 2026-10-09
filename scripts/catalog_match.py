@@ -313,7 +313,8 @@ class CatalogIndex:
                 continue
             if line and squash(p.product_line) != line:
                 continue
-            if subtype and p.subtype and taxonomy.keeps_subtype(category) and subtype != p.subtype:
+            if subtype and p.subtype and taxonomy.keeps_subtype(category) \
+                    and not taxonomy.same_format(subtype, p.subtype):
                 continue
             entry = fitting_entry(p.entries, want, category)
             if entry is not False:
@@ -372,12 +373,13 @@ class CatalogIndex:
         if subtype and not listing_size.is_empty():
             scored = [(s, key) for s, key in scored
                       if not (self.products[key].subtype
-                              and self.products[key].subtype != subtype
+                              and not taxonomy.same_format(self.products[key].subtype, subtype)
                               and self.products[key].size_ok(listing_size) is False)]
         if subtype:
             same = [(s, key) for s, key in scored
-                    if not self.products[key].subtype or self.products[key].subtype == subtype]
-            if any(self.products[key].subtype == subtype for _, key in same):
+                    if not self.products[key].subtype
+                    or taxonomy.same_format(self.products[key].subtype, subtype)]
+            if any(taxonomy.same_format(self.products[key].subtype, subtype) for _, key in same):
                 scored = same
         if not listing_size.is_empty():
             fits = [(s, key) for s, key in scored
@@ -432,7 +434,7 @@ def attribute_misses(reading: dict, product: "Product", entry: dict,
         out.append("line")
     subtype = reading.get("subtype")
     if subtype and product.subtype and taxonomy.keeps_subtype(category or product.category) \
-            and subtype != product.subtype:
+            and not taxonomy.same_format(subtype, product.subtype):
         out.append("subtype")
     want = reading_size(reading, name)
     if want.is_empty() or sizes.same_size(
@@ -482,7 +484,11 @@ def matched_subtype(entry: dict, name: str | None) -> str | None:
     """
     if not taxonomy.keeps_subtype(entry.get("category")):
         return None
-    return taxonomy.token_subtype(entry.get("category"), name) or entry.get("subtype")
+    said = taxonomy.token_subtype(entry.get("category"), name)
+    # A synonym is no disagreement: a PAX pod a store calls "Cart" stays a pod.
+    if said and taxonomy.same_format(said, entry.get("subtype")):
+        return entry.get("subtype")
+    return said or entry.get("subtype")
 
 
 def catalog_size(variant: str | None, name: str | None, entry: dict,
