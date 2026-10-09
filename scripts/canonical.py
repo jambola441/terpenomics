@@ -205,6 +205,18 @@ def _strip_line_from_strain(strain: str, line: str) -> str:
     return stripped or strain
 
 
+def not_a_line(line: str | None, brand: str) -> bool:
+    """A model-supplied line that is no line: a lone letter (one store prefixes every
+    name "X| Brand | ...", and 156 readings took "X" for the line), or the brand's own
+    name ("Canna Cure" for Cannacure Farms, "Lost Farms" for Lost Farm; 121 readings,
+    2026-10-08)."""
+    s = re.sub(r"[^a-z0-9]", "", (line or "").lower())
+    b = re.sub(r"[^a-z0-9]", "", (brand or "").lower())
+    if not s:
+        return False
+    return len(s) <= 1 or bool(b) and (s == b or s in b or s == b + "s")   # not "Level 5", "Jeeter XL"
+
+
 def canonicalize(rows: list[dict]) -> dict:
     """Apply both maps to enriched rows, in place. Returns a count of what changed.
 
@@ -212,7 +224,7 @@ def canonicalize(rows: list[dict]) -> dict:
     name always wins (it is a string fact), but a model-supplied line is left alone
     when no curated entry matches, so uncurated brands keep whatever the model found.
     """
-    stats = {"product_line_set": 0, "product_line_corrected": 0,
+    stats = {"product_line_set": 0, "product_line_corrected": 0, "product_line_dropped": 0,
              "product_line_from_description": 0, "strain_delined": 0, "strain_aliased": 0}
     for row in rows:
         brand = row.get("brand") or row.get("scraped_brand") or ""
@@ -231,7 +243,10 @@ def canonicalize(rows: list[dict]) -> dict:
                     strain = _strip_line_from_strain(strain, sp)
                     row["strain"] = strain
                     stats["strain_delined"] += 1
-        elif not (row.get("product_line") or "").strip():
+        elif not_a_line(row.get("product_line"), brand):
+            row["product_line"] = None
+            stats["product_line_dropped"] += 1
+        if not hit and not (row.get("product_line") or "").strip():
             line = line_from_description(brand, row.get("description") or "",
                                          row.get("category") or row.get("scraped_category"))
             if line:
