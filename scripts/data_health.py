@@ -277,7 +277,7 @@ def near_misses(data: Data) -> list[Finding]:
             near: dict[str, set] = defaultdict(set)
             for key, product in index.products.items():
                 for e in product.entries:
-                    m = cm.attribute_misses(reading, product, e, name, index.brand_name)
+                    m = cm.attribute_misses(reading, product, e, name, index.brand_name, index.synonyms)
                     if len(m) == 1:
                         near[m[0]].add(key)
             if "strain" in near and reading.get("strain"):

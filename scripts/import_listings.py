@@ -310,7 +310,7 @@ def apply_catalog(records: list[dict], existing: dict[tuple, dict], catalogs: di
             stats["manual"] += 1
             hit = by_id.get(rec["catalog_entry_id"] or "")
             if hit:
-                _overlay(rec, hit[1], stats, _is_masked)
+                _overlay(rec, hit[1], stats, _is_masked, catalog_match.format_synonyms(hit[0]))
             continue
         key = catalog_store.brand_key(rec["scraped_brand"])
         if key in catalogs:
@@ -349,7 +349,7 @@ def apply_catalog(records: list[dict], existing: dict[tuple, dict], catalogs: di
             rec["catalog_match_confidence"] = d.confidence
             rec["catalog_match_method"] = d.method
             if d.method in catalog_match.OVERLAY_METHODS:
-                _overlay(rec, d.entry, stats, _is_masked)
+                _overlay(rec, d.entry, stats, _is_masked, catalog_match.format_synonyms(catalog))
     return stats
 
 
@@ -369,11 +369,11 @@ def _keep_stored_match(rec: dict, stored: dict | None, by_id: dict, stats: dict,
     rec["catalog_entry_id"] = hit[1]["id"]
     rec["catalog_match_confidence"] = stored["catalog_match_confidence"]
     rec["catalog_match_method"] = stored["catalog_match_method"]
-    _overlay(rec, hit[1], stats, is_masked)
+    _overlay(rec, hit[1], stats, is_masked, catalog_match.format_synonyms(hit[0]))
     return True
 
 
-def _overlay(rec: dict, entry: dict, stats: dict, is_masked) -> None:
+def _overlay(rec: dict, entry: dict, stats: dict, is_masked, synonyms: bool = True) -> None:
     """The catalog entry is authoritative for what the product IS.
 
     product_line is taken as-is, including empty: the line being present at some
@@ -394,7 +394,7 @@ def _overlay(rec: dict, entry: dict, stats: dict, is_masked) -> None:
     import catalog_match
     if entry.get("category"):
         rec["scraped_category"] = entry["category"]
-    subtype = catalog_match.matched_subtype(entry, rec.get("scraped_name"))
+    subtype = catalog_match.matched_subtype(entry, rec.get("scraped_name"), synonyms)
     if subtype:
         stats["subtype_from_name"] += subtype != entry.get("subtype")
         rec["subtype"] = subtype

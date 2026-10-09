@@ -546,3 +546,16 @@ class TestFormatSynonyms:
         pod = self.PAX["entries"][0]
         assert cm.matched_subtype(pod, "Northern Lights | Live Rosin w Diamonds | Cart") == "pod"
         assert cm.matched_subtype(pod, "Northern Lights | AIO") == "all-in-one"
+
+    def test_a_brand_selling_both_keeps_them_apart(self):
+        select = {"brand_name": "Select", "entries": [
+            {"id": "cliq", "product_key": "cliq", "name": "Cliq Gelato", "product_line": "Cliq",
+             "category": "vaporizers", "subtype": "pod", "strain": "Gelato", "variant": "1g"},
+            {"id": "elite", "product_key": "elite", "name": "Elite Gelato", "product_line": "Elite",
+             "category": "vaporizers", "subtype": "cart", "strain": "Gelato", "variant": "1g"}]}
+        idx = cm.CatalogIndex(select)
+        assert idx.synonyms is False and cm.CatalogIndex(self.PAX).synonyms is True
+        r = {"category": "vaporizers", "subtype": "cart", "strain": "Gelato", "size": "1g"}
+        assert idx.join(r)[1]["id"] == "elite"                  # a cart is the cart, not either
+        assert idx.join(dict(r, subtype="pod"))[1]["id"] == "cliq"
+        assert cm.matched_subtype(select["entries"][0], "Select Gelato Cart", synonyms=False) == "cart"

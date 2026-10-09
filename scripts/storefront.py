@@ -814,6 +814,7 @@ def split_store_products(doc: dict, listings: list[dict],
     Elsewhere the stores' subtype is too often enrichment's default to overrule a name
     (Spacebuds' moonrocks are "infused" on the site and "flower" at the stores)."""
     proposed = catalog_bootstrap.propose(doc["brand_name"], listings)["catalog"]["entries"]
+    synonyms = taxonomy.synonyms_hold({e.get("subtype") for e in doc["entries"] if e.get("subtype")})
     site = defaultdict(list)
     for e in doc["entries"]:
         site[e["category"]].append((_total(e), _names(e), e))
@@ -825,18 +826,18 @@ def split_store_products(doc: dict, listings: list[dict],
             if not catalog_bootstrap._same_total(total, t):
                 continue
             if p["category"] in SUBTYPE_DECIDES and p.get("subtype") and e.get("subtype") \
-                    and not taxonomy.same_format(p["subtype"], e["subtype"]):
+                    and not taxonomy.same_format(p["subtype"], e["subtype"], synonyms):
                 continue
             if (how := _name_match(names, n)):
                 hits.append((how, e))
         if not hits:
-            only_stores.append(_as_site_size(p, names, site[p["category"]]))
+            only_stores.append(_as_site_size(p, names, site[p["category"]], synonyms))
             continue
         found.append(p)
     return found, only_stores, {}
 
 
-def _as_site_size(p: dict, names: dict, site: list[tuple]) -> dict:
+def _as_site_size(p: dict, names: dict, site: list[tuple], synonyms: bool = True) -> dict:
     """A store product the site lists in other sizes is that product in one more size,
     not a product of its own: Nanticoke's site lists Blue Dream pre-rolls as 0.5g
     singles and 5 x 0.7g packs, and stores also sell the 5 x 0.5g pack (2.5g). Kept as
@@ -846,7 +847,7 @@ def _as_site_size(p: dict, names: dict, site: list[tuple]) -> dict:
     strain), the store size joins it: the site product's key and fields, an id of its
     own. Otherwise the product stays the stores' own, as before."""
     same = [e for _, n, e in site
-            if taxonomy.same_format(p.get("subtype") or None, e.get("subtype") or None)
+            if taxonomy.same_format(p.get("subtype") or None, e.get("subtype") or None, synonyms)
             and _name_match(names, n) == "exact"]
     if len({e["product_key"] for e in same}) > 1:
         # Nanticoke's plain Durban Poison and its oHHo Durban Poison both read as

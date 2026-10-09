@@ -247,6 +247,8 @@ class CatalogIndex:
             if e.get("is_active", True):
                 groups[e.get("product_key") or catalog_store._product_key(e)].append(e)
         self.products = {k: Product.build(k, v) for k, v in groups.items()}
+        # Pod and cart are one format here unless the brand sells both (taxonomy).
+        self.synonyms = format_synonyms(catalog)
 
     def pick_entry(self, key: str, listing_variant: str | None, category: str | None,
                    name: str = "") -> dict:
@@ -314,7 +316,7 @@ class CatalogIndex:
             if line and squash(p.product_line) != line:
                 continue
             if subtype and p.subtype and taxonomy.keeps_subtype(category) \
-                    and not taxonomy.same_format(subtype, p.subtype):
+                    and not taxonomy.same_format(subtype, p.subtype, self.synonyms):
                 continue
             entry = fitting_entry(p.entries, want, category)
             if entry is not False:
@@ -373,13 +375,13 @@ class CatalogIndex:
         if subtype and not listing_size.is_empty():
             scored = [(s, key) for s, key in scored
                       if not (self.products[key].subtype
-                              and not taxonomy.same_format(self.products[key].subtype, subtype)
+                              and not taxonomy.same_format(self.products[key].subtype, subtype, self.synonyms)
                               and self.products[key].size_ok(listing_size) is False)]
         if subtype:
             same = [(s, key) for s, key in scored
                     if not self.products[key].subtype
-                    or taxonomy.same_format(self.products[key].subtype, subtype)]
-            if any(taxonomy.same_format(self.products[key].subtype, subtype) for _, key in same):
+                    or taxonomy.same_format(self.products[key].subtype, subtype, self.synonyms)]
+            if any(taxonomy.same_format(self.products[key].subtype, subtype, self.synonyms) for _, key in same):
                 scored = same
         if not listing_size.is_empty():
             fits = [(s, key) for s, key in scored
@@ -415,7 +417,8 @@ ATTRIBUTES = ("category", "strain", "line", "subtype", "size")
 
 
 def attribute_misses(reading: dict, product: "Product", entry: dict,
-                     name: str | None = None, brand: str | None = None) -> list[str]:
+                     name: str | None = None, brand: str | None = None,
+                     synonyms: bool = True) -> list[str]:
     """The attributes on which one catalog entry disagrees with a listing's reading, in
     the join's own terms (CatalogIndex.join): a line or format the reading leaves blank
     is no disagreement; a strain or size it leaves blank is one, because the join needs
@@ -434,7 +437,7 @@ def attribute_misses(reading: dict, product: "Product", entry: dict,
         out.append("line")
     subtype = reading.get("subtype")
     if subtype and product.subtype and taxonomy.keeps_subtype(category or product.category) \
-            and not taxonomy.same_format(subtype, product.subtype):
+            and not taxonomy.same_format(subtype, product.subtype, synonyms):
         out.append("subtype")
     want = reading_size(reading, name)
     if want.is_empty() or sizes.same_size(
@@ -472,7 +475,13 @@ def reading_size(reading: dict, name: str | None = None) -> sizes.Size:
     return want
 
 
-def matched_subtype(entry: dict, name: str | None) -> str | None:
+def format_synonyms(catalog: dict) -> bool:
+    """Whether pod and cart (taxonomy.FORMAT_SYNONYMS) are one format in this catalog."""
+    return taxonomy.synonyms_hold({e.get("subtype") for e in catalog.get("entries") or []
+                                   if e.get("is_active", True) and e.get("subtype")})
+
+
+def matched_subtype(entry: dict, name: str | None, synonyms: bool = True) -> str | None:
     """The subtype a listing resolved to `entry` takes.
 
     The entry's — unless a format word in the listing's own name says otherwise
@@ -485,8 +494,9 @@ def matched_subtype(entry: dict, name: str | None) -> str | None:
     if not taxonomy.keeps_subtype(entry.get("category")):
         return None
     said = taxonomy.token_subtype(entry.get("category"), name)
-    # A synonym is no disagreement: a PAX pod a store calls "Cart" stays a pod.
-    if said and taxonomy.same_format(said, entry.get("subtype")):
+    # A synonym is no disagreement where the brand sells one of the two: a PAX pod a
+    # store calls "Cart" stays a pod. Where it sells both, the name's word stands.
+    if said and taxonomy.same_format(said, entry.get("subtype"), synonyms):
         return entry.get("subtype")
     return said or entry.get("subtype")
 
