@@ -24,6 +24,8 @@
       "Bash(python scripts/db_http.py count:*)",
       "Bash(python scripts/storefront.py check:*)",
       "Bash(python3 scripts/storefront.py check:*)",
+      "Bash(python scripts/storefront.py push:*)",
+      "Bash(python3 scripts/storefront.py push:*)",
       "Bash(python scripts/catalog_shape.py:*)",
       "Bash(python3 scripts/catalog_shape.py:*)",
       "Bash(python scripts/data_health.py report:*)",
