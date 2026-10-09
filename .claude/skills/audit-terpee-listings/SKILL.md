@@ -39,9 +39,12 @@ In this order, new before old:
    finding about it is stale data.
 2. **Sizes 2+ stores sell that the product lacks.** Matching joins on size exactly
    (2026-10-08), so these listings reach the product only through Jev, or not at all.
-3. **Product-page sizes left behind** (normally zero right after the 13:00 UTC import).
-4. **Review-only clusters** at 3+ stores, then **brandless listings** by count.
-5. **Curated products no listing has matched for 30 days.** Check that they stopped
+3. **Near misses at 2+ stores**: the stores' reading misses one product on exactly one
+   attribute, so the join cannot place them. Biggest first; they are the catalog's
+   coverage gaps (a format, a line, a size it lacks) and the readings' misspellings.
+4. **Product-page sizes left behind** (normally zero right after the 13:00 UTC import).
+5. **Review-only clusters** at 3+ stores, then **brandless listings** by count.
+6. **Curated products no listing has matched for 30 days.** Check that they stopped
    selling, then retire them.
 
 List the rest in the report as open, without investigating them.
@@ -56,6 +59,10 @@ stores actually sell, and the brand's site settles what exists. Decide what it i
 | --- | --- | --- |
 | stale store | the store's scraper failed, or the cron did not run | none in the data. Read the Render cron logs (crn-db1fveugekts73dl7s60) for the store and report the error. Never re-run the pipeline or change Render settings without asking |
 | size 2+ stores sell | a real size the catalog lacks (STIIIZY's 40's Orange Sunset 5-pack, 2.5g, added 2026-10-05), another product under a similar name (a different line), or a typo stores share | real size: `catalog_fix.py add-size ENTRY SIZE`. Another product: say so (it belongs in the catalog as its own product). Shared typo: dismiss, naming the stores |
+| near miss: format | a format the brand sells that the catalog lacks (Eureka's RELOAD filed as cart only; stores sell the AIO), or a misread when the finding says every product of the line shares one format (Hashtag Honey's Snowballz are all infused) | real format: the brand's site settles it, then `add-product` with that format. Misread: a format rule for the line, which is code (step 7) |
+| near miss: line | a product that lost its line (a line-less PAX AIO beside High Purity), or a word stores read as a line | lost line: re-line the entries (`catalog_fix.py` line fix). Not a line: a line rule in `data/product_lines.json` |
+| near miss: strain | the catalog's strain carries a word stores leave out ("Social Sparkling Pear": Camino's effect), or the stores' carries one the matcher does not set aside | a strain alias (`data/strain_aliases.json`), or the catalog strain corrected when the brand's site names it without the word. Extraction and grade words ("Rosin", "Live Resin", "Premium") and the product's own line are already set aside (catalog_match.strain_core) |
+| near miss: size / category | as for sizes 2+ stores sell; a category stores file another way (a 5-pack of prerolls under flower) | as for sizes; a category rule is code (step 7) |
 | page sizes left behind | a catalog edit since the last import | `catalog_fix.py size-sync` |
 | review-only cluster | the listings' reading misses the product (a strain spelled another way, a line not read), or the catalog lacks the product | look at the listings' `reading`: a spelling is a strain alias (`data/strain_aliases.json`), a missed line a line rule (`data/product_lines.json`); a missing product or size is `add-product` / `add-size`. Store names no longer match anything (2026-10-08) |
 | brandless listings | one store's feed carries no brand (87 STIIIZY listings did on 2026-10-05) | none in the catalog. Find the store (`look` shows dispensary ids) and report it; fixing the scraper or enrichment is code (step 7) |
