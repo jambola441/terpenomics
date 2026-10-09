@@ -249,3 +249,15 @@ class TestCategoryLines:
                  "category": "preroll", "product_line": None, "strain": "Kush Mints x Chopped Cheese"}]
         canonicalize(rows)
         assert (rows[0]["product_line"], rows[0]["strain"]) == ("Chopped Cheese", "Kush Mintz")
+
+
+def test_a_stray_letter_or_the_brand_is_not_a_line():
+    from canonical import not_a_line
+    assert not_a_line("X", "Anthem") and not_a_line("Canna Cure", "Cannacure Farms")
+    assert not_a_line("Lost Farms", "Lost Farm") and not_a_line("Grassroots", "Grassroots")
+    assert not not_a_line("Live Surf", "BLOOM") and not not_a_line(None, "BLOOM")
+    assert not not_a_line("Level 5", "Level") and not not_a_line("Jeeter XL", "Jeeter")
+    rows = [{"brand": "Anthem", "name": "X| Anthem | Indica | Preroll | 10pk | 3.5g", "category": "preroll",
+             "product_line": "X", "strain": "Indica Blend"}]
+    canonicalize(rows)
+    assert rows[0]["product_line"] is None

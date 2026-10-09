@@ -63,6 +63,7 @@ import json
 import os
 import re
 import sys
+import time
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -719,9 +720,18 @@ def write_decisions_http(decisions: list[Decision], workers: int = 8) -> int:
         n = 0
         guard = f"catalog_match_method=eq.{old}" if old else "catalog_match_method=is.null"
         for i in range(0, len(ids), 100):
-            rows = db_http.update("listings", f"id=in.({','.join(ids[i:i + 100])})&{guard}",
-                                  {"catalog_entry_id": entry, "catalog_match_confidence": conf,
-                                   "catalog_match_method": method})
+            for attempt in range(4):
+                # A dropped connection is retried (2026-10-08: one SSL EOF stopped a
+                # full re-match part-way); the guard makes a repeat harmless.
+                try:
+                    rows = db_http.update("listings", f"id=in.({','.join(ids[i:i + 100])})&{guard}",
+                                          {"catalog_entry_id": entry, "catalog_match_confidence": conf,
+                                           "catalog_match_method": method})
+                    break
+                except db_http.DbHttpError:
+                    if attempt == 3:
+                        raise
+                    time.sleep(2 ** attempt)
             n += len(rows)
         return n
 
