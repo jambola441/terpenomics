@@ -84,3 +84,56 @@ def test_a_listing_with_no_size_takes_the_size_less_entry():
     r = {"subtype": "filter-tip", "product_line": None, "colour": None, "size": None}
     assert mc.join(entries, r)["id"] == 2
     assert mc.join(entries, dict(r, size="21ct"))["id"] == 1
+
+
+def test_a_brands_retail_counts_pick_each_widths_count():
+    # A page naming two widths and two counts is two sizes, not four.
+    counts = {"1 1/4": [50], "king size": [32]}
+    got = mc.site_sizes("RAW Ethereal", "RAWKSSLIM-ETH, RAW-114-ETH", "50 leaves per pack. 32 leaves per pack.",
+                        "Ethereal", counts)
+    assert {x.label() for x in got} == {"1 1/4 50ct", "king size 32ct"}
+    # A line that differs, and a count the title states, win.
+    assert [x.label() for x in mc.site_sizes("RAW Creaseless 1¼", "", "", "Classic Creaseless",
+                                             {"1 1/4": [50], "Classic Creaseless 1 1/4": [300]})] == ["1 1/4 300ct"]
+    assert [x.label() for x in mc.site_sizes("Unbleached 1¼ Cones 32 Pack", "", "", "Unbleached",
+                                             {"1 1/4": [6]})] == ["1 1/4 32ct"]
+
+
+def test_stores_count_the_cover_leaf():
+    assert mc.same_size(mc.parse_size("king size 33ct"), mc.parse_size("king size 32ct"))
+    assert not mc.same_size(mc.parse_size("king size 3ct"), mc.parse_size("king size 4ct"))
+
+
+def test_widths_stores_write():
+    for name, size in [("RAW | Classic 1¼ Rolling Papers", "1 1/4"), ("RAW | King Classic Cones", "king size"),
+                       ("OCB Bamboo Rolling Papers - Slim", "king size"), ("X-Pert Slim Fit Rolling Papers", "king size"),
+                       ("Bamboo Mini Cones", "mini"), ("RAW Lemonade King Wide Papers", "ks wide"),
+                       ("King Palm Wraps", None)]:
+        assert mc.parse_size(mc._MERCH.variant(name, None)).width == size, name
+
+
+def test_cone_tips_and_tip_booklets_are_tips_without_a_width():
+    for name in ("Pre-Rolled Perfecto Cone Tips", "Raw - Original Tips Booklet - 50ct", "RAW | Slim Pre Rolled Tips"):
+        r = mc.reading(name, "RAW", "cone")
+        assert r["subtype"] == "filter-tip", name
+        assert mc.parse_size(r["size"]).width is None
+
+
+def test_a_lines_packaging_colour_is_no_colour():
+    assert mc.reading("1 1/4 x 6pk Yellow Classic Cones", "RAW", "cone")["colour"] is None
+    # The colour word is part of the line's spelling: OCB's "Organic Unbleached Hemp".
+    r = mc.reading("OCB - Organic Unbleached Hemp King Size Cones - 3pk", "OCB", "cone")
+    assert (r["product_line"], r["colour"]) == ("Organic Hemp", None)
+
+
+def test_a_stores_size_of_a_site_product_joins_it():
+    import storefront as sf
+    site = {"brand_name": "RAW", "entries": [{
+        "external_id": "sf:merch:paper:classicconnoisseur:::1141450ctwtips:1", "product_key": "sf:merch:paper:classicconnoisseur::",
+        "name": "Classic Connoisseur Papers", "product_line": "Classic Connoisseur", "category": "merch",
+        "subtype": "paper", "strain": None, "variant": "1 1/4 50ct w/tips", "attributes": None, "match_terms": []}]}
+    listings = [l(1, "a", "Raw Classic Connoisseur Papers King Size 32ct"), l(2, "b", "Classic Connoisseur KS Slim Papers 32ct"),
+                l(3, "a", "Raw Classic Connoisseur 1 1/4 Papers 50ct"), l(4, "b", "Classic Connoisseur 1 1/4 Papers 50ct")]
+    found, only, _ = sf.split_store_products(site, listings)
+    assert [e["variant"] for e in found] == ["1 1/4 50ct w/tips"]
+    assert [(e["product_key"], e["variant"]) for e in only] == [(site["entries"][0]["product_key"], "king size 32ct w/tips")]

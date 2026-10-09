@@ -496,6 +496,10 @@ def validate(recipe: dict, where: str = "recipe") -> dict:
     kind = (recipe.get("source") or {}).get("kind")
     if kind not in SOURCES:
         bad(f"source.kind {kind!r} is not one of {sorted(SOURCES)}")
+    for fmt, table in (recipe.get("merch_counts") or {}).items():
+        if not isinstance(table, dict) or not all(
+                isinstance(v, list) and all(isinstance(n, int) and n > 0 for n in v) for v in table.values()):
+            bad(f"merch_counts.{fmt}: a width (or \"<line> <width>\") to a list of pack counts")
     for table in (recipe.get("store_aliases") or {}):
         if table not in ("lines", "names"):
             bad(f"store_aliases.{table}: only lines and names are mapped")
@@ -701,7 +705,8 @@ def build(recipe: dict, items: list[Item]) -> tuple[dict, dict]:
             import merch_catalog
             sku = (json.loads(it.fields.get("meta") or "{}") or {}).get("sku") or ""
             got = merch_catalog.site_entries(it.title, sku, it.fields.get("body") or "", brand,
-                                             crule["set"].get("subtype"), method, it.id)
+                                             crule["set"].get("subtype"), method, it.id,
+                                             recipe.get("merch_counts"))
             if not got:
                 skipped["merch: not a cataloged format, or no size stated"] += 1
             entries.extend(got)
@@ -849,6 +854,13 @@ def split_store_products(doc: dict, listings: list[dict],
         site[e["category"]].append((_total(e), _names(e), e))
     found, only_stores = [], []
     for p in proposed:
+        if p["category"] == "merch":
+            # Papers and hardware are their format, line, colour and size (merch_catalog),
+            # not a name and a total: the site's Classic Connoisseur 1¼ is not the stores'
+            # Classic Connoisseur king size, which joins it as one more size.
+            (found if _merch_site_has(p, site["merch"]) else only_stores).append(
+                p if _merch_site_has(p, site["merch"]) else _merch_as_site_size(p, site["merch"]))
+            continue
         total, names = _total(p), _names(_aliased(p, aliases or {}))
         hits = []
         for t, n, e in site[p["category"]]:
@@ -864,6 +876,35 @@ def split_store_products(doc: dict, listings: list[dict],
             continue
         found.append(p)
     return found, only_stores, {}
+
+
+def _merch_product(p: dict, site: list[tuple]) -> list[dict]:
+    """The site's entries of the merch product `p` is: format, line and colour agree."""
+    import merch_catalog as mc
+    return [e for _, _, e in site if e.get("subtype") == p.get("subtype")
+            and mc._key(e.get("product_line")) == mc._key(p.get("product_line"))
+            and mc._key(mc.entry_colour(e)) == mc._key(mc.entry_colour(p))]
+
+
+def _merch_site_has(p: dict, site: list[tuple]) -> bool:
+    """Whether the site lists the stores' merch product in their size (or the product,
+    for a format sold without one)."""
+    import merch_catalog as mc
+    want = mc.parse_size(p.get("variant"))
+    return any(want.is_empty() and not e.get("variant")
+               or not want.is_empty() and e.get("variant") and mc.same_size(want, mc.parse_size(e["variant"]))
+               for e in _merch_product(p, site))
+
+
+def _merch_as_site_size(p: dict, site: list[tuple]) -> dict:
+    """A stores' merch size of a product the site lists: that product, one more size."""
+    same = _merch_product(p, site)
+    if len({e["product_key"] for e in same}) != 1:
+        return p
+    e = same[0]
+    return {**p, "product_key": e["product_key"], "name": e["name"],
+            "external_id": f"{e['product_key']}:{squash(p.get('variant')) or 'nosize'}:stores",
+            "joins": e["name"]}
 
 
 def _as_site_size(p: dict, names: dict, site: list[tuple], synonyms: bool = True) -> dict:

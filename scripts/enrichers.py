@@ -129,7 +129,7 @@ class MerchEnricher(CategoryEnricher):
     # is otherwise named identically to the plain one. Used twice: it sets the
     # variant, and `for_tokens` removes it before the rules run — see there.
     _tips = re.compile(
-        r"w/\s*(?:pre[\s-]*rolled\s+)?tips?\b|\+\s*tips?\b|\bwith\s+tips?\b", re.I)
+        r"w/\s*(?:pre[\s-]*rolled\s+)?tips?\b|\+\s*tips?\b|\b(?:with|plus)\s+tips?\b", re.I)
 
     # Order is load-bearing, first match wins:
     #   bong before pipe          — a "water pipe" is a bong
@@ -196,17 +196,25 @@ class MerchEnricher(CategoryEnricher):
     # both: cones differ by pack at one size ("Pink 98mm Cones 20pk" vs "50pk"),
     # papers differ by width at one count, since a brand ships its whole range at
     # 33ct. Emitting both avoids a per-subtype rule.
-    _pack = re.compile(r"\b(\d+)\s*(pk|pack|ct|count|leaves|pcs|pc)\b", re.I)
+    _pack = re.compile(r"\b(\d+)\s*-?\s*(pk|pck|packs?|ct|count|leaves|pcs|pc)\b", re.I)
     # Width normalised because one brand writes it several ways in one menu — RAW
     # has "KS Slim", "King Size Slim" and "Slim KS" for the same paper, which split
     # one product three ways. "Slim" is a thinness, not a width, so it is not a
     # key; "KS Wide" is a genuinely different width, so it is.
     _widths = [
-        (re.compile(r"\bks\s*wide\b|\bking\s*size\s*wide\b", re.I), "ks wide"),
-        (re.compile(r"\bking\s*size\b|\bkingsize\b|\bks\b", re.I),   "king size"),
-        (re.compile(r"\b1\s*1/4\b|\b1\.25\b", re.I),                 "1 1/4"),
-        (re.compile(r"\b1\s*1/2\b|\b1\.5\b", re.I),                  "1 1/2"),
+        (re.compile(r"\bks\s*wide\b|\bking\s*(?:size\s*)?wide\b|\bkingsize\s*wide\b", re.I), "ks wide"),
+        # A bare "King" is the width only before a paper word: "King Classic Cones",
+        # "King Slim Hemp Rolling Papers" (and never King Palm, a brand).
+        (re.compile(r"\bking\s*size\b|\bkingsize\b|\bks\b"
+                    r"|\bking\b(?=\s+(?:slims?|classic|cones?|papers?|hemp|organic)\b)", re.I), "king size"),
+        (re.compile(r"\b1\s*1/4\b|\b1\.25\b|\b1\s*\u00bc", re.I),        "1 1/4"),
+        (re.compile(r"\b1\s*1/2\b|\b1\.5\b|\b1\s*\u00bd", re.I),         "1 1/2"),
         (re.compile(r"\bsingle\s*wide\b", re.I),                     "single wide"),
+        # A bare "Slim" is the king size slim (OCB's "Slim", X-Pert's "Slim Fit", RAW's
+        # "KS Slim"): an explicit width before it wins. Not on tips or filters, which
+        # come slim at any width.
+        (re.compile(r"\bslim(?:\s*fit)?\b(?!\s*(?:pre|tips?|filters?|cellulose))", re.I), "king size"),
+        (re.compile(r"\bmini\b(?=\s+(?:pre[\s-]*rolled\s+)?cones?\b)", re.I),   "mini"),
         (re.compile(r"\b100s\b", re.I),                              "100s"),
     ]
     _dim = re.compile(
@@ -228,7 +236,7 @@ class MerchEnricher(CategoryEnricher):
         n, unit = m.group(1), m.group(2).lower()
         # leaves, count and ct all mean the same thing; keeping them apart would
         # split one product across three spellings.
-        return f"{n}pk" if unit in ("pk", "pack") else f"{n}ct"
+        return f"{n}pk" if unit in ("pk", "pck", "pack", "packs") else f"{n}ct"
 
     def variant(self, name: str, scraped: str | None) -> str | None:
         parts = [self._size(name), self._pack_of(name)]

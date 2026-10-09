@@ -178,6 +178,10 @@ first line.
   All of it is read by rules, so a misread is fixed in the rules: a line in
   `data/product_lines.json` (a hardware line declares `"subtype": "battery"`), a colour
   in `attributes.py`. Hardware with a curated line needs one store; papers need two.
+  A papers brand's site gives widths and counts apart: the recipe's `merch_counts` pairs
+  them (RAW, OCB). A colour that is the line's packaging is the line's `"finish"`
+  (RAW Classic's natural and yellow), not a colour. Store counts one off a booklet's
+  (33ct for a 32-leaf king size slim) are the same booklet.
 - **Inferred sizes.** `scripts/line_fill.py` gives every product of a named line the
   sizes its line comes in (same brand, category, format and line), as entries with
   source `inferred`.

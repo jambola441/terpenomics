@@ -76,7 +76,7 @@ def is_merch(category: str | None, subtype: str | None, name: str = "", brand: s
 # ---------------------------------------------------------------------------
 
 _COUNT = re.compile(r"\b(\d+)\s*(?:pk|ct)\b")
-_WIDTH = re.compile(r"^(ks wide|king size|1 1/4|1 1/2|single wide|100s|\d+(?:\.\d+)?\s*(?:mm|in|inch|\"))")
+_WIDTH = re.compile(r"^(ks wide|king size|1 1/4|1 1/2|single wide|mini|100s|\d+(?:\.\d+)?\s*(?:mm|in|inch|\"))")
 
 
 @dataclass(frozen=True)
@@ -108,44 +108,78 @@ def same_size(a: MerchSize, b: MerchSize) -> bool:
         return False
     if a.width and b.width and a.width != b.width:
         return False
-    if a.count and b.count and a.count != b.count:
+    if a.count and b.count and not same_count(a.count, b.count):
         return False
     return True
+
+
+def same_count(a: int, b: int) -> bool:
+    """Whether two leaf counts name one booklet: a king size slim is 32 leaves on the
+    pack and "33ct" in many stores (the cover leaf counted), so a booklet's count of 30
+    or more agrees within one. Cone packs (3, 6, 20, 32) never sit one apart."""
+    return a == b or (min(a, b) >= 30 and abs(a - b) == 1)
 
 
 # ---------------------------------------------------------------------------
 # A listing's merch reading
 # ---------------------------------------------------------------------------
 
-def line_subtype(brand: str, line: str | None) -> str | None:
-    """The format a curated merch line declares (data/product_lines.json: PAX's Flow is a
-    device, filed with batteries), or None."""
+def _line_entry(brand: str, line: str | None) -> dict:
     if not line:
-        return None
+        return {}
     own, shared = canonical._for_brand(canonical._load(canonical._LINES_PATH, "lines"), brand or "")
     for entry in list(own or []) + list(shared or []):
         if isinstance(entry, dict) and entry.get("line") == line and entry.get("category") == "merch":
-            return entry.get("subtype")
-    return None
+            return entry
+    return {}
+
+
+def line_subtype(brand: str, line: str | None) -> str | None:
+    """The format a curated merch line declares (data/product_lines.json: PAX's Flow is a
+    device, filed with batteries), or None."""
+    return _line_entry(brand, line).get("subtype")
+
+
+def line_finish(brand: str, line: str | None) -> set[str]:
+    """Colours that are a line's packaging, not a colour of the product: RAW Classic's
+    "Natural" and "Yellow", Ethereal's "Gold" ("finish" in data/product_lines.json)."""
+    return {_key(c) for c in _line_entry(brand, line).get("finish") or []}
+
+
+# A tip named by what it fits: "Perfecto Pre-Rolled Cone Tips", "Maestro Cone Tips", and a
+# booklet of tips ("Original Tips Booklet", RAW's Rawlbook) are tips, not cones or papers.
+_TIP_NAMES = re.compile(r"\bcone\s+tips?\b|\btips?\s+booklet\b|\brawlbook\b|\bpaper\s+tips?\b", re.I)
 
 
 def reading(name: str, brand: str, subtype: str | None = None, category: str | None = None) -> dict:
     """What the rules read off a merch listing's name: format, line, colour, size. A name
     with no format word takes its line's (a "PAX Flow | Onyx" is a device), and a
     vaporizer a store filed as a battery is one."""
-    line = find_product_line(brand or "", name or "", "merch")
-    sub = _MERCH.token_subtype(name) or line_subtype(brand, line) or subtype
+    hit = canonical._find_line(brand or "", name or "", "merch")
+    line, spelling = hit if hit else (None, None)
+    sub = ("filter-tip" if _TIP_NAMES.search(name or "") else None) \
+        or _MERCH.token_subtype(name) or line_subtype(brand, line) or subtype
     if category == "vaporizers" and sub not in CATALOGED:
         sub = "battery"                     # a vape-filed device: its format word was a vape's
     if not line and sub in PAPERS:
         line = default_line(brand, sub)
     colour = (attribute_registry.for_category("merch", name) or {}).get("colour")
-    if colour and line and _key(colour) in _key(line):
+    if colour and line and (_key(colour) in _key(line) or _key(colour) in _key(spelling)
+                            or _key(colour) in line_finish(brand, line)):
         colour = None                       # RAW Black is a line: its black is no colour of its own
     size = _MERCH.variant(name, None)
+    if sub == "filter-tip":
+        size = tip_size(size)
     if size and comes_with_tips(line) and "w/tips" not in size:
         size += " w/tips"
     return {"category": "merch", "subtype": sub, "product_line": line, "colour": colour, "size": size}
+
+
+def tip_size(size: str | None) -> str | None:
+    """A tip's size is its count alone: tips come "slim" or "wide" at every paper width,
+    so a width read off a tip's name ("Slim Pre-Rolled Tips") is not one."""
+    count = parse_size(size).count
+    return f"{count}ct" if count else None
 
 
 def comes_with_tips(line: str | None) -> bool:
@@ -189,10 +223,17 @@ _SKU_WIDTHS = [(re.compile(r"KS-?WIDE|KSW\b|-KSW-", re.I), "ks wide"),
                (re.compile(r"-112-|112\b|\bRAW1-2\b", re.I), "1 1/2")]
 
 
-def site_sizes(title: str, sku: str, body: str, line: str | None = None) -> list[MerchSize]:
+def site_sizes(title: str, sku: str, body: str, line: str | None = None,
+               counts: dict | None = None) -> list[MerchSize]:
     """The retail sizes a site's product page states: the widths its title and SKUs name,
     times the pack counts its copy names, bulk and display boxes left out. A page that
-    names no count gives its widths with the count open."""
+    names no count gives its widths with the count open.
+
+    `counts` is the brand's retail counts per width for this format (a storefront
+    recipe's "merch_counts": RAW's king size slim is 32 leaves, its 1¼ is 50), keyed by
+    width or by "<line> <width>" where a line differs (RAW Creaseless 1¼ is 300). A
+    width it names takes those counts, narrowed to the ones the page states if it states
+    any of them: a page naming two widths and two counts is not four products."""
     widths = []
     w = parse_size(_MERCH.variant(title, None)).width
     if w:
@@ -202,17 +243,31 @@ def site_sizes(title: str, sku: str, body: str, line: str | None = None) -> list
             widths.append(width)
     if re.search(r"\bwide\b", body or "", re.I) and "king size" in widths and "ks wide" not in widths:
         widths.append("ks wide")
-    counts = []
+    counts_found = []
     for m in list(_PACK_PHRASE.finditer(body or "")) + list(_LEAVES.finditer(body or "")):
         tail = (body or "")[m.end():m.end() + 12]
         if _BULK.search(m.group(0)) or re.match(r"\s*(?:per\s+)?(?:bulk\s+)?(?:box|display|case)\b", tail, re.I):
             continue
         n = int(m.group(1))
-        if 1 <= n < 100 and n not in counts:
-            counts.append(n)
+        if 1 <= n < 100 and n not in counts_found:
+            counts_found.append(n)
     tips = comes_with_tips(line) or bool(_MERCH._tips.search(title or ""))
-    return fold_partial([MerchSize(w, c, tips) for w in (widths or [None]) for c in (counts or [None])
-                         if w or c])
+    stated = counts_found
+    titled = parse_size(_MERCH.variant(title, None)).count     # "Unbleached 1¼ Cones 32 Pack"
+    out = []
+    for w in widths or [None]:
+        known = _retail_counts(counts, line, w)
+        cs = [titled] if titled else \
+            ([c for c in known if any(same_count(c, x) for x in stated)] or known) if known else stated
+        out += [MerchSize(w, c, tips) for c in (cs or [None]) if w or c]
+    return fold_partial(out)
+
+
+def _retail_counts(counts: dict | None, line: str | None, width: str | None) -> list[int]:
+    if not counts or not width:
+        return []
+    got = counts.get(f"{line} {width}") if line else None
+    return list(got if got is not None else counts.get(width) or [])
 
 
 def fold_partial(sizes: list[MerchSize]) -> list[MerchSize]:
@@ -224,14 +279,18 @@ def fold_partial(sizes: list[MerchSize]) -> list[MerchSize]:
 
 
 def site_entries(title: str, sku: str, body: str, brand: str, subtype: str, method: str,
-                 item_id: str) -> list[dict]:
+                 item_id: str, counts: dict | None = None) -> list[dict]:
     """Catalog entries for one product page of a brand's site, read by the same rules as
     a store listing (reading), one per size the page states (site_sizes)."""
     r = reading(title, brand, subtype)
     sub = r["subtype"]                      # a format word in the title, else the site's category
     if sub not in CATALOGED:
         return []
-    sizes = site_sizes(title, sku, body, r["product_line"]) if sub in PAPERS else [MerchSize()]
+    sizes = site_sizes(title, sku, body, r["product_line"], (counts or {}).get(sub)) \
+        if sub in PAPERS else [MerchSize()]
+    if sub == "filter-tip":
+        sizes = fold_partial(sorted({MerchSize(None, x.count) for x in sizes},
+                                    key=lambda x: x.count or 0)) or [MerchSize()]
     if not sizes and sub not in SIZED:
         sizes = [MerchSize()]
     product_key = f"sf:merch:{sub}:{_key(r['product_line'])}:{_key(r['colour'])}:{_key(range_name(title, r))}"
