@@ -159,6 +159,8 @@ def reading(name: str, brand: str, subtype: str | None = None, category: str | N
     line, spelling = hit if hit else (None, None)
     sub = ("filter-tip" if _TIP_NAMES.search(name or "") else None) \
         or _MERCH.token_subtype(name) or line_subtype(brand, line) or subtype
+    if sub == "filter-tip" and comes_with_tips(line) and not _TIP_NAMES.search(name or ""):
+        sub = "paper"                       # "Pre-Rolling Tips Masterpiece Classic": the papers its tips come with
     if category == "vaporizers" and sub not in CATALOGED:
         sub = "battery"                     # a vape-filed device: its format word was a vape's
     if not line and sub in PAPERS:
@@ -209,8 +211,9 @@ def tip_size(size: str | None) -> str | None:
 
 def comes_with_tips(line: str | None) -> bool:
     """A range sold with tips in the pack, whether or not a name says so: RAW's
-    Connoisseur is its papers with tips."""
-    return "connoisseur" in (line or "").lower()
+    Connoisseur is its papers with tips, Masterpiece its papers with pre-rolled tips,
+    Artesano its papers with tips and a tray."""
+    return any(w in (line or "").lower() for w in ("connoisseur", "masterpiece", "artesano"))
 
 
 _DEFAULTS: dict | None = None
