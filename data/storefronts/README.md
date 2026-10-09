@@ -81,8 +81,9 @@ with `^...$` for an exact value; `(?i)` for case).
 **Rules.** Each list is tried in order; the first match wins.
 - `skip`: what is not a product we model — apparel, accessories, gift cards, bundles.
 - `category`: `set.category` is one of flower, preroll, vaporizers, edible, concentrate,
-  tinctures, topical (merch and other are not catalogued); `set.subtype` where the site
-  says one the title does not. Prefer format words in the title over a site's own type
+  tinctures, topical, or merch for papers, cones, tips and hardware (`set.subtype` paper,
+  cone, filter-tip, battery: read by `merch_catalog.py`, no `title` rule; other is not
+  catalogued); `set.subtype` where the site says one the title does not. Prefer format words in the title over a site's own type
   field when they disagree — sites mislabel.
 - `title`: `match` on the title with named groups `line`, `strain`, `strain2` (joined after
   `strain`, for a title that splits the product's name: "10mg 'Deep Sleep' Blackberry
@@ -104,6 +105,14 @@ some stores give a product the site lists in another (`{"when": {"name": "^Cotto
 "size": "^100mg$"}, "why": "..."}`; `name`, `size` and `subtype` are regexes on the store
 product's name, size and subtype: the name carries the line where a line rule gave it one,
 "Pips Sativa" rather than "Sativa"). `check` prints what it dropped and why.
+
+**`merch_counts`** for a papers brand whose pages name widths and pack counts apart
+(RAW: "available in 1¼ and King Size", "50 and 32 leaves"): the retail counts per width,
+by format, so a page's widths take their own counts rather than every count the page
+names. `{"paper": {"1 1/4": [50], "king size": [32], "Classic Creaseless 1 1/4": [300]},
+"cone": {"1 1/4": [6, 32], "king size": [3]}}`: a key is a width, or a line and a width
+where that line differs; `[]` means no count is known (the page's own stands). A count in
+the title ("Unbleached 1¼ Cones 32 Pack") always wins. See raw.json and ocb.json.
 
 **`title_case`: true** for a site that writes names in capitals ("UPLIFTING Pineapple"):
 capitalised words longer than three letters become Title case, shorter ones (OG, GSC,

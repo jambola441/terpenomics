@@ -1,4 +1,8 @@
 {
+  "_comment_raw": "RAW from rawthentic.com (2026-10-09): the paper lines are Classic, Black, Organic Hemp and Ethereal; Connoisseur, Artesano, Creaseless and Masterpiece are ranges inside a line (RAW Classic Connoisseur, RAW Organic Hemp Artesano, RAW Black Connoisseur), named in full so the longest wins. Stores write RAW Black as Black Classic. A RAW paper or cone whose name names no line is Classic (_merch_default_lines). Stores' Organic / Hemp is Organic Hemp. A line's \"finish\" is its packaging colour, not a product colour (Classic's natural/yellow, Ethereal's gold). The cone ranges (Lean, Lil Lean, 98 Special, Single Size a.k.a. Dogwalker, Peacemaker, Emperador, Supernatural, Challenge) are lines of their own: each is one shape, sold beside the Classic 1¼ and King Size. Perfecto and Maestro are cone tips. Lyrical Lemonade is a collaboration (papers and cones). 'Natural Unrefined' is RAW's tagline, not a line: their tips are Classic.",
+  "_merch_default_lines": {"RAW": {"paper": "Classic", "cone": "Classic", "filter-tip": "Classic"}},
+  "_comment_ocb": "OCB from ocbusa.com (2026-10-09): the lines are Premium (the black booklet, written Premium Black by stores), Unbleached (OCB's Virgin, the name stores still use), Organic Hemp (stores' 'Organic Unbleached Hemp'), Bamboo, Brown Rice, Ultimate, X-Pert, Solaire and Sophistique. A plain 'Slim' is the king size slim (enrichers.MerchEnricher), the only king size OCB sells.",
+  "_comment_hardware": "Hardware lines (2026-10-09, merch_catalog.py): a merch line may declare a subtype, the format its products are (PAX Flow and Plus are dry-herb devices, Era Go a pod battery; STIIIZY Pro, Pro XL, BIIIG and Lite are pod batteries). merch_catalog reads it where the name has no format word ('PAX Flow | Onyx').",
   "_comment": "Curated brand -> product lines. A line is assigned when its text appears in the product name (word-boundary match, spacing/punctuation insensitive); longest match wins. Keys starting with _ are ignored; the key \"*\" applies to every brand. Grow this from `python evals/enrich/audit.py --db` — it is the cheapest, most durable accuracy fix available, since assignment becomes a string fact instead of a model judgment. Seeded from The Plug (Crown Heights) product names.",
   "Claybourne Co.": [
     "Flyers",
@@ -107,22 +111,248 @@
     }
   ],
   "RAW": [
-    "Classic",
-    "Connoisseur",
-    "Ethereal",
-    "Masterpiece",
-    "Organic Hemp",
-    "Perfecto",
-    "Unrefined"
+    {
+      "line": "Classic",
+      "also": [
+        "Classics"
+      ],
+      "category": "merch",
+      "finish": [
+        "Natural",
+        "Yellow"
+      ]
+    },
+    {
+      "line": "Black",
+      "also": [
+        "Black Classic",
+        "Classic Black",
+        "Blacks",
+        "Black Classics"
+      ],
+      "category": "merch"
+    },
+    {
+      "line": "Organic Hemp",
+      "also": [
+        "Organic",
+        "Hemp"
+      ],
+      "category": "merch"
+    },
+    {
+      "line": "Black Organic Hemp",
+      "also": [
+        "Organic Hemp Black",
+        "Black Organic",
+        "Black Hemp"
+      ],
+      "category": "merch"
+    },
+    {
+      "line": "Ethereal",
+      "category": "merch",
+      "finish": [
+        "Gold"
+      ]
+    },
+    {
+      "line": "Classic Connoisseur",
+      "also": [
+        "Connoisseur"
+      ],
+      "category": "merch"
+    },
+    {
+      "line": "Organic Hemp Connoisseur",
+      "also": [
+        "Organic Connoisseur"
+      ],
+      "category": "merch"
+    },
+    {
+      "line": "Black Connoisseur",
+      "also": [
+        "Black Classic Connoisseur",
+        "Classic Black Connoisseur"
+      ],
+      "category": "merch"
+    },
+    {
+      "line": "Classic Artesano",
+      "also": [
+        "Artesano"
+      ],
+      "category": "merch"
+    },
+    {
+      "line": "Organic Hemp Artesano",
+      "also": [
+        "Organic Artesano"
+      ],
+      "category": "merch"
+    },
+    {
+      "line": "Classic Creaseless",
+      "also": [
+        "Creaseless"
+      ],
+      "category": "merch"
+    },
+    {
+      "line": "Organic Hemp Creaseless",
+      "also": [
+        "Organic Creaseless"
+      ],
+      "category": "merch"
+    },
+    {
+      "line": "Classic Masterpiece",
+      "also": [
+        "Masterpiece"
+      ],
+      "category": "merch"
+    },
+    {
+      "line": "Lean",
+      "also": [
+        "Classic Lean"
+      ],
+      "category": "merch",
+      "subtype": "cone"
+    },
+    {
+      "line": "Lil Lean",
+      "category": "merch",
+      "subtype": "cone"
+    },
+    {
+      "line": "98 Special",
+      "also": [
+        "98's Special",
+        "98 Specials"
+      ],
+      "category": "merch",
+      "subtype": "cone"
+    },
+    {
+      "line": "Single Size",
+      "also": [
+        "Dogwalker",
+        "Dogwalkers",
+        "Single Size Cones"
+      ],
+      "category": "merch",
+      "subtype": "cone"
+    },
+    {
+      "line": "Peacemaker",
+      "category": "merch",
+      "subtype": "cone"
+    },
+    {
+      "line": "Emperador",
+      "category": "merch",
+      "subtype": "cone"
+    },
+    {
+      "line": "Supernatural",
+      "category": "merch",
+      "subtype": "cone"
+    },
+    {
+      "line": "Challenge",
+      "category": "merch",
+      "subtype": "cone"
+    },
+    {
+      "line": "Lyrical Lemonade",
+      "also": [
+        "Lyrical Grape Lemonade",
+        "Lyrical Lemonade Grape"
+      ],
+      "category": "merch"
+    },
+    {
+      "line": "Perfecto",
+      "category": "merch",
+      "subtype": "filter-tip"
+    },
+    {
+      "line": "Maestro",
+      "category": "merch",
+      "subtype": "filter-tip"
+    }
   ],
   "Blazy Susan": [
     "Premium",
     "Ultra Thin Rice"
   ],
   "OCB": [
-    "Organic Hemp",
-    "Premium",
-    "Solaire"
+    {
+      "line": "Premium",
+      "also": [
+        "Premium Black",
+        "Black Premium",
+        "Black"
+      ],
+      "category": "merch",
+      "finish": [
+        "Black"
+      ]
+    },
+    {
+      "line": "Unbleached",
+      "also": [
+        "Virgin",
+        "Virgin Unbleached",
+        "Unbleached Virgin"
+      ],
+      "category": "merch"
+    },
+    {
+      "line": "Organic Hemp",
+      "also": [
+        "Organic",
+        "Organic Unbleached Hemp",
+        "Unbleached Organic Hemp",
+        "Unbleached Hemp"
+      ],
+      "category": "merch"
+    },
+    {
+      "line": "Bamboo",
+      "category": "merch",
+      "also": [
+        "Unbleached Bamboo",
+        "Organic Bamboo"
+      ]
+    },
+    {
+      "line": "Brown Rice",
+      "category": "merch"
+    },
+    {
+      "line": "Ultimate",
+      "category": "merch"
+    },
+    {
+      "line": "X-Pert",
+      "also": [
+        "XPert",
+        "X Pert",
+        "Xpert"
+      ],
+      "category": "merch"
+    },
+    {
+      "line": "Solaire",
+      "category": "merch"
+    },
+    {
+      "line": "Sophistique",
+      "category": "merch"
+    }
   ],
   "Big Bambu": [
     "Classic",
@@ -158,7 +388,8 @@
       "line": "Liquid Diamonds",
       "also": [
         "Liquid Diamond"
-      ],
+    
+  ],
       "category": "vaporizers"
     },
     {
@@ -183,6 +414,29 @@
     {
       "line": "Sour",
       "category": "edible"
+    },
+    {
+      "line": "Pro XL",
+      "category": "merch",
+      "subtype": "battery"
+    },
+    {
+      "line": "Pro",
+      "category": "merch",
+      "subtype": "battery"
+    },
+    {
+      "line": "BIIIG",
+      "also": [
+        "Biiig"
+      ],
+      "category": "merch",
+      "subtype": "battery"
+    },
+    {
+      "line": "Lite",
+      "category": "merch",
+      "subtype": "battery"
     }
   ],
   "_comment_1906": "1906 sells its tablets as Drops in effects (Bliss, Boost, Chill, Genius, Go, Love, Sleep): the family is the line, the effect is the product. Stores write \"1906 - Bliss Drops 2pk\".",
@@ -257,7 +511,41 @@
       "category": "vaporizers"
     },
     "Diamonds",
-    "High Purity"
+    "High Purity",
+    {
+      "line": "Era Go",
+      "also": [
+        "ERA GO",
+        "EraGo",
+        "Era-Go"
+      ],
+      "category": "merch",
+      "subtype": "battery"
+    },
+    {
+      "line": "Flow",
+      "category": "merch",
+      "subtype": "battery"
+    },
+    {
+      "line": "Plus",
+      "category": "merch",
+      "subtype": "battery"
+    },
+    {
+      "line": "Mini",
+      "also": [
+        "Mini 2",
+        "Mini II"
+      ],
+      "category": "merch",
+      "subtype": "battery"
+    },
+    {
+      "line": "Four",
+      "category": "merch",
+      "subtype": "battery"
+    }
   ],
   "_comment_heavy_hitters": "From the Heavy Hitters curation (2026-10-08); replaces the brand's list. heavyhitters.co/states/new-york: vapes are Ultra (0.5g and 1g Twin Turbo all-in-ones, 2g all-in-one, 1g 510 cart), Slow Cured Resin 1g all-in-one and Live Rosin Solventless 1g all-in-one; gummies (5 x 20mg, 100mg) are Ultra Gummies (Atomic Apple, Holy Grape, Strawberry Storm), Solventless Live Rosin Gummies (Blackberry Lemon, Guava Strawberry, Papaya Mango), Lights Out (CBN sleep: Midnight Cherry; Cloudberry vape) and Lights On (THCV energy: Green Crack); pre-rolls are Diamond Infused (1g 'Diamond Pre-Roll' and 5 x 0.5g 'Diamond Pre-Roll 5ct'), beside the brand's Jelly Roll rosin-infused pre-rolls (CA); 2g Pure Live Rosin jars and 7g Slow Cured Indoor Flower carry no line. Ultra, Live Rosin, Lights On and Lights Out are printed by the brand across formats. Every Heavy Hitters CBN product is Lights Out and every THCV product Lights On, so those words name the line where a store leaves it out ('CBN Cloudberry - 0.5G AIO Vape', 'Green Crack 2:1 THC:THCV Gummies'). Live Rosin stays off the concentrate category: the rosin jars say Live Rosin too and are line-less.",
   "Heavy Hitters": [

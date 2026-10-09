@@ -170,6 +170,18 @@ first line.
 - **Brand names.** `data/brand_aliases.json` maps scraped brand strings only. A
   sub-brand that stores file under its parent ("KIVA - Camino ...") lands in the parent's
   catalog, which then holds a second copy of the sub-brand.
+- **Hardware and papers** (`scripts/merch_catalog.py`, 2026-10-09). Papers, cones, wraps,
+  tips, batteries and chargers are catalog entries (category merch), built from the
+  stores' consensus by the bootstrap, and by a storefront push as products only stores
+  sell. A merch product is its format, line ("Classic", "Era Go", "Pro XL") and colour
+  (in `attributes`), plus a paper's size (width, count, tips: "king size 32ct w/tips").
+  All of it is read by rules, so a misread is fixed in the rules: a line in
+  `data/product_lines.json` (a hardware line declares `"subtype": "battery"`), a colour
+  in `attributes.py`. Hardware with a curated line needs one store; papers need two.
+  A papers brand's site gives widths and counts apart: the recipe's `merch_counts` pairs
+  them (RAW, OCB). A colour that is the line's packaging is the line's `"finish"`
+  (RAW Classic's natural and yellow), not a colour. Store counts one off a booklet's
+  (33ct for a 32-leaf king size slim) are the same booklet.
 - **Inferred sizes.** `scripts/line_fill.py` gives every product of a named line the
   sizes its line comes in (same brand, category, format and line), as entries with
   source `inferred`.

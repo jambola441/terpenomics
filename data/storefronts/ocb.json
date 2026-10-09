@@ -1,0 +1,94 @@
+{
+  "brand": "OCB",
+  "site": "https://ocbusa.com",
+  "source": {
+    "kind": "shopify_json",
+    "url": "https://ocbusa.com/products.json"
+  },
+  "learned": "2026-10-09, by an agent: ocbusa.com is Shopify with a public /products.json (251 products, vendor 'OCB®'). Each product is listed up to three times: the parent with a 'Single Booklet' (or 'Single Pack') and an 'N Count Display' variant, and copies titled ', Booklet' / ', Single' and ', Display'. Leaves and cones per pack are in the product pages' PAPER SPECS / CONE SPECS bullets (server-rendered, not in products.json); read 2026-10-09 for all 51 consumer products, they are regular by width (merch_counts).",
+  "notes": [
+    "Kept: the parent product's single-pack variant. Out: display boxes (a distributor's unit), the ', Booklet' / ', Single' / ', Display' copies of a parent, bundles, rollers, cone towers, Stack Paks (300-leaf packs), Roll Kits, grinders, trays, mats and the Houseplant by OCB co-brand (sold only by the display).",
+    "The title names line, width and format: 'Organic Hemp Slim Rolling Papers + Tips', 'Bamboo King Cones', 'Unbleached 1¼ Cones 32 Pack'. 'Slim' is the king size slim, 'King' cones are 109mm, 'Mini' cones 70mm. Read by the store-listing rules (merch_catalog.reading), so site and stores agree by construction.",
+    "Counts from the spec bullets: papers 1¼ and single wide 50 leaves, slim 32 (with 32 or 50 tips on '+ Tips'); cones mini 10, 1¼ 6, king 3; Unbleached also sells a 1¼ 32-pack and a king 24-pack, whose titles state the count."
+  ],
+  "skip": [
+    {
+      "when": {
+        "variant": "Display"
+      },
+      "why": "a display box is a distributor's unit"
+    },
+    {
+      "when": {
+        "title": ", (Booklet|Single|Display)$"
+      },
+      "why": "a copy of a parent product"
+    },
+    {
+      "when": {
+        "title": "Bundle|Roller|Tower|Grinder|Tray|Mat\\b|Ashtray|Loader|Stack Pak|Roll Kit|Houseplant"
+      },
+      "why": "not a single pack of papers, cones or tips"
+    },
+    {
+      "when": {
+        "tags": "^(?!.*\\b(Rolling Papers|Cones|Tips)\\b)"
+      },
+      "why": "not papers, cones or tips"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "title": "\\bCones?\\b"
+      },
+      "set": {
+        "category": "merch",
+        "subtype": "cone"
+      }
+    },
+    {
+      "when": {
+        "title": "^(?!.*Papers).*\\bTips\\b"
+      },
+      "set": {
+        "category": "merch",
+        "subtype": "filter-tip"
+      }
+    },
+    {
+      "when": {
+        "title": "Papers"
+      },
+      "set": {
+        "category": "merch",
+        "subtype": "paper"
+      }
+    }
+  ],
+  "title": [],
+  "merch_counts": {
+    "paper": {
+      "1 1/4": [
+        50
+      ],
+      "single wide": [
+        50
+      ],
+      "king size": [
+        32
+      ]
+    },
+    "cone": {
+      "mini": [
+        10
+      ],
+      "1 1/4": [
+        6
+      ],
+      "king size": [
+        3
+      ]
+    }
+  }
+}

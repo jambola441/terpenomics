@@ -510,3 +510,11 @@ def test_store_skip_can_test_the_subtype():
          {"name": "Mega Mellow Moon", "variant": "100mg", "subtype": "gummy"}],
         [{"when": {"name": "^Mega Mellow Moon$", "subtype": "^other$"}, "why": "a subtype guess"}])
     assert [e["subtype"] for e in kept] == ["gummy"] and len(dropped) == 1
+
+
+def test_merch_counts_are_widths_to_counts():
+    import pytest
+    base = {"brand": "X", "source": {"kind": "shopify_json", "url": "https://x.example/products.json"}}
+    storefront.validate({**base, "merch_counts": {"paper": {"1 1/4": [50]}}})
+    with pytest.raises(SystemExit):
+        storefront.validate({**base, "merch_counts": {"paper": {"1 1/4": 50}}})
