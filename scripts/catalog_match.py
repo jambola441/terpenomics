@@ -118,6 +118,25 @@ STOPWORDS = {"the", "a", "an", "and", "of", "with", "pack", "pk", "mg", "g",
              "indica", "sativa", "hybrid", "i", "s", "h"}
 
 
+# Words stores and catalogs add around a strain without changing it: the extraction
+# ("Orange Yuzu Rosin", "Hash Burger Live Resin"), the grade or format ("Premium Jack",
+# "Indoor Hot Sauce", "Mega Dosed"), "The" ("The Belafonte"). strain_core sets them
+# aside, with the brand's name and the product's own line ("Blueberry Belts" against
+# Flav's Belts line, "Juicy Fruit Wave Rider" against 7 SEAZ's Wave Rider).
+STRAIN_NOISE = {"live", "resin", "rosin", "solventless", "infused", "triple", "indoor", "sungrown",
+                "premium", "the", "mega", "dosed", "dose", "gummy", "gummies", "flower", "vape",
+                "cart", "pod", "aio", "preroll", "pre", "roll", "rolls", "disposable", "single", "pack"}
+
+
+def strain_core(strain: str | None, brand: str | None = None, line: str | None = None) -> str:
+    """strain_key() of the strain with STRAIN_NOISE, the brand's words and the line's words
+    set aside; the whole strain when nothing else is left ("Live Resin" stays itself)."""
+    words = [w for w in norm_name(strain or "").split() if w]
+    drop = STRAIN_NOISE | set(norm_name(brand or "").split()) | set(norm_name(line or "").split())
+    kept = [w for w in words if w not in drop]
+    return strain_key(" ".join(kept or words))
+
+
 def _tokens(s: str) -> set[str]:
     return {t for t in norm_name(s).split() if t and t not in STOPWORDS and not t.isdigit()}
 
@@ -278,9 +297,19 @@ class CatalogIndex:
             return None
         strain, line, subtype = strain_key(reading["strain"]), squash(reading.get("product_line")), \
             reading.get("subtype")
+        # The strain as read first. Only when no product of the category carries it are
+        # the words around a strain set aside (strain_core), so "Sour Diesel" never
+        # reaches "Premium Sour Diesel" while the brand sells a plain Sour Diesel.
+        exact = any(p.category == category and strain_key(p.strain) == strain
+                    for p in self.products.values())
         hits = []
         for key, p in self.products.items():
-            if p.category != category or strain_key(p.strain) != strain:
+            if p.category != category:
+                continue
+            if exact and strain_key(p.strain) != strain:
+                continue
+            if not exact and strain_core(p.strain, self.brand_name, p.product_line) != \
+                    strain_core(reading["strain"], self.brand_name, p.product_line):
                 continue
             if line and squash(p.product_line) != line:
                 continue
@@ -378,6 +407,38 @@ def fitting_entry(entries: list[dict], want: sizes.Size, category: str | None) -
     if len({s for _, s in fits}) > 1:
         return None
     return next((e for e, _ in fits if e.get("source") != "inferred"), fits[0][0])
+
+
+ATTRIBUTES = ("category", "strain", "line", "subtype", "size")
+
+
+def attribute_misses(reading: dict, product: "Product", entry: dict,
+                     name: str | None = None, brand: str | None = None) -> list[str]:
+    """The attributes on which one catalog entry disagrees with a listing's reading, in
+    the join's own terms (CatalogIndex.join): a line or format the reading leaves blank
+    is no disagreement; a strain or size it leaves blank is one, because the join needs
+    both. An empty list is a join hit."""
+    category = reading.get("category")
+    out = []
+    if not category or product.category != category:
+        out.append("category")
+    if not reading.get("strain") or (
+            strain_key(product.strain) != strain_key(reading["strain"])
+            and strain_core(product.strain, brand, product.product_line)
+            != strain_core(reading["strain"], brand, product.product_line)):
+        out.append("strain")
+    line = squash(reading.get("product_line"))
+    if line and squash(product.product_line) != line:
+        out.append("line")
+    subtype = reading.get("subtype")
+    if subtype and product.subtype and taxonomy.keeps_subtype(category or product.category) \
+            and subtype != product.subtype:
+        out.append("subtype")
+    want = reading_size(reading, name)
+    if want.is_empty() or sizes.same_size(
+            want, sizes.parse(entry.get("variant"), category=product.category)) is not True:
+        out.append("size")
+    return out
 
 
 def reading_size(reading: dict, name: str | None = None) -> sizes.Size:

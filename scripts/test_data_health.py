@@ -170,3 +170,30 @@ def test_enrichment_answers_jev_was_unsure_of_are_grouped_by_brand_and_field():
     found = dh.unsure_answers(d)
     assert keys(found) == ["unsure:size:other", "unsure:strain:jaunty"]
     assert next(f for f in found if f.key == "unsure:strain:jaunty").evidence == 2
+
+
+def test_a_format_the_catalog_lacks_is_a_near_miss_at_two_stores():
+    eureka = catalog("Eureka", {"id": "dp", "pk": "dp", "name": "RELOAD Durban Poison", "category": "vaporizers",
+                                "subtype": "cart", "product_line": "RELOAD", "strain": "Durban Poison",
+                                "variant": "1g"})
+    aio = {"category": "vaporizers", "subtype": "all-in-one", "strain": "Durban Poison",
+           "product_line": "RELOAD", "size": "1g"}
+    ls = [listing(1, "A", "Durban Poison Reload AIO 1g", brand="Eureka", category="vaporizers", reading=aio),
+          listing(2, "B", "Eureka RELOAD AIO Durban Poison", brand="Eureka", category="vaporizers", reading=aio),
+          listing(3, "C", "Durban Poison Reload Cart 1g", brand="Eureka", category="vaporizers",
+                  reading=dict(aio, subtype="cart"))]                      # joins: no finding
+    found = dh.near_misses(data(ls, eureka))
+    assert keys(found) == ["near-miss:eureka:dp:subtype:allinone"]
+    assert "subtype is 'cart' in the catalog; 2 listing(s) at 2 store(s) read 'all-in-one'" in found[0].text
+
+
+def test_a_strain_near_miss_needs_one_product_inside_the_stores_spelling():
+    camino = catalog("Camino", *[{"id": k, "pk": k, "name": f"Gummies {s}", "category": "edible",
+                                  "subtype": "gummy", "product_line": "Gummies", "strain": s,
+                                  "variant": "20pk 100mg"}
+                                 for k, s in (("sp", "Social Sparkling Pear"), ("wb", "Chill Wild Berry"))])
+    pear = {"category": "edible", "subtype": "gummy", "strain": "Sparkling Pear", "size": "100mg"}
+    ls = [listing(i, s, "Camino Sparkling Pear Gummies 20ct", brand="Camino", category="edible", reading=pear)
+          for i, s in ((1, "A"), (2, "B"))]
+    found = dh.near_misses(data(ls, camino))
+    assert keys(found) == ["near-miss:camino:sp:strain:sparklingpear"]

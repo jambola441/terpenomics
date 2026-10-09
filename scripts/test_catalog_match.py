@@ -227,6 +227,30 @@ class TestJoin:
         assert idx.join(r, "Flav | 10pk Gummy Belts | 100mg | Strawberry")[1]["id"] == "ten"
         assert idx.join(dict(r, size="10pk 100mg"))[1]["id"] == "ten"
 
+    def test_words_around_a_strain_are_set_aside_only_when_no_product_carries_it(self):
+        def e(i, line, strain, size="1g"):
+            return {"id": i, "product_key": i, "name": f"{line or ''} {strain}".strip(), "product_line": line,
+                    "category": "vaporizers", "subtype": "cart", "strain": strain, "variant": size}
+        cat = {"brand_name": "MFNY", "entries": [e("hb", "Live Resin", "Hash Burger"),
+                                                  e("bel", "Live Resin", 'The "Belafonte"'),
+                                                  e("sd", None, "Sour Diesel"),
+                                                  e("psd", None, "Premium Sour Diesel")]}
+        idx = cm.CatalogIndex(cat)
+        r = {"category": "vaporizers", "subtype": "cart", "size": "1g"}
+        assert idx.join(dict(r, strain="Hash Burger Live Resin"))[0] == "hb"      # extraction words
+        assert idx.join(dict(r, strain="Belafonte"))[0] == "bel"                 # "The", quotes
+        # A product carries the strain as read: no setting aside, no Premium twin.
+        assert idx.join(dict(r, strain="Sour Diesel"))[0] == "sd"
+        assert idx.join(dict(r, strain="Premium Sour Diesel"))[0] == "psd"
+
+    def test_the_products_own_line_is_set_aside_from_the_strain(self):
+        cat = {"brand_name": "Flav", "entries": [
+            {"id": "b", "product_key": "b", "name": "Belts Blueberry", "product_line": "Belts",
+             "category": "edible", "subtype": "gummy", "strain": "Blueberry", "variant": "10pk 100mg"}]}
+        r = {"category": "edible", "subtype": "gummy", "strain": "Blueberry Belts", "size": "10pk 100mg"}
+        assert cm.CatalogIndex(cat).join(r)[0] == "b"
+        assert cm.strain_core("Live Resin") == "liveresin"                       # nothing else left
+
     def test_resolve_takes_the_join_and_names_never_decide(self):
         listings = [{"id": 1, "name": "STIIIZY Biscotti 0.5g", "category": "vaporizers",
                      "reading": reading("Biscotti", "0.5g")},

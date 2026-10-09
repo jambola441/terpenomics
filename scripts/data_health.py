@@ -32,6 +32,7 @@ import catalog_match as cm  # noqa: E402
 import catalog_store  # noqa: E402
 import sizes  # noqa: E402
 from brand_catalog import norm_name  # noqa: E402
+from catalog_bootstrap import squash, strain_key  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 STALE_HOURS = 30    # the cron runs daily at 13:00 UTC; a store unseen this long missed a run
@@ -43,6 +44,7 @@ SECTIONS = [        # (kind, title), in the order the report prints them
     ("stale-store", "Stores the daily run missed"),
     ("missing-size", "Sizes 2+ stores sell that the matched product lacks"),
     ("review-cluster", "Products with review-only listings at 2+ stores"),
+    ("near-miss", "Products stores' readings miss on one attribute, at 2+ stores"),
     ("size-sync", "Product-page sizes the last import left behind"),
     ("brandless", "Listings with no brand that start with a catalog brand's name"),
     ("stale-curated", f"Curated products no listing has matched for {CURATED_DAYS} days"),
@@ -75,7 +77,8 @@ class Data:
 # ---------------------------------------------------------------------------
 
 LISTING_COLS = ("id,dispensary_id,sku,scraped_name,scraped_brand,scraped_category,variant,size,"
-                "description,catalog_entry_id,catalog_match_method,catalog_match_confidence,last_seen_at")
+                "description,reading,catalog_entry_id,catalog_match_method,catalog_match_confidence,"
+                "last_seen_at")
 
 
 def load(now: datetime | None = None) -> Data:
@@ -232,6 +235,93 @@ def review_clusters(data: Data) -> list[Finding]:
     return out
 
 
+# What each kind of near miss usually needs. The agent judges which applies.
+NEAR_MISS_FIX = {
+    "strain": "a strain alias (data/strain_aliases), if the stores' spelling is this strain",
+    "line": "the product re-lined, or a line rule, if the stores' line is right",
+    "subtype": "the format added to the catalog if the brand sells it, else a format misread",
+    "size": "the size added if the brand sells it, else a typo the stores share",
+    "category": "a category rule, if the stores file it right",
+}
+
+
+def near_misses(data: Data) -> list[Finding]:
+    """Listings the attribute join cannot place because their reading misses one product
+    on exactly one attribute, grouped by product, attribute and what the stores read, at
+    MIN_STORES or more stores.
+
+    This is the catalog's coverage seen from the readings: a format the brand sells that
+    the catalog lacks (Eureka's RELOAD filed as cart only; stores sell the AIO), a
+    product that lost its line (a line-less PAX AIO beside High Purity), a strain the
+    stores spell another way, a size the catalog lacks. Only unambiguous misses count:
+    one product, one attribute. A strain miss qualifies every product of that category
+    and size, so it counts only when one product's strain sits inside the stores' (or
+    theirs inside it): "Orange Trainwreck" in "Orange Trainwreck Sungrown".
+
+    A format miss against a line whose products all share one format is flagged: the
+    stores more likely misread it (Hashtag Honey's Snowballz are all infused flower)."""
+    by_brand: dict[str, list[dict]] = defaultdict(list)
+    for l in data.listings:
+        if l.get("reading") and l.get("catalog_match_method") not in ("attributes", "manual"):
+            by_brand[catalog_store.brand_key(l.get("scraped_brand"))].append(l)
+    groups: dict[tuple, list] = defaultdict(list)
+    for bkey, catalog in data.catalogs.items():
+        listings = by_brand.get(bkey)
+        if not listings:
+            continue
+        index = cm.CatalogIndex(catalog)
+        for l in listings:
+            reading, name = l["reading"], l.get("scraped_name") or ""
+            if index.join(reading, name):
+                continue
+            near: dict[str, set] = defaultdict(set)
+            for key, product in index.products.items():
+                for e in product.entries:
+                    m = cm.attribute_misses(reading, product, e, name, index.brand_name)
+                    if len(m) == 1:
+                        near[m[0]].add(key)
+            if "strain" in near and reading.get("strain"):
+                theirs = strain_key(reading["strain"])
+                near["strain"] = {k for k in near["strain"]
+                                  if len(ours := strain_key(index.products[k].strain)) >= 4
+                                  and (ours in theirs or theirs in ours)}
+            hits = [(attr, keys) for attr, keys in near.items() if len(keys) == 1]
+            if len(hits) != 1:
+                continue
+            attr, keys = hits[0]
+            key = next(iter(keys))
+            said = {"line": reading.get("product_line"), "subtype": reading.get("subtype"),
+                    "category": reading.get("category"), "strain": reading.get("strain"),
+                    "size": _total(cm.reading_size(reading, name)) or reading.get("size")}[attr]
+            folded = strain_key(said) if attr == "strain" else squash(said)
+            groups[(bkey, key, attr, folded)].append((l, catalog, index, said))
+    out = []
+    for (bkey, key, attr, _), rows in groups.items():
+        stores = len({l["dispensary_id"] for l, _, _, _ in rows})
+        if stores < MIN_STORES:
+            continue
+        _, catalog, index, said = rows[0]
+        product = index.products[key]
+        has = {"line": product.product_line or "no line", "subtype": product.subtype,
+               "category": product.category, "strain": product.strain,
+               "size": ", ".join(sorted({e.get("variant") or "?" for e in product.entries}))}[attr]
+        note = ""
+        if attr == "subtype" and product.product_line:
+            formats = {p.subtype for p in index.products.values()
+                       if p.product_line == product.product_line and p.category == product.category}
+            if len(formats) == 1:
+                note = f" Every {product.product_line} product is {product.subtype}: likely a misread."
+        out.append(Finding(
+            f"near-miss:{catalog['brand_slug']}:{key}:{attr}:{squash(said)}", "near-miss",
+            f"{catalog['brand_name']} {product.title} ({product.category}): {attr} is {has!r} in the "
+            f"catalog; {len(rows)} listing(s) at {stores} store(s) read {said!r}. Needs "
+            f"{NEAR_MISS_FIX[attr]}.{note} " + _example(l.get("scraped_name") or "" for l, _, _, _ in rows),
+            len(rows), f'python3 scripts/catalog_shape.py listings "{catalog["brand_name"]}" '
+                       f'"(?i){re.escape(product.strain or product.title)}" --descriptions',
+            (stores, len(rows))))
+    return out
+
+
 def size_sync(data: Data) -> list[Finding]:
     """Listings whose product-page size (listings.size) is not what the importer would
     write now: a catalog edit since the last import, or an import that did not run."""
@@ -341,7 +431,7 @@ def unsure_answers(data: Data) -> list[Finding]:
             for (brand, field), rows in groups.items()]
 
 
-DETECTORS = (stale_stores, missing_sizes, review_clusters, size_sync, brandless,
+DETECTORS = (stale_stores, missing_sizes, review_clusters, near_misses, size_sync, brandless,
              stale_curated, unsure_answers)
 
 
