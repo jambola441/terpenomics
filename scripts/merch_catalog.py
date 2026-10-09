@@ -164,15 +164,40 @@ def reading(name: str, brand: str, subtype: str | None = None, category: str | N
     if not line and sub in PAPERS:
         line = default_line(brand, sub)
     colour = (attribute_registry.for_category("merch", name) or {}).get("colour")
-    if colour and line and (_key(colour) in _key(line) or _key(colour) in _key(spelling)
-                            or _key(colour) in line_finish(brand, line)):
-        colour = None                       # RAW Black is a line: its black is no colour of its own
+    if colour and line and (joined := find_product_line(brand or "", f"{colour} {line}", "merch")) \
+            and joined != line and _key(colour) in _key(joined):
+        line = joined                       # "Black King Size Classic Connoisseur": RAW Black Connoisseur
+    if colour and line:
+        # RAW Black is a line: its black is no colour of its own. Of "Red/Rose" on a RAW
+        # Rose tip, the red is left.
+        keep = [c for c in colour.split("/") if not (_key(c) in _key(line) or _key(c) in _key(spelling)
+                                                    or _key(c) in line_finish(brand, line))]
+        colour = "/".join(keep) or None
     size = _MERCH.variant(name, None)
+    if sub == "cone":
+        size = cone_width(size)
     if sub == "filter-tip":
         size = tip_size(size)
+    if sub == "paper" and size and "w/tips" in size and _line_entry(brand, line).get("with_tips"):
+        line = _line_entry(brand, line)["with_tips"]    # RAW Classic "+ Tips" is the Connoisseur
     if size and comes_with_tips(line) and "w/tips" not in size:
         size += " w/tips"
     return {"category": "merch", "subtype": sub, "product_line": line, "colour": colour, "size": size}
+
+
+# A cone's length names its width: stores list "78mm Small" or "84mm" where the brand
+# says 1¼, and 109mm where it says King. 98mm stays a length (RAW's 98 Special is a line).
+_CONE_LENGTHS = ((68, 72, "mini"), (76, 86, "1 1/4"), (105, 112, "king size"))
+
+
+def cone_width(size: str | None) -> str | None:
+    """A cone size with its length in mm read as the width it is ("78mm 8pk" -> "1 1/4 8pk")."""
+    m = re.match(r"^(\d+)\s*mm\b", size or "")
+    if not m:
+        return size
+    n = int(m.group(1))
+    width = next((w for lo, hi, w in _CONE_LENGTHS if lo <= n <= hi), None)
+    return (width + size[m.end():]) if width else size
 
 
 def tip_size(size: str | None) -> str | None:
@@ -218,7 +243,7 @@ _LEAVES = re.compile(r"(\d+)\s*(?:leaves|sheets)\s+per\s+(?:pack|booklet)", re.I
 # Widths named in a site's SKU or copy that the title leaves out ("RAW Classic Kingsize",
 # SKUs RAWKSWIDE and RAWK-SSLIM: the slim and the wide).
 _SKU_WIDTHS = [(re.compile(r"KS-?WIDE|KSW\b|-KSW-", re.I), "ks wide"),
-               (re.compile(r"K-?S-?SLIM|KSS\b|-KSS-|-KS-|KS\d", re.I), "king size"),
+               (re.compile(r"K-?S-?SLIM|KSS\b|-KSS-|-KS-|KS\d|-KSCONN", re.I), "king size"),
                (re.compile(r"-114-|114\b|\bRAW1-4\b|(?<=[A-Z])1\b", re.I), "1 1/4"),
                (re.compile(r"-112-|112\b|\bRAW1-2\b", re.I), "1 1/2")]
 

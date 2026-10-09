@@ -40,3 +40,4 @@ data/catalogs/*.json
 !.claude/hooks/
 !.claude/commands/
 !.claude/skills/
+.claude/settings.local.json

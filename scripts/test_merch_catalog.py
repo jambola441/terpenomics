@@ -137,3 +137,28 @@ def test_a_stores_size_of_a_site_product_joins_it():
     found, only, _ = sf.split_store_products(site, listings)
     assert [e["variant"] for e in found] == ["1 1/4 50ct w/tips"]
     assert [(e["product_key"], e["variant"]) for e in only] == [(site["entries"][0]["product_key"], "king size 32ct w/tips")]
+
+
+def test_a_lines_papers_with_tips_are_its_tips_range():
+    r = mc.reading("Raw - Classic 1.25 Rolling Papers + Tips - 50ct", "RAW", "paper")
+    assert (r["product_line"], r["size"]) == ("Classic Connoisseur", "1 1/4 50ct w/tips")
+    # A colour that makes another of the brand's lines with the one read is that line.
+    r = mc.reading("Raw - Black King Size Classic Connoisseur Papers w/Tips", "RAW", "paper")
+    assert (r["product_line"], r["colour"]) == ("Black Connoisseur", None)
+    # RAW's Rose is a tip design: the red one keeps its red.
+    assert mc.reading("RAW Red Rose Tip", "RAW", "filter-tip")["colour"] == "Red"
+
+
+def test_a_stores_count_takes_the_brands_retail_count():
+    import storefront as sf
+    counts = {"paper": {"1 1/4": [50], "king size": [32]}}
+    p = {"product_key": "k", "subtype": "paper", "product_line": "Classic", "variant": "king size 33ct w/tips"}
+    assert sf._merch_retail_count(p, counts)["variant"] == "king size 32ct w/tips"
+    assert sf._merch_count_ruled_out({**p, "variant": "1 1/4 33ct w/tips"}, counts)
+    assert not sf._merch_count_ruled_out({**p, "variant": "1 1/4 50ct"}, counts)
+
+
+def test_a_cones_length_is_its_width():
+    assert mc.reading("OCB - Organic Bamboo Cones 8pk - 78mm Small", "OCB", "cone")["size"] == "1 1/4 8pk"
+    assert mc.cone_width("109mm 3pk") == "king size 3pk"
+    assert mc.cone_width("98mm 20pk") == "98mm 20pk"        # RAW's 98 Special is a line, not a width

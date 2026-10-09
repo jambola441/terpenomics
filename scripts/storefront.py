@@ -836,8 +836,8 @@ def _aliased(entry: dict, aliases: dict) -> dict:
             "strain": look(aliases.get("names"), entry.get("strain"))}
 
 
-def split_store_products(doc: dict, listings: list[dict],
-                         aliases: dict | None = None) -> tuple[list[dict], list[dict], dict]:
+def split_store_products(doc: dict, listings: list[dict], aliases: dict | None = None,
+                         merch_counts: dict | None = None) -> tuple[list[dict], list[dict], dict]:
     """The products stores sell under the brand, as catalog_bootstrap.propose() builds
     them from our listings: those the site's catalog has, and those only stores have.
     The third value is always empty: store names are no longer carried onto site
@@ -855,6 +855,9 @@ def split_store_products(doc: dict, listings: list[dict],
     found, only_stores = [], []
     for p in proposed:
         if p["category"] == "merch":
+            p = _merch_retail_count(p, merch_counts)
+            if _merch_count_ruled_out(p, merch_counts):
+                continue        # a count the brand does not sell at that width: a store's slip
             # Papers and hardware are their format, line, colour and size (merch_catalog),
             # not a name and a total: the site's Classic Connoisseur 1¼ is not the stores'
             # Classic Connoisseur king size, which joins it as one more size.
@@ -876,6 +879,30 @@ def split_store_products(doc: dict, listings: list[dict],
             continue
         found.append(p)
     return found, only_stores, {}
+
+
+def _merch_retail_count(p: dict, merch_counts: dict | None) -> dict:
+    """A stores' merch size relabelled to the brand's retail count it stands for: stores
+    write the 32-leaf king size slim as "33ct" (merch_catalog.same_count), and the
+    recipe's merch_counts says which the booklet is."""
+    import merch_catalog as mc
+    size = mc.parse_size(p.get("variant"))
+    known = mc._retail_counts((merch_counts or {}).get(p.get("subtype")), p.get("product_line"), size.width)
+    fit = [c for c in known if size.count and c != size.count and mc.same_count(c, size.count)]
+    if len(fit) != 1:
+        return p
+    variant = mc.MerchSize(size.width, fit[0], size.tips).label()
+    return {**p, "variant": variant,
+            "external_id": f"{p['product_key']}:{mc._key(variant) or 'nosize'}"}
+
+
+def _merch_count_ruled_out(p: dict, merch_counts: dict | None) -> bool:
+    """Whether the recipe's retail counts for the size's width leave its count out: a
+    store's "Organic Hemp Connoisseur 1¼ 33ct" is not a size RAW sells (1¼ is 50)."""
+    import merch_catalog as mc
+    size = mc.parse_size(p.get("variant"))
+    known = mc._retail_counts((merch_counts or {}).get(p.get("subtype")), p.get("product_line"), size.width)
+    return bool(known and size.count and not any(mc.same_count(c, size.count) for c in known))
 
 
 def _merch_product(p: dict, site: list[tuple]) -> list[dict]:
@@ -1060,7 +1087,8 @@ def main() -> None:
         found = only_stores = terms = dropped = None
         if not args.offline:
             found, only_stores, terms = split_store_products(
-                doc, store_listings(recipe["brand"], args.via_http), recipe.get("store_aliases"))
+                doc, store_listings(recipe["brand"], args.via_http), recipe.get("store_aliases"),
+                recipe.get("merch_counts"))
             only_stores, dropped = skip_store_products(only_stores, recipe.get("store_skip"))
         if args.command == "check":
             print_check(report, found, only_stores, dropped)

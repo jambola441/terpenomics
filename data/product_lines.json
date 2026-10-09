@@ -1,5 +1,5 @@
 {
-  "_comment_raw": "RAW from rawthentic.com (2026-10-09): the paper lines are Classic, Black, Organic Hemp and Ethereal; Connoisseur, Artesano, Creaseless and Masterpiece are ranges inside a line (RAW Classic Connoisseur, RAW Organic Hemp Artesano, RAW Black Connoisseur), named in full so the longest wins. Stores write RAW Black as Black Classic. A RAW paper or cone whose name names no line is Classic (_merch_default_lines). Stores' Organic / Hemp is Organic Hemp. A line's \"finish\" is its packaging colour, not a product colour (Classic's natural/yellow, Ethereal's gold). The cone ranges (Lean, Lil Lean, 98 Special, Single Size a.k.a. Dogwalker, Peacemaker, Emperador, Supernatural, Challenge) are lines of their own: each is one shape, sold beside the Classic 1¼ and King Size. Perfecto and Maestro are cone tips. Lyrical Lemonade is a collaboration (papers and cones). 'Natural Unrefined' is RAW's tagline, not a line: their tips are Classic.",
+  "_comment_raw": "RAW from rawthentic.com (2026-10-09): the paper lines are Classic, Black, Organic Hemp and Ethereal; Connoisseur, Artesano, Creaseless and Masterpiece are ranges inside a line (RAW Classic Connoisseur, RAW Organic Hemp Artesano, RAW Black Connoisseur), named in full so the longest wins. Stores write RAW Black as Black Classic. A RAW paper or cone whose name names no line is Classic (_merch_default_lines). Stores' Organic / Hemp is Organic Hemp. A line's \"finish\" is its packaging colour, not a product colour (Classic's natural/yellow, Ethereal's gold). The cone ranges (Lean, Lil Lean, 98 Special, Single Size a.k.a. Dogwalker, Peacemaker, Emperador, Supernatural, Challenge) are lines of their own: each is one shape, sold beside the Classic 1¼ and King Size. Perfecto and Maestro are cone tips. Lyrical Lemonade is a collaboration (papers and cones). 'Natural Unrefined' is RAW's tagline, not a line: their tips are Classic. A line's \"with_tips\" names the range its papers with tips are: stores' 'Classic Papers + Tips' is the Classic Connoisseur. RAW's Rose is a tip design (the Pre-Rolled Rose Tip, and a red one), not a colour.",
   "_merch_default_lines": {"RAW": {"paper": "Classic", "cone": "Classic", "filter-tip": "Classic"}},
   "_comment_ocb": "OCB from ocbusa.com (2026-10-09): the lines are Premium (the black booklet, written Premium Black by stores), Unbleached (OCB's Virgin, the name stores still use), Organic Hemp (stores' 'Organic Unbleached Hemp'), Bamboo, Brown Rice, Ultimate, X-Pert, Solaire and Sophistique. A plain 'Slim' is the king size slim (enrichers.MerchEnricher), the only king size OCB sells.",
   "_comment_hardware": "Hardware lines (2026-10-09, merch_catalog.py): a merch line may declare a subtype, the format its products are (PAX Flow and Plus are dry-herb devices, Era Go a pod battery; STIIIZY Pro, Pro XL, BIIIG and Lite are pod batteries). merch_catalog reads it where the name has no format word ('PAX Flow | Onyx').",
@@ -120,7 +120,8 @@
       "finish": [
         "Natural",
         "Yellow"
-      ]
+      ],
+      "with_tips": "Classic Connoisseur"
     },
     {
       "line": "Black",
@@ -130,7 +131,8 @@
         "Blacks",
         "Black Classics"
       ],
-      "category": "merch"
+      "category": "merch",
+      "with_tips": "Black Connoisseur"
     },
     {
       "line": "Organic Hemp",
@@ -138,7 +140,8 @@
         "Organic",
         "Hemp"
       ],
-      "category": "merch"
+      "category": "merch",
+      "with_tips": "Organic Hemp Connoisseur"
     },
     {
       "line": "Black Organic Hemp",
@@ -280,6 +283,15 @@
     },
     {
       "line": "Maestro",
+      "category": "merch",
+      "subtype": "filter-tip"
+    },
+    {
+      "line": "Rose",
+      "also": [
+        "Rose Tip",
+        "Rose Tips"
+      ],
       "category": "merch",
       "subtype": "filter-tip"
     }
