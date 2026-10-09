@@ -43,6 +43,9 @@ from canonical import find_product_line  # noqa: E402
 PAPERS = ("paper", "cone", "wrap", "filter-tip")
 HARDWARE = ("battery", "charger")
 CATALOGED = frozenset(PAPERS + HARDWARE)
+# Formats that are a product only in a size: a paper's width and count make the SKU. Tips
+# and hardware are products without one (a site rarely states a tip's count).
+SIZED = ("paper", "cone", "wrap")
 NOUN = {"paper": "Papers", "cone": "Cones", "wrap": "Wraps", "filter-tip": "Tips",
         "battery": "Battery", "charger": "Charger"}
 _MERCH = enrichers.for_category("merch")
@@ -134,9 +137,126 @@ def reading(name: str, brand: str, subtype: str | None = None, category: str | N
     sub = _MERCH.token_subtype(name) or line_subtype(brand, line) or subtype
     if category == "vaporizers" and sub not in CATALOGED:
         sub = "battery"                     # a vape-filed device: its format word was a vape's
+    if not line and sub in PAPERS:
+        line = default_line(brand, sub)
     colour = (attribute_registry.for_category("merch", name) or {}).get("colour")
-    return {"category": "merch", "subtype": sub, "product_line": line,
-            "colour": colour, "size": _MERCH.variant(name, None)}
+    if colour and line and _key(colour) in _key(line):
+        colour = None                       # RAW Black is a line: its black is no colour of its own
+    size = _MERCH.variant(name, None)
+    if size and comes_with_tips(line) and "w/tips" not in size:
+        size += " w/tips"
+    return {"category": "merch", "subtype": sub, "product_line": line, "colour": colour, "size": size}
+
+
+def comes_with_tips(line: str | None) -> bool:
+    """A range sold with tips in the pack, whether or not a name says so: RAW's
+    Connoisseur is its papers with tips."""
+    return "connoisseur" in (line or "").lower()
+
+
+_DEFAULTS: dict | None = None
+
+
+def default_line(brand: str, subtype: str) -> str | None:
+    """The line a brand's paper or cone is when its name names none: RAW's plain papers are
+    Classic, the range the brand calls its own ("_merch_default_lines" in
+    data/product_lines.json)."""
+    global _DEFAULTS
+    if _DEFAULTS is None:
+        import json
+        _DEFAULTS = json.loads(canonical._LINES_PATH.read_text(encoding="utf-8")).get("_merch_default_lines") or {}
+    defaults = _DEFAULTS
+    own = next((v for k, v in defaults.items() if _key(k) == _key(brand)), None) or {}
+    return own.get(subtype)
+
+
+# ---------------------------------------------------------------------------
+# A brand's own site (storefront.py): one entry per size its page states
+# ---------------------------------------------------------------------------
+
+# Bulk and display boxes are a distributor's unit, not a store's: "500 bulk box",
+# "24 packs per box", "Mega Bulk Box".
+_BULK = re.compile(r"\b(bulk|box|boxes|display|case|jar|bag of)\b", re.I)
+_PACK_PHRASE = re.compile(
+    r"(\d+)\s*(?:-\s*)?(?:cone|cones|pre-?rolled tips?|tips?|leaves|leaf|papers?|sheets?|pieces?|piece)?"
+    r"\s*(?:per\s+)?(?:pack|pk|booklet)\b", re.I)
+_LEAVES = re.compile(r"(\d+)\s*(?:leaves|sheets)\s+per\s+(?:pack|booklet)", re.I)
+# Widths named in a site's SKU or copy that the title leaves out ("RAW Classic Kingsize",
+# SKUs RAWKSWIDE and RAWK-SSLIM: the slim and the wide).
+_SKU_WIDTHS = [(re.compile(r"KS-?WIDE|KSW\b|-KSW-", re.I), "ks wide"),
+               (re.compile(r"K-?S-?SLIM|KSS\b|-KSS-|-KS-|KS\d", re.I), "king size"),
+               (re.compile(r"-114-|114\b|\bRAW1-4\b|(?<=[A-Z])1\b", re.I), "1 1/4"),
+               (re.compile(r"-112-|112\b|\bRAW1-2\b", re.I), "1 1/2")]
+
+
+def site_sizes(title: str, sku: str, body: str, line: str | None = None) -> list[MerchSize]:
+    """The retail sizes a site's product page states: the widths its title and SKUs name,
+    times the pack counts its copy names, bulk and display boxes left out. A page that
+    names no count gives its widths with the count open."""
+    widths = []
+    w = parse_size(_MERCH.variant(title, None)).width
+    if w:
+        widths.append(w)
+    for pattern, width in _SKU_WIDTHS:
+        if pattern.search(sku or "") and width not in widths and not (w and width.startswith("k") != w.startswith("k")):
+            widths.append(width)
+    if re.search(r"\bwide\b", body or "", re.I) and "king size" in widths and "ks wide" not in widths:
+        widths.append("ks wide")
+    counts = []
+    for m in list(_PACK_PHRASE.finditer(body or "")) + list(_LEAVES.finditer(body or "")):
+        tail = (body or "")[m.end():m.end() + 12]
+        if _BULK.search(m.group(0)) or re.match(r"\s*(?:per\s+)?(?:bulk\s+)?(?:box|display|case)\b", tail, re.I):
+            continue
+        n = int(m.group(1))
+        if 1 <= n < 100 and n not in counts:
+            counts.append(n)
+    tips = comes_with_tips(line) or bool(_MERCH._tips.search(title or ""))
+    return fold_partial([MerchSize(w, c, tips) for w in (widths or [None]) for c in (counts or [None])
+                         if w or c])
+
+
+def fold_partial(sizes: list[MerchSize]) -> list[MerchSize]:
+    """One product's sizes without the partial ones a complete size covers: a page or a
+    store that gives "32ct" beside "king size 32ct" names that size, and kept apart it
+    would make every king size 32ct listing fit two entries."""
+    whole = [x for x in sizes if x.width and x.count]
+    return [x for x in sizes if (x.width and x.count) or not any(same_size(x, w) for w in whole)]
+
+
+def site_entries(title: str, sku: str, body: str, brand: str, subtype: str, method: str,
+                 item_id: str) -> list[dict]:
+    """Catalog entries for one product page of a brand's site, read by the same rules as
+    a store listing (reading), one per size the page states (site_sizes)."""
+    r = reading(title, brand, subtype)
+    sub = r["subtype"]                      # a format word in the title, else the site's category
+    if sub not in CATALOGED:
+        return []
+    sizes = site_sizes(title, sku, body, r["product_line"]) if sub in PAPERS else [MerchSize()]
+    if not sizes and sub not in SIZED:
+        sizes = [MerchSize()]
+    product_key = f"sf:merch:{sub}:{_key(r['product_line'])}:{_key(r['colour'])}:{_key(range_name(title, r))}"
+    out = []
+    for size in sizes:
+        out.append({
+            "external_id": f"{product_key}:{_key(size.label()) or 'nosize'}:{item_id}",
+            "product_key": product_key,
+            "name": " ".join(x for x in (r["product_line"], r["colour"], range_name(title, r), NOUN[sub]) if x),
+            "product_line": r["product_line"],
+            "category": "merch",
+            "subtype": sub,
+            "strain": None,
+            "variant": size.label(),
+            "attributes": {"colour": r["colour"]} if r["colour"] else None,
+            "match_terms": [],
+            "source": method,
+        })
+    return out
+
+
+def range_name(title: str, r: dict) -> str | None:
+    """Nothing yet: a site product's range beyond its line (Lean, Peacemaker) is not read,
+    so two such ranges of one line and width are one product. Kept as a hook."""
+    return None
 
 
 def _key(s: str | None) -> str:
@@ -165,7 +285,7 @@ def propose_entries(brand: str, listings: list[dict], min_stores: int = 2) -> li
         if r["subtype"] not in CATALOGED:
             continue
         size = parse_size(r["size"]) if r["subtype"] in PAPERS else MerchSize()
-        if r["subtype"] in PAPERS and size.is_empty():
+        if r["subtype"] in SIZED and size.is_empty():
             continue
         groups[(r["subtype"], _key(r["product_line"]), _key(r["colour"]), size)].append((l, r))
 
@@ -225,7 +345,7 @@ def join(entries: list[dict], r: dict) -> dict | None:
     if r.get("subtype") not in CATALOGED:
         return None
     want = parse_size(r.get("size"))
-    if r["subtype"] in PAPERS and want.is_empty():
+    if r["subtype"] in SIZED and want.is_empty():
         return None
     hits = []
     for e in entries:
@@ -237,7 +357,14 @@ def join(entries: list[dict], r: dict) -> dict | None:
             continue                       # a line the reading lacks is no agreement
         if _key(entry_colour(e)) != _key(r.get("colour")):
             continue
-        if r["subtype"] in PAPERS and not same_size(want, parse_size(e.get("variant"))):
+        if r["subtype"] in PAPERS and not want.is_empty() and e.get("variant") \
+                and not same_size(want, parse_size(e.get("variant"))):
             continue
         hits.append(e)
+    # A listing that states no size, of a product with sized and size-less entries
+    # (RAW's Tips: the page's 10ct and 21ct, and one without a count), is the size-less one.
+    if len(hits) > 1 and len({e.get("product_key") for e in hits}) == 1:
+        # ...and one that states a size is the entry of that size, not the size-less one.
+        hits = ([e for e in hits if not e.get("variant")] if want.is_empty()
+                else [e for e in hits if e.get("variant")]) or hits
     return hits[0] if len(hits) == 1 else None

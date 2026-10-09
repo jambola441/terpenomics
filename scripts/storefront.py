@@ -662,6 +662,23 @@ def _size_complete(entry: dict) -> bool:
         (s.mg is not None) if measure == "dose" else True
 
 
+def _fold_merch(entries: list[dict]) -> list[dict]:
+    """A merch product's partial sizes that one of its complete sizes covers, dropped
+    across the site's pages (merch_catalog.fold_partial): "RAW Classic" pages give "32ct"
+    with no width beside the Kingsize page's "king size 32ct"."""
+    import merch_catalog
+    by_product: dict[str, list[dict]] = defaultdict(list)
+    for e in entries:
+        if e["category"] == "merch":
+            by_product[e["product_key"]].append(e)
+    drop = set()
+    for es in by_product.values():
+        sizes = {id(e): merch_catalog.parse_size(e["variant"]) for e in es if e.get("variant")}
+        kept = set(merch_catalog.fold_partial(list(sizes.values())))
+        drop |= {i for i, s in sizes.items() if s not in kept}
+    return [e for e in entries if id(e) not in drop]
+
+
 def build(recipe: dict, items: list[Item]) -> tuple[dict, dict]:
     """The catalog document for the recipe's brand, and what happened to each item."""
     brand = recipe["brand"]
@@ -678,6 +695,17 @@ def build(recipe: dict, items: list[Item]) -> tuple[dict, dict]:
             unparsed.append({"title": it.title, "variant": it.variant, "why": "no category rule"})
             continue
         category = crule["set"]["category"]
+        if category == "merch":
+            # Papers and hardware (merch_catalog.py): read by the rules that read a store's
+            # listing, one entry per size the page states.
+            import merch_catalog
+            sku = (json.loads(it.fields.get("meta") or "{}") or {}).get("sku") or ""
+            got = merch_catalog.site_entries(it.title, sku, it.fields.get("body") or "", brand,
+                                             crule["set"].get("subtype"), method, it.id)
+            if not got:
+                skipped["merch: not a cataloged format, or no size stated"] += 1
+            entries.extend(got)
+            continue
         if category not in taxonomy.catalogable():
             skipped[f"{category}: not catalogued"] += 1
             continue
@@ -725,6 +753,7 @@ def build(recipe: dict, items: list[Item]) -> tuple[dict, dict]:
             "match_terms": sorted({t for t in (strip_brand(it.title, brand), norm_name(it.title)) if t}),
             "source": method,
         })
+    entries = _fold_merch(entries)
     # One entry per product and size. A lab-results list repeats a product once per lot
     # (7 SEAZ: 198 rows, 142 products), and a store that lists a product twice would
     # otherwise be two rows in the admin; the first keeps its id, all names are kept.

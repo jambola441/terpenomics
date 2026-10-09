@@ -1,4 +1,6 @@
 {
+  "_comment_raw": "RAW from rawthentic.com (2026-10-09): the paper lines are Classic, Black, Organic Hemp and Ethereal; Connoisseur, Artesano, Creaseless and Masterpiece are ranges inside a line (RAW Classic Connoisseur, RAW Organic Hemp Artesano, RAW Black Connoisseur), named in full so the longest wins. Stores write RAW Black as Black Classic. A RAW paper or cone whose name names no line is Classic (_merch_default_lines).",
+  "_merch_default_lines": {"RAW": {"paper": "Classic", "cone": "Classic"}},
   "_comment_hardware": "Hardware lines (2026-10-09, merch_catalog.py): a merch line may declare a subtype, the format its products are (PAX Flow and Plus are dry-herb devices, Era Go a pod battery; STIIIZY Pro, Pro XL, BIIIG and Lite are pod batteries). merch_catalog reads it where the name has no format word ('PAX Flow | Onyx').",
   "_comment": "Curated brand -> product lines. A line is assigned when its text appears in the product name (word-boundary match, spacing/punctuation insensitive); longest match wins. Keys starting with _ are ignored; the key \"*\" applies to every brand. Grow this from `python evals/enrich/audit.py --db` — it is the cheapest, most durable accuracy fix available, since assignment becomes a string fact instead of a model judgment. Seeded from The Plug (Crown Heights) product names.",
   "Claybourne Co.": [
@@ -108,13 +110,89 @@
     }
   ],
   "RAW": [
-    "Classic",
-    "Connoisseur",
-    "Ethereal",
-    "Masterpiece",
-    "Organic Hemp",
-    "Perfecto",
-    "Unrefined"
+    {
+      "line": "Classic",
+      "category": "merch"
+    },
+    {
+      "line": "Black",
+      "also": [
+        "Black Classic",
+        "Classic Black"
+      ],
+      "category": "merch"
+    },
+    {
+      "line": "Organic Hemp",
+      "category": "merch"
+    },
+    {
+      "line": "Black Organic Hemp",
+      "also": [
+        "Organic Hemp Black"
+      ],
+      "category": "merch"
+    },
+    {
+      "line": "Ethereal",
+      "category": "merch"
+    },
+    {
+      "line": "Classic Connoisseur",
+      "also": [
+        "Connoisseur"
+      ],
+      "category": "merch"
+    },
+    {
+      "line": "Organic Hemp Connoisseur",
+      "category": "merch"
+    },
+    {
+      "line": "Black Connoisseur",
+      "also": [
+        "Black Classic Connoisseur",
+        "Classic Black Connoisseur"
+      ],
+      "category": "merch"
+    },
+    {
+      "line": "Classic Artesano",
+      "also": [
+        "Artesano"
+      ],
+      "category": "merch"
+    },
+    {
+      "line": "Organic Hemp Artesano",
+      "category": "merch"
+    },
+    {
+      "line": "Classic Creaseless",
+      "also": [
+        "Creaseless"
+      ],
+      "category": "merch"
+    },
+    {
+      "line": "Organic Hemp Creaseless",
+      "category": "merch"
+    },
+    {
+      "line": "Classic Masterpiece",
+      "also": [
+        "Masterpiece"
+      ],
+      "category": "merch"
+    },
+    {
+      "line": "Perfecto",
+      "category": "merch"
+    },
+    {
+      "line": "Unrefined",
+      "category": "merch"
+    }
   ],
   "Blazy Susan": [
     "Premium",

@@ -196,7 +196,7 @@ class MerchEnricher(CategoryEnricher):
     # both: cones differ by pack at one size ("Pink 98mm Cones 20pk" vs "50pk"),
     # papers differ by width at one count, since a brand ships its whole range at
     # 33ct. Emitting both avoids a per-subtype rule.
-    _pack = re.compile(r"\b(\d+)\s*(pk|pack|ct|count|leaves)\b", re.I)
+    _pack = re.compile(r"\b(\d+)\s*(pk|pack|ct|count|leaves|pcs|pc)\b", re.I)
     # Width normalised because one brand writes it several ways in one menu — RAW
     # has "KS Slim", "King Size Slim" and "Slim KS" for the same paper, which split
     # one product three ways. "Slim" is a thinness, not a width, so it is not a
