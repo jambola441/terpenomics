@@ -1,10 +1,10 @@
 {
-  "_comment": "Examples for catalog_reading's line, strain and size questions, keyed by the catalog's brand_slug: one store listing per catalog entry, the entry named by a selector (category, subtype, line, strain, size, as in catalog_fix) that must name one active entry. size_field is the store's size field where it disagrees with the package. A question shows a couple of them (catalog_reading.EXAMPLES_SHOWN), from entries like the product being read whose answer is one of its options, the listings sharing most words with the one being read first. They come from review decisions (review_decisions, 2026-10-10), except two Ruby Farms ones: the Tangerine Dream 2pk is Herbology's row with a 5g size field at the 1g row's $20.35, and the Grand Daddy Purple Rose Blunt was read as that Rose Petal entry before there were examples.",
+  "_comment": "Examples for catalog_reading's line, strain and size questions, keyed by the catalog's brand_slug: one store listing per catalog entry, the entry named by a selector (category, subtype, line, strain, size, as in catalog_fix) that must name one active entry. A question shows a couple of them (catalog_reading.EXAMPLES_SHOWN), from entries like the product being read whose answer is one of its options, the listings sharing most words with the one being read first. size_field is the store's size field, given only where it is wrong for a product sold in one size: a wrong field shown on a product with several sizes makes every right one look doubtful (2026-10-10: a Tangerine Dream 2pk with a 5g field cost the Hash Infused 10-packs their trust). They come from review decisions (review_decisions, 2026-10-10), except Ruby Farms' Grand Daddy Purple Rose Blunt, read as that Rose Petal entry before there were examples.",
   "ayrloom": [
     {"listing": "ATF -Sativa- 0.6g - 5pk Infused (Pre-Roll)", "entry": {"category": "preroll", "strain": "Alaskan Thunder Fu*k", "size": "3g"}},
     {"listing": "ayrloom | Bomb Popz Infused Pre-Roll | 5 Pack", "entry": {"category": "preroll", "strain": "Bomb Popz", "size": "3g"}},
-    {"listing": "Black Cherry \"UP\" -Hybrid- 2:1 (Cannabis Infused Beverage) | Ayrloom", "size_field": "10mg", "entry": {"category": "edible", "strain": "Black Cherry", "size": "10mg"}},
-    {"listing": "Ayrloom - Black Cherry 1:1 THC:CBD Single - 10mg", "size_field": "10mg", "entry": {"category": "edible", "strain": "Black Cherry", "size": "5mg"}},
+    {"listing": "Ayrloom - Beverage 12oz Single Can (10mg THC:5mg CBD) - Black Cherry", "entry": {"category": "edible", "strain": "Black Cherry", "size": "10mg"}},
+    {"listing": "Ayrloom - Black Cherry 1:1 THC:CBD Single - 10mg", "entry": {"category": "edible", "strain": "Black Cherry", "size": "5mg"}},
     {"listing": "X| Ayrloom | Beverage Enhancer | Tincture (300THC)", "size_field": "30mg", "entry": {"category": "tinctures", "strain": "Unflavored Beverage Enhancer", "size": "300mg"}},
     {"listing": "Ayrloom Tincture Drops (150mg THC: 450mg CBD) - Low Dose Everyday drops", "size_field": "600mg", "entry": {"category": "tinctures", "strain": "Everyday", "size": "150mg"}},
     {"listing": "Tincture | Ayrloom | High Dose Drops", "size_field": "100mg", "entry": {"category": "tinctures", "strain": "High Dose", "size": "1000mg"}}
@@ -14,10 +14,10 @@
     {"listing": "Milk Chocolate Sea Salt Mini Bar (Daytime Sativa) - 100mg Chocolate", "entry": {"category": "edible", "line": "Mini Bar", "strain": "1:1 Milk Chocolate", "size": "10pk 100mg"}},
     {"listing": "Dark Chocolate Sea Salt Mini Bar (Hybrid) - 100mg Chocolate", "entry": {"category": "edible", "line": "Mini Bar", "strain": "Dark Chocolate", "size": "10pk 100mg"}},
     {"listing": "Milk Chocolate Sea Salt Mini Bar (Hybrid) - 100mg Chocolate", "entry": {"category": "edible", "line": "Mini Bar", "strain": "Milk Chocolate", "size": "10pk 100mg"}},
-    {"listing": "Daytime Sativa | 3:1 CBG/THC | Milk Chocolate Bar", "size_field": "100mg", "entry": {"category": "edible", "line": "Full Bar", "strain": "3:1 Milk Chocolate", "size": "10pk 100mg"}},
+    {"listing": "Daytime Sativa | 3:1 CBG/THC | Milk Chocolate Bar", "entry": {"category": "edible", "line": "Full Bar", "strain": "3:1 Milk Chocolate", "size": "10pk 100mg"}},
     {"listing": "Gron - Dark Chocolate 1:1:1 CBD:CBN:THC 10pk - 100mg", "entry": {"category": "edible", "line": "Full Bar", "strain": "1:1:1 Dark Chocolate", "size": "10pk 100mg"}},
-    {"listing": "Dark Chocolate - THC - Indica", "size_field": "100mg", "entry": {"category": "edible", "line": "Full Bar", "strain": "Dark Chocolate", "size": "10pk 100mg"}},
-    {"listing": "Milk Chocolate - THC - Sativa", "size_field": "100mg", "entry": {"category": "edible", "line": "Full Bar", "strain": "Milk Chocolate", "size": "10pk 100mg"}},
+    {"listing": "Dark Chocolate - THC - Indica", "entry": {"category": "edible", "line": "Full Bar", "strain": "Dark Chocolate", "size": "10pk 100mg"}},
+    {"listing": "Milk Chocolate - THC - Sativa", "entry": {"category": "edible", "line": "Full Bar", "strain": "Milk Chocolate", "size": "10pk 100mg"}},
     {"listing": "Gron - Pips Dark Chocolate 1:1:1 CBD:CBN:THC 20pk - 100mg", "entry": {"category": "edible", "line": "Pips", "strain": "1:1:1 Dark Chocolate", "size": "20pk 100mg"}},
     {"listing": "Gron | Dark Chocolate | Live Rosin | Indica | 20 Pack | 100mg THC", "entry": {"category": "edible", "line": "Pips", "strain": "Dark Chocolate", "size": "20pk 100mg"}},
     {"listing": "Gron | Milk Chocolate | Live Rosin | Sativa | 20 Pack | 100mg THC", "entry": {"category": "edible", "line": "Pips", "strain": "Milk Chocolate", "size": "20pk 100mg"}}
@@ -25,7 +25,6 @@
   "ruby-farms": [
     {"listing": "Ruby Farms | Amnesia Haze 10pk | Hash Infused Preroll", "entry": {"category": "preroll", "line": "Hash Infused", "strain": "Amnesia Haze", "size": "5g"}},
     {"listing": "Ruby Farms | Biscotti Jealousy 2pk | Hash Infused Preroll", "entry": {"category": "preroll", "line": "Hash Infused", "strain": "Biscotti Jealousy", "size": "1g"}},
-    {"listing": "Ruby Farms | Tangerine Dream 2pk | Hash Infused Preroll", "size_field": "5g", "entry": {"category": "preroll", "line": "Hash Infused", "strain": "Tangerine Dream", "size": "1g"}},
     {"listing": "Ruby Farms | African Orange - Hybrid Pre Rolls | 7pk 3.5g", "entry": {"category": "preroll", "line": "Doobies", "strain": "African Orange", "size": "3.5g"}},
     {"listing": "Ruby Farms | Grand Daddy Purple Hash Infused Rose Blunt", "entry": {"category": "preroll", "line": "Rose Petal", "strain": "Granddaddy Purple", "size": "1.5g"}}
   ]
