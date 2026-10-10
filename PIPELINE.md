@@ -169,10 +169,12 @@ CDN), so a card fetches a 320px file instead of a print-size original. A resized
 that fails falls back to the original (`ui/my-app/src/utils/photoUrl.ts`, shared with
 the app). The rest (Google Cloud Storage, Azure and CloudFront files, about 1,850) are
 copied into Supabase Storage's public `photos` bucket at 320px and 640px WebP by
-`scripts/photo_mirror.py`, which the cron job runs after a good scrape (it needs
-`SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`; without them the step is skipped). The
-API serves the copy (`photo_mirrors`), and a photo that could not be copied keeps its
-original and is tried again a week later.
+`scripts/photo_mirror.py`, which its own Render cron job, `terpenomics-photo-mirror`,
+runs daily at 16:00 UTC, after the scrape (`scripts/render.yaml`). It is a job of its
+own so the scraper never holds `SUPABASE_SERVICE_ROLE_KEY`; it needs that, `SUPABASE_URL`
+and `DATABASE_URL`, and exits 1 without the Supabase two. The API serves the copy
+(`photo_mirrors`), and a photo that could not be copied keeps its original and is
+tried again a week later.
 
 **Pushing is additive.** `brand_catalog.py push` and `catalog_bootstrap.py --push`
 insert new products and refresh metadata (support, last seen), but never
