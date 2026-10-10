@@ -74,7 +74,7 @@ def test_the_florist_farms_recipe_reads_its_title_shapes():
     wb = entry(doc, "Live Resin Infused Witches Brew")
     assert (wb["category"], wb["subtype"], wb["variant"]) == ("preroll", None, "2.5g")
     assert entry(doc, "Kief Coated Green Crack")["variant"] == "0.5g"
-    assert entry(doc, "Strawberries and Cream")["variant"] == "3.5g"
+    assert entry(doc, "Non-Infused Strawberries and Cream")["variant"] == "3.5g"
     aio = entry(doc, "Live Resin Jealousy")
     assert (aio["category"], aio["subtype"], aio["variant"]) == ("vaporizers", "all-in-one", "1g")
     cart = entry(doc, "Northern Lights")
@@ -609,3 +609,20 @@ def test_a_photo_too_heavy_for_a_phone_is_left_out():
     weights = {"https://x/light.png": 40_000, "https://x/heavy.png": 900_000}
     out = storefront.drop_heavy_photos(items, weigh=weights.get)
     assert [i.image for i in out] == ["https://x/light.png", None, "https://x/unknown.png", None]
+
+
+def test_a_line_less_store_product_never_takes_a_site_lines_name():
+    """A line-less store product whose name only a lined site product has is not
+    guessed into that line (Florist Farms' plain Gorilla Glue 1g is not "Kief Coated
+    Gorilla Glue"): it is left out for review, and the fix is the catalog's."""
+    kief = {"product_key": "kc-gg", "name": "Kief Coated Gorilla Glue", "product_line": "Kief Coated",
+            "strain": "Gorilla Glue", "subtype": None, "category": "preroll", "variant": "0.5g"}
+    site = [(storefront._total(kief), storefront._names(kief), kief)]
+    p = {"name": "Gorilla Glue", "strain": "Gorilla Glue", "product_line": None, "subtype": None,
+         "category": "preroll", "variant": "1g", "product_key": "store-gg"}
+    out = storefront._as_site_size(p, storefront._names(p), site)
+    assert out["review"] == "Kief Coated Gorilla Glue" and out["product_key"] == "store-gg"
+    assert storefront.with_store_products({"entries": []}, [out])["entries"] == []
+    # Within its own line the store size still joins the site product.
+    lined = dict(p, product_line="Kief Coated", name="Kief Coated Gorilla Glue")
+    assert storefront._as_site_size(lined, storefront._names(lined), site)["product_key"] == "kc-gg"

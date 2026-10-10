@@ -16,7 +16,7 @@
       "url": "a@href"
     }
   },
-  "learned": "2026-10-05, by hand: /blunts has 33 product cards and /pre-rolls 24, each 'series / name / spec line / description', the spec line starting with the size ('1.5g infused blunt · Flower · Live resin · Diamonds', '1g infused pre-roll · ...').",
+  "learned": "2026-10-05, by hand: /blunts has 33 product cards and /pre-rolls 24, each 'series / name / spec line / description', the spec line starting with the size ('1.5g infused blunt \u00b7 Flower \u00b7 Live resin \u00b7 Diamonds', '1g infused pre-roll \u00b7 ...').",
   "notes": [
     "One national catalog: the site says 'The same catalog, coast to coast', and /find-us/ny gives the formats with 'weights fixed across every market' (blunt 1.5g, pre-roll 1g, loose Moon Rocks 2g, mini blunts 3 x 0.7g, mini pre-rolls 3 x 0.5g). There is no NY filter or NY product list; presidentialthcnewyork.com is an SEO guide without SKUs.",
     "Next.js on Vercel with CSS-module class names (preroll-experience-module__<hash>__artCardSquare), so the selectors use element structure only: article > div holds p (series), h3 (name), span (spec line, plus a 'gold' badge span on a few) and p (description).",
@@ -26,11 +26,61 @@
   ],
   "skip": [],
   "category": [
-    {"when": {"product_type": "(?i)\\binfused (blunt|pre-roll)\\b"}, "set": {"category": "preroll"}}
+    {
+      "when": {
+        "product_type": "(?i)\\binfused (blunt|pre-roll)\\b"
+      },
+      "set": {
+        "category": "preroll"
+      }
+    },
+    {
+      "when": {
+        "product_type": "(?i)^live r[eo]sin$",
+        "body": "(?i)moon ?rock (?:pre-?roll|blunt)"
+      },
+      "set": {
+        "category": "preroll"
+      }
+    }
   ],
   "title": [
-    {"when": {"category": "^preroll$"},
-     "match": "^(?P<strain>.+)$",
-     "extract": {"product_type": "(?i)(?P<size>\\d*\\.?\\d+\\s*g) infused (?:blunt|pre-roll)\\b"}}
-  ]
+    {
+      "when": {
+        "category": "^preroll$",
+        "product_type": "(?i)infused (?:blunt|pre-roll)"
+      },
+      "match": "^(?P<strain>.+)$",
+      "extract": {
+        "product_type": "(?i)(?P<size>\\d*\\.?\\d+\\s*g) infused (?:blunt|pre-roll)\\b"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$",
+        "title": "^XJ-?13$"
+      },
+      "match": "^XJ-?13$",
+      "set": {
+        "strain": "XJ-13"
+      },
+      "extract": {
+        "body": "(?i)(?P<size>1\\.5g|1g) (?:roll|moon rock (?:blunt|pre-?roll)|of flower)"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "^(?P<strain>.+)$",
+      "extract": {
+        "body": "(?i)(?P<size>1\\.5g|1g) (?:roll|moon rock (?:blunt|pre-?roll)|of flower)"
+      }
+    }
+  ],
+  "store_aliases": {
+    "lines": {
+      "Moon Rocks": ""
+    }
+  }
 }
