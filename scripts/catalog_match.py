@@ -60,7 +60,6 @@ Usage
 from __future__ import annotations
 
 import argparse
-import dataclasses
 import hashlib
 import html
 import json
@@ -265,13 +264,9 @@ class CatalogIndex:
         """
         product = self.products[key]
         want = sizes.parse(listing_variant, name, category=category or product.category)
-        # A size that fits the listing's first reading beats one that fits only the
-        # other reading of an ambiguous dose ("20mg | 2pk": 40mg, or 20mg in all).
-        for either in (False, True):
-            for e in product.entries:
-                got = sizes.parse(e.get("variant"), category=product.category)
-                if sizes.same_size(want, got, either_reading=either):
-                    return e
+        for e in product.entries:
+            if sizes.same_size(want, sizes.parse(e.get("variant"), category=product.category)):
+                return e
         if listing_variant:
             lv = norm_name(listing_variant)
             for e in product.entries:
@@ -290,8 +285,6 @@ class CatalogIndex:
         is not joined to the product's other sizes; the listing goes to Jev, and the
         audit shows what is left. On the labelled set this tier decided 168 of 295
         listings, 14 of them against the label, most of those labels stale.
-        One exception: a bare dose with no count joins the one pack it is the
-        per-piece dose of, when the product sells nothing at that figure (per_piece).
 
         Inferred sizes (line_fill.py) count: they are the sizes the product's line
         comes in. Format is compared wherever both sides state one; a pre-roll keeps
@@ -411,7 +404,7 @@ def fitting_entry(entries: list[dict], want: sizes.Size, category: str | None) -
     came first. Two entries of one size (a stated one and an inferred one) are one fit.
     """
     fits = [(e, sizes.parse(e.get("variant"), category=category)) for e in entries]
-    fits = [(e, s) for e, s in fits if sizes.same_size(want, s) is True] or per_piece(fits, want, category)
+    fits = [(e, s) for e, s in fits if sizes.same_size(want, s) is True]
     if not fits:
         return False
     if len({s for _, s in fits}) > 1:
@@ -419,24 +412,6 @@ def fitting_entry(entries: list[dict], want: sizes.Size, category: str | None) -
     if len({s for _, s in fits}) > 1:
         return None
     return next((e for e, _ in fits if e.get("source") != "inferred"), fits[0][0])
-
-
-def per_piece(sized: list[tuple[dict, sizes.Size]], want: sizes.Size,
-              category: str | None) -> list[tuple[dict, sizes.Size]]:
-    """The entries a bare dose names as the per-piece dose of their pack: "Sour Cherry
-    10mg" is Wyld's 10pk 100mg (owner, 2026-10-10: a store can print the piece's dose
-    and leave out the count). Only for a figure with no pack count, against a product
-    that sells nothing at that figure itself (same_size found no fit) and in one pack
-    size only: a product with a 10pk 100mg and a 5pk 50mg leaves a 10mg to Jev."""
-    if category not in sizes.DOSE_CATEGORIES or want.pack is not None or want.mg is None \
-            or want.grams is not None:
-        return []
-    fits = [(e, s) for e, s in sized if s.pack and s.pack > 1 and s.mg is not None
-            and abs(want.mg * s.pack - s.mg) <= 0.5]
-    return fits if len({s for _, s in fits}) == 1 else []
-
-
-ATTRIBUTES = ("category", "strain", "line", "subtype", "size")
 
 
 def attribute_misses(reading: dict, product: "Product", entry: dict,
@@ -463,54 +438,29 @@ def attribute_misses(reading: dict, product: "Product", entry: dict,
             and not taxonomy.same_format(subtype, product.subtype, synonyms):
         out.append("subtype")
     want = reading_size(reading, name)
-    if want.is_empty() or not size_fits(want, product, entry):
+    if want.is_empty() or sizes.same_size(
+            want, sizes.parse(entry.get("variant"), category=product.category)) is not True:
         out.append("size")
     return out
-
-
-def size_fits(want: sizes.Size, product: "Product", entry: dict) -> bool:
-    """Whether `entry` is in the size wanted: the same size, or the pack a bare dose is
-    the per-piece dose of when the product sells nothing at that figure (per_piece)."""
-    sized = [(e, sizes.parse(e.get("variant"), category=product.category)) for e in product.entries]
-    if sizes.same_size(want, sizes.parse(entry.get("variant"), category=product.category)) is True:
-        return True
-    if any(sizes.same_size(want, s) is True for _, s in sized):
-        return False
-    return any(e is entry for e, _ in per_piece(sized, want, product.category))
 
 
 def reading_size(reading: dict, name: str | None = None) -> sizes.Size:
     """The size the reading names, with the pack count the listing's name states.
 
-    The reading stores one label ("20mg", "100mg"), which can drop what the name says
-    about the package. Two things matter to a size check:
-      - the count: "1pk - 100mg" is Flav's single Mega Belt, not its 10-pack of 100mg
-        (fitting_entry tells them apart only when the count is known);
-      - the other reading of a lone dose beside a pack (sizes.alt_mg): the parser takes
-        "2pk - 10mg" as 10mg a piece, as most brands mean it (81 of 104 such listings
-        on brand-site catalogs, 2026-10-09), but 1906 means the package total and sells
-        "2pk 10mg". same_size accepts either reading against an entry of the same
-        count, so the 2-pack joins and the 20-pack does not.
-    So when the reading states no count and the name read alone gives the same total
-    with one, the name's Size is used. The name gives a size here, never an identity.
+    The reading stores one label ("100mg"), which can drop the count the name gives:
+    "1pk - 100mg" is Flav's single Mega Belt, not its 10-pack of 100mg (fitting_entry
+    tells them apart only when the count is known). So when the reading states no
+    count and the name read alone gives the same total with one, the name's Size is
+    used. Nothing else is read into it: a size that fits no entry is Jev's to choose
+    (near_entries). The name gives a size here, never an identity.
     """
     category = reading.get("category")
     want = sizes.parse(reading.get("size"), category=category)
     if not name or want.pack is not None:
         return want
     own = sizes.parse(name, category=category)
-    if own.pack is None:
-        return want
-    # The name's figure, or its other reading (pack x figure): readings stored before
-    # 2026-10-10 hold the multiplied figure ("20mg" for "2pk - 10mg").
-    if want.mg is not None and any(v is not None and abs(v - want.mg) <= 0.5 for v in (own.mg, own.alt_mg)):
+    if own.pack is not None and not own.is_empty() and sizes.same_size(own, want):
         return own
-    if want.grams is not None and own.grams is not None and sizes.same_size(own, want):
-        return own
-    # A count with no figure beside it ("Tablets | 30-Pack") still says how many: the
-    # 30mg read is no per-piece dose of a 3-pack (per_piece).
-    if own.mg is None and own.grams is None:
-        return dataclasses.replace(want, pack=own.pack)
     return want
 
 
