@@ -12,7 +12,7 @@ import { useState, type ReactNode } from 'react'
 import api from '../api/client'
 import type { CustomerProfile } from '../types'
 import { t, radius, font } from '../theme'
-import { Logo } from './Icon'
+import { Icon, Logo } from './Icon'
 
 export default function OnboardingScreen({ profile, onDone, onSignOut }: {
   profile: CustomerProfile
@@ -109,6 +109,20 @@ export default function OnboardingScreen({ profile, onDone, onSignOut }: {
         </Check>
 
         {error && <div role="alert" style={{ color: t.danger, fontSize: font.size.body }}>{error}</div>}
+
+        {!returning && (
+          <div style={{
+            display: 'flex', gap: 10, alignItems: 'flex-start', padding: '12px 14px',
+            background: t.accentTint, border: `1px solid ${t.accentDim}`, borderRadius: radius.md,
+            color: t.text2, fontSize: font.size.small + 1, lineHeight: 1.5,
+          }}>
+            <Icon name="drop" size={17} color={t.accent} strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
+            <span>
+              <b style={{ color: t.text1 }}>Earn Terpee points</b> at partner stores, local businesses that
+              work with Terpee: give this phone number at checkout. You’ll find them under You → Points.
+            </span>
+          </div>
+        )}
 
         <button
           type="submit"

@@ -511,6 +511,8 @@ export default function CustomerPortal() {
           onOpenListing={openListing}
           onOpenDispensary={dispensaryId => navigate(storePath('home', dispensaryId))}
           onOpenProduct={openProduct}
+          onOpenPartner={slug => navigate('/portal/partners/' + encodeURIComponent(slug))}
+          onSeePartners={() => navigate('/portal/partners')}
         />
       ) : view === 'brands' ? (
         selectedBrandName ? (
@@ -552,6 +554,7 @@ export default function CustomerPortal() {
             onBack={() => navigate(-1)}
             onHowItWorks={() => navigate('/portal/how-points-work')}
             onSendReceipt={() => navigate('/portal/profile/points')}
+            onShowOnMap={id => navigate(`/portal/map?show=partners&spot=${encodeURIComponent(id)}`)}
           />
         ) : (
           <PartnersPage

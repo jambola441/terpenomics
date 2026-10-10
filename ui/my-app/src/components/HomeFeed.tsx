@@ -36,6 +36,7 @@ import { FeedState, Pressable, Skeleton, Pill, ProductImage, PageTitle, StoreBul
 import { MarketNote, productKey } from './browse'
 import { Icon, CategoryIcon, type IconName } from './Icon'
 import { formatDist, formatDollars, haversineMi } from '../utils/format'
+import PartnerStrip from './PartnerStrip'
 import { readEnum, readOne, useFilterParams, useScrollMemory, writeOne } from '../utils/browseState'
 
 /** Per rail. Eight fills two 2×2 screens — enough to be worth a swipe, few
@@ -63,9 +64,12 @@ interface Props {
   onOpenDispensary: (dispensaryId: string) => void
   /** Open the product page; `brand` is null when the listing has no brand. */
   onOpenProduct: (brand: string | null, productKey: string) => void
+  /** A partner store's page, and the list of them (the "Earn points" row). */
+  onOpenPartner: (slug: string) => void
+  onSeePartners: () => void
 }
 
-export default function HomeFeed({ onOpenListing, onOpenDispensary, onOpenProduct }: Props) {
+export default function HomeFeed({ onOpenListing, onOpenDispensary, onOpenProduct, onOpenPartner, onSeePartners }: Props) {
   const [feed, setFeed] = useState<Feed | null>(null)
   const [preferred, setPreferred] = useState<PortalDispensary[] | null>(null)
   // In the URL so a Back from a listing lands on the feed as it was left.
@@ -187,6 +191,8 @@ export default function HomeFeed({ onOpenListing, onOpenDispensary, onOpenProduc
           Edit
         </button>
       </div>
+
+      <PartnerStrip onOpenPartner={onOpenPartner} onSeeAll={onSeePartners} />
 
       {/* View toggle — a segmented control, not two buttons */}
       <div role="group" aria-label="Feed view" style={{
