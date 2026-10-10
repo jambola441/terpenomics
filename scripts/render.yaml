@@ -1,6 +1,7 @@
-# Render Blueprint reference: the daily dispensary scrape, and partner POS sync.
+# Render Blueprint reference: the daily dispensary scrape, partner POS sync, and the
+# daily store-photo copy.
 #
-# This file defines ONLY these two jobs. The existing `terpenomics` (Docker web
+# This file defines ONLY these three jobs. The existing `terpenomics` (Docker web
 # service) and `terpenomics-ui` (static site) were created from the Render dashboard
 # and are NOT managed here; adding this blueprint does not touch them.
 #
@@ -48,13 +49,6 @@ services:
       # Render also emails the owner when a run fails.
       - key: ALERT_WEBHOOK_URL
         sync: false
-      # After a good run, new store photos whose hosts cannot resize are copied into
-      # Supabase Storage at web sizes (scripts/photo_mirror.py). Without these two the
-      # step is skipped with a log line. Same values as the API's.
-      - key: SUPABASE_URL
-        sync: false
-      - key: SUPABASE_SERVICE_ROLE_KEY
-        sync: false
       # --- behavior (safe defaults, edit freely) ---
       # Only stores marked "active" in dispensaries.json are run. The enrich cache is
       # namespaced per model, so switching models starts it cold.
@@ -95,5 +89,33 @@ services:
         value: production
       - key: ANTHROPIC_API_KEY
         sync: false            # reads uploaded receipts; without it they're reviewed by hand
+      - key: PYTHONUNBUFFERED
+        value: "1"
+
+  # Store photos whose hosts cannot resize on request, copied into Supabase Storage
+  # at web sizes (scripts/photo_mirror.py; PIPELINE.md). Its own job so the scraper
+  # never holds the storage key. It copies what the day's scrape brought in, so it
+  # runs after the scrape's latest possible finish (13:00 + SCRAPE_TIMEOUT_SEC);
+  # anything it misses waits a day, and the listing shows the original meanwhile.
+  # Without the two Supabase keys it exits 1, so a misconfigured job shows as failed.
+  - type: cron
+    name: terpenomics-photo-mirror
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerCommand: python scripts/photo_mirror.py
+    schedule: "0 16 * * *"     # 16:00 UTC, after the 13:00 scrape and its 150-min cap
+    plan: starter
+    region: oregon             # where the other terpenomics services run
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        sync: false            # reads listings, records what was copied
+      - key: SUPABASE_URL
+        sync: false            # same values as the terpenomics web service
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: PHOTO_MIRROR_LIMIT
+        value: "3000"          # photos per run, at most; a day brings tens
       - key: PYTHONUNBUFFERED
         value: "1"

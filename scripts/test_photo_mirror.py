@@ -111,3 +111,14 @@ def test_run_copies_pending_photos_and_records_every_attempt(monkeypatch):
 def test_run_without_storage_keys_skips(monkeypatch):
     monkeypatch.delenv("SUPABASE_SERVICE_ROLE_KEY", raising=False)
     assert pm.run()["skipped"] is True
+
+
+def test_the_job_fails_when_its_storage_keys_are_missing(monkeypatch):
+    """Run as its own cron job, a missing key must show as a failed run, not a quiet one."""
+    import db_http
+    monkeypatch.setattr(db_http, "_load_dotenv", lambda: None)
+    monkeypatch.setattr(pm.photo_store, "configured", lambda: False)
+    monkeypatch.setattr(sys, "argv", ["photo_mirror.py"])
+    with pytest.raises(SystemExit) as exit_:
+        pm.main()
+    assert exit_.value.code == 1
