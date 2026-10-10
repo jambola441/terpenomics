@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List, Literal, Optional
+from typing import Callable, List, Literal, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
@@ -18,6 +18,7 @@ from services import feed as feed_rails
 from services.phone import to_e164
 from services.display_name import compose as compose_display_name
 from services.feed import RailItem
+from services.listing_photos import listing_photos
 from services.market import context_for, context_or_empty
 
 router = APIRouter(prefix="/me", tags=["me"])
@@ -479,7 +480,8 @@ def remove_preferred_dispensary(
 RAILS = ("featured", "new", "recommended", "deals")
 
 
-def _serialize_rail_item(item: RailItem, *, with_store: bool, market: dict) -> dict:
+def _serialize_rail_item(item: RailItem, *, with_store: bool, market: dict,
+                         photo: Callable[[Listing], Optional[str]]) -> dict:
     listing = item.listing
     payload = {
         "id": str(listing.id),
@@ -500,7 +502,7 @@ def _serialize_rail_item(item: RailItem, *, with_store: bool, market: dict) -> d
         "price_cents": listing.price_cents,
         "variant": listing.variant,
         "url": listing.url,
-        "image_url": listing.image_url,
+        "image_url": photo(listing),
         "in_stock": listing.in_stock,
         # What the ranking knew. Absent facts are zero/None rather than missing
         # keys, so the card renders the same shape in every rail.
@@ -557,21 +559,20 @@ def _dedupe_to_cheapest(items: List[RailItem]) -> List[RailItem]:
     return list(best.values())
 
 
+def _rail_listings(node):
+    """Every listing in any nesting of rail item collections, so the store view
+    (rails per section) and the combined view (rails) can both hand over
+    whatever shape they built."""
+    if isinstance(node, RailItem):
+        yield node.listing
+        return
+    for child in node:
+        yield from _rail_listings(child)
+
+
 def _market_for(session: Session, rail_groups) -> dict[str, dict]:
-    """The market comparison for every listing in a feed, in one query.
-
-    Takes any nesting of rail item collections and flattens it, so the store
-    view (rails per section) and the combined view (rails) can both hand it
-    whatever shape they built.
-    """
-    def listings(node):
-        if isinstance(node, RailItem):
-            yield node.listing.id
-            return
-        for child in node:
-            yield from listings(child)
-
-    ids = list(dict.fromkeys(listings(rail_groups)))
+    """The market comparison for every listing in a feed, in one query."""
+    ids = list(dict.fromkeys(listing.id for listing in _rail_listings(rail_groups)))
     return context_or_empty(context_for(session, ids), ids)
 
 
@@ -633,12 +634,14 @@ def get_feed(
             for name, items in rails.items()
         }
         market = _market_for(session, shown.values())
+        photo = listing_photos(session, list(_rail_listings(shown.values())))
         return {
             "view": "combined",
             "sections": [],
             "combined": {
                 name: [
-                    _serialize_rail_item(item, with_store=True, market=market[str(item.listing.id)])
+                    _serialize_rail_item(item, with_store=True, market=market[str(item.listing.id)],
+                                         photo=photo)
                     for item in items
                 ]
                 for name, items in shown.items()
@@ -666,6 +669,7 @@ def get_feed(
     # is many rails of a handful each, and a round trip per card would cost far
     # more than the line it draws.
     market = _market_for(session, (rails.values() for _, _, rails in built))
+    photo = listing_photos(session, list(_rail_listings(rails.values() for _, _, rails in built)))
 
     sections = [
         {
@@ -673,7 +677,8 @@ def get_feed(
             "total": total,
             "rails": {
                 name: [
-                    _serialize_rail_item(item, with_store=False, market=market[str(item.listing.id)])
+                    _serialize_rail_item(item, with_store=False, market=market[str(item.listing.id)],
+                                         photo=photo)
                     for item in items
                 ]
                 for name, items in rails.items()

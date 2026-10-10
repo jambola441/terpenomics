@@ -311,6 +311,67 @@ def test_push_is_additive_and_keeps_curation(push, fresh_db):
     assert cur.fetchone()[0] == "https://acme/products.json"
 
 
+def test_a_push_writes_and_refreshes_the_sites_photo(push, fresh_db):
+    """The site's photo is metadata: a re-fetch updates it, and one the site stopped
+    sending is kept rather than blanked."""
+    cur = fresh_db.cursor()
+
+    def doc(image):
+        return {"brand_slug": "acme", "brand_name": "Acme", "source_url": "https://acme/products.json",
+                "source_method": "shopify_products_json", "fetched_at": "2026-10-09T00:00:00Z",
+                "entries": [{"external_id": "1", "name": "island time", "product_line": None,
+                             "category": "edible", "subtype": "gummy", "strain": "Island Time",
+                             "variant": "10mg", "attributes": None, "match_terms": ["island time"],
+                             "image_url": image}]}
+
+    def photo():
+        cur.execute("SELECT image_url FROM brand_catalog_entries")
+        return cur.fetchone()[0]
+
+    push(doc("https://acme/a.png"))
+    assert photo() == "https://acme/a.png"
+    push(doc("https://acme/b.png"))
+    assert photo() == "https://acme/b.png"
+    push(doc(None))
+    assert photo() == "https://acme/b.png"
+
+
+@pytest.mark.parametrize("via_http", [False, True])
+def test_set_photos_writes_photos_and_nothing_else(fresh_db, via_rest, via_http):
+    import brand_catalog
+
+    if via_http:
+        via_rest(fresh_db)
+    cur = fresh_db.cursor()
+    doc = cb.propose("Jetpacks", JETPACKS)["catalog"]
+    brand_catalog.push(doc, via_http=via_http)
+    cur.execute("SELECT external_id, name, variant, is_active FROM brand_catalog_entries ORDER BY 1")
+    before = cur.fetchall()
+    first, *_ = doc["entries"]
+    first["image_url"] = "https://cdn.shopify.com/x.png?width=600"
+    doc["entries"].append({**first, "external_id": "not-stored", "image_url": "https://x/y.png"})
+
+    assert brand_catalog.set_photos(doc, dry_run=True, via_http=via_http)["updated"] == 1
+    cur.execute("SELECT count(*) FROM brand_catalog_entries WHERE image_url IS NOT NULL")
+    assert cur.fetchone()[0] == 0                                  # a dry run writes nothing
+    counts = brand_catalog.set_photos(doc, via_http=via_http)
+    assert counts == {"updated": 1, "with_photo": 2, "not_in_catalog": 1}
+    cur.execute("SELECT external_id, image_url FROM brand_catalog_entries WHERE image_url IS NOT NULL")
+    assert cur.fetchall() == [(first["external_id"], first["image_url"])]
+    cur.execute("SELECT external_id, name, variant, is_active FROM brand_catalog_entries ORDER BY 1")
+    assert cur.fetchall() == before                                # no entry added or changed
+    assert brand_catalog.set_photos(doc, via_http=via_http)["updated"] == 0
+
+
+def test_a_push_before_migration_0012_leaves_the_photo_out(push, fresh_db):
+    fresh_db.cursor().execute("ALTER TABLE brand_catalog_entries DROP COLUMN image_url")
+    doc = cb.propose("Jetpacks", JETPACKS)["catalog"]
+    for e in doc["entries"]:
+        e["image_url"] = "https://jetpacks/x.png"
+    assert push(doc)["inserted"] == len(doc["entries"])
+    assert push(doc)["refreshed"] == len(doc["entries"])
+
+
 def test_push_before_migration_0003_skips_its_columns(push, fresh_db, capsys):
     fresh_db.cursor().execute("ALTER TABLE brand_catalog_entries "
                               "DROP COLUMN product_key, DROP COLUMN source, DROP COLUMN support")

@@ -13,7 +13,9 @@ from then on this script runs it with no model involved:
 
   source     where the products are (SOURCES): a Shopify store's /products.json, a
              WooCommerce Store API, a WordPress post type, product cards in a page's
-             HTML (CSS selectors), or JSON — an API, or a blob a page embeds
+             HTML (CSS selectors), or JSON — an API, or a blob a page embeds. Its
+             photos come along (the first three carry them; html and json name one
+             with fields.image), at web size; PIPELINE.md, Photos
   skip       what is not a product we model: apparel, gift cards, bundles
   category   the site's own fields (product_type, tags, title...) -> our category,
              and a subtype where the site says one the title does not
@@ -89,7 +91,7 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import sizes  # noqa: E402
 import taxonomy  # noqa: E402
-from brand_catalog import norm_name, strip_brand  # noqa: E402
+from brand_catalog import norm_name, strip_brand, web_photo, web_size  # noqa: E402
 from scraper_common import apply_brand_aliases  # noqa: E402
 import catalog_bootstrap  # noqa: E402
 from catalog_bootstrap import squash, strain_key  # noqa: E402
@@ -121,6 +123,8 @@ class Item:
     title: str
     variant: str | None = None
     fields: dict = field(default_factory=dict)
+    # The site's photo of it, absolute; the entry's image_url (migration 0012).
+    image: str | None = None
 
 
 # --------------------------------------------------------------------------- sources
@@ -193,11 +197,15 @@ def shopify(source: dict, get=None) -> list[Item]:
                     "vendor": p.get("vendor") or "",
                     "url": urllib.parse.urljoin(source["url"], f"/products/{p.get('handle')}"),
                     "body": _text(p.get("body_html"))[:2000]}
+            # A variant's own photo when the site gives it one (a size's jar), else
+            # the product's first.
+            first = ((p.get("images") or [{}])[0] or {}).get("src")
             for v in p.get("variants") or [{"id": p.get("id")}]:
                 label = _variant_label(v.get("title"))
                 meta = json.dumps({"sku": v.get("sku"), "options": [v.get(f"option{i}") for i in (1, 2, 3)]})
+                image = web_photo((v.get("featured_image") or {}).get("src") or first)
                 items.append(Item(str(v.get("id")), base["title"], label,
-                                  {**base, "variant": label or "", "meta": meta}))
+                                  {**base, "variant": label or "", "meta": meta}, image))
         if len(products) < 250:
             break
     return items
@@ -218,12 +226,18 @@ def woocommerce(source: dict, get=None) -> list[Item]:
                     "url": p.get("permalink") or "",
                     "body": _text(f"{p.get('short_description') or ''} {p.get('description') or ''}")[:2000],
                     "meta": json.dumps({"sku": p.get("sku"), "attributes": p.get("attributes")})}
+            # The Store API lists a product's photos, not each variation's; its srcset
+            # names the sizes WordPress made of the upload.
+            photo = (p.get("images") or [{}])[0] or {}
+            image = web_size(((m.group(2), m.group(1)) for m in
+                              re.finditer(r"(\S+)\s+(\d+)w", photo.get("srcset") or "")),
+                             photo.get("src"))
             variations = p.get("variations") or []
             for v in variations:
                 label = " / ".join(a.get("value") or "" for a in v.get("attributes") or []) or None
-                items.append(Item(str(v.get("id")), base["title"], label, {**base, "variant": label or ""}))
+                items.append(Item(str(v.get("id")), base["title"], label, {**base, "variant": label or ""}, image))
             if not variations:
-                items.append(Item(str(p.get("id")), base["title"], None, {**base, "variant": ""}))
+                items.append(Item(str(p.get("id")), base["title"], None, {**base, "variant": ""}, image))
         if len(products) < 100:
             break
     return items
@@ -255,10 +269,21 @@ def wordpress(source: dict, get=None) -> list[Item]:
                 "tags": ", ".join(_text(t) for t in terms if t), "vendor": "", "url": p.get("link") or "",
                 "body": _text(f"{(p.get('content') or {}).get('rendered') or ''} "
                               f"{(p.get('excerpt') or {}).get('rendered') or ''}")[:2000],
-                "variant": "", "meta": json.dumps(p.get("acf") or p.get("meta") or {})}))
+                "variant": "", "meta": json.dumps(p.get("acf") or p.get("meta") or {})},
+                _wp_featured_image(p)))
         if len(posts) < 100:
             break
     return items
+
+
+def _wp_featured_image(post: dict) -> str | None:
+    """A post's featured image, which `_embed` brings along: the rendition WordPress
+    made nearest the web size (an upload can be a multi-megabyte original), else the
+    upload. A post with none has none; its site-wide share image is no product's."""
+    media = ((post.get("_embedded") or {}).get("wp:featuredmedia") or [None])[0] or {}
+    sizes = ((media.get("media_details") or {}).get("sizes") or {}).values()
+    return web_size(((s.get("width"), s.get("source_url")) for s in sizes if isinstance(s, dict)),
+                    media.get("source_url") or None)
 
 
 def _pages(source: dict, get_text=None):
@@ -340,11 +365,19 @@ def html_cards(source: dict, get_text=None) -> list[Item]:
             f = {"page": url, **{k: _css(card, sel) for k, sel in spec.items()}}
             if f.get("url"):
                 f["url"] = urllib.parse.urljoin(url, f["url"])
+            image = _image(url, f.pop("image", None))
             title = f.get("title") or ""
             if title:
                 items.append(Item(f.get("id") or f.get("url") or squash(title), title,
-                                  f.get("variant") or None, {**{k: "" for k in FIELDS}, **f}))
+                                  f.get("variant") or None, {**{k: "" for k in FIELDS}, **f}, image))
     return items
+
+
+def _image(page: str, found: str | None) -> str | None:
+    """`fields.image` as read: the first of several (a gallery), made absolute. "img@src"
+    in an html recipe, or "img@data-src" where the site lazy-loads; a dot path in json."""
+    first = (found or "").split(" | ")[0].split(", ")[0].strip()
+    return web_photo(urllib.parse.urljoin(page, first)) if first else None
 
 
 def _at(node, path: str):
@@ -398,10 +431,11 @@ def json_items(source: dict, get_text=None) -> list[Item]:
             f = {"page": url, **{k: _flat(_at(node, path)) for k, path in spec.items()}}
             if f.get("url"):
                 f["url"] = urllib.parse.urljoin(url, f["url"])
+            image = _image(url, f.pop("image", None))
             title = f.get("title") or ""
             if title:
                 items.append(Item(f.get("id") or f.get("url") or squash(title), title,
-                                  f.get("variant") or None, {**{k: "" for k in FIELDS}, **f}))
+                                  f.get("variant") or None, {**{k: "" for k in FIELDS}, **f}, image))
     return items
 
 
@@ -462,9 +496,9 @@ def _validate_source(src: dict, kind: str, bad) -> None:
         bad(f"source.fields.title is required for {kind}")
     if kind == "json" and not src.get("items"):
         bad("source.items (the dot path to the products) is required for json")
-    unknown = set(src.get("fields") or {}) - set(FIELDS) - {"id"}
+    unknown = set(src.get("fields") or {}) - set(FIELDS) - {"id", "image"}
     if unknown:
-        bad(f"source.fields: unknown fields {sorted(unknown)} (fields: id, {', '.join(FIELDS)})")
+        bad(f"source.fields: unknown fields {sorted(unknown)} (fields: id, image, {', '.join(FIELDS)})")
 
 
 def _pack_size_slip(size: str | None, rule: dict) -> str | None:
@@ -580,6 +614,41 @@ def fetch(recipe: dict) -> list[Item]:
     return items
 
 
+# A photo heavier than this, even at web size, costs a phone more than the store's
+# photo it would replace (276 KB median): Leal's 768px renditions are ~900 KB PNGs.
+MAX_PHOTO_BYTES = 400_000
+
+
+def _photo_bytes(url: str) -> int | None:
+    """What a browser would download: a HEAD that asks for WebP, as a phone does. None
+    when the server will not say."""
+    req = urllib.request.Request(url, method="HEAD", headers={
+        "User-Agent": USER_AGENT, "Accept": "image/avif,image/webp,image/*,*/*;q=0.8"})
+    try:
+        with urllib.request.urlopen(req, timeout=TIMEOUT_SECONDS) as r:
+            length = r.headers.get("Content-Length")
+            return int(length) if length and length.isdigit() else None
+    except Exception:  # noqa: BLE001 — a photo we cannot weigh is kept, not judged
+        return None
+
+
+def drop_heavy_photos(items: list[Item], weigh=_photo_bytes) -> list[Item]:
+    """Items keep their photo unless it weighs over MAX_PHOTO_BYTES; those entries
+    have none, and their listings show the store's. Run before writing a catalog
+    (push, photos, fetch), not for a check, which has no use for photos."""
+    from concurrent.futures import ThreadPoolExecutor
+    urls = sorted({it.image for it in items if it.image})
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        heavy = {u for u, n in zip(urls, pool.map(weigh, urls)) if n and n > MAX_PHOTO_BYTES}
+    if heavy:
+        print(f"  {len(heavy)} of {len(urls)} photos over {MAX_PHOTO_BYTES // 1000} KB left out "
+              f"(their listings keep the store's)")
+    for it in items:
+        if it.image in heavy:
+            it.image = None
+    return items
+
+
 def split_items(items: list[Item], spec: dict | None) -> list[Item]:
     """`split` ({"field": "variant", "find": regex}): an item whose field holds two or
     more of `find`'s matches is one item per match, the field set to that match. One
@@ -598,7 +667,7 @@ def split_items(items: list[Item], spec: dict | None) -> list[Item]:
             piece = piece if isinstance(piece, str) else piece[0]
             out.append(Item(f"{it.id}:{squash(piece)}", it.title,
                             piece if spec["field"] == "variant" else it.variant,
-                            {**it.fields, spec["field"]: piece}))
+                            {**it.fields, spec["field"]: piece}, it.image))
     return out
 
 
@@ -736,7 +805,7 @@ def build(recipe: dict, items: list[Item]) -> tuple[dict, dict]:
                                              recipe.get("merch_counts"))
             if not got:
                 skipped["merch: not a cataloged format, or no size stated"] += 1
-            entries.extend(got)
+            entries.extend({**e, "image_url": it.image} for e in got)
             continue
         if category not in taxonomy.catalogable():
             skipped[f"{category}: not catalogued"] += 1
@@ -784,6 +853,7 @@ def build(recipe: dict, items: list[Item]) -> tuple[dict, dict]:
             "attributes": None,
             "match_terms": sorted({t for t in (strip_brand(it.title, brand), norm_name(it.title)) if t}),
             "source": method,
+            "image_url": it.image,
         })
     entries = _fold_merch(entries) + _merch_extra_sizes(entries, recipe.get("merch_sizes"))
     # One entry per product and size. A lab-results list repeats a product once per lot
@@ -794,6 +864,7 @@ def build(recipe: dict, items: list[Item]) -> tuple[dict, dict]:
         first = unique.setdefault((e["product_key"], e["variant"]), e)
         if first is not e:
             first["match_terms"] = sorted(set(first["match_terms"]) | set(e["match_terms"]))
+            first["image_url"] = first.get("image_url") or e.get("image_url")
     collapsed = len(entries) - len(unique)
     entries = list(unique.values())
     src = recipe["source"]
@@ -1083,7 +1154,8 @@ def print_check(report: dict, found: list[dict] | None, only_stores: list[dict] 
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=("check", "fetch", "push"))
+    ap.add_argument("command", choices=("check", "fetch", "push", "photos"),
+                    help="photos: write the site's photos onto the stored entries, nothing else")
     who = ap.add_mutually_exclusive_group(required=True)
     who.add_argument("--brand")
     who.add_argument("--all", action="store_true", help="every recipe in data/storefronts/")
@@ -1106,12 +1178,19 @@ def main() -> None:
     failed = 0
     for recipe in recipes:
         try:
-            doc, report = build(recipe, fetch(recipe))
+            items = fetch(recipe)
+            if args.command != "check":
+                items = drop_heavy_photos(items)
+            doc, report = build(recipe, items)
         except Exception as e:  # one site down must not stop the rest
             print(f"{recipe['brand']}: fetch failed: {e}")
             failed += 1
             continue
         found = only_stores = terms = dropped = None
+        if args.command == "photos":
+            import brand_catalog
+            brand_catalog.set_photos(doc, dry_run=args.dry_run, via_http=args.via_http)
+            continue
         if not args.offline:
             found, only_stores, terms = split_store_products(
                 doc, store_listings(recipe["brand"], args.via_http), recipe.get("store_aliases"),
