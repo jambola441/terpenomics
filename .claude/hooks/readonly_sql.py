@@ -1,10 +1,19 @@
 #!/usr/bin/env python3
 """
-PreToolUse hook for mcp__Supabase__execute_sql: auto-approve read-only SQL.
+PreToolUse hook: auto-approve read-only SQL, from either path that runs it —
+mcp__Supabase__execute_sql, or `python3 scripts/db_http.py sql "<query>"` in Bash.
 
 Approves a query only when every check passes; anything else falls through to the
 normal permission prompt (exit 0, no output). It never denies — a write is still
 possible, it just has to be confirmed by a person.
+
+A Bash command is read in one exact shape (`sqls_from_bash`): an optional
+`cd <this repo> &&`, then one or more calls joined by `;` or `&&`, each an optional
+`timeout <n>` and python/python3 running this repo's scripts/db_http.py with `sql`
+and one argument (line breaks inside it are fine), optionally followed by `2>&1`
+and pipes into text filters (`FILTERS`). Every query must pass. Anything else —
+another script or command, env assignments, `$` or backticks, a heredoc, a pipe
+into python — prompts as before.
 
 Conservative by construction:
   - exactly one statement (a trailing semicolon is fine)
@@ -20,8 +29,15 @@ Known limit: a user-defined function with side effects called from a SELECT is n
 detectable from the text. This is a guard against accidental writes, not a sandbox.
 """
 import json
+import os
 import re
+import shlex
 import sys
+from pathlib import Path
+
+# .claude/hooks/readonly_sql.py -> the repo root
+REPO = Path(__file__).resolve().parents[2]
+DB_HTTP = REPO / "scripts" / "db_http.py"
 
 STARTERS = {"select", "with", "explain", "show", "table", "values"}
 
@@ -107,13 +123,143 @@ def is_read_only(sql: str) -> bool:
     return True
 
 
+def _same_file(path: str, cwd: Path) -> bool:
+    p = Path(path)
+    try:
+        return (p if p.is_absolute() else cwd / p).resolve() == DB_HTTP
+    except OSError:
+        return False
+
+
+# Text filters the output may be piped through. None can write a file or run a
+# program with the arguments allowed here; sort and uniq are limited to flags,
+# because `sort -o FILE`, `uniq IN OUT` and `sort --compress-program=P` can.
+FILTERS = {"head", "tail", "grep", "tr", "wc", "cut", "jq", "sort", "uniq"}
+OPERATOR = re.compile(r"[();<>|&]+")
+
+
+def _is_filter(tokens: list[str]) -> bool:
+    if not tokens or tokens[0] not in FILTERS:
+        return False
+    name, args = tokens[0], tokens[1:]
+    if any(OPERATOR.fullmatch(a) for a in args):
+        return False
+    if name in ("sort", "uniq"):
+        return all(re.fullmatch(r"-[A-Za-z0-9,.]+", a) and "o" not in a for a in args)
+    return True
+
+
+def _plain_quoting(command: str) -> bool:
+    """True when the shell will expand nothing and see only one line.
+
+    Fails on `$` or a backtick anywhere, a backslash outside single quotes (where
+    it is not literal and changes where a quote ends), a line break outside quotes
+    (it could start a second command or a heredoc), or an unclosed quote. With
+    those gone, shlex's POSIX splitting matches the shell's.
+    """
+    quote = None
+    for ch in command:
+        if ch in "$`":
+            return False
+        if quote == "'":
+            if ch == "'":
+                quote = None
+        elif quote == '"':
+            if ch == "\\":
+                return False
+            if ch == '"':
+                quote = None
+        elif ch == "\\" or ch in "\n\r":
+            return False
+        elif ch in "'\"":
+            quote = ch
+    return quote is None
+
+
+def _one_sql_command(tokens: list[str], here: Path) -> str | None:
+    """The SQL of one `[timeout N] python scripts/db_http.py sql Q [2>&1] [| filter]...`."""
+    # `timeout 120 python ...` — a time limit changes nothing about what runs.
+    if tokens[:1] == ["timeout"] and len(tokens) > 1 and re.fullmatch(r"\d+(\.\d+)?[smhd]?", tokens[1]):
+        tokens = tokens[2:]
+    if len(tokens) < 4 or tokens[0] not in ("python", "python3"):
+        return None
+    if not _same_file(tokens[1], here) or tokens[2] != "sql":
+        return None
+    query, rest = tokens[3], tokens[4:]
+    if query == "-":
+        return None  # reads the SQL from stdin, which we cannot see
+
+    if rest[:3] in (["2", ">&", "1"], ["2", ">", "/dev/null"]):
+        rest = rest[3:]
+    while rest:
+        if rest[0] != "|":
+            return None
+        rest = rest[1:]
+        end = rest.index("|") if "|" in rest else len(rest)
+        if not _is_filter(rest[:end]):
+            return None
+        rest = rest[end:]
+    return query
+
+
+def sqls_from_bash(command: str, cwd: str | None) -> list[str] | None:
+    """Every query in a command made only of `db_http.py sql` calls, or None.
+
+    The calls may be joined by `;` or `&&`, may start with `cd <this repo>`, and
+    may include a bare `echo` (a closing newline after `tr -d '\\n'`).
+    """
+    if not _plain_quoting(command):
+        return None
+    lexer = shlex.shlex(command, posix=True, punctuation_chars=True)
+    lexer.whitespace_split = True
+    try:
+        tokens = list(lexer)
+    except ValueError:
+        return None
+
+    commands, current = [], []
+    for token in tokens:
+        if token in (";", "&&"):
+            commands.append(current)
+            current = []
+        else:
+            current.append(token)
+    commands.append(current)
+    if commands and not commands[-1]:
+        commands.pop()  # a trailing `;`
+
+    here, queries = Path(cwd or os.getcwd()), []
+    for i, part in enumerate(commands):
+        if part == ["echo"]:
+            continue
+        if part[:1] == ["cd"] and i == 0 and len(part) == 2:
+            target = Path(part[1])
+            target = target if target.is_absolute() else here / target
+            try:
+                if target.resolve() != REPO:
+                    return None
+            except OSError:
+                return None
+            here = REPO
+            continue
+        query = _one_sql_command(part, here)
+        if query is None:
+            return None
+        queries.append(query)
+    return queries or None
+
+
 def main() -> None:
     try:
         payload = json.load(sys.stdin)
     except json.JSONDecodeError:
         return
-    query = (payload.get("tool_input") or {}).get("query") or ""
-    if is_read_only(query):
+    tool_input = payload.get("tool_input") or {}
+    if payload.get("tool_name") == "Bash":
+        queries = sqls_from_bash(tool_input.get("command") or "", payload.get("cwd")) or []
+    else:
+        queries = [tool_input.get("query") or ""]
+    if queries and all(is_read_only(q) for q in queries):
         print(json.dumps({"hookSpecificOutput": {
             "hookEventName": "PreToolUse",
             "permissionDecision": "allow",

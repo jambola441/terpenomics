@@ -54,6 +54,8 @@ export type BrowseItem = {
   subtype: string | null
   strain: string | null
   variant: string | null
+  /** The brand's product line, null when the product is in none. */
+  line: string | null
   imageUrl: string | null
   minPriceCents: number | null
   maxPriceCents: number | null
@@ -61,13 +63,45 @@ export type BrowseItem = {
   offerings: BrowseOffering[]
 }
 
-export type FacetKey = 'category' | 'subtype' | 'brand' | 'variant'
+export type FacetKey = 'category' | 'subtype' | 'brand' | 'variant' | 'line'
 
 const FACET_TITLES: Record<FacetKey, string> = {
   category: 'Category',
   subtype: 'Subtype',
   brand: 'Brand',
   variant: 'Weight / Size',
+  line: 'Product line',
+}
+
+/** The line option for products in no line. Without it, picking a line would
+ *  quietly hide every product the brand never named a line for, and the counts
+ *  would only add up to part of the page. */
+export const NO_LINE = 'No line'
+
+/** A line counts as one, for its filter and its links, from this many products
+ *  up. Below that a "line" is often one product under a flavour or effect name,
+ *  and a filter of one-item options reads as noise. */
+export const LINE_MIN_PRODUCTS = 3
+
+/** A product's name once its line is already said around it. compose()
+ *  (services/display_name.py) writes "Palms Blue Dream"; under a Palms heading
+ *  or filter that is just "Blue Dream". A name that is only the line stays. */
+export function nameWithinLine(name: string, line: string | null): string {
+  if (!line) return name
+  const prefix = `${line} `
+  return name.toLowerCase().startsWith(prefix.toLowerCase()) && name.length > prefix.length
+    ? name.slice(prefix.length)
+    : name
+}
+
+/** Brand casing ("UP", "Liquid Diamonds") is the name; sizes carry units. */
+const KEEPS_CASE: ReadonlySet<FacetKey> = new Set(['variant', 'line'])
+
+/** The value an item files under for a facet. Only the line facet has a bucket
+ *  for "none"; elsewhere an item without the field simply has no value. */
+function facetValue(item: BrowseItem, key: FacetKey): string | null {
+  if (key === 'line') return item.line ?? NO_LINE
+  return item[key]
 }
 
 /** Sizes read naturally in size order; everything else reads best by how much
@@ -77,6 +111,7 @@ const FACET_SORTS: Record<FacetKey, (a: Facet, b: Facet) => number> = {
   subtype: (a, b) => b.count - a.count,
   brand: (a, b) => b.count - a.count,
   variant: (a, b) => variantWeight(a.value) - variantWeight(b.value),
+  line: (a, b) => Number(a.value === NO_LINE) - Number(b.value === NO_LINE) || b.count - a.count,
 }
 
 type Facet = { value: string; count: number }
@@ -93,6 +128,9 @@ type Enriched = {
 
 type Filters = {
   search: string
+  /** The facets this screen offers. A selection on any other (one the URL
+   *  carried in, say) filters nothing, since there is no chip to undo it. */
+  keys: readonly FacetKey[]
   facets: Record<FacetKey, Set<string>>
   radiusMi: number | null
   price: [number, number] | null
@@ -101,11 +139,11 @@ type Filters = {
 function matches(e: Enriched, f: Filters, except?: FacetKey | 'price' | 'radius'): boolean {
   if (f.search && !e.haystack.includes(f.search)) return false
 
-  for (const key of Object.keys(f.facets) as FacetKey[]) {
+  for (const key of f.keys) {
     if (except === key) continue
     const selected = f.facets[key]
     if (!selected.size) continue
-    const value = e.item[key]
+    const value = facetValue(e.item, key)
     if (!value || !selected.has(value)) return false
   }
 
@@ -180,6 +218,7 @@ export default function BrowseScreen({
     subtype: readSet(initialParams, 'subtype'),
     brand: readSet(initialParams, 'brand'),
     variant: readSet(initialParams, 'variant'),
+    line: readSet(initialParams, 'line'),
   }))
   const [radiusMi, setRadiusMi] = useState<number | null>(() => readNumber(initialParams, 'radius'))
   const [price, setPrice] = useState<[number, number] | null>(() => readRange(initialParams, 'price'))
@@ -196,6 +235,7 @@ export default function BrowseScreen({
     subtype: facets.includes('subtype') ? writeSet(selected.subtype) : [],
     brand: facets.includes('brand') ? writeSet(selected.brand) : [],
     variant: facets.includes('variant') ? writeSet(selected.variant) : [],
+    line: facets.includes('line') ? writeSet(selected.line) : [],
     radius: writeOne(radiusMi),
     price: writeRange(price),
     sort: sort === 'featured' ? [] : [sort],
@@ -208,7 +248,7 @@ export default function BrowseScreen({
     if (previousKey.current === resetKey) return
     previousKey.current = resetKey
     setSearch('')
-    setSelected({ category: new Set(), subtype: new Set(), brand: new Set(), variant: new Set() })
+    setSelected({ category: new Set(), subtype: new Set(), brand: new Set(), variant: new Set(), line: new Set() })
     setRadiusMi(null); setPrice(null); setSort('featured')
     scrollRef.current?.scrollTo({ top: 0 })
   }, [resetKey])
@@ -246,7 +286,7 @@ export default function BrowseScreen({
       closestDist: closestStore ? closestDist : null,
       closestStore,
       cheapestStore,
-      haystack: [item.name, item.brand, item.category, item.subtype, item.strain, item.variant]
+      haystack: [item.name, item.brand, item.category, item.subtype, item.strain, item.variant, item.line]
         .filter(Boolean).join(' ').toLowerCase(),
     }
   }), [items, userPos])
@@ -264,6 +304,7 @@ export default function BrowseScreen({
 
   const filters: Filters = {
     search: search.trim().toLowerCase(),
+    keys: facets,
     facets: selected,
     radiusMi,
     price,
@@ -273,6 +314,7 @@ export default function BrowseScreen({
   // memos honest without listing six dependencies four times.
   const filterSignature = JSON.stringify([
     filters.search,
+    facets,
     (Object.keys(selected) as FacetKey[]).map(k => [...selected[k]]),
     radiusMi,
     price,
@@ -285,7 +327,7 @@ export default function BrowseScreen({
       const counts = new Map<string, number>()
       for (const e of enriched) {
         if (!matches(e, filters, key)) continue
-        const value = e.item[key]
+        const value = facetValue(e.item, key)
         if (!value) continue
         counts.set(value, (counts.get(value) ?? 0) + 1)
       }
@@ -347,7 +389,7 @@ export default function BrowseScreen({
   }
 
   function clearAll() {
-    setSelected({ category: new Set(), subtype: new Set(), brand: new Set(), variant: new Set() })
+    setSelected({ category: new Set(), subtype: new Set(), brand: new Set(), variant: new Set(), line: new Set() })
     setRadiusMi(null)
     setPrice(null)
   }
@@ -363,13 +405,21 @@ export default function BrowseScreen({
   const [quickKey] = facets
   const quickFacet = facetOptions[quickKey] ?? []
 
+  // With one line picked, every card is in it, and the name compose() gave it
+  // ("Palms Blue Dream") repeats what the filter already says.
+  const [onlyLine] = facets.includes('line') && selected.line.size === 1 ? [...selected.line] : []
+  function nameInLine(item: BrowseItem): string {
+    if (!onlyLine || onlyLine === NO_LINE || item.line !== onlyLine) return item.name
+    return nameWithinLine(item.name, item.line)
+  }
+
   const groups: SheetGroup[] = facets.map(key => ({
     key,
     title: FACET_TITLES[key],
     facet: facetOptions[key] ?? [],
     sel: selected[key],
     onToggle: (value: string) => toggle(key, value),
-    capitalize: key !== 'variant',
+    capitalize: !KEEPS_CASE.has(key),
   }))
 
   return (
@@ -416,7 +466,7 @@ export default function BrowseScreen({
                 count={f.count}
                 active={selected[quickKey].has(f.value)}
                 color={color}
-                capitalize={quickKey !== 'variant'}
+                capitalize={!KEEPS_CASE.has(quickKey)}
                 onClick={() => toggle(quickKey, f.value)}
               />
             ))}
@@ -437,7 +487,7 @@ export default function BrowseScreen({
             <ActiveChip
               key={key + value}
               label={value}
-              capitalize={key !== 'variant'}
+              capitalize={!KEEPS_CASE.has(key)}
               onRemove={() => toggle(key, value)}
             />
           )))}
@@ -491,7 +541,7 @@ export default function BrowseScreen({
                 <BrowseCard
                   key={e.item.key}
                   item={{
-                    name: e.item.name,
+                    name: nameInLine(e.item),
                     brand: e.item.brand,
                     category: e.item.category,
                     subtype: e.item.subtype,

@@ -48,6 +48,13 @@ services:
       # Render also emails the owner when a run fails.
       - key: ALERT_WEBHOOK_URL
         sync: false
+      # After a good run, new store photos whose hosts cannot resize are copied into
+      # Supabase Storage at web sizes (scripts/photo_mirror.py). Without these two the
+      # step is skipped with a log line. Same values as the API's.
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
       # --- behavior (safe defaults, edit freely) ---
       # Only stores marked "active" in dispensaries.json are run. The enrich cache is
       # namespaced per model, so switching models starts it cold.

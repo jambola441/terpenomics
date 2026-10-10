@@ -185,7 +185,7 @@ def verify_email_change(
     session.add(customer)
     session.commit()
     session.refresh(customer)
-    return _serialize_customer(customer)
+    return _serialize_customer(customer, session)
 
 
 @router.delete("")
@@ -198,4 +198,4 @@ def remove_email(
     session.add(customer)
     session.commit()
     session.refresh(customer)
-    return _serialize_customer(customer)
+    return _serialize_customer(customer, session)

@@ -26,6 +26,7 @@ function toItems(data: PortalCategoryDetail): BrowseItem[] {
     subtype: product.subtype,
     strain: product.strain,
     variant: product.variant,
+    line: product.product_line,
     imageUrl: product.image_url,
     minPriceCents: product.min_price_cents,
     maxPriceCents: product.max_price_cents,

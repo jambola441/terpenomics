@@ -102,6 +102,23 @@ class ConsentEvent(SQLModel, table=True):
     created_at: datetime      = Field(default_factory=utcnow, index=True, nullable=False)
 
 
+class CustomerFlag(SQLModel, table=True):
+    """One customer's override of one feature flag (services/flags.py).
+
+    A row forces the flag on or off for that customer, whatever the global
+    default says; no row means the default applies. A table rather than a column
+    on customers so it needs no migration before deploy: create_all makes a
+    missing table at startup, but never adds a column (db/migrations/0015).
+    """
+
+    __tablename__ = "customer_flags"
+
+    customer_id: UUID = Field(foreign_key="customers.id", primary_key=True)
+    flag:        str  = Field(max_length=64, primary_key=True)
+    enabled:     bool = Field(nullable=False)
+    updated_at:  datetime = Field(default_factory=utcnow, nullable=False)
+
+
 # ---------------------------
 # Terpenes + Cannabinoids
 # ---------------------------
@@ -607,6 +624,42 @@ class OrderItem(SQLModel, table=True):
 # ---------------------------
 # Curation
 # ---------------------------
+
+class PhotoMirror(SQLModel, table=True):
+    """A store photo copied into Terpee's own storage at web sizes, because its host
+    cannot resize on request (scripts/photo_mirror.py; migration 0013). `url` is the
+    640px copy, with a 320px one beside it; a failed copy keeps `failed` and no url."""
+
+    __tablename__ = "photo_mirrors"
+
+    source_url: str = Field(primary_key=True, sa_type=Text)
+    url: Optional[str] = Field(default=None, sa_type=Text)
+    bytes: Optional[int] = None
+    failed: Optional[str] = Field(default=None, sa_type=Text)
+    mirrored_at: datetime = Field(
+        default_factory=utcnow_tz,
+        sa_column=Column("mirrored_at", DateTime(timezone=True), nullable=False),
+    )
+
+
+class BrandLogo(SQLModel, table=True):
+    """The logo a brand's tile and page show, picked by a person from the brand's own
+    site (routes/admin/brand_logos.py; migration 0014). Keyed by brand_key, the
+    folding catalogs use, so spellings of one brand share it."""
+
+    __tablename__ = "brand_logos"
+
+    brand_key: str = Field(primary_key=True, sa_type=Text)
+    brand_name: str = Field(nullable=False, sa_type=Text)
+    logo_url: Optional[str] = Field(default=None, sa_type=Text)
+    source_url: Optional[str] = Field(default=None, sa_type=Text)
+    site_url: Optional[str] = Field(default=None, sa_type=Text)
+    chosen_by: Optional[str] = Field(default=None, sa_type=Text)
+    updated_at: datetime = Field(
+        default_factory=utcnow_tz,
+        sa_column=Column("updated_at", DateTime(timezone=True), nullable=False),
+    )
+
 
 class FeaturedListing(SQLModel, table=True):
     """A listing a store (or an admin) wants shown first.

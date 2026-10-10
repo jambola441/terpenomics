@@ -156,7 +156,7 @@ export default function BrandsPage({ onOpenBrand }: Props) {
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 9,
                 }}
               >
-                <BrandMark name={brand.name} imageUrl={brand.image_url} size={64} />
+                <BrandMark name={brand.name} imageUrl={brand.logo_url ?? brand.image_url} size={64} />
                 <div style={{
                   color: t.text1, fontSize: font.size.caption + 1, fontWeight: font.weight.semibold,
                   textAlign: 'center', lineHeight: 1.25, width: '100%',

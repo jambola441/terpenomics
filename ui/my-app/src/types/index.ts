@@ -384,6 +384,8 @@ export type PortalBrand = {
   name: string
   listing_count: number
   image_url: string | null
+  /** The brand's own logo, picked in the admin; absent from an API that predates it. */
+  logo_url?: string | null
 }
 
 export type PortalCategory = {
@@ -427,6 +429,17 @@ export type PortalProductDetail = PortalBrandProduct & {
 export type PortalBrandDetail = {
   name: string
   image_url: string | null
+  logo_url?: string | null
+  product_count: number
+  dispensary_count: number
+  products: PortalBrandProduct[]
+}
+
+/** One of a brand's product lines, cut from the brand's answer
+ *  (GET /customer/brands/{brand}/lines/{line}). */
+export type PortalBrandLine = {
+  brand: string
+  name: string
   product_count: number
   dispensary_count: number
   products: PortalBrandProduct[]
@@ -680,6 +693,24 @@ export type CustomerProfile = {
   email: string | null
   marketing_opt_in: boolean
   onboarding: Onboarding
+  /** Feature flags resolved for this customer (services/flags.py). Optional so
+   *  an older API reads as everything off. */
+  flags?: Record<string, boolean>
+}
+
+/** One feature flag as the admin customer page sees it
+ *  (GET /admin/customers/{id}/flags, services/flags.py explain()). */
+export type CustomerFlagRow = {
+  flag: string
+  enabled: boolean
+  /** Where `enabled` came from: this customer's override, the global default
+   *  (on or off for everyone), or a percentage rollout. */
+  source: 'override' | 'default' | 'rollout'
+  override: boolean | null
+  default_percent: number
+  /** False for a flag reserved for work that has not landed. */
+  built: boolean
+  about: string
 }
 
 /** Sign-up state and what to show for it (routes_me.py, services/consent.py). */
@@ -952,3 +983,16 @@ export type AdminReceiptQueue = {
   counts: Record<ReceiptStatus, number>
   items: AdminReceipt[]
 }
+
+/** A brand in the admin's logo picker (routes/admin/brand_logos.py). */
+export type BrandLogoRow = {
+  brand_key: string
+  brand_name: string
+  listing_count: number
+  logo_url: string | null
+  site_url: string | null
+  chosen_by: string | null
+  updated_at: string | null
+}
+
+export type LogoCandidate = { url: string; kind: string }

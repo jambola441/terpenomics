@@ -15,6 +15,8 @@ needs but the orchestrator itself doesn't care about:
     morning rather than weeks later
   * a pause switch: with PIPELINE_PAUSED set, a run logs, alerts and exits 0
     without scraping
+  * after a good run, the day's new store photos that cannot be resized on request
+    are copied into Supabase Storage (photo_mirror.py); best effort, never fails a run
 
 One-off:        python scripts/run_scrape_cron.py
 Custom sweep:   SCRAPE_ARGS="--all --parallel --no-enrich" python scripts/run_scrape_cron.py
@@ -52,6 +54,9 @@ DEFAULT_TIMEOUT_SEC = int(os.environ.get("SCRAPE_TIMEOUT_SEC", str(90 * 60)))
 
 # What to hand scrape.py. Override via env for a one-off (e.g. drop --parallel).
 SCRAPE_ARGS = os.environ.get("SCRAPE_ARGS", "--all --parallel")
+
+# Photos copied after a run, at most: a day brings tens; the first run about 1,500.
+PHOTO_MIRROR_LIMIT = int(os.environ.get("PHOTO_MIRROR_LIMIT", "3000"))
 
 # The pause switch: set to anything but "", "0", "false" or "no" and runs are skipped.
 # Each skipped run still logs and alerts, so a pause that outlives its reason is noticed.
@@ -189,12 +194,25 @@ def run_pipeline(timeout: int = DEFAULT_TIMEOUT_SEC) -> int:
         enrich_cost_usd=summary.get("cost_usd"),
     )
     log.info("pipeline %s in %.0fs (exit %d)", state, dur, code)
+    if code == 0:
+        _mirror_photos()
     if code != 0:
         lines = [f"terpenomics scrape {state} (exit {code}, {dur / 60:.0f} min)"]
         lines += [f"• {s['slug']}: {s['stage']} — {s['detail']}" for s in failed[:15]]
         lines += [f"• {s['slug']} (warning): {s['warning']}" for s in warned[:5]]
         _alert("\n".join(lines))
     return code
+
+
+def _mirror_photos() -> None:
+    """Copy new store photos that cannot be resized on request into our own storage
+    (photo_mirror.py). Their listings show the originals until this runs, so a failure
+    here is logged and never fails the run."""
+    try:
+        import photo_mirror
+        photo_mirror.run(limit=PHOTO_MIRROR_LIMIT)
+    except Exception:  # noqa: BLE001
+        log.exception("photo mirror failed; the scrape itself succeeded")
 
 
 def main() -> None:

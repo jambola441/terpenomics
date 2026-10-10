@@ -15,6 +15,7 @@ from models import (
 from routes.admin.serializers import serialize_purchase_item
 from services.display_name import compose as compose_display_name
 from services.listing_photos import listing_photos
+from services.brand_logos import logos_for
 from services.market import context_for, context_or_empty
 from services.response_cache import cached_json
 
@@ -87,7 +88,9 @@ def list_portal_brands(
     rows = session.exec(
         stmt.group_by(Listing.scraped_brand).order_by(order).offset(offset).limit(limit)
     ).all()
-    return [{"name": r.scraped_brand, "listing_count": r.cnt, "image_url": r.image_url} for r in rows]
+    logo = logos_for(session, (r.scraped_brand for r in rows))
+    return [{"name": r.scraped_brand, "listing_count": r.cnt, "image_url": r.image_url,
+             "logo_url": logo.get(r.scraped_brand)} for r in rows]
 
 
 # ---------------------------
@@ -195,9 +198,46 @@ def _build_portal_brand(session: Session, brand_name: str, in_stock: bool) -> di
     return {
         "name": brand_name,
         "image_url": brand_image,
+        "logo_url": logos_for(session, [brand_name]).get(brand_name),
         "product_count": len(product_list),
         "dispensary_count": len(dispensary_ids),
         "products": product_list,
+    }
+
+
+# ---------------------------
+# GET /brands/{brand_name}/lines/{line_name}
+# ---------------------------
+
+@router.get("/brands/{brand_name}/lines/{line_name}")
+def get_portal_brand_line(
+    brand_name: str,
+    line_name: str,
+    session: Session = Depends(get_session),
+    in_stock: bool = Query(default=True),
+):
+    """One of a brand's product lines: its products, shaped as on the brand page.
+
+    For the product page's "More in this line" row, which needs the line and not
+    the whole brand. Cut from the brand's own answer rather than queried apart,
+    so the two can never disagree about what is in a line.
+    """
+    return cached_json(
+        ("brand_line", brand_name, line_name, in_stock),
+        lambda s: _build_portal_brand_line(s, brand_name, line_name, in_stock),
+        session,
+    )
+
+
+def _build_portal_brand_line(session: Session, brand_name: str, line_name: str, in_stock: bool) -> dict:
+    brand = _build_portal_brand(session, brand_name, in_stock)
+    products = [p for p in brand["products"] if p["product_line"] == line_name]
+    return {
+        "brand": brand_name,
+        "name": line_name,
+        "product_count": len(products),
+        "dispensary_count": len({o["dispensary_id"] for p in products for o in p["offerings"]}),
+        "products": products,
     }
 
 

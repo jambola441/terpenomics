@@ -1,5 +1,7 @@
 import supabase from '../utils/supabase'
 import type {
+  BrandLogoRow,
+  LogoCandidate,
   Customer,
   Product,
   Purchase,
@@ -18,6 +20,8 @@ import type {
   PortalProduct,
   PortalBrand,
   PortalBrandDetail,
+  PortalBrandLine,
+  CustomerFlagRow,
   PortalProductDetail,
   PortalCategory,
   PortalCategoryDetail,
@@ -319,6 +323,16 @@ export const api = {
     
     getTerpeneScores: (id: string, params?: TerpeneScoresParams) =>
       authenticatedFetch<TerpeneScoresResponse>(`/admin/customers/${id}/terpene-scores${buildQueryString(params)}`),
+
+    getFlags: (id: string) =>
+      authenticatedFetch<CustomerFlagRow[]>(`/admin/customers/${id}/flags`),
+
+    /** true or false forces the flag for this customer; null returns them to the default. */
+    setFlag: (id: string, flag: string, enabled: boolean | null) =>
+      authenticatedFetch<CustomerFlagRow[]>(`/admin/customers/${id}/flags/${encodeURIComponent(flag)}`, {
+        method: 'POST',
+        body: JSON.stringify({ enabled }),
+      }),
   },
 
   products: {
@@ -458,6 +472,34 @@ export const api = {
    * every response carries an `export` block and nothing is really live until
    * `regenerateExport` has run.
    */
+  /** Brand logos, picked from each brand's own site (routes/admin/brand_logos.py). */
+  brandLogos: {
+    list: (params?: { q?: string; limit?: number }) =>
+      authenticatedFetch<BrandLogoRow[]>(`/admin/brand-logos${buildQueryString(params)}`),
+
+    candidates: (brandKey: string, siteUrl: string) =>
+      authenticatedFetch<{ site_url: string; candidates: LogoCandidate[] }>(
+        `/admin/brand-logos/${encodeURIComponent(brandKey)}/candidates`,
+        { method: 'POST', body: JSON.stringify({ site_url: siteUrl }) },
+      ),
+
+    choose: (brandKey: string, data: { brand_name: string; image_url: string; site_url?: string | null }) =>
+      authenticatedFetch<BrandLogoRow>(`/admin/brand-logos/${encodeURIComponent(brandKey)}`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    upload: (brandKey: string, brandName: string, file: File) => {
+      const form = new FormData()
+      form.append('brand_name', brandName)
+      form.append('file', file)
+      return authenticatedUpload<BrandLogoRow>(`/admin/brand-logos/${encodeURIComponent(brandKey)}/upload`, form)
+    },
+
+    remove: (brandKey: string) =>
+      authenticatedFetch<{ ok: boolean }>(`/admin/brand-logos/${encodeURIComponent(brandKey)}`, { method: 'DELETE' }),
+  },
+
   brandCatalogs: {
     list: (params?: { q?: string; limit?: number; offset?: number }) =>
       authenticatedFetch<BrandCatalogRow[]>(`/admin/brand-catalogs${buildQueryString(params)}`),
@@ -881,6 +923,10 @@ export const api = {
 
     getBrand: (name: string) =>
       portalFetch<PortalBrandDetail>(`/customer/brands/${encodeURIComponent(name)}`),
+
+    getBrandLine: (brand: string, line: string) =>
+      portalFetch<PortalBrandLine>(
+        `/customer/brands/${encodeURIComponent(brand)}/lines/${encodeURIComponent(line)}`),
 
     /** One product with its offerings. Brand is a filter, not a prerequisite:
      *  omitting it asks for the unbranded product with that key. */
