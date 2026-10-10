@@ -31,13 +31,16 @@
       ["Daytime Sativa | 3:1 CBG/THC | Milk Chocolate Bar", "3:1 Milk Chocolate"],
       ["Gron - Dark Chocolate 1:1:1 CBD:CBN:THC 10pk - 100mg", "1:1:1 Dark Chocolate"],
       ["Milk Chocolate - THC - Sativa", "Milk Chocolate"],
-      ["Indica Pips - 100MG Dark Chocolate Pieces", "Dark Chocolate"]
+      ["Indica Pips - 100MG Dark Chocolate Pieces", "Dark Chocolate"],
+      ["Gron - Pips Dark Chocolate 1:1:1 CBD:CBN:THC 20pk - 100mg", "1:1:1 Dark Chocolate"]
     ],
     "size": [
       ["Dark Chocolate Sea Salt Mini Bar (Sleepy Indica) - 100mg Chocolate", "10pk 100mg"],
       ["Gron | Daytime Sativa Milk Chocolate Mini Bar (S) | 100mg", "10pk 100mg"],
       ["3:1 Milk Chocolate & Sea Salt Bar (size field 100mg)", "10pk 100mg"],
-      ["Indica Pips - 100MG Dark Chocolate Pieces", "20pk 100mg"]
+      ["Indica Pips - 100MG Dark Chocolate Pieces", "20pk 100mg"],
+      ["Gron | Dark Chocolate | Live Rosin | Indica | 20 Pack | 100mg THC", "20pk 100mg"],
+      ["Gron | Milk Chocolate | Live Rosin | Sativa | 20 Pack | 100mg THC", "20pk 100mg"]
     ]
   },
   "ruby-farms": {
