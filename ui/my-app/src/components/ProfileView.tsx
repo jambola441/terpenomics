@@ -157,6 +157,7 @@ function PointsPane({ data, error, onUploaded, onRetry }: {
   onUploaded: () => void
   onRetry: () => void
 }) {
+  const navigate = useNavigate()
   if (error) return <FeedState kind="error" message="Couldn't load your points" hint={error} onRetry={onRetry} />
   if (!data) return <FeedState kind="loading" message="Loading your points…" />
 
@@ -184,6 +185,10 @@ function PointsPane({ data, error, onUploaded, onRetry }: {
         Earn {data.points_per_dollar === 1 ? '1 point' : `${data.points_per_dollar} points`} per dollar
         (before tax and tip) when you shop at Terpee partner stores with your phone number on the
         receipt. Points become available {data.pending_days} days after your purchase.
+      </div>
+      <div style={{ display: 'flex', gap: 10 }}>
+        <PointsLink icon="pin" label="Partner stores" sub="Where to earn" onClick={() => navigate('/portal/partners')} />
+        <PointsLink icon="info" label="How points work" sub="Steps and questions" onClick={() => navigate('/portal/how-points-work')} />
       </div>
 
       <ReceiptUpload onUploaded={onUploaded} />
@@ -222,6 +227,25 @@ function PointsPane({ data, error, onUploaded, onRetry }: {
         </div>
       )}
     </div>
+  )
+}
+
+function PointsLink({ icon, label, sub, onClick }: { icon: IconName; label: string; sub: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        flex: 1, minWidth: 0, minHeight: 56, cursor: 'pointer', textAlign: 'left',
+        display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px',
+        background: t.surface1, border: `1px solid ${t.border}`, borderRadius: radius.md, color: t.text1,
+      }}
+    >
+      <Icon name={icon} size={18} color={t.accent} />
+      <span style={{ minWidth: 0 }}>
+        <span style={{ display: 'block', fontSize: font.size.small + 1, fontWeight: font.weight.semibold }}>{label}</span>
+        <span style={{ display: 'block', fontSize: font.size.caption, color: t.text3, marginTop: 1 }}>{sub}</span>
+      </span>
+    </button>
   )
 }
 

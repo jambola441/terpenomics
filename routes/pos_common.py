@@ -6,6 +6,7 @@ Credentials are write-only: nothing here ever puts them in a response.
 """
 from __future__ import annotations
 
+import os
 from datetime import datetime, timezone
 from typing import Callable, Optional
 from uuid import UUID
@@ -119,7 +120,10 @@ def program_json() -> dict:
     from connectors.points import PENDING_DAYS, points_per_dollar
 
     return {"points_per_dollar": points_per_dollar(), "pending_days": PENDING_DAYS,
-            "claim_window_days": CLAIM_WINDOW_DAYS}
+            "claim_window_days": CLAIM_WINDOW_DAYS,
+            # What points can be used for, once rewards are set up; screens leave the
+            # question out until then.
+            "rewards": (os.getenv("POINTS_REWARDS") or "").strip() or None}
 
 
 def points_summary_json(session: Session, customer_id: UUID, limit: int = 50) -> dict:

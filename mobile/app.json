@@ -31,7 +31,7 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Terpee checks that you are in New York, where reserving cannabis for pickup is legal, before placing an order."
+          "locationWhenInUsePermission": "Terpee checks that you are in New York, where reserving cannabis for pickup is legal, before placing an order, and lists the partner stores nearest you."
         }
       ],
       [

@@ -187,7 +187,7 @@ def test_customers_see_active_partners_and_stores_with_the_programs_numbers(sess
     session.commit()
 
     got = client.get("/customer/partners").json()
-    assert got["program"] == {"points_per_dollar": 1, "pending_days": 7, "claim_window_days": 30}
+    assert got["program"] == {"points_per_dollar": 1, "pending_days": 7, "claim_window_days": 30, "rewards": None}
     [p] = got["partners"]
     assert (p["name"], p["slug"], p["category"], p["description"]) == ("Bean Co", "bean-co", "Café", "Coffee.")
     assert [(loc["name"], loc["lat"], loc["hours"][0]["day"]) for loc in p["locations"]] == [("Main", 40.1, "MON")]
@@ -206,3 +206,8 @@ def test_an_edit_shows_to_customers_at_once(session, client):
     client.patch(f"/admin/partners/{bean.id}", json={"description": "Coffee."})
     assert client.get("/customer/partners/bean-co").json()["description"] == "Coffee."
     assert client.get("/customer/partners").json()["partners"][0]["description"] == "Coffee."
+
+
+def test_what_points_are_for_is_said_once_rewards_are_set_up(session, client, monkeypatch):
+    monkeypatch.setenv("POINTS_REWARDS", "  100 points = $5 off at any partner store.  ")
+    assert client.get("/customer/partners").json()["program"]["rewards"] == "100 points = $5 off at any partner store."
