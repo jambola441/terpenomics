@@ -6,8 +6,8 @@
    Palms all-in-ones"), so here each line gets a shelf: a header that says what
    the line is, and a row of its products.
 
-   Most brands do not qualify, and the rule for who does is deliberately strict
-   (`groupByLine`): on 2026-10-10, 81% of brands had no line at all, the median
+   Most brands do not qualify, and the rule for who does asks for at least two
+   real lines (`groupByLine`): on 2026-10-10, 81% of brands had no line at all, the median
    line held one product, and many "lines" were flavours or effects. A category
    that fails the rule is shown as it always was; a page with no category that
    passes is never grouped at all. Whatever has no line, or sits in a line too
@@ -23,13 +23,15 @@ import { LINE_MIN_PRODUCTS } from '../utils/lines'
 
 /* ── The rule ─────────────────────────────────────────────────────────────── */
 
-/** A category is laid out by line only when all of these hold. Thresholds from
- *  the skeptic's pass over production data (2026-10-10): looser ones admitted
- *  brands whose biggest "shelf" was the products with no line. */
+/** A category is laid out by line only when all of these hold. The shelves have
+ *  to carry a fair share of it, not every product: whatever no shelf holds goes
+ *  on the "More" shelf, which is never hidden. On 2026-10-10 this gave 37
+ *  brands shelves (24 under the first, stricter rule, which also capped the
+ *  products in no line or in tiny lines); requiring two real lines is what
+ *  keeps it from going further, and is what keeps shelves meaningful. */
 const GROUP_MIN_PRODUCTS = 6      // enough products for shelves to mean anything
 const GROUP_MIN_SHELVES = 2       // at least two real lines
-const GROUP_MIN_COVERAGE = 0.7    // the unlined shelf is at most 30% of the category
-const GROUP_MAX_THIN = 0.15       // products in one- and two-product lines
+const GROUP_MIN_ON_SHELVES = 0.4  // the shelves hold at least 40% of the category
 
 /** Fewer products than this after the shopper's filters, and shelves of one or
  *  two cards read worse than the grid. */
@@ -66,14 +68,12 @@ export function groupByLine<E>(entries: E[], itemOf: (e: E) => BrowseItem): Cate
     }
     const real = [...byLine].filter(([, es]) => es.length >= LINE_MIN_PRODUCTS)
     const thin = [...byLine].filter(([, es]) => es.length < LINE_MIN_PRODUCTS)
-    const lined = [...byLine.values()].reduce((n, es) => n + es.length, 0)
-    const inThin = thin.reduce((n, [, es]) => n + es.length, 0)
+    const onShelves = real.reduce((n, [, es]) => n + es.length, 0)
     const n = inCategory.length
 
     const passes = n >= GROUP_MIN_PRODUCTS
       && real.length >= GROUP_MIN_SHELVES
-      && lined / n >= GROUP_MIN_COVERAGE
-      && inThin / n <= GROUP_MAX_THIN
+      && onShelves / n >= GROUP_MIN_ON_SHELVES
 
     if (!passes) {
       sections.push({ category, entries: inCategory, shelves: [], rest: inCategory, thinLines: [] })
