@@ -28,6 +28,7 @@ from routes.pos_common import (
     location_json as _location,
     member_json,
     order_json,
+    clean_profile,
     partner_json as _partner,
     points_summary_json,
     run_json as _run,
@@ -43,6 +44,8 @@ from models import (
     PosOrder,
     PosSyncRun,
 )
+from services import places, response_cache
+
 from .auth import require_admin
 
 router = APIRouter()
@@ -60,6 +63,9 @@ class PartnerCreate(BaseModel):
     slug: str
     logo_url: Optional[str] = None
     is_active: bool = True
+    description: Optional[str] = None
+    category: Optional[str] = None
+    website_url: Optional[str] = None
 
 
 class PartnerUpdate(BaseModel):
@@ -67,6 +73,9 @@ class PartnerUpdate(BaseModel):
     slug: Optional[str] = None
     logo_url: Optional[str] = None
     is_active: Optional[bool] = None
+    description: Optional[str] = None
+    category: Optional[str] = None
+    website_url: Optional[str] = None
 
 
 def _check_slug(session: Session, slug: str, partner_id: Optional[UUID] = None) -> None:
@@ -102,10 +111,11 @@ def create_partner(
     _: SupabaseAuthUser = Depends(require_admin),
 ):
     _check_slug(session, payload.slug)
-    partner = Partner(**payload.model_dump())
+    partner = Partner(**clean_profile(payload.model_dump()))
     session.add(partner)
     session.commit()
     session.refresh(partner)
+    response_cache.clear()          # the customer partners list is cached
     return _partner(partner)
 
 
@@ -139,7 +149,7 @@ def update_partner(
     _: SupabaseAuthUser = Depends(require_admin),
 ):
     partner = _get_partner(session, partner_id)
-    data = payload.model_dump(exclude_unset=True)
+    data = clean_profile(payload.model_dump(exclude_unset=True))
     if data.get("slug") is not None:
         _check_slug(session, data["slug"], partner_id)
     for key, value in data.items():
@@ -150,6 +160,7 @@ def update_partner(
     session.add(partner)
     session.commit()
     session.refresh(partner)
+    response_cache.clear()
     return _partner(partner)
 
 
@@ -208,9 +219,55 @@ def remove_member(
 # Locations
 # ----------------------------------------------------------------------
 
+class LocationCreate(BaseModel):
+    name: str
+    address: Optional[str] = None
+    lat: Optional[float] = None
+    lng: Optional[float] = None
+    phone: Optional[str] = None
+    is_active: bool = True
+
+
 class LocationUpdate(BaseModel):
     name: Optional[str] = None
     is_active: Optional[bool] = None
+    # A POS location's address is the POS's, and the next sync puts it back; its
+    # coordinates and phone are too when the POS has them.
+    address: Optional[str] = None
+    lat: Optional[float] = None
+    lng: Optional[float] = None
+    phone: Optional[str] = None
+
+
+def _clean_location(data: dict) -> dict:
+    for key in ("name", "address", "phone"):
+        if isinstance(data.get(key), str):
+            data[key] = data[key].strip() or None
+    if ("lat" in data) != ("lng" in data) or (data.get("lat") is None) != (data.get("lng") is None):
+        raise HTTPException(422, "lat and lng go together")
+    if data.get("lat") is not None and not (-90 <= data["lat"] <= 90 and -180 <= data["lng"] <= 180):
+        raise HTTPException(422, "lat/lng out of range")
+    return data
+
+
+@router.post("/partners/{partner_id}/locations", status_code=201)
+def create_location(
+    partner_id: UUID,
+    payload: LocationCreate,
+    session: Session = Depends(get_session),
+    _: SupabaseAuthUser = Depends(require_admin),
+):
+    """A store added by hand, for a partner without a connected POS."""
+    _get_partner(session, partner_id)
+    data = _clean_location(payload.model_dump())
+    if not data["name"]:
+        raise HTTPException(422, "name is required")
+    loc = PartnerLocation(partner_id=partner_id, **data)
+    session.add(loc)
+    session.commit()
+    session.refresh(loc)
+    response_cache.clear()
+    return _location(loc)
 
 
 @router.patch("/partner-locations/{location_id}")
@@ -223,14 +280,49 @@ def update_location(
     loc = session.get(PartnerLocation, location_id)
     if loc is None:
         raise HTTPException(404, "location not found")
-    data = payload.model_dump(exclude_unset=True, exclude_none=True)
+    data = _clean_location(payload.model_dump(exclude_unset=True))
     for key, value in data.items():
+        if value is None and key in ("name", "is_active"):
+            raise HTTPException(422, f"{key} cannot be null")
         setattr(loc, key, value)
     loc.updated_at = datetime.now(timezone.utc)
     session.add(loc)
     session.commit()
     session.refresh(loc)
+    response_cache.clear()
     return _location(loc)
+
+
+@router.delete("/partner-locations/{location_id}")
+def delete_location(
+    location_id: UUID,
+    session: Session = Depends(get_session),
+    _: SupabaseAuthUser = Depends(require_admin),
+):
+    """Only a store added by hand: a POS's would come back on the next sync, and
+    its orders point at it. Turn "Earns points" off for those instead."""
+    loc = session.get(PartnerLocation, location_id)
+    if loc is None:
+        raise HTTPException(404, "location not found")
+    if loc.connection_id is not None:
+        raise HTTPException(409, "this store comes from the POS; turn it off instead")
+    session.delete(loc)
+    session.commit()
+    response_cache.clear()
+    return {"ok": True}
+
+
+@router.get("/geocode")
+def geocode(
+    q: str = Query(min_length=3, max_length=300),
+    _: SupabaseAuthUser = Depends(require_admin),
+):
+    """Places matching an address, to put a hand-added store on the map. Looking
+    up only: the admin saves the one they pick with the location."""
+    try:
+        return places.search(q)
+    except places.LookupFailed as e:
+        raise HTTPException(502, str(e))
 
 
 # ----------------------------------------------------------------------

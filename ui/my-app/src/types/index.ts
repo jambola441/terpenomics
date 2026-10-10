@@ -754,20 +754,68 @@ export type Partner = {
   slug: string
   is_active: boolean
   logo_url: string | null
+  /** What customers read about the business (admin; description and website also the partner). */
+  description: string | null
+  category: string | null
+  website_url: string | null
   created_at: string
   updated_at: string
 }
 
+/** Square's business hours: one entry per open stretch (utils/hours.ts). */
+export type HoursPeriod = { day: string; open: string; close: string }
+
 export type PartnerLocation = {
   id: string
   partner_id: string
+  /** Null for a store added by hand, for a partner without a POS. */
   connection_id: string | null
   external_location_id: string | null
   name: string
   address: string | null
   timezone: string | null
   is_active: boolean
+  lat: number | null
+  lng: number | null
+  phone: string | null
+  hours: HoursPeriod[] | null
 }
+
+/** A place an address lookup found (/admin/geocode). */
+export type GeocodeHit = { label: string; lat: number; lng: number }
+
+/** How points work, in the numbers the ledger keeps. */
+export type PointsProgram = {
+  points_per_dollar: number
+  pending_days: number
+  /** How long after a purchase it can still be matched to you, or its receipt sent. */
+  claim_window_days: number
+}
+
+/** A partner store as customers see it (/customer/partners). */
+export type PortalPartnerLocation = {
+  id: string
+  name: string
+  address: string | null
+  lat: number | null
+  lng: number | null
+  phone: string | null
+  hours: HoursPeriod[] | null
+}
+
+export type PortalPartner = {
+  id: string
+  slug: string
+  name: string
+  logo_url: string | null
+  description: string | null
+  category: string | null
+  website_url: string | null
+  locations: PortalPartnerLocation[]
+}
+
+export type PortalPartners = { program: PointsProgram; partners: PortalPartner[] }
+export type PortalPartnerPage = PortalPartner & { program: PointsProgram }
 
 export type PosConnectionStatus = 'active' | 'error' | 'disabled' | 'revoked'
 
@@ -876,11 +924,9 @@ export type PointsEntry = {
   note: string | null
 }
 
-export type PointsSummary = {
+export type PointsSummary = PointsProgram & {
   available: number
   pending: number
-  points_per_dollar: number
-  pending_days: number
   entries: PointsEntry[]
 }
 

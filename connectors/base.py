@@ -36,6 +36,15 @@ class ExternalLocation:
     address: Optional[str] = None
     timezone: Optional[str] = None
     is_active: bool = True
+    # Where it is and when it's open, for customers (store.import_locations).
+    lat: Optional[float] = None
+    lng: Optional[float] = None
+    phone: Optional[str] = None
+    hours: Optional[list[dict]] = None     # [{"day": "MON", "open": "09:00", "close": "17:00"}]
+    # What the business says about itself, to fill a partner's blanks.
+    description: Optional[str] = None
+    website_url: Optional[str] = None
+    logo_url: Optional[str] = None
 
 
 @dataclass

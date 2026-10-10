@@ -7,7 +7,7 @@ import supabase from './utils/supabase'
 import { rememberNext } from './utils/redirect'
 import type { Partner, PartnerPortalDetail, PartnerPosOrder } from './types'
 import { primaryBtn } from './utils/partners'
-import { Banner, ConnectionCard, LocationsTable, OrdersTable, Section, muted, page, wrap } from './components/partnerUi'
+import { Banner, ConnectionCard, LocationsTable, OrdersTable, ProfileEditor, Section, muted, page, wrap } from './components/partnerUi'
 import { t, font } from './theme'
 import { Logo } from './components/Icon'
 
@@ -274,6 +274,14 @@ function Dashboard({ partnerId, pos, reason, clearPos }: {
         )}
       </Section>
 
+      <Section title="Your page on Terpee">
+        <div style={{ ...muted, marginBottom: 12 }}>
+          Terpee members see this on your page and in the list of stores where they earn points,
+          with your locations, hours and phone number from Square.
+        </div>
+        <ProfileEditor partner={partner} admin={false} onSave={data => api.partnerPortal.updateProfile(partnerId, data).then(load)} />
+      </Section>
+
       <Section title="Locations">
         {partner.locations.length === 0 ? (
           <div style={muted}>Your Square locations appear here once you connect.</div>
@@ -281,7 +289,8 @@ function Dashboard({ partnerId, pos, reason, clearPos }: {
           <>
             <LocationsTable locations={partner.locations} />
             <div style={{ ...muted, fontSize: 12, marginTop: 8 }}>
-              To change which locations earn points, contact your Terpee rep.
+              Addresses, hours and phone numbers come from Square: change them there and they update
+              here within 15 minutes. To change which locations earn points, contact your Terpee rep.
             </div>
           </>
         )}

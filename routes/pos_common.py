@@ -38,7 +38,9 @@ def iso(dt: Optional[datetime]) -> Optional[str]:
 def partner_json(p: Partner) -> dict:
     return {
         "id": str(p.id), "name": p.name, "slug": p.slug, "is_active": p.is_active,
-        "logo_url": p.logo_url, "created_at": iso(p.created_at), "updated_at": iso(p.updated_at),
+        "logo_url": p.logo_url, "description": p.description, "category": p.category,
+        "website_url": p.website_url,
+        "created_at": iso(p.created_at), "updated_at": iso(p.updated_at),
     }
 
 
@@ -48,7 +50,37 @@ def location_json(loc: PartnerLocation) -> dict:
         "connection_id": str(loc.connection_id) if loc.connection_id else None,
         "external_location_id": loc.external_location_id, "name": loc.name,
         "address": loc.address, "timezone": loc.timezone, "is_active": loc.is_active,
+        "lat": loc.lat, "lng": loc.lng, "phone": loc.phone, "hours": loc.hours,
     }
+
+
+# ----------------------------------------------------------------------
+# What customers are told about a partner (admin and partner both edit it)
+# ----------------------------------------------------------------------
+
+DESCRIPTION_MAX = 400
+CATEGORY_MAX = 40
+
+
+def clean_profile(data: dict) -> dict:
+    """Trimmed profile fields, blanks as None; 422 for a website that isn't a web
+    address or text past its length."""
+    out = dict(data)
+    for key in ("description", "category", "website_url", "logo_url"):
+        if key in out and isinstance(out[key], str):
+            out[key] = out[key].strip() or None
+    if len(out.get("description") or "") > DESCRIPTION_MAX:
+        raise HTTPException(422, f"description is at most {DESCRIPTION_MAX} characters")
+    if len(out.get("category") or "") > CATEGORY_MAX:
+        raise HTTPException(422, f"category is at most {CATEGORY_MAX} characters")
+    for key in ("website_url", "logo_url"):
+        url = out.get(key)
+        if url and not url.lower().startswith(("https://", "http://")):
+            if key == "website_url" and "." in url and " " not in url:
+                out[key] = f"https://{url}"
+            else:
+                raise HTTPException(422, f"{key} must be a web address")
+    return out
 
 
 def connection_json(c: PosConnection) -> dict:
@@ -80,9 +112,19 @@ def member_json(m: PartnerMember) -> dict:
     }
 
 
+def program_json() -> dict:
+    """How points work, in the numbers the ledger keeps: shown on every screen that
+    explains the program, so the words can't drift from the rules."""
+    from connectors.matching import CLAIM_WINDOW_DAYS
+    from connectors.points import PENDING_DAYS, points_per_dollar
+
+    return {"points_per_dollar": points_per_dollar(), "pending_days": PENDING_DAYS,
+            "claim_window_days": CLAIM_WINDOW_DAYS}
+
+
 def points_summary_json(session: Session, customer_id: UUID, limit: int = 50) -> dict:
     """A customer's balance and recent ledger entries."""
-    from connectors.points import PENDING_DAYS, balance, history, points_per_dollar
+    from connectors.points import balance, history
     from connectors.store import utcnow
 
     now = utcnow()
@@ -90,8 +132,7 @@ def points_summary_json(session: Session, customer_id: UUID, limit: int = 50) ->
     return {
         "available": bal.available,
         "pending": bal.pending,
-        "points_per_dollar": points_per_dollar(),
-        "pending_days": PENDING_DAYS,
+        **program_json(),
         "entries": [points_entry_json(e, partner_name, now) for e, partner_name in history(session, customer_id, limit)],
     }
 
