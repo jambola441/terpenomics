@@ -37,9 +37,9 @@ class TestSizes:
         (("0.6g", "FJ-Mini Infused Pre-roll | 0.6G"), "preroll", sizes.Size(grams=0.6)),
         (("", "Jetpacks | FJ-3 | .6g | 5 Pack | 3g | THC 37.83%"), "preroll", sizes.Size(grams=3.0, pack=5)),
         (("", "Blueberry Pancakes 5pk x 0.6g - 3.0g"), "preroll", sizes.Size(grams=3.0, pack=5, unit_g=0.6)),
-        (("10mg / 10 pack",), "edible", sizes.Size(mg=100.0, pack=10)),
+        (("10mg / 10 pack",), "edible", sizes.Size(mg=10.0, pack=10)),        # ambiguous: as stated
         (("", "Wyld Gummies 100mg 10pk"), "edible", sizes.Size(mg=100.0, pack=10)),
-        (("", "Kiva 20MG x 2PK"), "edible", sizes.Size(mg=40.0, pack=2)),
+        (("", "Kiva 20MG x 2PK"), "edible", sizes.Size(mg=40.0, pack=2, unit_mg=20.0)),
         (("1/8oz",), "flower", sizes.Size(grams=3.5)),
         (("", "Half Ounce Smalls"), "flower", sizes.Size(grams=14.0)),
         (("", "Blue Dream 1/8 Ounce"), "flower", sizes.Size(grams=3.5)),
@@ -72,9 +72,10 @@ class TestSizes:
         # Catalog entries write "2pk 40mg"; stores write "40mg" for the same package.
         assert sizes.same_size(sizes.parse("40mg", category="edible"),
                                sizes.parse("2pk 40mg", category="edible")) is True
-        # Store text is still read as store text: a dose beside a pack is per piece
-        # while the package stays under the cap.
-        assert sizes.parse("Dreamberry | 20mg | 2pk", category="edible") == sizes.Size(mg=40.0, pack=2)
+        # A lone dose beside a pack is never multiplied (owner, 2026-10-10): the figure
+        # stands, and pack x figure is only the other reading.
+        got = sizes.parse("Dreamberry | 20mg | 2pk", category="edible")
+        assert got == sizes.Size(mg=20.0, pack=2) and got.alt_mg == 40.0
 
     def test_a_lone_dose_beside_a_pack_may_be_either_reading(self):
         per_piece = sizes.parse("10mg", "1906 - Bliss Drops 2pk - 10mg", category="edible")
@@ -82,9 +83,11 @@ class TestSizes:
         label = sizes.parse("2pk 20mg", category="edible")
         assert sizes.same_size(per_piece, label) is True
         assert sizes.same_size(in_all, label) is True
-        # Only against the same pack count: ten pieces are not a single.
+        # Only against the same pack count: ten pieces are not a stated single.
         assert sizes.same_size(sizes.parse("Gummies 10pk 10mg", category="edible"),
-                               sizes.parse("10mg", category="edible")) is False
+                               sizes.parse("1pk 10mg", category="edible")) is False
+        assert sizes.same_size(sizes.parse("Gummies 10pk 10mg", category="edible"),
+                               sizes.parse("10pk 100mg", category="edible")) is True
         # An explicit per-piece form is not a guess.
         assert sizes.parse("Kiva 2pk x 20mg", category="edible").alt_mg is None
 
@@ -92,7 +95,8 @@ class TestSizes:
         idx = cm.CatalogIndex(catalog(
             {"name": "dreamberry", "category": "edible", "variant": "2pk 20mg", "pk": "db"},
             {"name": "dreamberry", "category": "edible", "variant": "2pk 40mg", "pk": "db"}))
-        assert idx.pick_entry("db", "", "edible", "Dreamberry | 20mg | 2pk")["variant"] == "2pk 40mg"
+        assert idx.pick_entry("db", "", "edible", "Dreamberry | 20mg | 2pk")["variant"] == "2pk 20mg"   # as stated
+        assert idx.pick_entry("db", "", "edible", "Dreamberry | 20mg each | 2pk")["variant"] == "2pk 40mg"
         assert idx.pick_entry("db", "20mg", "edible", "Dreamberry")["variant"] == "2pk 20mg"
 
     def test_a_dose_single_is_not_a_pack_of_the_same_total(self):
@@ -195,8 +199,8 @@ class TestJoin:
         assert idx.join(None) is None
 
     def test_a_lone_dose_beside_a_pack_joins_either_reading(self):
-        # 1906 writes the package total ("2pk - 10mg" is 10mg in all); the parser's
-        # guess is per piece (20mg), which is what the reading stores.
+        # 1906 writes the package total ("2pk - 10mg" is 10mg in all); readings stored
+        # before the parser stopped multiplying hold 20mg.
         cat = {"brand_name": "1906", "entries": [
             {"id": "a", "product_key": "chill", "name": "Drops Chill", "product_line": "Drops",
              "category": "edible", "subtype": "tablet", "strain": "Chill", "variant": "2pk 10mg"},

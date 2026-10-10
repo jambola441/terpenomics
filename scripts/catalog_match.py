@@ -473,7 +473,9 @@ def reading_size(reading: dict, name: str | None = None) -> sizes.Size:
     own = sizes.parse(name, category=category)
     if own.pack is None:
         return want
-    if want.mg is not None and own.mg is not None and abs(own.mg - want.mg) <= 0.5:
+    # The name's figure, or its other reading (pack x figure): readings stored before
+    # 2026-10-10 hold the multiplied figure ("20mg" for "2pk - 10mg").
+    if want.mg is not None and any(v is not None and abs(v - want.mg) <= 0.5 for v in (own.mg, own.alt_mg)):
         return own
     if want.grams is not None and own.grams is not None and sizes.same_size(own, want):
         return own
