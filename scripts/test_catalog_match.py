@@ -39,7 +39,7 @@ class TestSizes:
         (("", "Blueberry Pancakes 5pk x 0.6g - 3.0g"), "preroll", sizes.Size(grams=3.0, pack=5, unit_g=0.6)),
         (("10mg / 10 pack",), "edible", sizes.Size(mg=10.0, pack=10)),        # ambiguous: as stated
         (("", "Wyld Gummies 100mg 10pk"), "edible", sizes.Size(mg=100.0, pack=10)),
-        (("", "Kiva 20MG x 2PK"), "edible", sizes.Size(mg=40.0, pack=2, unit_mg=20.0)),
+        (("", "Kiva 20MG x 2PK"), "edible", sizes.Size(mg=20.0, pack=2)),     # ambiguous: as stated
         (("1/8oz",), "flower", sizes.Size(grams=3.5)),
         (("", "Half Ounce Smalls"), "flower", sizes.Size(grams=14.0)),
         (("", "Blue Dream 1/8 Ounce"), "flower", sizes.Size(grams=3.5)),
@@ -72,24 +72,23 @@ class TestSizes:
         # Catalog entries write "2pk 40mg"; stores write "40mg" for the same package.
         assert sizes.same_size(sizes.parse("40mg", category="edible"),
                                sizes.parse("2pk 40mg", category="edible")) is True
-        # A lone dose beside a pack is never multiplied (owner, 2026-10-10): the figure
-        # stands, and pack x figure is only the other reading.
-        got = sizes.parse("Dreamberry | 20mg | 2pk", category="edible")
-        assert got == sizes.Size(mg=20.0, pack=2) and got.alt_mg == 40.0
+        # A lone dose beside a pack is never multiplied (owner, 2026-10-10).
+        assert sizes.parse("Dreamberry | 20mg | 2pk", category="edible") == sizes.Size(mg=20.0, pack=2)
 
-    def test_a_lone_dose_beside_a_pack_may_be_either_reading(self):
-        per_piece = sizes.parse("10mg", "1906 - Bliss Drops 2pk - 10mg", category="edible")
-        in_all = sizes.parse("20mg", "Bliss Drops 2-pack", category="edible")
-        label = sizes.parse("2pk 20mg", category="edible")
-        assert sizes.same_size(per_piece, label) is True
-        assert sizes.same_size(in_all, label) is True
-        # Only against the same pack count: ten pieces are not a stated single.
+    def test_an_ambiguous_dose_is_left_to_jev(self):
+        # "10mg 10pk" may be 10mg a gummy or 10mg in all: no rule decides. It fits no
+        # entry of Wyld's, so the join leaves it and Jev picks among the product's sizes.
         assert sizes.same_size(sizes.parse("Gummies 10pk 10mg", category="edible"),
-                               sizes.parse("1pk 10mg", category="edible")) is False
-        assert sizes.same_size(sizes.parse("Gummies 10pk 10mg", category="edible"),
-                               sizes.parse("10pk 100mg", category="edible")) is True
-        # An explicit per-piece form is not a guess.
-        assert sizes.parse("Kiva 2pk x 20mg", category="edible").alt_mg is None
+                               sizes.parse("10pk 100mg", category="edible")) is False
+        cat = {"brand_name": "Wyld", "entries": [
+            {"id": "sc", "product_key": "sc", "name": "Sour Cherry", "category": "edible",
+             "subtype": "gummy", "strain": "Sour Cherry", "variant": "10pk 100mg"}]}
+        idx = cm.CatalogIndex(cat)
+        r = {"category": "edible", "subtype": "gummy", "strain": "Sour Cherry", "size": "10mg"}
+        name = "Sour Cherry -Indica- 10mg 10pk Gummies"
+        assert idx.join(r, name) is None
+        assert [(e["id"], m) for _, e, m in cm.near_entries(
+            idx, {"name": name, "category": "edible", "reading": r}, "Wyld")] == [("sc", ["size"])]
 
     def test_the_first_reading_picks_the_entry_when_both_fit(self):
         idx = cm.CatalogIndex(catalog(
@@ -198,26 +197,6 @@ class TestJoin:
         assert idx.join(reading("Biscotti", None)) is None and idx.join(reading("", "1g")) is None
         assert idx.join(None) is None
 
-    def test_a_lone_dose_beside_a_pack_joins_either_reading(self):
-        # 1906 writes the package total ("2pk - 10mg" is 10mg in all); readings stored
-        # before the parser stopped multiplying hold 20mg.
-        cat = {"brand_name": "1906", "entries": [
-            {"id": "a", "product_key": "chill", "name": "Drops Chill", "product_line": "Drops",
-             "category": "edible", "subtype": "tablet", "strain": "Chill", "variant": "2pk 10mg"},
-            {"id": "b", "product_key": "chill", "name": "Drops Chill", "product_line": "Drops",
-             "category": "edible", "subtype": "tablet", "strain": "Chill", "variant": "20pk 100mg"}]}
-        idx = cm.CatalogIndex(cat)
-        r = {"category": "edible", "subtype": "tablet", "strain": "Chill", "product_line": "Drops",
-             "size": "20mg"}
-        assert idx.join(r) is None                                      # the bare figure alone
-        assert idx.join(r, "1906 - Chill Drops 2pk - 10mg")[1]["id"] == "a"
-        # Only when the name agrees with the reading's figure: otherwise the reading's
-        # own figure decides. And the other reading counts only against the same pack
-        # count, so a 20-pack name never reaches the 2-pack.
-        assert idx.join(dict(r, size="100mg"), "1906 - Chill Drops 2pk - 10mg")[1]["id"] == "b"
-        assert idx.join(dict(r, size="100mg"), "1906 - Chill Drops 20pk - 100mg")[1]["id"] == "b"
-        assert idx.join(r, "1906 - Chill Drops 20pk - 100mg") is None
-
     def test_a_count_left_open_does_not_pick_between_a_single_and_a_pack(self):
         cat = {"brand_name": "Flav", "entries": [
             {"id": "one", "product_key": "belts-straw", "name": "Belts Strawberry", "product_line": "Belts",
@@ -230,31 +209,6 @@ class TestJoin:
         assert idx.join(r, "Strawberry Belts Mega Dosed Gummy 1pk - 100mg")[1]["id"] == "one"
         assert idx.join(r, "Flav | 10pk Gummy Belts | 100mg | Strawberry")[1]["id"] == "ten"
         assert idx.join(dict(r, size="10pk 100mg"))[1]["id"] == "ten"
-
-    def test_a_bare_dose_joins_the_pack_it_is_the_per_piece_dose_of(self):
-        # A store can print the piece's dose and leave out the count: "Sour Cherry 10mg"
-        # is Wyld's 10-pack of 100mg.
-        def e(i, key, variant):
-            return {"id": i, "product_key": key, "name": key.title(), "category": "edible",
-                    "subtype": "gummy", "strain": key.title(), "variant": variant}
-        cat = {"brand_name": "Wyld", "entries": [e("sc", "sour cherry", "10pk 100mg")]}
-        idx = cm.CatalogIndex(cat)
-        r = {"category": "edible", "subtype": "gummy", "strain": "Sour Cherry", "size": "10mg"}
-        assert idx.join(r, "Wyld Sour Cherry Gummies 10mg")[1]["id"] == "sc"
-        assert idx.join(dict(r, size="20mg")) is None                  # 200mg is no size it sells
-        assert idx.join(r, "Wyld Sour Cherry Gummies 1pk 10mg") is None   # a count that differs
-        assert idx.join(r, "Wyld | Sour Cherry | Gummies | 1-Pack") is None    # a count, no figure
-        # A product that sells the figure itself keeps it; two packs it fits leave Jev to choose.
-        idx = cm.CatalogIndex({"brand_name": "Wyld", "entries": [
-            e("ten", "sour cherry", "10pk 100mg"), e("one", "sour cherry", "10mg")]})
-        assert idx.join(r)[1]["id"] == "one"
-        idx = cm.CatalogIndex({"brand_name": "Wyld", "entries": [
-            e("ten", "sour cherry", "10pk 100mg"), e("five", "sour cherry", "5pk 50mg")]})
-        assert idx.join(r) is None
-        # And the near entries Jev is offered count it as no miss.
-        p = cm.CatalogIndex(cat).products["sour cherry"]
-        assert cm.attribute_misses(r, p, cat["entries"][0]) == []
-        assert cm.attribute_misses(dict(r, size="20mg"), p, cat["entries"][0]) == ["size"]
 
     def test_words_around_a_strain_are_set_aside_only_when_no_product_carries_it(self):
         def e(i, line, strain, size="1g"):

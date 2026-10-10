@@ -16,20 +16,18 @@ A Size carries what the text states and nothing it does not:
   pack      units in the package (5 prerolls, 10 gummies)
   unit_g    weight of one unit, when a pack states it (0.6g each)
   unit_mg   dose of one unit, when a pack states it (10mg each)
-  alt_mg    the other reading of a lone dose beside a pack: pack x the figure, as if
-            per piece ("Drops 2pk | 10mg" states 10mg; 20mg if 10mg a drop)
 
 Totals are derived when the parts are present (5 x 0.6g -> 3g, 10 x 10mg each ->
 100mg), because that is how a store and a brand end up writing the same package
 differently. A lone dose beside a pack ("2pk - 10mg") is never multiplied: it may be
-the total or per piece, so the stated figure stands and the product is kept as the
-other reading (alt_mg).
+the total or per piece, so the stated figure stands, and a size that fits no catalog
+entry is Jev's to choose among the product's sizes (catalog_match.near_entries).
 """
 
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 import taxonomy
 
@@ -42,8 +40,6 @@ _MG = re.compile(rf"{_NUM}\s*(?:mg|milligrams?)\b", re.I)
 # "5pk", "5 pack", "5-pack", "5ct", "10 count", "2 pcs", "5 x" (when followed by a size)
 _PACK = re.compile(r"\b(\d+)\s*[-\s]?(?:pk|pack|packs|ct|count|pcs|pieces|pc)\b", re.I)
 _PACK_X = re.compile(rf"\b(\d+)\s*(?:pk\s*)?x\s*{_NUM}\s*(g|gr|grams?|mg)\b", re.I)
-# The same, written dose first: "20MG x 2PK" is 20mg a piece.
-_X_PACK = re.compile(rf"{_NUM}\s*(g|gr|grams?|mg)\s*x\s*(\d+)\s*[-\s]?(?:pk|pack|ct|count|pcs|pieces|pc)\b", re.I)
 _EACH = re.compile(rf"{_NUM}\s*(g|mg)\s*(?:each|ea\.?|per\s+\w+)\b", re.I)
 _OZ_FRAC = re.compile(r"\b(\d+)\s*/\s*(\d+)[\s-]*(?:oz|ounce)\b", re.I)
 # "1/2 Gram Joints" is 0.5g a joint, not the "2 Gram" _GRAMS would read inside it;
@@ -78,7 +74,6 @@ class Size:
     pack: int | None = None
     unit_g: float | None = None
     unit_mg: float | None = None
-    alt_mg: float | None = field(default=None, compare=False)
 
     def is_empty(self) -> bool:
         return self == Size()
@@ -132,14 +127,6 @@ def parse(*texts: str | None, category: str | None = None) -> Size:
             unit_g = val
         else:
             unit_mg = val
-    m = None if pack is not None else _X_PACK.search(text)
-    if m:
-        pack = int(m.group(3))
-        val = float(m.group(1))
-        if not m.group(2).lower().startswith("m"):
-            unit_g = val
-        else:
-            unit_mg = val
     if pack is None:
         packs = [int(p) for p in _PACK.findall(text)]
         pack = max(packs) if packs else None
@@ -168,16 +155,10 @@ def parse(*texts: str | None, category: str | None = None) -> Size:
     total_g = _total(grams, pack, unit_g, unit_below=None if is_label else 1.0)
     # A lone dose next to a pack count is ambiguous: "1906 Chill Drops 2pk - 10mg" is
     # the package total (two 5mg drops), "Wyld 10mg / 10 pack" is 10mg a gummy. Stores
-    # go both ways, so the parser never decides by multiplying (owner, 2026-10-10): the
-    # figure stands as stated, and pack x figure is kept as the other reading (alt_mg,
-    # when it stays within New York's 100mg package cap) for a size check to accept
-    # (same_size) and a catalog entry to settle. Only an explicit unit dose ("10mg
-    # each", "2 x 10mg", "10mg per piece") multiplies.
+    # go both ways, so the parser never decides (owner, 2026-10-10): the figure stands
+    # as stated, and Jev picks among the catalog's sizes when it fits none. Only an
+    # explicit unit dose ("10mg each", "2 x 10mg", "10mg per piece") multiplies.
     total_mg = _total(mgs, pack, unit_mg, unit_below=None)
-    doses = sorted({v for v in mgs if v > 0})
-    alt_mg = (pack * doses[0] if not is_label and unit_mg is None and pack and pack > 1
-              and len(doses) == 1 and total_mg == doses[0]
-              and pack * doses[0] <= EDIBLE_PACKAGE_CAP_MG else None)
 
     # A dose category is measured in mg and a weight category in grams; keep only the
     # unit the category actually sells by, so a gummy's "3.5g" piece weight or a
@@ -187,14 +168,14 @@ def parse(*texts: str | None, category: str | None = None) -> Size:
     if cat in WEIGHT_CATEGORIES:
         if total_g is None and total_mg is not None and total_mg >= 100:
             total_g = total_mg / 1000   # "500mg" cart -> 0.5g
-        total_mg = alt_mg = None
+        total_mg = None
     # A stated single counts for a dose: Flav's 100mg Mega Belt ("1pk - 100mg") is not
     # its 10-pack of 100mg, and same_size can tell them apart only if the 1 survives.
     # A weight's "1pk" says nothing a size check needs.
     if pack == 1 and cat not in DOSE_CATEGORIES:
         pack = None
     return Size(grams=_round(total_g), mg=_round(total_mg), pack=pack,
-                unit_g=_round(unit_g), unit_mg=_round(unit_mg), alt_mg=_round(alt_mg))
+                unit_g=_round(unit_g), unit_mg=_round(unit_mg))
 
 
 def _gram_mentions(text: str) -> list[float]:
@@ -263,11 +244,10 @@ def _round(v: float | None) -> float | None:
     return None if v is None else round(v, 3)
 
 
-def same_size(a: Size, b: Size, either_reading: bool = True) -> bool | None:
+def same_size(a: Size, b: Size) -> bool | None:
     """True / False when both sides state a comparable size, None when either is silent.
 
     None is not False: a store that omits the size is not selling a different product.
-    `either_reading=False` compares only each side's first reading of a dose (alt_mg).
     """
     # Two stated pack counts that differ are two packages, whatever the totals: a 100mg
     # single is not a 10-pack of 100mg. A side that states no count leaves it open.
@@ -276,13 +256,7 @@ def same_size(a: Size, b: Size, either_reading: bool = True) -> bool | None:
     if a.grams is not None and b.grams is not None:
         return abs(a.grams - b.grams) <= max(0.02, 0.03 * max(a.grams, b.grams))
     if a.mg is not None and b.mg is not None:
-        # A lone dose beside a pack may be per piece or the total (alt_mg); either
-        # reading counts, but only against the same pack count, so a "10pk 10mg"
-        # never passes for a 10mg single.
-        same_pack = either_reading and a.pack is not None and a.pack == b.pack
-        ours = [a.mg] + ([a.alt_mg] if same_pack and a.alt_mg is not None else [])
-        theirs = [b.mg] + ([b.alt_mg] if same_pack and b.alt_mg is not None else [])
-        return any(abs(x - y) <= max(0.5, 0.01 * max(x, y)) for x in ours for y in theirs)
+        return abs(a.mg - b.mg) <= max(0.5, 0.01 * max(a.mg, b.mg))
     if a.pack is not None and b.pack is not None:
         return a.pack == b.pack
     return None
