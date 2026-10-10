@@ -27,6 +27,7 @@ from models import (
     Listing,
     Order,
     OrderItem,
+    PhotoMirror,
     PreferredDispensary,
 )
 from routes.customer import router as customer_router
@@ -44,7 +45,7 @@ STORE_PHOTO = "https://pos.example/sunset.jpg"
 def fresh_db():
     SQLModel.metadata.create_all(engine)
     with Session(engine) as session:
-        for model in (OrderItem, Order, FeaturedListing, PreferredDispensary, Listing,
+        for model in (OrderItem, Order, FeaturedListing, PreferredDispensary, Listing, PhotoMirror,
                       BrandCatalogEntry, BrandCatalog, Dispensary, Customer):
             for row in session.exec(select(model)).all():
                 session.delete(row)
@@ -176,3 +177,21 @@ def test_an_order_keeps_the_photo_the_shopper_saw(world):
     })
     assert resp.status_code == 201, resp.text
     assert resp.json()["items"][0]["image_url"] == BRAND_PHOTO
+
+
+def test_a_store_photo_copied_into_our_storage_is_served_from_there(world):
+    copy = "https://abc.supabase.co/storage/v1/object/public/photos/store/k1/640.webp"
+    with Session(engine) as session:
+        session.add_all([
+            PhotoMirror(source_url="https://pos.example/blue.jpg", url=copy, bytes=900_000),
+            # A failed copy keeps the original.
+            PhotoMirror(source_url="https://pos.example/review.jpg", url=None, failed="HTTP 404"),
+            # A catalog photo still wins over a copy of the store's.
+            PhotoMirror(source_url=STORE_PHOTO, url="https://abc.supabase.co/x/640.webp"),
+        ])
+        session.commit()
+    body = _client().get(f"/customer/dispensaries/{world['shop_id']}/listings").json()
+    got = {row["id"]: row["image_url"] for row in body}
+    assert got[str(world["no_entry_photo"])] == copy
+    assert got[str(world["review"])] == "https://pos.example/review.jpg"
+    assert got[str(world["trusted"])] == BRAND_PHOTO

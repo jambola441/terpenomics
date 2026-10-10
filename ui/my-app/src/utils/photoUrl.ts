@@ -10,6 +10,8 @@
      Tymber             *.imgix.net (3,621; 141 KB -> 16 KB)
      Weedmaps           images.weedmaps.com, also imgix
      Shopify            cdn.shopify.com, where brand catalog photos live
+     Our own copies     Supabase Storage, for store photos on hosts that can't
+                        resize (scripts/photo_mirror.py): a 320px and a 640px file
 
    `auto=format` sends AVIF or WebP to a browser that takes them and the
    original format to one that doesn't; `fit=max` never enlarges. Sizes snap to
@@ -59,6 +61,11 @@ export function photoAt(src: string | null | undefined, px: number): string | nu
   }
   if (host === 'cdn.shopify.com' || path.includes('/cdn/shop/')) {
     return withParams(`https://${rawHost}${path}`, query, { width: w })
+  }
+  // Our copies come in two widths only.
+  const copy = /^(\/storage\/v1\/object\/public\/photos\/store\/[^/]+\/)(320|640)\.webp$/.exec(path)
+  if (host.endsWith('.supabase.co') && copy) {
+    return `https://${rawHost}${copy[1]}${step(px) <= 320 ? 320 : 640}.webp`
   }
   return null
 }
