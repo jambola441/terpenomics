@@ -6,7 +6,7 @@ Most store photos sit behind an image service that resizes on request (Dutchie's
 imgix, Shopify), and the web and app ask those for the drawn size
 (ui/my-app/src/utils/photoUrl.ts). The rest are plain files on Google Cloud Storage,
 Azure and CloudFront, often print-size: those are downloaded once, written at 320px
-and 640px as WebP to the `photos` bucket (photo_store.py), and recorded in
+and 640px as WebP to the `photos` bucket (services/photo_store.py), and recorded in
 photo_mirrors. The API then serves the copy (services/listing_photos.py), and the
 apps pick 320 or 640 by the size they draw.
 
@@ -33,8 +33,9 @@ from datetime import datetime, timedelta, timezone
 from typing import Callable, Iterable, Optional
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import photo_store  # noqa: E402
+from services import photo_store  # noqa: E402
 
 WIDTHS = (320, 640)
 RETRY_AFTER = timedelta(days=7)

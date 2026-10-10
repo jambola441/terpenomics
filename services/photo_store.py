@@ -2,7 +2,8 @@
 
 The `photos` bucket (migration 0013) is public to read and written only with the
 service-role key. Two kinds of file go in it: store photos copied at web sizes from
-hosts that cannot resize on request (photo_mirror.py), and brand logos.
+hosts that cannot resize on request (scripts/photo_mirror.py), and brand logos
+(services/brand_logos.py). Shared by the pipeline and the API.
 
     url = upload("store/ab12/640.webp", data, "image/webp")
 
