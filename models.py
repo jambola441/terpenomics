@@ -487,7 +487,7 @@ class ReviewDecision(SQLModel, table=True):
     proposals are drawn up from. A listing with a decision (skip included) leaves
     the queue; undo deletes the row and puts it back.
 
-    A new table, so create_all makes it at startup; db/migrations/0016 has it on
+    A new table, so create_all makes it at startup; db/migrations/0017 has it on
     record with the rest.
     """
 
