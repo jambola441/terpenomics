@@ -13,10 +13,15 @@ as the hint, and enrichment still decides.
 
 Writes only `reading`, only where it is empty (or every active listing with --all).
 
+--catalog reads each listing of a brand with a catalog against that catalog instead
+(catalog_reading: category, subtype, line, strain, size in the catalog's own values),
+which is how the importer reads them; a listing Jev could not read keeps its reading.
+
 Usage
 -----
   DB_VIA_HTTP=1 python scripts/backfill_reading.py --limit 200      # read, print a sample
   DB_VIA_HTTP=1 python scripts/backfill_reading.py --write          # every listing without one
+  DB_VIA_HTTP=1 python scripts/backfill_reading.py --catalog --all --write   # catalog readings
 """
 
 from __future__ import annotations
@@ -62,6 +67,29 @@ def read(listings: list[dict]) -> dict[str, dict]:
     return out
 
 
+def read_by_catalog(listings: list[dict]) -> dict[str, dict]:
+    """catalog_reading's readings for the listings of brands with a catalog."""
+    import catalog_reading
+    import catalog_store
+    import jev
+    catalogs = catalog_store.load_all("db")
+    by_brand: dict[str, list[dict]] = {}
+    for l in listings:
+        key = catalog_store.brand_key(l.get("scraped_brand"))
+        if key in catalogs:
+            by_brand.setdefault(key, []).append(
+                {"id": l["id"], "name": l.get("scraped_name") or "", "variant": l.get("variant"),
+                 "description": l.get("description"), "category": l.get("scraped_category"),
+                 "subtype": l.get("subtype")})
+    usage = jev.Usage()
+    out: dict[str, dict] = {}
+    for key, rows in by_brand.items():
+        out.update(catalog_reading.read(catalogs[key], rows, usage=usage))
+        print(f"  {catalogs[key]['brand_name']}: {len(rows)} listing(s); {len(out)} read so far", flush=True)
+    print(usage.summary())
+    return out
+
+
 def write(readings: dict[str, dict], workers: int = 8, tries: int = 4) -> int:
     """One PATCH a listing. A dropped connection is retried with backoff (2026-10-08: one
     reset 6,000 rows into a run lost the rest of it); a listing still failing after
@@ -85,12 +113,24 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--all", action="store_true", help="re-read listings that have a reading too")
     ap.add_argument("--limit", type=int, default=0, help="only this many (a sample)")
     ap.add_argument("--write", action="store_true", help="write the readings (else print a sample)")
+    ap.add_argument("--catalog", action="store_true",
+                    help="read brands with a catalog against it (catalog_reading)")
     args = ap.parse_args(argv)
     listings = pending(args.all)
     if args.limit:
         listings = listings[:args.limit]
     print(f"{len(listings)} listing(s) to read")
     if not listings:
+        return 0
+    if args.catalog:
+        readings = read_by_catalog(listings)
+        if not args.write:
+            for l in listings[:15]:
+                print(f"  {(l.get('scraped_name') or '')[:60]:60} -> {readings.get(l['id'])}")
+            print("(dry run; --write writes them)")
+            return 0
+        wrote = write(readings)
+        print(f"wrote {wrote} catalog reading(s) of {len(listings)} listing(s)")
         return 0
     if not args.write:
         readings = read(listings[:args.limit or 500])

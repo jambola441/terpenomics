@@ -663,6 +663,10 @@ const MATCH: Record<string, { colors: React.CSSProperties; title: string }> = {
     colors: { background: t.warningTint, color: t.warning },
     title: 'Jev suggests this entry but is not sure: the listing keeps its own fields',
   },
+  review_unsure: {
+    colors: { background: t.warningTint, color: t.warning },
+    title: 'Read against the catalog, but unsurely: a suggestion to review; the listing keeps its own fields',
+  },
 }
 
 /** The listings that resolve to an entry, at every store: opened under its row. */

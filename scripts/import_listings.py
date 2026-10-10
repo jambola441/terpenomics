@@ -292,12 +292,15 @@ def apply_catalog(records: list[dict], existing: dict[tuple, dict], catalogs: di
                   use_jev: bool, slug: str, usage) -> dict:
     """Resolve each record against its brand's catalog and overlay trusted matches."""
     import catalog_match
+    import catalog_reading
     import catalog_store
     from catalog_enricher import _is_masked
 
     stats = {"exact": 0, "jev": 0, "jev_review": 0, "manual": 0, "substring": 0,
              "token": 0, "ambiguous": 0, "none": 0, "no_catalog": 0, "overlaid": 0,
-             "kept_previous": 0, "masked_strain_skipped": 0, "subtype_from_name": 0}
+             "kept_previous": 0, "masked_strain_skipped": 0, "subtype_from_name": 0,
+             "read_by_catalog": 0, "attributes": 0, "review_missing": 0, "review_unsure": 0,
+             "review_near": 0}
     by_id = catalog_store.entries_by_id(catalogs)
     by_brand: dict[str, list[int]] = {}
     for i, rec in enumerate(records):
@@ -326,16 +329,23 @@ def apply_catalog(records: list[dict], existing: dict[tuple, dict], catalogs: di
                      "variant": records[i]["variant"],
                      "description": records[i].get("description"),
                      "reading": records[i].get("reading")} for i in idxs]
-        cache = catalog_match.AnswerCache(catalog.get("brand_slug") or key)
-        decisions = catalog_match.resolve(catalog, listings, use_jev=use_jev, cache=cache,
-                                          usage=usage)
+        if use_jev and catalog_reading_on():
+            # The listing read in its catalog's own values (catalog_reading), which the
+            # join then settles. A listing Jev could not read keeps enrichment's reading.
+            for lid, reading in catalog_reading.read(catalog, listings, usage=usage).items():
+                records[int(lid)]["reading"] = listings[int(lid)]["reading"] = reading
+                stats["read_by_catalog"] += 1
+        # Attribute-only (owner's call, 2026-10-10): Jev reads, the join decides; a
+        # listing the join leaves goes to the review queue (catalog_match.review_reason).
+        decisions = catalog_match.resolve(catalog, listings, use_jev=False)
         for d in decisions:
             rec = records[int(d.listing["id"])]
-            # This run could not make a model decision — no key, the breaker open, or
-            # the call failed. A trusted match from an earlier run on the same name is
-            # kept rather than replaced by "none", or one bad morning would undo every
-            # catalog identity the way a failed enrichment used to undo extraction.
-            if d.method == "error" or (not use_jev and d.method != "exact"):
+            # This run could not read the listing against its catalog — no key, the
+            # breaker open, or the call failed. A trusted match from an earlier run on
+            # the same name is kept rather than replaced, or one bad morning would undo
+            # every catalog identity the way a failed enrichment used to undo extraction.
+            if d.method not in catalog_match.TRUSTED_METHODS \
+                    and (rec.get("reading") or {}).get("by") != "catalog":
                 stored = existing.get((rec["sku"], rec["variant"] or ""))
                 kept = _keep_stored_match(rec, stored, by_id, stats, _is_masked)
                 if kept or d.method == "error":
@@ -344,6 +354,8 @@ def apply_catalog(records: list[dict], existing: dict[tuple, dict], catalogs: di
             method = d.method if d.method in stats else "none"
             stats[method] += 1
             if d.entry is None:
+                if d.method.startswith("review_"):
+                    rec["catalog_match_method"] = d.method     # the review queue's reason
                 continue
             rec["catalog_entry_id"] = d.entry.get("id")
             rec["catalog_match_confidence"] = d.confidence
@@ -438,6 +450,11 @@ def assign_sizes(records: list[dict], catalogs: dict) -> int:
             fixed += size != rec["variant"]     # Ayrloom's "150mg" can come back as itself
             rec["size"] = size
     return fixed
+
+
+def catalog_reading_on() -> bool:
+    """apply_catalog reads each listing against its catalog unless CATALOG_READING=0."""
+    return os.environ.get("CATALOG_READING", "1").strip() != "0"
 
 
 def size_choice_on() -> bool:

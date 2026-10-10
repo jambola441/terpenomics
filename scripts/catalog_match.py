@@ -14,7 +14,13 @@ How a listing is resolved
   attributes  its own reading (enrichment's category, format, strain, line and size,
               saved on the listing before any catalog overlay) names exactly one
               product in a size it comes in. Free, and accepted outright.
-  jev         otherwise Jev chooses among the catalog's entries (one product in one
+  review_*    otherwise, in the pipeline (owner's call, 2026-10-10), no match: the
+              listing goes to the review queue with the reason (review_reason):
+              review_missing, review_unsure or review_near. A join on a catalog
+              reading (catalog_reading) read unsurely is review_unsure with its entry
+              as a suggestion. Jev reads the listing against the catalog; it no
+              longer picks entries here.
+  jev         with --jev only (measurement), Jev chooses among the catalog's entries (one product in one
               size each) that agree with the reading on every attribute but one
               (near_entries; papers by merch_catalog's width and tips), or "none", with
               a probability for every option. Its pick is the entry, so the size comes
@@ -53,8 +59,8 @@ Usage
   python scripts/catalog_match.py --brand Ayrloom                  # the attribute join only
   python scripts/catalog_match.py --brand Ayrloom --jev --misses   # with the Jev tier
   python scripts/catalog_match.py --brand Ayrloom --eval           # measure Jev's gating
-  python scripts/catalog_match.py --all --jev --write              # pipeline step (5432)
-  python scripts/catalog_match.py --all --jev --write --via-http   # from the sandbox
+  python scripts/catalog_match.py --all --write                    # pipeline step (5432)
+  python scripts/catalog_match.py --all --write --via-http         # from the sandbox
 """
 
 from __future__ import annotations
@@ -75,6 +81,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from brand_catalog import norm_name  # noqa: E402
 from catalog_bootstrap import squash, strain_key  # noqa: E402
 import canonical  # noqa: E402
+import catalog_reading  # noqa: E402
 import catalog_store  # noqa: E402
 import jev  # noqa: E402
 import merch_catalog  # noqa: E402
@@ -814,13 +821,19 @@ def resolve(catalog: dict, listings: list[dict], *, use_jev: bool,
                 if key in index.products and key != held_out:
                     decisions[i] = Decision(l, key, hit, 1.0, "attributes")
                     continue
-        joined = index.join(l.get("reading"), name)
+        reading = l.get("reading")
+        joined = index.join(reading, name)
         if joined and joined[0] != held_out \
                 and not infused_veto(index.products[joined[0]], name, cat, l.get("description")):
-            decisions[i] = Decision(l, joined[0], joined[1], 1.0, "attributes")
+            if catalog_reading.trusted(reading):
+                decisions[i] = Decision(l, joined[0], joined[1], 1.0, "attributes")
+            else:
+                # Read against the catalog, but unsurely: a product the catalog lacks
+                # reads as its nearest one (catalog_reading). A suggestion for review.
+                decisions[i] = Decision(l, joined[0], joined[1], _least_p(reading), "review_unsure")
             continue
         if not use_jev:
-            decisions[i] = Decision(l, None, None, 0.0, "none")
+            decisions[i] = Decision(l, None, None, 0.0, review_reason(index, l, brand, held_out))
             continue
         cands = closest(near_entries(index, l, brand, exclude=held_out), name, index)
         if not cands:
@@ -851,6 +864,33 @@ def resolve(catalog: dict, listings: list[dict], *, use_jev: bool,
             decisions[i] = _decide(l, index, labels, pick, p, probs, len(cands))
     cache.save()
     return [d for d in decisions if d is not None]
+
+
+def _least_p(reading: dict | None) -> float:
+    p = (reading or {}).get("p") or {}
+    return round(min((p.get(k, 0.0) for k in ("category", "strain", "size")), default=0.0), 3)
+
+
+def review_reason(index: "CatalogIndex", listing: dict, brand: str,
+                  exclude: str | None = None) -> str:
+    """Why the join left a listing, which says what fixes it (the review queue):
+
+      review_missing  read against the catalog, its category or strain is none of the
+                      catalog's: most likely a product the catalog lacks; add it
+      review_unsure   some step was answered unsurely (catalog_reading.unsure_steps,
+                      on the reading's `p`)
+      review_near     one catalog entry misses its reading on one attribute alone
+                      (near_entries): a size, line or format the catalog may lack
+      none            nothing close
+    """
+    reading = listing.get("reading") or {}
+    if reading.get("by") == "catalog" and (not reading.get("category") or not reading.get("strain")):
+        return "review_missing"
+    if catalog_reading.unsure_steps(reading):
+        return "review_unsure"
+    if near_entries(index, listing, brand, exclude=exclude):
+        return "review_near"
+    return "none"
 
 
 def _decide(listing, index, labels, pick, p, probs, n_cands) -> Decision:
