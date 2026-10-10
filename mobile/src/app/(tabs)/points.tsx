@@ -6,7 +6,7 @@ import { formatDate, formatDollars } from '@web/utils/format'
 import { api } from '@/lib/api'
 import { useFetch } from '@/lib/useFetch'
 import { FeedState, Label, SectionTitle, styles } from '@/components/ui'
-import { Icon } from '@/components/Icon'
+import { Icon, type IconName } from '@/components/Icon'
 import { t, space, font, fonts, radius, type } from '@/lib/theme'
 
 const KIND: Record<string, string> = { earn: 'Earned', receipt: 'Receipt', refund: 'Refunded', adjust: 'Adjusted' }
@@ -75,6 +75,10 @@ export default function Points() {
         available {data.pending_days} days after your purchase.
       </Text>
 
+      <View style={{ flexDirection: 'row', gap: space[3], marginHorizontal: space[4], marginTop: space[4] }}>
+        <ProgramLink icon="pin" title="Partner stores" detail="Where to earn" onPress={() => router.push('/partners')} />
+        <ProgramLink icon="info" title="How points work" detail="Steps and questions" onPress={() => router.push('/how-points-work')} />
+      </View>
       <Pressable
         onPress={() => router.push('/receipt')}
         style={({ pressed }) => [s.upload, pressed && { backgroundColor: t.surface2 }]}
@@ -110,6 +114,22 @@ export default function Points() {
         </View>
       )}
     </ScrollView>
+  )
+}
+
+function ProgramLink({ icon, title, detail, onPress }: { icon: IconName; title: string; detail: string; onPress: () => void }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [styles.card, s.programLink, pressed && { backgroundColor: t.surface2 }]}
+      accessibilityRole="button"
+    >
+      <Icon name={icon} size={18} color={t.accent} />
+      <View style={{ flex: 1 }}>
+        <Text style={[styles.name, { fontSize: font.size.small + 1 }]}>{title}</Text>
+        <Text style={[styles.meta, { fontSize: font.size.caption }]}>{detail}</Text>
+      </View>
+    </Pressable>
   )
 }
 
@@ -154,6 +174,7 @@ function ReceiptRow({ receipt: r }: { receipt: MyReceipt }) {
 
 const s = StyleSheet.create({
   balance: { fontFamily: fonts.sansBold, fontSize: font.size.hero, lineHeight: 36, color: t.text1, fontVariant: ['tabular-nums'] },
+  programLink: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: space[2], padding: space[3], minHeight: 56 },
   upload: {
     flexDirection: 'row', alignItems: 'center', gap: space[3],
     margin: space[4], padding: space[4],

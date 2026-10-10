@@ -26,7 +26,8 @@ router = APIRouter()
 
 def _location(loc: PartnerLocation) -> dict:
     return {"id": str(loc.id), "name": loc.name, "address": loc.address,
-            "lat": loc.lat, "lng": loc.lng, "phone": loc.phone, "hours": loc.hours}
+            "lat": loc.lat, "lng": loc.lng, "phone": loc.phone, "hours": loc.hours,
+            "timezone": loc.timezone}
 
 
 def _partner(p: Partner, locations: list[PartnerLocation]) -> dict:

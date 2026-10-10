@@ -26,6 +26,9 @@ import SearchView from './components/SearchView'
 import ListingDetailView from './components/ListingDetail'
 import ProfileView from './components/ProfileView'
 import OrdersScreen from './components/OrdersScreen'
+import PartnersPage from './components/PartnersPage'
+import PartnerView from './components/PartnerView'
+import HowPointsWork from './components/HowPointsWork'
 import StoreScreen from './components/StoreScreen'
 import CartDrawer from './components/CartDrawer'
 import ConfirmSheet from './components/ConfirmSheet'
@@ -63,6 +66,9 @@ const SECTION_OF: Record<string, Tab> = {
   map: 'map',
   orders: 'orders',
   profile: 'profile',
+  // Where points are earned, and how: reached from You → Points.
+  partners: 'profile',
+  'how-points-work': 'profile',
 }
 
 type AccountProblem = 'not_linked' | 'unreachable'
@@ -200,6 +206,7 @@ export default function CustomerPortal() {
   const storeAisle = matchStoreAisle?.params.category ?? null
 
   const section = location.pathname.split('/')[2] ?? ''
+  const partnerSlug = section === 'partners' ? decodeURIComponent(location.pathname.split('/')[3] ?? '') || null : null
   // What's on screen, and which tab lights up for it.
   const view = section in SECTION_OF ? section : 'home'
   const activeTab: Tab = SECTION_OF[view]
@@ -538,6 +545,23 @@ export default function CustomerPortal() {
           onAddToCart={handleAddToCart}
           cart={cart}
         />
+      ) : view === 'partners' ? (
+        partnerSlug ? (
+          <PartnerView
+            slug={partnerSlug}
+            onBack={() => navigate(-1)}
+            onHowItWorks={() => navigate('/portal/how-points-work')}
+            onSendReceipt={() => navigate('/portal/profile/points')}
+          />
+        ) : (
+          <PartnersPage
+            onBack={() => navigate(-1)}
+            onOpenPartner={slug => navigate('/portal/partners/' + encodeURIComponent(slug))}
+            onHowItWorks={() => navigate('/portal/how-points-work')}
+          />
+        )
+      ) : view === 'how-points-work' ? (
+        <HowPointsWork onBack={() => navigate(-1)} onOpenPartners={() => navigate('/portal/partners')} />
       ) : view === 'orders' ? (
         <OrdersScreen
           orders={orders}

@@ -76,6 +76,9 @@ function RootNavigator() {
         <Stack.Screen name="cart" options={{ presentation: 'modal', title: 'Your cart' }} />
         <Stack.Screen name="receipt" options={{ presentation: 'modal', title: 'Upload a receipt' }} />
         <Stack.Screen name="stores" options={{ presentation: 'modal', title: 'Your stores' }} />
+        <Stack.Screen name="partners/index" options={{ title: 'Partner stores', headerBackButtonDisplayMode: 'minimal' }} />
+        <Stack.Screen name="partners/[slug]" options={{ title: '', headerBackButtonDisplayMode: 'minimal' }} />
+        <Stack.Screen name="how-points-work" options={{ title: 'How points work', headerBackButtonDisplayMode: 'minimal' }} />
       </Stack.Protected>
     </Stack>
     </CartProvider>

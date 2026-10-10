@@ -790,6 +790,8 @@ export type PointsProgram = {
   pending_days: number
   /** How long after a purchase it can still be matched to you, or its receipt sent. */
   claim_window_days: number
+  /** What points can be used for, once rewards are set up; null until then. */
+  rewards: string | null
 }
 
 /** A partner store as customers see it (/customer/partners). */
@@ -801,6 +803,8 @@ export type PortalPartnerLocation = {
   lng: number | null
   phone: string | null
   hours: HoursPeriod[] | null
+  /** The store's own, for "open now"; null for a store added by hand (the viewer's is used). */
+  timezone: string | null
 }
 
 export type PortalPartner = {
