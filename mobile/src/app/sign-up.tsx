@@ -120,6 +120,16 @@ export default function SignUp() {
             </View>
           ) : null}
 
+          {!returning ? (
+            <View style={s.points}>
+              <Icon name="drop" size={17} color={t.accent} strokeWidth={2} />
+              <Text style={[type.copy, { flex: 1, fontSize: 14, lineHeight: 20 }]}>
+                <Text style={{ color: t.text1, fontFamily: fonts.sansSemibold }}>Earn Terpee points</Text> at partner stores,
+                {'local businesses that work with Terpee: give this phone number at checkout. You’ll find them in Points.'}
+              </Text>
+            </View>
+          ) : null}
+
           <Button title="Continue" onPress={submit} disabled={!ready} loading={loading} style={{ marginTop: space[4] }} />
           <Button title="Sign out" variant="secondary" onPress={signOut} />
         </ScrollView>
@@ -168,6 +178,10 @@ const s = StyleSheet.create({
   },
   boxOn: { backgroundColor: t.accent, borderColor: t.accent },
   checkText: { ...type.copy, color: t.text1, lineHeight: 21 },
+  points: {
+    flexDirection: 'row', gap: space[3], alignItems: 'flex-start', marginTop: space[2], padding: space[4],
+    backgroundColor: t.accentTint, borderWidth: 1, borderColor: t.accentDim, borderRadius: radius.md,
+  },
   link: { color: t.text1, fontFamily: fonts.sansSemibold, textDecorationLine: 'underline' },
   error: { flexDirection: 'row', alignItems: 'flex-start', gap: space[2] },
 })

@@ -18,7 +18,9 @@ connection, a timeout, a 5xx) is not recorded, so the next run tries again.
   python scripts/photo_mirror.py --via-http     # the same over Supabase's REST API
   python scripts/photo_mirror.py --dry-run      # count what would be copied
 
-The daily cron job runs it after the scrape (run_scrape_cron.py).
+Its own daily cron job runs it two hours after the scrape (terpenomics-photo-mirror
+in scripts/render.yaml), so the scraper never holds the storage key. Run there, a
+missing key is an error, so Render shows the job as failed rather than idle.
 """
 
 from __future__ import annotations
@@ -40,6 +42,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from services import photo_store  # noqa: E402
 
 WIDTHS = (320, 640)
+# Copied per run, at most: a day brings tens; a first run about 1,500.
+DEFAULT_LIMIT = int(os.environ.get("PHOTO_MIRROR_LIMIT", "3000"))
 RETRY_AFTER = timedelta(days=7)
 MAX_BYTES = 25 * 1024 * 1024
 USER_AGENT = "Mozilla/5.0 (compatible; terpee-photos/1.0)"
@@ -195,14 +199,16 @@ def main() -> None:
     ap.add_argument("--via-http", action="store_true", default=os.environ.get("DB_VIA_HTTP") == "1",
                     help="read and write over Supabase's REST API (a sandbox; DB_ACCESS.md)")
     ap.add_argument("--dry-run", action="store_true", help="count what would be copied")
-    ap.add_argument("--limit", type=int, help="copy at most this many")
+    ap.add_argument("--limit", type=int, default=DEFAULT_LIMIT,
+                    help=f"copy at most this many (default {DEFAULT_LIMIT}, or PHOTO_MIRROR_LIMIT)")
     args = ap.parse_args()
     try:  # the .env, where a sandbox keeps the keys (DB_ACCESS.md); Render sets them itself
         import db_http
         db_http._load_dotenv()
     except Exception:  # noqa: BLE001
         pass
-    run(via_http=args.via_http, dry_run=args.dry_run, limit=args.limit)
+    result = run(via_http=args.via_http, dry_run=args.dry_run, limit=args.limit)
+    sys.exit(1 if result.get("skipped") else 0)
 
 
 if __name__ == "__main__":

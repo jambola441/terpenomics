@@ -6,10 +6,11 @@
    ========================================================================== */
 
 import { useEffect, useState } from 'react'
-import type { CSSProperties, ReactNode } from 'react'
+import type { CSSProperties, FormEvent, ReactNode } from 'react'
 import { AdminTable, badge, navBtnStyle, Dash, type Column } from './AdminTable'
-import type { PartnerLocation, PosConnection, PosOrderBase, PosSyncRun } from '../types'
-import { ago, money, primaryBtn, when } from '../utils/partners'
+import type { Partner, PartnerLocation, PosConnection, PosOrderBase, PosSyncRun } from '../types'
+import { ago, inputStyle, money, primaryBtn, when } from '../utils/partners'
+import { hoursSummary } from '../utils/hours'
 import { Icon } from './Icon'
 import { t, font } from '../theme'
 /* ── Connection card ───────────────────────────────────────────────────────── */
@@ -107,16 +108,33 @@ export const runColumns: Column<PosSyncRun>[] = [
 
 /* ── Locations ─────────────────────────────────────────────────────────────── */
 
-/** `onToggle` makes "earns points" editable (admin); without it the column is read-only. */
-export function LocationsTable({ locations, busy = false, onToggle }: {
+/** `onToggle` makes "earns points" editable (admin); without it the column is
+ *  read-only. `onEdit` adds an Edit button per store (admin). */
+export function LocationsTable({ locations, busy = false, onToggle, onEdit }: {
   locations: PartnerLocation[]
   busy?: boolean
   onToggle?: (loc: PartnerLocation) => void
+  onEdit?: (loc: PartnerLocation) => void
 }) {
   const columns: Column<PartnerLocation>[] = [
-    { key: 'name', header: 'Store', td: { color: t.text1, fontWeight: 500 }, render: l => l.name },
+    {
+      key: 'name', header: 'Store', td: { color: t.text1, fontWeight: 500 },
+      render: l => (
+        <>
+          {l.name}
+          {!l.connection_id && <div style={{ fontSize: 11, color: t.text3, fontWeight: 400 }}>added by hand</div>}
+        </>
+      ),
+    },
     { key: 'address', header: 'Address', render: l => l.address ?? <Dash /> },
-    { key: 'tz', header: 'Timezone', td: { fontSize: 12, color: t.text3 }, render: l => l.timezone ?? <Dash /> },
+    {
+      key: 'map', header: 'On the map',
+      render: l => l.lat != null && l.lng != null
+        ? <span style={{ color: t.success }}>yes</span>
+        : <span style={{ color: t.warning }}>not placed</span>,
+    },
+    { key: 'phone', header: 'Phone', td: { fontSize: 12 }, render: l => l.phone ?? <Dash /> },
+    { key: 'hours', header: 'Hours', td: { fontSize: 12, color: t.text2, maxWidth: 220 }, render: l => hoursSummary(l.hours) ?? <Dash /> },
     {
       key: 'active', header: 'Earns points', stopPropagation: true,
       render: l => onToggle ? (
@@ -126,8 +144,101 @@ export function LocationsTable({ locations, busy = false, onToggle }: {
         </label>
       ) : (l.is_active ? 'yes' : 'no'),
     },
+    ...(onEdit ? [{
+      key: 'edit', header: '', stopPropagation: true,
+      render: (l: PartnerLocation) => <button onClick={() => onEdit(l)} disabled={busy} style={navBtnStyle}>Edit</button>,
+    } satisfies Column<PartnerLocation>] : []),
   ]
   return <AdminTable columns={columns} rows={locations} rowKey={l => l.id} />
+}
+
+/* ── What customers read ───────────────────────────────────────────────────── */
+
+const DESCRIPTION_MAX = 400
+
+/**
+ * The words on the partner's page in the Terpee app: what the business is, and
+ * its website. The admin also sets the kind of business and the logo; the
+ * partner edits only the first two (`admin` false).
+ */
+export function ProfileEditor({ partner, admin, onSave }: {
+  partner: Partner
+  admin: boolean
+  onSave: (data: { description: string | null; website_url: string | null; category?: string | null; logo_url?: string | null }) => Promise<unknown>
+}) {
+  const initial = () => ({
+    description: partner.description ?? '', website_url: partner.website_url ?? '',
+    category: partner.category ?? '', logo_url: partner.logo_url ?? '',
+  })
+  const [form, setForm] = useState(initial)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  useEffect(() => { setForm(initial()) }, [partner.id, partner.updated_at]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const before = initial()
+  const dirty = (Object.keys(form) as (keyof typeof form)[]).some(k => form[k] !== before[k])
+  const set = (k: keyof typeof form) => (e: { target: { value: string } }) => { setForm({ ...form, [k]: e.target.value }); setSaved(false) }
+
+  async function save(e: FormEvent) {
+    e.preventDefault()
+    setSaving(true)
+    setError(null)
+    try {
+      const blank = (v: string) => v.trim() || null
+      await onSave({
+        description: blank(form.description), website_url: blank(form.website_url),
+        ...(admin ? { category: blank(form.category), logo_url: blank(form.logo_url) } : {}),
+      })
+      setSaved(true)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const label: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12, color: t.text2 }
+  const field: CSSProperties = { ...inputStyle, fontSize: 14 }
+  return (
+    <form onSubmit={save} style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 640 }}>
+      <label style={label}>
+        <span>About {admin ? 'the business' : 'your business'} <span style={{ color: t.text3 }}>— one or two sentences: what you sell, what it's like</span></span>
+        <textarea
+          value={form.description}
+          onChange={set('description')}
+          maxLength={DESCRIPTION_MAX}
+          rows={3}
+          placeholder="Small-batch coffee roaster with a café and pastry counter."
+          style={{ ...field, resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.5 }}
+        />
+        <span style={{ alignSelf: 'flex-end', fontSize: 11, color: t.text3 }}>{form.description.length}/{DESCRIPTION_MAX}</span>
+      </label>
+      <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+        {admin && (
+          <label style={{ ...label, flex: '1 1 160px' }}>
+            Kind of business
+            <input value={form.category} onChange={set('category')} maxLength={40} placeholder="Café" style={field} />
+          </label>
+        )}
+        <label style={{ ...label, flex: '2 1 260px' }}>
+          Website
+          <input value={form.website_url} onChange={set('website_url')} placeholder="https://" inputMode="url" style={field} />
+        </label>
+      </div>
+      {admin && (
+        <label style={label}>
+          Logo URL
+          <input value={form.logo_url} onChange={set('logo_url')} placeholder="https://…/logo.png" inputMode="url" style={field} />
+        </label>
+      )}
+      {error && <div style={{ color: t.danger, fontSize: 13 }}>{error}</div>}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button type="submit" disabled={!dirty || saving} style={primaryBtn(!dirty || saving)}>{saving ? 'Saving…' : 'Save'}</button>
+        {saved && !dirty && <span style={{ fontSize: 13, color: t.success }}>Saved. Customers see it now.</span>}
+      </div>
+    </form>
+  )
 }
 
 /* ── Orders ────────────────────────────────────────────────────────────────── */

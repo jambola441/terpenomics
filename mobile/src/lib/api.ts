@@ -15,6 +15,8 @@ import type {
   PortalCategory,
   PortalCategoryDetail,
   PortalDispensary,
+  PortalPartnerPage,
+  PortalPartners,
   PortalProductDetail,
 } from '@web/types'
 import { Platform } from 'react-native'
@@ -206,5 +208,10 @@ export const api = {
     getCategories: () => pub<PortalCategory[]>(`/customer/categories`),
 
     getCategory: (name: string) => pub<PortalCategoryDetail>(`/customer/categories/${encodeURIComponent(name)}`),
+
+    /** Partner stores, where purchases earn points, and how points work. */
+    getPartners: () => pub<PortalPartners>(`/customer/partners`),
+
+    getPartner: (slug: string) => pub<PortalPartnerPage>(`/customer/partners/${encodeURIComponent(slug)}`),
   },
 }
