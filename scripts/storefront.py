@@ -1043,15 +1043,37 @@ def _as_site_size(p: dict, names: dict, site: list[tuple], synonyms: bool = True
     same subtype (a store's infused flower is not the site's plain flower of the
     strain), the store size joins it: the site product's key and fields, an id of its
     own. Otherwise the product stays the stores' own, as before."""
+    own = squash(p.get("product_line") if line is ... else line)
     same = [e for _, n, e in site
             if taxonomy.same_format(p.get("subtype") or None, e.get("subtype") or None, synonyms)
-            and _name_match(names, n) == "exact"
-            # Only within the store product's own line. Nanticoke's plain Durban Poison
-            # and its oHHo Durban Poison both read as "Durban Poison"; and a store-only
-            # line-less product never takes a site product's line on a shared strain
-            # (owner, 2026-10-10: Florist Farms' plain Gorilla Glue 1g became "Kief
-            # Coated Gorilla Glue 1g", a 0.5g single, that way).
-            and squash(e.get("product_line")) == squash(p.get("product_line") if line is ... else line)]
+            and _name_match(names, n) == "exact"]
+    if len({e["product_key"] for e in same}) > 1:
+        # Nanticoke's plain Durban Poison and its oHHo Durban Poison both read as
+        # "Durban Poison": the one in the store product's own line is the one.
+        same = [e for e in same if squash(e.get("product_line")) == own]
+    if own:
+        same = [e for e in same if squash(e.get("product_line")) == own]
+    else:
+        # A line-less store product takes a site product's line unless the size points
+        # at another family: that line sells no such size and another of the brand's
+        # families in the format does. Stores often drop the line ("Honey Banana 1g" is
+        # MFNY's Live Resin Honey Banana, a line of 1g vapes; Jaunty's Fast-Acting
+        # 2-packs, a size no family lists), but Florist Farms' plain Gorilla Glue 1g is
+        # not "Kief Coated Gorilla Glue": Kief Coated is a 0.5g single and 1g is the
+        # plain singles' size (owner, 2026-10-10: never merge two lines).
+        total = _total(p)
+
+        def sells(lined: str, subtype) -> bool:
+            return any(squash(x.get("product_line")) == lined and catalog_bootstrap._same_total(total, t)
+                       for t, _, x in site)
+
+        def elsewhere(lined: str, subtype) -> bool:
+            return any(squash(x.get("product_line")) != lined and catalog_bootstrap._same_total(total, t)
+                       and taxonomy.same_format(x.get("subtype") or None, subtype or None, synonyms)
+                       for t, _, x in site)
+        same = [e for e in same if not squash(e.get("product_line"))
+                or sells(squash(e.get("product_line")), e.get("subtype"))
+                or not elsewhere(squash(e.get("product_line")), e.get("subtype"))]
     if len({e["product_key"] for e in same}) != 1:
         return p
     e = same[0]
