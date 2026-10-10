@@ -41,7 +41,7 @@ import taxonomy  # noqa: E402
 
 # Bump when a question or option text changes: enrich.py stamps cached answers with
 # it, so answers given to an older question are re-asked rather than trusted.
-QUESTION_VERSION = 1
+QUESTION_VERSION = 2
 
 # Jev degrades on large irrelevant state; the first few hundred characters of a
 # description carry the format words, the rest is marketing copy.
@@ -92,7 +92,8 @@ SUBTYPE_CRITERIA: dict[str, dict[str, str]] = {
         "other": "A vape product that is none of these.",
     },
     "edible": {
-        "gummy": "Gummies, chews, fruit chews, ropes, pearls.",
+        "gummy": "Gummies, chews, fruit chews, pearls.",
+        "rope": "A gummy rope: one long gummy strip sold as a single piece.",
         "chocolate": "Chocolate bars and chocolates.",
         "beverage": "Drinks: sodas, seltzers, teas, shots, drink mixes, sparkling water.",
         "tablet": "Tablets, pills, capsules, mints, beans or drops in tablet form.",

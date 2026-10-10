@@ -16,7 +16,8 @@
     "Low THC gummies state CBD/CBG/CBN first ('Qty: 20 Gummies Potency: 500mg CBD ... + 20mg THC'). An edible's size is its THC, so Unwind is 20mg; Lights Out and Utopia have no THC and are skipped.",
     "'#021 Galactic Guava “Sour Mango Guava”' says 'SIZE: 1CT' but its tin prints 'Batch ZZ ... (10) Live Rosin Infused Gummies, 10mg THC/gummy (100mg THC/pack)' and stores sell it as a 10pk; a rule guarded on the 1CT text sets 10CT. The title's #021 is also Ice Cream Zundae's number; its lab code is OH-LROG-022.",
     "Low THC Unwind: 'Qty: 20 Gummies ... + 20mg THC' is 20pk 20mg; a guarded rule sets it, since 'Qty: 20 Gummies' does not read as a pack.",
-    "store_aliases (2026-10-08): stores' line/strain splits of site products: Ice Cream Zundae 'Mystery Flavor' (#021 'Mystery'), the effect ropes without their flavor (Livewire, Melt, Overglow, 'Party Animal (Party)'), the Galactic Guava rope as 'Galactic Guava Sour Mango Passionfruit', and Awaken as 'Orange Punch' (its FLAVOR field), and the AIOs as '(Unwind) Calm' and 'On. (Energy)'."
+    "store_aliases (2026-10-08): stores' line/strain splits of site products: Ice Cream Zundae 'Mystery Flavor' (#021 'Mystery'), the effect ropes without their flavor (Livewire, Melt, Overglow, 'Party Animal (Party)'), the Galactic Guava rope as 'Galactic Guava Sour Mango Passionfruit', and Awaken as 'Orange Punch' (its FLAVOR field), and the AIOs as '(Unwind) Calm' and 'On. (Energy)'.",
+    "Ropes are their own subtype (2026-10-10): product_type 'Gummy Rope' is edible/rope. The Galactic Guava rope and the '#021 Galactic Guava “Sour Mango Guava”' 10-pack share a name, and as one subtype Jev split listings between them about 50/50; as two, the subtype settles it."
   ],
   "skip": [
     {
@@ -60,7 +61,17 @@
     },
     {
       "when": {
-        "product_type": "^(Live Rosin|Gummy Rope|Gummies|Low THC)$"
+        "product_type": "^Gummy Rope$"
+      },
+      "set": {
+        "category": "edible",
+        "subtype": "rope"
+      },
+      "why": "a rope is one long gummy strip (100mg, 1CT), sold apart from the 10-packs; stores write 'Gummy Rope' or 'Rope', and a rope and a 10-pack can share a flavor name (Galactic Guava)"
+    },
+    {
+      "when": {
+        "product_type": "^(Live Rosin|Gummies|Low THC)$"
       },
       "set": {
         "category": "edible",
@@ -296,5 +307,14 @@
       "Energy": "On",
       "Orange Punch": "Orangeade"
     }
-  }
+  },
+  "store_skip": [
+    {
+      "when": {
+        "name": "^Live Rosin Galactic Guava$",
+        "size": "^10pk 100mg$"
+      },
+      "why": "the '#021 Galactic Guava “Sour Mango Guava”' 10-pack under its cultivar name: the site's product is Sour Mango Guava, and Galactic Guava alone is the rope (subtype rope since 2026-10-10)"
+    }
+  ]
 }
