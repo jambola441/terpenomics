@@ -817,6 +817,10 @@ class Partner(SQLModel, table=True):
     slug:      str           = Field(nullable=False, sa_type=Text, sa_column_kwargs={"unique": True})
     is_active: bool          = Field(default=True, nullable=False)
     logo_url:  Optional[str] = Field(default=None, sa_type=Text)
+    # What customers are told about it (migration 0015).
+    description: Optional[str] = Field(default=None, sa_type=Text)
+    category:    Optional[str] = Field(default=None, sa_type=Text)    # "Café", "Smoke shop"
+    website_url: Optional[str] = Field(default=None, sa_type=Text)
 
     created_at: datetime = Field(default_factory=utcnow_tz, sa_column=_tz_column("created_at", nullable=False))
     updated_at: datetime = Field(default_factory=utcnow_tz, sa_column=_tz_column("updated_at", nullable=False))
@@ -861,7 +865,8 @@ class PosConnection(SQLModel, table=True):
 class PartnerLocation(SQLModel, table=True):
     """A physical store, as the POS knows it.
 
-    Imported from the POS when a connection is made. Orders from an inactive
+    Imported from the POS when a connection is made, or added by hand in the
+    admin for a partner without one (receipts only). Orders from an inactive
     location are still ingested -- deactivating is a points decision, not a data
     one -- but the ledger can skip them.
     """
@@ -879,6 +884,12 @@ class PartnerLocation(SQLModel, table=True):
     name:                 str            = Field(nullable=False, sa_type=Text)
     address:              Optional[str]  = Field(default=None, sa_type=Text)
     timezone:             Optional[str]  = Field(default=None, sa_type=Text)
+    # Where it is and when it's open, for the map and the partner's page (migration 0015).
+    # `hours`: [{"day": "MON", "open": "09:00", "close": "17:00"}, ...]
+    lat:                  Optional[float] = Field(default=None)
+    lng:                  Optional[float] = Field(default=None)
+    phone:                Optional[str]   = Field(default=None, sa_type=Text)
+    hours:                Optional[list]  = Field(default=None, sa_column=Column("hours", JSONB_, nullable=True))
     is_active:            bool           = Field(default=True, nullable=False)
 
     created_at: datetime = Field(default_factory=utcnow_tz, sa_column=_tz_column("created_at", nullable=False))

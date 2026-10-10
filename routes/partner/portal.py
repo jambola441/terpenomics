@@ -1,7 +1,8 @@
 """The partner portal: a partner managing their own POS connection.
 
-Partners can connect (OAuth), reconnect, pause/resume and disconnect, and see
-their sync history and orders. They cannot rename themselves, change which
+Partners can connect (OAuth), reconnect, pause/resume and disconnect, see
+their sync history and orders, and write what Terpee customers read about them
+(description and website). They cannot rename themselves, change which
 locations earn points, or manage logins -- those stay in /admin. Orders say
 whether the shopper was a Terpee member, never who.
 
@@ -10,7 +11,8 @@ require_partner_member; a connection id from another partner is a 404.
 """
 from __future__ import annotations
 
-from typing import Callable, Literal
+from datetime import datetime, timezone
+from typing import Callable, Literal, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -23,6 +25,7 @@ from database import get_session
 from models import Partner, PartnerLocation, PosConnection, PosOrder, PosSyncRun
 from routes.pos_common import (
     authorize_url,
+    clean_profile,
     connection_json,
     connector_factory,
     disconnect_connection,
@@ -32,6 +35,8 @@ from routes.pos_common import (
     run_json,
     set_connection_status,
 )
+
+from services import response_cache
 
 from .auth import memberships, require_partner_member, verified_email
 
@@ -73,6 +78,28 @@ def get_partner(
         "locations": [location_json(loc) for loc in locations],
         "connections": [connection_json(c) for c in connections],
     }
+
+
+class ProfileUpdate(BaseModel):
+    description: Optional[str] = None
+    website_url: Optional[str] = None
+
+
+@router.patch("/partners/{partner_id}")
+def update_profile(
+    payload: ProfileUpdate,
+    partner: Partner = Depends(require_partner_member),
+    session: Session = Depends(get_session),
+):
+    """What Terpee customers read about this business, on its page."""
+    for key, value in clean_profile(payload.model_dump(exclude_unset=True)).items():
+        setattr(partner, key, value)
+    partner.updated_at = datetime.now(timezone.utc)
+    session.add(partner)
+    session.commit()
+    session.refresh(partner)
+    response_cache.clear()          # the customer partners list is cached
+    return partner_json(partner)
 
 
 @router.get("/partners/{partner_id}/oauth/{provider}/start")

@@ -12,7 +12,7 @@ from uuid import UUID
 
 from sqlmodel import Session, select
 
-from models import PartnerLocation, PosConnection, PosOrder, PosOrderItem
+from models import Partner, PartnerLocation, PosConnection, PosOrder, PosOrderItem
 
 from .base import ExternalLocation, NormalizedOrder
 
@@ -33,9 +33,13 @@ def import_locations(
 ) -> dict[str, UUID]:
     """Upsert the POS's locations; return external id -> partner_locations.id.
 
-    Name, address and timezone follow the POS. `is_active` is taken from the POS
-    only when a location is first seen: after that it is an admin's decision and
-    a sync must not undo it.
+    Name, address and timezone follow the POS. Coordinates, phone and hours follow
+    it too when it has them; when it has none, what an admin entered stays.
+    `is_active` is taken from the POS only when a location is first seen: after
+    that it is an admin's decision and a sync must not undo it.
+
+    The partner's description, website and logo are filled from the POS only while
+    they are blank: once someone has written them, they are theirs.
     """
     existing = {
         loc.external_location_id: loc
@@ -44,6 +48,7 @@ def import_locations(
         ).all()
     }
     now = utcnow()
+    profile = None      # the first location that says anything about the business
     for ext in locations:
         row = existing.get(ext.external_id)
         if row is None:
@@ -58,8 +63,20 @@ def import_locations(
         row.name = ext.name
         row.address = ext.address
         row.timezone = ext.timezone
+        if ext.lat is not None and ext.lng is not None:
+            row.lat, row.lng = ext.lat, ext.lng
+        row.phone = ext.phone or row.phone
+        row.hours = ext.hours or row.hours
         row.updated_at = now
         session.add(row)
+        if profile is None and (ext.description or ext.website_url or ext.logo_url):
+            profile = ext
+    partner = session.get(Partner, connection.partner_id) if profile else None
+    if partner is not None:
+        for field in ("description", "website_url", "logo_url"):
+            if not getattr(partner, field) and getattr(profile, field):
+                setattr(partner, field, getattr(profile, field))
+        session.add(partner)
     session.flush()
     return {ext_id: row.id for ext_id, row in existing.items()}
 

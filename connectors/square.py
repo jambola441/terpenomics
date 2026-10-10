@@ -82,6 +82,29 @@ def _chunks(items: list, size: int) -> Iterable[list]:
         yield items[i:i + size]
 
 
+
+def _float(value) -> Optional[float]:
+    try:
+        return float(value) if value is not None else None
+    except (TypeError, ValueError):
+        return None
+
+
+_DAYS = ("MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN")
+
+
+def _hours(business_hours: Optional[dict]) -> Optional[list[dict]]:
+    """Square's business_hours as [{"day": "MON", "open": "09:00", "close": "17:00"}],
+    Monday first; None when the location sets none. A close earlier than its open
+    runs past midnight."""
+    periods = []
+    for p in (business_hours or {}).get("periods") or []:
+        day, start, end = p.get("day_of_week"), p.get("start_local_time"), p.get("end_local_time")
+        if day in _DAYS and start and end:
+            periods.append({"day": day, "open": start[:5], "close": end[:5]})
+    periods.sort(key=lambda p: (_DAYS.index(p["day"]), p["open"]))
+    return periods or None
+
 class SquareConnector:
     provider = "square"
 
@@ -230,12 +253,20 @@ class SquareConnector:
             addr = loc.get("address") or {}
             parts = [addr.get("address_line_1"), addr.get("locality"),
                      addr.get("administrative_district_level_1"), addr.get("postal_code")]
+            coords = loc.get("coordinates") or {}
             out.append(ExternalLocation(
                 external_id=loc["id"],
                 name=loc.get("name") or loc.get("business_name") or loc["id"],
                 address=", ".join(p for p in parts if p) or None,
                 timezone=loc.get("timezone"),
                 is_active=loc.get("status", "ACTIVE") == "ACTIVE",
+                lat=_float(coords.get("latitude")),
+                lng=_float(coords.get("longitude")),
+                phone=(loc.get("phone_number") or "").strip() or None,
+                hours=_hours(loc.get("business_hours")),
+                description=(loc.get("description") or "").strip() or None,
+                website_url=(loc.get("website_url") or "").strip() or None,
+                logo_url=loc.get("full_format_logo_url") or loc.get("logo_url") or None,
             ))
         return out
 

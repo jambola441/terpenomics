@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { navBtnStyle, type Column } from './components/AdminTable'
 import api from './api/client'
-import type { PartnerDetail as Detail, PartnerMember, PosOrder } from './types'
+import type { PartnerDetail as Detail, PartnerLocation, PartnerMember, PosOrder } from './types'
 import { inputStyle, primaryBtn, when } from './utils/partners'
-import { Banner, ConnectionCard, LocationsTable, OrdersTable, Section, muted, page, wrap } from './components/partnerUi'
+import { Banner, ConnectionCard, LocationsTable, OrdersTable, ProfileEditor, Section, muted, page, wrap } from './components/partnerUi'
+import PartnerLocationEditor from './components/PartnerLocationEditor'
 import { t, font } from './theme'
 import { Icon } from './components/Icon'
 
@@ -27,6 +28,7 @@ export default function PartnerDetail() {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
   const [editingName, setEditingName] = useState<string | null>(null)
+  const [editing, setEditing] = useState<PartnerLocation | 'new' | null>(null)
 
   const justConnected = params.get('pos') === 'connected'
 
@@ -162,16 +164,52 @@ export default function PartnerDetail() {
           )}
         </Section>
 
+        {/* ── What customers read ───────────────────────────────────────── */}
+        <Section title="Shown to customers">
+          <div style={{ ...muted, marginBottom: 12 }}>
+            On this partner's page in the Terpee app and site, and the partners list. The partner can
+            change the description and website themselves at /partner.
+          </div>
+          <ProfileEditor partner={partner} admin onSave={data => api.partners.update(partnerId, data).then(load)} />
+        </Section>
+
         {/* ── Locations ─────────────────────────────────────────────────── */}
-        <Section title="Locations">
-          {partner.locations.length === 0 ? (
-            <div style={muted}>Locations are imported from the POS when it connects.</div>
-          ) : (
-            <LocationsTable
-              locations={partner.locations}
-              busy={busy !== null}
-              onToggle={loc => act('location', () => api.partners.updateLocation(loc.id, { is_active: !loc.is_active }))}
+        <Section
+          title="Stores"
+          action={editing === null && (
+            <button onClick={() => setEditing('new')} disabled={busy !== null} style={navBtnStyle}>
+              <Icon name="plus" size={14} />Add a store
+            </button>
+          )}
+        >
+          {editing !== null && (
+            <PartnerLocationEditor
+              key={editing === 'new' ? 'new' : editing.id}
+              partnerId={partnerId}
+              location={editing === 'new' ? undefined : editing}
+              onDone={() => { setEditing(null); load() }}
+              onCancel={() => setEditing(null)}
             />
+          )}
+          {partner.locations.length === 0 ? (
+            <div style={muted}>
+              Stores come in from the POS when it connects. For a partner without one, add each
+              store by hand so customers can find it.
+            </div>
+          ) : (
+            <>
+              <LocationsTable
+                locations={partner.locations}
+                busy={busy !== null || editing !== null}
+                onToggle={loc => act('location', () => api.partners.updateLocation(loc.id, { is_active: !loc.is_active }))}
+                onEdit={setEditing}
+              />
+              {partner.locations.some(l => l.is_active && (l.lat == null || l.lng == null)) && (
+                <div style={{ ...muted, marginTop: 8 }}>
+                  A store that isn't placed shows in the list but not on the map: Edit it and use “Find on map”.
+                </div>
+              )}
+            </>
           )}
         </Section>
 

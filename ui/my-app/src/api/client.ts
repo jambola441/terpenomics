@@ -45,9 +45,12 @@ import type {
   CustomerProfile,
   OnboardingPayload,
   ProfileUpdate,
+  GeocodeHit,
   Partner,
   PartnerDetail,
   PartnerLocation,
+  PortalPartners,
+  PortalPartnerPage,
   PosConnection,
   PosSyncRun,
   PosOrderPage,
@@ -62,6 +65,22 @@ import type {
   AdminReceiptDetail,
   ReceiptStatus,
 } from '../types'
+
+/** What customers read about a partner, as the admin edits it. */
+type PartnerProfileUpdate = {
+  description?: string | null
+  category?: string | null
+  website_url?: string | null
+  logo_url?: string | null
+}
+
+/** A store's address, map position and phone. lat and lng go together. */
+type LocationFields = {
+  address?: string | null
+  lat?: number | null
+  lng?: number | null
+  phone?: string | null
+}
 
 // Get API base URL from environment variable or use default
 export const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://sturdy-parakeet-qg59j4pjp9q29j9j-8000.app.github.dev'
@@ -577,17 +596,31 @@ export const api = {
         body: JSON.stringify(data),
       }),
 
-    update: (id: string, data: { name?: string; slug?: string; logo_url?: string | null; is_active?: boolean }) =>
+    update: (id: string, data: PartnerProfileUpdate & { name?: string; slug?: string; is_active?: boolean }) =>
       authenticatedFetch<Partner>(`/admin/partners/${id}`, {
         method: 'PATCH',
         body: JSON.stringify(data),
       }),
 
-    updateLocation: (locationId: string, data: { name?: string; is_active?: boolean }) =>
+    /** A store added by hand, for a partner without a POS. */
+    createLocation: (partnerId: string, data: LocationFields & { name: string }) =>
+      authenticatedFetch<PartnerLocation>(`/admin/partners/${partnerId}/locations`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    updateLocation: (locationId: string, data: LocationFields & { name?: string; is_active?: boolean }) =>
       authenticatedFetch<PartnerLocation>(`/admin/partner-locations/${locationId}`, {
         method: 'PATCH',
         body: JSON.stringify(data),
       }),
+
+    deleteLocation: (locationId: string) =>
+      authenticatedFetch<{ ok: boolean }>(`/admin/partner-locations/${locationId}`, { method: 'DELETE' }),
+
+    /** Places matching an address, to put a store on the map. */
+    geocode: (q: string) =>
+      authenticatedFetch<GeocodeHit[]>(`/admin/geocode${buildQueryString({ q })}`),
 
     startOAuth: (provider: string, partnerId: string) =>
       authenticatedFetch<{ authorize_url: string }>(
@@ -668,6 +701,13 @@ export const api = {
    */
   partnerPortal: {
     me: () => authenticatedFetch<PartnerMe>(`/partner/me`),
+
+    /** What Terpee customers read about the business. */
+    updateProfile: (partnerId: string, data: { description?: string | null; website_url?: string | null }) =>
+      authenticatedFetch<Partner>(`/partner/partners/${partnerId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
 
     get: (partnerId: string) =>
       authenticatedFetch<PartnerPortalDetail>(`/partner/partners/${partnerId}`),
@@ -895,6 +935,13 @@ export const api = {
 
     getDispensaries: () =>
       portalFetch<PortalDispensary[]>(`/customer/dispensaries`),
+
+    /** Partner stores, where purchases earn points, and how points work. */
+    getPartners: () =>
+      portalFetch<PortalPartners>(`/customer/partners`),
+
+    getPartner: (slug: string) =>
+      portalFetch<PortalPartnerPage>(`/customer/partners/${encodeURIComponent(slug)}`),
 
     getDispensaryFilterOptions: (dispensaryId: string) =>
       // `categories` is missing from an API that predates it.
