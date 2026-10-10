@@ -73,3 +73,16 @@ def test_tinctures_and_topicals_are_not_filled():
         e("sl", "Releaf Sleep", "Releaf", "500mg", "tinctures", None),
         e("t1", "Releaf THC1000", "Releaf", "1000mg", "tinctures", None)]}
     assert line_fill.wanted(balm) == {}
+
+
+def test_a_line_whose_products_come_in_their_own_sizes_is_not_filled():
+    # data/product_lines.json: 1906's Drops are curated sizes_by_product (each effect's
+    # tin and pouch counts follow its dose).
+    drops = {"id": "c2", "brand_name": "1906", "entries": [
+        e("bliss", "Drops Bliss", "Drops", "20pk 100mg", category="edible", subtype="tablet"),
+        e("bliss", "Drops Bliss", "Drops", "2pk 10mg", category="edible", subtype="tablet"),
+        e("genius", "Drops Genius", "Drops", "30pk 75mg", category="edible", subtype="tablet"),
+        e("boost", "Drops Boost", "Drops", "3pk 90mg", category="edible", subtype="tablet")]}
+    assert line_fill.sizes_by_product("1906", "Drops") and not line_fill.sizes_by_product("STIIIZY", "Original")
+    assert line_fill.wanted(drops) == {}
+    assert line_fill.wanted({**drops, "brand_name": "Another Brand"})        # the switch is per brand

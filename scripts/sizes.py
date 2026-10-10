@@ -16,11 +16,14 @@ A Size carries what the text states and nothing it does not:
   pack      units in the package (5 prerolls, 10 gummies)
   unit_g    weight of one unit, when a pack states it (0.6g each)
   unit_mg   dose of one unit, when a pack states it (10mg each)
-  alt_mg    the other reading of a lone dose beside a pack: the package total
-            ("Drops 2-pack | 20mg" is 40mg if per piece, 20mg if not)
+  alt_mg    the other reading of a lone dose beside a pack: pack x the figure, as if
+            per piece ("Drops 2pk | 10mg" states 10mg; 20mg if 10mg a drop)
 
-Totals are derived when the parts are present (5 x 0.6g -> 3g, 10 x 10mg -> 100mg),
-because that is how a store and a brand end up writing the same package differently.
+Totals are derived when the parts are present (5 x 0.6g -> 3g, 10 x 10mg each ->
+100mg), because that is how a store and a brand end up writing the same package
+differently. A lone dose beside a pack ("2pk - 10mg") is never multiplied: it may be
+the total or per piece, so the stated figure stands and the product is kept as the
+other reading (alt_mg).
 """
 
 from __future__ import annotations
@@ -39,6 +42,8 @@ _MG = re.compile(rf"{_NUM}\s*(?:mg|milligrams?)\b", re.I)
 # "5pk", "5 pack", "5-pack", "5ct", "10 count", "2 pcs", "5 x" (when followed by a size)
 _PACK = re.compile(r"\b(\d+)\s*[-\s]?(?:pk|pack|packs|ct|count|pcs|pieces|pc)\b", re.I)
 _PACK_X = re.compile(rf"\b(\d+)\s*(?:pk\s*)?x\s*{_NUM}\s*(g|gr|grams?|mg)\b", re.I)
+# The same, written dose first: "20MG x 2PK" is 20mg a piece.
+_X_PACK = re.compile(rf"{_NUM}\s*(g|gr|grams?|mg)\s*x\s*(\d+)\s*[-\s]?(?:pk|pack|ct|count|pcs|pieces|pc)\b", re.I)
 _EACH = re.compile(rf"{_NUM}\s*(g|mg)\s*(?:each|ea\.?|per\s+\w+)\b", re.I)
 _OZ_FRAC = re.compile(r"\b(\d+)\s*/\s*(\d+)[\s-]*(?:oz|ounce)\b", re.I)
 # "1/2 Gram Joints" is 0.5g a joint, not the "2 Gram" _GRAMS would read inside it;
@@ -127,6 +132,14 @@ def parse(*texts: str | None, category: str | None = None) -> Size:
             unit_g = val
         else:
             unit_mg = val
+    m = None if pack is not None else _X_PACK.search(text)
+    if m:
+        pack = int(m.group(3))
+        val = float(m.group(1))
+        if not m.group(2).lower().startswith("m"):
+            unit_g = val
+        else:
+            unit_mg = val
     if pack is None:
         packs = [int(p) for p in _PACK.findall(text)]
         pack = max(packs) if packs else None
@@ -153,17 +166,18 @@ def parse(*texts: str | None, category: str | None = None) -> Size:
     mgs = _floats(_MG, text)
 
     total_g = _total(grams, pack, unit_g, unit_below=None if is_label else 1.0)
-    # New York caps an edible package at 100mg, so a lone dose next to a pack count
-    # is per piece whenever multiplying stays within the cap ("10mg / 10 pack" is
-    # 100mg) and is the package total when it would not ("100mg 10pk" is 100mg).
-    total_mg = _total(mgs, pack, unit_mg, unit_below=None,
-                      cap=None if is_label else EDIBLE_PACKAGE_CAP_MG)
-    # That rule is a guess, and stores go both ways: "Bliss Drops 2pk - 10mg" is 10mg
-    # a drop, "Bliss Drops 2-pack" with an option of 20mg is 20mg in all. Keep the
-    # other reading so a size check can accept either (same_size).
+    # A lone dose next to a pack count is ambiguous: "1906 Chill Drops 2pk - 10mg" is
+    # the package total (two 5mg drops), "Wyld 10mg / 10 pack" is 10mg a gummy. Stores
+    # go both ways, so the parser never decides by multiplying (owner, 2026-10-10): the
+    # figure stands as stated, and pack x figure is kept as the other reading (alt_mg,
+    # when it stays within New York's 100mg package cap) for a size check to accept
+    # (same_size) and a catalog entry to settle. Only an explicit unit dose ("10mg
+    # each", "2 x 10mg", "10mg per piece") multiplies.
+    total_mg = _total(mgs, pack, unit_mg, unit_below=None)
     doses = sorted({v for v in mgs if v > 0})
-    alt_mg = (doses[0] if not is_label and unit_mg is None and pack and pack > 1
-              and len(doses) == 1 and total_mg == pack * doses[0] else None)
+    alt_mg = (pack * doses[0] if not is_label and unit_mg is None and pack and pack > 1
+              and len(doses) == 1 and total_mg == doses[0]
+              and pack * doses[0] <= EDIBLE_PACKAGE_CAP_MG else None)
 
     # A dose category is measured in mg and a weight category in grams; keep only the
     # unit the category actually sells by, so a gummy's "3.5g" piece weight or a

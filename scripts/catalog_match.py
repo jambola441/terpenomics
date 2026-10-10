@@ -14,11 +14,14 @@ How a listing is resolved
   attributes  its own reading (enrichment's category, format, strain, line and size,
               saved on the listing before any catalog overlay) names exactly one
               product in a size it comes in. Free, and accepted outright.
-  jev         otherwise the brand's products are ranked by their titles' overlap with
-              the name, filtered to the listing's category and — when both sides state
-              one — to a compatible size (sizes.py does the pack math, not the model),
-              and Jev picks which shortlisted product the listing IS, or "none", with a
-              probability for every option. The probability is the gate:
+  jev         otherwise Jev chooses among the catalog's entries (one product in one
+              size each) that agree with the reading on every attribute but one
+              (near_entries; papers by merch_catalog's width and tips), or "none", with
+              a probability for every option. Its pick is the entry, so the size comes
+              with it: Jev never picks a product without its size (owner, 2026-10-09).
+              A reading two attributes from everything gets no question; of more
+              than 25 options, those whose titles share most words with the name.
+              The probability is the gate:
 
                 p >= AUTO (0.85)     method "jev"          trusted for identity
                 p >= REVIEW (0.50)   method "jev_review"   entry recorded, not trusted
@@ -42,7 +45,7 @@ Cost and repeat runs
 One Jev call per unresolved listing, ~600 input tokens, $0.042/M, output free: about
 $0.000025 a listing, so the whole fleet is cents. Answers are cached under
 data/enrich_cache/catalog_match/ (the persistent disk on Render), keyed by the listing
-name *and the candidate set*, so a catalog edit that changes a listing's shortlist
+name *and the options offered*, so a catalog edit that changes a listing's options
 re-asks that listing and nothing else.
 
 Usage
@@ -57,6 +60,7 @@ Usage
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import hashlib
 import html
 import json
@@ -83,7 +87,7 @@ ROOT = Path(__file__).resolve().parent.parent
 CACHE_DIR = ROOT / "data" / "enrich_cache" / "catalog_match"
 # Bump when the question wording or the option rendering changes: cached answers were
 # given to a different question.
-QUESTION_VERSION = 2
+QUESTION_VERSION = 3   # 3: options are entries (one product in one size), 2026-10-09
 
 # Set from the Ayrloom holdout (--eval, 2026-10-04): with the true product removed
 # from the shortlist, Jev still picked a wrong one at p>=0.80 for 5.7% of listings,
@@ -286,6 +290,8 @@ class CatalogIndex:
         is not joined to the product's other sizes; the listing goes to Jev, and the
         audit shows what is left. On the labelled set this tier decided 168 of 295
         listings, 14 of them against the label, most of those labels stale.
+        One exception: a bare dose with no count joins the one pack it is the
+        per-piece dose of, when the product sells nothing at that figure (per_piece).
 
         Inferred sizes (line_fill.py) count: they are the sizes the product's line
         comes in. Format is compared wherever both sides state one; a pre-roll keeps
@@ -405,7 +411,7 @@ def fitting_entry(entries: list[dict], want: sizes.Size, category: str | None) -
     came first. Two entries of one size (a stated one and an inferred one) are one fit.
     """
     fits = [(e, sizes.parse(e.get("variant"), category=category)) for e in entries]
-    fits = [(e, s) for e, s in fits if sizes.same_size(want, s) is True]
+    fits = [(e, s) for e, s in fits if sizes.same_size(want, s) is True] or per_piece(fits, want, category)
     if not fits:
         return False
     if len({s for _, s in fits}) > 1:
@@ -413,6 +419,21 @@ def fitting_entry(entries: list[dict], want: sizes.Size, category: str | None) -
     if len({s for _, s in fits}) > 1:
         return None
     return next((e for e, _ in fits if e.get("source") != "inferred"), fits[0][0])
+
+
+def per_piece(sized: list[tuple[dict, sizes.Size]], want: sizes.Size,
+              category: str | None) -> list[tuple[dict, sizes.Size]]:
+    """The entries a bare dose names as the per-piece dose of their pack: "Sour Cherry
+    10mg" is Wyld's 10pk 100mg (owner, 2026-10-10: a store can print the piece's dose
+    and leave out the count). Only for a figure with no pack count, against a product
+    that sells nothing at that figure itself (same_size found no fit) and in one pack
+    size only: a product with a 10pk 100mg and a 5pk 50mg leaves a 10mg to Jev."""
+    if category not in sizes.DOSE_CATEGORIES or want.pack is not None or want.mg is None \
+            or want.grams is not None:
+        return []
+    fits = [(e, s) for e, s in sized if s.pack and s.pack > 1 and s.mg is not None
+            and abs(want.mg * s.pack - s.mg) <= 0.5]
+    return fits if len({s for _, s in fits}) == 1 else []
 
 
 ATTRIBUTES = ("category", "strain", "line", "subtype", "size")
@@ -442,10 +463,20 @@ def attribute_misses(reading: dict, product: "Product", entry: dict,
             and not taxonomy.same_format(subtype, product.subtype, synonyms):
         out.append("subtype")
     want = reading_size(reading, name)
-    if want.is_empty() or sizes.same_size(
-            want, sizes.parse(entry.get("variant"), category=product.category)) is not True:
+    if want.is_empty() or not size_fits(want, product, entry):
         out.append("size")
     return out
+
+
+def size_fits(want: sizes.Size, product: "Product", entry: dict) -> bool:
+    """Whether `entry` is in the size wanted: the same size, or the pack a bare dose is
+    the per-piece dose of when the product sells nothing at that figure (per_piece)."""
+    sized = [(e, sizes.parse(e.get("variant"), category=product.category)) for e in product.entries]
+    if sizes.same_size(want, sizes.parse(entry.get("variant"), category=product.category)) is True:
+        return True
+    if any(sizes.same_size(want, s) is True for _, s in sized):
+        return False
+    return any(e is entry for e, _ in per_piece(sized, want, product.category))
 
 
 def reading_size(reading: dict, name: str | None = None) -> sizes.Size:
@@ -470,10 +501,16 @@ def reading_size(reading: dict, name: str | None = None) -> sizes.Size:
     own = sizes.parse(name, category=category)
     if own.pack is None:
         return want
-    if want.mg is not None and own.mg is not None and abs(own.mg - want.mg) <= 0.5:
+    # The name's figure, or its other reading (pack x figure): readings stored before
+    # 2026-10-10 hold the multiplied figure ("20mg" for "2pk - 10mg").
+    if want.mg is not None and any(v is not None and abs(v - want.mg) <= 0.5 for v in (own.mg, own.alt_mg)):
         return own
     if want.grams is not None and own.grams is not None and sizes.same_size(own, want):
         return own
+    # A count with no figure beside it ("Tablets | 30-Pack") still says how many: the
+    # 30mg read is no per-piece dose of a 3-pack (per_piece).
+    if own.mg is None and own.grams is None:
+        return dataclasses.replace(want, pack=own.pack)
     return want
 
 
@@ -556,9 +593,87 @@ def catalog_size(variant: str | None, name: str | None, entry: dict,
 NONE = "none"
 
 
+# Most entries a question may offer; beyond it, those whose product title shares most
+# words with the listing's name (closest).
+MAX_OPTIONS = 25
+
+# A candidate: (product key, entry, the attributes it misses the reading on — none or one).
+Candidate = tuple
+
+
+def near_entries(index: "CatalogIndex", listing: dict, brand: str,
+                 exclude: str | None = None) -> list[Candidate]:
+    """Jev's options for a listing the join left: the catalog entries that agree with
+    its reading on every attribute but at most one (owner's call, 2026-10-09: Jev never
+    picks a product without its size; it chooses among the entries one attribute away,
+    or none). STIIIZY's 4.5g Orange Sunset gets the 1g and the 2.5g; a strain the
+    reading lacks gets every strain in its line and size. Papers and hardware are read
+    by merch_catalog's rules (width, tips, colour), the rest by attribute_misses."""
+    name, cat = listing.get("name") or "", listing.get("category")
+    if merch_catalog.is_merch(cat, listing.get("subtype"), name, brand):
+        r = merch_catalog.reading(name, brand, listing.get("subtype"), cat)
+        if r.get("subtype") not in merch_catalog.CATALOGED:
+            return []
+        out = []
+        for e, m in merch_catalog.near_entries(index.catalog.get("entries") or [], r):
+            key = e.get("product_key") or catalog_store._product_key(e)
+            if key in index.products and key != exclude:
+                out.append((key, e, m))
+        return out
+    reading = listing.get("reading")
+    if not reading:
+        return []
+    out = []
+    for key, p in index.products.items():
+        if key == exclude or infused_veto(p, name, cat, listing.get("description")):
+            continue
+        for e in p.entries:
+            m = attribute_misses(reading, p, e, name, brand, index.synonyms)
+            if len(m) <= 1:
+                out.append((key, e, m))
+    return out
+
+
+def closest(candidates: list[Candidate], name: str, index: "CatalogIndex") -> list[Candidate]:
+    """The options a question offers: the entries that miss nothing when there are any
+    (a reading that fits several products exactly, which the join leaves), else the
+    near entries, at most MAX_OPTIONS of them, those whose product's title shares the
+    most words with the listing's name first. A strain read short ("Alley" for Alley
+    Oop) is one attribute from every flower of its size; the name tells which."""
+    exact = [c for c in candidates if not c[2]]
+    if exact:
+        candidates = exact
+    if len(candidates) <= MAX_OPTIONS:
+        return candidates
+    words = set(norm_name(name).split())
+    def overlap(c):
+        p = index.products[c[0]]
+        title = set(norm_name(" ".join(x for x in (p.title, p.strain, p.product_line) if x)).split())
+        return len(words & title) / (len(title) or 1)
+    return sorted(candidates, key=overlap, reverse=True)[:MAX_OPTIONS]
+
+
+def option_text(product: "Product", entry: dict) -> str:
+    """What Jev reads for one option: the product, spelled out (Product.describe) but
+    with this entry's size alone."""
+    bits = [product.title]
+    kind = "/".join(x for x in (product.category, product.subtype) if x)
+    if kind:
+        bits.append(kind)
+    if product.product_line:
+        bits.append(f"product line {product.product_line}")
+    if product.strain and norm_name(product.strain) != norm_name(product.title):
+        bits.append(f"strain/flavor {product.strain}")
+    colour = (entry.get("attributes") or {}).get("colour")
+    if colour:
+        bits.append(f"colour {colour}")
+    bits.append(f"size {entry.get('variant') or 'not stated'}")
+    return " · ".join(bits)
+
+
 def jev_question(brand: str, listing: dict, index: CatalogIndex,
-                 candidates: list[str]) -> tuple[dict, dict, dict[str, str]]:
-    """(state, questions, label -> product key) for one listing.
+                 candidates: list[Candidate]) -> tuple[dict, dict, dict[str, Candidate]]:
+    """(state, questions, label -> candidate) for one listing.
 
     The state is the listing and nothing else a decision does not need — of the sales
     copy, only a product line it names (described_line): 'large irrelevant state costs
@@ -576,28 +691,30 @@ def jev_question(brand: str, listing: dict, index: CatalogIndex,
     line = described_line(listing, index)
     if line:
         state["product_line_in_description"] = line
-    labels: dict[str, str] = {}
+    labels: dict[str, Candidate] = {}
     criteria: dict[str, str] = {
-        NONE: ("None of the products below is this listing — its flavor, strain or "
-               "scent differs, its product line differs, or it is a product this "
-               "catalog does not contain."),
+        NONE: ("None of the options below is this listing — its flavor, strain or scent "
+               "differs, its product line differs, its size differs, or it is a product "
+               "this catalog does not contain."),
     }
-    for key in candidates:
+    for cand in candidates:
+        key, entry, _ = cand
         p = index.products[key]
-        label = (p.title or key).strip()[:70] or key[:70]
+        label = f"{(p.title or key).strip()} — {entry.get('variant') or 'no size'}"[:70]
         base, n = label, 2
         while label in criteria:
             label = f"{base} ({n})"
             n += 1
-        labels[label] = key
-        criteria[label] = p.describe()
+        labels[label] = cand
+        criteria[label] = option_text(p, entry)
     question = jev.Choice(
         instructions=(
-            f"Which {brand} catalog product is this dispensary listing? Stores rename "
-            "products freely: extra words, store codes, potency, lineage and the "
-            "brand name itself are noise. Match on what the product is — the same "
-            "flavor, strain or scent, and the same product line. Answer none when "
-            "no option is that product."
+            f"Which {brand} catalog item is this dispensary listing? Each option is one "
+            "product in one size. Stores rename products freely: extra words, store codes, "
+            "potency, lineage and the brand name itself are noise, and a store's size field "
+            "can be mistyped while the name states the real size. Match on what the product "
+            "is — the same flavor, strain or scent, the same product line, and the same "
+            "size. Answer none when no option is that product in that size."
         ),
         criteria=criteria,
     )
@@ -625,11 +742,11 @@ def described_line(listing: dict, index: CatalogIndex) -> str | None:
     return canonical.line_from_description(brand, " ".join(text.split()), listing.get("category"))
 
 
-def _cache_key(listing: dict, candidates: list[str], index: CatalogIndex) -> str:
+def _cache_key(listing: dict, candidates: list[Candidate], index: CatalogIndex) -> str:
     parts = [
         QUESTION_VERSION, jev.MODEL, norm_name(listing.get("name") or ""),
         listing.get("category") or "", listing.get("subtype") or "", listing.get("variant") or "",
-        [(k, index.products[k].describe()) for k in candidates],
+        [(k, e.get("id"), option_text(index.products[k], e)) for k, e, _ in candidates],
     ]
     # Only when it is in the question, so answers cached without one stay valid.
     line = described_line(listing, index)
@@ -637,7 +754,6 @@ def _cache_key(listing: dict, candidates: list[str], index: CatalogIndex) -> str
         parts.append(line)
     payload = json.dumps(parts, ensure_ascii=False)
     return hashlib.sha1(payload.encode("utf-8")).hexdigest()
-
 
 class AnswerCache:
     def __init__(self, slug: str, enabled: bool = True):
@@ -698,14 +814,14 @@ def resolve(catalog: dict, listings: list[dict], *, use_jev: bool,
     """Decide every listing of one brand.
 
     `exclude` (listing id -> product key) removes that product from the listing's
-    shortlist — the holdout used by --eval to measure how often Jev picks a wrong
+    options — the holdout used by --eval to measure how often Jev picks a wrong
     product when the right one is absent.
     """
     index = CatalogIndex(catalog)
     brand = catalog.get("brand_name") or ""
     cache = cache or AnswerCache(catalog.get("brand_slug") or "x", enabled=False)
     decisions: list[Decision | None] = [None] * len(listings)
-    pending: list[tuple[int, list[str], dict[str, str], str]] = []
+    pending: list[tuple[int, list[Candidate], dict[str, Candidate], str]] = []
     jobs = []
 
     for i, l in enumerate(listings):
@@ -728,10 +844,9 @@ def resolve(catalog: dict, listings: list[dict], *, use_jev: bool,
         if not use_jev:
             decisions[i] = Decision(l, None, None, 0.0, "none")
             continue
-        cands = index.shortlist(name, cat, l.get("variant"), exclude=held_out,
-                                subtype=l.get("subtype"), description=l.get("description"))
+        cands = closest(near_entries(index, l, brand, exclude=held_out), name, index)
         if not cands:
-            decisions[i] = Decision(l, None, None, 0.0, "none", 0)
+            decisions[i] = Decision(l, None, None, 0.0, "none", len(cands))
             continue
         key = _cache_key(l, cands, index)
         hit = cache.get(key)
@@ -761,13 +876,14 @@ def resolve(catalog: dict, listings: list[dict], *, use_jev: bool,
 
 
 def _decide(listing, index, labels, pick, p, probs, n_cands) -> Decision:
+    """Jev's pick is one entry: the product and its size come with it."""
     method = gate(pick, p, auto_threshold(index.catalog))
-    key = labels.get(pick) if method in ("jev", "jev_review") else None
-    entry = index.pick_entry(key, listing.get("variant"), listing.get("category"),
-                             listing.get("name") or "") if key else None
+    cand = labels.get(pick) if method in ("jev", "jev_review") else None
+    if cand is None and method in ("jev", "jev_review"):
+        method = "none"                 # a label no longer offered (an answer cached for another catalog)
+    key, entry = (cand[0], cand[1]) if cand else (None, None)
     conf = p if key else float((probs or {}).get(NONE, 0.0))
     return Decision(listing, key, entry, round(conf, 3), method, n_cands, probs)
-
 
 # ---------------------------------------------------------------------------
 # Listings in, decisions out
@@ -902,16 +1018,17 @@ def evaluate(catalog: dict, listings: list[dict], usage: jev.Usage,
     """How well does the Jev tier gate, measured without hand labels?
 
     Silver labels: listings the attribute join decides. Then the holdout: ask Jev with
-    that product removed from the shortlist. The right answer is now "none", so any
-    product Jev still picks at probability >= t is a false match at threshold t —
-    the number that should set AUTO. Only listings that still have candidates after
-    the holdout count; an empty shortlist is a free "none" and proves nothing.
+    that product removed from its options. The right answer is now "none", so any
+    entry Jev still picks at probability >= t is a false match at threshold t —
+    the number that should set AUTO. Only listings that still have options after
+    the holdout count; no options is a free "none" and proves nothing.
     """
     index = CatalogIndex(catalog)
     first = resolve(catalog, listings, use_jev=True, cache=cache, usage=usage)
     silver = {str(d.listing["id"]): d.product_key for d in first if d.method == "attributes"}
-    # Asked without their reading, so Jev decides them with the true product held out.
-    labelled = [{**l, "reading": None} for l in listings if str(l["id"]) in silver]
+    # The join skips a held-out product, so Jev decides them with the true product
+    # gone; their reading stays, as Jev's options are built from it.
+    labelled = [l for l in listings if str(l["id"]) in silver]
     holdout = resolve(catalog, labelled, use_jev=True,
                       cache=AnswerCache("holdout", enabled=False), usage=usage, exclude=silver)
     asked = [d for d in holdout if d.candidates > 0]
