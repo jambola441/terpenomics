@@ -28,6 +28,7 @@ import {
 } from './ui'
 import { Icon, type IconName } from './Icon'
 import { formatDist, formatDollars, haversineMi } from '../utils/format'
+import { usePhoto } from '../hooks/usePhoto'
 
 interface Props {
   dispensaryId: string
@@ -93,6 +94,9 @@ export default function ListingDetailView({
     overflowY: 'auto',
     background: t.bg,
   }
+
+  // The page's photo spans the screen; the column tops out near 600px.
+  const hero = usePhoto(listing?.image_url, 600)
 
   if (loading) {
     return <div style={containerStyle}><FeedState kind="loading" message="Loading…" style={{ height: '100%' }} /></div>
@@ -165,13 +169,14 @@ export default function ListingDetailView({
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{listing.dispensary_name}</span>
       </button>
 
-      {listing.image_url ? (
+      {hero ? (
         <div style={{ position: 'relative', width: '100%', paddingTop: '100%', background: t.tile }}>
           <img
-            src={listing.image_url}
+            src={hero.src}
+            srcSet={hero.srcSet}
             alt={listing.display_name}
             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', padding: 24, boxSizing: 'border-box' }}
-            onError={e => { (e.target as HTMLImageElement).parentElement!.style.display = 'none' }}
+            onError={hero.onError}
           />
         </div>
       ) : (
@@ -581,6 +586,7 @@ function SimilarRail({ items, storeName, onOpen }: {
                 src={row.image_url}
                 alt={row.display_name}
                 category={row.scraped_category}
+                drawWidth={142}
               />
               <div style={{ padding: '8px 10px 10px' }}>
                 {row.scraped_brand && (
