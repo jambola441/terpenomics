@@ -19,7 +19,9 @@ offering only the catalog's values that fit the answers before it (owner's desig
     so a wrong line cannot hide the right strain;
   * size is asked among the sizes of the product just picked, spelled out ("10pk
     100mg: 10 pieces, 100mg THC in the whole package"): a bare "100mg" then means the
-    one package with that total, not every size the brand sells.
+    one package with that total, not every size the brand sells. An edible's mg is its
+    total THC (or THCA) only, never CBD, CBN or other cannabinoids (owner, 2026-10-10):
+    Ayrloom's "5mg THC : 5mg CBD" can is 5mg though stores size it "10mg".
 
 The reading is the catalog's values, so the attribute join (catalog_match.CatalogIndex
 .join) settles it without Jev; Jev no longer picks entries at matching. Each answer's
@@ -85,8 +87,10 @@ STRAIN_Q = ("Which of these is this product's strain or flavor: the name that te
 SIZE_Q = ("This listing is the product named in 'product'. Which of that product's packages is it? "
           "Stores often give only part of the size: just the package's total ('100mg') or just the "
           "count ('10pk'). A listing that states only the total or only the count is the package "
-          "with that total or count. Choose none only if the listing states a total or count that "
-          "none of these packages has.")
+          "with that total or count. A package's mg is its total THC (or THCA) only, never CBD, "
+          "CBN, CBG or other cannabinoids: a can of '5mg THC : 5mg CBD' is 5mg, even where the "
+          "store's size field adds them up to 10mg. Choose none only if the listing states a total "
+          "or count that none of these packages has.")
 
 # (question key, catalog entry field, reading field, instructions)
 STEPS = (("category", "category", "category", CATEGORY_Q),
@@ -104,9 +108,9 @@ def spell_size(label: str, category: str | None) -> str:
     """A catalog size with what it means: what a store's partial size is matched against."""
     z = sizes.parse(label, category=category)
     if z.mg is not None and z.pack:
-        return f"{label}: {z.pack} pieces, {z.mg:g}mg THC in the whole package"
+        return f"{label}: {z.pack} pieces, {z.mg:g}mg THC in the whole package (THC only)"
     if z.mg is not None:
-        return f"{label}: {z.mg:g}mg THC in the whole package"
+        return f"{label}: {z.mg:g}mg THC in the whole package (THC only)"
     if z.grams is not None and z.pack:
         return f"{label}: {z.pack} pieces, {z.grams:g}g in total"
     if z.grams is not None:

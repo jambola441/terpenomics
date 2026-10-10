@@ -61,8 +61,8 @@ def test_each_step_offers_only_the_values_left_and_size_only_the_products_sizes(
     opts = {k: [v for o, v in c.items() if o != cr.NONE] for k, _, c in asked}
     assert opts["subtype"][1].startswith("gummy: Gummies, chews")           # with its definition
     assert opts["strain"] == ["Pineapple Habanero", "Wild Cherry Excite"]    # the gummies alone
-    assert opts["size"] == ["10pk 100mg: 10 pieces, 100mg THC in the whole package",
-                            "20pk 100mg: 20 pieces, 100mg THC in the whole package"]
+    assert opts["size"] == ["10pk 100mg: 10 pieces, 100mg THC in the whole package (THC only)",
+                            "20pk 100mg: 20 pieces, 100mg THC in the whole package (THC only)"]
     size_state = next(s for k, s, _ in asked if k == "size")
     assert size_state["product"] == "Wild Cherry Excite"
     assert size_state["description"] == "Uplifting chews"
