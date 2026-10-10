@@ -24,8 +24,8 @@ offering only the catalog's values that fit the answers before it (owner's desig
 The reading is the catalog's values, so the attribute join (catalog_match.CatalogIndex
 .join) settles it without Jev; Jev no longer picks entries at matching. Each answer's
 probability is kept on the reading (`p`), and the matcher trusts a join only when the
-category and strain were read confidently (TRUST_AT), and the size too or else the
-store's own size field agrees (trusted): a listing of a product the catalog
+strain was read confidently (TRUST_AT), and read the same from the name alone, and the
+size too or else the store's own size field agrees (trusted): a listing of a product the catalog
 lacks reads "none" or reads its nearest product unsurely (measured 2026-10-10: the
 Excite listings, with Exhilarate removed, read the wrong strain at p 0.81-0.85 against
 0.99 for true picks), and goes to the review queue, where the fix is the catalog.
@@ -145,6 +145,7 @@ class _Walk:
         self.p: dict[str, float] = {}
         self.done = False
         self.failed = False
+        self.strain_values: list[str] = []
 
     def question(self, step: tuple, brand: str) -> tuple[dict, dict, list[str]] | None:
         key, field, _, instructions = step
@@ -167,6 +168,8 @@ class _Walk:
 
     def answer(self, step: tuple, pick: str | None, p: float, values: list[str]) -> None:
         key, field, out, _ = step
+        if key == "strain":
+            self.strain_values = values
         value = None if pick in (None, NONE) else values[int(pick[1:])]
         self.p[key] = round(p, 3)
         if key in SOFT and (value is None or p < NARROW_AT):
@@ -177,6 +180,16 @@ class _Walk:
                 self.done = True              # the catalog has no such product
             return
         self.pool = [e for e in self.pool if e.get(field) == value]
+
+
+def _check(self, pick: str | None, p: float) -> None:
+    """Record the name-only strain answer (read, above)."""
+    value = None if pick in (None, NONE) else self.strain_values[int(pick[1:])]
+    self.reading["strain_from_name"] = value
+    self.p["strain_from_name"] = round(p, 3)
+
+
+_Walk.check = _check
 
 
 def _cache_key(state: dict, question: dict) -> str:
@@ -224,38 +237,79 @@ def read(catalog: dict, listings: list[dict], *, usage: jev.Usage | None = None,
             pick, p, _ = res.choice(step[0])
             cache.put(key, {"pick": pick, "p": round(p, 4)})
             w.answer(step, pick, p, values)
+    # The strain asked again from the name alone, among the same options. A store's
+    # description is sometimes another product's, pasted (2026-10-10: MFNY's Superboof
+    # badder carries the Gelato 41 description, and read as Gelato 41 at 0.96); when
+    # the two answers differ, the reading is not trusted (trusted) and a person looks.
+    jobs, pending = [], []
+    for w in walks:
+        if w.failed or not w.reading.get("strain") or not w.strain_values:
+            continue
+        state = {k: v for k, v in base_state(brand, w.listing).items() if k != "description"}
+        state.update({k: w.reading[k] for k in ("category", "subtype", "product_line") if w.reading.get(k)})
+        options = {NONE: "None of these", **{f"o{i}": v for i, v in enumerate(w.strain_values)}}
+        question = {"strain": jev.Choice(STRAIN_Q, options)}
+        key = _cache_key(state, question)
+        hit = cache.get(key)
+        if hit is not None:
+            w.check(hit["pick"], hit["p"])
+            continue
+        jobs.append((state, question))
+        pending.append((w, key))
+    for (w, key), res in zip(pending, jev.ask_many(jobs, workers=workers, usage=usage) if jobs else []):
+        if res is None:
+            w.failed = True
+            continue
+        pick, p, _ = res.choice("strain")
+        cache.put(key, {"pick": pick, "p": round(p, 4)})
+        w.check(pick, p)
     cache.save()
     out = {}
     for w in walks:
         if w.failed:
             continue
         r = {f: w.reading.get(f) for f in ("category", "subtype", "strain", "product_line", "size")}
+        if "strain_from_name" in w.reading:
+            r["strain_from_name"] = w.reading["strain_from_name"]
         out[str(w.listing["id"])] = dict(r, p=w.p, by="catalog")
     return out
 
 
 def trusted(reading: dict | None, store_size_agrees: bool = False) -> bool:
-    """Whether a catalog reading is sure enough for its join to be trusted: category and
-    strain read at TRUST_AT or above, and the size too, or else the store's own size
-    field naming the same size (store_size_agrees). Size is the step Jev is least sure
-    of: measured on 11 brands (2026-10-10), a 0.9 bar on it sent 955 joins to review,
-    and 977 of the unsure joins were the entry production already trusted. A reading
-    not made against the catalog (enrichment's) has no probabilities and is not held
-    to this."""
+    """Whether a catalog reading is sure enough for its join to be trusted:
+
+      * the strain read at TRUST_AT or above, and the same strain read from the name
+        alone (a store description is sometimes another product's);
+      * the size read at TRUST_AT or above, or else the store's own size field naming
+        the same size (store_size_agrees). Size is the step Jev is least sure of:
+        measured on 11 brands (2026-10-10), a 0.9 bar alone sent 955 joins to review,
+        nearly all the entry production already trusted.
+
+    Category is not held to a bar: a wrong one already fails the join, since strain and
+    size are offered within it; a bar on it parked 171 right matches (infused pre-rolls
+    read at 0.5-0.9). A reading not made against the catalog (enrichment's) has no
+    probabilities and is not held to this."""
     if not reading or reading.get("by") != "catalog":
         return True
     p = reading.get("p") or {}
-    if p.get("category", 0.0) < TRUST_AT or p.get("strain", 0.0) < TRUST_AT:
+    if p.get("strain", 0.0) < TRUST_AT:
+        return False
+    if "strain_from_name" in reading and reading["strain_from_name"] != reading.get("strain"):
         return False
     return p.get("size", 0.0) >= TRUST_AT or store_size_agrees
 
 
 def unsure_steps(reading: dict | None) -> list[str]:
-    """The steps of a catalog reading answered below its bar (review queue detail)."""
+    """The steps of a catalog reading answered below their bar, and "strain_from_name"
+    when the name alone reads another strain (review queue detail)."""
     if not reading or reading.get("by") != "catalog":
         return []
     p = reading.get("p") or {}
-    return [k for k, v in p.items() if v < (NARROW_AT if k in SOFT else TRUST_AT)]
+    out = [k for k, v in p.items()
+           if k in ("strain", "size", *SOFT) and v < (NARROW_AT if k in SOFT else TRUST_AT)]
+    if "strain_from_name" in reading and reading["strain_from_name"] != reading.get("strain"):
+        out.append("strain_from_name")
+    return out
 
 
 def main() -> int:

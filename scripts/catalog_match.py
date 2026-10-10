@@ -876,7 +876,7 @@ def store_size_agrees(listing: dict, entry: dict, category: str | None) -> bool:
 
 def _least_p(reading: dict | None) -> float:
     p = (reading or {}).get("p") or {}
-    return round(min((p.get(k, 0.0) for k in ("category", "strain", "size")), default=0.0), 3)
+    return round(min((p.get(k, 0.0) for k in ("strain", "size")), default=0.0), 3)
 
 
 def review_reason(index: "CatalogIndex", listing: dict, brand: str,

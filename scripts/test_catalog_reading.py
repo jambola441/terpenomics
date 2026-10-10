@@ -139,3 +139,31 @@ def test_the_review_queue_says_why():
     assert resolve(reading(size="5pk 50mg", p={"size": 0.95})).method == "review_near"   # one attribute off
     assert resolve(reading(size=None, p={"size": 0.4})).method == "review_unsure"
     assert resolve(reading(category="flower", strain="Gelato", size="3.5g")).method == "none"
+
+
+def test_the_strain_is_asked_again_from_the_name_and_a_disagreement_is_not_trusted(monkeypatch):
+    calls = {"n": 0}
+    ask, asked = fake({"category": ("edible", 0.99), "subtype": ("gummy", 0.97),
+                       "line": ("Gummies", 0.95), "strain": ("Wild Cherry Excite", 0.98),
+                       "size": ("10pk 100mg", 0.93)})
+
+    def ask_many(jobs, **kw):
+        # The name-only question (no description in its state) reads another strain.
+        out = ask(jobs, **kw)
+        for (state, q), r in zip(jobs, out):
+            if "strain" in q and "description" not in state:
+                calls["n"] += 1
+                label = next(k for k, v in q["strain"].criteria.items() if v == "Pineapple Habanero")
+                r.answers["strain"] = {"type": "choice", "choice": label, "probabilities": {label: 0.9}}
+        return out
+    monkeypatch.setattr(jev, "ask_many", ask_many)
+    got = cr.read(CAMINO, [LISTING], cache=NoCache())["1"]
+    assert calls["n"] == 1 and got["strain_from_name"] == "Pineapple Habanero"
+    assert not cr.trusted(got, store_size_agrees=True)
+    assert "strain_from_name" in cr.unsure_steps(got)
+    assert resolve(dict(got)).method == "review_unsure"
+    assert cr.trusted(dict(got, strain_from_name="Wild Cherry Excite"))
+
+
+def test_category_is_not_held_to_a_bar():
+    assert resolve(reading(p={"category": 0.5})).method == "attributes"
