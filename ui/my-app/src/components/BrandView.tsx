@@ -16,7 +16,8 @@ import type { PortalBrandDetail } from '../types'
 import { t, alpha, raw } from '../theme'
 import { Dot, Stat } from './browse'
 import { BackButton, BrandMark, PageTitle } from './ui'
-import BrowseScreen, { LINE_MIN_PRODUCTS, type BrowseItem, type FacetKey } from './BrowseScreen'
+import BrowseScreen, { type BrowseItem, type FacetKey } from './BrowseScreen'
+import { LINE_MIN_PRODUCTS } from '../utils/lines'
 
 /** Whether any of the brand's lines is big enough to filter by. */
 function hasRealLine(data: PortalBrandDetail): boolean {
@@ -89,6 +90,8 @@ export default function BrandView({ brandName, onBack, onOpenProduct }: Props) {
   // the one thing that varies across a brand's whole range. The line comes
   // second, never first, so it never takes over the quick rail.
   const showLines = useFlag('lines') && data != null && hasRealLine(data)
+  // Shelves by line ride on the line filter: their See all links select a line.
+  const groupable = useFlag('lines_grouped') && showLines
   const facets = useMemo<FacetKey[]>(
     () => showLines ? ['category', 'line', 'subtype', 'variant'] : ['category', 'subtype', 'variant'],
     [showLines],
@@ -102,6 +105,7 @@ export default function BrandView({ brandName, onBack, onOpenProduct }: Props) {
       onRetry={() => setAttempt(n => n + 1)}
       color={c}
       facets={facets}
+      groupable={groupable}
       resetKey={brandName}
       searchPlaceholder={`Search ${brandName}…`}
       totalCount={data?.product_count ?? 0}
