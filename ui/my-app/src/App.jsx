@@ -18,6 +18,7 @@ const Purchases = lazy(() => import('./Purchases'))
 const Orders = lazy(() => import('./Orders'))
 const BrandCatalogs = lazy(() => import('./BrandCatalogs'))
 const BrandCatalogEdit = lazy(() => import('./BrandCatalogEdit'))
+const BrandLogos = lazy(() => import('./BrandLogos'))
 const Dispensaries = lazy(() => import('./Dispensaries'))
 const DispensaryEdit = lazy(() => import('./DispensaryEdit'))
 const DispensaryListingsAdmin = lazy(() => import('./DispensaryListingsAdmin'))
@@ -58,6 +59,7 @@ function App() {
           <Route path="/admin/lab-reports/:reportId" element={<LabReportDetail />} />
           <Route path="/admin/brand-catalogs" element={<BrandCatalogs />} />
           <Route path="/admin/brand-catalogs/:catalogId" element={<BrandCatalogEdit />} />
+          <Route path="/admin/brand-logos" element={<BrandLogos />} />
           <Route path="/admin/dispensaries" element={<Dispensaries />} />
           <Route path="/admin/dispensaries/:dispensaryId" element={<DispensaryEdit />} />
           <Route path="/admin/dispensaries/:dispensaryId/listings" element={<DispensaryListingsAdmin />} />

@@ -625,6 +625,25 @@ class PhotoMirror(SQLModel, table=True):
     )
 
 
+class BrandLogo(SQLModel, table=True):
+    """The logo a brand's tile and page show, picked by a person from the brand's own
+    site (routes/admin/brand_logos.py; migration 0014). Keyed by brand_key, the
+    folding catalogs use, so spellings of one brand share it."""
+
+    __tablename__ = "brand_logos"
+
+    brand_key: str = Field(primary_key=True, sa_type=Text)
+    brand_name: str = Field(nullable=False, sa_type=Text)
+    logo_url: Optional[str] = Field(default=None, sa_type=Text)
+    source_url: Optional[str] = Field(default=None, sa_type=Text)
+    site_url: Optional[str] = Field(default=None, sa_type=Text)
+    chosen_by: Optional[str] = Field(default=None, sa_type=Text)
+    updated_at: datetime = Field(
+        default_factory=utcnow_tz,
+        sa_column=Column("updated_at", DateTime(timezone=True), nullable=False),
+    )
+
+
 class FeaturedListing(SQLModel, table=True):
     """A listing a store (or an admin) wants shown first.
 
