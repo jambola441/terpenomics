@@ -6,13 +6,14 @@
 
 import { useState, type ReactNode } from 'react'
 import {
-  ActivityIndicator, Pressable, StyleSheet, Text, View,
+  ActivityIndicator, PixelRatio, Pressable, StyleSheet, Text, View,
   type StyleProp, type TextStyle, type ViewStyle,
 } from 'react-native'
 import { Image } from 'expo-image'
 import { formatDollars } from '@web/utils/format'
 import { alpha, categories, categoryStyle, strains, terpeneStyle } from '@web/design/tokens'
 import { boroughColor, NYC_COLOR } from '@web/utils/boroughs'
+import { photoAt } from '@web/utils/photoUrl'
 import { CategoryIcon, Icon, type IconName } from './Icon'
 import { t, radius, space, font, fonts, type } from '@/lib/theme'
 
@@ -131,9 +132,16 @@ export function ProductImage({ uri, size, category, radius: r }: {
   category?: string | null
   radius?: number
 }) {
-  const [failed, setFailed] = useState<string | null>(null)
-  const showPhoto = !!uri && failed !== uri
   const pad = size >= 120 ? 10 : 4
+  // The photo at the size it is drawn where its host can resize (@web/utils/photoUrl),
+  // then the original if that fails, then the category glyph. Failures are kept
+  // with their photo, so a recycled row starts again from the resized file.
+  const [failed, setFailed] = useState<{ uri: string; tries: number } | null>(null)
+  const tries = uri && failed?.uri === uri ? failed.tries : 0
+  const sources = uri
+    ? [photoAt(uri, (size - pad * 2) * PixelRatio.get()), uri].filter((u): u is string => !!u)
+    : []
+  const source = sources[tries]
   return (
     <View
       style={[
@@ -141,12 +149,12 @@ export function ProductImage({ uri, size, category, radius: r }: {
         { width: size, height: size, borderRadius: r ?? (size >= 120 ? radius.lg : radius.md) },
       ]}
     >
-      {showPhoto ? (
+      {source ? (
         <Image
-          source={{ uri }}
+          source={{ uri: source }}
           style={{ width: size - pad * 2, height: size - pad * 2 }}
           contentFit="contain"
-          onError={() => setFailed(uri)}
+          onError={() => setFailed({ uri: uri!, tries: tries + 1 })}
         />
       ) : (
         <CategoryIcon

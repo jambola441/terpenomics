@@ -12,6 +12,7 @@ import { strains, terpeneStyle } from '../design/tokens'
 import { icons } from '../design/icons'
 import { Icon, CategoryIcon, type IconName } from './Icon'
 import { boroughColor, NYC_COLOR } from '../utils/boroughs'
+import { usePhoto } from '../hooks/usePhoto'
 
 /* ── Spinner ───────────────────────────────────────────────────────────────── */
 
@@ -282,6 +283,7 @@ export function ProductImage({
   height,
   radius: r = radius.lg,
   pad = 10,
+  drawWidth,
   style,
 }: {
   src?: string | null
@@ -290,10 +292,12 @@ export function ProductImage({
   height?: number | string
   radius?: string
   pad?: number
+  /** About how wide it is drawn, in CSS px, so the photo is fetched at that size.
+   *  Defaults to `height` when that is a number, else a card's width. */
+  drawWidth?: number
   style?: CSSProperties
 }) {
-  const [errored, setErrored] = useState(false)
-  const showSrc = src && !errored ? src : undefined
+  const photo = usePhoto(src, drawWidth ?? (typeof height === 'number' ? height : 220))
 
   return (
     <div
@@ -311,11 +315,12 @@ export function ProductImage({
         ...style,
       }}
     >
-      {showSrc ? (
+      {photo ? (
         <img
-          src={showSrc}
+          src={photo.src}
+          srcSet={photo.srcSet}
           alt={alt}
-          onError={() => setErrored(true)}
+          onError={photo.onError}
           // A grid of these can run to hundreds of cards. The frame above already
           // reserves the space, so deferring the ones below the fold costs no
           // layout shift and saves the request, the decode and the memory until
@@ -662,8 +667,7 @@ export function BrandMark({ name, imageUrl, size = 62, style }: {
   size?: number
   style?: CSSProperties
 }) {
-  const [errored, setErrored] = useState(false)
-  const photo = imageUrl && !errored
+  const photo = usePhoto(imageUrl, size)
   return (
     <div style={{
       width: size, height: size, borderRadius: Math.round(size * 0.24), overflow: 'hidden', flexShrink: 0,
@@ -674,10 +678,11 @@ export function BrandMark({ name, imageUrl, size = 62, style }: {
     }}>
       {photo ? (
         <img
-          src={imageUrl!}
+          src={photo.src}
+          srcSet={photo.srcSet}
           alt=""
           loading="lazy"
-          onError={() => setErrored(true)}
+          onError={photo.onError}
           style={{ width: '100%', height: '100%', objectFit: 'contain', padding: Math.round(size * 0.08), boxSizing: 'border-box' }}
         />
       ) : (

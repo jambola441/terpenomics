@@ -171,7 +171,7 @@ export default function DispensaryListings({
           {/* Square, and the width of the card. This frame used to be a fixed
               110px band with its own copy of the fallback logic; ProductImage
               is the same frame every other product shot on the portal uses. */}
-          <ProductImage src={l.image_url} alt={l.display_name} category={cat} radius="0" />
+          <ProductImage src={l.image_url} alt={l.display_name} category={cat} radius="0" drawWidth={132} />
         </div>
         <div style={{ padding: '9px 9px 11px', flex: 1 }}>
           {price && <div className="num" style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.callout, marginBottom: 3 }}>{price}</div>}
