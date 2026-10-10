@@ -1,0 +1,50 @@
+{
+  "_comment": "Brand-specific examples for catalog_reading's questions, keyed by the catalog's brand_slug, then by question (strain, size). Each example is [what the store wrote, the catalog option it is]. A question shows only the examples whose answer is one of its options. They come from review decisions (review_decisions, 2026-10-10): listings read right but under the trust bar, or read wrong, where a person picked the entry.",
+  "ayrloom": {
+    "strain": [
+      ["ATF - 5PK Infused Prerolls", "Alaskan Thunder Fu*k"],
+      ["Ayrloom - Alaskan Thunderfuck Infused Prerolls 5pk - 3g", "Alaskan Thunder Fu*k"],
+      ["Ayrloom - Beverage Enhancer Tincture - 300mg", "Unflavored Beverage Enhancer"],
+      ["Beverage Enhancer | 300mg THC | 5mg/Serving", "Unflavored Beverage Enhancer"],
+      ["Ayrloom Tincture Drops (150mg THC: 450mg CBD) - Low Dose Everyday drops", "Everyday"],
+      ["Tincture | Ayrloom | High Dose Drops", "High Dose"]
+    ],
+    "size": [
+      ["Ayrloom - Black Cherry 1:1 THC:CBD Single - 10mg (a 1:1 can)", "5mg"],
+      ["Black Cherry \"UP\" 2:1 Cannabis Infused Beverage (size field 10mg)", "10mg"],
+      ["Ayrloom - Beverage 12oz Single Can (10mg THC:5mg CBD) - Black Cherry", "10mg"],
+      ["ATF -Sativa- 0.6g - 5pk Infused (Pre-Roll)", "3g"],
+      ["ayrloom | Bomb Popz Infused Pre-Roll | 5 Pack", "3g"],
+      ["X| Ayrloom | Beverage Enhancer | Tincture (300THC) (size field 30mg)", "300mg"],
+      ["Ayrloom Tincture Drops (150mg THC: 450mg CBD) - Low Dose Everyday drops (size field 600mg)", "150mg"],
+      ["Tincture | Ayrloom | High Dose Drops (size field 100mg)", "1000mg"]
+    ]
+  },
+  "gr-n": {
+    "strain": [
+      ["Dark Chocolate Sea Salt Mini Bar (Sleepy Indica) - 100mg Chocolate", "1:1 Dark Chocolate"],
+      ["Dark Chocolate Sea Salt -Indica- 1:1 THC:CBN 100mg Chocolate Mini Bar", "1:1 Dark Chocolate"],
+      ["Milk Chocolate Sea Salt Mini Bar (Daytime Sativa) - 100mg Chocolate", "1:1 Milk Chocolate"],
+      ["Milk Chocolate Sea Salt -Sativa- 1:1 THC:CBG 100mg Chocolate Mini Bar", "1:1 Milk Chocolate"],
+      ["Dark Chocolate Sea Salt Mini Bar (Hybrid) - 100mg Chocolate", "Dark Chocolate"],
+      ["Milk Chocolate Sea Salt Mini Bar (Hybrid) - 100mg Chocolate", "Milk Chocolate"],
+      ["Daytime Sativa | 3:1 CBG/THC | Milk Chocolate Bar", "3:1 Milk Chocolate"],
+      ["Gron - Dark Chocolate 1:1:1 CBD:CBN:THC 10pk - 100mg", "1:1:1 Dark Chocolate"],
+      ["Milk Chocolate - THC - Sativa", "Milk Chocolate"],
+      ["Indica Pips - 100MG Dark Chocolate Pieces", "Dark Chocolate"]
+    ],
+    "size": [
+      ["Dark Chocolate Sea Salt Mini Bar (Sleepy Indica) - 100mg Chocolate", "10pk 100mg"],
+      ["Gron | Daytime Sativa Milk Chocolate Mini Bar (S) | 100mg", "10pk 100mg"],
+      ["3:1 Milk Chocolate & Sea Salt Bar (size field 100mg)", "10pk 100mg"],
+      ["Indica Pips - 100MG Dark Chocolate Pieces", "20pk 100mg"]
+    ]
+  },
+  "ruby-farms": {
+    "size": [
+      ["Ruby Farms | Amnesia Haze 10pk | Hash Infused Preroll", "5g"],
+      ["Ruby Farms | Biscotti Jealousy 2pk | Hash Infused Preroll", "1g"],
+      ["Ruby Farms | African Orange - Hybrid Pre Rolls | 7pk 3.5g", "3.5g"]
+    ]
+  }
+}

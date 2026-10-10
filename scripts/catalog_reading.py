@@ -50,6 +50,8 @@ import json
 import os
 import re
 import sys
+from functools import lru_cache
+from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import catalog_store  # noqa: E402
@@ -60,7 +62,7 @@ import sizes  # noqa: E402
 
 # Bump when a question or option text changes: cached answers to an older question are
 # then asked again.
-QUESTION_VERSION = 2
+QUESTION_VERSION = 1
 
 # Subtype and line narrow the next question's options only at or above this; below it
 # the answer is left out of the reading.
@@ -83,26 +85,14 @@ STRAIN_Q = ("Which of these is this product's strain or flavor: the name that te
             "brand's other products? A flavor counts as the strain for edibles, drinks, vapes and "
             "topicals. Stores often add, drop or reorder words, so pick the one that names the same "
             "product. It is never the brand, a format, a size or a potency. Choose none if the "
-            "strain is not one of these. Examples: 'Beverage Enhancer' is 'Unflavored Beverage "
-            "Enhancer' (a store dropped a word); 'ATF' and 'Alaskan Thunder Fuck' are 'Alaskan "
-            "Thunder Fu*k' (initials or a censored spelling name the same strain); where the "
-            "options are '1:1:1 Dark Chocolate' and 'Dark Chocolate', a listing that states a "
-            "ratio ('1:1:1 CBD:CBN:THC') is the one with that ratio and a listing with no ratio "
-            "('Dark Chocolate - THC') is the one without.")
+            "strain is not one of these.")
 SIZE_Q = ("This listing is the product named in 'product'. Which of that product's packages is it? "
           "Stores often give only part of the size: just the package's total ('100mg') or just the "
           "count ('10pk'). A listing that states only the total or only the count is the package "
           "with that total or count. A package's mg is its total THC (or THCA) only, never CBD, "
           "CBN, CBG or other cannabinoids: a can of '5mg THC : 5mg CBD' is 5mg, even where the "
           "store's size field adds them up to 10mg. Choose none only if the listing states a total "
-          "or count that none of these packages has. Examples: '10mg / 10pc' or '10 x 10mg' is "
-          "10 pieces of 10mg, the '10pk 100mg' package; '100mg THC : 100mg CBN | 20pk' and "
-          "'10:2 THC:CBD | 100mg' are 100mg; a tincture of '150mg THC : 450mg CBD' is 150mg even "
-          "where the size field says 600mg; '5pk 0.6g' or '5 x 0.6g' pre-rolls are 3g in total, "
-          "the '3g' package; '.75g 2-pack' is 1.5g; '7pk 5g' and '10 Hash Infused Pre-Rolls' with "
-          "a size field of 5g are the '5g' package; '7pk' alone is the package of 7. When the "
-          "name or the size field states exactly one package's size, that is the package, even "
-          "where it is the only one listed.")
+          "or count that none of these packages has.")
 
 # (question key, catalog entry field, reading field, instructions)
 STEPS = (("category", "category", "category", CATEGORY_Q),
@@ -114,6 +104,30 @@ STEPS = (("category", "category", "category", CATEGORY_Q),
 SOFT = ("subtype", "line")
 NONE = "none"
 MAX_OPTIONS = 254          # Jev takes 255 options, one of them "none"
+
+# Brand-specific examples, from review decisions: {brand_slug: {question: [[store text, option]]}}.
+EXAMPLES_PATH = Path(__file__).resolve().parent.parent / "data" / "reading_examples.json"
+
+
+@lru_cache(maxsize=1)
+def _examples() -> dict:
+    try:
+        data = json.loads(EXAMPLES_PATH.read_text())
+    except FileNotFoundError:
+        return {}
+    return {k: v for k, v in data.items() if not k.startswith("_")}
+
+
+def instructions_for(key: str, base: str, slug: str | None, values: list[str]) -> str:
+    """A question's instructions with the brand's examples whose answer is one of `values`
+    (an example for an option not offered would only mislead)."""
+    offered = set(values)
+    shown = [(text, answer) for text, answer in _examples().get(slug or "", {}).get(key, [])
+             if answer in offered]
+    if not shown:
+        return base
+    said = "; ".join(f"'{text}' is '{answer}'" for text, answer in shown)
+    return f"{base} Examples from this brand's listings: {said}."
 
 
 def spell_size(label: str, category: str | None) -> str:
@@ -167,7 +181,7 @@ class _Walk:
         self.failed = False
         self.strain_values: list[str] = []
 
-    def question(self, step: tuple, brand: str) -> tuple[dict, dict, list[str]] | None:
+    def question(self, step: tuple, brand: str, slug: str | None = None) -> tuple[dict, dict, list[str]] | None:
         key, field, _, instructions = step
         values = sorted({e[field] for e in self.pool if e.get(field)}, key=str)
         if not values:
@@ -184,7 +198,7 @@ class _Walk:
         for i, v in enumerate(values):
             options[f"o{i}"] = option_label(key, v, self.reading.get("category"))
         return dict(base_state(brand, self.listing), **extra), \
-            {key: jev.Choice(instructions, options)}, values
+            {key: jev.Choice(instructions_for(key, instructions, slug, values), options)}, values
 
     def answer(self, step: tuple, pick: str | None, p: float, values: list[str]) -> None:
         key, field, out, _ = step
@@ -229,6 +243,7 @@ def read(catalog: dict, listings: list[dict], *, usage: jev.Usage | None = None,
     own filing, when known) and, for merch, category and subtype."""
     import catalog_match
     brand = catalog.get("brand_name") or ""
+    slug = catalog.get("brand_slug")
     entries = [e for e in catalog.get("entries") or [] if e.get("is_active", True)]
     cache = cache or catalog_match.AnswerCache(f"reading.{catalog.get('brand_slug') or 'x'}")
     walks = [_Walk(l, entries) for l in listings
@@ -238,7 +253,7 @@ def read(catalog: dict, listings: list[dict], *, usage: jev.Usage | None = None,
         for w in walks:
             if w.done or w.failed:
                 continue
-            q = w.question(step, brand)
+            q = w.question(step, brand, slug)
             if q is None:
                 continue
             state, question, values = q
@@ -268,7 +283,7 @@ def read(catalog: dict, listings: list[dict], *, usage: jev.Usage | None = None,
         state = {k: v for k, v in base_state(brand, w.listing).items() if k != "description"}
         state.update({k: w.reading[k] for k in ("category", "subtype", "product_line") if w.reading.get(k)})
         options = {NONE: "None of these", **{f"o{i}": v for i, v in enumerate(w.strain_values)}}
-        question = {"strain": jev.Choice(STRAIN_Q, options)}
+        question = {"strain": jev.Choice(instructions_for("strain", STRAIN_Q, slug, w.strain_values), options)}
         key = _cache_key(state, question)
         hit = cache.get(key)
         if hit is not None:
