@@ -50,6 +50,8 @@ import json
 import os
 import re
 import sys
+from functools import lru_cache
+from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import catalog_store  # noqa: E402
@@ -103,6 +105,30 @@ SOFT = ("subtype", "line")
 NONE = "none"
 MAX_OPTIONS = 254          # Jev takes 255 options, one of them "none"
 
+# Brand-specific examples, from review decisions: {brand_slug: {question: [[store text, option]]}}.
+EXAMPLES_PATH = Path(__file__).resolve().parent.parent / "data" / "reading_examples.json"
+
+
+@lru_cache(maxsize=1)
+def _examples() -> dict:
+    try:
+        data = json.loads(EXAMPLES_PATH.read_text())
+    except FileNotFoundError:
+        return {}
+    return {k: v for k, v in data.items() if not k.startswith("_")}
+
+
+def instructions_for(key: str, base: str, slug: str | None, values: list[str]) -> str:
+    """A question's instructions with the brand's examples whose answer is one of `values`
+    (an example for an option not offered would only mislead)."""
+    offered = set(values)
+    shown = [(text, answer) for text, answer in _examples().get(slug or "", {}).get(key, [])
+             if answer in offered]
+    if not shown:
+        return base
+    said = "; ".join(f"'{text}' is '{answer}'" for text, answer in shown)
+    return f"{base} Examples from this brand's listings: {said}."
+
 
 def spell_size(label: str, category: str | None) -> str:
     """A catalog size with what it means: what a store's partial size is matched against."""
@@ -155,7 +181,7 @@ class _Walk:
         self.failed = False
         self.strain_values: list[str] = []
 
-    def question(self, step: tuple, brand: str) -> tuple[dict, dict, list[str]] | None:
+    def question(self, step: tuple, brand: str, slug: str | None = None) -> tuple[dict, dict, list[str]] | None:
         key, field, _, instructions = step
         values = sorted({e[field] for e in self.pool if e.get(field)}, key=str)
         if not values:
@@ -172,7 +198,7 @@ class _Walk:
         for i, v in enumerate(values):
             options[f"o{i}"] = option_label(key, v, self.reading.get("category"))
         return dict(base_state(brand, self.listing), **extra), \
-            {key: jev.Choice(instructions, options)}, values
+            {key: jev.Choice(instructions_for(key, instructions, slug, values), options)}, values
 
     def answer(self, step: tuple, pick: str | None, p: float, values: list[str]) -> None:
         key, field, out, _ = step
@@ -217,6 +243,7 @@ def read(catalog: dict, listings: list[dict], *, usage: jev.Usage | None = None,
     own filing, when known) and, for merch, category and subtype."""
     import catalog_match
     brand = catalog.get("brand_name") or ""
+    slug = catalog.get("brand_slug")
     entries = [e for e in catalog.get("entries") or [] if e.get("is_active", True)]
     cache = cache or catalog_match.AnswerCache(f"reading.{catalog.get('brand_slug') or 'x'}")
     walks = [_Walk(l, entries) for l in listings
@@ -226,7 +253,7 @@ def read(catalog: dict, listings: list[dict], *, usage: jev.Usage | None = None,
         for w in walks:
             if w.done or w.failed:
                 continue
-            q = w.question(step, brand)
+            q = w.question(step, brand, slug)
             if q is None:
                 continue
             state, question, values = q
@@ -256,7 +283,7 @@ def read(catalog: dict, listings: list[dict], *, usage: jev.Usage | None = None,
         state = {k: v for k, v in base_state(brand, w.listing).items() if k != "description"}
         state.update({k: w.reading[k] for k in ("category", "subtype", "product_line") if w.reading.get(k)})
         options = {NONE: "None of these", **{f"o{i}": v for i, v in enumerate(w.strain_values)}}
-        question = {"strain": jev.Choice(STRAIN_Q, options)}
+        question = {"strain": jev.Choice(instructions_for("strain", STRAIN_Q, slug, w.strain_values), options)}
         key = _cache_key(state, question)
         hit = cache.get(key)
         if hit is not None:

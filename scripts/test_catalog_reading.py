@@ -176,3 +176,28 @@ def test_the_stores_own_category_filing_is_in_the_state(monkeypatch):
     got = cr.read(CAMINO, [dict(LISTING, store_category="Edibles")], cache=NoCache())["1"]
     assert all(state.get("store_category") == "Edibles" for _, state, _ in asked)
     assert got["store_category"] == "Edibles"
+
+
+def test_brand_examples_are_shown_only_for_the_options_offered(monkeypatch):
+    monkeypatch.setattr(cr, "_examples", lambda: {"camino": {
+        "size": [["Camino WC 10ct", "10pk 100mg"], ["Camino Social can", "1pk 5mg"]],
+        "strain": [["WC Excite chews", "Wild Cherry Excite"]]}})
+    ask, asked = fake({"category": ("edible", 0.99), "subtype": ("gummy", 0.97),
+                       "line": ("Gummies", 0.95), "strain": ("Wild Cherry Excite", 0.98),
+                       "size": ("10pk 100mg", 0.93)})
+    seen = []
+
+    def ask_many(jobs, **kw):
+        seen.extend((k, q.instructions) for _, qs in jobs for k, q in qs.items())
+        return ask(jobs, **kw)
+    monkeypatch.setattr(jev, "ask_many", ask_many)
+    cr.read(CAMINO, [LISTING], cache=NoCache())
+    size_q = next(i for k, i in seen if k == "size")
+    assert "'Camino WC 10ct' is '10pk 100mg'" in size_q
+    assert "Social can" not in size_q                  # 1pk 5mg is not one of this product's sizes
+    assert all("WC Excite chews" in i for k, i in seen if k == "strain")   # the name-only check too
+    assert all("Examples" not in i for k, i in seen if k not in ("size", "strain"))
+    other = dict(CAMINO, brand_slug="other")
+    seen.clear()
+    cr.read(other, [LISTING], cache=NoCache())
+    assert all("Examples" not in i for _, i in seen)
