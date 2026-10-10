@@ -19,7 +19,7 @@
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { t, font } from '../theme'
+import { t, font, radius } from '../theme'
 import {
   readEnum, readNumber, readRange, readSet, useFilterParams, useScrollMemory,
   writeOne, writeRange, writeSet,
@@ -32,6 +32,8 @@ import {
   haversineMi, variantWeight,
   type SheetGroup, type SortKey,
 } from './browse'
+import { NO_LINE, nameWithinLine } from '../utils/lines'
+import LineShelves, { GROUP_MIN_RESULTS, groupByLine, hasShelves } from './LineShelves'
 
 /* ── What a page hands over ───────────────────────────────────────────────── */
 
@@ -54,6 +56,8 @@ export type BrowseItem = {
   subtype: string | null
   strain: string | null
   variant: string | null
+  /** The brand's product line, null when the product is in none. */
+  line: string | null
   imageUrl: string | null
   minPriceCents: number | null
   maxPriceCents: number | null
@@ -61,13 +65,24 @@ export type BrowseItem = {
   offerings: BrowseOffering[]
 }
 
-export type FacetKey = 'category' | 'subtype' | 'brand' | 'variant'
+export type FacetKey = 'category' | 'subtype' | 'brand' | 'variant' | 'line'
 
 const FACET_TITLES: Record<FacetKey, string> = {
   category: 'Category',
   subtype: 'Subtype',
   brand: 'Brand',
   variant: 'Weight / Size',
+  line: 'Product line',
+}
+
+/** Brand casing ("UP", "Liquid Diamonds") is the name; sizes carry units. */
+const KEEPS_CASE: ReadonlySet<FacetKey> = new Set(['variant', 'line'])
+
+/** The value an item files under for a facet. Only the line facet has a bucket
+ *  for "none"; elsewhere an item without the field simply has no value. */
+function facetValue(item: BrowseItem, key: FacetKey): string | null {
+  if (key === 'line') return item.line ?? NO_LINE
+  return item[key]
 }
 
 /** Sizes read naturally in size order; everything else reads best by how much
@@ -77,6 +92,7 @@ const FACET_SORTS: Record<FacetKey, (a: Facet, b: Facet) => number> = {
   subtype: (a, b) => b.count - a.count,
   brand: (a, b) => b.count - a.count,
   variant: (a, b) => variantWeight(a.value) - variantWeight(b.value),
+  line: (a, b) => Number(a.value === NO_LINE) - Number(b.value === NO_LINE) || b.count - a.count,
 }
 
 type Facet = { value: string; count: number }
@@ -93,6 +109,9 @@ type Enriched = {
 
 type Filters = {
   search: string
+  /** The facets this screen offers. A selection on any other (one the URL
+   *  carried in, say) filters nothing, since there is no chip to undo it. */
+  keys: readonly FacetKey[]
   facets: Record<FacetKey, Set<string>>
   radiusMi: number | null
   price: [number, number] | null
@@ -101,11 +120,11 @@ type Filters = {
 function matches(e: Enriched, f: Filters, except?: FacetKey | 'price' | 'radius'): boolean {
   if (f.search && !e.haystack.includes(f.search)) return false
 
-  for (const key of Object.keys(f.facets) as FacetKey[]) {
+  for (const key of f.keys) {
     if (except === key) continue
     const selected = f.facets[key]
     if (!selected.size) continue
-    const value = e.item[key]
+    const value = facetValue(e.item, key)
     if (!value || !selected.has(value)) return false
   }
 
@@ -160,12 +179,19 @@ interface Props {
   emptyIcon?: IconName | ReactNode
 
   onOpen: (item: BrowseItem) => void
+
+  /** Offer shelves by product line (flag `lines_grouped`), for the categories
+   *  that pass LineShelves' rule. Needs the line facet among `facets`. */
+  groupable?: boolean
 }
+
+type View = 'shelves' | 'grid'
+const VIEWS: readonly View[] = ['shelves', 'grid']
 
 export default function BrowseScreen({
   items, loading, error, onRetry, color, facets, hero, heroBackground, heroDecoration,
   searchPlaceholder, resetKey, totalCount, truncated, suppressSubtype,
-  emptyMessage, emptyHint, emptyIcon, onOpen,
+  emptyMessage, emptyHint, emptyIcon, onOpen, groupable = false,
 }: Props) {
   const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(null)
   const [locationDenied, setLocationDenied] = useState(false)
@@ -180,10 +206,12 @@ export default function BrowseScreen({
     subtype: readSet(initialParams, 'subtype'),
     brand: readSet(initialParams, 'brand'),
     variant: readSet(initialParams, 'variant'),
+    line: readSet(initialParams, 'line'),
   }))
   const [radiusMi, setRadiusMi] = useState<number | null>(() => readNumber(initialParams, 'radius'))
   const [price, setPrice] = useState<[number, number] | null>(() => readRange(initialParams, 'price'))
   const [sort, setSort] = useState<SortKey>(() => readEnum(initialParams, 'sort', SORT_KEYS, 'featured'))
+  const [view, setView] = useState<View>(() => readEnum(initialParams, 'view', VIEWS, 'shelves'))
   const [sheet, setSheet] = useState(false)
 
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -196,9 +224,12 @@ export default function BrowseScreen({
     subtype: facets.includes('subtype') ? writeSet(selected.subtype) : [],
     brand: facets.includes('brand') ? writeSet(selected.brand) : [],
     variant: facets.includes('variant') ? writeSet(selected.variant) : [],
+    line: facets.includes('line') ? writeSet(selected.line) : [],
     radius: writeOne(radiusMi),
     price: writeRange(price),
     sort: sort === 'featured' ? [] : [sort],
+    // Shelves are the default where they exist, so only the grid is written.
+    view: groupable && view === 'grid' ? ['grid'] : [],
   })
   useScrollMemory(scrollRef, !loading && items.length > 0)
 
@@ -208,8 +239,8 @@ export default function BrowseScreen({
     if (previousKey.current === resetKey) return
     previousKey.current = resetKey
     setSearch('')
-    setSelected({ category: new Set(), subtype: new Set(), brand: new Set(), variant: new Set() })
-    setRadiusMi(null); setPrice(null); setSort('featured')
+    setSelected({ category: new Set(), subtype: new Set(), brand: new Set(), variant: new Set(), line: new Set() })
+    setRadiusMi(null); setPrice(null); setSort('featured'); setView('shelves')
     scrollRef.current?.scrollTo({ top: 0 })
   }, [resetKey])
 
@@ -246,7 +277,7 @@ export default function BrowseScreen({
       closestDist: closestStore ? closestDist : null,
       closestStore,
       cheapestStore,
-      haystack: [item.name, item.brand, item.category, item.subtype, item.strain, item.variant]
+      haystack: [item.name, item.brand, item.category, item.subtype, item.strain, item.variant, item.line]
         .filter(Boolean).join(' ').toLowerCase(),
     }
   }), [items, userPos])
@@ -264,6 +295,7 @@ export default function BrowseScreen({
 
   const filters: Filters = {
     search: search.trim().toLowerCase(),
+    keys: facets,
     facets: selected,
     radiusMi,
     price,
@@ -273,6 +305,7 @@ export default function BrowseScreen({
   // memos honest without listing six dependencies four times.
   const filterSignature = JSON.stringify([
     filters.search,
+    facets,
     (Object.keys(selected) as FacetKey[]).map(k => [...selected[k]]),
     radiusMi,
     price,
@@ -285,7 +318,7 @@ export default function BrowseScreen({
       const counts = new Map<string, number>()
       for (const e of enriched) {
         if (!matches(e, filters, key)) continue
-        const value = e.item[key]
+        const value = facetValue(e.item, key)
         if (!value) continue
         counts.set(value, (counts.get(value) ?? 0) + 1)
       }
@@ -337,6 +370,51 @@ export default function BrowseScreen({
     if (radiusMi != null) setRadiusMi(null)
   }, [hasLocation, sort, radiusMi])
 
+  // Shelves by line. Whether the page can have them is decided on everything
+  // it holds, so the switch does not come and go as filters change; whether
+  // they show right now also depends on what the shopper is doing. A search, a
+  // price or distance sort, or a narrower filter than category asks for one
+  // list in that order, and shelves would hide the answer: in 63 of 87
+  // brands with several lines, the cheapest product had no line.
+  const canGroup = useMemo(
+    () => groupable && hasShelves(groupByLine(enriched, e => e.item)),
+    [groupable, enriched],
+  )
+  const sections = useMemo(
+    () => canGroup ? groupByLine(sorted, e => e.item) : [],
+    [canGroup, sorted],
+  )
+  const flattenedBy = !canGroup || view === 'grid' ? null
+    : filters.search ? 'search'
+    : sort !== 'featured' ? 'sort'
+    : selected.line.size || selected.subtype.size || selected.variant.size ? 'filter'
+    : null
+  const showShelves = canGroup && view === 'shelves' && !flattenedBy
+    && sorted.length >= GROUP_MIN_RESULTS && hasShelves(sections)
+
+  // The page's best few, whatever line they are in, pinned above the shelves.
+  const best = useMemo(() => {
+    if (!showShelves) return { entries: [] as Enriched[], label: '' }
+    const priced = (e: Enriched) => e.item.minPriceCents ?? Infinity
+    const ranked = hasLocation
+      ? [...filtered].sort((a, b) => (a.closestDist ?? Infinity) - (b.closestDist ?? Infinity) || priced(a) - priced(b))
+      : [...filtered].sort((a, b) => priced(a) - priced(b))
+    return {
+      entries: ranked.slice(0, 4),
+      label: hasLocation ? 'Nearest to you · any line' : 'Lowest price · any line',
+    }
+  }, [showShelves, filtered, hasLocation])
+
+  /** Narrow to what a shelf's "See all" names; the grid takes over from there. */
+  function seeOnly(category: string | null, lines: string[]) {
+    setSelected(prev => ({
+      ...prev,
+      category: category ? new Set([category]) : prev.category,
+      line: new Set(lines),
+    }))
+    scrollRef.current?.scrollTo({ top: 0 })
+  }
+
   function toggle(key: FacetKey, value: string) {
     setSelected(prev => {
       const next = new Set(prev[key])
@@ -347,7 +425,7 @@ export default function BrowseScreen({
   }
 
   function clearAll() {
-    setSelected({ category: new Set(), subtype: new Set(), brand: new Set(), variant: new Set() })
+    setSelected({ category: new Set(), subtype: new Set(), brand: new Set(), variant: new Set(), line: new Set() })
     setRadiusMi(null)
     setPrice(null)
   }
@@ -363,13 +441,47 @@ export default function BrowseScreen({
   const [quickKey] = facets
   const quickFacet = facetOptions[quickKey] ?? []
 
+  // With one line picked, every card is in it, and the name compose() gave it
+  // ("Palms Blue Dream") repeats what the filter already says.
+  const [onlyLine] = facets.includes('line') && selected.line.size === 1 ? [...selected.line] : []
+  function nameInLine(item: BrowseItem): string {
+    if (!onlyLine || onlyLine === NO_LINE || item.line !== onlyLine) return item.name
+    return nameWithinLine(item.name, item.line)
+  }
+
+  function renderCard(e: Enriched, inLine: boolean) {
+    return (
+      <BrowseCard
+        key={e.item.key}
+        item={{
+          name: inLine ? nameWithinLine(e.item.name, e.item.line) : nameInLine(e.item),
+          brand: e.item.brand,
+          category: e.item.category,
+          subtype: e.item.subtype,
+          variant: e.item.variant,
+          imageUrl: e.item.imageUrl,
+          priceCents: e.item.minPriceCents,
+          multiPriced: e.item.minPriceCents != null
+            && e.item.maxPriceCents != null
+            && e.item.maxPriceCents > e.item.minPriceCents,
+          dispensaryCount: e.item.dispensaryCount,
+          distanceMi: e.closestDist,
+          storeName: e.closestStore ?? e.cheapestStore,
+        }}
+        color={color}
+        suppressSubtype={suppressSubtype}
+        onOpen={() => onOpen(e.item)}
+      />
+    )
+  }
+
   const groups: SheetGroup[] = facets.map(key => ({
     key,
     title: FACET_TITLES[key],
     facet: facetOptions[key] ?? [],
     sel: selected[key],
     onToggle: (value: string) => toggle(key, value),
-    capitalize: key !== 'variant',
+    capitalize: !KEEPS_CASE.has(key),
   }))
 
   return (
@@ -416,7 +528,7 @@ export default function BrowseScreen({
                 count={f.count}
                 active={selected[quickKey].has(f.value)}
                 color={color}
-                capitalize={quickKey !== 'variant'}
+                capitalize={!KEEPS_CASE.has(quickKey)}
                 onClick={() => toggle(quickKey, f.value)}
               />
             ))}
@@ -437,7 +549,7 @@ export default function BrowseScreen({
             <ActiveChip
               key={key + value}
               label={value}
-              capitalize={key !== 'variant'}
+              capitalize={!KEEPS_CASE.has(key)}
               onRemove={() => toggle(key, value)}
             />
           )))}
@@ -464,7 +576,15 @@ export default function BrowseScreen({
             {truncated && (
               <span style={{ color: t.text3, fontSize: font.size.caption }}>showing top matches</span>
             )}
+            {canGroup && <ViewSwitch view={view} onChange={setView} />}
           </div>
+          {flattenedBy && (
+            <div style={{ color: t.text3, fontSize: font.size.caption, padding: '2px 16px 0' }}>
+              {flattenedBy === 'search' ? 'One list while you search'
+                : flattenedBy === 'sort' ? `One list while sorted by ${sortLabel.toLowerCase()}`
+                : 'One list while filtered'}
+            </div>
+          )}
 
           {!hasLocation && (
             <div style={{ color: t.text3, fontSize: font.size.caption, padding: '2px 16px 0', display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -485,31 +605,21 @@ export default function BrowseScreen({
               icon="search"
               style={{ minHeight: 260 }}
             />
+          ) : showShelves ? (
+            <LineShelves
+              sections={sections}
+              itemOf={e => e.item}
+              renderCard={renderCard}
+              best={best}
+              onSeeLine={(category, line) => seeOnly(category, [line])}
+              onSeeRest={(category, thinLines) => seeOnly(category, [NO_LINE, ...thinLines])}
+              onSeeCategory={category => setSelected(prev => ({
+                ...prev, category: category ? new Set([category]) : prev.category,
+              }))}
+            />
           ) : (
             <BrowseGrid items={sorted}>
-              {e => (
-                <BrowseCard
-                  key={e.item.key}
-                  item={{
-                    name: e.item.name,
-                    brand: e.item.brand,
-                    category: e.item.category,
-                    subtype: e.item.subtype,
-                    variant: e.item.variant,
-                    imageUrl: e.item.imageUrl,
-                    priceCents: e.item.minPriceCents,
-                    multiPriced: e.item.minPriceCents != null
-                      && e.item.maxPriceCents != null
-                      && e.item.maxPriceCents > e.item.minPriceCents,
-                    dispensaryCount: e.item.dispensaryCount,
-                    distanceMi: e.closestDist,
-                    storeName: e.closestStore ?? e.cheapestStore,
-                  }}
-                  color={color}
-                  suppressSubtype={suppressSubtype}
-                  onOpen={() => onOpen(e.item)}
-                />
-              )}
+              {e => renderCard(e, false)}
             </BrowseGrid>
           )}
         </>
@@ -531,6 +641,41 @@ export default function BrowseScreen({
         onClear={clearAll}
         activeCount={activeCount}
       />
+    </div>
+  )
+}
+
+/** Shelves by line, or the plain grid. Shown only where shelves exist. */
+function ViewSwitch({ view, onChange }: { view: View; onChange: (v: View) => void }) {
+  const options: { key: View; label: string; icon: IconName }[] = [
+    { key: 'shelves', label: 'Shelves', icon: 'list' },
+    { key: 'grid', label: 'Grid', icon: 'grid' },
+  ]
+  return (
+    <div role="group" aria-label="Layout" style={{
+      display: 'flex', gap: 2, padding: 2, borderRadius: radius.md,
+      background: t.surface1, border: `1px solid ${t.border}`, flexShrink: 0,
+    }}>
+      {options.map(o => {
+        const active = view === o.key
+        return (
+          <button
+            key={o.key}
+            aria-pressed={active}
+            onClick={() => onChange(o.key)}
+            style={{
+              border: 'none', cursor: 'pointer', borderRadius: radius.sm, padding: '5px 9px',
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              background: active ? t.surface3 : 'transparent',
+              color: active ? t.text1 : t.text3,
+              fontSize: font.size.caption, fontWeight: active ? font.weight.semibold : font.weight.medium,
+            }}
+          >
+            <Icon name={o.icon} size={13} />
+            {o.label}
+          </button>
+        )
+      })}
     </div>
   )
 }

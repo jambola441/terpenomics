@@ -36,6 +36,7 @@ import { t, radius, font, motion } from './theme'
 import { FeedState } from './components/ui'
 import { Icon, type IconName } from './components/Icon'
 import { storePath } from './utils/storePaths'
+import { FlagsProvider } from './hooks/useFlag'
 import 'leaflet/dist/leaflet.css'
 
 /** Mirrors MAX_QTY_PER_LINE in routes/orders.py. */
@@ -396,6 +397,15 @@ export default function CustomerPortal() {
     )
   const openListing = (dispensaryId: string, listingId: string) =>
     navigate(`/portal/${view}/listings/${dispensaryId}/${listingId}`)
+  // The brand page reads its filters from the URL, so a breadcrumb can land on
+  // it already narrowed to a category or a line.
+  const openBrand = (brand: string, filter: { category?: string; line?: string } = {}) => {
+    const params = new URLSearchParams()
+    if (filter.category) params.set('category', filter.category)
+    if (filter.line) params.set('line', filter.line)
+    const query = params.toString()
+    navigate('/portal/brands/' + encodeURIComponent(brand) + (query ? `?${query}` : ''))
+  }
 
   // Auth / loading gates
   if (session === undefined) {
@@ -457,6 +467,7 @@ export default function CustomerPortal() {
   } as CSSProperties
 
   return (
+    <FlagsProvider flags={profile?.flags}>
     <div style={shellStyle}>
       {/* A product, a listing or a store opens over whichever section the
           shopper is in; otherwise the section decides. */}
@@ -477,6 +488,8 @@ export default function CustomerPortal() {
           productKey={productKey}
           onBack={() => navigate(-1)}
           onListingClick={openListing}
+          onOpenBrand={openBrand}
+          onOpenProduct={openProduct}
         />
       ) : storeId && view !== 'map' ? (
         <StoreScreen
@@ -500,7 +513,7 @@ export default function CustomerPortal() {
             onOpenProduct={key => openProduct(selectedBrandName, key)}
           />
         ) : (
-          <BrandsPage onOpenBrand={name => navigate('/portal/brands/' + encodeURIComponent(name))} />
+          <BrandsPage onOpenBrand={name => openBrand(name)} />
         )
       ) : view === 'categories' ? (
         selectedCategory ? (
@@ -665,6 +678,7 @@ export default function CustomerPortal() {
         })}
       </nav>
     </div>
+    </FlagsProvider>
   )
 }
 

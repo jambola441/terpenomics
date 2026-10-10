@@ -9,7 +9,7 @@ from sqlmodel import Session, select, or_, func
 from auth import SupabaseAuthUser
 from database import get_session
 from models import Customer, Listing, ListingTerpene, Purchase, PurchaseItem, Terpene
-from services import consent
+from services import consent, flags
 from services.phone import to_e164
 from .auth import require_admin
 from .serializers import serialize_customer, serialize_purchase_item
@@ -214,6 +214,41 @@ def update_customer(
     session.refresh(c)
 
     return serialize_customer(c)
+
+
+class FlagOverride(BaseModel):
+    # True or False forces the flag for this customer; null returns them to the
+    # global default (services/flags.py).
+    enabled: Optional[bool] = None
+
+
+@router.get("/customers/{customer_id}/flags")
+def get_customer_flags(
+    customer_id: UUID,
+    session: Session = Depends(get_session),
+    _: SupabaseAuthUser = Depends(require_admin),
+):
+    """Each feature flag's answer for this customer, and where it came from."""
+    if not session.get(Customer, customer_id):
+        raise HTTPException(status_code=404, detail="customer not found")
+    return flags.explain(session, customer_id)
+
+
+@router.post("/customers/{customer_id}/flags/{flag}")
+def set_customer_flag(
+    customer_id: UUID,
+    flag: str,
+    payload: FlagOverride,
+    session: Session = Depends(get_session),
+    _: SupabaseAuthUser = Depends(require_admin),
+):
+    if not session.get(Customer, customer_id):
+        raise HTTPException(status_code=404, detail="customer not found")
+    try:
+        flags.set_override(session, customer_id, flag, payload.enabled)
+    except KeyError:
+        raise HTTPException(status_code=404, detail="unknown flag")
+    return flags.explain(session, customer_id)
 
 
 @router.get("/customers/{customer_id}/terpene-scores")

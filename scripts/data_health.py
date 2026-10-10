@@ -202,13 +202,13 @@ def missing_sizes(data: Data) -> list[Finding]:
 
 
 def review_clusters(data: Data) -> list[Finding]:
-    """Products with review-only matches (jev_review) at MIN_STORES or more stores whose size
+    """Products with review-only matches (jev_review, review_unsure) at MIN_STORES or more stores whose size
     fits: the catalog likely has the product and the stores name it in a way that
     leaves the model unsure. Recording a store's name settles it, once the listings are
     checked to be that product."""
     groups: dict[tuple, list] = defaultdict(list)
     for l, catalog, entry, index, key in _matched(data):
-        if l.get("catalog_match_method") != "jev_review":
+        if l.get("catalog_match_method") not in ("jev_review", "review_unsure"):
             continue
         product = index.products[key]
         s = sizes.parse(l.get("variant"), l.get("scraped_name"),
@@ -224,7 +224,7 @@ def review_clusters(data: Data) -> list[Finding]:
         _, catalog, product = rows[0]
         conf = [float(l["catalog_match_confidence"]) for l, _, _ in rows
                 if l.get("catalog_match_confidence") is not None]
-        span = f", Jev {min(conf):.2f}-{max(conf):.2f}" if conf else ""
+        span = f", p {min(conf):.2f}-{max(conf):.2f}" if conf else ""
         out.append(Finding(
             f"review-cluster:{catalog['brand_slug']}:{key}", "review-cluster",
             f"{catalog['brand_name']} {product.title}: {len(rows)} review-only listing(s) at "
@@ -448,7 +448,8 @@ def metrics(data: Data, findings: list[Finding]) -> dict:
            "catalog_brand_listings": in_catalog,
            "trusted": trusted,
            "trusted_share": round(100 * trusted / in_catalog, 1) if in_catalog else 0.0,
-           "review_only": sum(1 for l in data.listings if l.get("catalog_match_method") == "jev_review"),
+           "review_only": sum(1 for l in data.listings
+                               if l.get("catalog_match_method") in ("jev_review", "review_unsure")),
            "no_brand": sum(1 for l in data.listings if not l.get("scraped_brand"))}
     for kind, _ in SECTIONS:
         out[f"findings_{kind}"] = sum(1 for f in findings if f.kind == kind)

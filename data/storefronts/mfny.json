@@ -157,7 +157,8 @@
       },
       "match": "^(?:(?P<line>Classics)\\s+)?(?P<strain>.+?)\\s+(?:(?:Live\\s+)?Resin\\s+)?(?:(?i:mini|mii)[\\s-]*)?(?i:pre-?rolls?\\s+four\\s+pack)",
       "set": {
-        "size": "4 x 0.75g"
+        "size": "4 x 0.75g",
+        "line": "Mini"
       }
     },
     {
@@ -167,7 +168,8 @@
       },
       "match": "^(?P<strain>.+?)\\s+(?:(?:Live\\s+)?Resin\\s+)?(?i:mini|mii)[\\s-]*Pre-?Rolls?$",
       "set": {
-        "size": "4 x 0.75g"
+        "size": "4 x 0.75g",
+        "line": "Mini"
       }
     },
     {
@@ -176,7 +178,8 @@
       },
       "match": "^(?P<strain>.+?)\\s+(?:(?:Live\\s+)?Resin\\s+)?(?i:mini|mii)[\\s-]*Pre-?Rolls?$",
       "set": {
-        "size": "0.75g"
+        "size": "0.75g",
+        "line": "Mini"
       }
     },
     {
@@ -337,6 +340,60 @@
       },
       "match": "^(?P<line>Classics)\\s+(?P<strain>.+?)\\s+Live\\s+Res[ie]n\\s+Gum+ies$",
       "set": {
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "title": "^(?:Sour Peach x Rainbow Beltz 2\\.0)\\b"
+      },
+      "match": "^(?P<strain>.+?)(?:\\s+Gum+ies)?$",
+      "set": {
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "title": "^(?:Blueberry x Blueberry Muffin|Cherry x Poddy Mouth)\\b"
+      },
+      "match": "^(?P<strain>.+?)(?:\\s+Gum+ies)?$",
+      "set": {
+        "line": "Live Rosin",
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "body": "Live%20Rosin%20Gumm"
+      },
+      "match": "^(?P<strain>.+?)(?:\\s+Gum+ies)?$",
+      "set": {
+        "line": "Live Rosin",
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "title": "^(?:Sour Fruit Punch x Lemon Sour Dawg|Blueberry x Turbo Blueberry|Blueberry Raz x Zativa|Peaches & Cream x Oishii|Cherry Lime x Super R\\*ntz|Sour Watermelon x Angry Apple)\\b"
+      },
+      "match": "^(?P<strain>.+?)(?:\\s+Gum+ies)?$",
+      "set": {
+        "line": "Live Resin",
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "body": "Live%20Resin%20Gumm"
+      },
+      "match": "^(?P<strain>.+?)(?:\\s+Gum+ies)?$",
+      "set": {
+        "line": "Live Resin",
         "size": "10pk 100mg"
       }
     },

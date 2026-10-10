@@ -102,6 +102,23 @@ class ConsentEvent(SQLModel, table=True):
     created_at: datetime      = Field(default_factory=utcnow, index=True, nullable=False)
 
 
+class CustomerFlag(SQLModel, table=True):
+    """One customer's override of one feature flag (services/flags.py).
+
+    A row forces the flag on or off for that customer, whatever the global
+    default says; no row means the default applies. A table rather than a column
+    on customers so it needs no migration before deploy: create_all makes a
+    missing table at startup, but never adds a column (db/migrations/0015).
+    """
+
+    __tablename__ = "customer_flags"
+
+    customer_id: UUID = Field(foreign_key="customers.id", primary_key=True)
+    flag:        str  = Field(max_length=64, primary_key=True)
+    enabled:     bool = Field(nullable=False)
+    updated_at:  datetime = Field(default_factory=utcnow, nullable=False)
+
+
 # ---------------------------
 # Terpenes + Cannabinoids
 # ---------------------------
