@@ -6,7 +6,7 @@ writes nothing new.
 """
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from sqlmodel import Session, SQLModel, select
@@ -284,8 +284,11 @@ def client(world, session):
 
 def test_customer_sees_balance_and_history(client, session, world):
     conn, ada = world
-    sale(session, conn, ada, ext="O1", closed=NOW - timedelta(days=30))   # available
-    sale(session, conn, ada, ext="O2")                                    # still pending
+    # The route and reconcile_points read the real clock, so date these sales from it:
+    # a sale a day before the fixed NOW stopped being pending 7 days after NOW.
+    now = datetime.now(timezone.utc)
+    sale(session, conn, ada, ext="O1", closed=now - timedelta(days=30))   # available
+    sale(session, conn, ada, ext="O2", closed=now - timedelta(days=1))    # still pending
     reconcile_points(session)
     session.commit()
 
@@ -305,7 +308,7 @@ def test_customer_with_no_points_gets_zero(client):
 
 def test_admin_sees_a_customers_ledger_and_points_per_order(client, session, world):
     conn, ada = world
-    o = sale(session, conn, ada)
+    o = sale(session, conn, ada, closed=datetime.now(timezone.utc) - timedelta(days=1))   # still pending
     reconcile_points(session)
     session.commit()
 
