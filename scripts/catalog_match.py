@@ -825,7 +825,8 @@ def resolve(catalog: dict, listings: list[dict], *, use_jev: bool,
         joined = index.join(reading, name)
         if joined and joined[0] != held_out \
                 and not infused_veto(index.products[joined[0]], name, cat, l.get("description")):
-            if catalog_reading.trusted(reading):
+            agrees = store_size_agrees(l, joined[1], (reading or {}).get("category"))
+            if catalog_reading.trusted(reading, agrees):
                 decisions[i] = Decision(l, joined[0], joined[1], 1.0, "attributes")
             else:
                 # Read against the catalog, but unsurely: a product the catalog lacks
@@ -864,6 +865,13 @@ def resolve(catalog: dict, listings: list[dict], *, use_jev: bool,
             decisions[i] = _decide(l, index, labels, pick, p, probs, len(cands))
     cache.save()
     return [d for d in decisions if d is not None]
+
+
+def store_size_agrees(listing: dict, entry: dict, category: str | None) -> bool:
+    """Whether the store's own size field (or, without one, the name) names the entry's size."""
+    want = sizes.parse(listing.get("variant"), listing.get("name") or "", category=category)
+    return not want.is_empty() and \
+        sizes.same_size(want, sizes.parse(entry.get("variant"), category=category)) is True
 
 
 def _least_p(reading: dict | None) -> float:

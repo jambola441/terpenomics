@@ -124,6 +124,11 @@ def test_a_sure_join_is_trusted_and_an_unsure_one_goes_to_review():
     assert resolve(reading()).method == "attributes"
     d = resolve(reading(p={"strain": 0.83}))
     assert (d.method, d.product_key, d.confidence) == ("review_unsure", "wc", 0.83)
+    # An unsure size is trusted when the store's own size field names the same package.
+    assert resolve(reading(p={"size": 0.8})).method == "review_unsure"
+    [d] = cm.resolve(CAMINO, [{"id": 1, "name": "x", "variant": "10pk 100mg", "category": "edible",
+                               "reading": reading(p={"size": 0.8})}], use_jev=False)
+    assert d.method == "attributes"
     # Enrichment's reading carries no probabilities and is not held to the bar.
     plain = {k: v for k, v in reading().items() if k not in ("p", "by")}
     assert resolve(plain).method == "attributes"

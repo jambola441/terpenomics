@@ -24,7 +24,8 @@ offering only the catalog's values that fit the answers before it (owner's desig
 The reading is the catalog's values, so the attribute join (catalog_match.CatalogIndex
 .join) settles it without Jev; Jev no longer picks entries at matching. Each answer's
 probability is kept on the reading (`p`), and the matcher trusts a join only when the
-strain and size were read confidently (TRUST_AT): a listing of a product the catalog
+category and strain were read confidently (TRUST_AT), and the size too or else the
+store's own size field agrees (trusted): a listing of a product the catalog
 lacks reads "none" or reads its nearest product unsurely (measured 2026-10-10: the
 Excite listings, with Exhilarate removed, read the wrong strain at p 0.81-0.85 against
 0.99 for true picks), and goes to the review queue, where the fix is the catalog.
@@ -233,14 +234,20 @@ def read(catalog: dict, listings: list[dict], *, usage: jev.Usage | None = None,
     return out
 
 
-def trusted(reading: dict | None) -> bool:
-    """Whether a catalog reading is sure enough for its join to be trusted: category,
-    strain and size each read at TRUST_AT or above. A reading not made against the
-    catalog (enrichment's) has no probabilities and is not held to this."""
+def trusted(reading: dict | None, store_size_agrees: bool = False) -> bool:
+    """Whether a catalog reading is sure enough for its join to be trusted: category and
+    strain read at TRUST_AT or above, and the size too, or else the store's own size
+    field naming the same size (store_size_agrees). Size is the step Jev is least sure
+    of: measured on 11 brands (2026-10-10), a 0.9 bar on it sent 955 joins to review,
+    and 977 of the unsure joins were the entry production already trusted. A reading
+    not made against the catalog (enrichment's) has no probabilities and is not held
+    to this."""
     if not reading or reading.get("by") != "catalog":
         return True
     p = reading.get("p") or {}
-    return all(p.get(k, 0.0) >= TRUST_AT for k in ("category", "strain", "size"))
+    if p.get("category", 0.0) < TRUST_AT or p.get("strain", 0.0) < TRUST_AT:
+        return False
+    return p.get("size", 0.0) >= TRUST_AT or store_size_agrees
 
 
 def unsure_steps(reading: dict | None) -> list[str]:
