@@ -834,7 +834,7 @@ class Partner(SQLModel, table=True):
     slug:      str           = Field(nullable=False, sa_type=Text, sa_column_kwargs={"unique": True})
     is_active: bool          = Field(default=True, nullable=False)
     logo_url:  Optional[str] = Field(default=None, sa_type=Text)
-    # What customers are told about it (migration 0015).
+    # What customers are told about it (migration 0016).
     description: Optional[str] = Field(default=None, sa_type=Text)
     category:    Optional[str] = Field(default=None, sa_type=Text)    # "Café", "Smoke shop"
     website_url: Optional[str] = Field(default=None, sa_type=Text)
@@ -901,7 +901,7 @@ class PartnerLocation(SQLModel, table=True):
     name:                 str            = Field(nullable=False, sa_type=Text)
     address:              Optional[str]  = Field(default=None, sa_type=Text)
     timezone:             Optional[str]  = Field(default=None, sa_type=Text)
-    # Where it is and when it's open, for the map and the partner's page (migration 0015).
+    # Where it is and when it's open, for the map and the partner's page (migration 0016).
     # `hours`: [{"day": "MON", "open": "09:00", "close": "17:00"}, ...]
     lat:                  Optional[float] = Field(default=None)
     lng:                  Optional[float] = Field(default=None)
