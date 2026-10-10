@@ -72,7 +72,8 @@ finishes the job. Pair it with `ENRICH_CACHE=db`, so the enrich cache is kept in
 Postgres rather than in the sandbox's files.
 
 `check`, `select` and `count` are pre-approved in `.claude/settings.json`, as are
-read-only SQL through the Supabase connector (`.claude/hooks/readonly_sql.py`) and
+read-only SQL through the Supabase connector or `db_http.py sql "<query>"`
+(`.claude/hooks/readonly_sql.py`), and
 the connectors' other read tools. Writes still ask first.
 
 From Python:

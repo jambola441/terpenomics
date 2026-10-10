@@ -1,10 +1,17 @@
 #!/usr/bin/env python3
 """
-PreToolUse hook for mcp__Supabase__execute_sql: auto-approve read-only SQL.
+PreToolUse hook: auto-approve read-only SQL, from either path that runs it —
+mcp__Supabase__execute_sql, or `python3 scripts/db_http.py sql "<query>"` in Bash.
 
 Approves a query only when every check passes; anything else falls through to the
 normal permission prompt (exit 0, no output). It never denies — a write is still
 possible, it just has to be confirmed by a person.
+
+A Bash command is read only in one exact shape (`sql_from_bash`): an optional
+`cd <this repo> &&`, then python/python3 running this repo's scripts/db_http.py with
+`sql` and one argument, optionally followed by `2>&1` and a pipe into head or tail.
+Anything else — another script, env assignments, `$`/backticks, `;`, a heredoc —
+prompts as before.
 
 Conservative by construction:
   - exactly one statement (a trailing semicolon is fine)
@@ -20,8 +27,15 @@ Known limit: a user-defined function with side effects called from a SELECT is n
 detectable from the text. This is a guard against accidental writes, not a sandbox.
 """
 import json
+import os
 import re
+import shlex
 import sys
+from pathlib import Path
+
+# .claude/hooks/readonly_sql.py -> the repo root
+REPO = Path(__file__).resolve().parents[2]
+DB_HTTP = REPO / "scripts" / "db_http.py"
 
 STARTERS = {"select", "with", "explain", "show", "table", "values"}
 
@@ -107,12 +121,74 @@ def is_read_only(sql: str) -> bool:
     return True
 
 
+def _same_file(path: str, cwd: Path) -> bool:
+    p = Path(path)
+    try:
+        return (p if p.is_absolute() else cwd / p).resolve() == DB_HTTP
+    except OSError:
+        return False
+
+
+def _is_pager(tokens: list[str]) -> bool:
+    """`head`/`tail` with only flags and counts, e.g. `head -50`, `tail -n 20`."""
+    return (bool(tokens) and tokens[0] in ("head", "tail")
+            and all(re.fullmatch(r"-?[A-Za-z0-9]+", t) for t in tokens[1:]))
+
+
+def sql_from_bash(command: str, cwd: str | None) -> str | None:
+    """The SQL of a `db_http.py sql "<query>"` command, or None for any other command."""
+    # `$` and backticks expand inside double quotes; a newline could start a second
+    # command or a heredoc. None of them is needed by the shape we accept.
+    if any(ch in command for ch in "$`\n\r"):
+        return None
+    lexer = shlex.shlex(command, posix=True, punctuation_chars=True)
+    lexer.whitespace_split = True
+    try:
+        tokens = list(lexer)
+    except ValueError:
+        return None
+
+    here = Path(cwd or os.getcwd())
+    if tokens[:1] == ["cd"]:
+        if len(tokens) < 3 or tokens[2] != "&&":
+            return None
+        target = Path(tokens[1])
+        target = target if target.is_absolute() else here / target
+        try:
+            if target.resolve() != REPO:
+                return None
+        except OSError:
+            return None
+        here, tokens = REPO, tokens[3:]
+
+    if len(tokens) < 4 or tokens[0] not in ("python", "python3"):
+        return None
+    if not _same_file(tokens[1], here) or tokens[2] != "sql":
+        return None
+    query, rest = tokens[3], tokens[4:]
+    if query == "-":
+        return None  # reads the SQL from stdin, which we cannot see
+
+    if rest[:3] == ["2", ">&", "1"]:
+        rest = rest[3:]
+    if rest:
+        if rest[0] != "|" or not _is_pager(rest[1:]):
+            return None
+    return query
+
+
 def main() -> None:
     try:
         payload = json.load(sys.stdin)
     except json.JSONDecodeError:
         return
-    query = (payload.get("tool_input") or {}).get("query") or ""
+    tool_input = payload.get("tool_input") or {}
+    if payload.get("tool_name") == "Bash":
+        query = sql_from_bash(tool_input.get("command") or "", payload.get("cwd"))
+        if query is None:
+            return
+    else:
+        query = tool_input.get("query") or ""
     if is_read_only(query):
         print(json.dumps({"hookSpecificOutput": {
             "hookEventName": "PreToolUse",
