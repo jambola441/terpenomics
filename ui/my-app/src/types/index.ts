@@ -435,6 +435,16 @@ export type PortalBrandDetail = {
   products: PortalBrandProduct[]
 }
 
+/** One of a brand's product lines, cut from the brand's answer
+ *  (GET /customer/brands/{brand}/lines/{line}). */
+export type PortalBrandLine = {
+  brand: string
+  name: string
+  product_count: number
+  dispensary_count: number
+  products: PortalBrandProduct[]
+}
+
 /** A store carrying products in a category. Sent once; offerings index into it. */
 export type PortalCategoryDispensary = {
   id: string
@@ -683,6 +693,24 @@ export type CustomerProfile = {
   email: string | null
   marketing_opt_in: boolean
   onboarding: Onboarding
+  /** Feature flags resolved for this customer (services/flags.py). Optional so
+   *  an older API reads as everything off. */
+  flags?: Record<string, boolean>
+}
+
+/** One feature flag as the admin customer page sees it
+ *  (GET /admin/customers/{id}/flags, services/flags.py explain()). */
+export type CustomerFlagRow = {
+  flag: string
+  enabled: boolean
+  /** Where `enabled` came from: this customer's override, the global default
+   *  (on or off for everyone), or a percentage rollout. */
+  source: 'override' | 'default' | 'rollout'
+  override: boolean | null
+  default_percent: number
+  /** False for a flag reserved for work that has not landed. */
+  built: boolean
+  about: string
 }
 
 /** Sign-up state and what to show for it (routes_me.py, services/consent.py). */

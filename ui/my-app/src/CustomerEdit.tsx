@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import supabase  from './utils/supabase'
 import api, { API_BASE } from './api/client'
 import { ListingSearch } from './components/ListingSearch'
-import type { Listing, PointsSummary } from './types'
+import type { CustomerFlagRow, Listing, PointsSummary } from './types'
 import type { CSSProperties } from 'react'
 import { t, font, radius } from './theme'
 import { Icon } from './components/Icon'
@@ -523,6 +523,8 @@ export default function CustomerEdit() {
 
       {cid && <TerpeePoints customerId={cid} />}
 
+      {cid && <FeatureFlags customerId={cid} />}
+
       <div style={{ ...cardStyle, marginBottom: 24 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
           <h2 style={sectionTitleStyle}>Top Terpenes</h2>
@@ -717,6 +719,80 @@ function TerpeePoints({ customerId }: { customerId: string }) {
             </table>
           )}
         </>
+      )}
+    </div>
+  )
+}
+
+/** Which unreleased features this customer sees (services/flags.py), and a
+ *  switch per flag: Default follows PORTAL_FLAGS, On or Off overrides it. */
+function FeatureFlags({ customerId }: { customerId: string }) {
+  const [rows, setRows] = useState<CustomerFlagRow[] | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [saving, setSaving] = useState<string | null>(null)
+
+  useEffect(() => {
+    api.customers.getFlags(customerId).then(setRows).catch(err => setError(err.message))
+  }, [customerId])
+
+  async function choose(flag: string, value: string) {
+    setSaving(flag)
+    setError(null)
+    try {
+      setRows(await api.customers.setFlag(customerId, flag, value === 'default' ? null : value === 'on'))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not save')
+    } finally {
+      setSaving(null)
+    }
+  }
+
+  const sourceText = (r: CustomerFlagRow) =>
+    r.source === 'override' ? 'set for this customer'
+      : r.source === 'rollout' ? `${r.default_percent}% rollout`
+      : r.default_percent === 100 ? 'on for everyone' : 'off by default'
+
+  return (
+    <div style={{ ...cardStyle, marginBottom: 24 }}>
+      <h2 style={{ ...sectionTitleStyle, marginBottom: 8 }}>Feature flags</h2>
+      {error && <p style={{ color: t.danger, margin: '0 0 8px', fontSize: 13 }}>{error}</p>}
+      {!rows ? (
+        !error && <p style={mutedStyle}>Loading…</p>
+      ) : (
+        <table style={tableStyle}>
+          <thead>
+            <tr style={{ ...headRowStyle, textAlign: 'left' }}>
+              <th style={thStyle}>Flag</th><th style={thStyle}>Now</th><th style={thStyle}>For this customer</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(r => (
+              <tr key={r.flag} style={rowStyle}>
+                <td style={tdStyle}>
+                  <div style={{ fontFamily: font.family.mono, color: r.built ? t.text1 : t.text3 }}>{r.flag}</div>
+                  <div style={metaStyle}>{r.built ? r.about : `Not built yet. ${r.about}`}</div>
+                </td>
+                <td style={tdStyle}>
+                  <span style={{ color: r.enabled ? t.success : t.text3, fontWeight: 600 }}>{r.enabled ? 'On' : 'Off'}</span>
+                  <div style={metaStyle}>{sourceText(r)}</div>
+                </td>
+                <td style={tdStyle}>
+                  <select
+                    aria-label={`${r.flag} for this customer`}
+                    value={r.override == null ? 'default' : r.override ? 'on' : 'off'}
+                    disabled={!r.built || saving === r.flag}
+                    onChange={e => choose(r.flag, e.target.value)}
+                    style={selectStyle}
+                  >
+                    <option value="default">Default</option>
+                    <option value="on">On</option>
+                    <option value="off">Off</option>
+                  </select>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
     </div>
   )

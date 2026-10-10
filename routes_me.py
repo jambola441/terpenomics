@@ -13,7 +13,7 @@ from sqlmodel import Session, select
 from auth import SupabaseAuthUser, get_current_user, verified_email, verified_phone
 from database import get_session
 from models import Customer, Dispensary, Listing, PreferredDispensary, Purchase
-from services import account_deletion, consent, supabase_admin
+from services import account_deletion, consent, flags, supabase_admin
 from services import feed as feed_rails
 from services.phone import to_e164
 from services.display_name import compose as compose_display_name
@@ -161,7 +161,7 @@ def link_customer(
 # GET /me — customer profile
 # ---------------------------
 
-def _serialize_customer(customer: Customer) -> dict:
+def _serialize_customer(customer: Customer, session: Session) -> dict:
     missing = consent.missing(customer)
     return {
         "id": str(customer.id),
@@ -183,6 +183,9 @@ def _serialize_customer(customer: Customer) -> dict:
             },
             "disclosures": consent.disclosures(),
         },
+        # Which unreleased features this customer sees (services/flags.py). Here
+        # rather than in any shared catalogue answer, which is one copy for all.
+        "flags": flags.resolve(session, customer.id),
     }
 
 
@@ -228,8 +231,11 @@ Platform = Literal["ios", "android", "web"]
 
 
 @router.get("")
-def get_me(customer: Customer = Depends(get_current_customer)):
-    return _serialize_customer(customer)
+def get_me(
+    customer: Customer = Depends(get_current_customer),
+    session: Session = Depends(get_session),
+):
+    return _serialize_customer(customer, session)
 
 
 class OnboardingRequest(BaseModel):
@@ -281,7 +287,7 @@ def complete_onboarding(
     session.add(customer)
     session.commit()
     session.refresh(customer)
-    return _serialize_customer(customer)
+    return _serialize_customer(customer, session)
 
 
 class UpdateMeRequest(BaseModel):
@@ -333,7 +339,7 @@ def update_me(
     session.add(customer)
     session.commit()
     session.refresh(customer)
-    return _serialize_customer(customer)
+    return _serialize_customer(customer, session)
 
 
 @router.delete("", status_code=204)

@@ -9,13 +9,26 @@
    for a brand facet; it gets a category one instead.
    ========================================================================== */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import api from '../api/client'
+import { useFlag } from '../hooks/useFlag'
 import type { PortalBrandDetail } from '../types'
 import { t, alpha, raw } from '../theme'
 import { Dot, Stat } from './browse'
 import { BackButton, BrandMark, PageTitle } from './ui'
-import BrowseScreen, { type BrowseItem } from './BrowseScreen'
+import BrowseScreen, { LINE_MIN_PRODUCTS, type BrowseItem, type FacetKey } from './BrowseScreen'
+
+/** Whether any of the brand's lines is big enough to filter by. */
+function hasRealLine(data: PortalBrandDetail): boolean {
+  const counts = new Map<string, number>()
+  for (const product of data.products) {
+    if (!product.product_line) continue
+    const n = (counts.get(product.product_line) ?? 0) + 1
+    if (n >= LINE_MIN_PRODUCTS) return true
+    counts.set(product.product_line, n)
+  }
+  return false
+}
 
 /** The brand endpoint inlines each offering's store, and every product is this
  *  brand's — the page's own subject rather than a field on the row. */
@@ -28,6 +41,7 @@ function toItems(data: PortalBrandDetail): BrowseItem[] {
     subtype: product.subtype,
     strain: product.strain,
     variant: product.variant,
+    line: product.product_line,
     imageUrl: product.image_url,
     minPriceCents: product.min_price_cents,
     // The brand endpoint aggregates to a single price, so a card here never
@@ -71,6 +85,15 @@ export default function BrandView({ brandName, onBack, onOpenProduct }: Props) {
 
   const c = t.accent
 
+  // Category leads, in place of the brand facet the category page has: it is
+  // the one thing that varies across a brand's whole range. The line comes
+  // second, never first, so it never takes over the quick rail.
+  const showLines = useFlag('lines') && data != null && hasRealLine(data)
+  const facets = useMemo<FacetKey[]>(
+    () => showLines ? ['category', 'line', 'subtype', 'variant'] : ['category', 'subtype', 'variant'],
+    [showLines],
+  )
+
   return (
     <BrowseScreen
       items={data ? toItems(data) : []}
@@ -78,9 +101,7 @@ export default function BrandView({ brandName, onBack, onOpenProduct }: Props) {
       error={error}
       onRetry={() => setAttempt(n => n + 1)}
       color={c}
-      // Category leads, in place of the brand facet the category page has:
-      // it is the one thing that varies across a brand's whole range.
-      facets={['category', 'subtype', 'variant']}
+      facets={facets}
       resetKey={brandName}
       searchPlaceholder={`Search ${brandName}…`}
       totalCount={data?.product_count ?? 0}
