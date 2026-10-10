@@ -231,6 +231,31 @@ class TestJoin:
         assert idx.join(r, "Flav | 10pk Gummy Belts | 100mg | Strawberry")[1]["id"] == "ten"
         assert idx.join(dict(r, size="10pk 100mg"))[1]["id"] == "ten"
 
+    def test_a_bare_dose_joins_the_pack_it_is_the_per_piece_dose_of(self):
+        # A store can print the piece's dose and leave out the count: "Sour Cherry 10mg"
+        # is Wyld's 10-pack of 100mg.
+        def e(i, key, variant):
+            return {"id": i, "product_key": key, "name": key.title(), "category": "edible",
+                    "subtype": "gummy", "strain": key.title(), "variant": variant}
+        cat = {"brand_name": "Wyld", "entries": [e("sc", "sour cherry", "10pk 100mg")]}
+        idx = cm.CatalogIndex(cat)
+        r = {"category": "edible", "subtype": "gummy", "strain": "Sour Cherry", "size": "10mg"}
+        assert idx.join(r, "Wyld Sour Cherry Gummies 10mg")[1]["id"] == "sc"
+        assert idx.join(dict(r, size="20mg")) is None                  # 200mg is no size it sells
+        assert idx.join(r, "Wyld Sour Cherry Gummies 1pk 10mg") is None   # a count that differs
+        assert idx.join(r, "Wyld | Sour Cherry | Gummies | 1-Pack") is None    # a count, no figure
+        # A product that sells the figure itself keeps it; two packs it fits leave Jev to choose.
+        idx = cm.CatalogIndex({"brand_name": "Wyld", "entries": [
+            e("ten", "sour cherry", "10pk 100mg"), e("one", "sour cherry", "10mg")]})
+        assert idx.join(r)[1]["id"] == "one"
+        idx = cm.CatalogIndex({"brand_name": "Wyld", "entries": [
+            e("ten", "sour cherry", "10pk 100mg"), e("five", "sour cherry", "5pk 50mg")]})
+        assert idx.join(r) is None
+        # And the near entries Jev is offered count it as no miss.
+        p = cm.CatalogIndex(cat).products["sour cherry"]
+        assert cm.attribute_misses(r, p, cat["entries"][0]) == []
+        assert cm.attribute_misses(dict(r, size="20mg"), p, cat["entries"][0]) == ["size"]
+
     def test_words_around_a_strain_are_set_aside_only_when_no_product_carries_it(self):
         def e(i, line, strain, size="1g"):
             return {"id": i, "product_key": i, "name": f"{line or ''} {strain}".strip(), "product_line": line,

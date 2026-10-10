@@ -60,6 +60,7 @@ Usage
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import hashlib
 import html
 import json
@@ -289,6 +290,8 @@ class CatalogIndex:
         is not joined to the product's other sizes; the listing goes to Jev, and the
         audit shows what is left. On the labelled set this tier decided 168 of 295
         listings, 14 of them against the label, most of those labels stale.
+        One exception: a bare dose with no count joins the one pack it is the
+        per-piece dose of, when the product sells nothing at that figure (per_piece).
 
         Inferred sizes (line_fill.py) count: they are the sizes the product's line
         comes in. Format is compared wherever both sides state one; a pre-roll keeps
@@ -408,7 +411,7 @@ def fitting_entry(entries: list[dict], want: sizes.Size, category: str | None) -
     came first. Two entries of one size (a stated one and an inferred one) are one fit.
     """
     fits = [(e, sizes.parse(e.get("variant"), category=category)) for e in entries]
-    fits = [(e, s) for e, s in fits if sizes.same_size(want, s) is True]
+    fits = [(e, s) for e, s in fits if sizes.same_size(want, s) is True] or per_piece(fits, want, category)
     if not fits:
         return False
     if len({s for _, s in fits}) > 1:
@@ -416,6 +419,21 @@ def fitting_entry(entries: list[dict], want: sizes.Size, category: str | None) -
     if len({s for _, s in fits}) > 1:
         return None
     return next((e for e, _ in fits if e.get("source") != "inferred"), fits[0][0])
+
+
+def per_piece(sized: list[tuple[dict, sizes.Size]], want: sizes.Size,
+              category: str | None) -> list[tuple[dict, sizes.Size]]:
+    """The entries a bare dose names as the per-piece dose of their pack: "Sour Cherry
+    10mg" is Wyld's 10pk 100mg (owner, 2026-10-10: a store can print the piece's dose
+    and leave out the count). Only for a figure with no pack count, against a product
+    that sells nothing at that figure itself (same_size found no fit) and in one pack
+    size only: a product with a 10pk 100mg and a 5pk 50mg leaves a 10mg to Jev."""
+    if category not in sizes.DOSE_CATEGORIES or want.pack is not None or want.mg is None \
+            or want.grams is not None:
+        return []
+    fits = [(e, s) for e, s in sized if s.pack and s.pack > 1 and s.mg is not None
+            and abs(want.mg * s.pack - s.mg) <= 0.5]
+    return fits if len({s for _, s in fits}) == 1 else []
 
 
 ATTRIBUTES = ("category", "strain", "line", "subtype", "size")
@@ -445,10 +463,20 @@ def attribute_misses(reading: dict, product: "Product", entry: dict,
             and not taxonomy.same_format(subtype, product.subtype, synonyms):
         out.append("subtype")
     want = reading_size(reading, name)
-    if want.is_empty() or sizes.same_size(
-            want, sizes.parse(entry.get("variant"), category=product.category)) is not True:
+    if want.is_empty() or not size_fits(want, product, entry):
         out.append("size")
     return out
+
+
+def size_fits(want: sizes.Size, product: "Product", entry: dict) -> bool:
+    """Whether `entry` is in the size wanted: the same size, or the pack a bare dose is
+    the per-piece dose of when the product sells nothing at that figure (per_piece)."""
+    sized = [(e, sizes.parse(e.get("variant"), category=product.category)) for e in product.entries]
+    if sizes.same_size(want, sizes.parse(entry.get("variant"), category=product.category)) is True:
+        return True
+    if any(sizes.same_size(want, s) is True for _, s in sized):
+        return False
+    return any(e is entry for e, _ in per_piece(sized, want, product.category))
 
 
 def reading_size(reading: dict, name: str | None = None) -> sizes.Size:
@@ -479,6 +507,10 @@ def reading_size(reading: dict, name: str | None = None) -> sizes.Size:
         return own
     if want.grams is not None and own.grams is not None and sizes.same_size(own, want):
         return own
+    # A count with no figure beside it ("Tablets | 30-Pack") still says how many: the
+    # 30mg read is no per-piece dose of a 3-pack (per_piece).
+    if own.mg is None and own.grams is None:
+        return dataclasses.replace(want, pack=own.pack)
     return want
 
 
