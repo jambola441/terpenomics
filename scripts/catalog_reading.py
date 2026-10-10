@@ -105,8 +105,16 @@ SOFT = ("subtype", "line")
 NONE = "none"
 MAX_OPTIONS = 254          # Jev takes 255 options, one of them "none"
 
-# Brand-specific examples, from review decisions: {brand_slug: {question: [[store text, option]]}}.
+# Brand examples, from review decisions: {brand_slug: [{"listing", "size_field"?, "entry": selector}]},
+# one store listing per catalog entry. A question shows a couple of them: from entries like the
+# product being read whose answer is one of its options, nearest the listing's name first.
 EXAMPLES_PATH = Path(__file__).resolve().parent.parent / "data" / "reading_examples.json"
+EXAMPLES_SHOWN = 3
+# The catalog field each question with examples answers.
+EXAMPLE_FIELDS = {"line": "product_line", "strain": "strain", "size": "variant"}
+# Selector keys (catalog_fix's) -> catalog entry fields.
+_SELECTOR = {"category": "category", "subtype": "subtype", "line": "product_line",
+             "strain": "strain", "size": "variant"}
 
 
 @lru_cache(maxsize=1)
@@ -118,16 +126,54 @@ def _examples() -> dict:
     return {k: v for k, v in data.items() if not k.startswith("_")}
 
 
-def instructions_for(key: str, base: str, slug: str | None, values: list[str]) -> str:
-    """A question's instructions with the brand's examples whose answer is one of `values`
-    (an example for an option not offered would only mislead)."""
-    offered = set(values)
-    shown = [(text, answer) for text, answer in _examples().get(slug or "", {}).get(key, [])
-             if answer in offered]
-    if not shown:
+def brand_examples(slug: str | None, entries: list[dict]) -> list[tuple[dict, dict]]:
+    """The brand's examples, each with the one active entry its selector names. An example
+    naming no entry or several is left out, and so is a second listing for an entry."""
+    out, seen = [], set()
+    for ex in _examples().get(slug or "", []):
+        sel = ex.get("entry") or {}
+        hits = [e for e in entries
+                if all((e.get(_SELECTOR[k]) or None) == (v or None) for k, v in sel.items())]
+        if len(hits) != 1:
+            print(f"  [warn] reading example {ex.get('listing')!r} names {len(hits)} entries; left out",
+                  file=sys.stderr)
+            continue
+        key = hits[0].get("id") or id(hits[0])
+        if key not in seen:
+            seen.add(key)
+            out.append((ex, hits[0]))
+    return out
+
+
+def _words(text: str) -> set[str]:
+    return set(re.findall(r"[a-z0-9]+(?:[.:/][a-z0-9]+)*", text.lower()))
+
+
+def instructions_for(key: str, base: str, examples: list[tuple[dict, dict]], reading: dict,
+                     values: list[str], name: str) -> str:
+    """A question's instructions with up to EXAMPLES_SHOWN of the brand's examples (brand_examples):
+    those whose entry is like the product read so far (its category, and its subtype and line
+    where read) and whose answer is one of `values`, the listings sharing most words with `name`
+    first."""
+    field = EXAMPLE_FIELDS.get(key)
+    if not field or not examples:
         return base
-    said = "; ".join(f"'{text}' is '{answer}'" for text, answer in shown)
-    return f"{base} Examples from this brand's listings: {said}."
+    offered, words = set(values), _words(name)
+    near = []
+    for ex, e in examples:
+        if e.get(field) not in offered or e.get("category") != reading.get("category"):
+            continue
+        if any(reading.get(f) and e.get(f) != reading[f] for f in ("subtype", "product_line")):
+            continue
+        w = _words(ex["listing"])
+        near.append((-len(w & words) / max(len(w | words), 1), len(near), ex, e))
+    if not near:
+        return base
+    said = []
+    for _, _, ex, e in sorted(near, key=lambda t: t[:2])[:EXAMPLES_SHOWN]:
+        note = f" (size field {ex['size_field']})" if key == "size" and ex.get("size_field") else ""
+        said.append(f"'{ex['listing']}'{note} is '{e[field]}'")
+    return f"{base} Examples from this brand's listings: {'; '.join(said)}."
 
 
 def spell_size(label: str, category: str | None) -> str:
@@ -181,7 +227,7 @@ class _Walk:
         self.failed = False
         self.strain_values: list[str] = []
 
-    def question(self, step: tuple, brand: str, slug: str | None = None) -> tuple[dict, dict, list[str]] | None:
+    def question(self, step: tuple, brand: str, examples: list = ()) -> tuple[dict, dict, list[str]] | None:
         key, field, _, instructions = step
         values = sorted({e[field] for e in self.pool if e.get(field)}, key=str)
         if not values:
@@ -198,7 +244,8 @@ class _Walk:
         for i, v in enumerate(values):
             options[f"o{i}"] = option_label(key, v, self.reading.get("category"))
         return dict(base_state(brand, self.listing), **extra), \
-            {key: jev.Choice(instructions_for(key, instructions, slug, values), options)}, values
+            {key: jev.Choice(instructions_for(key, instructions, examples, self.reading, values,
+                                              self.listing.get("name") or ""), options)}, values
 
     def answer(self, step: tuple, pick: str | None, p: float, values: list[str]) -> None:
         key, field, out, _ = step
@@ -243,8 +290,8 @@ def read(catalog: dict, listings: list[dict], *, usage: jev.Usage | None = None,
     own filing, when known) and, for merch, category and subtype."""
     import catalog_match
     brand = catalog.get("brand_name") or ""
-    slug = catalog.get("brand_slug")
     entries = [e for e in catalog.get("entries") or [] if e.get("is_active", True)]
+    examples = brand_examples(catalog.get("brand_slug"), entries)
     cache = cache or catalog_match.AnswerCache(f"reading.{catalog.get('brand_slug') or 'x'}")
     walks = [_Walk(l, entries) for l in listings
              if not merch_catalog.is_merch(l.get("category"), l.get("subtype"), l.get("name") or "", brand)]
@@ -253,7 +300,7 @@ def read(catalog: dict, listings: list[dict], *, usage: jev.Usage | None = None,
         for w in walks:
             if w.done or w.failed:
                 continue
-            q = w.question(step, brand, slug)
+            q = w.question(step, brand, examples)
             if q is None:
                 continue
             state, question, values = q
@@ -283,7 +330,8 @@ def read(catalog: dict, listings: list[dict], *, usage: jev.Usage | None = None,
         state = {k: v for k, v in base_state(brand, w.listing).items() if k != "description"}
         state.update({k: w.reading[k] for k in ("category", "subtype", "product_line") if w.reading.get(k)})
         options = {NONE: "None of these", **{f"o{i}": v for i, v in enumerate(w.strain_values)}}
-        question = {"strain": jev.Choice(instructions_for("strain", STRAIN_Q, slug, w.strain_values), options)}
+        question = {"strain": jev.Choice(instructions_for("strain", STRAIN_Q, examples, w.reading, w.strain_values,
+                                                          w.listing.get("name") or ""), options)}
         key = _cache_key(state, question)
         hit = cache.get(key)
         if hit is not None:
