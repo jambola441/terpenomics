@@ -124,11 +124,10 @@ def test_a_sure_join_is_trusted_and_an_unsure_one_goes_to_review():
     assert resolve(reading()).method == "attributes"
     d = resolve(reading(p={"strain": 0.83}))
     assert (d.method, d.product_key, d.confidence) == ("review_unsure", "wc", 0.83)
-    # An unsure size is trusted when the store's own size field names the same package.
-    assert resolve(reading(p={"size": 0.8})).method == "review_unsure"
+    # An unsure size goes to review even when the store's size field names that size.
     [d] = cm.resolve(CAMINO, [{"id": 1, "name": "x", "variant": "10pk 100mg", "category": "edible",
                                "reading": reading(p={"size": 0.8})}], use_jev=False)
-    assert d.method == "attributes"
+    assert d.method == "review_unsure"
     # Enrichment's reading carries no probabilities and is not held to the bar.
     plain = {k: v for k, v in reading().items() if k not in ("p", "by")}
     assert resolve(plain).method == "attributes"
@@ -159,7 +158,7 @@ def test_the_strain_is_asked_again_from_the_name_and_a_disagreement_is_not_trust
     monkeypatch.setattr(jev, "ask_many", ask_many)
     got = cr.read(CAMINO, [LISTING], cache=NoCache())["1"]
     assert calls["n"] == 1 and got["strain_from_name"] == "Pineapple Habanero"
-    assert not cr.trusted(got, store_size_agrees=True)
+    assert not cr.trusted(got)
     assert "strain_from_name" in cr.unsure_steps(got)
     assert resolve(dict(got)).method == "review_unsure"
     assert cr.trusted(dict(got, strain_from_name="Wild Cherry Excite"))

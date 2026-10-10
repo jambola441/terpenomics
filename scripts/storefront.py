@@ -1047,33 +1047,16 @@ def _as_site_size(p: dict, names: dict, site: list[tuple], synonyms: bool = True
     same = [e for _, n, e in site
             if taxonomy.same_format(p.get("subtype") or None, e.get("subtype") or None, synonyms)
             and _name_match(names, n) == "exact"]
-    if len({e["product_key"] for e in same}) > 1:
-        # Nanticoke's plain Durban Poison and its oHHo Durban Poison both read as
-        # "Durban Poison": the one in the store product's own line is the one.
-        same = [e for e in same if squash(e.get("product_line")) == own]
-    if own:
-        same = [e for e in same if squash(e.get("product_line")) == own]
-    else:
-        # A line-less store product takes a site product's line unless the size points
-        # at another family: that line sells no such size and another of the brand's
-        # families in the format does. Stores often drop the line ("Honey Banana 1g" is
-        # MFNY's Live Resin Honey Banana, a line of 1g vapes; Jaunty's Fast-Acting
-        # 2-packs, a size no family lists), but Florist Farms' plain Gorilla Glue 1g is
-        # not "Kief Coated Gorilla Glue": Kief Coated is a 0.5g single and 1g is the
-        # plain singles' size (owner, 2026-10-10: never merge two lines).
-        total = _total(p)
-
-        def sells(lined: str, subtype) -> bool:
-            return any(squash(x.get("product_line")) == lined and catalog_bootstrap._same_total(total, t)
-                       for t, _, x in site)
-
-        def elsewhere(lined: str, subtype) -> bool:
-            return any(squash(x.get("product_line")) != lined and catalog_bootstrap._same_total(total, t)
-                       and taxonomy.same_format(x.get("subtype") or None, subtype or None, synonyms)
-                       for t, _, x in site)
-        same = [e for e in same if not squash(e.get("product_line"))
-                or sells(squash(e.get("product_line")), e.get("subtype"))
-                or not elsewhere(squash(e.get("product_line")), e.get("subtype"))]
+    if not own and same and all(squash(e.get("product_line")) for e in same):
+        # A line-less store product whose name only a lined site product has: it may be
+        # that product with the line left out, or a family of its own (Florist Farms'
+        # plain Gorilla Glue 1g is not "Kief Coated Gorilla Glue"). Not guessed: it is
+        # left out of the catalog, its listings go to review, and the fix is the
+        # catalog's (owner, 2026-10-10: keep it simple, send it to review).
+        return {**p, "review": same[0]["name"]}
+    # Otherwise only within the store product's own line (Nanticoke's plain Durban
+    # Poison and its oHHo Durban Poison both read as "Durban Poison").
+    same = [e for e in same if squash(e.get("product_line")) == own]
     if len({e["product_key"] for e in same}) != 1:
         return p
     e = same[0]
@@ -1107,6 +1090,7 @@ def with_store_products(doc: dict, only_stores: list[dict], terms: dict | None =
     terms = terms or {}
     site = [{**e, "match_terms": sorted(set(e["match_terms"]) | terms.get(e["external_id"], set()))}
             for e in doc["entries"]]
+    only_stores = [e for e in only_stores if not e.get("review")]
     return {**doc, "entries": site + only_stores,
             "product_count": len({e["product_key"] for e in site + only_stores})}
 
@@ -1169,6 +1153,10 @@ def print_check(report: dict, found: list[dict] | None, only_stores: list[dict] 
         print(f"  stores sell {len(found) + len(only_stores)} products (2+ stores): {len(found)} on the "
               f"site, {len(only_stores)} only at stores (kept from the stores' consensus):")
         for e in sorted(only_stores, key=lambda e: e["name"]):
+            if e.get("review"):
+                print(f"    ? {e['name']} ({e['category']} {e['variant'] or ''}, {e['support']} stores): "
+                      f"not added; line-less, and only the site's {e['review']!r} has the name (review)")
+                continue
             print(f"    - {e['name']} ({e['category']} {e['variant'] or ''}, {e['support']} stores)"
                   + (" — another size of the site's product" if e.get("joins") else ""))
         for e, why in dropped or []:

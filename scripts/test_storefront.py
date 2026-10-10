@@ -612,30 +612,17 @@ def test_a_photo_too_heavy_for_a_phone_is_left_out():
 
 
 def test_a_line_less_store_product_never_takes_a_site_lines_name():
-    """Florist Farms' store-only plain Gorilla Glue 1g must not become the site's
-    "Kief Coated Gorilla Glue" in one more size: Kief Coated sells no 1g, and 1g is
-    the plain singles' size."""
+    """A line-less store product whose name only a lined site product has is not
+    guessed into that line (Florist Farms' plain Gorilla Glue 1g is not "Kief Coated
+    Gorilla Glue"): it is left out for review, and the fix is the catalog's."""
     kief = {"product_key": "kc-gg", "name": "Kief Coated Gorilla Glue", "product_line": "Kief Coated",
             "strain": "Gorilla Glue", "subtype": None, "category": "preroll", "variant": "0.5g"}
-    plain = {"product_key": "ni-gel", "name": "Non-Infused Gelato", "product_line": "Non-Infused",
-             "strain": "Gelato", "subtype": None, "category": "preroll", "variant": "1g"}
-    site = [(storefront._total(e), storefront._names(e), e) for e in (kief, plain)]
+    site = [(storefront._total(kief), storefront._names(kief), kief)]
     p = {"name": "Gorilla Glue", "strain": "Gorilla Glue", "product_line": None, "subtype": None,
          "category": "preroll", "variant": "1g", "product_key": "store-gg"}
     out = storefront._as_site_size(p, storefront._names(p), site)
-    assert out["product_key"] == "store-gg" and out.get("product_line") is None
+    assert out["review"] == "Kief Coated Gorilla Glue" and out["product_key"] == "store-gg"
+    assert storefront.with_store_products({"entries": []}, [out])["entries"] == []
     # Within its own line the store size still joins the site product.
     lined = dict(p, product_line="Kief Coated", name="Kief Coated Gorilla Glue")
     assert storefront._as_site_size(lined, storefront._names(lined), site)["product_key"] == "kc-gg"
-
-
-def test_a_line_less_store_size_still_joins_when_nothing_else_sells_it():
-    """Stores drop the line: MFNY's "Honey Banana 1g" vape is the site's Live Resin
-    Honey Banana, a line that sells 1g."""
-    lr = {"product_key": "lr-hb", "name": "Live Resin Honey Banana", "product_line": "Live Resin",
-          "strain": "Honey Banana", "subtype": "cart", "category": "vaporizers", "variant": "0.5g"}
-    lr1 = dict(lr, product_key="lr-cr", name="Live Resin Candy Rain", strain="Candy Rain", variant="1g")
-    site = [(storefront._total(e), storefront._names(e), e) for e in (lr, lr1)]
-    p = {"name": "Honey Banana", "strain": "Honey Banana", "product_line": None, "subtype": "cart",
-         "category": "vaporizers", "variant": "1g", "product_key": "store-hb"}
-    assert storefront._as_site_size(p, storefront._names(p), site)["product_key"] == "lr-hb"
