@@ -11,7 +11,8 @@ photo_mirrors. The API then serves the copy (services/listing_photos.py), and th
 apps pick 320 or 640 by the size they draw.
 
 A photo that cannot be copied (gone, not an image) is recorded with the reason and
-tried again a week later; its listings keep the original.
+tried again a week later; its listings keep the original. A network hiccup (a reset
+connection, a timeout, a 5xx) is not recorded, so the next run tries again.
 
   python scripts/photo_mirror.py                # copy what is new, over DATABASE_URL
   python scripts/photo_mirror.py --via-http     # the same over Supabase's REST API
@@ -27,6 +28,7 @@ import hashlib
 import os
 import re
 import sys
+import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
@@ -82,9 +84,18 @@ def _fetch(url: str) -> bytes:
     return data
 
 
+def _transient(e: Exception) -> bool:
+    """A failure worth trying again tomorrow rather than in a week."""
+    code = getattr(e, "code", None)
+    if isinstance(code, int):
+        return code >= 500 or code == 429
+    return isinstance(e, (urllib.error.URLError, TimeoutError, ConnectionError))
+
+
 def copy(url: str, fetch: Callable[[str], bytes] = _fetch,
-         upload: Callable[[str, bytes, str], str] = photo_store.upload) -> dict:
-    """One photo copied: its photo_mirrors row, with `failed` set when it could not be."""
+         upload: Callable[[str, bytes, str], str] = photo_store.upload) -> Optional[dict]:
+    """One photo copied: its photo_mirrors row, with `failed` set when it could not be,
+    or None after a network hiccup (nothing recorded; the next run tries again)."""
     folder = f"store/{hashlib.sha1(url.encode()).hexdigest()[:32]}"
     now = datetime.now(timezone.utc)
     try:
@@ -94,6 +105,8 @@ def copy(url: str, fetch: Callable[[str], bytes] = _fetch,
         return {"source_url": url, "url": urls[max(WIDTHS)], "bytes": len(data),
                 "failed": None, "mirrored_at": now}
     except Exception as e:  # noqa: BLE001 — recorded per photo; the rest go on
+        if _transient(e):
+            return None
         reason = f"HTTP {e.code}" if hasattr(e, "code") else f"{type(e).__name__}: {e}"
         return {"source_url": url, "url": None, "bytes": None, "failed": reason[:300],
                 "mirrored_at": now}
@@ -145,7 +158,7 @@ def _save_http(rows: list[dict]) -> None:
 
 
 def run(via_http: bool = False, dry_run: bool = False, limit: Optional[int] = None,
-        workers: int = 8) -> dict:
+        workers: int = 4) -> dict:
     """Copy what is pending. Returns counts; prints them."""
     if not photo_store.configured() and not dry_run:
         print("photo_mirror: SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set — skipped")
@@ -157,10 +170,13 @@ def run(via_http: bool = False, dry_run: bool = False, limit: Optional[int] = No
     if dry_run or not todo:
         return {"pending": len(todo), "copied": 0, "failed": 0}
     save = _save_http if via_http else _save_postgres
-    copied = failed = 0
+    copied = failed = later = 0
     with ThreadPoolExecutor(max_workers=workers) as pool:
         batch = []
         for row in pool.map(copy, todo):
+            if row is None:
+                later += 1
+                continue
             batch.append(row)
             copied += row["url"] is not None
             failed += row["url"] is None
@@ -169,8 +185,9 @@ def run(via_http: bool = False, dry_run: bool = False, limit: Optional[int] = No
                 batch = []
         if batch:
             save(batch)
-    print(f"photo_mirror: {copied} copied, {failed} could not be (kept their original)")
-    return {"pending": len(todo), "copied": copied, "failed": failed}
+    print(f"photo_mirror: {copied} copied, {failed} could not be (kept their original), "
+          f"{later} to try again next run")
+    return {"pending": len(todo), "copied": copied, "failed": failed, "later": later}
 
 
 def main() -> None:

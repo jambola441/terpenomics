@@ -22,6 +22,9 @@ BUCKET = "photos"
 TIMEOUT_SECONDS = 60
 # Copies are named after their source and never change, so a browser may keep them.
 CACHE_SECONDS = 30 * 24 * 3600
+# Decoded, a 170-megapixel PNG (one store has one) needs ~700 MB: more than a small
+# container has. JPEGs are decoded small to begin with; anything else this big is refused.
+MAX_PIXELS = 60_000_000
 
 
 def configured() -> bool:
@@ -56,8 +59,12 @@ def webp_sizes(data: bytes, widths: Iterable[int], quality: int = 80) -> dict[in
 
     try:
         im = Image.open(io.BytesIO(data))
+        if im.format == "JPEG":
+            im.draft("RGB", (max(widths) * 2, max(widths) * 2))
+        if im.width * im.height > MAX_PIXELS:
+            raise ValueError(f"too large to resize: {im.width}x{im.height}")
         im.load()
-    except (UnidentifiedImageError, OSError) as e:
+    except (UnidentifiedImageError, OSError, Image.DecompressionBombError) as e:
         raise ValueError(f"not an image: {e}") from e
     im = ImageOps.exif_transpose(im)
     has_alpha = im.mode in ("RGBA", "LA") or (im.mode == "P" and "transparency" in im.info)

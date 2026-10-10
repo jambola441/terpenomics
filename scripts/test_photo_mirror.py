@@ -75,6 +75,24 @@ def test_a_photo_that_cannot_be_copied_says_why():
     assert row["url"] is None and row["failed"].startswith("ValueError: not an image")
 
 
+@pytest.mark.parametrize("error", [
+    urllib.error.URLError(ConnectionResetError(104, "Connection reset by peer")),
+    urllib.error.HTTPError("https://x", 503, "Unavailable", {}, None),
+    TimeoutError("timed out"),
+])
+def test_a_network_hiccup_is_not_recorded_so_the_next_run_retries(error):
+    def flaky(url):
+        raise error
+    assert pm.copy("https://x/a.png", fetch=flaky, upload=None) is None
+
+
+def test_a_photo_too_big_to_decode_safely_is_refused(monkeypatch):
+    from services import photo_store
+    monkeypatch.setattr(photo_store, "MAX_PIXELS", 100 * 100)
+    row = pm.copy("https://x/huge.png", fetch=lambda u: png(200, 200), upload=None)
+    assert "too large to resize" in row["failed"]
+
+
 def test_run_copies_pending_photos_and_records_every_attempt(monkeypatch):
     monkeypatch.setenv("SUPABASE_URL", "https://abc.supabase.co")
     monkeypatch.setenv("SUPABASE_SERVICE_ROLE_KEY", "k")
@@ -82,10 +100,12 @@ def test_run_copies_pending_photos_and_records_every_attempt(monkeypatch):
     monkeypatch.setattr(pm, "_load_postgres", lambda: ([g + "a", g + "b", g + "a"], {}))
     saved = []
     monkeypatch.setattr(pm, "_save_postgres", saved.extend)
-    monkeypatch.setattr(pm, "copy", lambda url: {"source_url": url, "url": None if url.endswith("b") else "u",
-                                                  "bytes": 1, "failed": None, "mirrored_at": NOW})
-    assert pm.run() == {"pending": 2, "copied": 1, "failed": 1}
-    assert sorted(r["source_url"] for r in saved) == [g + "a", g + "b"]
+    monkeypatch.setattr(pm, "_load_postgres", lambda: ([g + "a", g + "b", g + "a", g + "c"], {}))
+    monkeypatch.setattr(pm, "copy", lambda url: None if url.endswith("c") else {
+        "source_url": url, "url": None if url.endswith("b") else "u", "bytes": 1, "failed": None,
+        "mirrored_at": NOW})
+    assert pm.run() == {"pending": 3, "copied": 1, "failed": 1, "later": 1}
+    assert sorted(r["source_url"] for r in saved) == [g + "a", g + "b"]       # c: not recorded
 
 
 def test_run_without_storage_keys_skips(monkeypatch):
