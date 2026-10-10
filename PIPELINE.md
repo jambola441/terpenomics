@@ -149,6 +149,19 @@ least two stores carry. On the top 300 brands it proposes
 3,122 products covering 61% of their listings. Each entry records its `support` (how
 many stores).
 
+**Photos.** A storefront entry keeps the brand's photo of the product
+(`brand_catalog_entries.image_url`), and a listing whose match to it is trusted shows
+that photo in place of the store's, on every screen and in the order
+(`services/listing_photos.py`). Store photos of one product differed from store to
+store (2.5 per matched product), and some links were dead. Shopify, WooCommerce and
+WordPress sources carry a photo; an html or json recipe names one with
+`source.fields.image` (`"img@src"`, or `"img@data-src"` where the site lazy-loads). The
+reader stores a web-sized copy: Shopify's CDN at 600px (WebP, about 40 KB), the
+nearest rendition WordPress made, and none at all when that still weighs over 400 KB
+(Leal's PNGs), so a brand's print file never reaches a phone. A push refreshes
+photos; `storefront.py photos --brand X` writes them onto the stored entries and
+changes nothing else.
+
 **Pushing is additive.** `brand_catalog.py push` and `catalog_bootstrap.py --push`
 insert new products and refresh metadata (support, last seen), but never
 overwrite a field you curated and never reactivate an entry you took out — a Shopify

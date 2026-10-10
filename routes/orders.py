@@ -32,6 +32,7 @@ from models import (
 )
 from routes_me import get_current_customer, get_onboarded_customer
 from services.display_name import compose as compose_display_name
+from services.listing_photos import listing_photos
 
 
 def _display_name(listing: Listing) -> str:
@@ -178,6 +179,8 @@ def create_order(
         select(Listing).where(Listing.id.in_(list(merged.keys())))
     ).all()
     by_id = {l.id: l for l in listings}
+    # The order keeps the photo the shopper saw on the card.
+    photo = listing_photos(session, listings)
 
     missing = [str(lid) for lid in merged if lid not in by_id]
     if missing:
@@ -215,7 +218,7 @@ def create_order(
             name=_display_name(listing),
             brand=listing.scraped_brand,
             variant=listing.variant,
-            image_url=listing.image_url,
+            image_url=photo(listing),
         ))
 
     order = Order(

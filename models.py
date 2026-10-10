@@ -280,6 +280,10 @@ class BrandCatalogEntry(SQLModel, table=True):
     match_terms: Optional[list[str]] = Field(
         default=None, sa_column=Column("match_terms", TEXT_ARRAY, nullable=True)
     )
+    # The brand's own photo of this product and size, from its site
+    # (scripts/storefront.py; migration 0012). Listings matched to the entry by a
+    # trusted method show it in place of the store's (services/listing_photos.py).
+    image_url: Optional[str] = Field(default=None, sa_type=Text)
 
     is_active: bool = Field(default=True, nullable=False)
 
@@ -424,6 +428,13 @@ class Listing(ListingBase, TimestampMixin, table=True):
     def product_size(self) -> Optional[str]:
         """The size this listing's product page shows and groups on (see `size`)."""
         return self.size if self.size is not None else self.variant
+
+
+# The catalog_match_method values whose entry a listing is trusted to be: the import
+# overlays the entry's identity for these, and the listing shows the entry's photo
+# (services/listing_photos.py). jev_review is recorded for a person to check, not
+# trusted. Mirrors scripts/catalog_match.py TRUSTED_METHODS; tests keep the two equal.
+TRUSTED_MATCH_METHODS = ("attributes", "exact", "substring", "token", "jev", "manual")
 
 
 # Listing.product_size in SQL, for grouping and filtering on product identity.
