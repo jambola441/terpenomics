@@ -14,6 +14,7 @@ const sections = [
   { label: 'Receipts',       path: '/admin/receipts',       icon: 'scan',     desc: 'Customer receipt uploads to review: read the subtotal, award points' },
   { label: 'Partner Stores', path: '/admin/partners',       icon: 'building', desc: 'Non-dispensary partners whose purchases earn Terpee points; connect their Square' },
   { label: 'Brand Catalogs', path: '/admin/brand-catalogs', icon: 'tag',      desc: "Products a brand says it makes — the referent enrichment is checked against" },
+  { label: 'Review Queue',   path: '/admin/review',         icon: 'check-circle', desc: 'Listings the catalog matcher could not settle, one card at a time — your calls become catalog fixes' },
   { label: 'Brand Logos',    path: '/admin/brand-logos',    icon: 'image',    desc: "Each big brand's own logo, picked from its site, for brand tiles and pages" },
 ]
 

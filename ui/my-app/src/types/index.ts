@@ -1046,3 +1046,79 @@ export type BrandLogoRow = {
 }
 
 export type LogoCandidate = { url: string; kind: string }
+
+/* ── Catalog review queue (routes/admin/review.py) ─────────────────────────── */
+
+/** Why the matcher left a listing for review (catalog_match_method). */
+export type ReviewReason = 'review_unsure' | 'review_missing' | 'review_near'
+
+/** entry: it is this candidate · none: none of these · missing: the catalog lacks
+ *  the product or size · skip. Recorded only: nothing else changes. */
+export type ReviewDecisionKind = 'entry' | 'none' | 'missing' | 'skip'
+
+export type ReviewCounts = {
+  total: number
+  decided: number
+  remaining: number
+  by_reason: Record<ReviewReason, { total: number; decided: number }>
+}
+
+export type ReviewBrandProgress = ReviewCounts & { brand: string; has_catalog: boolean }
+
+export type ReviewProgress = {
+  /** Largest remaining first; only the filtered brand when one was asked for. */
+  brands: ReviewBrandProgress[]
+  /** The whole queue, whatever the filter. */
+  totals: ReviewCounts
+  /** The calling reviewer's decisions. */
+  me: { today: number; last_10_min: number }
+}
+
+/** The catalog reading saved on the listing (scripts/catalog_reading.py). `p`
+ *  holds each step's probability, keyed by step (category, subtype, line, strain, size). */
+export type ReviewReading = {
+  category: string | null
+  subtype: string | null
+  product_line: string | null
+  strain: string | null
+  size: string | null
+  store_category: string | null
+  by: string | null
+  p: Record<string, number> | null
+}
+
+export type ReviewCandidate = {
+  id: string
+  name: string
+  product_line: string | null
+  strain: string | null
+  category: string | null
+  subtype: string | null
+  variant: string | null
+  image_url: string | null
+  is_active: boolean
+  /** The matcher's suggestion (the listing's catalog_entry_id). */
+  suggested: boolean
+}
+
+export type ReviewCard = {
+  /** The queue the card is in, spelled as `ReviewProgress.brands[].brand`. */
+  brand: string | null
+  listing: {
+    id: string
+    name: string | null
+    brand: string | null
+    category: string | null
+    store: string
+    variant: string | null
+    size: string | null
+    price_cents: number | null
+    url: string | null
+    image_url: string | null
+    description: string | null
+  }
+  reason: ReviewReason
+  reading: ReviewReading | null
+  candidates: ReviewCandidate[]
+  progress?: ReviewProgress
+}

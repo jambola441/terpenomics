@@ -435,6 +435,14 @@ class Listing(ListingBase, TimestampMixin, table=True):
     attributes: Optional[dict] = Field(
         default=None, sa_column=Column("attributes", JSONB_, nullable=True)
     )
+    # The listing's own reading of what it is (category, subtype, product_line,
+    # strain, size; for a catalog brand also `p`, `by`, `store_category`), saved
+    # before any catalog overlay (db/migrations/0011). Written by the pipeline
+    # (scripts/import_listings.py record_reading, catalog_reading.py); the API only
+    # reads it, for the review queue (routes/admin/review.py).
+    reading: Optional[dict] = Field(
+        default=None, sa_column=Column("reading", JSONB_, nullable=True)
+    )
 
     dispensary:     Dispensary              = Relationship(back_populates="listings")
     purchase_items: list["PurchaseItem"]    = Relationship(back_populates="listing")
@@ -456,6 +464,48 @@ TRUSTED_MATCH_METHODS = ("attributes", "exact", "substring", "token", "jev", "ma
 
 # Listing.product_size in SQL, for grouping and filtering on product identity.
 LISTING_PRODUCT_SIZE = func.coalesce(Listing.size, Listing.variant)
+
+
+# ---------------------------
+# Catalog review queue
+# ---------------------------
+
+# The catalog_match_method values that put a listing in the review queue
+# (scripts/catalog_match.py review_reason).
+REVIEW_REASONS = ("review_unsure", "review_missing", "review_near")
+
+# What a reviewer can say about a listing: it is this catalog entry, none of the
+# entries offered, the catalog lacks the product (or its size), or skip.
+REVIEW_DECISIONS = ("entry", "none", "missing", "skip")
+
+
+class ReviewDecision(SQLModel, table=True):
+    """One person's call on one listing in the catalog review queue.
+
+    Recorded only: a decision never changes the listing's match or the catalog.
+    Every issue is fixed in the catalog, and these rows are what the catalog-fix
+    proposals are drawn up from. A listing with a decision (skip included) leaves
+    the queue; undo deletes the row and puts it back.
+
+    A new table, so create_all makes it at startup; db/migrations/0017 has it on
+    record with the rest.
+    """
+
+    __tablename__ = "review_decisions"
+    __table_args__ = (
+        Index("review_decisions_reviewer_created_at", "reviewer", "created_at"),
+    )
+
+    id:         UUID           = Field(default_factory=uuid4, primary_key=True)
+    listing_id: UUID           = Field(foreign_key="listings.id", index=True, nullable=False)
+    reviewer:   str            = Field(sa_type=Text, nullable=False)
+    decision:   str            = Field(max_length=16, nullable=False)
+    entry_id:   Optional[UUID] = Field(default=None, foreign_key="brand_catalog_entries.id")
+    note:       Optional[str]  = Field(default=None, sa_type=Text)
+    # The listing's catalog_match_method when the call was made: the matcher may
+    # have moved it on since.
+    reason:     Optional[str]  = Field(default=None, max_length=32)
+    created_at: datetime       = Field(default_factory=utcnow, nullable=False)
 
 
 class ListingTerpene(SQLModel, table=True):

@@ -32,6 +32,7 @@ const PartnerDetail = lazy(() => import('./PartnerDetail'))
 const PosOAuthForward = lazy(() => import('./PosOAuthForward'))
 const PartnerPortal = lazy(() => import('./PartnerPortal'))
 const Receipts = lazy(() => import('./Receipts'))
+const ReviewQueue = lazy(() => import('./ReviewQueue'))
 const TermsPage = lazy(() => import('./Legal').then(m => ({ default: m.TermsPage })))
 const PrivacyPage = lazy(() => import('./Legal').then(m => ({ default: m.PrivacyPage })))
 
@@ -68,6 +69,7 @@ function App() {
           <Route path="/admin/partners" element={<Partners />} />
           <Route path="/admin/partners/:partnerId" element={<PartnerDetail />} />
           <Route path="/admin/receipts" element={<Receipts />} />
+          <Route path="/admin/review" element={<ReviewQueue />} />
         </Route>
         <Route path="/pos/oauth/:provider/callback" element={<PosOAuthForward />} />
         <Route path="/partner" element={<PartnerPortal />} />

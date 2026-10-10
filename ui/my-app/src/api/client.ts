@@ -66,6 +66,10 @@ import type {
   AdminReceiptQueue,
   AdminReceiptDetail,
   ReceiptStatus,
+  ReviewCard,
+  ReviewDecisionKind,
+  ReviewProgress,
+  ReviewReason,
 } from '../types'
 
 /** What customers read about a partner, as the admin edits it. */
@@ -705,6 +709,38 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ reason }),
       }),
+  },
+
+  /**
+   * Catalog review queue (routes/admin/review.py). Decisions are recorded only:
+   * they never change a listing's match or the catalog. `tz_offset` is the
+   * browser's getTimezoneOffset(), so "today" is the reviewer's day.
+   */
+  review: {
+    /** The next undecided card, or null when the queue is done. `exclude` passes
+     *  over cards already on screen (prefetching the one after). */
+    next: (params?: { brand?: string; reason?: ReviewReason; exclude?: string[] }) =>
+      authenticatedFetch<ReviewCard | null>(`/admin/review/next${buildQueryString({
+        brand: params?.brand, reason: params?.reason, exclude: params?.exclude?.join(','),
+        tz_offset: new Date().getTimezoneOffset(),
+      })}`),
+
+    progress: (brand?: string) =>
+      authenticatedFetch<ReviewProgress>(`/admin/review/progress${buildQueryString({
+        brand, tz_offset: new Date().getTimezoneOffset(),
+      })}`),
+
+    decide: (data: { listing_id: string; decision: ReviewDecisionKind; entry_id?: string; note?: string }, brand?: string) =>
+      authenticatedFetch<{ id: string; progress: ReviewProgress }>(`/admin/review/decisions${buildQueryString({
+        brand, tz_offset: new Date().getTimezoneOffset(),
+      })}`, { method: 'POST', body: JSON.stringify(data) }),
+
+    /** Delete my last decision; its card comes back (null if it left the queue since). */
+    undo: (brand?: string) =>
+      authenticatedFetch<{ listing_id: string; card: ReviewCard | null; progress: ReviewProgress }>(
+        `/admin/review/undo${buildQueryString({ brand, tz_offset: new Date().getTimezoneOffset() })}`,
+        { method: 'POST' },
+      ),
   },
 
   /**
