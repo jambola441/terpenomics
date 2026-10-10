@@ -45,7 +45,11 @@ FLAGS: dict[str, dict] = {
         "about": "Line filter on brand pages, lines in search, the product page's "
                  "breadcrumb and its More in this line row.",
     },
-    "lines_grouped": {"built": False, "about": "Shelves and Overview for brands that pass the grouping rule."},
+    "lines_grouped": {
+        "built": True,
+        "about": "Brand pages laid out as one shelf per product line, for categories that "
+                 "pass the grouping rule (components/LineShelves.tsx). Needs `lines`.",
+    },
     "line_page": {"built": False, "about": "Line page, Compare, route strip, flavours not on NYC shelves."},
     "browse_views": {"built": False, "about": "List and Map views on brand and category pages."},
     "price_per_unit": {"built": False, "about": "Price per mg or gram: sort, filter and column."},
