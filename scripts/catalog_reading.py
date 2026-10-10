@@ -60,7 +60,7 @@ import sizes  # noqa: E402
 
 # Bump when a question or option text changes: cached answers to an older question are
 # then asked again.
-QUESTION_VERSION = 1
+QUESTION_VERSION = 2
 
 # Subtype and line narrow the next question's options only at or above this; below it
 # the answer is left out of the reading.
@@ -83,14 +83,26 @@ STRAIN_Q = ("Which of these is this product's strain or flavor: the name that te
             "brand's other products? A flavor counts as the strain for edibles, drinks, vapes and "
             "topicals. Stores often add, drop or reorder words, so pick the one that names the same "
             "product. It is never the brand, a format, a size or a potency. Choose none if the "
-            "strain is not one of these.")
+            "strain is not one of these. Examples: 'Beverage Enhancer' is 'Unflavored Beverage "
+            "Enhancer' (a store dropped a word); 'ATF' and 'Alaskan Thunder Fuck' are 'Alaskan "
+            "Thunder Fu*k' (initials or a censored spelling name the same strain); where the "
+            "options are '1:1:1 Dark Chocolate' and 'Dark Chocolate', a listing that states a "
+            "ratio ('1:1:1 CBD:CBN:THC') is the one with that ratio and a listing with no ratio "
+            "('Dark Chocolate - THC') is the one without.")
 SIZE_Q = ("This listing is the product named in 'product'. Which of that product's packages is it? "
           "Stores often give only part of the size: just the package's total ('100mg') or just the "
           "count ('10pk'). A listing that states only the total or only the count is the package "
           "with that total or count. A package's mg is its total THC (or THCA) only, never CBD, "
           "CBN, CBG or other cannabinoids: a can of '5mg THC : 5mg CBD' is 5mg, even where the "
           "store's size field adds them up to 10mg. Choose none only if the listing states a total "
-          "or count that none of these packages has.")
+          "or count that none of these packages has. Examples: '10mg / 10pc' or '10 x 10mg' is "
+          "10 pieces of 10mg, the '10pk 100mg' package; '100mg THC : 100mg CBN | 20pk' and "
+          "'10:2 THC:CBD | 100mg' are 100mg; a tincture of '150mg THC : 450mg CBD' is 150mg even "
+          "where the size field says 600mg; '5pk 0.6g' or '5 x 0.6g' pre-rolls are 3g in total, "
+          "the '3g' package; '.75g 2-pack' is 1.5g; '7pk 5g' and '10 Hash Infused Pre-Rolls' with "
+          "a size field of 5g are the '5g' package; '7pk' alone is the package of 7. When the "
+          "name or the size field states exactly one package's size, that is the package, even "
+          "where it is the only one listed.")
 
 # (question key, catalog entry field, reading field, instructions)
 STEPS = (("category", "category", "category", CATEGORY_Q),
