@@ -176,6 +176,9 @@ def reading(name: str, brand: str, subtype: str | None = None, category: str | N
                                                     or _key(c) in line_finish(brand, line))]
         colour = "/".join(keep) or None
     size = _MERCH.variant(name, None)
+    if sub in (None, "filter-tip") and not _TIP_NAMES.search(name or "") and size \
+            and "w/tips" in size and parse_size(size).width:
+        sub = "paper"                       # "Premium Slim King Size Plus Tips": a paper width with its tips
     if sub == "cone":
         size = cone_width(size)
     if sub == "filter-tip":

@@ -179,3 +179,11 @@ def test_a_recipe_adds_sizes_the_site_leaves_out():
     extra = {"paper": {"Classic Artesano": ["king size 32ct w/tips", "1 1/4 w/tips"], "Unlisted": ["king size"]}}
     got = sf._merch_extra_sizes(site, extra)
     assert [(e["product_key"], e["variant"]) for e in got] == [("k", "king size 32ct w/tips")]
+
+
+def test_a_paper_width_with_plus_tips_is_papers_not_tips():
+    """OCB's "Premium Slim King Size Plus Tips" is the king size paper with its tips, even
+    where the store filed it as a filter tip; a tips booklet stays tips."""
+    r = mc.reading("OCB | Premium Slim King Size Plus Tips", "OCB", "filter-tip", "merch")
+    assert (r["subtype"], r["size"]) == ("paper", "king size w/tips")
+    assert mc.reading("OCB Premium Flat Paper Tips Booklet", "OCB", None, "merch")["subtype"] == "filter-tip"
