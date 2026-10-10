@@ -93,7 +93,7 @@ export default function BrandView({ brandName, onBack, onOpenProduct }: Props) {
         <BackButton onClick={onBack} glass />
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 18 }}>
-          <BrandMark name={brandName} imageUrl={data?.image_url} size={60} />
+          <BrandMark name={brandName} imageUrl={data?.logo_url ?? data?.image_url} size={60} />
 
           <div style={{ minWidth: 0 }}>
             <PageTitle>{brandName}</PageTitle>

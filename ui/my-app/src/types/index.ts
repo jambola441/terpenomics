@@ -384,6 +384,8 @@ export type PortalBrand = {
   name: string
   listing_count: number
   image_url: string | null
+  /** The brand's own logo, picked in the admin; absent from an API that predates it. */
+  logo_url?: string | null
 }
 
 export type PortalCategory = {
@@ -427,6 +429,7 @@ export type PortalProductDetail = PortalBrandProduct & {
 export type PortalBrandDetail = {
   name: string
   image_url: string | null
+  logo_url?: string | null
   product_count: number
   dispensary_count: number
   products: PortalBrandProduct[]
@@ -952,3 +955,16 @@ export type AdminReceiptQueue = {
   counts: Record<ReceiptStatus, number>
   items: AdminReceipt[]
 }
+
+/** A brand in the admin's logo picker (routes/admin/brand_logos.py). */
+export type BrandLogoRow = {
+  brand_key: string
+  brand_name: string
+  listing_count: number
+  logo_url: string | null
+  site_url: string | null
+  chosen_by: string | null
+  updated_at: string | null
+}
+
+export type LogoCandidate = { url: string; kind: string }

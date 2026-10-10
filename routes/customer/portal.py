@@ -15,6 +15,7 @@ from models import (
 from routes.admin.serializers import serialize_purchase_item
 from services.display_name import compose as compose_display_name
 from services.listing_photos import listing_photos
+from services.brand_logos import logos_for
 from services.market import context_for, context_or_empty
 from services.response_cache import cached_json
 
@@ -87,7 +88,9 @@ def list_portal_brands(
     rows = session.exec(
         stmt.group_by(Listing.scraped_brand).order_by(order).offset(offset).limit(limit)
     ).all()
-    return [{"name": r.scraped_brand, "listing_count": r.cnt, "image_url": r.image_url} for r in rows]
+    logo = logos_for(session, (r.scraped_brand for r in rows))
+    return [{"name": r.scraped_brand, "listing_count": r.cnt, "image_url": r.image_url,
+             "logo_url": logo.get(r.scraped_brand)} for r in rows]
 
 
 # ---------------------------
@@ -195,6 +198,7 @@ def _build_portal_brand(session: Session, brand_name: str, in_stock: bool) -> di
     return {
         "name": brand_name,
         "image_url": brand_image,
+        "logo_url": logos_for(session, [brand_name]).get(brand_name),
         "product_count": len(product_list),
         "dispensary_count": len(dispensary_ids),
         "products": product_list,

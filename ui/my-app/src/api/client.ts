@@ -1,5 +1,7 @@
 import supabase from '../utils/supabase'
 import type {
+  BrandLogoRow,
+  LogoCandidate,
   Customer,
   Product,
   Purchase,
@@ -458,6 +460,34 @@ export const api = {
    * every response carries an `export` block and nothing is really live until
    * `regenerateExport` has run.
    */
+  /** Brand logos, picked from each brand's own site (routes/admin/brand_logos.py). */
+  brandLogos: {
+    list: (params?: { q?: string; limit?: number }) =>
+      authenticatedFetch<BrandLogoRow[]>(`/admin/brand-logos${buildQueryString(params)}`),
+
+    candidates: (brandKey: string, siteUrl: string) =>
+      authenticatedFetch<{ site_url: string; candidates: LogoCandidate[] }>(
+        `/admin/brand-logos/${encodeURIComponent(brandKey)}/candidates`,
+        { method: 'POST', body: JSON.stringify({ site_url: siteUrl }) },
+      ),
+
+    choose: (brandKey: string, data: { brand_name: string; image_url: string; site_url?: string | null }) =>
+      authenticatedFetch<BrandLogoRow>(`/admin/brand-logos/${encodeURIComponent(brandKey)}`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    upload: (brandKey: string, brandName: string, file: File) => {
+      const form = new FormData()
+      form.append('brand_name', brandName)
+      form.append('file', file)
+      return authenticatedUpload<BrandLogoRow>(`/admin/brand-logos/${encodeURIComponent(brandKey)}/upload`, form)
+    },
+
+    remove: (brandKey: string) =>
+      authenticatedFetch<{ ok: boolean }>(`/admin/brand-logos/${encodeURIComponent(brandKey)}`, { method: 'DELETE' }),
+  },
+
   brandCatalogs: {
     list: (params?: { q?: string; limit?: number; offset?: number }) =>
       authenticatedFetch<BrandCatalogRow[]>(`/admin/brand-catalogs${buildQueryString(params)}`),
