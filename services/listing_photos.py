@@ -9,7 +9,9 @@ image_url, read by scripts/storefront.py).
 A listing shows the catalog's photo when its match to the entry is trusted
 (models.TRUSTED_MATCH_METHODS: the matches whose identity the import already
 takes) and the entry has one. Otherwise, and for every listing of a brand without
-a storefront catalog, it shows the store's.
+a storefront catalog, it shows the store's: our own web-sized copy where the
+store's host cannot resize (photo_mirrors, scripts/photo_mirror.py), else the
+original.
 
     photo = listing_photos(session, listings)
     ... "image_url": photo(listing) ...
@@ -26,7 +28,7 @@ from uuid import UUID
 
 from sqlmodel import Session, select
 
-from models import TRUSTED_MATCH_METHODS, BrandCatalogEntry
+from models import TRUSTED_MATCH_METHODS, BrandCatalogEntry, PhotoMirror
 
 # Postgres takes far more, but a few thousand ids a statement keeps each one small.
 _CHUNK = 2000
@@ -40,8 +42,10 @@ def _trusted_entry(listing: Any) -> Optional[UUID]:
 
 
 def listing_photos(session: Session, listings: Iterable[Any]) -> Callable[[Any], Optional[str]]:
-    """photo(listing): the catalog's photo for a trusted match that has one, else the
-    store's. `listings` is every listing the caller will ask about."""
+    """photo(listing): the catalog's photo for a trusted match that has one, else our
+    copy of the store's, else the store's. `listings` is every listing the caller will
+    ask about."""
+    listings = list(listings)
     entry_ids = list({e for e in (_trusted_entry(l) for l in listings) if e})
     by_entry: dict[UUID, str] = {}
     for i in range(0, len(entry_ids), _CHUNK):
@@ -52,8 +56,21 @@ def listing_photos(session: Session, listings: Iterable[Any]) -> Callable[[Any],
         ).all()
         by_entry.update({entry_id: url for entry_id, url in rows if url})
 
-    def photo(listing: Any) -> Optional[str]:
+    def catalog(listing: Any) -> Optional[str]:
         entry_id = _trusted_entry(listing)
-        return (by_entry.get(entry_id) if entry_id else None) or listing.image_url
+        return by_entry.get(entry_id) if entry_id else None
+
+    store_urls = list({l.image_url for l in listings if l.image_url and not catalog(l)})
+    copies: dict[str, str] = {}
+    for i in range(0, len(store_urls), _CHUNK):
+        rows = session.exec(
+            select(PhotoMirror.source_url, PhotoMirror.url)
+            .where(PhotoMirror.source_url.in_(store_urls[i:i + _CHUNK]))
+            .where(PhotoMirror.url.is_not(None))
+        ).all()
+        copies.update({source: url for source, url in rows if url})
+
+    def photo(listing: Any) -> Optional[str]:
+        return catalog(listing) or copies.get(listing.image_url) or listing.image_url
 
     return photo

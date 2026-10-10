@@ -608,6 +608,23 @@ class OrderItem(SQLModel, table=True):
 # Curation
 # ---------------------------
 
+class PhotoMirror(SQLModel, table=True):
+    """A store photo copied into Terpee's own storage at web sizes, because its host
+    cannot resize on request (scripts/photo_mirror.py; migration 0013). `url` is the
+    640px copy, with a 320px one beside it; a failed copy keeps `failed` and no url."""
+
+    __tablename__ = "photo_mirrors"
+
+    source_url: str = Field(primary_key=True, sa_type=Text)
+    url: Optional[str] = Field(default=None, sa_type=Text)
+    bytes: Optional[int] = None
+    failed: Optional[str] = Field(default=None, sa_type=Text)
+    mirrored_at: datetime = Field(
+        default_factory=utcnow_tz,
+        sa_column=Column("mirrored_at", DateTime(timezone=True), nullable=False),
+    )
+
+
 class FeaturedListing(SQLModel, table=True):
     """A listing a store (or an admin) wants shown first.
 
