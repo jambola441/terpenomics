@@ -197,6 +197,9 @@ def build_record(row: dict, dispensary_id: str, now: datetime) -> dict | None:
         "updated_at": now,
         "last_seen_at": now,
         "_enrich_failed": parse_bool(row.get("enrich_failed", "")),
+        # The store's own filing ("Vaporizers", "Vape Pens"), before map_category: kept
+        # on the reading for catalog_reading's category question.
+        "_store_category": _clean(row, "raw_category"),
     }
 
 
@@ -248,6 +251,8 @@ def record_reading(records: list[dict], existing: dict[tuple, dict]) -> None:
             rec["reading"] = (stored or {}).get("reading")
         else:
             rec["reading"] = {k: rec.get(col) or None for k, col in READING}
+        if rec.get("_store_category") and rec["reading"] is not None:
+            rec["reading"] = dict(rec["reading"], store_category=rec["_store_category"])
 
 
 def protect_failed_enrichment(records: list[dict], existing: dict[tuple, dict]) -> int:
@@ -328,6 +333,8 @@ def apply_catalog(records: list[dict], existing: dict[tuple, dict], catalogs: di
                      "subtype": records[i]["subtype"],
                      "variant": records[i]["variant"],
                      "description": records[i].get("description"),
+                     "store_category": records[i].get("_store_category")
+                     or (records[i].get("reading") or {}).get("store_category"),
                      "reading": records[i].get("reading")} for i in idxs]
         if use_jev and catalog_reading_on():
             # The listing read in its catalog's own values (catalog_reading), which the

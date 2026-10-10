@@ -167,3 +167,13 @@ def test_the_strain_is_asked_again_from_the_name_and_a_disagreement_is_not_trust
 
 def test_category_is_not_held_to_a_bar():
     assert resolve(reading(p={"category": 0.5})).method == "attributes"
+
+
+def test_the_stores_own_category_filing_is_in_the_state(monkeypatch):
+    ask, asked = fake({"category": ("edible", 0.99), "subtype": ("gummy", 0.97),
+                       "line": ("Gummies", 0.95), "strain": ("Wild Cherry Excite", 0.98),
+                       "size": ("10pk 100mg", 0.93)})
+    monkeypatch.setattr(jev, "ask_many", ask)
+    got = cr.read(CAMINO, [dict(LISTING, store_category="Edibles")], cache=NoCache())["1"]
+    assert all(state.get("store_category") == "Edibles" for _, state, _ in asked)
+    assert got["store_category"] == "Edibles"

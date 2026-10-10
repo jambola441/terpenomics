@@ -80,6 +80,7 @@ def read_by_catalog(listings: list[dict]) -> dict[str, dict]:
             by_brand.setdefault(key, []).append(
                 {"id": l["id"], "name": l.get("scraped_name") or "", "variant": l.get("variant"),
                  "description": l.get("description"), "category": l.get("scraped_category"),
+                 "store_category": (l.get("reading") or {}).get("store_category"),
                  "subtype": l.get("subtype")})
     usage = jev.Usage()
     out: dict[str, dict] = {}

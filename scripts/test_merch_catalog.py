@@ -51,7 +51,7 @@ def test_the_matcher_joins_merch_on_its_attributes():
                 {"id": 8, "name": "Pax - Era Go Battery - Sky", "category": "merch", "subtype": "battery"}]
     gold, sky = cm.resolve(catalog, listings, use_jev=False)
     assert (gold.method, gold.entry["name"]) == ("attributes", "Era Go Gold Battery")
-    assert sky.method == "none"                                   # no Sky in the catalog
+    assert sky.method == "review_near"     # no Sky in the catalog: a near miss for review
 
 
 def test_a_brands_unlined_paper_is_its_default_line_and_black_is_a_line():

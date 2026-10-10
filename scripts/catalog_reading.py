@@ -13,7 +13,7 @@ offering only the catalog's values that fit the answers before it (owner's desig
 
   * category and subtype options carry the classifier's definitions
     (jev_classify.CATEGORY_CRITERIA / SUBTYPE_CRITERIA), so "chews" reads as a gummy;
-  * the store's description is in the state;
+  * the store's description and its own category filing are in the state;
   * subtype and line narrow the options only on a confident answer (p >= NARROW_AT);
     an unsure one is left blank in the reading and the next question sees every value,
     so a wrong line cannot hide the right strain;
@@ -128,6 +128,10 @@ def option_label(key: str, value: str, category: str | None) -> str:
 def base_state(brand: str, listing: dict) -> dict:
     state = {"brand": brand, "name": listing.get("name") or "",
              "store_size_field": listing.get("variant") or ""}
+    if listing.get("store_category"):
+        # The store's own filing: names often leave the format out ("Gelato | ROVE
+        # Classics | 1g" is a cart, filed under Vaporizers).
+        state["store_category"] = listing["store_category"]
     text = html.unescape(re.sub(r"<[^>]+>", " ", listing.get("description") or ""))
     text = " ".join(text.split())[:DESCRIPTION_CHARS]
     if text:
@@ -205,8 +209,8 @@ def read(catalog: dict, listings: list[dict], *, usage: jev.Usage | None = None,
     probability, and `by` = "catalog". A listing Jev could not answer for is left out:
     the caller keeps the reading it has. Merch is left out too (merch_catalog reads it).
 
-    Listings are dicts with id, name, variant, description and, for merch, category and
-    subtype."""
+    Listings are dicts with id, name, variant, description, store_category (the store's
+    own filing, when known) and, for merch, category and subtype."""
     import catalog_match
     brand = catalog.get("brand_name") or ""
     entries = [e for e in catalog.get("entries") or [] if e.get("is_active", True)]
@@ -271,6 +275,8 @@ def read(catalog: dict, listings: list[dict], *, usage: jev.Usage | None = None,
         r = {f: w.reading.get(f) for f in ("category", "subtype", "strain", "product_line", "size")}
         if "strain_from_name" in w.reading:
             r["strain_from_name"] = w.reading["strain_from_name"]
+        if w.listing.get("store_category"):
+            r["store_category"] = w.listing["store_category"]
         out[str(w.listing["id"])] = dict(r, p=w.p, by="catalog")
     return out
 

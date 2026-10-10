@@ -226,9 +226,9 @@ def test_a_mistyped_dose_is_stored_with_its_catalog_size(db, tmp_path):
                        product_line="Gummies", **gummy),
                    row("C", "Acme Blue Dream", strain="Blue Dream")])
     db.execute("SELECT sku, variant, size, catalog_match_method FROM listings ORDER BY sku")
-    # A's 50mg is no size the product comes in: no join (Jev, off here, would decide it,
-    # and a trusted Jev match takes the catalog's size). B joins and keeps its size.
-    assert db.fetchall() == [("A", "50mg", "50mg", None), ("B", "100mg", "100mg", "attributes"),
+    # A's 50mg is no size the product comes in: no join; one attribute from the product,
+    # so it goes to the review queue as a near miss. B joins and keeps its size.
+    assert db.fetchall() == [("A", "50mg", "50mg", "review_near"), ("B", "100mg", "100mg", "attributes"),
                              ("C", "3.5g", "3.5g", None)]
 
 
@@ -253,38 +253,41 @@ def test_only_a_trusted_match_corrects_a_size():
 
 
 def _fake_jev(monkeypatch, probability):
-    """Jev answers the first product option with `probability`, the rest to none."""
+    """Jev reads each listing against the catalog (catalog_reading): every question
+    answers its first catalog option, the strain with `probability`, the rest surely."""
     def ask_many(jobs, workers=8, usage=None, model=None, on_error=None):
         out = []
         for state, questions in jobs:
-            options = list(questions["product"].criteria)
-            pick = options[1]
+            [(key, q)] = questions.items()
+            pick = list(q.criteria)[1]
+            p = probability if key == "strain" else 0.99
             out.append(jev.Result(
-                answers={"product": {"type": "choice", "choice": pick,
-                                     "probabilities": {pick: probability, "none": 1 - probability}}},
+                answers={key: {"type": "choice", "choice": pick,
+                               "probabilities": {pick: p, "none": 1 - p}}},
                 model="fake", input_tokens=10, cost_usd=0.0, latency_s=0.0))
         return out
     monkeypatch.setattr(jev, "available", lambda: True)
     monkeypatch.setattr(jev, "ask_many", ask_many)
 
 
-def test_confident_jev_match_overlays(db, tmp_path, monkeypatch):
+def test_a_sure_catalog_reading_joins_and_overlays(db, tmp_path, monkeypatch):
     _fake_jev(monkeypatch, 0.95)
     add_catalog(db, [{"name": "blue dream", "category": "flower", "strain": "Blue Dream",
                       "product_line": "Gold", "subtype": "smalls", "variant": "3.5g"}])
     run(tmp_path, [row("A", "Acme | Blue Dream Smalls | 3.5g", strain="Blue Dream Smalls", subtype="smalls")])
     [r] = listings(db)
-    assert r["catalog_match_method"] == "jev" and r["catalog_match_confidence"] == pytest.approx(0.95)
+    assert r["catalog_match_method"] == "attributes"
     assert (r["strain"], r["product_line"], r["subtype"]) == ("Blue Dream", "Gold", "smalls")
+    assert r["reading"]["by"] == "catalog" and r["reading"]["strain"] == "Blue Dream"
 
 
-def test_unsure_jev_match_goes_to_review_without_overlay(db, tmp_path, monkeypatch):
+def test_an_unsure_catalog_reading_goes_to_review_without_overlay(db, tmp_path, monkeypatch):
     _fake_jev(monkeypatch, 0.6)
     add_catalog(db, [{"name": "blue dream", "category": "flower", "strain": "Blue Dream",
                       "product_line": "Gold", "variant": "3.5g"}])
     run(tmp_path, [row("A", "Acme | Blue Dream | 3.5g", strain="Blue Dreem")])
     [r] = listings(db)
-    assert r["catalog_match_method"] == "jev_review" and r["catalog_entry_id"] is not None
+    assert r["catalog_match_method"] == "review_unsure" and r["catalog_entry_id"] is not None
     assert (r["strain"], r["product_line"]) == ("Blue Dreem", None)
 
 
@@ -431,3 +434,14 @@ def test_a_rescrape_without_a_url_keeps_the_stored_one(db, tmp_path):
     assert run(tmp_path, [row("A", "Acme Blue Dream", product_url=link + "-v2")], name="3.csv") == 0
     db.execute("SELECT url FROM listings WHERE sku = 'A'")
     assert db.fetchone()[0] == link + "-v2"
+
+
+def test_the_stores_own_category_is_kept_on_the_reading():
+    from datetime import datetime, timezone
+    rec = import_listings.build_record(
+        {"name": "Punch | ROVE Classics | 1g", "brand": "Rove", "category": "vaporizers",
+         "raw_category": "Vaporizers", "sku": "1", "strain": "Punch", "variant": "1g"},
+        "d1", datetime.now(timezone.utc))
+    import_listings.record_reading([rec], {})
+    assert rec["reading"]["store_category"] == "Vaporizers"
+    assert rec["reading"]["category"] == "vaporizers"
