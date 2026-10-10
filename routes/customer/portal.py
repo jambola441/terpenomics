@@ -14,6 +14,7 @@ from models import (
 )
 from routes.admin.serializers import serialize_purchase_item
 from services.display_name import compose as compose_display_name
+from services.listing_photos import listing_photos
 from services.market import context_for, context_or_empty
 from services.response_cache import cached_json
 
@@ -123,6 +124,7 @@ def _build_portal_brand(session: Session, brand_name: str, in_stock: bool) -> di
     rows = session.exec(stmt).all()
     if not rows:
         raise HTTPException(status_code=404, detail="brand not found")
+    photo = listing_photos(session, [listing for listing, _ in rows])
 
     # Group listings into products by the 6-tuple identity (brand is fixed here).
     # Each product carries its per-dispensary offerings so the client can compute
@@ -132,8 +134,8 @@ def _build_portal_brand(session: Session, brand_name: str, in_stock: bool) -> di
     dispensary_ids = set()
 
     for listing, dispensary in rows:
-        if brand_image is None and listing.image_url:
-            brand_image = listing.image_url
+        if brand_image is None and photo(listing):
+            brand_image = photo(listing)
         dispensary_ids.add(str(dispensary.id))
 
         key = (
@@ -161,13 +163,13 @@ def _build_portal_brand(session: Session, brand_name: str, in_stock: bool) -> di
                 "product_line": listing.product_line,
                 "strain": listing.strain,
                 "variant": listing.product_size,
-                "image_url": listing.image_url,
+                "image_url": photo(listing),
                 "offerings": [],
             }
             products[key] = product
 
-        if product["image_url"] is None and listing.image_url:
-            product["image_url"] = listing.image_url
+        if product["image_url"] is None and photo(listing):
+            product["image_url"] = photo(listing)
 
         product["offerings"].append({
             "listing_id": str(listing.id),
@@ -258,11 +260,12 @@ def get_portal_product(
         raise HTTPException(status_code=404, detail="product not found")
 
     first_listing = rows[0][0]
+    photo = listing_photos(session, [listing for listing, _ in rows])
     offerings = []
     image_url = None
     for listing, dispensary in rows:
-        if image_url is None and listing.image_url:
-            image_url = listing.image_url
+        if image_url is None and photo(listing):
+            image_url = photo(listing)
         offerings.append({
             "listing_id": str(listing.id),
             "dispensary_id": str(dispensary.id),
@@ -358,6 +361,7 @@ def _build_portal_category(session: Session, category_name: str, in_stock: bool)
             Listing.id, Listing.scraped_brand, Listing.scraped_category, Listing.subtype,
             Listing.product_line, Listing.strain, LISTING_PRODUCT_SIZE.label("variant"), Listing.scraped_name,
             Listing.image_url, Listing.price_cents, Listing.in_stock, Listing.url,
+            Listing.catalog_entry_id, Listing.catalog_match_method,
             Dispensary.id.label("d_id"), Dispensary.name.label("d_name"),
             Dispensary.slug.label("d_slug"), Dispensary.lat, Dispensary.lng,
         )
@@ -394,9 +398,10 @@ def _build_portal_category(session: Session, category_name: str, in_stock: bool)
     dispensaries: list[dict] = []
     dispensary_index: dict[str, int] = {}
 
+    photo = listing_photos(session, rows)
     for listing in rows:
-        if category_image is None and listing.image_url:
-            category_image = listing.image_url
+        if category_image is None and photo(listing):
+            category_image = photo(listing)
         d_id = str(listing.d_id)
         idx = dispensary_index.get(d_id)
         if idx is None:
@@ -438,13 +443,13 @@ def _build_portal_category(session: Session, category_name: str, in_stock: bool)
                 "product_line": listing.product_line,
                 "strain": listing.strain,
                 "variant": listing.variant,
-                "image_url": listing.image_url,
+                "image_url": photo(listing),
                 "offerings": [],
             }
             products[key] = product
 
-        if product["image_url"] is None and listing.image_url:
-            product["image_url"] = listing.image_url
+        if product["image_url"] is None and photo(listing):
+            product["image_url"] = photo(listing)
 
         offering = {"dispensary_index": idx, "price_cents": listing.price_cents}
         # A branded product opens the brand-product view, which is addressed by
@@ -576,6 +581,7 @@ def get_dispensary_listings(
     listings = session.exec(
         select(Listing).where(Listing.id.in_(listing_ids)).order_by(Listing.scraped_name)
     ).all()
+    photo = listing_photos(session, listings)
 
     terpene_map: dict[str, list] = {}
     for link, t in session.exec(
@@ -623,7 +629,7 @@ def get_dispensary_listings(
             "price_cents": listing.price_cents,
             "variant": listing.product_size,
             "url": listing.url,
-            "image_url": listing.image_url,
+            "image_url": photo(listing),
             "in_stock": listing.in_stock,
             "terpenes": terpene_map.get(lid, []),
             "cannabinoids": cannabinoid_map.get(lid, []),
@@ -735,6 +741,8 @@ def _similar_at_dispensary(session: Session, listing: Listing, limit: int = 10) 
         if len(found) >= limit:
             break
 
+    chosen = list(found.values())[:limit]
+    photo = listing_photos(session, chosen)
     return [
         {
             "id": str(row.id),
@@ -753,9 +761,9 @@ def _similar_at_dispensary(session: Session, listing: Listing, limit: int = 10) 
             "product_line": row.product_line,
             "variant": row.product_size,
             "price_cents": row.price_cents,
-            "image_url": row.image_url,
+            "image_url": photo(row),
         }
-        for row in list(found.values())[:limit]
+        for row in chosen
     ]
 
 
@@ -828,7 +836,7 @@ def get_dispensary_listing(
         "price_cents": listing.price_cents,
         "variant": listing.product_size,
         "url": listing.url,
-        "image_url": listing.image_url,
+        "image_url": listing_photos(session, [listing])(listing),
         "in_stock": listing.in_stock,
         "description": listing.description,
         "terpenes": terpenes,

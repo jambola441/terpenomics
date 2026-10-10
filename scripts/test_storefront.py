@@ -518,3 +518,94 @@ def test_merch_counts_are_widths_to_counts():
     storefront.validate({**base, "merch_counts": {"paper": {"1 1/4": [50]}}})
     with pytest.raises(SystemExit):
         storefront.validate({**base, "merch_counts": {"paper": {"1 1/4": 50}}})
+
+
+# --- photos -------------------------------------------------------------------
+#
+# A catalog entry keeps the brand's photo (image_url, migration 0012), which a
+# listing matched to it shows in place of the store's.
+
+def test_a_shopify_variant_photo_beats_the_products_first():
+    p = product(20, "Mule Fuel | Eighth Ounce", "Flower", variants=("3.5g", "7g"))
+    p["images"] = [{"src": "https://cdn.shopify.com/mule.png"}]
+    p["variants"][1]["featured_image"] = {"src": "https://cdn.shopify.com/mule-7g.png"}
+    items = storefront.shopify(FLORIST["source"], get=fake_get([{"products": [p]}]))
+    # At web size: Shopify's CDN resizes on request.
+    assert [i.image for i in items] == ["https://cdn.shopify.com/mule.png?width=600",
+                                        "https://cdn.shopify.com/mule-7g.png?width=600"]
+    doc, _ = storefront.build(FLORIST, items)
+    assert {e["image_url"] for e in doc["entries"]} == {i.image for i in items}
+
+
+def test_woocommerce_and_wordpress_photos():
+    page = [{"id": 1, "name": "H-Bar", "categories": [], "tags": [], "permalink": "https://x/h",
+             "images": [{"src": "https://x/h.jpg",
+                         "srcset": "https://x/h.jpg 2000w, https://x/h-300.jpg 300w, https://x/h-768.jpg 768w"},
+                        {"src": "https://x/h2.jpg"}],
+             "variations": [{"id": 11, "attributes": [{"value": "1g"}]}]}]
+    [wc] = storefront.woocommerce({"url": "https://x/wp-json/wc/store/v1/products"},
+                                  get=lambda url: page if "page=1" in url else [])
+    assert wc.image == "https://x/h-768.jpg"                # the smallest at least 600 wide
+
+    post = {"id": 7, "title": {"rendered": "Mango Haze"}, "link": "https://hk/p/7",
+            "_embedded": {"wp:featuredmedia": [{
+                "source_url": "https://hk/up/mango-4000px.png",
+                "media_details": {"sizes": {
+                    "thumbnail": {"width": 150, "source_url": "https://hk/up/mango-150.png"},
+                    "medium_large": {"width": 768, "source_url": "https://hk/up/mango-768.png"},
+                    "large": {"width": 1024, "source_url": "https://hk/up/mango-1024.png"}}}}]}}
+    [wp] = storefront.wordpress({"url": "https://hk/wp-json/wp/v2/product"},
+                                get=lambda u: [post] if "page=1" in u else [])
+    assert wp.image == "https://hk/up/mango-768.png"       # a web size, not the upload
+    del post["_embedded"]["wp:featuredmedia"][0]["media_details"]
+    [wp] = storefront.wordpress({"url": "https://hk/wp-json/wp/v2/product"},
+                                get=lambda u: [post] if "page=1" in u else [])
+    assert wp.image == "https://hk/up/mango-4000px.png"
+
+
+def test_an_html_recipe_names_its_photo_and_a_split_keeps_it():
+    src = storefront.validate({
+        "brand": "Pax", "source": {
+            "kind": "html", "url": "https://pax.example/pods", "item": "div.card",
+            "fields": {"title": "h3", "variant": ".sizes", "image": "img@data-src"},
+            "split": {"field": "variant", "find": r"\d+(?:\.\d+)?G"}},
+        "category": [{"set": {"category": "vaporizers"}}],
+        "title": [{"match": "(?P<strain>.+)"}]})["source"]
+    html = ('<div class="card"><img data-src="/img/gsc.png"><img data-src="/img/x.png">'
+            '<h3>GSC</h3><span class="sizes">0.5G, 1G</span></div>')
+    items = storefront.split_items(storefront.html_cards(src, get_text=lambda url, post=None: html),
+                                   src["split"])
+    assert [(i.variant, i.image) for i in items] == [("0.5G", "https://pax.example/img/gsc.png"),
+                                                     ("1G", "https://pax.example/img/gsc.png")]
+    assert "image" not in items[0].fields
+
+
+def test_a_repeated_product_takes_a_photo_from_whichever_copy_has_one():
+    a = product(30, "Mule Fuel | Eighth Ounce", "Flower")
+    b = product(31, "Mule Fuel | Eighth Ounce", "Flower")
+    b["images"] = [{"src": "https://cdn.shopify.com/mule.png"}]
+    doc, report = storefront.build(FLORIST, storefront.shopify(
+        FLORIST["source"], get=fake_get([{"products": [a, b]}])))
+    assert report["duplicates_collapsed"] == 1
+    assert [e["image_url"] for e in doc["entries"]] == ["https://cdn.shopify.com/mule.png?width=600"]
+
+
+def test_web_photo_resizes_only_what_the_cdn_can():
+    from brand_catalog import web_photo
+
+    assert web_photo("https://cdn.shopify.com/s/files/a.png?v=17&width=2048") == \
+        "https://cdn.shopify.com/s/files/a.png?v=17&width=600"
+    assert web_photo("https://brand.example/cdn/shop/files/a.png") == \
+        "https://brand.example/cdn/shop/files/a.png?width=600"
+    assert web_photo("https://hk/up/mango.png") == "https://hk/up/mango.png"
+    assert web_photo(None) is None
+
+
+def test_a_photo_too_heavy_for_a_phone_is_left_out():
+    items = [storefront.Item("1", "a", image="https://x/light.png"),
+             storefront.Item("2", "b", image="https://x/heavy.png"),
+             storefront.Item("3", "c", image="https://x/unknown.png"),
+             storefront.Item("4", "d")]
+    weights = {"https://x/light.png": 40_000, "https://x/heavy.png": 900_000}
+    out = storefront.drop_heavy_photos(items, weigh=weights.get)
+    assert [i.image for i in out] == ["https://x/light.png", None, "https://x/unknown.png", None]

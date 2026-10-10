@@ -32,6 +32,7 @@ import json
 import os
 import re
 import sys
+import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
@@ -157,6 +158,33 @@ def _variant_label(v: dict) -> str | None:
     return None if not t or t.lower() == "default title" else t
 
 
+# A product photo is drawn at most ~400px wide on a phone, at 2-3x: 600px covers a
+# card and the listing page. A brand's original upload is often a print file (Off
+# Hours: 5 MB median, 14 MB at most, 2026-10-09), against 276 KB for a store's.
+WEB_WIDTH = 600
+
+
+def web_photo(url: str | None) -> str | None:
+    """A Shopify CDN photo at WEB_WIDTH: the CDN resizes on request and sends WebP to
+    a browser that takes it (Off Hours' 14 MB PNG is 39 KB). Anything else as given."""
+    if not url:
+        return None
+    parts = urllib.parse.urlsplit(url)
+    if parts.netloc != "cdn.shopify.com" and "/cdn/shop/" not in parts.path:
+        return url
+    query = [(k, v) for k, v in urllib.parse.parse_qsl(parts.query) if k != "width"]
+    query.append(("width", str(WEB_WIDTH)))
+    return urllib.parse.urlunsplit(parts._replace(query=urllib.parse.urlencode(query)))
+
+
+def web_size(candidates, fallback: str | None = None) -> str | None:
+    """The smallest of (width, url) at least WEB_WIDTH wide, else the widest there is,
+    else `fallback`: a WordPress upload's renditions, a WooCommerce srcset."""
+    sized = sorted((int(w), u) for w, u in candidates if w and u)
+    wide = [u for w, u in sized if w >= WEB_WIDTH]
+    return wide[0] if wide else sized[-1][1] if sized else fallback
+
+
 def fetch_shopify(brand: str, domain: str) -> dict:
     """Tier 1. Returns a catalog dict ready to write."""
     url = f"https://{domain}/products.json?limit=250"
@@ -178,6 +206,7 @@ def fetch_shopify(brand: str, domain: str) -> dict:
         # "Beverage (100% off)" would happily absorb every beverage listing.
         if re.search(r"\(\d+%\s*off\)", title, re.I):
             continue
+        first_image = ((p.get("images") or [{}])[0] or {}).get("src")
         for v in p.get("variants", []):
             entries.append({
                 "external_id": str(v.get("id")),
@@ -198,6 +227,7 @@ def fetch_shopify(brand: str, domain: str) -> dict:
                 "source_tags": _clean_tags(tags),
                 "product_key": str(p.get("id")),
                 "source": "shopify_products_json",
+                "image_url": web_photo((v.get("featured_image") or {}).get("src") or first_image),
             })
 
     return {
@@ -276,7 +306,8 @@ def push(catalog: dict, dry_run: bool = False, via_http: bool = False,
       existing entries identity fields are never touched — name, line, category,
                        subtype, strain, variant, attributes stay as curated. Only
                        metadata refreshes: match_terms (union), last_seen_at,
-                       support, and product_key/source when they were empty.
+                       support, image_url (the site's photo; one the site stopped
+                       sending is kept), and product_key/source when they were empty.
       deactivated      stay deactivated. Reactivating is a person's decision; the
                        entries the source lists again are counted and reported.
       vanished         storefront catalogs: deactivated, never deleted (listings hold
@@ -305,6 +336,58 @@ def push(catalog: dict, dry_run: bool = False, via_http: bool = False,
         print(f"  {counts['listed_again_but_inactive']} entries the source lists are inactive "
               f"here (taken out by hand, or gone and back) — left inactive; reactivate in "
               f"the admin if wanted")
+    return counts
+
+
+def set_photos(catalog: dict, dry_run: bool = False, via_http: bool = False) -> dict:
+    """Write the catalog's photos onto the entries already stored, and nothing else:
+    no entry added, retired or edited. A push does this too; this is for refreshing
+    photos without the rest of a push (the first fill after migration 0012).
+
+    Entries are found by external_id within the brand's catalog. Returns counts."""
+    photos = {e["external_id"]: e["image_url"] for e in catalog["entries"] if e.get("image_url")}
+    if via_http:
+        import urllib.parse
+        from concurrent.futures import ThreadPoolExecutor
+
+        import db_http
+
+        slug = urllib.parse.quote(catalog["brand_slug"])
+        found = db_http.select("brand_catalogs", f"select=id&brand_slug=eq.{slug}")
+        rows = db_http.select_all("brand_catalog_entries",
+                                  f"select=id,external_id,image_url&catalog_id=eq.{found[0]['id']}"
+                                  f"&order=id") if found else []
+    else:
+        import psycopg2.extras
+        conn = _connect()
+        cur = conn.cursor()
+        cur.execute("""SELECT e.id, e.external_id, e.image_url FROM brand_catalog_entries e
+                       JOIN brand_catalogs c ON c.id = e.catalog_id WHERE c.brand_slug = %s""",
+                    (catalog["brand_slug"],))
+        rows = [{"id": i, "external_id": ext, "image_url": url} for i, ext, url in cur.fetchall()]
+
+    change = [(str(r["id"]), photos[r["external_id"]]) for r in rows
+              if r["external_id"] in photos and r["image_url"] != photos[r["external_id"]]]
+    if via_http:
+        if not dry_run:
+            with ThreadPoolExecutor(max_workers=8) as pool:
+                list(pool.map(lambda c: db_http.update("brand_catalog_entries", f"id=eq.{c[0]}",
+                                                       {"image_url": c[1]}), change))
+    else:
+        if change:
+            psycopg2.extras.execute_values(cur, """
+                UPDATE brand_catalog_entries e SET image_url = v.image_url
+                FROM (VALUES %s) AS v(id, image_url) WHERE e.id = v.id
+                """, change, template="(%s::uuid, %s)")
+        conn.rollback() if dry_run else conn.commit()
+        conn.close()
+
+    stored = {r["external_id"] for r in rows}
+    counts = {"updated": len(change), "with_photo": len(photos),
+              "not_in_catalog": sum(1 for ext in photos if ext not in stored)}
+    print(f"{'[dry run] ' if dry_run else ''}photos for {catalog['brand_name']}: "
+          f"{counts['updated']} set; {counts['with_photo']} site entries have one, "
+          f"{counts['not_in_catalog']} of them not stored yet (a push adds those)")
     return counts
 
 
@@ -340,10 +423,13 @@ def _push_postgres(catalog: dict, dry_run: bool, replace: bool = False) -> dict:
     # not been migrated yet.
     cur.execute("""SELECT column_name FROM information_schema.columns
                    WHERE table_name = 'brand_catalog_entries'
-                     AND column_name IN ('product_key', 'source', 'support')""")
-    extra = sorted(r[0] for r in cur.fetchall())
+                     AND column_name IN ('product_key', 'source', 'support', 'image_url')""")
+    found = {r[0] for r in cur.fetchall()}
+    extra = sorted(found & set(EXTRA_COLUMNS))
     if len(extra) < 3:
         _warn_unmigrated()
+    # image_url came later (migration 0012); a database without it still takes a push.
+    extra += ["image_url"] if "image_url" in found else []
     meta = _entry_meta(catalog)
 
     rows = [(catalog_id, e["external_id"], e["name"], e["product_line"], e["category"],
@@ -358,6 +444,7 @@ def _push_postgres(catalog: dict, dry_run: bool, replace: bool = False) -> dict:
         "product_key": "COALESCE(brand_catalog_entries.product_key, EXCLUDED.product_key)",
         "source": "COALESCE(brand_catalog_entries.source, EXCLUDED.source)",
         "support": "EXCLUDED.support",
+        "image_url": "COALESCE(EXCLUDED.image_url, brand_catalog_entries.image_url)",
     }
     sets = [f"{c} = {metadata[c]}" for c in extra]
     returned = psycopg2.extras.execute_values(
@@ -440,20 +527,26 @@ def _push_http(catalog: dict, dry_run: bool, replace: bool = False) -> dict:
                 "brand_slug": catalog["brand_slug"], "source_url": catalog.get("source_url"),
                 **header})[0]["id"]
 
-    try:
-        db_http.select("brand_catalog_entries", f"select={','.join(EXTRA_COLUMNS)}&limit=1")
-        extra = list(EXTRA_COLUMNS)
-    except db_http.DbHttpError as exc:
-        if "42703" not in str(exc):           # undefined_column; anything else is real
-            raise
-        extra = []
+    def has(columns) -> bool:
+        try:
+            db_http.select("brand_catalog_entries", f"select={','.join(columns)}&limit=1")
+            return True
+        except db_http.DbHttpError as exc:
+            if "42703" not in str(exc):       # undefined_column; anything else is real
+                raise
+            return False
+
+    extra = list(EXTRA_COLUMNS) if has(EXTRA_COLUMNS) else []
+    if not extra:
         _warn_unmigrated()
+    # image_url came later (migration 0012); a database without it still takes a push.
+    extra += ["image_url"] if has(["image_url"]) else []
     meta = _entry_meta(catalog)
 
     existing: dict[str, dict] = {}
     if catalog_id:
         cols = ["id", "external_id", "match_terms", "is_active", "verified_fields",
-                *[c for c in extra if c != "support"]]
+                *[c for c in extra if c not in ("support", "image_url")]]
         for r in db_http.select_all("brand_catalog_entries",
                                     f"select={','.join(cols)}&catalog_id=eq.{catalog_id}"
                                     f"&order=id"):
@@ -480,6 +573,8 @@ def _push_http(catalog: dict, dry_run: bool, replace: bool = False) -> dict:
                 change[c] = cur[c] if cur.get(c) is not None else row[c]
         if "support" in extra:
             change["support"] = row["support"]
+        if "image_url" in extra and row["image_url"]:
+            change["image_url"] = row["image_url"]
         refreshes.append((cur["id"], change))
 
     retire = []
