@@ -92,7 +92,7 @@ SPECS: dict[str, CategorySpec] = {s.name: s for s in (
         "cultivar or flavour", _WEIGHT_RULE.format("1g, 0.5g, 2g"), "cultivar or flavour",
         _CULTIVAR_IDENTITY, title_is_strain=True),
     CategorySpec(
-        "edible", ("gummy", "chocolate", "beverage", "tablet", "other"), None, "dose",
+        "edible", ("gummy", "rope", "chocolate", "beverage", "tablet", "other"), None, "dose",
         "flavour",
         "TOTAL package THC in mg — multiply a per-piece dose by the pack count "
         "(5mg x 20pk = 100mg). For a drink this is still the mg dose, never the liquid volume.",
@@ -160,7 +160,10 @@ SUBTYPE_TOKENS: dict[str, dict[str, re.Pattern]] = {
     },
     "edible": {
         "beverage": re.compile(r"\b(beverage|sparkling\s+water|tea\s+sachet|drink)\b", re.I),
-        "gummy": re.compile(r"\bgumm|\bchews?\b|\brope\b|\bpearl\b", re.I),
+        # Before gummy: a rope is one long strip, sold apart from the brand's gummies
+        # ("Live Rosin Gummy Rope"), and the name says gummy too.
+        "rope": re.compile(r"\bropes?\b", re.I),
+        "gummy": re.compile(r"\bgumm|\bchews?\b|\bpearl\b", re.I),
         "chocolate": re.compile(r"\bchocolate\b|\bbar\b", re.I),
         "tablet": re.compile(r"\btablet\b|\bprotab\b|\bcapsule\b|\bpill\b|\bbean\b|\bdrop\b", re.I),
     },

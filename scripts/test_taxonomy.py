@@ -94,3 +94,12 @@ def test_a_pod_is_a_pod_even_when_the_menu_adds_cartridge():
         assert taxonomy.token_subtype("vaporizers", name) == "pod", name
     assert taxonomy.token_subtype("vaporizers", "Live Resin 510 Cart 1g") == "cart"
     assert taxonomy.token_subtype("vaporizers", "Disposable Pod 1g") == "all-in-one"
+
+
+def test_a_rope_is_its_own_edible_subtype():
+    # Off Hours sells a 100mg rope and a 10-pack of gummies under one flavor name
+    # (Galactic Guava); as one subtype the matcher split listings between them.
+    assert "rope" in taxonomy.spec("edible").subtypes
+    assert taxonomy.token_subtype("edible", "Off Hours - Galactic Guava Live Rosin Rope - 100mg") == "rope"
+    assert taxonomy.token_subtype("edible", "Off hours | Live Resin Ropes 100mg | Gelonade") == "rope"
+    assert taxonomy.token_subtype("edible", "Galactic Guava Live Rosin Infused Gummies 10pk") == "gummy"
