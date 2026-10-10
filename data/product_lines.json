@@ -451,9 +451,9 @@
       "subtype": "battery"
     }
   ],
-  "_comment_1906": "1906 sells its tablets as Drops in effects (Bliss, Boost, Chill, Genius, Go, Love, Sleep): the family is the line, the effect is the product. Stores write \"1906 - Bliss Drops 2pk\".",
+  "_comment_1906": "1906 sells its tablets as Drops in effects (Bliss, Boost, Chill, Genius, Go, Love, Sleep): the family is the line, the effect is the product. Stores write \"1906 - Bliss Drops 2pk\". The Drops' tin and pouch counts follow each effect's dose (Genius and Love 30pk 75mg and 4pk 10mg, the rest 20pk 100mg and 2pk 10mg, Boost also 3pk 90mg), so line fill gives no effect another's sizes (sizes_by_product).",
   "1906": [
-    "Drops"
+    {"line": "Drops", "sizes_by_product": true}
   ],
   "_comment_herb": "Herb (1off Manufacturing, OCM-PROC-000062) prints HASH INFUSED on its infused Ready to Roll 7g bag ('5.6 flower / 1.4 dry sift hash'; ingredients 'cannabis flower, dry sifted hash') and on its infused pre-roll tube ('1 GRAM HASH INFUSED'). Stores write 'Infused Ground Flower', 'Pre Ground Infused Flower', 'Hash Infused Pre roll'. Plain flower, pre-ground and pre-rolls carry no line. 'Ready to Roll' is printed on both plain and infused pre-ground, so it is the format (subtype preground), not a line. Keep this rule without a category: the stock pre-roll blurb stores paste ('can be rolled with flower, shake ... infused with concentrates') would otherwise file plain pre-rolls as Hash Infused.",
   "Herb": [

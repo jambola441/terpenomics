@@ -15,7 +15,10 @@ brands), every size another product of that line comes in. On the labelled match
 Lines with no name are left alone: a catalog's line-less products are often several
 real lines it never named, and filling them gave line-less products sizes that won
 listings belonging to a named product. Tinctures and topicals are left alone too: their
-size is the product's strength, not a size the line comes in.
+size is the product's strength, not a size the line comes in. So is a line curated with
+"sizes_by_product" (data/product_lines.json): 1906's Drops come in a tin and a pouch
+whose counts follow each effect's dose (Genius and Love are 2.5mg drops, 30pk 75mg and
+4pk 10mg; Boost is also a 30mg 3-pack), so no effect's sizes are another's.
 
 Inferred sizes count as the product's sizes wherever a size is compared: the attribute
 join, Jev's shortlist and the options Jev is shown (the owner's rule, 2026-10-09: a
@@ -39,6 +42,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import canonical  # noqa: E402
 import catalog_store  # noqa: E402
 import sizes  # noqa: E402
 from brand_catalog import norm_name  # noqa: E402
@@ -61,6 +65,13 @@ def _size(variant: str | None, category: str | None) -> tuple[str | None, sizes.
     return s.label(), s
 
 
+def sizes_by_product(brand: str | None, line: str) -> bool:
+    """Whether the brand's curated line says each product comes in its own sizes."""
+    own, _ = canonical._for_brand(canonical._load(canonical._LINES_PATH, "lines"), brand or "")
+    return any(isinstance(e, dict) and e.get("sizes_by_product") and norm_name(e.get("line") or "") == norm_name(line)
+               for e in own or [])
+
+
 def wanted(catalog: dict) -> dict[str, dict]:
     """The inferred entries the catalog's stated entries call for, by external id."""
     products: dict[str, list[dict]] = defaultdict(list)
@@ -70,7 +81,8 @@ def wanted(catalog: dict) -> dict[str, dict]:
     lines: dict[tuple, list[str]] = defaultdict(list)
     for key, es in products.items():
         line = (es[0].get("product_line") or "").strip()
-        if line and es[0].get("category") not in POTENCY_SIZED:
+        if line and es[0].get("category") not in POTENCY_SIZED \
+                and not sizes_by_product(catalog.get("brand_name"), line):
             lines[(es[0].get("category"), es[0].get("subtype") or "", norm_name(line))].append(key)
     out: dict[str, dict] = {}
     for (category, _, _), keys in lines.items():
