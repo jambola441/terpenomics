@@ -973,7 +973,8 @@ def split_store_products(doc: dict, listings: list[dict], aliases: dict | None =
             if (how := _name_match(names, n)):
                 hits.append((how, e))
         if not hits:
-            only_stores.append(_as_site_size(p, names, site[p["category"]], synonyms))
+            only_stores.append(_as_site_size(p, names, site[p["category"]], synonyms,
+                                             line=_aliased(p, aliases or {}).get("product_line")))
             continue
         found.append(p)
     return found, only_stores, {}
@@ -1032,7 +1033,8 @@ def _merch_as_site_size(p: dict, site: list[tuple]) -> dict:
             "joins": e["name"]}
 
 
-def _as_site_size(p: dict, names: dict, site: list[tuple], synonyms: bool = True) -> dict:
+def _as_site_size(p: dict, names: dict, site: list[tuple], synonyms: bool = True,
+                  line: str | None = ...) -> dict:
     """A store product the site lists in other sizes is that product in one more size,
     not a product of its own: Nanticoke's site lists Blue Dream pre-rolls as 0.5g
     singles and 5 x 0.7g packs, and stores also sell the 5 x 0.5g pack (2.5g). Kept as
@@ -1043,11 +1045,13 @@ def _as_site_size(p: dict, names: dict, site: list[tuple], synonyms: bool = True
     own. Otherwise the product stays the stores' own, as before."""
     same = [e for _, n, e in site
             if taxonomy.same_format(p.get("subtype") or None, e.get("subtype") or None, synonyms)
-            and _name_match(names, n) == "exact"]
-    if len({e["product_key"] for e in same}) > 1:
-        # Nanticoke's plain Durban Poison and its oHHo Durban Poison both read as
-        # "Durban Poison": the one in the store product's own line is the one.
-        same = [e for e in same if squash(e.get("product_line")) == squash(p.get("product_line"))]
+            and _name_match(names, n) == "exact"
+            # Only within the store product's own line. Nanticoke's plain Durban Poison
+            # and its oHHo Durban Poison both read as "Durban Poison"; and a store-only
+            # line-less product never takes a site product's line on a shared strain
+            # (owner, 2026-10-10: Florist Farms' plain Gorilla Glue 1g became "Kief
+            # Coated Gorilla Glue 1g", a 0.5g single, that way).
+            and squash(e.get("product_line")) == squash(p.get("product_line") if line is ... else line)]
     if len({e["product_key"] for e in same}) != 1:
         return p
     e = same[0]

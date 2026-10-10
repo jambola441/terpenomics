@@ -257,7 +257,8 @@
       "match": "^(?P<strain>Amnesia Haze) Vape$",
       "set": {
         "size": "1g",
-        "subtype": "all-in-one"
+        "subtype": "all-in-one",
+        "line": "Cured Resin"
       }
     },
     {
@@ -315,7 +316,8 @@
       },
       "match": "(?i)^(?P<strain>.+?)\\s+(?P<size>\\d*\\.?\\d+\\s*G)(?:ram)?\\s+(?:Ceramic\\s+)?(?:Vape\\s+)?(?:Cart|Vape)$",
       "set": {
-        "subtype": "cart"
+        "subtype": "cart",
+        "line": "Cured Resin"
       }
     },
     {
@@ -324,7 +326,8 @@
       },
       "match": "(?i)^(?P<strain>.+?)\\s+(?P<size>\\d*\\.?\\d+\\s*G)(?:ram)?\\s+(?:AIO\\s+)?Vape(?:\\s+Pen)?$",
       "set": {
-        "subtype": "all-in-one"
+        "subtype": "all-in-one",
+        "line": "Cured Resin"
       }
     },
     {

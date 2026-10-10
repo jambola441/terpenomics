@@ -455,6 +455,10 @@
   "1906": [
     {"line": "Drops", "sizes_by_product": true}
   ],
+  "_comment_heady_tree": "Heady Tree's Infused line holds two families: the kief-infused 1G Infused Pre Rolls and the hash-infused Infused Shorty's (7 x 0.5g). Stores call both 'Infused', so they share the line, and line fill keeps each product to its own sizes: otherwise each family got the other's size (Infused Blue Zushi 1g, Infused Uptown Funk 3.5g) beside the real line-less products (2026-10-10).",
+  "Heady Tree": [
+    {"line": "Infused", "sizes_by_product": true}
+  ],
   "_comment_herb": "Herb (1off Manufacturing, OCM-PROC-000062) prints HASH INFUSED on its infused Ready to Roll 7g bag ('5.6 flower / 1.4 dry sift hash'; ingredients 'cannabis flower, dry sifted hash') and on its infused pre-roll tube ('1 GRAM HASH INFUSED'). Stores write 'Infused Ground Flower', 'Pre Ground Infused Flower', 'Hash Infused Pre roll'. Plain flower, pre-ground and pre-rolls carry no line. 'Ready to Roll' is printed on both plain and infused pre-ground, so it is the format (subtype preground), not a line. Keep this rule without a category: the stock pre-roll blurb stores paste ('can be rolled with flower, shake ... infused with concentrates') would otherwise file plain pre-rolls as Hash Infused.",
   "Herb": [
     {

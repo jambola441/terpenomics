@@ -16,7 +16,7 @@
     "Names carry size, strain and format in no fixed order: '1G Blue Lobster Infused Pre Roll', '1G Pre Roll Oreoz', '1G Candy Fumez 1G', '3.5G Mylar El Jefe', '3.5G Blue Zushi Jar', '14G Dante Inferno Ground Flower', '1G AIO Gas Leak Disposable', 'Mango Smoothie Infused Shorty's'. A bare '1G <strain>' row is a pre-roll (vapes say AIO, blunts say Blunt; flower is never 1G here).",
     "Shorty's rows give no size. NY stores sell every Shorty's as a 7-pack of 0.5g (3.5g): 'Blue Nerdz Hash Infused Prerolls 7pk 3.5g', 'Fried Ice Cream Prerolls 7pk 3.5g', 'Hawaiian Snow Cone 0.5g Infused Pre Rolls 7pk'. Pre Pak rows (four 2025 batches) give no size and no store sells one, so they are skipped.",
     "The brand spells one strain both ways: pre-roll rows say 'Cap Junky', jars and the newer COA file names say 'Cap Junkie', as stores do. The pre-rolls are written 'Cap Junkie' so they do not split from the jar's spelling and the stores'.",
-    "Blunts keep no line (format words are not lines); no strain has both a 1G blunt and a 1G pre-roll today, which would collapse into one entry."
+    "Pre-rolls carry the site's own family words as lines so families of one size stay apart: 'Pre Roll' (1G '<strain> Pre Roll' singles), 'Blunt' (1G '<strain> Blunt'), \"Shorty's\" (non-infused '<strain> Shorty's' 7 x 0.5g), 'Infused' (Infused Pre Roll / Infused Shorty's). 'Infused' holds two families, the kief-infused 1G singles and the hash-infused 7 x 0.5g Shorty's; stores call both 'Infused', so they share the line, and line fill keeps each product to its own sizes (data/product_lines.json sizes_by_product) instead of giving each the other's (Infused Blue Zushi 1g, Infused Uptown Funk 3.5g). Without them a 1G blunt and a 1G pre-roll of one strain would collapse into one entry, and line-less singles sat beside Infused 1G of the same strain (Dante Inferno)."
   ],
   "skip": [
     {
@@ -81,7 +81,8 @@
       },
       "match": "^(?P<strain>.+?)\\s+(?:(?P<line>Infused)\\s+)?Shorty['’]?s(?:\\s+\\d+(?:st|nd|rd|th)\\s+Run)?$",
       "set": {
-        "size": "7 x 0.5g"
+        "size": "7 x 0.5g",
+        "line": "Shorty's"
       }
     },
     {
@@ -91,14 +92,18 @@
       },
       "match": "^(?P<size>\\d+(?:\\.\\d+)?G)\\s+Cap Junky\\s+Pre[\\s-]?Roll(?:\\s+\\d+(?:st|nd|rd|th)\\s+Run)?$",
       "set": {
-        "strain": "Cap Junkie"
+        "strain": "Cap Junkie",
+        "line": "Pre Roll"
       }
     },
     {
       "when": {
         "category": "^preroll$"
       },
-      "match": "^(?P<size>\\d+(?:\\.\\d+)?G)\\s+Pre[\\s-]?Roll\\s+(?P<strain>.+?)(?:\\s+\\d+(?:st|nd|rd|th)\\s+Run)?$"
+      "match": "^(?P<size>\\d+(?:\\.\\d+)?G)\\s+Pre[\\s-]?Roll\\s+(?P<strain>.+?)(?:\\s+\\d+(?:st|nd|rd|th)\\s+Run)?$",
+      "set": {
+        "line": "Pre Roll"
+      }
     },
     {
       "when": {
@@ -108,9 +113,22 @@
     },
     {
       "when": {
+        "category": "^preroll$",
+        "title": "(?i)\\bblunt\\b"
+      },
+      "match": "^(?P<size>\\d+(?:\\.\\d+)?G)\\s+(?P<strain>.+?)\\s+Blunt(?:\\s+\\d+(?:st|nd|rd|th)\\s+Run)?$",
+      "set": {
+        "line": "Blunt"
+      }
+    },
+    {
+      "when": {
         "category": "^preroll$"
       },
-      "match": "^(?P<size>\\d+(?:\\.\\d+)?G)\\s+(?P<strain>.+?)(?:\\s+(?:Pre[\\s-]?Roll|Blunt|1G))?(?:\\s+\\d+(?:st|nd|rd|th)\\s+Run)?$"
+      "match": "^(?P<size>\\d+(?:\\.\\d+)?G)\\s+(?P<strain>.+?)(?:\\s+(?:Pre[\\s-]?Roll|1G))?(?:\\s+\\d+(?:st|nd|rd|th)\\s+Run)?$",
+      "set": {
+        "line": "Pre Roll"
+      }
     },
     {
       "when": {

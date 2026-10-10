@@ -116,6 +116,7 @@
       },
       "match": "^(?:THC\\s+)?(?P<strain>.+)$",
       "set": {
+        "line": "Full Bar",
         "size": "10pk 100mg"
       }
     }

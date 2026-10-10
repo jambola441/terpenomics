@@ -108,6 +108,16 @@
     },
     {
       "when": {
+        "category": "^preroll$"
+      },
+      "match": "^(?P<strain>[^|]+?)\\s*\\|\\s*(?:1 Gram Pre-Roll\\s*\\|\\s*Single|(?:1/2|Half) Gram (?:Pre-Rolls|Joints)\\s*\\|\\s*7pk)\\s*$",
+      "set": {
+        "line": "Non-Infused"
+      },
+      "why": "the plain whole-flower pre-rolls (1g singles, 7 x 0.5g tins). The site files the singles under its 'Non-Infused Pre-Rolls | 1-Pack' collection, apart from 'Infused Pre-Rolls | 1-Pack'; every 7pk is whole flower ('Ingredients: Whole cannabis flower') and no infused 7pk exists."
+    },
+    {
+      "when": {
         "category": "^(preroll|vaporizers|flower)$"
       },
       "match": "^(?P<strain>[^|]+?)\\s*\\|"
