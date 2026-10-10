@@ -162,6 +162,13 @@ nearest rendition WordPress made, and none at all when that still weighs over 40
 photos; `storefront.py photos --brand X` writes them onto the stored entries and
 changes nothing else.
 
+Store photos stay as the scrapers found them, and the web and app ask for them at the
+size they are drawn: most sit behind an image service that resizes on request
+(Dutchie's bucket through images.dutchie.com, Tymber's and Weedmaps' imgix, Shopify's
+CDN), so a card fetches a 320px file instead of a print-size original. A resized file
+that fails falls back to the original (`ui/my-app/src/utils/photoUrl.ts`, shared with
+the app).
+
 **Pushing is additive.** `brand_catalog.py push` and `catalog_bootstrap.py --push`
 insert new products and refresh metadata (support, last seen), but never
 overwrite a field you curated and never reactivate an entry you took out — a Shopify
