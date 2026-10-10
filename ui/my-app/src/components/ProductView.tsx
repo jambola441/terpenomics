@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import api from '../api/client'
-import type { PortalProductDetail, ListingDetail } from '../types'
-import { t, radius, font } from '../theme'
+import type { PortalProductDetail, PortalBrandProduct, ListingDetail } from '../types'
+import { t, radius, font, categoryLabel } from '../theme'
+import { useFlag } from '../hooks/useFlag'
+import { LINE_MIN_PRODUCTS, nameWithinLine } from './BrowseScreen'
 import {
   Pressable, CategoryTag, ClassificationTag, DetailBlock, CollapsibleBlock, SpecRow,
   BackButton, FeedState, ProductImage, TerpeneProfile, Label,
@@ -15,9 +17,14 @@ interface ProductViewProps {
   productKey: string
   onBack: () => void
   onListingClick: (dispensaryId: string, listingId: string) => void
+  /** The brand page, optionally already narrowed to a category or a line. */
+  onOpenBrand: (brand: string, filter?: { category?: string; line?: string }) => void
+  onOpenProduct: (brand: string, productKey: string) => void
 }
 
-export default function ProductView({ brandName, productKey, onBack, onListingClick }: ProductViewProps) {
+export default function ProductView({
+  brandName, productKey, onBack, onListingClick, onOpenBrand, onOpenProduct,
+}: ProductViewProps) {
   const [product, setProduct] = useState<PortalProductDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -43,6 +50,30 @@ export default function ProductView({ brandName, productKey, onBack, onListingCl
       setUserPos({ lat: pos.coords.latitude, lng: pos.coords.longitude })
     })
   }, [])
+
+  // The rest of this product's line, for the breadcrumb and the More in this
+  // line row (flag `lines`). Its own small request rather than the whole brand.
+  const linesOn = useFlag('lines')
+  const lineBrand = product?.brand ?? null
+  const lineName = product?.product_line ?? null
+  const [lineProducts, setLineProducts] = useState<PortalBrandProduct[] | null>(null)
+  useEffect(() => {
+    setLineProducts(null)
+    if (!linesOn || !lineBrand || !lineName) return
+    let cancelled = false
+    api.portal.getBrandLine(lineBrand, lineName)
+      .then(l => { if (!cancelled) setLineProducts(l.products) })
+      .catch(() => { /* the row and the line crumb are extras */ })
+    return () => { cancelled = true }
+  }, [linesOn, lineBrand, lineName])
+  // A "line" of one or two products is often a flavour or effect name: no
+  // crumb and no row for those, the same bar the brand page's filter uses.
+  const lineIsReal = lineProducts != null && lineProducts.length >= LINE_MIN_PRODUCTS
+  const moreInLine = lineIsReal
+    ? lineProducts.filter(p => p.key !== productKey)
+      .sort((a, b) => b.dispensary_count - a.dispensary_count)
+      .slice(0, 12)
+    : []
 
   // Pull richer attributes (description, classification, terpenes, cannabinoids)
   // from a representative listing — the cheapest offering carrying this product.
@@ -110,9 +141,24 @@ export default function ProductView({ brandName, productKey, onBack, onListingCl
         <BackButton onClick={onBack} />
         {/* The header draws before the fetch resolves, and an unbranded product
             never gets a brand line at all. */}
-        {product?.brand && (
+        {product?.brand && (linesOn ? (
+          <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, flexWrap: 'wrap' }}>
+            <Crumb label={product.brand} onClick={() => onOpenBrand(product.brand!)} />
+            {product.category && <>
+              <CrumbSeparator />
+              <Crumb
+                label={categoryLabel(product.category)}
+                onClick={() => onOpenBrand(product.brand!, { category: product.category! })}
+              />
+            </>}
+            {lineIsReal && lineName && <>
+              <CrumbSeparator />
+              <Crumb label={lineName} current onClick={() => onOpenBrand(product.brand!, { line: lineName })} />
+            </>}
+          </nav>
+        ) : (
           <div style={{ color: t.text2, fontSize: font.size.small + 1, fontWeight: font.weight.medium }}>{product.brand}</div>
-        )}
+        ))}
       </div>
 
       {loading ? (
@@ -237,6 +283,46 @@ export default function ProductView({ brandName, productKey, onBack, onListingCl
             })}
           </div>
 
+          {/* The rest of the line, for "what else is in it?" */}
+          {moreInLine.length > 0 && lineBrand && lineName && (
+            <div style={{ padding: '0 0 22px' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, padding: '0 16px 10px' }}>
+                <Label style={{ marginBottom: 0 }}>More in {lineName}</Label>
+                <button
+                  onClick={() => onOpenBrand(lineBrand, { line: lineName })}
+                  style={{
+                    border: 'none', background: 'none', padding: '6px 0', cursor: 'pointer',
+                    color: t.text2, fontSize: font.size.small, display: 'inline-flex', alignItems: 'center', gap: 2,
+                  }}
+                >
+                  All {lineProducts!.length} <Icon name="chevron-right" size={14} />
+                </button>
+              </div>
+              <div className="no-scrollbar" style={{ display: 'flex', gap: 12, overflowX: 'auto', padding: '0 16px' }}>
+                {moreInLine.map(p => (
+                  <Pressable
+                    key={p.key}
+                    onClick={() => onOpenProduct(lineBrand, p.key)}
+                    style={{ width: 128, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 6 }}
+                  >
+                    <ProductImage src={p.image_url} alt={p.name} category={p.category} height={112} pad={8} />
+                    {p.min_price_cents != null && (
+                      <div className="num" style={{ color: t.text1, fontWeight: font.weight.bold, fontSize: font.size.callout }}>
+                        {formatDollars(p.min_price_cents)}
+                      </div>
+                    )}
+                    <div style={{ color: t.text1, fontSize: font.size.small + 1, lineHeight: 1.25 }}>
+                      {nameWithinLine(p.name, lineName)}
+                    </div>
+                    <div className="num" style={{ color: t.text3, fontFamily: font.family.mono, fontSize: font.size.micro + 0.5, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      {[p.variant, `${p.dispensary_count} ${p.dispensary_count === 1 ? 'store' : 'stores'}`].filter(Boolean).join(' · ')}
+                    </div>
+                  </Pressable>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Cannabinoids */}
           {cannabinoids.length > 0 && (
             <DetailBlock title="Cannabinoids" style={{ padding: '0 16px 18px' }}>
@@ -290,4 +376,26 @@ export default function ProductView({ brandName, productKey, onBack, onListingCl
       )}
     </div>
   )
+}
+
+/** One step of the breadcrumb. The last one names where the product sits. */
+function Crumb({ label, current = false, onClick }: { label: string; current?: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        border: 'none', background: 'none', padding: '6px 0', cursor: 'pointer', minWidth: 0,
+        color: current ? t.text1 : t.text2,
+        fontSize: font.size.small + 1,
+        fontWeight: current ? font.weight.semibold : font.weight.medium,
+        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 160,
+      }}
+    >
+      {label}
+    </button>
+  )
+}
+
+function CrumbSeparator() {
+  return <span aria-hidden style={{ color: t.text4, fontSize: font.size.small + 1 }}>›</span>
 }
