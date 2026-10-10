@@ -1,14 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useMatch, useNavigate } from 'react-router-dom'
+import { useMatch, useNavigate, useSearchParams } from 'react-router-dom'
 import api from '../api/client'
 import DispensaryListings from './DispensaryListings'
 import AisleView from './AisleView'
-import type { CartItem, PortalDispensary } from '../types'
-import { t, radius, font, alpha } from '../theme'
+import type { CartItem, PortalDispensary, PortalPartner, PortalPartnerLocation, PointsProgram } from '../types'
+import { t, radius, font, alpha, raw } from '../theme'
 import { FeedState, Spinner, Label, StoreBullet, storeInitial } from './ui'
 import { Icon } from './Icon'
 import { boroughOf, boroughColor, colorForBorough, boroughLabel, type Borough } from '../utils/boroughs'
 import { tileConfig } from '../utils/mapTiles'
+import { openStatus } from '../utils/hours'
+import { directionsUrl } from '../utils/partnerPlaces'
+import { earnLine } from '../utils/pointsProgram'
 
 const NYC: [number, number] = [40.7128, -74.006]
 
@@ -38,6 +41,22 @@ function pinIcon(L: any, d: PortalDispensary, active: boolean) {
     tooltipAnchor: [0, -14],
   })
 }
+
+/** A partner store's pin: resin, with the points drop (index.css). */
+type Spot = { partner: PortalPartner; location: PortalPartnerLocation }
+const DROP_SVG = '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3.25 7.4 10.6a5.4 5.4 0 1 0 9.2 0Z"/></svg>'
+
+function partnerPinIcon(L: any, active: boolean) {
+  return L.divIcon({
+    html: `<div class="nyc-pin nyc-pin--partner${active ? ' nyc-pin--active' : ''}" style="--pin:var(--accent)"><span class="nyc-pin__disc">${DROP_SVG}</span></div>`,
+    className: '',
+    iconSize: [30, 30],
+    iconAnchor: [15, 17],
+    tooltipAnchor: [0, -14],
+  })
+}
+
+const APPLE = typeof navigator !== 'undefined' && /iPhone|iPad|Macintosh/.test(navigator.userAgent)
 
 /** Pins closer than this on screen are drawn as one count bubble. A pin's
  *  target is 44px, so two any closer steal each other's taps. */
@@ -141,6 +160,15 @@ export default function DispensaryMap({ activeDispensaryId, onAddToCart, cart = 
   const [mapReady, setMapReady] = useState(false)
   const [selected, setSelected] = useState<PortalDispensary | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // Partner stores, where purchases earn points: pinned beside the dispensaries,
+  // or alone with "Earn points" on (?show=partners). ?spot=<store> opens one.
+  const [params, setParams] = useSearchParams()
+  const [partners, setPartners] = useState<PortalPartner[]>([])
+  const [program, setProgram] = useState<PointsProgram | null>(null)
+  const [spot, setSpot] = useState<Spot | null>(null)
+  const earnOnly = params.get('show') === 'partners'
+  const partnerLayerRef = useRef<any>(null)
+  const partnerMarkersRef = useRef<Map<string, any>>(new Map())
 
   const aisleDispensaryId = matchAisle?.params.dispensaryId ?? null
   const aisleCategory = matchAisle?.params.category ?? null
@@ -162,7 +190,32 @@ export default function DispensaryMap({ activeDispensaryId, onAddToCart, cart = 
         setError('Failed to load dispensaries')
         setLoadingDispensaries(false)
       })
+    // The map works without them: a failure leaves the dispensaries alone.
+    api.portal.getPartners()
+      .then(r => { setPartners(r?.partners ?? []); setProgram(r?.program ?? null) })
+      .catch(() => setPartners([]))
   }, [attempt])
+
+  const spots = useMemo<Spot[]>(() => partners.flatMap(partner => partner.locations
+    .filter(location => location.lat != null && location.lng != null)
+    .map(location => ({ partner, location }))), [partners])
+
+  // A link to one partner store (from its page) opens it, with partners only.
+  const spotParam = params.get('spot')
+  useEffect(() => {
+    if (!spotParam) return
+    const found = spots.find(s => s.location.id === spotParam)
+    if (found) { setSelected(null); setSpot(found) }
+  }, [spotParam, spots])
+
+  function setEarnOnly(on: boolean) {
+    const next = new URLSearchParams(params)
+    if (on) next.set('show', 'partners')
+    else { next.delete('show'); next.delete('spot') }
+    setParams(next, { replace: true })
+    if (on) setSelected(null)
+    else setSpot(null)
+  }
 
   // Initialize Leaflet as soon as the container is ready — NYC center, no markers yet
   useEffect(() => {
@@ -207,6 +260,7 @@ export default function DispensaryMap({ activeDispensaryId, onAddToCart, cart = 
       L.control.zoom({ position: 'topright' }).addTo(map)
 
       layerRef.current = L.layerGroup().addTo(map)
+      partnerLayerRef.current = L.layerGroup().addTo(map)
       map.on('zoomend', () => setZoom(map.getZoom()))
       setZoom(map.getZoom())
       setMapReady(true)
@@ -227,21 +281,69 @@ export default function DispensaryMap({ activeDispensaryId, onAddToCart, cart = 
         LRef.current = null
         layerRef.current = null
         markersRef.current = new Map()
+        partnerLayerRef.current = null
+        partnerMarkersRef.current = new Map()
       }
     }
   }, [tiles])
 
   const located = useMemo(() => dispensaries.filter(d => d.lat != null && d.lng != null), [dispensaries])
 
-  // Frame every store rather than averaging to a point that may fit none.
+  // Frame every store rather than averaging to a point that may fit none; with
+  // "Earn points" on, every partner store.
   useEffect(() => {
     const L = LRef.current, map = mapInstanceRef.current
-    if (!mapReady || !L || !map || located.length === 0) return
-    map.fitBounds(
-      L.latLngBounds(located.map(d => [d.lat!, d.lng!] as [number, number])),
-      { padding: [56, 56], maxZoom: 15 },
-    )
-  }, [mapReady, located])
+    const points = earnOnly
+      ? spots.map(s => [s.location.lat!, s.location.lng!] as [number, number])
+      : located.map(d => [d.lat!, d.lng!] as [number, number])
+    if (!mapReady || !L || !map || points.length === 0) return
+    map.fitBounds(L.latLngBounds(points), { padding: [56, 56], maxZoom: 15 })
+  }, [mapReady, located, spots, earnOnly])
+
+  // Dispensary pins step aside while only partners are shown.
+  useEffect(() => {
+    const map = mapInstanceRef.current, layer = layerRef.current
+    if (!mapReady || !map || !layer) return
+    if (earnOnly) map.removeLayer(layer)
+    else if (!map.hasLayer(layer)) layer.addTo(map)
+  }, [mapReady, earnOnly])
+
+  // Partner pins: few, so each is its own, drawn above the dispensaries.
+  const spotId = spot?.location.id ?? null
+  useEffect(() => {
+    const L = LRef.current, layer = partnerLayerRef.current
+    if (!mapReady || !L || !layer) return
+    const old = partnerMarkersRef.current
+    const next = new Map<string, any>()
+    for (const s of spots) {
+      const active = s.location.id === spotId
+      let marker = old.get(s.location.id)
+      old.delete(s.location.id)
+      if (!marker) {
+        const label = s.partner.locations.length > 1 ? `${s.partner.name}, ${s.location.name}` : s.partner.name
+        marker = L.marker([s.location.lat!, s.location.lng!], { icon: partnerPinIcon(L, active), title: `${label} (earn points)` })
+          .addTo(layer)
+          .bindTooltip(tipText(label), { direction: 'top', className: 'nyc-tip', offset: [0, -2] })
+        onActivate(marker, () => { setSelected(null); setSpot(s) })
+      } else {
+        marker.setIcon(partnerPinIcon(L, active))
+      }
+      marker.setZIndexOffset(active ? 2000 : 500)
+      next.set(s.location.id, marker)
+    }
+    old.forEach(m => m.remove())
+    partnerMarkersRef.current = next
+  }, [mapReady, spots, spotId])
+
+  // Bring a chosen partner store into view, as for a dispensary.
+  useEffect(() => {
+    const map = mapInstanceRef.current
+    if (spot && map) {
+      const z = Math.max(map.getZoom(), 14)
+      const point = map.project([spot.location.lat!, spot.location.lng!], z).add([0, SHEET_PAN_OFFSET])
+      map.setView(map.unproject(point, z), z, { animate: true })
+    }
+  }, [spot])
 
   // Pins, with stores that would overlap at this zoom drawn as one bubble.
   // Overlapping 30px pins used to leave a sliver of each to tap. A bubble
@@ -264,7 +366,7 @@ export default function DispensaryMap({ activeDispensaryId, onAddToCart, cart = 
           marker = L.marker([d.lat!, d.lng!], { icon: pinIcon(L, d, active), title: d.name })
             .addTo(layer)
             .bindTooltip(tipText(d.name), { direction: 'top', className: 'nyc-tip', offset: [0, -2] })
-          onActivate(marker, () => setSelected(d))
+          onActivate(marker, () => { setSpot(null); setSelected(d) })
         } else {
           marker.setIcon(pinIcon(L, d, active))
         }
@@ -365,13 +467,33 @@ export default function DispensaryMap({ activeDispensaryId, onAddToCart, cart = 
         }} />
       )}
 
-      {/* Borough legend */}
-      {!loadingDispensaries && boroughCounts.length > 0 && !activeDispensary && (
+      {/* Borough legend, led by the partner-stores switch */}
+      {!loadingDispensaries && (boroughCounts.length > 0 || spots.length > 0) && !activeDispensary && (
         <div style={{
           position: 'absolute', top: 14, left: 14, zIndex: 600,
           display: 'flex', flexWrap: 'wrap', gap: 6, maxWidth: 'calc(100% - 76px)',
         }}>
-          {boroughCounts.map(([borough, count]) => {
+          {spots.length > 0 && (
+            <button
+              onClick={() => setEarnOnly(!earnOnly)}
+              aria-pressed={earnOnly}
+              title={earnOnly ? 'Show dispensaries too' : 'Show only partner stores, where you earn points'}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer',
+                background: earnOnly ? t.accent : 'rgba(12, 15, 13, 0.8)',
+                border: `1px solid ${earnOnly ? t.accent : alpha(raw.accent, 0.55)}`,
+                backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+                borderRadius: radius.pill, padding: '5px 10px 5px 8px', minHeight: 30,
+                color: earnOnly ? t.accentInk : t.text1, fontSize: font.size.caption, fontWeight: font.weight.semibold,
+                letterSpacing: '0.02em', boxShadow: 'var(--e-1)',
+              }}
+            >
+              <Icon name="drop" size={13} strokeWidth={2} color={earnOnly ? t.accentInk : t.accent} />
+              Earn points
+              <span className="num" style={{ color: earnOnly ? t.accentInk : t.text3, fontFamily: font.family.mono, fontWeight: font.weight.medium }}>{spots.length}</span>
+            </button>
+          )}
+          {!earnOnly && boroughCounts.map(([borough, count]) => {
             const color = colorForBorough(borough)
             return (
               <span
@@ -487,8 +609,19 @@ export default function DispensaryMap({ activeDispensaryId, onAddToCart, cart = 
         </div>
       )}
 
+      {/* A partner store's sheet */}
+      {spot && !selected && !activeDispensary && (
+        <PartnerSheet
+          spot={spot}
+          program={program}
+          style={sheetBase}
+          onOpen={() => navigate('/portal/partners/' + encodeURIComponent(spot.partner.slug))}
+          onClose={() => setSpot(null)}
+        />
+      )}
+
       {/* Dispensaries without map coords: show as list at bottom */}
-      {!loadingDispensaries && dispensaries.filter(d => d.lat == null).length > 0 && !selected && !activeDispensary && (
+      {!loadingDispensaries && dispensaries.filter(d => d.lat == null).length > 0 && !selected && !spot && !earnOnly && !activeDispensary && (
         <div style={{ ...sheetBase, padding: '0 20px 28px', maxHeight: '42%', overflowY: 'auto' }}>
           <Handle />
           <Label style={{ margin: '14px 0 12px' }}>Stores</Label>
@@ -522,6 +655,85 @@ export default function DispensaryMap({ activeDispensaryId, onAddToCart, cart = 
           <span style={{ color: t.text2, fontSize: font.size.small + 1 }}>Loading stores…</span>
         </div>
       )}
+    </div>
+  )
+}
+
+/** What a partner store pin opens: which business, open now, what it earns, and
+ *  the way to its page or to the door. */
+function PartnerSheet({ spot, program, style, onOpen, onClose }: {
+  spot: Spot
+  program: PointsProgram | null
+  style: React.CSSProperties
+  onOpen: () => void
+  onClose: () => void
+}) {
+  const { partner, location } = spot
+  const status = openStatus(location.hours, location.timezone)
+  const directions = directionsUrl(location, APPLE)
+  const chip: React.CSSProperties = {
+    display: 'inline-flex', alignItems: 'center', gap: 5, marginBottom: 8,
+    background: t.accentTint, border: `1px solid ${t.accentDim}`, borderRadius: radius.pill, padding: '3px 9px 3px 7px',
+    color: t.accent, fontFamily: font.family.mono, fontSize: font.size.caption, fontWeight: font.weight.medium,
+    letterSpacing: '0.06em', textTransform: 'uppercase',
+  }
+  return (
+    <div style={{ ...style, padding: '0 20px 28px', borderTop: `2px solid ${t.accent}` }}>
+      <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 10 }}>
+        <div style={{ width: 36, height: 4, borderRadius: 2, background: t.surface3 }} />
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingTop: 14 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <span style={chip}><Icon name="drop" size={12} strokeWidth={2} />Partner store{partner.category ? ` · ${partner.category}` : ''}</span>
+          <div style={{ color: t.text1, fontFamily: font.family.display, fontWeight: font.weight.semibold, fontSize: font.size.heading + 2, letterSpacing: '-0.015em', lineHeight: 1.15 }}>
+            {partner.name}
+          </div>
+          {location.address && (
+            <div style={{ color: t.text2, fontSize: font.size.small + 1, marginTop: 6, display: 'flex', alignItems: 'center', gap: 5 }}>
+              <Icon name="pin" size={14} color={t.text3} /> {location.address}
+            </div>
+          )}
+          <div style={{ fontSize: font.size.small + 1, marginTop: 6, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {status && <span style={{ color: status.open ? t.success : t.text3, fontWeight: font.weight.medium }}>{status.text}</span>}
+            {program && <span style={{ color: t.accent, fontWeight: font.weight.semibold }}>{earnLine(program)}</span>}
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 }}>
+            <button
+              onClick={onOpen}
+              style={{
+                background: t.accent, border: 'none', borderRadius: radius.md,
+                color: t.accentInk, fontSize: font.size.small + 2, fontWeight: font.weight.bold,
+                padding: '10px 14px 10px 16px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6,
+              }}
+            >
+              View store <Icon name="arrow-right" size={16} strokeWidth={2} />
+            </button>
+            {directions && (
+              <a
+                href={directions}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6, background: 'transparent',
+                  border: `1px solid ${t.borderStrong}`, borderRadius: radius.md, color: t.text1,
+                  fontSize: font.size.small + 2, fontWeight: font.weight.medium, padding: '10px 14px', textDecoration: 'none',
+                }}
+              >
+                <Icon name="navigate" size={15} /> Directions
+              </a>
+            )}
+          </div>
+        </div>
+        <button
+          onClick={onClose}
+          aria-label="Close"
+          style={{
+            background: t.surface2, border: `1px solid ${t.border}`, borderRadius: radius.pill,
+            color: t.text2, width: 34, height: 34, cursor: 'pointer', marginLeft: 12, flexShrink: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+        ><Icon name="close" size={16} /></button>
+      </div>
     </div>
   )
 }

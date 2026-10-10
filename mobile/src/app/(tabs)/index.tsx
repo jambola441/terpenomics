@@ -5,6 +5,7 @@ import { FEED_RAILS, type FeedListing, type FeedRail } from '@web/types'
 import { api, HOME_FEED } from '@/lib/api'
 import { useFetch } from '@/lib/useFetch'
 import ListingCard from '@/components/ListingCard'
+import { PartnerStrip } from '@/components/partners'
 import { FeedState, SectionTitle, styles } from '@/components/ui'
 import { t, space, type } from '@/lib/theme'
 
@@ -61,6 +62,7 @@ export default function Home() {
           <Text style={[type.link, { color: t.accent }]}>Edit</Text>
         </Pressable>
       </View>
+      <PartnerStrip />
       {FEED_RAILS.map(rail => {
         const items = feed.combined![rail]
         if (!items?.length) return null

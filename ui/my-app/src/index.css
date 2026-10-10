@@ -338,6 +338,11 @@ textarea::placeholder {
   100% { transform: scale(2.1);  opacity: 0; }
 }
 
+/* Partner stores, where purchases earn points: resin and a rounded square, so
+   they read apart from dispensaries by shape as well as colour. */
+.nyc-pin--partner .nyc-pin__disc { border-radius: 9px; color: var(--accent-ink); }
+.nyc-pin--partner .nyc-pin__disc::after { border-radius: 1px; }
+
 /* ── Clusters: stores too close to tap apart at this zoom ──────────────────── */
 
 .nyc-cluster {

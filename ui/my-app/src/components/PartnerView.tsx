@@ -15,11 +15,13 @@ import { Icon } from './Icon'
 
 const APPLE = typeof navigator !== 'undefined' && /iPhone|iPad|Macintosh/.test(navigator.userAgent)
 
-export default function PartnerView({ slug, onBack, onHowItWorks, onSendReceipt }: {
+export default function PartnerView({ slug, onBack, onHowItWorks, onSendReceipt, onShowOnMap }: {
   slug: string
   onBack: () => void
   onHowItWorks: () => void
   onSendReceipt: () => void
+  /** Open the map on this store's pin. */
+  onShowOnMap: (locationId: string) => void
 }) {
   const [data, setData] = useState<PortalPartnerPage | null>(null)
   const [error, setError] = useState<'missing' | 'failed' | null>(null)
@@ -84,13 +86,13 @@ export default function PartnerView({ slug, onBack, onHowItWorks, onSendReceipt 
       {data.locations.length === 0 ? (
         <div style={{ color: t.text3, fontSize: font.size.small + 1, padding: '10px 0' }}>No store address yet.</div>
       ) : (
-        data.locations.map(loc => <LocationRow key={loc.id} location={loc} />)
+        data.locations.map(loc => <LocationRow key={loc.id} location={loc} onShowOnMap={onShowOnMap} />)
       )}
     </>,
   )
 }
 
-function LocationRow({ location: loc }: { location: PortalPartnerLocation }) {
+function LocationRow({ location: loc, onShowOnMap }: { location: PortalPartnerLocation; onShowOnMap: (id: string) => void }) {
   const status = openStatus(loc.hours, loc.timezone)
   const directions = directionsUrl(loc, APPLE)
   return (
@@ -107,6 +109,11 @@ function LocationRow({ location: loc }: { location: PortalPartnerLocation }) {
           <a href={directions} target="_blank" rel="noopener noreferrer" style={actionBtn}>
             <Icon name="navigate" size={15} /> Directions
           </a>
+        )}
+        {loc.lat != null && loc.lng != null && (
+          <button onClick={() => onShowOnMap(loc.id)} style={{ ...actionBtn, cursor: 'pointer' }}>
+            <Icon name="map" size={15} /> Show on map
+          </button>
         )}
         {loc.phone && (
           <a href={telHref(loc.phone)} style={actionBtn}>
