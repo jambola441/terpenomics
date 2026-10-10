@@ -86,7 +86,8 @@ ROOT = Path(__file__).resolve().parent.parent
 CACHE_DIR = ROOT / "data" / "enrich_cache" / "catalog_match"
 # Bump when the question wording or the option rendering changes: cached answers were
 # given to a different question.
-QUESTION_VERSION = 3   # 3: options are entries (one product in one size), 2026-10-09
+QUESTION_VERSION = 4   # 3: options are entries (one product in one size), 2026-10-09
+                       # 4: the state carries every size the listing could mean, 2026-10-10
 
 # Set from the Ayrloom holdout (--eval, 2026-10-04): with the true product removed
 # from the shortlist, Jev still picked a wrong one at p>=0.80 for 5.7% of listings,
@@ -629,15 +630,19 @@ def jev_question(brand: str, listing: dict, index: CatalogIndex,
     copy, only a product line it names (described_line): 'large irrelevant state costs
     accuracy' is the third documented jagged edge.
     """
-    size = sizes.parse(listing.get("variant"), listing.get("name"),
-                       category=listing.get("category"))
     state = {
         "brand": brand,
         "listing_name": listing.get("name") or "",
         "listing_category": listing.get("category") or "",
         "listing_subtype": listing.get("subtype") or "",
-        "listing_size": size.label() or (listing.get("variant") or ""),
+        "store_size_field": listing.get("variant") or "",
     }
+    # Every size the listing could mean, not one the parser settled on: the store's
+    # field, and the name and description read as the package total and as count x
+    # unit (owner, 2026-10-10: the parser proposes sizes, Jev picks among the catalog's).
+    options = size_options(listing)
+    if options:
+        state["sizes_the_listing_could_mean"] = options
     line = described_line(listing, index)
     if line:
         state["product_line_in_description"] = line
@@ -661,14 +666,37 @@ def jev_question(brand: str, listing: dict, index: CatalogIndex,
         instructions=(
             f"Which {brand} catalog item is this dispensary listing? Each option is one "
             "product in one size. Stores rename products freely: extra words, store codes, "
-            "potency, lineage and the brand name itself are noise, and a store's size field "
-            "can be mistyped while the name states the real size. Match on what the product "
+            "potency, lineage and the brand name itself are noise. The listing's size can be "
+            "read more than one way (a figure beside a pack count may be each piece or the "
+            "whole pack, and a store's size field can be mistyped); the sizes it could mean "
+            "are listed, and the right option is the one in the size this listing most "
+            "likely is. Match on what the product "
             "is — the same flavor, strain or scent, the same product line, and the same "
             "size. Answer none when no option is that product in that size."
         ),
         criteria=criteria,
     )
     return state, {"product": question}, labels
+
+
+def size_options(listing: dict) -> str:
+    """The sizes size_candidates reads in a listing, each with where it was read:
+    "4.5g (store size field; name, as 5 x 0.9g), 2.5g (name)". Readings that imply a
+    unit that does not exist (a 0.03g pre-roll) are left out."""
+    import size_candidates
+    cands = size_candidates.candidates({"variant": listing.get("variant"), "scraped_name": listing.get("name"),
+                                        "description": listing.get("description"),
+                                        "scraped_category": listing.get("category")})
+    where = {"field": "store size field", "name": "name", "description": "description",
+             "name+field": "count in the name x the store size field"}
+    by_size: dict[str, list[str]] = {}
+    for c in cands:
+        if c.likely and c.source in where:
+            how = where[c.source] + ("" if c.reading in ("", "as written") else f", {c.reading}")
+            by_size.setdefault(c.label(), [])
+            if how not in by_size[c.label()]:
+                by_size[c.label()].append(how)
+    return ", ".join(f"{size} ({'; '.join(hows)})" for size, hows in by_size.items())
 
 
 def described_line(listing: dict, index: CatalogIndex) -> str | None:
