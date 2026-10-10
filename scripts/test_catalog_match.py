@@ -256,6 +256,28 @@ class TestJoin:
         assert cm.attribute_misses(r, p, cat["entries"][0]) == []
         assert cm.attribute_misses(dict(r, size="20mg"), p, cat["entries"][0]) == ["size"]
 
+    def test_a_weight_the_name_states_decides_when_the_size_read_fits_none(self):
+        # Stores size STIIIZY's 40's 5-packs by their own arithmetic (5 x 0.9g = 4.5g);
+        # the name still says the pack is 2.5g.
+        def e(i, size):
+            return {"id": i, "product_key": "os", "name": "40's Orange Sunset", "product_line": "40's",
+                    "category": "preroll", "subtype": "infused", "strain": "Orange Sunset", "variant": size}
+        idx = cm.CatalogIndex({"brand_name": "STIIIZY", "entries": [e("one", "1g"), e("pack", "2.5g")]})
+        r = {"category": "preroll", "subtype": "infused", "strain": "Orange Sunset", "product_line": "40's",
+             "size": "4.5g"}
+        name = "Orange Sunset 40'S | 5 x 0.9g Premium Infused (2.5g Pre-Roll Pack) | Stiiizy"
+        assert idx.join(r, name)[1]["id"] == "pack"
+        assert idx.join(r) is None                                         # nothing else to go on
+        # A piece's weight in a count is not the package's: "2 x 0.5g" never joins a 0.5g.
+        idx = cm.CatalogIndex({"brand_name": "STIIIZY", "entries": [e("half", "0.5g")]})
+        assert idx.join(dict(r, size="1g"), "Orange Sunset 40's 2 x 0.5g") is None
+        # A name that states a count is a package the catalog lacks, not its single.
+        idx = cm.CatalogIndex({"brand_name": "STIIIZY", "entries": [e("one", "1g")]})
+        assert idx.join(dict(r, size="2g"), "STIIIZY - 2PK 1G Pods - Orange Sunset") is None
+        # Two weights the name states that fit two entries leave it to Jev.
+        idx = cm.CatalogIndex({"brand_name": "STIIIZY", "entries": [e("one", "1g"), e("pack", "2.5g")]})
+        assert idx.join(r, "Orange Sunset 40's 1g / 2.5g") is None
+
     def test_words_around_a_strain_are_set_aside_only_when_no_product_carries_it(self):
         def e(i, line, strain, size="1g"):
             return {"id": i, "product_key": i, "name": f"{line or ''} {strain}".strip(), "product_line": line,

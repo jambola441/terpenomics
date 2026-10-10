@@ -297,14 +297,37 @@ class CatalogIndex:
         comes in. Format is compared wherever both sides state one; a pre-roll keeps
         none.
 
-        `name` is the listing's own name, read for one thing only: the other reading
-        of a lone dose beside a pack (reading_size)."""
+        `name` is the listing's own name, read for sizes only: the other reading of a
+        lone dose beside a pack (reading_size), and a weight it states when the size
+        read fits no entry."""
         if not reading or not reading.get("strain") or not reading.get("size"):
             return None
         category = reading.get("category")
         want = reading_size(reading, name)
         if want.is_empty():
             return None
+        hit = self._join_size(reading, want)
+        if hit or category not in sizes.WEIGHT_CATEGORIES or not name:
+            return hit
+        pack = sizes.parse(name, category=category).pack or 1
+        # The size read can be the store's arithmetic, not the package: STIIIZY's 40's
+        # "5 x 0.9g Premium Infused (2.5g Pre-Roll Pack)" sized 4.5g. A weight the name
+        # itself states that fits one entry, where the size read fits none, is the size.
+        # Weights written in grams only ("Quarter Water" is no quarter ounce), and not
+        # a piece's weight in a count: "5 x 0.9g", or the 1g of a "2PK 1G Pods" read
+        # as 2g (a package the catalog lacks, not its single).
+        found = {}
+        for g in sorted({float(m) for m in _GRAMS.findall(_MULTIPLIED.sub(" ", name))}):
+            if want.grams is not None and (abs(g - want.grams) <= 0.02
+                                           or (pack > 1 and abs(g * pack - want.grams) <= 0.02)):
+                continue
+            h = self._join_size(reading, sizes.Size(grams=g))
+            if h:
+                found[h[1]["id"]] = h
+        return next(iter(found.values())) if len(found) == 1 else None
+
+    def _join_size(self, reading: dict, want: sizes.Size) -> tuple[str, dict] | None:
+        category = reading.get("category")
         strain, line, subtype = strain_key(reading["strain"]), squash(reading.get("product_line")), \
             reading.get("subtype")
         # The strain as read first. Only when no product of the category carries it are
@@ -398,6 +421,11 @@ class CatalogIndex:
                 scored = fits
         scored.sort(key=lambda sk: (-sk[0], len(self.products[sk[1]].title)))
         return [key for _, key in scored[:k]]
+
+
+_GRAMS = re.compile(r"(?<![\d.])(\d*\.?\d+)\s*(?:g|gr|grams?)\b", re.I)
+# A weight given per piece of a count: "5 x 0.9g", "0.5g x 5", "2x3.5g".
+_MULTIPLIED = re.compile(r"\b\d+\s*[x\u00d7]\s*\d*\.?\d+\s*g\b|\b\d*\.?\d+\s*g\s*[x\u00d7]\s*\d+\b", re.I)
 
 
 def fitting_entry(entries: list[dict], want: sizes.Size, category: str | None) -> dict | None | bool:
