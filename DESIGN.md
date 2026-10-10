@@ -82,6 +82,20 @@ A store's avatar is a subway bullet: its initial on its borough's MTA colour
 red, Queens purple, Bronx green, Staten Island blue, yellow with a black letter
 when the borough is unknown. The map pins are the same disc.
 
+### Product lines
+
+A brand's product line ("Palms", "UP") wears a **diamond**, after the subway's
+express bullet (`LineMark` in `components/LineShelves.tsx`), filled with its
+category's hue. Discs already mean a store (borough colour) or a strain type
+(I/S/H), so a line never borrows their shape. Every line in a category shares
+one hue, so the line's name is always set beside the mark; colour is never the
+only cue. A hollow, dashed diamond marks what is in no line.
+
+A line's shelf is headed like a specimen drawer: a mono eyebrow
+(`LINE · VAPES · 4 PRODUCTS`), the name in Fraunces, then price span and store
+count in mono. Inside a line's own shelf or filter, cards drop the line from the
+product name ("Blue Dream", not "Palms Blue Dream"): the heading already says it.
+
 ## Type
 
 | Face | Role | Notes |

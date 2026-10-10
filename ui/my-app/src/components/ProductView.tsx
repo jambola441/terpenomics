@@ -3,7 +3,7 @@ import api from '../api/client'
 import type { PortalProductDetail, PortalBrandProduct, ListingDetail } from '../types'
 import { t, radius, font, categoryLabel } from '../theme'
 import { useFlag } from '../hooks/useFlag'
-import { LINE_MIN_PRODUCTS, nameWithinLine } from './BrowseScreen'
+import { LINE_MIN_PRODUCTS, nameWithinLine } from '../utils/lines'
 import {
   Pressable, CategoryTag, ClassificationTag, DetailBlock, CollapsibleBlock, SpecRow,
   BackButton, FeedState, ProductImage, TerpeneProfile, Label,
