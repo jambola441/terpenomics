@@ -46,6 +46,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import os
 import sys
 import urllib.parse
 import uuid
@@ -585,15 +586,36 @@ def plan_size_sync(catalogs: dict, listings: list[dict]) -> list[tuple[dict, str
 
 def brand_listings(brand: str, category: str | None = None) -> list[dict]:
     """The brand's active listings; only one category's when given, since the matcher
-    shortlists products of a listing's own category and nothing else can move."""
+    shortlists products of a listing's own category and nothing else can move. In the
+    shape the import hands catalog_reading.read and catalog_match.resolve: with the
+    description, the store's own filing and the stored reading."""
     import db_http
     rows = db_http.select_all(
-        "listings", "select=id,dispensary_id,scraped_name,scraped_category,subtype,variant,description"
+        "listings", "select=id,dispensary_id,scraped_name,scraped_category,subtype,variant,description,reading"
                     f"&is_active=is.true&scraped_brand=ilike.{urllib.parse.quote(brand)}"
                     + (f"&scraped_category=eq.{urllib.parse.quote(category)}" if category else ""))
     return [{"id": r["id"], "name": r.get("scraped_name") or "", "category": r.get("scraped_category"),
-             "subtype": r.get("subtype"), "variant": r.get("variant"), "description": r.get("description")}
+             "subtype": r.get("subtype"), "variant": r.get("variant"), "description": r.get("description"),
+             "store_category": (r.get("reading") or {}).get("store_category"),
+             "reading": r.get("reading")}
             for r in rows]
+
+
+def read_against(catalog: dict, listings: list[dict], *, use_jev: bool) -> list[dict]:
+    """The listings as the import would resolve them against `catalog`: each re-read in
+    the catalog's own values (catalog_reading.read, which honours CATALOG_READING_ONE_SIZE_AT
+    and the working copy's data/reading_examples.json), so a plan's entries and examples
+    count. A listing the read leaves out keeps its stored reading, as at import. Copies:
+    the caller's rows are not touched."""
+    import catalog_reading
+    out = [dict(l) for l in listings]
+    if not use_jev or os.environ.get("CATALOG_READING", "1").strip() == "0":
+        return out
+    got = catalog_reading.read(catalog, [dict(l, id=str(l["id"])) for l in out])
+    for l in out:
+        if str(l["id"]) in got:
+            l["reading"] = got[str(l["id"])]
+    return out
 
 
 def outcome(catalog: dict, listing: dict, d) -> tuple:
@@ -660,12 +682,14 @@ def measure(plan: Plan, runs: int = 2) -> None:
     listings = brand_listings(brand, plan.category)
     use_jev = jev.available()
     if not use_jev:
-        print("  (Jev is not available here: measuring the exact tier only)")
+        print("  (Jev is not available here: measuring with the stored readings only)")
     by_id = {l["id"]: l for l in listings}
 
     def run(catalog):
+        # As the import does (import_listings.apply_catalog): Jev reads, the join decides.
+        read = read_against(catalog, listings, use_jev=use_jev)
         return {d.listing["id"]: outcome(catalog, d.listing, d)
-                for d in cm.resolve(catalog, listings, use_jev=use_jev)}
+                for d in cm.resolve(catalog, read, use_jev=False)}
     raw = [run(plan.catalog) for _ in range(runs)]
     old = [carried(plan, r) for r in raw]
     new = [run(plan.changed) for _ in range(runs)]
