@@ -36,5 +36,10 @@
     {"listing": "Grassroots - Dark Heart Titan Express Prerolls 5pk - 2g", "entry": {"category": "preroll", "line": "Shorties", "strain": "Titan Express", "size": "2g"}},
     {"listing": "Grassroots - Dark Heart Triple Stack Diamond Infused Prerolls 5pk - 2g", "entry": {"category": "preroll", "line": "Diamond Infused", "strain": "Triple Stack", "size": "2g"}},
     {"listing": "Grassroots - Dark Heart Collection Zesty Garlic Cookies Prerolls 2pk - 0.8g", "entry": {"category": "preroll", "line": "2-Pack", "strain": "Zesty Garlic Cookies", "size": "0.8g"}}
+  ],
+  "runtz": [
+    {"listing": "Runtz - Pink Runtz Prerolls 2pk - 1.5g", "entry": {"category": "preroll", "strain": "Pink Runtz", "size": "1.5g"}},
+    {"listing": "Pre-Rolls | Runtz | Pluto - 2pk", "entry": {"category": "preroll", "strain": "Pluto", "size": "1.5g"}},
+    {"listing": "Pre-Rolls | Runtz | Lemon Candy Runtz - 5pk", "entry": {"category": "preroll", "strain": "Lemon Candy Runtz", "size": "3.75g"}}
   ]
 }
