@@ -1,0 +1,66 @@
+{
+ "brand": "MFNY",
+ "_comment": "DRAFT 2026-10-11 r2, from MFNY's untrusted listings. Most untrusted listings pointed at the right product and only the line or size was read below 0.9; those are handled by reading examples (data/reading_examples.json 'mfny'), not here. This plan holds only what the catalog lacked or had wrong. Curated entries survive storefront re-pushes. Not written: apply with --write after approval. Three 'mfny' reading examples name entries this plan creates (Classics Live Resin Sour Diesel 2g, Peach x Oishii 3pk 30mg, Live Rosin The \"Belafonte\" 1g) and one names Live Rosin Sour Peach x Rainbow Beltz 2.0, which arrives with the recipe change at the next storefront push (a storefront entry cannot be re-keyed here); until then the import leaves those four out with a warning. Measured 2026-10-11: examples 297 -> 376, this plan 376 -> 388 (catalog_fix --measure, inferred sizes stripped); with inferred sizes kept, as the import reads, 358 -> 433, about 443 once Sour Peach is Live Rosin.",
+ "edits": [
+  {
+   "op": "set-size",
+   "entry": {
+    "category": "edible",
+    "strain": "Peach x Oishii",
+    "size": "3pk 90mg"
+   },
+   "size": "3pk 30mg",
+   "why": "every store writes the 3-pack as 30mg ('3pk Live Resin Gummies 30mg', 'Peach x Oishii - Live Resin 3pk | 30MG'; store names on this entry all say 30mg); MFNY gummies are 10mg each (recipe: 10 x 10mg) and NY caps a piece at 10mg, so 90mg is not possible. line_fill copied the 90mg to every Live Resin gummy's inferred 3pk, so those follow on the sync."
+  },
+  {
+   "op": "reactivate",
+   "entry": "4818f090-e4fd-49de-988f-7e8770596cb8",
+   "why": "Classics Live Resin Sour Diesel 2g badder: 5 listings at 4 stores ('Sour Diesel Live Resin Badder | 2g', '#17 Sour Diesel ... 2g Live Resin Badder', 'MFNY - Sour Diesel Live Resin Badder - 2g'); recipe notes: stores sell 2g jars of Sour Diesel, which join the site product as its 2g. Inactive with no listings, so the 2g listings had nothing to land on."
+  },
+  {
+   "op": "add-size",
+   "entry": {
+    "category": "concentrate",
+    "line": "Classics Live Resin",
+    "strain": "Chemdog",
+    "size": "1g"
+   },
+   "size": "2g",
+   "why": "'MFNY | Live Resin Badder ChemDog (I)' sold at 2g; recipe notes list Chemdog among the 2g badder jars stores sell (Sour Diesel, Skunk, Candy Rain, Chemdog, Lemon Cane, Belafonte)."
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "subtype": "resin",
+   "line": "Live Resin",
+   "strain": "Lemon Cane",
+   "sizes": [
+    "1g",
+    "2g"
+   ],
+   "why": "'Lemon Cane Live Resin Badder | 1g' and 'MFNY - Lemon Cane | 2G Live Resin Badder' at two stores; recipe notes: stores sell Lemon Cane badder in 2g jars (the site lists no Lemon Cane badder, only carts and Two-Fers)."
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "subtype": "rosin",
+   "line": "Live Rosin",
+   "strain": "The \"Belafonte\"",
+   "sizes": [
+    "1g"
+   ],
+   "why": "5 listings at 5 stores ('The Belafonte Live Rosin Badder | 1g', 'MFNY | Badder | Live Rosin | The Belafonte | 1g | Sativa', 'MFNY | Live Rosin Badder The Belafonte (S)'); recipe notes: live rosin badders the site does not list (The Belafonte, Hash Burger), one store carrying both the resin and the rosin badder at different THC."
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "subtype": "rosin",
+   "line": "Live Rosin",
+   "strain": "Hash Burger",
+   "sizes": [
+    "1g"
+   ],
+   "why": "'MFNY | Badder | Live Rosin | Hash Burger | 1g | Indica | THC 66.24%', 'Live Rosin Badder Hash Burger'; same recipe note as The Belafonte rosin badder."
+  }
+ ]
+}
