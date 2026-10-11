@@ -366,6 +366,20 @@ def test_masked_catalog_strain_is_not_copied():
     assert rec["strain"] == "Alaskan Thunder Fuck" and stats["masked_strain_skipped"] == 1
 
 
+def test_overlay_entry_applies_identity_and_catalog_size_like_an_import():
+    """The review queue's manual match (overlay_entry) overlays as apply_catalog +
+    assign_sizes would: entry identity, and a mistyped dose size from the catalog."""
+    entry = {"id": "e1", "name": "Balance Yuzu Lemon", "category": "edible", "strain": "Yuzu Lemon",
+             "product_line": None, "variant": "20pk 100mg"}
+    catalog = {"entries": [entry]}
+    rec = {"scraped_name": "Camino Yuzu Lemon 20pk 50mg", "scraped_category": "tincture",
+           "subtype": None, "strain": "Yuzu", "product_line": "Balance", "variant": "50mg"}
+    import_listings.overlay_entry(rec, catalog, entry)
+    assert (rec["scraped_category"], rec["strain"], rec["product_line"]) == ("edible", "Yuzu Lemon", None)
+    want = catalog_match.catalog_size("50mg", rec["scraped_name"], entry, [entry], None) or "50mg"
+    assert rec["size"] == want
+
+
 def test_manual_match_survives_reimport(db, tmp_path):
     eid, other = add_catalog(db, [
         {"name": "manual pick", "category": "flower", "strain": "Picked", "product_line": "Hand"},

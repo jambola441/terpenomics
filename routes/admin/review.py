@@ -13,10 +13,19 @@ A reviewer sees the store's listing beside up to four of its brand's catalog ent
 and says which it is (`entry`), none of them (`none`), that the catalog is missing
 the product or size (`missing`), or `skip`.
 
-**Decisions are recorded only.** Nothing here touches a listing's match or a catalog
-entry: every issue is fixed in the catalog, and the review_decisions rows are what
-those fixes are proposed from. A listing with a decision, skip included, is out of
-the queue; undo deletes the reviewer's last decision and puts its listing back.
+**`entry` is a transition to trusted, by review.** The listing becomes a manual
+match to that entry (catalog_entry_id, catalog_match_method 'manual', confidence 1.0)
+and takes the entry's identity at once, through the importer's own overlay
+(import_listings.overlay_entry); every later import keeps a manual match and
+overlays it again. That takes it out of the queue for good. The listing's previous
+match is kept on the decision (reason, prev_entry_id, prev_confidence) and undo puts
+it back.
+
+**Every other decision is recorded only.** `none`, `missing` and `skip` touch
+neither the listing's match nor a catalog entry: catalog issues are fixed in the
+catalog, and the review_decisions rows are what those fixes are proposed from. A
+listing with a decision, skip included, is out of the queue; undo deletes the
+reviewer's last decision and puts its listing back.
 
 A listing's brand is matched to its catalog by catalog_store.brand_key (lowercase,
 '&' as 'and', no punctuation): the key catalogs are filed under everywhere else, so
@@ -71,6 +80,39 @@ def _in_queue():
 
 def _decided_ids():
     return select(ReviewDecision.listing_id)
+
+
+def _entry_dict(e: BrandCatalogEntry) -> dict:
+    """An entry in catalog_store's shape, for the importer's helpers."""
+    return {"id": str(e.id), "name": e.name, "product_line": e.product_line, "category": e.category,
+            "subtype": e.subtype, "strain": e.strain, "variant": e.variant, "is_active": e.is_active,
+            "product_key": getattr(e, "product_key", None),
+            "product_external_id": getattr(e, "product_external_id", None)}
+
+
+# Listing columns overlay_entry may change.
+_OVERLAID = ("scraped_category", "subtype", "strain", "product_line", "size")
+
+
+def make_manual(session: Session, listing: Listing, entry: BrandCatalogEntry) -> None:
+    """Make `listing` a manual match to `entry` and overlay the entry's identity as the
+    importer does (import_listings.overlay_entry). Does not commit."""
+    import import_listings  # noqa: E402  (scripts/, on sys.path above)
+
+    entries = session.exec(select(BrandCatalogEntry)
+                           .where(BrandCatalogEntry.catalog_id == entry.catalog_id)).all()
+    catalog = {"entries": [_entry_dict(e) for e in entries]}
+    entry_d = next(d for d in catalog["entries"] if d["id"] == str(entry.id))
+    rec = {"scraped_name": listing.scraped_name, "scraped_category": listing.scraped_category,
+           "subtype": listing.subtype, "strain": listing.strain, "product_line": listing.product_line,
+           "variant": listing.variant, "size": listing.size, "description": listing.description}
+    import_listings.overlay_entry(rec, catalog, entry_d)
+    for k in _OVERLAID:
+        setattr(listing, k, rec[k])
+    listing.catalog_entry_id = entry.id
+    listing.catalog_match_method = "manual"
+    listing.catalog_match_confidence = 1.0
+    session.add(listing)
 
 
 def _catalogs(session: Session) -> dict[str, BrandCatalog]:
@@ -336,7 +378,9 @@ def record_decision(
     brand: Optional[str] = Query(default=None),
     tz_offset: int = Query(default=0, ge=-840, le=840),
 ):
-    """Record a call on one listing. Changes nothing but review_decisions."""
+    """Record a call on one listing. `entry` also makes the listing a manual match
+    to the entry (make_manual), keeping its previous match on the decision for
+    undo; every other decision changes nothing but review_decisions."""
     listing = session.get(Listing, body.listing_id)
     if listing is None:
         raise HTTPException(status_code=404, detail="Listing not found")
@@ -360,6 +404,10 @@ def record_decision(
         listing_id=listing.id, reviewer=reviewer, decision=body.decision, entry_id=body.entry_id,
         note=(body.note or "").strip() or None, reason=listing.catalog_match_method,
     )
+    if body.decision == "entry":
+        row.prev_entry_id = listing.catalog_entry_id
+        row.prev_confidence = listing.catalog_match_confidence
+        make_manual(session, listing, entry)
     session.add(row)
     session.commit()
     return {"id": str(row.id), "progress": _progress(session, reviewer, brand, tz_offset)}
@@ -373,7 +421,10 @@ def undo(
     tz_offset: int = Query(default=0, ge=-840, le=840),
 ):
     """Delete this reviewer's most recent decision; its listing is back in the queue.
-    Returns the listing's card (null if it has since left the queue) so the screen
+    For an `entry` decision the listing's previous match comes back (method from
+    `reason`, entry and confidence from prev_entry_id / prev_confidence) if it is
+    still the manual match the decision made. The identity overlaid stays until the
+    next import re-reads the listing. Returns the listing's card (null if it has since left the queue) so the screen
     can show it again."""
     reviewer = _reviewer(user)
     row = session.exec(select(ReviewDecision).where(ReviewDecision.reviewer == reviewer)
@@ -381,6 +432,14 @@ def undo(
     if row is None:
         raise HTTPException(status_code=404, detail="Nothing to undo")
     listing_id = row.listing_id
+    if row.decision == "entry":
+        listing = session.get(Listing, listing_id)
+        if (listing is not None and listing.catalog_match_method == "manual"
+                and listing.catalog_entry_id == row.entry_id):
+            listing.catalog_entry_id = row.prev_entry_id
+            listing.catalog_match_method = row.reason
+            listing.catalog_match_confidence = row.prev_confidence
+            session.add(listing)
     session.delete(row)
     session.commit()
 

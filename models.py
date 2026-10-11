@@ -482,13 +482,17 @@ REVIEW_DECISIONS = ("entry", "none", "missing", "skip")
 class ReviewDecision(SQLModel, table=True):
     """One person's call on one listing in the catalog review queue.
 
-    Recorded only: a decision never changes the listing's match or the catalog.
-    Every issue is fixed in the catalog, and these rows are what the catalog-fix
+    A decision `entry` is a transition to trusted, by review: the listing takes
+    entry_id as a manual match (catalog_match_method 'manual', confidence 1.0) and
+    the entry's identity at once, and the importer keeps it from then on. The
+    listing's match before it is kept here (reason, prev_entry_id, prev_confidence)
+    so undo can put it back. Every other decision is recorded only: it never
+    changes the listing's match or the catalog; those rows are what the catalog-fix
     proposals are drawn up from. A listing with a decision (skip included) leaves
     the queue; undo deletes the row and puts it back.
 
     A new table, so create_all makes it at startup; db/migrations/0017 has it on
-    record with the rest.
+    record with the rest, and 0018 adds prev_entry_id and prev_confidence.
     """
 
     __tablename__ = "review_decisions"
@@ -505,6 +509,11 @@ class ReviewDecision(SQLModel, table=True):
     # The listing's catalog_match_method when the call was made: the matcher may
     # have moved it on since.
     reason:     Optional[str]  = Field(default=None, max_length=32)
+    # For a decision `entry`: the listing's catalog_entry_id and
+    # catalog_match_confidence before it became manual, which undo restores
+    # (db/migrations/0018).
+    prev_entry_id:   Optional[UUID]  = Field(default=None, foreign_key="brand_catalog_entries.id")
+    prev_confidence: Optional[float] = Field(default=None)
     created_at: datetime       = Field(default_factory=utcnow, nullable=False)
 
 
