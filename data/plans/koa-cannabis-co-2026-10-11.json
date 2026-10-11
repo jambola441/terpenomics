@@ -1,16 +1,7 @@
 {
  "brand": "Koa Cannabis Co.",
- "_comment": "2026-10-11 draft (catalogs batch A): apply after `catalog_bootstrap.py --brand \"Koa Cannabis Co.\" --push` creates the catalog; selectors name bootstrap entries. Measure with `catalog_fix.py plan --measure` first.",
+ "_comment": "2026-10-11 draft (catalogs batch A, owner policy 2026-10-11): apply after `catalog_bootstrap.py --brand \"Koa Cannabis Co.\" --push` (no --replace) creates the catalog; selectors name bootstrap entries. Single-store products without a brand source are left to review.",
  "edits": [
-  {
-   "op": "rekey",
-   "entry": {
-    "category": "preroll",
-    "strain": "Gg #4"
-   },
-   "why": "Koa writes GG #4 (stores: 'GG #4' x5, 'GG#4', 'GG4')",
-   "strain": "GG #4"
-  },
   {
    "op": "set-size",
    "entry": {
@@ -19,7 +10,7 @@
     "size": "1.4g"
    },
    "size": "0.7g",
-   "why": "Koa Doubles are 2 x 0.35g minis = 0.7g (koacannabis.com 'Doubles: two infused pre-rolls'; Weedmaps 'Infused Minis | 0.35g each | 2pk'); 4 of 6 NY 2pk listings say 0.7g, the 1.4g ones double-count"
+   "why": "Koa states the 2pk Doubles as 0.7g (koacannabis.com; https://weedmaps.com/brands/koa/products/koa-koa-star-berry-infused-minis-0-35g-each-2pk '10-packs with 3.5g ... 2-packs with 0.7g')"
   },
   {
    "op": "set-size",
@@ -29,62 +20,17 @@
     "size": "1.4g"
    },
    "size": "0.7g",
-   "why": "Koa Doubles are 2 x 0.35g minis = 0.7g (koacannabis.com 'Doubles: two infused pre-rolls'; Weedmaps 'Infused Minis | 0.35g each | 2pk'); 4 of 6 NY 2pk listings say 0.7g, the 1.4g ones double-count"
+   "why": "Koa states the 2pk Doubles as 0.7g (koacannabis.com; https://weedmaps.com/brands/koa/products/koa-koa-star-berry-infused-minis-0-35g-each-2pk '10-packs with 3.5g ... 2-packs with 0.7g')"
   },
   {
-   "op": "add-product",
-   "category": "preroll",
-   "strain": "Green Crack",
-   "sizes": [
-    "3.5g"
-   ],
-   "why": "10pk live resin infused minis 3.5g (10 x 0.35g), one store"
-  },
-  {
-   "op": "add-product",
-   "category": "preroll",
-   "strain": "Blue Dream",
-   "sizes": [
-    "3.5g"
-   ],
-   "why": "10pk live resin infused minis 3.5g (10 x 0.35g), one store"
-  },
-  {
-   "op": "add-product",
-   "category": "preroll",
-   "strain": "Green Crack",
-   "sizes": [
-    "0.7g"
-   ],
-   "why": "Doubles 2pk 0.7g, one or two stores ('<strain> - 2pk | 0.7g'); Koa Doubles are 2 x 0.35g minis = 0.7g (koacannabis.com 'Doubles: two infused pre-rolls'; Weedmaps 'Infused Minis | 0.35g each | 2pk'); 4 of 6 NY 2pk listings say 0.7g, the 1.4g ones double-count"
-  },
-  {
-   "op": "add-product",
-   "category": "preroll",
-   "strain": "Sour Diesel",
-   "sizes": [
-    "0.7g"
-   ],
-   "why": "Doubles 2pk 0.7g, one or two stores ('<strain> - 2pk | 0.7g'); Koa Doubles are 2 x 0.35g minis = 0.7g (koacannabis.com 'Doubles: two infused pre-rolls'; Weedmaps 'Infused Minis | 0.35g each | 2pk'); 4 of 6 NY 2pk listings say 0.7g, the 1.4g ones double-count"
-  },
-  {
-   "op": "add-product",
-   "category": "preroll",
-   "strain": "Granddaddy Purple",
-   "sizes": [
-    "0.7g"
-   ],
-   "why": "Doubles 2pk 0.7g, one or two stores ('<strain> - 2pk | 0.7g'); Koa Doubles are 2 x 0.35g minis = 0.7g (koacannabis.com 'Doubles: two infused pre-rolls'; Weedmaps 'Infused Minis | 0.35g each | 2pk'); 4 of 6 NY 2pk listings say 0.7g, the 1.4g ones double-count"
-  },
-  {
-   "op": "add-size",
+   "op": "set-size",
    "entry": {
     "category": "preroll",
-    "strain": "GG #4",
-    "size": "3.5g"
+    "strain": "Granddaddy Purple",
+    "size": "1.4g"
    },
    "size": "0.7g",
-   "why": "GG #4 Doubles 2pk 0.7g, one store ('GG #4 | Infused Pre-roll 2pk | 0.7g')"
+   "why": "Koa states the 2pk Doubles as 0.7g (koacannabis.com; https://weedmaps.com/brands/koa/products/koa-koa-star-berry-infused-minis-0-35g-each-2pk '10-packs with 3.5g ... 2-packs with 0.7g')"
   }
  ]
 }

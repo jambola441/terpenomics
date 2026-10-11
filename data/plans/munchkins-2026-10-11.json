@@ -1,6 +1,6 @@
 {
  "brand": "Munchkins",
- "_comment": "2026-10-11 draft (catalogs batch A): apply after `catalog_bootstrap.py --brand \"Munchkins\" --push` creates the catalog; selectors name bootstrap entries. Measure with `catalog_fix.py plan --measure` first.",
+ "_comment": "2026-10-11 draft (catalogs batch A, owner policy 2026-10-11): apply after `catalog_bootstrap.py --brand \"Munchkins\" --push` (no --replace) creates the catalog; selectors name bootstrap entries. Single-store products without a brand source are left to review.",
  "edits": [
   {
    "op": "rekey",
@@ -10,7 +10,7 @@
     "strain": "Blueberry Headband",
     "size": "3.5g"
    },
-   "why": "Munchkins is a small-buds brand: stores write 'Small Buds Flower' / '(small buds)' on the same strains and sizes others file as plain flower, which split Blueberry Headband 3.5g into two entries (owner to confirm)",
+   "why": "Munchkins is a small-buds brand: stores write 'Small Buds Flower' / '(small buds)' on the same strains and sizes others file as plain flower; this merges the duplicate Blueberry Headband 3.5g (owner to confirm)",
    "subtype": "smalls"
   },
   {
@@ -21,7 +21,7 @@
     "strain": "Girl Scout Cookies",
     "size": "3.5g"
    },
-   "why": "Munchkins is a small-buds brand: stores write 'Small Buds Flower' / '(small buds)' on the same strains and sizes others file as plain flower, which split Blueberry Headband 3.5g into two entries (owner to confirm)",
+   "why": "Munchkins is a small-buds brand: stores write 'Small Buds Flower' / '(small buds)' on the same strains and sizes others file as plain flower; this merges the duplicate Blueberry Headband 3.5g (owner to confirm)",
    "subtype": "smalls"
   },
   {
@@ -32,7 +32,7 @@
     "strain": "Chemdawg",
     "size": "28g"
    },
-   "why": "Munchkins is a small-buds brand: stores write 'Small Buds Flower' / '(small buds)' on the same strains and sizes others file as plain flower, which split Blueberry Headband 3.5g into two entries (owner to confirm)",
+   "why": "Munchkins is a small-buds brand: stores write 'Small Buds Flower' / '(small buds)' on the same strains and sizes others file as plain flower; this merges the duplicate Blueberry Headband 3.5g (owner to confirm)",
    "subtype": "smalls"
   },
   {
@@ -43,7 +43,7 @@
     "strain": "Mimosa",
     "size": "28g"
    },
-   "why": "Munchkins is a small-buds brand: stores write 'Small Buds Flower' / '(small buds)' on the same strains and sizes others file as plain flower, which split Blueberry Headband 3.5g into two entries (owner to confirm)",
+   "why": "Munchkins is a small-buds brand: stores write 'Small Buds Flower' / '(small buds)' on the same strains and sizes others file as plain flower; this merges the duplicate Blueberry Headband 3.5g (owner to confirm)",
    "subtype": "smalls"
   },
   {
@@ -54,7 +54,7 @@
     "strain": "Rainbow Beltz",
     "size": "28g"
    },
-   "why": "Munchkins is a small-buds brand: stores write 'Small Buds Flower' / '(small buds)' on the same strains and sizes others file as plain flower, which split Blueberry Headband 3.5g into two entries (owner to confirm)",
+   "why": "Munchkins is a small-buds brand: stores write 'Small Buds Flower' / '(small buds)' on the same strains and sizes others file as plain flower; this merges the duplicate Blueberry Headband 3.5g (owner to confirm)",
    "subtype": "smalls"
   },
   {
@@ -65,7 +65,7 @@
     "strain": "RS11",
     "size": "28g"
    },
-   "why": "Munchkins is a small-buds brand: stores write 'Small Buds Flower' / '(small buds)' on the same strains and sizes others file as plain flower, which split Blueberry Headband 3.5g into two entries (owner to confirm)",
+   "why": "Munchkins is a small-buds brand: stores write 'Small Buds Flower' / '(small buds)' on the same strains and sizes others file as plain flower; this merges the duplicate Blueberry Headband 3.5g (owner to confirm)",
    "subtype": "smalls"
   },
   {
@@ -76,62 +76,7 @@
     "strain": "Trop Cherry",
     "size": "28g"
    },
-   "why": "Munchkins is a small-buds brand: stores write 'Small Buds Flower' / '(small buds)' on the same strains and sizes others file as plain flower, which split Blueberry Headband 3.5g into two entries (owner to confirm)",
-   "subtype": "smalls"
-  },
-  {
-   "op": "add-product",
-   "category": "preroll",
-   "strain": "Northern Lights",
-   "sizes": [
-    "14g"
-   ],
-   "why": "28pk pre-rolls 14g (28 x 0.5g), one store each ('<strain> 28pk | Preroll', 'Prerolls 28pk - 14g')"
-  },
-  {
-   "op": "add-product",
-   "category": "preroll",
-   "strain": "Cheetah Piss",
-   "sizes": [
-    "14g"
-   ],
-   "why": "28pk pre-rolls 14g (28 x 0.5g), one store each ('<strain> 28pk | Preroll', 'Prerolls 28pk - 14g')"
-  },
-  {
-   "op": "add-product",
-   "category": "preroll",
-   "strain": "Sour Diesel",
-   "sizes": [
-    "14g"
-   ],
-   "why": "28pk pre-rolls 14g (28 x 0.5g), one store each ('<strain> 28pk | Preroll', 'Prerolls 28pk - 14g')"
-  },
-  {
-   "op": "add-product",
-   "category": "preroll",
-   "strain": "White Widow",
-   "sizes": [
-    "14g"
-   ],
-   "why": "28pk pre-rolls 14g (28 x 0.5g), one store each ('<strain> 28pk | Preroll', 'Prerolls 28pk - 14g')"
-  },
-  {
-   "op": "add-product",
-   "category": "preroll",
-   "strain": "Granddaddy Purp",
-   "sizes": [
-    "14g"
-   ],
-   "why": "28pk pre-rolls 14g (28 x 0.5g), one store each ('<strain> 28pk | Preroll', 'Prerolls 28pk - 14g')"
-  },
-  {
-   "op": "add-product",
-   "category": "flower",
-   "strain": "Durban Poison",
-   "sizes": [
-    "3.5g"
-   ],
-   "why": "small buds 3.5g, one store ('Munchkins | Durban Poison | 3.5g')",
+   "why": "Munchkins is a small-buds brand: stores write 'Small Buds Flower' / '(small buds)' on the same strains and sizes others file as plain flower; this merges the duplicate Blueberry Headband 3.5g (owner to confirm)",
    "subtype": "smalls"
   }
  ]
