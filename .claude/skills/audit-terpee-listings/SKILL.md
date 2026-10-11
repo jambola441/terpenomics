@@ -46,6 +46,11 @@ In this order, new before old:
 5. **Review-only clusters** at 3+ stores, then **brandless listings** by count.
 6. **Curated products no listing has matched for 30 days.** Check that they stopped
    selling, then retire them.
+7. **Price outliers**: a matched listing priced 2.5x off its product's usual price (the
+   median at 3+ stores). Prices are what stores get right, so the match is usually wrong:
+   another size (a 2-pack matched to the 10-pack), a product the catalog lacks (a tips
+   booklet on the plain tips), a bundle. A catalog gap is a catalog fix; one store's typo
+   is a dismissal, and a $0.01 "samples" listing is not a sale.
 
 List the rest in the report as open, without investigating them.
 

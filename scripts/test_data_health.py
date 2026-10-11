@@ -197,3 +197,14 @@ def test_a_strain_near_miss_needs_one_product_inside_the_stores_spelling():
           for i, s in ((1, "A"), (2, "B"))]
     found = dh.near_misses(data(ls, camino))
     assert keys(found) == ["near-miss:camino:sp:strain:sparklingpear"]
+
+
+def test_a_listing_priced_far_from_its_products_usual_price_is_flagged():
+    rows = [listing(i, s, "40s Orange Sunset", entry="os1", method="attributes", price_cents=1600)
+            for i, s in enumerate("ABC")]
+    rows.append(listing(9, "D", "40s Orange Sunset 5pk", entry="os1", method="attributes", price_cents=6000))
+    rows.append(listing(8, "E", "40s Orange Sunset", entry="os1", method="attributes", price_cents=1200))  # a sale
+    found = dh.price_outliers(data(rows, STIIIZY))
+    assert keys(found) == ["price:l9"] and "usually $16.00" in found[0].text
+    # Fewer than PRICE_STORES stores make no usual price.
+    assert dh.price_outliers(data(rows[:1] + rows[3:4], STIIIZY)) == []
