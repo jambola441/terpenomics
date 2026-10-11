@@ -1407,6 +1407,10 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
     # failed (and have deliberate nulls "restored"), so it is cleared up front.
     for row in rows:
         row.pop("enrich_failed", None)
+        # Kept so a re-enrichment from the CSV (scrape.py --import-only) can ask with
+        # the scraper's variant — the cache key — rather than the normalized one.
+        if not row.get("scraped_variant"):
+            row["scraped_variant"] = row.get("variant") or ""
 
     if no_enrich:
         for row in rows:

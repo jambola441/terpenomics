@@ -370,7 +370,8 @@ python evals/enrich/audit.py --db                         # suspects per store
 | task | command |
 | --- | --- |
 | one store, end to end | `python scripts/scrape.py --slug <slug>` |
-| re-import the newest CSVs | `python scripts/scrape.py --all --import-only` |
+| re-enrich + re-import the newest CSVs (no scrape; cached answers free) | `python scripts/scrape.py --all --import-only` |
+| re-import the newest CSVs exactly as written | `python scripts/scrape.py --all --import-only --no-enrich` |
 | scrape without touching the DB | `python scripts/scrape.py --all --scrape-only` |
 | the whole pipeline from a sandbox | `ENRICH_CACHE=db python scripts/scrape.py --all --model haiku-or --via-http` |
 | include `pending` stores | `python scripts/scrape.py --all --include-pending` |

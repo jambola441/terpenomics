@@ -52,3 +52,44 @@ def test_scrape_only_partial_is_a_warning(stubbed):
     stubbed.update(partial=True, collected=810, reported_total=861)
     res = scrape.run_one(STORE, dry_run=False, scrape_only=True)
     assert res["ok"] and res["detail"] == "scraped" and res["warning"].startswith("partial scrape")
+
+
+@pytest.fixture
+def import_only(stubbed, monkeypatch, tmp_path):
+    """--import-only over a stubbed newest CSV; records the children run."""
+    calls = []
+    monkeypatch.setattr(scrape, "find_latest_csv", lambda slug: tmp_path / "scrape.csv")
+    monkeypatch.setattr(scrape, "run_bounded", lambda cmd, timeout: calls.append(cmd) or 0)
+    imports = []
+    monkeypatch.setattr(scrape, "run_import",
+                        lambda path, dry_run: imports.append(path) or (True, "imported"))
+    return calls, imports
+
+
+def test_import_only_re_enriches_then_imports(import_only):
+    calls, imports = import_only
+    res = scrape.run_one(STORE, dry_run=False, import_only=True, model="haiku-or")
+    assert res["ok"] and res["stage"] == "import"
+    assert len(calls) == 1 and calls[0][1].endswith("reenrich_csv.py")
+    assert calls[0][-2:] == ["--model", "haiku-or"]
+    assert imports
+
+
+def test_import_only_no_enrich_imports_as_is(import_only):
+    calls, imports = import_only
+    res = scrape.run_one(STORE, dry_run=False, import_only=True, no_enrich=True)
+    assert res["ok"] and calls == [] and imports
+
+
+def test_import_only_failed_re_enrich_skips_import(import_only, monkeypatch):
+    calls, imports = import_only
+    monkeypatch.setattr(scrape, "run_bounded", lambda cmd, timeout: 1)
+    res = scrape.run_one(STORE, dry_run=False, import_only=True)
+    assert not res["ok"] and res["stage"] == "enrich" and imports == []
+
+
+def test_import_only_degraded_enrichment_imports_but_fails(import_only, monkeypatch):
+    calls, imports = import_only
+    monkeypatch.setattr(scrape, "read_usage", lambda path: {"failed_rows": 800})
+    res = scrape.run_one(STORE, dry_run=False, import_only=True)
+    assert not res["ok"] and imports and "answered only 10/810" in res["detail"]

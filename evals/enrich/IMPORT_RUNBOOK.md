@@ -34,9 +34,10 @@ shell, so run these where you have a real `DATABASE_URL`.
 git pull
 
 # 1. the two stores that were never imported — enrichment already on disk, $0
-python scripts/scrape.py --slug kaya-bliss-bay-ridge  --import-only --dry-run
-python scripts/scrape.py --slug kaya-bliss-bay-ridge  --import-only
-python scripts/scrape.py --slug the-plug-crown-heights --import-only
+#    (--import-only re-enriches first since 2026-10-11; --no-enrich imports as written)
+python scripts/scrape.py --slug kaya-bliss-bay-ridge  --import-only --no-enrich --dry-run
+python scripts/scrape.py --slug kaya-bliss-bay-ridge  --import-only --no-enrich
+python scripts/scrape.py --slug the-plug-crown-heights --import-only --no-enrich
 
 # 2. a fresh sweep: scrape + enrich + import, every store
 python scripts/scrape.py --all --parallel --model haiku-or   # or --model haiku
@@ -135,7 +136,8 @@ imports:
 python scripts/scrape.py --all                  # scrape + enrich + import, every store
 python scripts/scrape.py --slug the-spot-bk     # one store
 python scripts/scrape.py --all --dry-run        # print commands, run nothing
-python scripts/scrape.py --all --import-only    # skip scraping, import CSVs already on disk
+python scripts/scrape.py --all --import-only    # skip scraping; re-enrich the newest CSVs (cache applies), import
+python scripts/scrape.py --all --import-only --no-enrich  # import the newest CSVs exactly as written
 python scripts/scrape.py --all --scrape-only    # scrape to CSV, skip the DB
 ```
 
@@ -172,12 +174,12 @@ correct, only slower and dearer.
 
 ## Landing this session's data
 
-The CSVs are already enriched, so importing them costs nothing and skips ~11 minutes
-of scraping:
+The CSVs are already enriched, so importing them as written (`--no-enrich`; plain
+`--import-only` re-enriches first) costs nothing and skips ~11 minutes of scraping:
 
 ```bash
-python scripts/scrape.py --all --import-only --dry-run   # look first
-python scripts/scrape.py --all --import-only
+python scripts/scrape.py --all --import-only --no-enrich --dry-run   # look first
+python scripts/scrape.py --all --import-only --no-enrich
 ```
 
 `find_latest_csv()` discovers files matching `^{slug}_\d{8}T\d{6}Z\.csv$`. The
