@@ -18,7 +18,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
+import statistics
 import sys
 import urllib.parse
 from collections import Counter, defaultdict
@@ -40,6 +42,8 @@ TOP = 15            # findings printed per detector; the rest are counted
 MIN_STORES = 2      # a size or a review cluster at one store is noise, as for the bootstrap
 CURATED_DAYS = 30   # a curated product no listing has matched this long has stopped selling
 UNSURE = 0.5        # Jev's probability under which an enrichment answer is reviewed
+PRICE_STORES = 3    # stores whose prices make an entry's usual price
+PRICE_FAR = 2.5     # a price this many times off the usual price (either way) is an outlier
 SECTIONS = [        # (kind, title), in the order the report prints them
     ("stale-store", "Stores the daily run missed"),
     ("missing-size", "Sizes 2+ stores sell that the matched product lacks"),
@@ -49,6 +53,7 @@ SECTIONS = [        # (kind, title), in the order the report prints them
     ("brandless", "Listings with no brand that start with a catalog brand's name"),
     ("stale-curated", f"Curated products no listing has matched for {CURATED_DAYS} days"),
     ("unsure", f"Enrichment answers Jev gave under {UNSURE:.0%}, by brand and field"),
+    ("price", f"Listings priced {PRICE_FAR:g}x off their product's usual price (a wrong size or product?)"),
 ]
 
 
@@ -78,7 +83,7 @@ class Data:
 
 LISTING_COLS = ("id,dispensary_id,sku,scraped_name,scraped_brand,scraped_category,variant,size,"
                 "description,reading,catalog_entry_id,catalog_match_method,catalog_match_confidence,"
-                "last_seen_at")
+                "last_seen_at,price_cents,url")
 
 
 def load(now: datetime | None = None) -> Data:
@@ -431,8 +436,42 @@ def unsure_answers(data: Data) -> list[Finding]:
             for (brand, field), rows in groups.items()]
 
 
+def price_outliers(data: Data) -> list[Finding]:
+    """Matched listings priced PRICE_FAR times above or below their entry's usual price (the
+    median of one price per store, at PRICE_STORES or more stores). Prices are what stores
+    get right: a 2-pack priced like the other 2-packs but matched to the 10-pack is matched
+    wrong, whatever its size field says."""
+    by_entry: dict[str, list[dict]] = defaultdict(list)
+    for l in data.listings:
+        if l.get("catalog_entry_id") and (l.get("price_cents") or 0) > 0:
+            by_entry[str(l["catalog_entry_id"])].append(l)
+    entries = catalog_store.entries_by_id(data.catalogs)
+    out = []
+    for eid, rows in by_entry.items():
+        per_store = {}
+        for l in rows:
+            per_store.setdefault(l.get("dispensary_id"), []).append(l["price_cents"])
+        if len(per_store) < PRICE_STORES or eid not in entries:
+            continue
+        usual = statistics.median(statistics.median(v) for v in per_store.values())
+        catalog, entry = entries[eid]
+        for l in rows:
+            ratio = l["price_cents"] / usual
+            if 1 / PRICE_FAR < ratio < PRICE_FAR:
+                continue
+            store = (data.dispensaries.get(l.get("dispensary_id")) or {}).get("name") or "?"
+            out.append(Finding(
+                f"price:{l['id']}", "price",
+                f'{catalog["brand_name"]} {entry.get("name") or entry.get("strain")} {entry.get("variant") or ""} '
+                f'usually ${usual / 100:.2f}; "{l.get("scraped_name")}" at {store} is ${l["price_cents"] / 100:.2f} '
+                f'(size field {l.get("variant") or "-"}, {l.get("catalog_match_method")}) {l.get("url") or ""}',
+                1, f'python3 scripts/db_http.py select listings "select=*&id=eq.{l["id"]}"',
+                (abs(math.log(ratio)),)))
+    return out
+
+
 DETECTORS = (stale_stores, missing_sizes, review_clusters, near_misses, size_sync, brandless,
-             stale_curated, unsure_answers)
+             stale_curated, unsure_answers, price_outliers)
 
 
 def detect(data: Data) -> list[Finding]:
