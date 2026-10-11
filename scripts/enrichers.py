@@ -141,6 +141,10 @@ class MerchEnricher(CategoryEnricher):
     #   the weak tip rule near the end — see the pair of tip rules below
     tokens = (
         ("gift-card",  re.compile(r"\bgift\s*cards?\b", re.I)),
+        # A rolling kit (papers, tips, tray in one box) before its papers and cones:
+        # "Deluxe Rolling Kit", "Combo Kit", "Pink Rolling Paper Coffin Kit".
+        ("kit",        re.compile(r"\b(?:rolling|deluxe|combo|coffin)\b[^|]*?\bkits?\b"
+                                  r"|\bkits?\b[^|]*?\b(?:papers?|cones?)\b", re.I)),
         # Strong tip rule: the words that mean a filter tip and nothing else.
         ("filter-tip", re.compile(r"\bfilter\s*tips?\b|\btips?\s*tin\b|\bcrutch", re.I)),
         ("roller",     re.compile(r"\broller\b|\brolling\s*machine\b", re.I)),

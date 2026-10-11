@@ -64,7 +64,7 @@ class CategorySpec:
 
 # Merch's rail is the longest and the only one owned by a deterministic enricher
 # (scripts/enrichers.py, MerchEnricher), which reads it from here.
-MERCH_SUBTYPES = ("gift-card", "filter-tip", "roller", "ashtray", "cone", "paper",
+MERCH_SUBTYPES = ("gift-card", "kit", "filter-tip", "roller", "ashtray", "cone", "paper",
                   "wrap", "grinder", "tray", "bong", "pipe", "dab-tool", "bowl",
                   "downstem", "charger", "battery", "lighter", "storage", "apparel",
                   "cleaning", "scale", "merch")

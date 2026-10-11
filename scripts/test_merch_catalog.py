@@ -187,3 +187,13 @@ def test_a_paper_width_with_plus_tips_is_papers_not_tips():
     r = mc.reading("OCB | Premium Slim King Size Plus Tips", "OCB", "filter-tip", "merch")
     assert (r["subtype"], r["size"]) == ("paper", "king size w/tips")
     assert mc.reading("OCB Premium Flat Paper Tips Booklet", "OCB", None, "merch")["subtype"] == "filter-tip"
+
+
+def test_shortys_are_53mm_cones_and_rolling_kits_are_kits():
+    r = mc.reading("Blazy Susan - Shorty Pink Cones 20ct", "Blazy Susan", "cone")
+    assert (r["subtype"], r["size"]) == ("cone", "53mm 20ct")
+    assert mc.reading("Blazy Susan x 53mm Shortys Purple 12 Pack", "Blazy Susan", "merch")["subtype"] == "cone"
+    k = mc.reading("Blazy Susan Pink Deluxe Rolling Kit | King Size | 32 Pcs", "Blazy Susan", "merch")
+    assert (k["subtype"], k["colour"]) == ("kit", "Pink")
+    assert mc.reading("Blazy Susan - Pink Rolling Papers King Size - 50ct", "Blazy Susan", "paper")["subtype"] == "paper"
+    assert mc.reading("Hot Knife Kit", "Generic", "merch")["subtype"] == "dab-tool"
