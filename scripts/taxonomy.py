@@ -87,8 +87,11 @@ SPECS: dict[str, CategorySpec] = {s.name: s for s in (
               "As a subtype, infused took the slot from pack on 834 listings, and 87 "
               "products sat under two subtypes (2026-10-05). The rail is still in the "
               "classify prompt, since a rail edit is a prompt edit; its answer is dropped."),
+    # No battery or other (the owner's call, 2026-10-11): a vape here holds oil. A
+    # battery, charger or dry-herb device sold alone is merch; a starter kit sold with
+    # oil is an all-in-one.
     CategorySpec(
-        "vaporizers", ("cart", "all-in-one", "pod", "battery", "other"), None, "weight",
+        "vaporizers", ("cart", "all-in-one", "pod"), None, "weight",
         "cultivar or flavour", _WEIGHT_RULE.format("1g, 0.5g, 2g"), "cultivar or flavour",
         _CULTIVAR_IDENTITY, title_is_strain=True),
     CategorySpec(
@@ -149,14 +152,16 @@ assert set(CATEGORY_ORDER) == set(SPECS) == set(RAIL_ORDER) == set(RULES_ORDER)
 # (keeps_subtype), so theirs is only ever the classify prompt's hint.
 SUBTYPE_TOKENS: dict[str, dict[str, re.Pattern]] = {
     "vaporizers": {
-        "all-in-one": re.compile(r"\ball[\s-]*in[\s-]*one\b|\baio\b|\bdisposable\b", re.I),
+        # A starter kit is an all-in-one (the owner's call, 2026-10-11): a vape here
+        # carries oil, so "1G Starter Kit | GMO" is the device and its oil. First, so a
+        # "Cartridge Starter Kit" is the kit, not a cart.
+        "all-in-one": re.compile(r"\ball[\s-]*in[\s-]*one\b|\baio\b|\bdisposable\b|\bstarter\s*kit\b", re.I),
         # Before cart: a pod is the specific word, and menus add the generic one beside
         # it ("Liquid Diamonds Pod (Vape Cartridge)", Rove's "Reload Pod", Select's "Cliq
         # Pod Cartridge"). 31 such listings read as carts, and 50 more saying "Pods"
         # read as nothing, until 2026-10-05.
         "pod": re.compile(r"\bpods?\b", re.I),
         "cart": re.compile(r"\b(cart|510|cartridge|preload|reload)\b", re.I),
-        "battery": re.compile(r"\b(battery|starter\s*kit)\b", re.I),
     },
     "edible": {
         "beverage": re.compile(r"\b(beverage|sparkling\s+water|tea\s+sachet|drink)\b", re.I),

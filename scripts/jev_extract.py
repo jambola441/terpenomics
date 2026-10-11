@@ -38,7 +38,7 @@ import jev  # noqa: E402
 
 # Bump when a question, the phrase rules or the option text change: enrich.py stamps
 # cached answers with it, so answers to an older question are re-asked.
-QUESTION_VERSION = 2
+QUESTION_VERSION = 3   # 3: a vape's "starter kit" is a format tail (2026-10-11)
 
 _NUM = r"(?:\d+(?:\.\d+)?|\.\d+)"
 _CANNABINOID = r"(?:thca?|cbd|cbn|cbg|cbc|thcv|d8|d9|delta[\s-]?[89])"
@@ -87,7 +87,7 @@ FORMAT_TAILS = {
     "preroll": "pre-roll pre-rolls preroll prerolls roll rolls joint joints blunt blunts cone cones "
                "infused mini minis",
     "vaporizers": "cart carts cartridge cartridges vape vapes pod pods disposable disposables aio "
-                  "all-in-one pen pens battery",
+                  "all-in-one pen pens battery starter kit",
     "flower": "flower flowers smalls bud buds ground pre-ground preground shake",
     "concentrate": "badder budder sugar sauce rosin resin wax shatter crumble diamonds rso "
                    "concentrate concentrates",

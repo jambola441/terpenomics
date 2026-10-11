@@ -29,6 +29,10 @@ def test_the_reading_is_the_rules():
     assert mc.is_merch("vaporizers", "all-in-one", "PAX Plus | Onyx", "PAX")
     assert mc.is_merch("vaporizers", "all-in-one", "Pax - Four Vaporizer - Greenstone", "PAX")
     assert not mc.is_merch("vaporizers", "pod", "PAX | Blue Dream | Live Rosin | Pod", "PAX")
+    # Devices are merch (2026-10-11); a stored vaporizers/battery pair still reads as one.
+    assert mc.is_merch("merch", "battery", "Puffco Proxy Vaporizer - Onyx", "Puffco")
+    assert mc.is_merch("vaporizers", "battery", "Era Go Battery - Gold", "PAX")
+    assert mc.reading("Pax - Four Vaporizer - Greenstone", "PAX", "all-in-one", "vaporizers")["subtype"] == "battery"
 
 
 def test_papers_need_two_stores_and_partial_sizes_fold_in():

@@ -152,6 +152,14 @@ class TestFormatTokens:
         # the same word under an uncurated brand must not fire
         assert find_format_category("Nobody", "Nobody - Grape Ape | 1G Briq V2") is None
 
+    def test_hardware_is_merch_unless_the_name_carries_oil(self):
+        # owner, 2026-10-11: a device sold alone has no THC, so it is merch
+        assert find_format_category("Puffco", "Puffco | Pivot | Vaporizer | Black") == "merch"
+        assert find_format_category("Backwoods", "Backwoods | Yellow | 510 Battery") == "merch"
+        assert find_format_category("PAX", "PAX Plus | Onyx") == "merch"
+        assert find_format_category("Rove", "ROVE - 1.0g Live Resin Diamond Ready to Use Vaporizer") is None
+        assert find_format_category("Eureka", "Eureka 2000mg Starter Kit Sativa Mango Haze") == "vaporizers"
+
     def test_word_boundaries_respected(self):
         assert find_format_category("Select", "Select - Briquette Sampler") is None
 

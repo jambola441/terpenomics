@@ -22,15 +22,18 @@
   "Boutiq": {
     "Switch": "vaporizers"
   },
-  "_comment_star": "Tokens under \"*\" apply to every brand, so they must be measured fleet-wide before being added. \"Vaporizer\" matches 104 active listings and 104 of them are vape hardware; \"Exxus\" matches 6, all of them. Brand-wide rules were REJECTED for Yocan and Wulf on the same measurement \u2014 both sell real accessories (batteries, knife kits, torches) alongside their vaporizers, and a blanket rule would have dragged 9 correct merch rows into vaporizers.",
+  "_comment_star": "Tokens under \"*\" apply to every brand, so they must be measured fleet-wide before being added. \"Vaporizer\" matches 104 active listings and 104 of them are vape hardware; \"Exxus\" matches 6, all of them. Brand-wide rules were REJECTED for Yocan and Wulf on the same measurement \u2014 both sell real accessories (batteries, knife kits, torches) alongside their vaporizers, and a blanket rule would have dragged 9 correct merch rows into vaporizers. Owner, 2026-10-11: vapes hold oil, so hardware is merch: \"Vaporizer\", \"Battery\", \"Batteries\", \"Dry Herb\" and \"Exxus\" now settle merch, and yield to an oil amount in the name (canonical.find_format_category), which keeps Rove's \"Ready to Use Vaporizer 1.0g\" and \"1g ... Starter Kit\" vapes.",
   "*": {
-    "Vaporizer": "vaporizers",
-    "Exxus": "vaporizers"
+    "Vaporizer": "merch",
+    "Exxus": "merch",
+    "Battery": "merch",
+    "Batteries": "merch",
+    "Dry Herb": "merch"
   },
   "PAX": {
-    "Plus": "vaporizers"
+    "Plus": "merch"
   },
   "Cartisan": {
-    "Pillar": "vaporizers"
+    "Pillar": "merch"
   }
 }

@@ -96,6 +96,16 @@ def test_a_pod_is_a_pod_even_when_the_menu_adds_cartridge():
     assert taxonomy.token_subtype("vaporizers", "Disposable Pod 1g") == "all-in-one"
 
 
+def test_a_vape_holds_oil_and_a_starter_kit_is_an_all_in_one():
+    # The owner's call, 2026-10-11: no battery or other under vaporizers. A kit sold
+    # with oil is an AIO, even when it names a cartridge; a device alone is merch.
+    assert taxonomy.SPECS["vaporizers"].subtypes == ("cart", "all-in-one", "pod")
+    for name in ("Live Resin Blend | 1G Starter Kit | GMO", "Cartridge Starter Kit",
+                 "2000mg Starter Kit Hybrid Mimosa", "Mimosa (H) 2g - Classic Starter Kit"):
+        assert taxonomy.token_subtype("vaporizers", name) == "all-in-one", name
+    assert taxonomy.token_subtype("vaporizers", "Era Go Battery - Gold") is None
+
+
 def test_a_rope_is_its_own_edible_subtype():
     # Off Hours sells a 100mg rope and a 10-pack of gummies under one flavor name
     # (Galactic Guava); as one subtype the matcher split listings between them.
@@ -103,3 +113,12 @@ def test_a_rope_is_its_own_edible_subtype():
     assert taxonomy.token_subtype("edible", "Off Hours - Galactic Guava Live Rosin Rope - 100mg") == "rope"
     assert taxonomy.token_subtype("edible", "Off hours | Live Resin Ropes 100mg | Gelonade") == "rope"
     assert taxonomy.token_subtype("edible", "Galactic Guava Live Rosin Infused Gummies 10pk") == "gummy"
+
+
+def test_classify_no_longer_offers_a_vape_battery():
+    # A battery or device without oil is merch now (2026-10-11), so Jev is not offered one.
+    import jev_classify
+    qs = jev_classify.questions("vaporizers", None)
+    assert set(qs["subtype.vaporizers"].criteria) == {"cart", "all-in-one", "pod"}
+    assert "starter kit" in qs["subtype.vaporizers"].criteria["all-in-one"]
+    assert "vape batteries" in jev_classify.CATEGORY_CRITERIA["merch"]

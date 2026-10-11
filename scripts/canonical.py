@@ -180,16 +180,24 @@ def canonical_strain(brand: str, strain: str) -> str | None:
     return None
 
 
+# An oil amount: "1g", ".5G", "1.0g", "2000mg" (not "510", "3DXL").
+_OIL_AMOUNT = re.compile(r"(?<![\w.])(?:\d+(?:\.\d+)?|\.\d+)\s*(?:g|mg)\b", re.I)
+
+
 def find_format_category(brand: str, name: str) -> str | None:
     """Category implied by a curated device/format token in the name, else None.
 
     Covers products whose only category signal is a brand's hardware name — a
     "Select Briq V2" or "Florist Farms Rechargeable OVL" carries no generic vape
     word, so the model reads "1G <something>" and answers concentrate. Longest
-    token wins."""
+    token wins. A hardware token (merch) yields to an oil amount in the name: since
+    2026-10-11 a battery or device sold alone is merch, but Rove's "Ready to Use
+    Vaporizer 1.0g" and a "1g ... Starter Kit" carry oil and stay vapes."""
     own, shared = _for_brand(_load(_FORMATS_PATH, "formats"), brand)
     merged = {**(shared or {}), **(own or {})}
-    hits = [(tok, cat) for tok, cat in merged.items() if _pattern(tok).search(name or "")]
+    oil = _OIL_AMOUNT.search(name or "")
+    hits = [(tok, cat) for tok, cat in merged.items()
+            if _pattern(tok).search(name or "") and not (cat == "merch" and oil)]
     return max(hits, key=lambda tc: len(tc[0]))[1] if hits else None
 
 
