@@ -88,6 +88,17 @@
    "category": "preroll",
    "subtype": null,
    "line": null,
+   "strain": "Rip Van Winkle",
+   "sizes": [
+    "3.6g"
+   ],
+   "why": "judged real (a Lowell blend name, clean 6pk listing): one store 'Pre-Rolls | Lowell Herb Co. | Rip Van Winkle | 6pk - Smokes' (typed 3.5g; Smokes 6pk is 6 x 0.6g = 3.6g)"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "subtype": null,
+   "line": null,
    "strain": "All Terrain",
    "sizes": [
     "3.6g"
