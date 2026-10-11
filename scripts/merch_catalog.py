@@ -40,13 +40,13 @@ import enrichers  # noqa: E402
 import canonical  # noqa: E402
 from canonical import find_product_line  # noqa: E402
 
-PAPERS = ("paper", "cone", "wrap", "filter-tip")
+PAPERS = ("paper", "cone", "wrap", "filter-tip", "kit")
 HARDWARE = ("battery", "charger")
 CATALOGED = frozenset(PAPERS + HARDWARE)
 # Formats that are a product only in a size: a paper's width and count make the SKU. Tips
 # and hardware are products without one (a site rarely states a tip's count).
-SIZED = ("paper", "cone", "wrap")
-NOUN = {"paper": "Papers", "cone": "Cones", "wrap": "Wraps", "filter-tip": "Tips",
+SIZED = ("paper", "cone", "wrap", "kit")
+NOUN = {"kit": "Rolling Kit", "paper": "Papers", "cone": "Cones", "wrap": "Wraps", "filter-tip": "Tips",
         "battery": "Battery", "charger": "Charger"}
 _MERCH = enrichers.for_category("merch")
 
@@ -161,6 +161,8 @@ def reading(name: str, brand: str, subtype: str | None = None, category: str | N
         or _MERCH.token_subtype(name) or line_subtype(brand, line) or subtype
     if sub == "filter-tip" and comes_with_tips(line) and not _TIP_NAMES.search(name or ""):
         sub = "paper"                       # "Pre-Rolling Tips Masterpiece Classic": the papers its tips come with
+    if sub in (None, "merch") and _SHORTY.search(name or ""):
+        sub = "cone"                        # "53mm Shortys Purple 12 Pack": Shortys are cones
     if category == "vaporizers" and sub not in CATALOGED:
         sub = "battery"                     # a vape-filed device: its format word was a vape's
     if not line and sub in PAPERS:
@@ -179,6 +181,8 @@ def reading(name: str, brand: str, subtype: str | None = None, category: str | N
     if sub in (None, "filter-tip") and not _TIP_NAMES.search(name or "") and size \
             and "w/tips" in size and parse_size(size).width:
         sub = "paper"                       # "Premium Slim King Size Plus Tips": a paper width with its tips
+    if sub == "cone" and _SHORTY.search(name or "") and not parse_size(size).width:
+        size = " ".join(x for x in ("53mm", size) if x)    # "Shorty Pink Cones 20ct": Blazy Susan's Shortys are 53mm
     if sub == "cone":
         size = cone_width(size)
     if sub == "filter-tip":
@@ -193,6 +197,7 @@ def reading(name: str, brand: str, subtype: str | None = None, category: str | N
 # A cone's length names its width: stores list "78mm Small" or "84mm" where the brand
 # says 1¼, and 109mm where it says King. 98mm stays a length (RAW's 98 Special is a line).
 _CONE_LENGTHS = ((68, 72, "mini"), (76, 86, "1 1/4"), (105, 112, "king size"))
+_SHORTY = re.compile(r"\bshort(?:y|ys|ie|ies|y's)\b", re.I)
 
 
 def cone_width(size: str | None) -> str | None:

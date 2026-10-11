@@ -298,7 +298,11 @@
   ],
   "Blazy Susan": [
     "Premium",
-    "Ultra Thin Rice"
+    "Ultra Thin Rice",
+    {"line": "Empress", "category": "merch"},
+    {"line": "Goddess", "category": "merch"},
+    {"line": "Cross", "category": "merch"},
+    {"line": "Tea Leaf", "also": ["Tea"], "category": "merch"}
   ],
   "OCB": [
     {

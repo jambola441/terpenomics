@@ -20,7 +20,7 @@
     }
   },
   "title_case": true,
-  "learned": "2026-10-05, by an agent pass: the brand's COA list (DANK_COA_UPDATED 2026-09-26), 1729 lab-batch rows; 640 tested in the last year, which make 482 entries. 2026-10-08, curation pass: plain-category 1.1g joints, 1.35g blunts and 5-packs are infused (package photos, Weedmaps); DANK-31625 7-packs are 7 x 1g; SAMPLE row skipped; three strain spellings fixed.",
+  "learned": "2026-10-05, by an agent pass: the brand's COA list (DANK_COA_UPDATED 2026-09-26), 1729 lab-batch rows; 640 tested in the last year, which make 482 entries. 2026-10-08, curation pass: plain-category 1.1g joints, 1.35g blunts and 5-packs are infused (package photos, Weedmaps); DANK-31625 7-packs are 7 x 1g; SAMPLE row skipped; three strain spellings fixed. 2026-10-11, owner: plain 1.25g blunts take the line Blunt and 7 x 0.5g packs the line 7-Pack; the 7 x 1g batch stays line-less (one shared line would fill a 7g onto every 0.5g pack).",
   "notes": [
     "The only machine-readable catalog is the /coa page's data file, window.DANK_COA_ROWS = [[category, subcategory, product, batch, coa_url, tested, thc, is_new, lab_sample_id], ...]. Category is FLOWER, PRE-ROLLS or INFUSED PRE-ROLLS; subcategory is size and format ('3.5 GRAM BAGS', '.5 GRAM JOINTS', '1.25 GRAM BLUNTS', '7 PACK PRE-ROLLS'); product is the strain in capitals. One row per batch: repeats collapse to one entry per product and size, and id is the strain so an entry's id does not change with which batch comes first.",
     "INFUSED PRE-ROLLS take the line Infused: 29 strain and size pairs exist both infused and plain. Bag and jar of one strain and size, and a joint and blunt of one strain and size, are one entry (packaging is not part of identity).",
@@ -106,6 +106,7 @@
       },
       "match": "^.+$",
       "set": {
+        "line": "7-Pack",
         "strain": "LA Confidential",
         "size": "7 x 0.5g"
       }
@@ -117,6 +118,7 @@
       },
       "match": "^(?P<strain>.+)$",
       "set": {
+        "line": "7-Pack",
         "size": "7 x 0.5g"
       }
     },
@@ -149,6 +151,40 @@
       "match": "^(?P<strain>.+)$",
       "set": {
         "line": "Infused"
+      }
+    },
+    {
+      "when": {
+        "product_type": "^PRE-ROLLS$",
+        "variant": "^1\\.25 GRAM BLUNTS$",
+        "title": "^ALASKAN THUNDER FUCK$"
+      },
+      "match": "^.+$",
+      "set": {
+        "line": "Blunt",
+        "strain": "Alaskan Thunderfuck"
+      }
+    },
+    {
+      "when": {
+        "product_type": "^PRE-ROLLS$",
+        "variant": "^1\\.25 GRAM BLUNTS$",
+        "title": "^HAWAIIAN THUNDER FUCK$"
+      },
+      "match": "^.+$",
+      "set": {
+        "line": "Blunt",
+        "strain": "Hawaiian Thunderfuck"
+      }
+    },
+    {
+      "when": {
+        "product_type": "^PRE-ROLLS$",
+        "variant": "^1\\.25 GRAM BLUNTS$"
+      },
+      "match": "^(?P<strain>.+)$",
+      "set": {
+        "line": "Blunt"
       }
     },
     {

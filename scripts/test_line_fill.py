@@ -52,17 +52,12 @@ def test_an_inferred_size_counts_as_the_products_size():
     assert idx.pick_entry("jack", "0.5g", "vaporizers")["variant"] == "0.5g"
 
 
-def test_a_push_syncs_only_a_brand_line_fill_was_turned_on_for(monkeypatch):
+def test_a_catalog_write_syncs_every_brand(monkeypatch):
     synced = []
     monkeypatch.setattr(line_fill, "sync", lambda catalog, write=False: synced.append(catalog["id"]) or (0, 0, 0))
     monkeypatch.setattr(line_fill, "load", lambda brand: [CATALOG])
     line_fill.sync_brand("STIIIZY")
-    assert synced == []                                   # never filled: a push does not start it
-    filled = {**CATALOG, "entries": CATALOG["entries"] + [
-        {**e("jack", "Original Jack", "Original", "0.5g"), "source": "inferred", "is_active": False}]}
-    monkeypatch.setattr(line_fill, "load", lambda brand: [filled])
-    line_fill.sync_brand("STIIIZY")
-    assert synced == ["c1"]
+    assert synced == ["c1"]                               # filled or not before (2026-10-11)
 
 
 def test_tinctures_and_topicals_are_not_filled():
@@ -86,3 +81,16 @@ def test_a_line_whose_products_come_in_their_own_sizes_is_not_filled():
     assert line_fill.sizes_by_product("1906", "Drops") and not line_fill.sizes_by_product("STIIIZY", "Original")
     assert line_fill.wanted(drops) == {}
     assert line_fill.wanted({**drops, "brand_name": "Another Brand"})        # the switch is per brand
+
+
+def test_line_less_products_are_filled_only_where_data_line_fill_says(monkeypatch, tmp_path):
+    rules = tmp_path / "line_fill.json"
+    rules.write_text('{"Ayrloom": [{"category": "vaporizers", "subtype": "all-in-one"}]}')
+    monkeypatch.setattr(line_fill, "LINELESS_PATH", rules)
+    cat = {"id": "c3", "brand_name": "Ayrloom", "entries": [
+        e("bp", "Bomb Popz", None, "1g", "vaporizers", "all-in-one"),
+        e("bp", "Bomb Popz", None, "2g", "vaporizers", "all-in-one"),
+        e("ch", "Cran Haze", None, "1g", "vaporizers", "all-in-one"),
+        e("gm", "Gelato", None, "3.5g", "flower", None),
+        e("gm2", "Mints", None, "7g", "flower", None)]}
+    assert sorted((r["strain"], r["variant"]) for r in line_fill.wanted(cat).values()) == [("Cran Haze", "2g")]

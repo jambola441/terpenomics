@@ -72,6 +72,20 @@ def sizes_by_product(brand: str | None, line: str) -> bool:
                for e in own or [])
 
 
+LINELESS_PATH = Path(__file__).resolve().parent.parent / "data" / "line_fill.json"
+
+
+def fills_lineless(brand: str | None, category: str | None, subtype: str | None) -> bool:
+    """Whether data/line_fill.json says the brand's line-less products of this kind are one line."""
+    import json
+    try:
+        data = json.loads(LINELESS_PATH.read_text())
+    except FileNotFoundError:
+        return False
+    own = next((v for k, v in data.items() if not k.startswith("_") and norm_name(k) == norm_name(brand or "")), [])
+    return any(r.get("category") == category and (r.get("subtype") or None) == (subtype or None) for r in own)
+
+
 def wanted(catalog: dict) -> dict[str, dict]:
     """The inferred entries the catalog's stated entries call for, by external id."""
     products: dict[str, list[dict]] = defaultdict(list)
@@ -84,6 +98,8 @@ def wanted(catalog: dict) -> dict[str, dict]:
         if line and es[0].get("category") not in POTENCY_SIZED \
                 and not sizes_by_product(catalog.get("brand_name"), line):
             lines[(es[0].get("category"), es[0].get("subtype") or "", norm_name(line))].append(key)
+        elif not line and fills_lineless(catalog.get("brand_name"), es[0].get("category"), es[0].get("subtype")):
+            lines[(es[0].get("category"), es[0].get("subtype") or "", "")].append(key)
     out: dict[str, dict] = {}
     for (category, _, _), keys in lines.items():
         if len(keys) < 2:
@@ -146,17 +162,14 @@ def sync(catalog: dict, write: bool = False) -> tuple[int, int, int]:
 
 
 def sync_brand(brand: str) -> None:
-    """For a command that just wrote a brand's catalog (a push, a curation plan).
-
-    Only a catalog line fill was turned on for (it holds inferred entries, active or
-    retired, from a `--write` run) is synced: a push never starts filling a brand.
-    """
+    """For a command that just wrote a brand's catalog (a push, a curation plan, a
+    catalog_fix edit). Every catalog is synced (owner's rule, 2026-10-09: a line's sizes
+    are the rule); until 2026-10-11 only catalogs already holding inferred entries were,
+    so Level, Cannabals and Flav fell 18 sizes behind."""
     import catalog_fix
     try:
         [catalog] = load(brand)
     except catalog_fix.Refused:
-        return
-    if not any(e.get("source") == INFERRED for e in catalog.get("entries") or []):
         return
     added, revived, retired = sync(catalog, write=True)
     print(f"  line fill: {added} inferred sizes added, {revived} brought back, {retired} taken back")
