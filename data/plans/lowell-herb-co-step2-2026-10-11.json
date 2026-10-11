@@ -1,0 +1,14 @@
+{
+ "brand": "Lowell Herb Co.",
+ "edits": [
+  {
+   "op": "add-size",
+   "entry": {
+    "strain": "Stargazer",
+    "line": "Quicks"
+   },
+   "size": "7g",
+   "why": "Quicks 20pk: 'Lowell Smokes - Stargazer Prerolls 20pk - 7g' (2 listings); 20 x 0.35g = 7g"
+  }
+ ]
+}

@@ -1,0 +1,214 @@
+{
+ "brand": "Papa's Herb",
+ "edits": [
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "flower",
+   "line": null,
+   "strain": "Garlic Breath",
+   "sizes": [
+    "14g"
+   ],
+   "why": "store listing: 'Papa's Herb - Garlic Breath - 14g'. no lines: flower 3.5g/14g/28g, pre-rolls 1g singles and 7 x 1g packs (7g; weedmaps NugHub NY '7 Pack Pre Rolls | Northern Lights'), 1g carts and 1g all-in-ones"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "flower",
+   "line": null,
+   "strain": "Ice Cream Cake",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "store listing: 'Papa's Herb - Ice Cream Cake - 3.5g'. no lines: flower 3.5g/14g/28g, pre-rolls 1g singles and 7 x 1g packs (7g; weedmaps NugHub NY '7 Pack Pre Rolls | Northern Lights'), 1g carts and 1g all-in-ones"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "flower",
+   "line": null,
+   "strain": "Chem Cookies",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "store listing: 'Papa's Herb | Chem Cookies (IH) | Flower | 3.5g'. no lines: flower 3.5g/14g/28g, pre-rolls 1g singles and 7 x 1g packs (7g; weedmaps NugHub NY '7 Pack Pre Rolls | Northern Lights'), 1g carts and 1g all-in-ones"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "flower",
+   "line": null,
+   "strain": "Guava",
+   "sizes": [
+    "28g"
+   ],
+   "why": "store listing: 'Papa's Herb | Guava' (28g). no lines: flower 3.5g/14g/28g, pre-rolls 1g singles and 7 x 1g packs (7g; weedmaps NugHub NY '7 Pack Pre Rolls | Northern Lights'), 1g carts and 1g all-in-ones"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "flower",
+   "line": null,
+   "strain": "Jet Fuel Gelato",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "store listing: 'Papa's Herb | Jet Fuel Gelato' (3.5g). no lines: flower 3.5g/14g/28g, pre-rolls 1g singles and 7 x 1g packs (7g; weedmaps NugHub NY '7 Pack Pre Rolls | Northern Lights'), 1g carts and 1g all-in-ones"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "flower",
+   "line": null,
+   "strain": "Northern Lights",
+   "sizes": [
+    "28g"
+   ],
+   "why": "store listing: 'Papa's Herb | Northern Lights' (28g). no lines: flower 3.5g/14g/28g, pre-rolls 1g singles and 7 x 1g packs (7g; weedmaps NugHub NY '7 Pack Pre Rolls | Northern Lights'), 1g carts and 1g all-in-ones"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "flower",
+   "line": null,
+   "strain": "NYC Diesel",
+   "sizes": [
+    "14g"
+   ],
+   "why": "store listing: 'Papa's Herb | NYC Diesel' (14g). no lines: flower 3.5g/14g/28g, pre-rolls 1g singles and 7 x 1g packs (7g; weedmaps NugHub NY '7 Pack Pre Rolls | Northern Lights'), 1g carts and 1g all-in-ones"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "flower",
+   "line": null,
+   "strain": "Purple Tangie",
+   "sizes": [
+    "14g"
+   ],
+   "why": "store listing: 'Papa's Herb | Purple Tangie' (14g). no lines: flower 3.5g/14g/28g, pre-rolls 1g singles and 7 x 1g packs (7g; weedmaps NugHub NY '7 Pack Pre Rolls | Northern Lights'), 1g carts and 1g all-in-ones"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "flower",
+   "line": null,
+   "strain": "Super Boof",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "store listing: 'Papa's Herb | Super Boof' (3.5g). no lines: flower 3.5g/14g/28g, pre-rolls 1g singles and 7 x 1g packs (7g; weedmaps NugHub NY '7 Pack Pre Rolls | Northern Lights'), 1g carts and 1g all-in-ones"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "subtype": null,
+   "line": null,
+   "strain": "Apples & Bananas",
+   "sizes": [
+    "1g"
+   ],
+   "why": "store listing: 'Apples & Bananas Preroll - 1g'. no lines: flower 3.5g/14g/28g, pre-rolls 1g singles and 7 x 1g packs (7g; weedmaps NugHub NY '7 Pack Pre Rolls | Northern Lights'), 1g carts and 1g all-in-ones"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "subtype": null,
+   "line": null,
+   "strain": "Trop Cherry",
+   "sizes": [
+    "1g"
+   ],
+   "why": "store listing: 'Trop Cherry Preroll - 1g'. no lines: flower 3.5g/14g/28g, pre-rolls 1g singles and 7 x 1g packs (7g; weedmaps NugHub NY '7 Pack Pre Rolls | Northern Lights'), 1g carts and 1g all-in-ones"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "subtype": null,
+   "line": null,
+   "strain": "Cookies N Cream",
+   "sizes": [
+    "1g"
+   ],
+   "why": "store listing: 'Papa's Herb | Cookies N Cream' (1g). no lines: flower 3.5g/14g/28g, pre-rolls 1g singles and 7 x 1g packs (7g; weedmaps NugHub NY '7 Pack Pre Rolls | Northern Lights'), 1g carts and 1g all-in-ones"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "subtype": null,
+   "line": null,
+   "strain": "Super Lemon Haze",
+   "sizes": [
+    "1g"
+   ],
+   "why": "store listing: 'Super Lemon Haze Pre-roll' (1g). no lines: flower 3.5g/14g/28g, pre-rolls 1g singles and 7 x 1g packs (7g; weedmaps NugHub NY '7 Pack Pre Rolls | Northern Lights'), 1g carts and 1g all-in-ones"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "subtype": null,
+   "line": null,
+   "strain": "Green Crack",
+   "sizes": [
+    "7g"
+   ],
+   "why": "store listing: 'Green Crack Prerolls 7pk - 7g'. no lines: flower 3.5g/14g/28g, pre-rolls 1g singles and 7 x 1g packs (7g; weedmaps NugHub NY '7 Pack Pre Rolls | Northern Lights'), 1g carts and 1g all-in-ones"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "subtype": null,
+   "line": null,
+   "strain": "Northern Lights",
+   "sizes": [
+    "7g"
+   ],
+   "why": "store listing: 'Northern Lights Prerolls 7pk - 7g'. no lines: flower 3.5g/14g/28g, pre-rolls 1g singles and 7 x 1g packs (7g; weedmaps NugHub NY '7 Pack Pre Rolls | Northern Lights'), 1g carts and 1g all-in-ones"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "subtype": null,
+   "line": null,
+   "strain": "Jet Fuel Gelato",
+   "sizes": [
+    "7g"
+   ],
+   "why": "store listing: 'Jet Fuel Gelato Pre-Roll 7pk'. no lines: flower 3.5g/14g/28g, pre-rolls 1g singles and 7 x 1g packs (7g; weedmaps NugHub NY '7 Pack Pre Rolls | Northern Lights'), 1g carts and 1g all-in-ones"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "subtype": "cart",
+   "line": null,
+   "strain": "Bubba Gum",
+   "sizes": [
+    "1g"
+   ],
+   "why": "'Papa's Herb - Bubba Gum Cartridge - 1g'. Decision: papasherb.com's other six 1g carts (Skywalker OG, Gelato 33, Jack Herer, GSC, Watermelon Z, Pineapple Express) are NOT added: that Shopify ships nationwide ('Fast 3-4 Day Delivery Across the U.S.'), so it is a DTC/hemp shop, not evidence of the NY licensed lineup"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "subtype": "all-in-one",
+   "line": null,
+   "strain": "Blueberry Zlushie",
+   "sizes": [
+    "1g"
+   ],
+   "why": "'Papa's Herb | Blueberry Zlushie AIO' (1g)"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "subtype": "all-in-one",
+   "line": null,
+   "strain": "Strawberry Cough",
+   "sizes": [
+    "1g"
+   ],
+   "why": "'Papa's Herb | Strawberry Cough AIO' (1g)"
+  }
+ ]
+}

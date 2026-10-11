@@ -1,0 +1,185 @@
+{
+ "brand": "Supernaturals",
+ "_comment": "DRAFT 2026-10-11, batch C, owner policy 2026-10-11: brand-sourced products only (single-store listings without a brand source left to review), no deactivations, no rebuild/--replace. Apply after the bootstrap catalog is pushed; selectors name bootstrap entries. Checked in memory with catalog_fix.apply_plan against catalog_bootstrap.propose.",
+ "edits": [
+  {
+   "op": "add-product",
+   "why": "https://www.supernaturalsny.com/coa: 10mg Gummies 10pk",
+   "category": "edible",
+   "strain": "Chamomile Elderberry Sleep",
+   "sizes": [
+    "10pk 100mg"
+   ],
+   "subtype": "gummy"
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.supernaturalsny.com/coa: 10mg Gummies 10pk",
+   "category": "edible",
+   "strain": "Peach Matcha Energy",
+   "sizes": [
+    "10pk 100mg"
+   ],
+   "subtype": "gummy"
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.supernaturalsny.com/coa: 10mg Gummies 10pk",
+   "category": "edible",
+   "strain": "Rosemary Lemon Focus",
+   "sizes": [
+    "10pk 100mg"
+   ],
+   "subtype": "gummy"
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.supernaturalsny.com/coa: 10mg Gummies 10pk",
+   "category": "edible",
+   "strain": "Watermelon Tulsi Chill",
+   "sizes": [
+    "10pk 100mg"
+   ],
+   "subtype": "gummy"
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.supernaturalsny.com/coa: Pre-rolled Joint 1 pack (0.75g per stores and Leafly)",
+   "category": "preroll",
+   "strain": "Sour Dubb",
+   "sizes": [
+    "0.75g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.supernaturalsny.com/coa: Pre-rolled Joint 2 pack; size 1.5g from the brand's packs as stores print them ('2pk .75g', CBG Cake '2pk .7g')",
+   "category": "preroll",
+   "strain": "Mint Spliff",
+   "sizes": [
+    "1.5g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.supernaturalsny.com/coa: Pre-rolled Joint 2 pack; size 1.5g from the brand's packs as stores print them ('2pk .75g', CBG Cake '2pk .7g')",
+   "category": "preroll",
+   "strain": "Lifter",
+   "sizes": [
+    "1.5g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.supernaturalsny.com/coa: Pre-rolled Joint 2 pack; size 1.5g from the brand's packs as stores print them ('2pk .75g', CBG Cake '2pk .7g')",
+   "category": "preroll",
+   "strain": "Sour CBG",
+   "sizes": [
+    "1.5g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.supernaturalsny.com/coa: Pre-rolled Joint 2 pack; size 1.5g from the brand's packs as stores print them ('2pk .75g', CBG Cake '2pk .7g')",
+   "category": "preroll",
+   "strain": "Rainbow Belts",
+   "sizes": [
+    "1.5g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.supernaturalsny.com/coa: Pre-rolled Joint 2 pack; size 1.4g from the brand's packs as stores print them ('2pk .75g', CBG Cake '2pk .7g')",
+   "category": "preroll",
+   "strain": "CBG Cake",
+   "sizes": [
+    "1.4g"
+   ]
+  },
+  {
+   "op": "add-size",
+   "entry": {
+    "category": "preroll",
+    "strain": "Purple Mandy",
+    "size": "3.5g"
+   },
+   "size": "1.5g",
+   "why": "https://www.supernaturalsny.com/coa: Purple Mandy is listed as a Pre-rolled Joint 2 pack as well as the 5 pack; 2 x .75g"
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.supernaturalsny.com/coa: Pre-rolled Joint 5 pack (5 x .7g)",
+   "category": "preroll",
+   "strain": "Rainbow Cherry Sherbet",
+   "sizes": [
+    "3.5g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.supernaturalsny.com/coa: Microtokes, pre-rolled .25g joints 10pk",
+   "category": "preroll",
+   "strain": "Blueberry",
+   "sizes": [
+    "2.5g"
+   ],
+   "line": "Microtokes"
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.supernaturalsny.com/coa: Microtokes, pre-rolled .25g joints 10pk",
+   "category": "preroll",
+   "strain": "Papaya Runtz",
+   "sizes": [
+    "2.5g"
+   ],
+   "line": "Microtokes"
+  },
+  {
+   "op": "add-product",
+   "why": "judged real (store menus use the brand's pack names, not on the COA page): 2 stores, '1:15 THC:CBD Pre-Roll 2pk' / 'Preroll 2-Pack'; one store's 1g field is its typo (brand 2pks are 2 x .75g)",
+   "category": "preroll",
+   "strain": "Hawaiian Haze",
+   "sizes": [
+    "1.5g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "judged real (store menus use the brand's pack names, not on the COA page): 1 store '2pk .7g Preroll Black Cherry Gelato (H)'",
+   "category": "preroll",
+   "strain": "Black Cherry Gelato",
+   "sizes": [
+    "1.4g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "judged real (store menus use the brand's pack names, not on the COA page): 1 store '5pk .7g Preroll Super Lemon Piss (SH)'",
+   "category": "preroll",
+   "strain": "Super Lemon Piss",
+   "sizes": [
+    "3.5g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "judged real (store menus use the brand's pack names, not on the COA page): 1 store '5pk Prerolls Cast Iron Cake (I)'; brand 5pks are 3.5g",
+   "category": "preroll",
+   "strain": "Cast Iron Cake",
+   "sizes": [
+    "3.5g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "judged real: 1 store 'Purple Mandy | Pre-Roll 10pk | 2.5G', the Microtokes 10 x .25g pack; Purple Mandy is a core brand strain (https://www.supernaturalsny.com/coa)",
+   "category": "preroll",
+   "strain": "Purple Mandy",
+   "sizes": [
+    "2.5g"
+   ],
+   "line": "Microtokes"
+  }
+ ]
+}
