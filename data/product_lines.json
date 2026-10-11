@@ -999,5 +999,15 @@
   "_comment_birdies": "Batch C draft (2026-10-11). Birdies' NY pre-rolls are all the Classic line in Indica / Hybrid / Sativa, 2 x 0.7g = 1.4g and 5 x 0.7g = 3.5g; every store prints 'Classic' but enrichment recorded it on 2 of 8 bootstrap products (Leafly brand catalog https://www.leafly.com/brands/birdies/catalog).",
   "Birdies": [
     {"line": "Classic", "category": "preroll"}
+  ],
+  "_comment_florette": "Batch C draft (2026-10-11), from Florette's Weedmaps brand catalog (https://weedmaps.com/brands/florette/products) and florettecannabis.com/products. Pre-roll lines: Minis (0.35g x 5 = 1.75g, 0.5g x 5 = 2.5g, 0.5g x 2 = 1g; a line so the 2pk is not the 1g Joint), Exotics (1g x 4 = 4g) and Infused (1.2g joint). Plain joints, Big Buds flower and the disposables have no line.",
+  "Florette": [
+    {"line": "Minis", "also": ["Mini Joints", "Mini Joint", "Mini Pre-Roll", "Mini Pre-Rolls"], "category": "preroll"},
+    {"line": "Exotics", "also": ["Florette Exotics"], "category": "preroll"},
+    {"line": "Infused", "also": ["Infused Joint"], "category": "preroll"}
+  ],
+  "_comment_supernaturals": "Batch C draft (2026-10-11): Microtokes are Supernaturals' .25g x 10 = 2.5g pre-rolls (https://www.supernaturalsny.com/coa).",
+  "Supernaturals": [
+    {"line": "Microtokes", "also": ["Microtoke"], "category": "preroll"}
   ]
 }

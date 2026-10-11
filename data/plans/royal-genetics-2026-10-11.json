@@ -1,6 +1,6 @@
 {
  "brand": "Royal Genetics",
- "_comment": "DRAFT 2026-10-11, batch C. Apply after the bootstrap catalog is pushed (catalog_bootstrap.py --brand \"Royal Genetics\" --push --via-http); selectors name bootstrap entries. Not measured: --measure needs the catalog in the database.",
+ "_comment": "DRAFT 2026-10-11, batch C, owner policy 2026-10-11: brand-sourced products only (single-store listings without a brand source left to review), no deactivations, no rebuild/--replace. Apply after the bootstrap catalog is pushed; selectors name bootstrap entries. Checked in memory with catalog_fix.apply_plan against catalog_bootstrap.propose.",
  "edits": [
   {
    "op": "set-size",
@@ -9,7 +9,7 @@
     "strain": "Densuke Watermelon"
    },
    "size": "10pk 100mg",
-   "why": "royalgeneticsny.com (home page sections, Summer 2026): gummies are 10 pcs, 100mg per pack; stores write 'Gummies 10-pack | 100mg'"
+   "why": "brand states 10 pcs, 100MG per pack (https://www.royalgeneticsny.com/); stores write 'Gummies 10-pack | 100mg'"
   },
   {
    "op": "set-size",
@@ -18,7 +18,7 @@
     "strain": "Kyoho Grape"
    },
    "size": "10pk 100mg",
-   "why": "royalgeneticsny.com (home page sections, Summer 2026): gummies are 10 pcs, 100mg per pack; stores write 'Gummies 10-pack | 100mg'"
+   "why": "brand states 10 pcs, 100MG per pack (https://www.royalgeneticsny.com/); stores write 'Gummies 10-pack | 100mg'"
   },
   {
    "op": "set-size",
@@ -27,7 +27,7 @@
     "strain": "Shimizu White Peach"
    },
    "size": "10pk 100mg",
-   "why": "royalgeneticsny.com (home page sections, Summer 2026): gummies are 10 pcs, 100mg per pack; stores write 'Gummies 10-pack | 100mg'"
+   "why": "brand states 10 pcs, 100MG per pack (https://www.royalgeneticsny.com/); stores write 'Gummies 10-pack | 100mg'"
   },
   {
    "op": "set-size",
@@ -36,11 +36,11 @@
     "strain": "Yuzu Lemon"
    },
    "size": "10pk 100mg",
-   "why": "royalgeneticsny.com (home page sections, Summer 2026): gummies are 10 pcs, 100mg per pack; stores write 'Gummies 10-pack | 100mg'"
+   "why": "brand states 10 pcs, 100MG per pack (https://www.royalgeneticsny.com/); stores write 'Gummies 10-pack | 100mg'"
   },
   {
    "op": "add-product",
-   "why": "royalgeneticsny.com (home page sections, Summer 2026): listed gummy flavour; 1 store 'Miyazaki Mango Gummies 10-pack | 100mg'",
+   "why": "https://www.royalgeneticsny.com/products (Spring 2026: flower 3.5g jars, rosin 1g, 1G pre-rolls, 1G disposable vapes, gummies 10 pcs 100mg); also https://www.royalgeneticsny.com/summer2026",
    "category": "edible",
    "strain": "Miyazaki Mango",
    "sizes": [
@@ -50,7 +50,7 @@
   },
   {
    "op": "add-product",
-   "why": "royalgeneticsny.com (home page sections, Summer 2026): listed living-soil flower strain, 3.5G; 1 store 'Flower Jar Lemon Tree'",
+   "why": "https://www.royalgeneticsny.com/products (Spring 2026: flower 3.5g jars, rosin 1g, 1G pre-rolls, 1G disposable vapes, gummies 10 pcs 100mg): Lemon Tree 3.5g Jar",
    "category": "flower",
    "strain": "Lemon Tree",
    "sizes": [
@@ -60,7 +60,7 @@
   },
   {
    "op": "add-product",
-   "why": "royalgeneticsny.com (home page sections, Summer 2026): listed living-soil flower strain, 3.5G; 1 store 'Flower Jar Sour Diesel'",
+   "why": "https://www.royalgeneticsny.com/products (Spring 2026: flower 3.5g jars, rosin 1g, 1G pre-rolls, 1G disposable vapes, gummies 10 pcs 100mg): Sour Diesel 3.5g Jar",
    "category": "flower",
    "strain": "Sour Diesel",
    "sizes": [
@@ -70,9 +70,9 @@
   },
   {
    "op": "add-product",
-   "why": "1 store 'Flower Jar Odeus Maximus (IH)' 3.5g; earlier drops on royalgeneticsny.com strain libraries; jar size matches the line",
+   "why": "https://www.royalgeneticsny.com/winter2026drop: Cake Mix 3.5g Jar",
    "category": "flower",
-   "strain": "Odeus Maximus",
+   "strain": "Cake Mix",
    "sizes": [
     "3.5g"
    ],
@@ -80,7 +80,7 @@
   },
   {
    "op": "add-product",
-   "why": "1 store 'Flower Jar Sherb Cream Pie (IH)' 3.5g; earlier drops on royalgeneticsny.com strain libraries; jar size matches the line",
+   "why": "https://www.royalgeneticsny.com/winter2026drop: Sherb Cream Pie 3.5g Jar",
    "category": "flower",
    "strain": "Sherb Cream Pie",
    "sizes": [
@@ -90,9 +90,9 @@
   },
   {
    "op": "add-product",
-   "why": "1 store 'Flower Jar Cake Mix (IH)' 3.5g; earlier drops on royalgeneticsny.com strain libraries; jar size matches the line",
+   "why": "https://www.royalgeneticsny.com/fall2025drop: Kush Mintz 3.5g Jar",
    "category": "flower",
-   "strain": "Cake Mix",
+   "strain": "Kush Mintz",
    "sizes": [
     "3.5g"
    ],
@@ -100,7 +100,67 @@
   },
   {
    "op": "add-product",
-   "why": "royalgeneticsny.com (home page sections, Summer 2026): Solventless Rosin 1G lists Super Boof; 1 store 'Live Rosin  Jar ...' 1g (store spells Kush Mintz)",
+   "why": "https://www.royalgeneticsny.com/fall2025drop: Peanut Butter Breath 3.5g Jar",
+   "category": "flower",
+   "strain": "Peanut Butter Breath",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.royalgeneticsny.com/summer2026: Arancio Loco 3.5g Jar",
+   "category": "flower",
+   "strain": "Arancio Loco",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.royalgeneticsny.com/summer2026: Krazy Runtz 3.5g Jar",
+   "category": "flower",
+   "strain": "Krazy Runtz",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.royalgeneticsny.com/summer2026: Clementine OG 3.5g Jar",
+   "category": "flower",
+   "strain": "Clementine OG",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.royalgeneticsny.com/summer2026: Bellini 3.5g Jar",
+   "category": "flower",
+   "strain": "Bellini",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.royalgeneticsny.com/summer2026: Fruit Plate 3.5g Jar",
+   "category": "flower",
+   "strain": "Fruit Plate",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.royalgeneticsny.com/products (Spring 2026: flower 3.5g jars, rosin 1g, 1G pre-rolls, 1G disposable vapes, gummies 10 pcs 100mg): rosin 1g jar; also https://www.royalgeneticsny.com/summer2026",
    "category": "concentrate",
    "strain": "Super Boof",
    "sizes": [
@@ -110,7 +170,7 @@
   },
   {
    "op": "add-product",
-   "why": "royalgeneticsny.com (home page sections, Summer 2026): Solventless Rosin 1G lists Odeus Maximus; 1 store 'Live Rosin  Jar ...' 1g (store spells Kush Mintz)",
+   "why": "https://www.royalgeneticsny.com/products (Spring 2026: flower 3.5g jars, rosin 1g, 1G pre-rolls, 1G disposable vapes, gummies 10 pcs 100mg): rosin 1g jar; also https://www.royalgeneticsny.com/summer2026",
    "category": "concentrate",
    "strain": "Odeus Maximus",
    "sizes": [
@@ -120,7 +180,7 @@
   },
   {
    "op": "add-product",
-   "why": "royalgeneticsny.com (home page sections, Summer 2026): Solventless Rosin 1G lists Cake Mix; 1 store 'Live Rosin  Jar ...' 1g (store spells Kush Mintz)",
+   "why": "https://www.royalgeneticsny.com/products (Spring 2026: flower 3.5g jars, rosin 1g, 1G pre-rolls, 1G disposable vapes, gummies 10 pcs 100mg): rosin 1g jar; also https://www.royalgeneticsny.com/summer2026",
    "category": "concentrate",
    "strain": "Cake Mix",
    "sizes": [
@@ -130,9 +190,9 @@
   },
   {
    "op": "add-product",
-   "why": "royalgeneticsny.com (home page sections, Summer 2026): Solventless Rosin 1G lists Kush Mints; 1 store 'Live Rosin  Jar ...' 1g (store spells Kush Mintz)",
+   "why": "https://www.royalgeneticsny.com/products (Spring 2026: flower 3.5g jars, rosin 1g, 1G pre-rolls, 1G disposable vapes, gummies 10 pcs 100mg): rosin 1g jar; also https://www.royalgeneticsny.com/summer2026",
    "category": "concentrate",
-   "strain": "Kush Mints",
+   "strain": "Kush Mintz",
    "sizes": [
     "1g"
    ],
@@ -140,7 +200,7 @@
   },
   {
    "op": "add-product",
-   "why": "royalgeneticsny.com (home page sections, Summer 2026): Pre-Roll lists Super Boof; 1 store 'Super Boof Pre-Roll | 1g'",
+   "why": "https://www.royalgeneticsny.com/products (Spring 2026: flower 3.5g jars, rosin 1g, 1G pre-rolls, 1G disposable vapes, gummies 10 pcs 100mg): 1G pre-rolls",
    "category": "preroll",
    "strain": "Super Boof",
    "sizes": [
@@ -149,9 +209,72 @@
   },
   {
    "op": "add-product",
-   "why": "royalgeneticsny.com (home page sections, Summer 2026): Disposable Vape (1G, AIO) lists Donny Burger; 1 store 'Donny Burger AIO Disposable Vape | 1g'",
+   "why": "https://www.royalgeneticsny.com/products (Spring 2026: flower 3.5g jars, rosin 1g, 1G pre-rolls, 1G disposable vapes, gummies 10 pcs 100mg): 1G pre-rolls",
+   "category": "preroll",
+   "strain": "Cake Mix",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.royalgeneticsny.com/products (Spring 2026: flower 3.5g jars, rosin 1g, 1G pre-rolls, 1G disposable vapes, gummies 10 pcs 100mg): 1G pre-rolls",
+   "category": "preroll",
+   "strain": "Peanut Butter Breath",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.royalgeneticsny.com/products (Spring 2026: flower 3.5g jars, rosin 1g, 1G pre-rolls, 1G disposable vapes, gummies 10 pcs 100mg): 1G pre-rolls",
+   "category": "preroll",
+   "strain": "Lemon Tree",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.royalgeneticsny.com/summer2026: 1G pre-rolls (arriving October 2026)",
+   "category": "preroll",
+   "strain": "Gastropop",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.royalgeneticsny.com/summer2026: 1G pre-rolls (arriving October 2026)",
+   "category": "preroll",
+   "strain": "Sherb Cream Pie",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.royalgeneticsny.com/summer2026: 1G pre-rolls (arriving October 2026)",
+   "category": "preroll",
+   "strain": "Super Silverhaze",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.royalgeneticsny.com/summer2026: 1G pre-rolls (arriving October 2026)",
+   "category": "preroll",
+   "strain": "Black Ice",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.royalgeneticsny.com/products (Spring 2026: flower 3.5g jars, rosin 1g, 1G pre-rolls, 1G disposable vapes, gummies 10 pcs 100mg): 1G disposable vape; also https://www.royalgeneticsny.com/summer2026",
    "category": "vaporizers",
-   "strain": "Donny Burger",
+   "strain": "Zoap",
    "sizes": [
     "1g"
    ],
@@ -159,7 +282,7 @@
   },
   {
    "op": "add-product",
-   "why": "royalgeneticsny.com (home page sections, Summer 2026): Disposable Vape (1G, AIO) lists Gelonade; 1 store 'Gelonade AIO Disposable Vape | 1g'",
+   "why": "https://www.royalgeneticsny.com/products (Spring 2026: flower 3.5g jars, rosin 1g, 1G pre-rolls, 1G disposable vapes, gummies 10 pcs 100mg): 1G disposable vape; also https://www.royalgeneticsny.com/summer2026",
    "category": "vaporizers",
    "strain": "Gelonade",
    "sizes": [
@@ -169,27 +292,7 @@
   },
   {
    "op": "add-product",
-   "why": "royalgeneticsny.com (home page sections, Summer 2026): Disposable Vape (1G, AIO) lists Original Z; 1 store 'Original Z AIO Disposable Vape | 1g'",
-   "category": "vaporizers",
-   "strain": "Original Z",
-   "sizes": [
-    "1g"
-   ],
-   "subtype": "all-in-one"
-  },
-  {
-   "op": "add-product",
-   "why": "royalgeneticsny.com (home page sections, Summer 2026): Disposable Vape (1G, AIO) lists Papaya; 1 store 'Papaya AIO Disposable Vape | 1g'",
-   "category": "vaporizers",
-   "strain": "Papaya",
-   "sizes": [
-    "1g"
-   ],
-   "subtype": "all-in-one"
-  },
-  {
-   "op": "add-product",
-   "why": "royalgeneticsny.com (home page sections, Summer 2026): Disposable Vape (1G, AIO) lists Permanent Marker; 1 store 'Permanent Marker AIO Disposable Vape | 1g'",
+   "why": "https://www.royalgeneticsny.com/products (Spring 2026: flower 3.5g jars, rosin 1g, 1G pre-rolls, 1G disposable vapes, gummies 10 pcs 100mg): 1G disposable vape; also https://www.royalgeneticsny.com/summer2026",
    "category": "vaporizers",
    "strain": "Permanent Marker",
    "sizes": [
@@ -199,17 +302,7 @@
   },
   {
    "op": "add-product",
-   "why": "royalgeneticsny.com (home page sections, Summer 2026): Disposable Vape (1G, AIO) lists Pink Rozay; 1 store 'Pink Rozay AIO Disposable Vape | 1g'",
-   "category": "vaporizers",
-   "strain": "Pink Rozay",
-   "sizes": [
-    "1g"
-   ],
-   "subtype": "all-in-one"
-  },
-  {
-   "op": "add-product",
-   "why": "royalgeneticsny.com (home page sections, Summer 2026): Disposable Vape (1G, AIO) lists White Truffle; 1 store 'White Truffle AIO Disposable Vape | 1g'",
+   "why": "https://www.royalgeneticsny.com/products (Spring 2026: flower 3.5g jars, rosin 1g, 1G pre-rolls, 1G disposable vapes, gummies 10 pcs 100mg): 1G disposable vape; also https://www.royalgeneticsny.com/summer2026",
    "category": "vaporizers",
    "strain": "White Truffle",
    "sizes": [
@@ -219,13 +312,73 @@
   },
   {
    "op": "add-product",
-   "why": "royalgeneticsny.com (home page sections, Summer 2026): Disposable Vape (1G, AIO) lists Zoap; 1 store 'Zoap AIO Disposable Vape | 1g'",
+   "why": "https://www.royalgeneticsny.com/products (Spring 2026: flower 3.5g jars, rosin 1g, 1G pre-rolls, 1G disposable vapes, gummies 10 pcs 100mg): 1G disposable vape; also https://www.royalgeneticsny.com/summer2026",
    "category": "vaporizers",
-   "strain": "Zoap",
+   "strain": "Tropicana Cookies",
    "sizes": [
     "1g"
    ],
    "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.royalgeneticsny.com/products (Spring 2026: flower 3.5g jars, rosin 1g, 1G pre-rolls, 1G disposable vapes, gummies 10 pcs 100mg): 1G disposable vape; also https://www.royalgeneticsny.com/summer2026",
+   "category": "vaporizers",
+   "strain": "Guava",
+   "sizes": [
+    "1g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.royalgeneticsny.com/products (Spring 2026: flower 3.5g jars, rosin 1g, 1G pre-rolls, 1G disposable vapes, gummies 10 pcs 100mg): 1G disposable vape; also https://www.royalgeneticsny.com/summer2026",
+   "category": "vaporizers",
+   "strain": "Donny Burger",
+   "sizes": [
+    "1g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.royalgeneticsny.com/products (Spring 2026: flower 3.5g jars, rosin 1g, 1G pre-rolls, 1G disposable vapes, gummies 10 pcs 100mg): 1G disposable vape; also https://www.royalgeneticsny.com/summer2026",
+   "category": "vaporizers",
+   "strain": "Original Z",
+   "sizes": [
+    "1g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.royalgeneticsny.com/products (Spring 2026: flower 3.5g jars, rosin 1g, 1G pre-rolls, 1G disposable vapes, gummies 10 pcs 100mg): 1G disposable vape; also https://www.royalgeneticsny.com/summer2026",
+   "category": "vaporizers",
+   "strain": "Papaya",
+   "sizes": [
+    "1g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.royalgeneticsny.com/products (Spring 2026: flower 3.5g jars, rosin 1g, 1G pre-rolls, 1G disposable vapes, gummies 10 pcs 100mg): 1G disposable vape; also https://www.royalgeneticsny.com/summer2026",
+   "category": "vaporizers",
+   "strain": "Pink Rozay",
+   "sizes": [
+    "1g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "judged real: 1 store 'Flower Jar Odeus Maximus (IH)' 3.5g, same jar label as the brand's other flower at that store; Odeus Maximus is the brand's own rosin strain (https://www.royalgeneticsny.com/products (Spring 2026: flower 3.5g jars, rosin 1g, 1G pre-rolls, 1G disposable vapes, gummies 10 pcs 100mg))",
+   "category": "flower",
+   "strain": "Odeus Maximus",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
   }
  ]
 }

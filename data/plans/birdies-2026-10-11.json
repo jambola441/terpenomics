@@ -1,82 +1,116 @@
 {
  "brand": "Birdies",
- "_comment": "DRAFT 2026-10-11, batch C. Apply after the bootstrap catalog is pushed (catalog_bootstrap.py --brand \"Birdies\" --push --via-http); selectors name bootstrap entries. Not measured: --measure needs the catalog in the database.",
+ "_comment": "DRAFT 2026-10-11, batch C, owner policy 2026-10-11: brand-sourced products only (single-store listings without a brand source left to review), no deactivations, no rebuild/--replace. Apply after the bootstrap catalog is pushed; selectors name bootstrap entries. Checked in memory with catalog_fix.apply_plan against catalog_bootstrap.propose.",
  "edits": [
   {
-   "op": "rekey",
+   "op": "add-size",
    "entry": {
     "category": "preroll",
+    "line": "Classic",
     "strain": "Hybrid",
-    "size": "1.4g",
-    "line": ""
+    "size": "1.4g"
    },
-   "line": "Classic",
-   "why": "store names: every Birdies listing (35, 3+ stores) reads \"Classic <type>\", 2pk 0.7g = 1.4g and 5pk 0.7g = 3.5g; Leafly brand catalog https://www.leafly.com/brands/birdies/catalog lists Classic Indica 1.4g [2pk] / 3.5g [5pk]; enrichment dropped the line"
+   "size": "2.1g",
+   "why": "https://www.leafly.com/brands/birdies/catalog (brand catalog, NY license): Birdies Classic Hybrid 2.1g [3pk]"
   },
   {
-   "op": "rekey",
+   "op": "add-size",
    "entry": {
     "category": "preroll",
+    "line": "Classic",
     "strain": "Hybrid",
-    "size": "3.5g",
-    "line": ""
+    "size": "1.4g"
    },
-   "line": "Classic",
-   "why": "store names: every Birdies listing (35, 3+ stores) reads \"Classic <type>\", 2pk 0.7g = 1.4g and 5pk 0.7g = 3.5g; Leafly brand catalog https://www.leafly.com/brands/birdies/catalog lists Classic Indica 1.4g [2pk] / 3.5g [5pk]; enrichment dropped the line"
+   "size": "7g",
+   "why": "https://www.leafly.com/brands/birdies/catalog (brand catalog, NY license): Birdies Classic Hybrid 7g [10pk]"
   },
   {
-   "op": "rekey",
+   "op": "add-product",
+   "why": "https://www.leafly.com/brands/birdies/catalog (brand catalog, NY license): Ultra Diamond Infused Hybrid 2.5g [3pk] / 4.2g [5pk]",
+   "category": "preroll",
+   "strain": "Hybrid",
+   "sizes": [
+    "2.5g",
+    "4.2g"
+   ],
+   "line": "Ultra Diamond Infused"
+  },
+  {
+   "op": "add-size",
    "entry": {
     "category": "preroll",
+    "line": "Classic",
     "strain": "Indica",
-    "size": "1.4g",
-    "line": ""
+    "size": "1.4g"
    },
-   "line": "Classic",
-   "why": "store names: every Birdies listing (35, 3+ stores) reads \"Classic <type>\", 2pk 0.7g = 1.4g and 5pk 0.7g = 3.5g; Leafly brand catalog https://www.leafly.com/brands/birdies/catalog lists Classic Indica 1.4g [2pk] / 3.5g [5pk]; enrichment dropped the line"
+   "size": "2.1g",
+   "why": "https://www.leafly.com/brands/birdies/catalog (brand catalog, NY license): Birdies Classic Indica 2.1g [3pk]"
   },
   {
-   "op": "deactivate",
+   "op": "add-size",
    "entry": {
     "category": "preroll",
+    "line": "Classic",
     "strain": "Indica",
-    "size": "3.5g",
-    "line": ""
+    "size": "1.4g"
    },
-   "into": {
-    "category": "preroll",
-    "strain": "Indica",
-    "size": "3.5g",
-    "line": "Classic"
-   },
-   "why": "store names: every Birdies listing (35, 3+ stores) reads \"Classic <type>\", 2pk 0.7g = 1.4g and 5pk 0.7g = 3.5g; Leafly brand catalog https://www.leafly.com/brands/birdies/catalog lists Classic Indica 1.4g [2pk] / 3.5g [5pk]; line-less copy of the Classic entry"
+   "size": "7g",
+   "why": "https://www.leafly.com/brands/birdies/catalog (brand catalog, NY license): Birdies Classic Indica 7g [10pk]"
   },
   {
-   "op": "rekey",
-   "entry": {
-    "category": "preroll",
-    "strain": "Sativa",
-    "size": "1.4g",
-    "line": ""
-   },
-   "line": "Classic",
-   "why": "store names: every Birdies listing (35, 3+ stores) reads \"Classic <type>\", 2pk 0.7g = 1.4g and 5pk 0.7g = 3.5g; Leafly brand catalog https://www.leafly.com/brands/birdies/catalog lists Classic Indica 1.4g [2pk] / 3.5g [5pk]; enrichment dropped the line"
+   "op": "add-product",
+   "why": "https://www.leafly.com/brands/birdies/catalog (brand catalog, NY license): Ultra Diamond Infused Indica 2.5g [3pk] / 4.2g [5pk]",
+   "category": "preroll",
+   "strain": "Indica",
+   "sizes": [
+    "2.5g",
+    "4.2g"
+   ],
+   "line": "Ultra Diamond Infused"
   },
   {
-   "op": "deactivate",
+   "op": "add-size",
    "entry": {
     "category": "preroll",
+    "line": "Classic",
     "strain": "Sativa",
-    "size": "3.5g",
-    "line": ""
+    "size": "1.4g"
    },
-   "into": {
+   "size": "2.1g",
+   "why": "https://www.leafly.com/brands/birdies/catalog (brand catalog, NY license): Birdies Classic Sativa 2.1g [3pk]"
+  },
+  {
+   "op": "add-size",
+   "entry": {
     "category": "preroll",
+    "line": "Classic",
     "strain": "Sativa",
-    "size": "3.5g",
-    "line": "Classic"
+    "size": "1.4g"
    },
-   "why": "store names: every Birdies listing (35, 3+ stores) reads \"Classic <type>\", 2pk 0.7g = 1.4g and 5pk 0.7g = 3.5g; Leafly brand catalog https://www.leafly.com/brands/birdies/catalog lists Classic Indica 1.4g [2pk] / 3.5g [5pk]; line-less copy of the Classic entry"
+   "size": "7g",
+   "why": "https://www.leafly.com/brands/birdies/catalog (brand catalog, NY license): Birdies Classic Sativa 7g [10pk]"
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.leafly.com/brands/birdies/catalog (brand catalog, NY license): Ultra Diamond Infused Sativa 2.5g [3pk] / 4.2g [5pk]",
+   "category": "preroll",
+   "strain": "Sativa",
+   "sizes": [
+    "2.5g",
+    "4.2g"
+   ],
+   "line": "Ultra Diamond Infused"
+  },
+  {
+   "op": "add-product",
+   "why": "https://www.leafly.com/brands/birdies/catalog (brand catalog, NY license): Birdies Light 2:1 High CBD 2.1g [3pk] / 7g [10pk]",
+   "category": "preroll",
+   "strain": "2:1 High CBD",
+   "sizes": [
+    "2.1g",
+    "7g"
+   ],
+   "line": "Light"
   }
  ]
 }
