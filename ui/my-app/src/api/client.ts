@@ -730,7 +730,10 @@ export const api = {
         brand, tz_offset: new Date().getTimezoneOffset(),
       })}`),
 
-    decide: (data: { listing_id: string; decision: ReviewDecisionKind; entry_id?: string; note?: string }, brand?: string) =>
+    decide: (data: {
+      listing_id: string; decision: ReviewDecisionKind; entry_id?: string; note?: string
+      category?: string; subtype?: string | null
+    }, brand?: string) =>
       authenticatedFetch<{ id: string; progress: ReviewProgress }>(`/admin/review/decisions${buildQueryString({
         brand, tz_offset: new Date().getTimezoneOffset(),
       })}`, { method: 'POST', body: JSON.stringify(data) }),

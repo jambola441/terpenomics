@@ -264,6 +264,40 @@
     "Sour Apple Soda": "Sour Apple",
     "Sour Apple Seltzer": "Sour Apple"
   },
+  "Static Room": {"YellowBurst": "Yellow Burst", "Trop Cherry": "Tropicana Cherry", "EL Tigerz": "El Tigrez", "Mega-Z Blue": "Mega Z Blue", "Mega-Z Green": "Mega Z Green", "Mega-Z Red": "Mega Z Red", "Party Poppers": "Party Popperz", "A.M.A 2.0": "A.M.A. 2.0", "A.M.A.2.0": "A.M.A. 2.0"},
+  "Muha Meds": {"Tempation": "Temptation", "Grandaddy Purp": "Grand Daddy Purp"},
+  "Koa Cannabis Co.": {"GG#4": "GG #4", "GG4": "GG #4", "Gg #4": "GG #4", "Skywalker Og": "Skywalker OG", "Granddaddy Purp": "Granddaddy Purple"},
+  "House of Sacci": {"Blond Hash": "Blonde Hash", "Devils Drip": "Devil's Drip", "Rs 11": "RS11", "RS 11": "RS11", "Puffin Z": "Puffins Z", "ZPK - Zour Patch Kidz": "Zour Patch Kidz", "ZPK": "Zour Patch Kidz"},
+  "Lowell Herb Co.": {
+    "Star Gazer": "Stargazer",
+    "Trail Blazer": "Trailblazer",
+    "Dream Weaver": "Dreamweaver",
+    "Dreamweavers": "Dreamweaver",
+    "Dreamweaver Outlaw": "Dreamweaver",
+    "Trailblazer Outlaw": "Trailblazer",
+    "Smokes Trailblazer": "Trailblazer",
+    "All-Terrain": "All Terrain"
+  },
+  "Punch Bar": {
+    "Cookies & Cream": "Cookies n' Cream",
+    "Cookies n'Cream": "Cookies n' Cream",
+    "Cookies n": "Cookies n' Cream",
+    "Caramel Bits Milk Chocolate": "Milk Chocolate Caramel Bits",
+    "Smores": "S'mores Milk Chocolate",
+    "S'mores": "S'mores Milk Chocolate",
+    "Smores Milk Chocolate": "S'mores Milk Chocolate",
+    "Raspberry": "Dark Chocolate Raspberry",
+    "Mint Dark Chocolate Hash Rosin": "Mint Dark Chocolate"
+  },
+  "Foy": {
+    "Daytime": "Mango",
+    "Daytime Mango": "Mango",
+    "Good Mood": "Peach",
+    "Sleep": "Strawberry",
+    "Nighttime": "Strawberry",
+    "Strawberry Sleep": "Strawberry",
+    "Nighttime Strawberry": "Strawberry"
+  },
   "Royal Genetics": {
     "Kush Mints": "Kush Mintz"
   },

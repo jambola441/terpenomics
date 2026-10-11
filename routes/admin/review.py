@@ -9,14 +9,37 @@ review reason in `catalog_match_method`:
   review_missing  the catalog most likely lacks the product
   review_near     one catalog entry is one attribute off (often a size it lacks)
 
-A reviewer sees the store's listing beside up to four of its brand's catalog entries
+and the importer (scripts/import_listings.py mark_unsure_category) leaves one more:
+
+  review_category  Jev was unsure of the listing's category or subtype at enrichment
+                   (under CATEGORY_REVIEW_BELOW) and the catalog did not settle it
+                   (owner decision 2026-10-11)
+
+For the catalog reasons a reviewer sees the store's listing beside up to four of its brand's catalog entries
 and says which it is (`entry`), none of them (`none`), that the catalog is missing
 the product or size (`missing`), or `skip`.
 
-**Decisions are recorded only.** Nothing here touches a listing's match or a catalog
-entry: every issue is fixed in the catalog, and the review_decisions rows are what
-those fixes are proposed from. A listing with a decision, skip included, is out of
-the queue; undo deletes the reviewer's last decision and puts its listing back.
+**`entry` is a transition to trusted, by review.** The listing becomes a manual
+match to that entry (catalog_entry_id, catalog_match_method 'manual', confidence 1.0)
+and takes the entry's identity at once, through the importer's own overlay
+(import_listings.overlay_entry); every later import keeps a manual match and
+overlays it again. That takes it out of the queue for good. The listing's previous
+match is kept on the decision (reason, prev_entry_id, prev_confidence) and undo puts
+it back.
+
+**`category` settles a review_category listing.** Its card offers every category
+and each one's subtypes (scripts/taxonomy.py) instead of catalog entries. The call
+writes the chosen category and subtype to the listing and adds both to its
+verified_fields, bound to its scraped name (scripts/verification.py), so every
+later import keeps them and stops marking it; the listing's catalog_match_method is
+cleared. The decision keeps what it replaced (reason, prev_category, prev_subtype,
+prev_verified) and undo puts it back.
+
+**Every other decision is recorded only.** `none`, `missing` and `skip` touch
+neither the listing's match nor a catalog entry: catalog issues are fixed in the
+catalog, and the review_decisions rows are what those fixes are proposed from. A
+listing with a decision, skip included, is out of the queue; undo deletes the
+reviewer's last decision and puts its listing back.
 
 A listing's brand is matched to its catalog by catalog_store.brand_key (lowercase,
 '&' as 'and', no punctuation): the key catalogs are filed under everywhere else, so
@@ -51,6 +74,8 @@ if _SCRIPTS not in sys.path:
     sys.path.append(_SCRIPTS)
 
 from catalog_store import brand_key  # noqa: E402
+import taxonomy  # noqa: E402
+import verification  # noqa: E402
 
 router = APIRouter(prefix="/review")
 
@@ -71,6 +96,39 @@ def _in_queue():
 
 def _decided_ids():
     return select(ReviewDecision.listing_id)
+
+
+def _entry_dict(e: BrandCatalogEntry) -> dict:
+    """An entry in catalog_store's shape, for the importer's helpers."""
+    return {"id": str(e.id), "name": e.name, "product_line": e.product_line, "category": e.category,
+            "subtype": e.subtype, "strain": e.strain, "variant": e.variant, "is_active": e.is_active,
+            "product_key": getattr(e, "product_key", None),
+            "product_external_id": getattr(e, "product_external_id", None)}
+
+
+# Listing columns overlay_entry may change.
+_OVERLAID = ("scraped_category", "subtype", "strain", "product_line", "size")
+
+
+def make_manual(session: Session, listing: Listing, entry: BrandCatalogEntry) -> None:
+    """Make `listing` a manual match to `entry` and overlay the entry's identity as the
+    importer does (import_listings.overlay_entry). Does not commit."""
+    import import_listings  # noqa: E402  (scripts/, on sys.path above)
+
+    entries = session.exec(select(BrandCatalogEntry)
+                           .where(BrandCatalogEntry.catalog_id == entry.catalog_id)).all()
+    catalog = {"entries": [_entry_dict(e) for e in entries]}
+    entry_d = next(d for d in catalog["entries"] if d["id"] == str(entry.id))
+    rec = {"scraped_name": listing.scraped_name, "scraped_category": listing.scraped_category,
+           "subtype": listing.subtype, "strain": listing.strain, "product_line": listing.product_line,
+           "variant": listing.variant, "size": listing.size, "description": listing.description}
+    import_listings.overlay_entry(rec, catalog, entry_d)
+    for k in _OVERLAID:
+        setattr(listing, k, rec[k])
+    listing.catalog_entry_id = entry.id
+    listing.catalog_match_method = "manual"
+    listing.catalog_match_confidence = 1.0
+    session.add(listing)
 
 
 def _catalogs(session: Session) -> dict[str, BrandCatalog]:
@@ -221,6 +279,20 @@ def _candidates(session: Session, listing: Listing, catalog: Optional[BrandCatal
     return picked
 
 
+def _category_choice(listing: Listing) -> dict:
+    """A review_category card's question: the listing's category and subtype now,
+    Jev's probability for each (the enrichment reading's `p`), and every category with
+    its subtypes to choose from (an empty list: the category keeps no subtype)."""
+    p = (listing.reading or {}).get("p") or {}
+    return {
+        "category": listing.scraped_category,
+        "subtype": listing.subtype,
+        "p": {k: p[k] for k in ("category", "subtype") if k in p},
+        "choices": [{"category": c, "subtypes": subs if taxonomy.keeps_subtype(c) else []}
+                    for c, subs in taxonomy.rails().items()],
+    }
+
+
 def _card(session: Session, listing: Listing, dispensary: Dispensary, catalogs: dict[str, BrandCatalog]) -> dict:
     reading = listing.reading or {}
     catalog = catalogs.get(brand_key(listing.scraped_brand))
@@ -247,7 +319,10 @@ def _card(session: Session, listing: Listing, dispensary: Dispensary, catalogs: 
         "reading": {k: reading.get(k) for k in
                     ("category", "subtype", "product_line", "strain", "size", "store_category", "by", "p")}
                    if reading else None,
-        "candidates": _candidates(session, listing, catalog),
+        "candidates": [] if listing.catalog_match_method == "review_category"
+                      else _candidates(session, listing, catalog),
+        "category_choice": _category_choice(listing) if listing.catalog_match_method == "review_category"
+                           else None,
     }
 
 
@@ -289,7 +364,7 @@ def next_card(
     session: Session = Depends(get_session),
     user: SupabaseAuthUser = Depends(require_admin),
     brand: Optional[str] = Query(default=None),
-    reason: Optional[Literal["review_unsure", "review_missing", "review_near"]] = Query(default=None),
+    reason: Optional[Literal["review_unsure", "review_missing", "review_near", "review_category"]] = Query(default=None),
     exclude: Optional[str] = Query(default=None, description="Comma-separated listing ids to pass over (the card on screen, when prefetching the one after it)"),
     tz_offset: int = Query(default=0, ge=-840, le=840),
 ):
@@ -323,8 +398,12 @@ class DecisionIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     listing_id: UUID
-    decision: Literal["entry", "none", "missing", "skip"]
+    decision: Literal["entry", "none", "missing", "skip", "category"]
     entry_id: Optional[UUID] = None
+    # For the decision category: the listing's category and subtype (null when the
+    # category keeps none).
+    category: Optional[str] = None
+    subtype: Optional[str] = None
     note: Optional[str] = Field(default=None, max_length=2000)
 
 
@@ -336,7 +415,11 @@ def record_decision(
     brand: Optional[str] = Query(default=None),
     tz_offset: int = Query(default=0, ge=-840, le=840),
 ):
-    """Record a call on one listing. Changes nothing but review_decisions."""
+    """Record a call on one listing. `entry` also makes the listing a manual match
+    to the entry (make_manual), keeping its previous match on the decision for
+    undo; `category` sets and verifies the listing's category and subtype, its
+    previous ones kept on the decision; every other decision changes nothing but
+    review_decisions."""
     listing = session.get(Listing, body.listing_id)
     if listing is None:
         raise HTTPException(status_code=404, detail="Listing not found")
@@ -345,6 +428,8 @@ def record_decision(
     if session.exec(select(ReviewDecision.id).where(ReviewDecision.listing_id == listing.id)).first():
         raise HTTPException(status_code=409, detail="This listing already has a decision")
 
+    if listing.catalog_match_method == "review_category" and body.decision not in ("category", "skip"):
+        raise HTTPException(status_code=422, detail="A review_category listing takes category or skip")
     if body.decision == "entry":
         if body.entry_id is None:
             raise HTTPException(status_code=422, detail="entry_id is required when the decision is entry")
@@ -354,12 +439,40 @@ def record_decision(
             raise HTTPException(status_code=422, detail="That entry is not in this listing's brand catalog")
     elif body.entry_id is not None:
         raise HTTPException(status_code=422, detail="entry_id is only for the decision entry")
+    if body.decision == "category":
+        if listing.catalog_match_method != "review_category":
+            raise HTTPException(status_code=422, detail="category is only for a review_category listing")
+        rails = taxonomy.rails()
+        if body.category not in rails:
+            raise HTTPException(status_code=422, detail="category must be one of " + ", ".join(rails))
+        if taxonomy.keeps_subtype(body.category):
+            if body.subtype not in rails[body.category]:
+                raise HTTPException(status_code=422, detail=f"subtype must be one of {body.category}'s: "
+                                                            + ", ".join(rails[body.category]))
+        elif body.subtype is not None:
+            raise HTTPException(status_code=422, detail=f"{body.category} keeps no subtype")
+    elif body.category is not None or body.subtype is not None:
+        raise HTTPException(status_code=422, detail="category and subtype are only for the decision category")
 
     reviewer = _reviewer(user)
     row = ReviewDecision(
         listing_id=listing.id, reviewer=reviewer, decision=body.decision, entry_id=body.entry_id,
         note=(body.note or "").strip() or None, reason=listing.catalog_match_method,
     )
+    if body.decision == "entry":
+        row.prev_entry_id = listing.catalog_entry_id
+        row.prev_confidence = listing.catalog_match_confidence
+        make_manual(session, listing, entry)
+    elif body.decision == "category":
+        row.category, row.subtype = body.category, body.subtype
+        row.prev_category, row.prev_subtype = listing.scraped_category, listing.subtype
+        row.prev_verified = listing.verified_fields
+        listing.scraped_category, listing.subtype = body.category, body.subtype
+        listing.verified_fields = verification.claim(
+            {"category": body.category, "subtype": body.subtype}, listing.scraped_name or "", reviewer,
+            existing=listing.verified_fields)
+        listing.catalog_match_method = None
+        session.add(listing)
     session.add(row)
     session.commit()
     return {"id": str(row.id), "progress": _progress(session, reviewer, brand, tz_offset)}
@@ -373,7 +486,12 @@ def undo(
     tz_offset: int = Query(default=0, ge=-840, le=840),
 ):
     """Delete this reviewer's most recent decision; its listing is back in the queue.
-    Returns the listing's card (null if it has since left the queue) so the screen
+    For an `entry` decision the listing's previous match comes back (method from
+    `reason`, entry and confidence from prev_entry_id / prev_confidence) if it is
+    still the manual match the decision made; for a `category` decision the listing's
+    category, subtype, verified_fields and reason come back while it still holds the
+    call. The identity overlaid stays until the
+    next import re-reads the listing. Returns the listing's card (null if it has since left the queue) so the screen
     can show it again."""
     reviewer = _reviewer(user)
     row = session.exec(select(ReviewDecision).where(ReviewDecision.reviewer == reviewer)
@@ -381,6 +499,24 @@ def undo(
     if row is None:
         raise HTTPException(status_code=404, detail="Nothing to undo")
     listing_id = row.listing_id
+    if row.decision == "entry":
+        listing = session.get(Listing, listing_id)
+        if (listing is not None and listing.catalog_match_method == "manual"
+                and listing.catalog_entry_id == row.entry_id):
+            listing.catalog_entry_id = row.prev_entry_id
+            listing.catalog_match_method = row.reason
+            listing.catalog_match_confidence = row.prev_confidence
+            session.add(listing)
+    elif row.decision == "category":
+        listing = session.get(Listing, listing_id)
+        # Only while the listing still holds the call (an import since keeps it, as a
+        # verified field; a person's later edit is theirs).
+        if (listing is not None and listing.scraped_category == row.category
+                and listing.subtype == row.subtype):
+            listing.scraped_category, listing.subtype = row.prev_category, row.prev_subtype
+            listing.verified_fields = row.prev_verified
+            listing.catalog_match_method = row.reason
+            session.add(listing)
     session.delete(row)
     session.commit()
 

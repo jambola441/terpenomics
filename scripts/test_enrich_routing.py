@@ -121,6 +121,29 @@ def test_a_cached_answer_from_an_older_jev_question_is_asked_again(fakes, monkey
     assert rows[0]["subtype"] == "gummy" and rows[0]["strain"] == "Plain"
 
 
+def test_a_cached_subtype_no_longer_on_its_rail_is_asked_again(fakes, monkeypatch):
+    # An LLM-path entry has no "jq", so only the rail check catches a retired subtype.
+    monkeypatch.setenv("ENRICH_CLASSIFIER", "jev")
+    monkeypatch.setattr(enrich.jev_classify, "classify", jev_answers((0.97, 0.93)))
+    stale = {"v": enrich._ENRICH_VERSION, "category": "vaporizers", "subtype": "battery",
+             "strain": "Old", "product_line": None, "variant": ""}
+    fresh = dict(stale, category="edible", subtype="gummy")
+    (enrich._CACHE_DIR / "test-store.haiku-or.json").write_text(
+        json.dumps({"a|100mg": stale, "b|100mg": fresh}))
+    rows = [gummy("Sure Gummies 10pk", "a"), gummy("Cached Gummies 10pk", "b")]
+    enrich.enrich(rows, model="haiku-or", brand_examples={})
+    assert rows[0]["category"] == "edible" and rows[0]["strain"] == "Plain"
+    assert rows[1]["strain"] == "Old"            # an on-rail entry is still trusted
+
+
+def test_on_rail():
+    assert not enrich._on_rail({"category": "vaporizers", "subtype": "other"})
+    assert enrich._on_rail({"category": "vaporizers", "subtype": "cart"})
+    assert enrich._on_rail({"category": "preroll", "subtype": "infused"})   # keeps none
+    assert enrich._on_rail({"category": "nonsense", "subtype": "x"})
+    assert enrich._on_rail({"category": "edible", "subtype": None})
+
+
 def test_llm_classifier_never_asks_jev(fakes, monkeypatch):
     monkeypatch.setenv("ENRICH_CLASSIFIER", "llm")
     monkeypatch.setattr(enrich.jev_classify, "classify",
@@ -246,6 +269,13 @@ def test_without_the_llm_jev_answers_everything_and_the_answers_are_cached(fakes
     assert cache["b|"]["p"] == {"category": 0.97, "subtype": 0.93, "strain": 0.6,
                                 "product_line": 0.9, "size": 0.9}
     assert cache["c|100mg"]["p"]["category"] == 0.4
+    # The category and subtype probabilities ride on the row to the CSV, for the
+    # importer's review-queue bar; from the cache on the next run too.
+    assert [(r.get("p_category"), r.get("p_subtype")) for r in rows] == [
+        (0.97, 0.93), (0.97, 0.93), (0.4, 0.93), (None, None)]
+    again = [dict(gummy("Mystery c 10pk", "c"), category="other")]
+    enrich.enrich(again, model="haiku-or", brand_examples={})
+    assert (again[0]["p_category"], again[0]["p_subtype"]) == (0.4, 0.93)
 
 
 def test_without_the_llm_a_size_field_in_another_unit_is_not_kept(fakes, monkeypatch):
