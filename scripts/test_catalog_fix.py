@@ -336,3 +336,26 @@ def test_measuring_a_rekey_counts_a_listing_that_follows_its_entry_as_staying():
              "l2": ("trusted", "lb:preroll:::gelato", "ge1", "1g")}        # went elsewhere: a real move
     stable, noise = cf.compare([cf.carried(plan, before)], [after])
     assert list(stable) == ["l2"] and noise == 0
+
+
+def test_measure_reads_each_listing_against_the_catalog_it_resolves(monkeypatch):
+    """--measure re-reads listings against the before and the after catalog (as the
+    import does), so an added entry or a brand example can change the outcome."""
+    import catalog_reading
+    seen = []
+
+    def fake_read(catalog, listings, **kw):
+        seen.append(len(catalog["entries"]))
+        return {l["id"]: {"read_against": len(catalog["entries"])} for l in listings if l["name"] != "skip"}
+    monkeypatch.setattr(catalog_reading, "read", fake_read)
+    monkeypatch.delenv("CATALOG_READING", raising=False)
+    rows = [{"id": 1, "name": "a", "reading": {"old": True}}, {"id": 2, "name": "skip", "reading": {"old": True}}]
+    cat = catalogs()["stiiizy"]
+    out = cf.read_against(cat, rows, use_jev=True)
+    assert out[0]["reading"] == {"read_against": len(cat["entries"])}
+    assert out[1]["reading"] == {"old": True}          # unread: keeps its stored reading
+    assert rows[0]["reading"] == {"old": True}         # the caller's rows untouched
+    assert seen == [len(cat["entries"])]
+    assert cf.read_against(cat, rows, use_jev=False)[0]["reading"] == {"old": True}
+    monkeypatch.setenv("CATALOG_READING", "0")
+    assert cf.read_against(cat, rows, use_jev=True)[0]["reading"] == {"old": True}
