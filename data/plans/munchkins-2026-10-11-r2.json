@@ -1,0 +1,4 @@
+{"brand": "Munchkins", "edits": [
+ {"op": "add-product", "category": "flower", "subtype": "smalls", "strain": "Blueberry Fritter", "sizes": ["28g"], "why": "round 2: 'Flower Bag Blueberry Fritter (H)' 28g, review_missing; a real Munchkins strain in their 28g bag (same store format as Chemdawg/Trop Cherry bags)"},
+ {"op": "add-product", "category": "flower", "subtype": "smalls", "strain": "Grape Ape", "sizes": ["28g"], "why": "round 2: 'Grape Ape -Indica Dom Hybrid- 26.8% THC | 28g ... Munchkins', review_missing; Munchkins flower is small buds (round 1)"}
+]}

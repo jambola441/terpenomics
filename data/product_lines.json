@@ -10,7 +10,7 @@
     "Gold Cuts",
     "Gassers"
   ],
-  "_comment_lowell": "Lowell Herb Co. NY pre-rolls (2026-10-11, batch B draft): Quicks are 10 x 0.35g (3.5g) and 20 x 0.35g (7g) packs, Outlaw the 1g single (weedmaps 'Lowell Outlaw | Trailblazer (S) | Pre-Roll 1G'); the 6 x 0.6g (3.6g) Smokes packs carry no line, since 'Lowell Smokes' is what the brand calls all its pre-rolls. Keyed by the brand as listings carry it: the old 'Lowell Smokes' key never reached a 'Lowell Herb Co.' listing.",
+  "_comment_lowell": "Lowell Herb Co. NY pre-rolls (2026-10-11, batch B draft): Quicks are 10 x 0.35g (3.5g) and 20 x 0.35g (7g) packs, Outlaw the 1g single (weedmaps 'Lowell Outlaw | Trailblazer (S) | Pre-Roll 1G'); the 6 x 0.6g (3.6g) Smokes packs carry no line, since 'Lowell Smokes' is what the brand calls all its pre-rolls. Round 2 (2026-10-11): the catalog files the 6-packs under line Smokes, since a line-less 6pk read as 'no line + Trailblazer' named the Quicks and Outlaw Trailblazer too and never joined (measured 25 -> 26 trusted with the brand's reading examples); Smokes stays out of this list on purpose: 'Lowell Smokes' is on Quicks and Outlaw names too, and a tie with Quicks would misfile them. Keyed by the brand as listings carry it: the old 'Lowell Smokes' key never reached a 'Lowell Herb Co.' listing.",
   "Lowell Herb Co.": [
     "Quicks",
     "Outlaw"
@@ -1012,7 +1012,7 @@
   "Birdies": [
     {"line": "Classic", "category": "preroll"}
   ],
-  "_comment_florette": "Batch C draft (2026-10-11), from Florette's Weedmaps brand catalog (https://weedmaps.com/brands/florette/products) and florettecannabis.com/products. Pre-roll lines: Minis (0.35g x 5 = 1.75g, 0.5g x 5 = 2.5g, 0.5g x 2 = 1g; a line so the 2pk is not the 1g Joint), Exotics (1g x 4 = 4g) and Infused (1.2g joint). Plain joints, Big Buds flower and the disposables have no line.",
+  "_comment_florette": "Batch C draft (2026-10-11), from Florette's Weedmaps brand catalog (https://weedmaps.com/brands/florette/products) and florettecannabis.com/products. Pre-roll lines: Minis, only the 0.5g x 2 = 1g 2-packs (a line so the 2pk is not the 1g Joint; round 2, 2026-10-11: the 5-packs, 0.35g x 5 = 1.75g and 0.5g x 5 = 2.5g, are line-less, since stores never write Minis on them and the size tells them apart), Exotics (1g x 4 = 4g) and Infused (1.2g joint). Plain joints, Big Buds flower and the disposables have no line.",
   "Florette": [
     {"line": "Minis", "also": ["Mini Joints", "Mini Joint", "Mini Pre-Roll", "Mini Pre-Rolls"], "category": "preroll"},
     {"line": "Exotics", "also": ["Florette Exotics"], "category": "preroll"},
