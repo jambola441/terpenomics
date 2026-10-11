@@ -26,7 +26,9 @@
     {"listing": "Ruby Farms | Amnesia Haze 10pk | Hash Infused Preroll", "entry": {"category": "preroll", "line": "Hash Infused", "strain": "Amnesia Haze", "size": "5g"}},
     {"listing": "Ruby Farms | Biscotti Jealousy 2pk | Hash Infused Preroll", "entry": {"category": "preroll", "line": "Hash Infused", "strain": "Biscotti Jealousy", "size": "1g"}},
     {"listing": "Ruby Farms | African Orange - Hybrid Pre Rolls | 7pk 3.5g", "entry": {"category": "preroll", "line": "Doobies", "strain": "African Orange", "size": "3.5g"}},
-    {"listing": "Ruby Farms | Grand Daddy Purple Hash Infused Rose Blunt", "entry": {"category": "preroll", "line": "Rose Petal", "strain": "Granddaddy Purple", "size": "1.5g"}}
+    {"listing": "Ruby Farms | Grand Daddy Purple Hash Infused Rose Blunt", "entry": {"category": "preroll", "line": "Rose Petal", "strain": "Granddaddy Purple", "size": "1.5g"}},
+    {"listing": "Ruby Farms Live Resin Blend | 1G Starter Kit | Hybrid - GMO", "entry": {"category": "vaporizers", "subtype": "all-in-one", "line": "Live Resin Blend", "strain": "GMO", "size": "1g"}},
+    {"listing": "Ruby Farms - Strawberry Fields Caviar Nectar Live Resin Cartridge Starter Kit - 1g", "entry": {"category": "vaporizers", "subtype": "all-in-one", "line": "Caviar Nectar", "strain": "Strawberry Fields", "size": "1g"}}
   ],
   "revert": [
     {"listing": "Revert Distillate Infused Ground Flower Pre Roll 2 Pack Durban Poison", "entry": {"category": "preroll", "line": "Infused", "strain": "Durban Poison", "size": "1.5g"}},

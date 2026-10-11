@@ -1,0 +1,207 @@
+{
+ "brand": "ruby-farms",
+ "edits": [
+  {
+   "op": "rekey",
+   "entry": "bb80adb1-3451-4c6d-acf8-f823c1676dfa",
+   "why": "owner 2026-10-11: starter kit = all-in-one; rubyfarms.com sells LRB/CN as 1g cart + starter kit",
+   "line": "Live Resin Blend"
+  },
+  {
+   "op": "rekey",
+   "entry": "03c05f90-5e52-4055-9bb4-2b891e25c92b",
+   "why": "owner 2026-10-11: starter kit = all-in-one; rubyfarms.com sells LRB/CN as 1g cart + starter kit",
+   "line": "Live Resin Blend"
+  },
+  {
+   "op": "rekey",
+   "entry": "ebaf2389-c28c-4481-8cc4-80ab6455ff54",
+   "why": "owner 2026-10-11: starter kit = all-in-one; rubyfarms.com sells LRB/CN as 1g cart + starter kit",
+   "line": "Live Resin Blend",
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "rekey",
+   "entry": "b9c40b39-de3c-4bf4-bce1-120556ac522d",
+   "why": "owner 2026-10-11: starter kit = all-in-one; rubyfarms.com sells LRB/CN as 1g cart + starter kit",
+   "line": "Live Resin Blend",
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "rekey",
+   "entry": "add1b2a0-efd3-43fb-a3be-1dcbb46776da",
+   "why": "owner 2026-10-11: starter kit = all-in-one; rubyfarms.com sells LRB/CN as 1g cart + starter kit",
+   "line": "Live Resin Blend",
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "rekey",
+   "entry": "fc513562-3650-433b-9e0e-d4d58f1ee510",
+   "why": "owner 2026-10-11: starter kit = all-in-one; rubyfarms.com sells LRB/CN as 1g cart + starter kit",
+   "line": "Caviar Nectar",
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "subtype": "cart",
+   "line": "Live Resin Blend",
+   "strain": "GMO",
+   "sizes": [
+    "1g"
+   ],
+   "why": "owner 2026-10-11: starter kit = all-in-one; rubyfarms.com sells LRB/CN as 1g cart + starter kit; seen in stores"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "subtype": "all-in-one",
+   "line": "Live Resin Blend",
+   "strain": "GMO",
+   "sizes": [
+    "1g"
+   ],
+   "why": "owner 2026-10-11: starter kit = all-in-one; rubyfarms.com sells LRB/CN as 1g cart + starter kit; seen in stores"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "subtype": "cart",
+   "line": "Live Resin Blend",
+   "strain": "Durban Poison",
+   "sizes": [
+    "1g"
+   ],
+   "why": "owner 2026-10-11: starter kit = all-in-one; rubyfarms.com sells LRB/CN as 1g cart + starter kit; seen in stores"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "subtype": "all-in-one",
+   "line": "Live Resin Blend",
+   "strain": "Durban Poison",
+   "sizes": [
+    "1g"
+   ],
+   "why": "owner 2026-10-11: starter kit = all-in-one; rubyfarms.com sells LRB/CN as 1g cart + starter kit; seen in stores"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "subtype": "cart",
+   "line": "Live Resin Blend",
+   "strain": "White Widow",
+   "sizes": [
+    "1g"
+   ],
+   "why": "owner 2026-10-11: starter kit = all-in-one; rubyfarms.com sells LRB/CN as 1g cart + starter kit; seen in stores"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "subtype": "all-in-one",
+   "line": "Live Resin Blend",
+   "strain": "White Widow",
+   "sizes": [
+    "1g"
+   ],
+   "why": "owner 2026-10-11: starter kit = all-in-one; rubyfarms.com sells LRB/CN as 1g cart + starter kit; seen in stores"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "subtype": "all-in-one",
+   "line": "Caviar Nectar",
+   "strain": "Alien Orange",
+   "sizes": [
+    "1g"
+   ],
+   "why": "owner 2026-10-11: starter kit = all-in-one; rubyfarms.com sells LRB/CN as 1g cart + starter kit; seen in stores"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "subtype": "all-in-one",
+   "line": "Caviar Nectar",
+   "strain": "Eureka Lemons",
+   "sizes": [
+    "1g"
+   ],
+   "why": "owner 2026-10-11: starter kit = all-in-one; rubyfarms.com sells LRB/CN as 1g cart + starter kit; seen in stores"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "subtype": "all-in-one",
+   "line": "Caviar Nectar",
+   "strain": "Moroccan Cherry",
+   "sizes": [
+    "1g"
+   ],
+   "why": "owner 2026-10-11: starter kit = all-in-one; rubyfarms.com sells LRB/CN as 1g cart + starter kit; seen in stores"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "subtype": "all-in-one",
+   "line": "Caviar Nectar",
+   "strain": "Sour Diesel",
+   "sizes": [
+    "1g"
+   ],
+   "why": "owner 2026-10-11: starter kit = all-in-one; rubyfarms.com sells LRB/CN as 1g cart + starter kit; seen in stores"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "subtype": "all-in-one",
+   "line": "Caviar Nectar",
+   "strain": "Strawberry Fields",
+   "sizes": [
+    "1g"
+   ],
+   "why": "owner 2026-10-11: starter kit = all-in-one; rubyfarms.com sells LRB/CN as 1g cart + starter kit; seen in stores"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "subtype": "all-in-one",
+   "line": "Caviar Nectar",
+   "strain": "Super Silver Haze",
+   "sizes": [
+    "1g"
+   ],
+   "why": "owner 2026-10-11: starter kit = all-in-one; rubyfarms.com sells LRB/CN as 1g cart + starter kit; seen in stores"
+  },
+  {
+   "op": "add-product",
+   "category": "topical",
+   "subtype": "topical",
+   "strain": "Blue Tansy Rose",
+   "sizes": [
+    "1000mg"
+   ],
+   "why": "owner 2026-10-11: 1:1 balm, 1000mg only (2000mg is a store's THC+CBD sum)"
+  },
+  {
+   "op": "add-product",
+   "category": "topical",
+   "subtype": "topical",
+   "strain": "Eucalyptus Sage",
+   "sizes": [
+    "1000mg"
+   ],
+   "why": "owner 2026-10-11: 1:1 balm, 1000mg only (2000mg is a store's THC+CBD sum)"
+  },
+  {
+   "op": "add-product",
+   "category": "topical",
+   "subtype": "topical",
+   "strain": "Turkey Tail Mushroom",
+   "sizes": [
+    "1000mg"
+   ],
+   "why": "owner 2026-10-11: 1:1 balm, 1000mg only (2000mg is a store's THC+CBD sum)"
+  }
+ ]
+}
