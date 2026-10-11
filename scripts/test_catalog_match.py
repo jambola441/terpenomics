@@ -186,7 +186,7 @@ class TestJoin:
         idx = cm.CatalogIndex(STIIIZY)
         assert idx.join(reading("Biscotti", "1g", line="LIIIL")) is None
         assert idx.join(reading("Biscotti", "1g", line="Original", subtype="pod"))[0] == "og-bisc"
-        assert idx.join(reading("Biscotti", "1g", subtype="battery")) is None          # a cart would be the pod (FORMAT_SYNONYMS)
+        assert idx.join(reading("Biscotti", "1g", line="Original", subtype="all-in-one")) is None   # Original is pods only
 
     def test_an_inferred_size_counts(self):
         key, entry = cm.CatalogIndex(STIIIZY).join(reading("Biscotti", "0.5g", line="Original", subtype="pod"))

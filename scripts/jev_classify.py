@@ -41,7 +41,7 @@ import taxonomy  # noqa: E402
 
 # Bump when a question or option text changes: enrich.py stamps cached answers with
 # it, so answers given to an older question are re-asked rather than trusted.
-QUESTION_VERSION = 2
+QUESTION_VERSION = 3   # 3: vape battery/other dropped, kits are AIOs, devices merch (2026-10-11)
 
 # Jev degrades on large irrelevant state; the first few hundred characters of a
 # description carry the format words, the rest is marketing copy.
@@ -53,8 +53,9 @@ CATEGORY_CRITERIA: dict[str, str] = {
     "preroll": "Pre-rolled joints or blunts, single or in packs, including infused "
                "pre-rolls (kief, diamonds, live resin).",
     "vaporizers": "Vapes: cartridges (510 carts), pods, all-in-one or disposable vape "
-                  "pens, and vape batteries. Anything named vape, cart, pod, AIO or "
-                  "disposable is a vaporizer even if the store files it as a concentrate.",
+                  "pens, and starter kits sold with oil. Anything named vape, cart, pod, AIO or "
+                  "disposable is a vaporizer even if the store files it as a concentrate. "
+                  "A battery or device sold without oil is merch.",
     "edible": "Eaten or drunk: gummies, chews, chocolates, beverages and drinks, "
               "tablets, pills and capsules, other foods. Dosed in mg of THC. An edible "
               "made with live resin or rosin (a live resin gummy or rope) is an edible.",
@@ -64,7 +65,8 @@ CATEGORY_CRITERIA: dict[str, str] = {
     "topical": "Topicals applied to the skin: balms, lotions, salves, creams, roll-ons, "
                "patches, bath products.",
     "merch": "Accessories with no cannabis in them: grinders, rolling papers, cones, "
-             "lighters, trays, glass, batteries sold alone, apparel, gift cards.",
+             "lighters, trays, glass, apparel, gift cards, and hardware sold without "
+             "cannabis: vape batteries, chargers and vaporizer devices (dry herb).",
     "other": "None of the above.",
 }
 
@@ -86,10 +88,8 @@ SUBTYPE_CRITERIA: dict[str, dict[str, str]] = {
     "vaporizers": {
         "cart": "Cartridge: a 510-thread cart, cartridge, preload or reload.",
         "all-in-one": "All-in-one or disposable vape: battery and oil together, rechargeable "
-                      "or disposable pen, AIO.",
+                      "or disposable pen, AIO, or a starter kit sold with oil.",
         "pod": "Pod for a proprietary device (e.g. STIIIZY pod, PAX Era pod).",
-        "battery": "A vape battery or device sold without oil, or a starter kit.",
-        "other": "A vape product that is none of these.",
     },
     "edible": {
         "gummy": "Gummies, chews, fruit chews, pearls.",

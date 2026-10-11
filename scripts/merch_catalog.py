@@ -23,7 +23,9 @@ Entries come from the stores' consensus like the bootstrap's (2+ stores), built 
 catalog_bootstrap.propose() through propose_entries() and kept in the brand's catalog
 by whichever push writes it (a storefront push carries them as products only stores
 sell). Hardware is filed under vaporizers by some stores ("PAX - Flow Portable
-Vaporizer"): a vaporizer read as a battery is merch here.
+Vaporizer"): a vaporizer read as a battery is merch here. Since 2026-10-11 a device
+sold without oil is merch at classification too, so this covers listings not yet
+re-classified and store-filed devices the name gives away.
 """
 from __future__ import annotations
 
@@ -61,6 +63,8 @@ def is_merch(category: str | None, subtype: str | None, name: str = "", brand: s
     cataloged), a vaporizer read as a battery, or a vaporizer whose name carries one of the
     brand's hardware lines with a device word or a hardware finish ("PAX Plus | Onyx",
     "Pax - Four Vaporizer - Greenstone": stores file devices as vapes)."""
+    # Vaporizers have no battery subtype since 2026-10-11 (devices are merch), but
+    # listings stored as vaporizers/battery keep that pair until re-classified.
     if category == "merch" or (category == "vaporizers" and subtype == "battery"):
         return True
     if category != "vaporizers" or not name:
