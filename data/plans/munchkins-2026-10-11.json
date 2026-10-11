@@ -1,0 +1,138 @@
+{
+ "brand": "Munchkins",
+ "_comment": "2026-10-11 draft (catalogs batch A, owner policy 2026-10-11): apply after `catalog_bootstrap.py --brand \"Munchkins\" --push` (no --replace) creates the catalog; selectors name bootstrap entries. Single-store products judged real are included (owner 2026-10-11); typos are left out. Left out as typos/misfiles: '14pk Prerolls 28g | Skywalker' (pack and weight disagree), 'Chemlato | Sativa | 28g' filed as a pre-roll, To The Moon Skywalker and Jaunty Crunch 'n Munch filed under Munchkins.",
+ "edits": [
+  {
+   "op": "rekey",
+   "entry": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Blueberry Headband",
+    "size": "3.5g"
+   },
+   "why": "Munchkins is a small-buds brand: stores write 'Small Buds Flower' / '(small buds)' on the same strains and sizes others file as plain flower; this merges the duplicate Blueberry Headband 3.5g (judged: most stores and the name say small buds; one store's 'Premium Buds' is the outlier)",
+   "subtype": "smalls"
+  },
+  {
+   "op": "rekey",
+   "entry": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Girl Scout Cookies",
+    "size": "3.5g"
+   },
+   "why": "Munchkins is a small-buds brand: stores write 'Small Buds Flower' / '(small buds)' on the same strains and sizes others file as plain flower; this merges the duplicate Blueberry Headband 3.5g (judged: most stores and the name say small buds; one store's 'Premium Buds' is the outlier)",
+   "subtype": "smalls"
+  },
+  {
+   "op": "rekey",
+   "entry": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Chemdawg",
+    "size": "28g"
+   },
+   "why": "Munchkins is a small-buds brand: stores write 'Small Buds Flower' / '(small buds)' on the same strains and sizes others file as plain flower; this merges the duplicate Blueberry Headband 3.5g (judged: most stores and the name say small buds; one store's 'Premium Buds' is the outlier)",
+   "subtype": "smalls"
+  },
+  {
+   "op": "rekey",
+   "entry": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Mimosa",
+    "size": "28g"
+   },
+   "why": "Munchkins is a small-buds brand: stores write 'Small Buds Flower' / '(small buds)' on the same strains and sizes others file as plain flower; this merges the duplicate Blueberry Headband 3.5g (judged: most stores and the name say small buds; one store's 'Premium Buds' is the outlier)",
+   "subtype": "smalls"
+  },
+  {
+   "op": "rekey",
+   "entry": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Rainbow Beltz",
+    "size": "28g"
+   },
+   "why": "Munchkins is a small-buds brand: stores write 'Small Buds Flower' / '(small buds)' on the same strains and sizes others file as plain flower; this merges the duplicate Blueberry Headband 3.5g (judged: most stores and the name say small buds; one store's 'Premium Buds' is the outlier)",
+   "subtype": "smalls"
+  },
+  {
+   "op": "rekey",
+   "entry": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "RS11",
+    "size": "28g"
+   },
+   "why": "Munchkins is a small-buds brand: stores write 'Small Buds Flower' / '(small buds)' on the same strains and sizes others file as plain flower; this merges the duplicate Blueberry Headband 3.5g (judged: most stores and the name say small buds; one store's 'Premium Buds' is the outlier)",
+   "subtype": "smalls"
+  },
+  {
+   "op": "rekey",
+   "entry": {
+    "category": "flower",
+    "subtype": "flower",
+    "strain": "Trop Cherry",
+    "size": "28g"
+   },
+   "why": "Munchkins is a small-buds brand: stores write 'Small Buds Flower' / '(small buds)' on the same strains and sizes others file as plain flower; this merges the duplicate Blueberry Headband 3.5g (judged: most stores and the name say small buds; one store's 'Premium Buds' is the outlier)",
+   "subtype": "smalls"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "strain": "Northern Lights",
+   "sizes": [
+    "14g"
+   ],
+   "why": "28pk pre-rolls 14g (28 x 0.5g, as Cereal Milk/Maui Wowie); judged real (one store, name and size consistent with the line; owner 2026-10-11: single-store products allowed)"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "strain": "Cheetah Piss",
+   "sizes": [
+    "14g"
+   ],
+   "why": "28pk pre-rolls 14g (28 x 0.5g, as Cereal Milk/Maui Wowie); judged real (one store, name and size consistent with the line; owner 2026-10-11: single-store products allowed)"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "strain": "Sour Diesel",
+   "sizes": [
+    "14g"
+   ],
+   "why": "28pk pre-rolls 14g (28 x 0.5g, as Cereal Milk/Maui Wowie); judged real (one store, name and size consistent with the line; owner 2026-10-11: single-store products allowed)"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "strain": "White Widow",
+   "sizes": [
+    "14g"
+   ],
+   "why": "28pk pre-rolls 14g (28 x 0.5g, as Cereal Milk/Maui Wowie); judged real (one store, name and size consistent with the line; owner 2026-10-11: single-store products allowed)"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "strain": "Granddaddy Purp",
+   "sizes": [
+    "14g"
+   ],
+   "why": "28pk pre-rolls 14g (28 x 0.5g, as Cereal Milk/Maui Wowie); judged real (one store, name and size consistent with the line; owner 2026-10-11: single-store products allowed)"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "strain": "Durban Poison",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "small buds 3.5g ('Munchkins | Durban Poison | 3.5g'); judged real (one store, name and size consistent with the line; owner 2026-10-11: single-store products allowed)",
+   "subtype": "smalls"
+  }
+ ]
+}
