@@ -79,5 +79,35 @@
     {"listing": "Boutiq | Switch Liquid Diamonds Triple Tank AIO | J13 x Gelato 41 x GDP", "entry": {"category": "vaporizers", "line": "Switch V5", "strain": "J-13 x Gelato 41 x GDP", "size": "2g"}},
     {"listing": "BTQ Switch V5 GUM | Z-41 x Lemon Cherry x Mango Melon | Hyb-Hyb-Ind | 2g | AIO", "entry": {"category": "vaporizers", "line": "Switch V5", "strain": "Z-41 x Lemon Cherry x Mango Melon", "size": "2g"}},
     {"listing": "Boutiq (Snack Pack) - Grape Soda X Rainbow Belts | (5 x .05g) Diamond Infused PreRolls", "entry": {"category": "preroll", "line": "Snack Pack", "strain": "Grape Soda x Rainbow Belts", "size": "2.5g"}}
+  ],
+  "royal-genetics": [
+    {"listing": "Densuke Watermelon - 100MG Gummies", "entry": {"category": "edible", "strain": "Densuke Watermelon", "size": "10pk 100mg"}},
+    {"listing": "Zoap AIO Disposable Vape | 1g", "entry": {"category": "vaporizers", "strain": "Zoap", "size": "1g"}},
+    {"listing": "| Flower Jar Cake Mix (IH)", "entry": {"category": "flower", "strain": "Cake Mix", "size": "3.5g"}},
+    {"listing": "Live Rosin  Jar Cake Mix", "entry": {"category": "concentrate", "strain": "Cake Mix", "size": "1g"}}
+  ],
+  "birdies": [
+    {"listing": "Birdies - Classic Hybrid Prerolls 5pk - 3.5g", "entry": {"category": "preroll", "line": "Classic", "strain": "Hybrid", "size": "3.5g"}},
+    {"listing": "Birdies | Classic Prerolls | Indica 2 Pack", "entry": {"category": "preroll", "line": "Classic", "strain": "Indica", "size": "1.4g"}},
+    {"listing": "Classic Sativa | Preroll | 0.7g each | 2pk", "entry": {"category": "preroll", "line": "Classic", "strain": "Sativa", "size": "1.4g"}}
+  ],
+  "florette": [
+    {"listing": "Florette - .35g (5pk) Prerolls - Chemdog D - Indica", "entry": {"category": "preroll", "line": null, "strain": "Chemdog D", "size": "1.75g"}},
+    {"listing": "Florette - Pound Cake Prerolls 5pk - 2.5g", "entry": {"category": "preroll", "line": null, "strain": "Pound Cake", "size": "2.5g"}},
+    {"listing": "Florette - Pound Cake Preroll - 1g", "entry": {"category": "preroll", "line": null, "strain": "Pound Cake", "size": "1g"}},
+    {"listing": "Florette | Gelato #41 | Infused Joint | 1.2g", "entry": {"category": "preroll", "line": "Infused", "strain": "Gelato #41", "size": "1.2g"}},
+    {"listing": "Florette - Blue Taffeze - 3.5g", "entry": {"category": "flower", "strain": "Blue Taffeze", "size": "3.5g"}}
+  ],
+  "moondust": [
+    {"listing": "Infused Pre-Rolls | Moondust | Killer Kiwi", "entry": {"category": "preroll", "strain": "Killer Kiwi", "size": "1g"}},
+    {"listing": "Moon Dust - Zour Patch Cough Moonrock Preroll - 1g", "entry": {"category": "preroll", "strain": "Zour Patch Cough", "size": "1g"}},
+    {"listing": "Vape AIO | Moondust | Orange Mimosa - Live Resin", "entry": {"category": "vaporizers", "strain": "Orange Mimosa", "size": "2g"}}
+  ],
+  "supernaturals": [
+    {"listing": "Supernaturals New York | Galactica | Pre-Roll 2pk", "entry": {"category": "preroll", "strain": "Galactica", "size": "1.5g"}},
+    {"listing": "Supernaturals | 5pk .7g Preroll Interspecies Erotica (IH)", "entry": {"category": "preroll", "strain": "Interspecies Erotica", "size": "3.5g"}},
+    {"listing": "Papaya Runtz | Pre-Roll 10pk | 2.5G", "entry": {"category": "preroll", "line": "Microtokes", "strain": "Papaya Runtz", "size": "2.5g"}},
+    {"listing": "Supernaturals New York | Donny Burger Joint", "entry": {"category": "preroll", "strain": "Donny Burger", "size": "0.75g"}},
+    {"listing": "Supernaturals New York | Rosemary Lemon Focus | 10 Pk Gummies", "entry": {"category": "edible", "strain": "Rosemary Lemon Focus", "size": "10pk 100mg"}}
   ]
 }
