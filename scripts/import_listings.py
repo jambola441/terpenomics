@@ -339,8 +339,10 @@ def apply_catalog(records: list[dict], existing: dict[tuple, dict], catalogs: di
         if use_jev and catalog_reading_on():
             # The listing read in its catalog's own values (catalog_reading), which the
             # join then settles. A listing Jev could not read keeps enrichment's reading.
+            # ids are positions in records; listings holds only this brand's rows
+            by_lid = {l["id"]: l for l in listings}
             for lid, reading in catalog_reading.read(catalog, listings, usage=usage).items():
-                records[int(lid)]["reading"] = listings[int(lid)]["reading"] = reading
+                records[int(lid)]["reading"] = by_lid[lid]["reading"] = reading
                 stats["read_by_catalog"] += 1
         # Attribute-only (owner's call, 2026-10-10): Jev reads, the join decides; a
         # listing the join leaves goes to the review queue (catalog_match.review_reason).
