@@ -27,5 +27,9 @@
     {"listing": "Ruby Farms | Biscotti Jealousy 2pk | Hash Infused Preroll", "entry": {"category": "preroll", "line": "Hash Infused", "strain": "Biscotti Jealousy", "size": "1g"}},
     {"listing": "Ruby Farms | African Orange - Hybrid Pre Rolls | 7pk 3.5g", "entry": {"category": "preroll", "line": "Doobies", "strain": "African Orange", "size": "3.5g"}},
     {"listing": "Ruby Farms | Grand Daddy Purple Hash Infused Rose Blunt", "entry": {"category": "preroll", "line": "Rose Petal", "strain": "Granddaddy Purple", "size": "1.5g"}}
+  ],
+  "revert": [
+    {"listing": "Revert Distillate Infused Ground Flower Pre Roll 2 Pack Durban Poison", "entry": {"category": "preroll", "line": "Infused", "strain": "Durban Poison", "size": "1.5g"}},
+    {"listing": "Revert - 0.7g Infused Preroll - Cherry Rush - Sativa", "entry": {"category": "preroll", "line": "Infused", "strain": "Cherry Rush", "size": "0.7g"}}
   ]
 }
