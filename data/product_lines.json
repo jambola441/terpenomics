@@ -10,7 +10,7 @@
     "Gold Cuts",
     "Gassers"
   ],
-  "_comment_lowell": "Lowell Herb Co. NY pre-rolls (2026-10-11, batch B draft): Quicks are 10 x 0.35g (3.5g) and 20 x 0.35g (7g) packs, Outlaw the 1g single (weedmaps 'Lowell Outlaw | Trailblazer (S) | Pre-Roll 1G'); the 6 x 0.6g (3.6g) Smokes packs carry no line, since 'Lowell Smokes' is what the brand calls all its pre-rolls. Keyed by the brand as listings carry it: the old 'Lowell Smokes' key never reached a 'Lowell Herb Co.' listing.",
+  "_comment_lowell": "Lowell Herb Co. NY pre-rolls (2026-10-11, batch B draft): Quicks are 10 x 0.35g (3.5g) and 20 x 0.35g (7g) packs, Outlaw the 1g single (weedmaps 'Lowell Outlaw | Trailblazer (S) | Pre-Roll 1G'); the 6 x 0.6g (3.6g) Smokes packs carry no line, since 'Lowell Smokes' is what the brand calls all its pre-rolls. Round 2 (2026-10-11): the catalog files the 6-packs under line Smokes, since a line-less 6pk read as 'no line + Trailblazer' named the Quicks and Outlaw Trailblazer too and never joined (measured 25 -> 26 trusted with the brand's reading examples); Smokes stays out of this list on purpose: 'Lowell Smokes' is on Quicks and Outlaw names too, and a tie with Quicks would misfile them. Keyed by the brand as listings carry it: the old 'Lowell Smokes' key never reached a 'Lowell Herb Co.' listing.",
   "Lowell Herb Co.": [
     "Quicks",
     "Outlaw"

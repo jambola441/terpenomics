@@ -1,0 +1,61 @@
+{
+ "brand": "Lowell Herb Co.",
+ "edits": [
+  {
+   "op": "rekey",
+   "entry": {
+    "line": "",
+    "strain": "Dreamweaver"
+   },
+   "line": "Smokes",
+   "why": "Smokes is the brand's name for its 6 x 0.6g (3.6g) packs, as the stores print it ('Lowell Smokes - Mind Safari Prerolls 6pk - 3.6g', 'Rip Van Winkle | 6pk - Smokes'). As a line it tells the 6pk from the Quicks and Outlaw products of the same blend: with no line, a 6pk read as 'no line + Trailblazer' named three products and went to review (review_near), and the readings that wrote 'Lowell Smokes' as the line now agree with the catalog"
+  },
+  {
+   "op": "rekey",
+   "entry": {
+    "line": "",
+    "strain": "Mind Safari"
+   },
+   "line": "Smokes",
+   "why": "Smokes is the brand's name for its 6 x 0.6g (3.6g) packs, as the stores print it ('Lowell Smokes - Mind Safari Prerolls 6pk - 3.6g', 'Rip Van Winkle | 6pk - Smokes'). As a line it tells the 6pk from the Quicks and Outlaw products of the same blend: with no line, a 6pk read as 'no line + Trailblazer' named three products and went to review (review_near), and the readings that wrote 'Lowell Smokes' as the line now agree with the catalog"
+  },
+  {
+   "op": "rekey",
+   "entry": {
+    "line": "",
+    "strain": "Trailblazer"
+   },
+   "line": "Smokes",
+   "why": "Smokes is the brand's name for its 6 x 0.6g (3.6g) packs, as the stores print it ('Lowell Smokes - Mind Safari Prerolls 6pk - 3.6g', 'Rip Van Winkle | 6pk - Smokes'). As a line it tells the 6pk from the Quicks and Outlaw products of the same blend: with no line, a 6pk read as 'no line + Trailblazer' named three products and went to review (review_near), and the readings that wrote 'Lowell Smokes' as the line now agree with the catalog"
+  },
+  {
+   "op": "rekey",
+   "entry": {
+    "line": "",
+    "strain": "All Terrain"
+   },
+   "line": "Smokes",
+   "why": "Smokes is the brand's name for its 6 x 0.6g (3.6g) packs, as the stores print it ('Lowell Smokes - Mind Safari Prerolls 6pk - 3.6g', 'Rip Van Winkle | 6pk - Smokes'). As a line it tells the 6pk from the Quicks and Outlaw products of the same blend: with no line, a 6pk read as 'no line + Trailblazer' named three products and went to review (review_near), and the readings that wrote 'Lowell Smokes' as the line now agree with the catalog"
+  },
+  {
+   "op": "rekey",
+   "entry": {
+    "line": "",
+    "strain": "Rip Van Winkle"
+   },
+   "line": "Smokes",
+   "why": "Smokes is the brand's name for its 6 x 0.6g (3.6g) packs, as the stores print it ('Lowell Smokes - Mind Safari Prerolls 6pk - 3.6g', 'Rip Van Winkle | 6pk - Smokes'). As a line it tells the 6pk from the Quicks and Outlaw products of the same blend: with no line, a 6pk read as 'no line + Trailblazer' named three products and went to review (review_near), and the readings that wrote 'Lowell Smokes' as the line now agree with the catalog"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "subtype": null,
+   "line": "Smokes",
+   "strain": "Stargazer",
+   "sizes": [
+    "3.6g"
+   ],
+   "why": "the Smokes 6 x 0.6g pack in Stargazer, which the catalog lacked (only the Quicks 10pk): 'Lowell Smokes - Stargazer Prerolls 6pk - 3.6g' (2 stores), 'Lowell | Star Gazer (Indica) Pre-Roll 6-Pack'. Stores' 6pk listings were being read as Quicks Stargazer 3.5g"
+  }
+ ]
+}

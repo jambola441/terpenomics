@@ -1,0 +1,7 @@
+{"brand": "Foy", "edits": [
+ {"op":"set-size","entry":{"line":"Daytime","size":"100mg"},"size":"20pk 100mg","why":"pack in the size: stores write '20 pck'/'20ct'/'20pk' and '4-pck'/'4ct'/'4pk'; a bare 100mg / 20mg left the size reading at p~0.57"},
+ {"op":"set-size","entry":{"line":"Daytime","size":"20mg"},"size":"4pk 20mg","why":"as above"},
+ {"op":"set-size","entry":{"line":"Good Mood","size":"100mg"},"size":"20pk 100mg","why":"as above"},
+ {"op":"set-size","entry":{"line":"Sleep","size":"100mg"},"size":"20pk 100mg","why":"as above"},
+ {"op":"set-size","entry":{"line":"Sleep","size":"20mg"},"size":"4pk 20mg","why":"as above"}
+]}
