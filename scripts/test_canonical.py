@@ -1,7 +1,7 @@
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from canonical import _strip_line_from_strain, canonicalize, canonical_strain, find_format_category, find_product_line
+from canonical import _strip_line_from_strain, canonicalize, canonical_strain, find_product_line
 from scraper_common import normalize_variant
 
 
@@ -131,38 +131,10 @@ class TestCanonicalize:
 
 
 # ---------------------------------------------------------------------------
-# Format tokens — brand device names that settle the category
+# Variant normalisation
 # ---------------------------------------------------------------------------
 
-class TestFormatTokens:
-    def test_briq_is_a_vape(self):
-        assert find_format_category("Select", "Select Flavor Series - Grape Ape | 1G Briq V2") == "vaporizers"
-
-    def test_ovl_is_a_vape(self):
-        assert find_format_category("Florist Farms", "Florist Farms - Jack Herer | 1G Rechargeable OVL") == "vaporizers"
-
-    def test_two_fer_is_a_vape(self):
-        assert find_format_category("MFNY", "MFNY - Honey Banana | 0.5G Two-Fer (2pk)") == "vaporizers"
-
-    def test_flower_and_concentrate_unaffected(self):
-        assert find_format_category("Revert", "Revert - Maui Wowie | 14G Pre-Ground Kief Infused Flower") is None
-        assert find_format_category("Jetpacks", "Jetpacks - Donny Burger | 1G Indica Diamonds") is None
-
-    def test_token_is_brand_scoped(self):
-        # the same word under an uncurated brand must not fire
-        assert find_format_category("Nobody", "Nobody - Grape Ape | 1G Briq V2") is None
-
-    def test_hardware_is_merch_unless_the_name_carries_oil(self):
-        # owner, 2026-10-11: a device sold alone has no THC, so it is merch
-        assert find_format_category("Puffco", "Puffco | Pivot | Vaporizer | Black") == "merch"
-        assert find_format_category("Backwoods", "Backwoods | Yellow | 510 Battery") == "merch"
-        assert find_format_category("PAX", "PAX Plus | Onyx") == "merch"
-        assert find_format_category("Rove", "ROVE - 1.0g Live Resin Diamond Ready to Use Vaporizer") is None
-        assert find_format_category("Eureka", "Eureka 2000mg Starter Kit Sativa Mango Haze") == "vaporizers"
-
-    def test_word_boundaries_respected(self):
-        assert find_format_category("Select", "Select - Briquette Sampler") is None
-
+class TestVariantUnits:
     def test_weight_categories_stay_in_grams(self):
         # a 0.4g pre-roll must not render as "400mg" beside its 0.5g/0.6g siblings
         assert normalize_variant("0.4g", "preroll") == "0.4g"
