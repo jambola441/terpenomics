@@ -1,0 +1,148 @@
+{
+ "brand": "Kings & Queens",
+ "edits": [
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "flower",
+   "line": null,
+   "strain": "HeadBanger",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "judged real (clean strain, the brand's only flower format): 'Flower | Kings & Queens | HeadBanger'. Pre-roll strains stay 'Indica'/'Sativa'/'Hybrid' (the 3pk mixed blends): 'Blend' is not set aside by catalog_match.strain_core, so 'Indica Blend' would stop matching stores' 'Mixed Indica Pre-Roll 3pk' readings. NY indoor 'Large Bud' / 'Premium Flower' 3.5g jars, no line (weedmaps Smoking Scholars 'Kings & Queens - Large Bud - 3.5g - Indoor Garlic Breath'); every store sells only 3.5g"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "flower",
+   "line": null,
+   "strain": "Marigold",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "judged real (clean strain, the brand's only flower format): 'Large Bud - 3.5g - Indoor Marigold'. Pre-roll strains stay 'Indica'/'Sativa'/'Hybrid' (the 3pk mixed blends): 'Blend' is not set aside by catalog_match.strain_core, so 'Indica Blend' would stop matching stores' 'Mixed Indica Pre-Roll 3pk' readings. NY indoor 'Large Bud' / 'Premium Flower' 3.5g jars, no line (weedmaps Smoking Scholars 'Kings & Queens - Large Bud - 3.5g - Indoor Garlic Breath'); every store sells only 3.5g"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "flower",
+   "line": null,
+   "strain": "Mind Twist",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "judged real (clean strain, the brand's only flower format): 'Large Bud - 3.5g - Indoor Mind Twist', 'Flower | Mind Twist | 3.5g'. Pre-roll strains stay 'Indica'/'Sativa'/'Hybrid' (the 3pk mixed blends): 'Blend' is not set aside by catalog_match.strain_core, so 'Indica Blend' would stop matching stores' 'Mixed Indica Pre-Roll 3pk' readings. NY indoor 'Large Bud' / 'Premium Flower' 3.5g jars, no line (weedmaps Smoking Scholars 'Kings & Queens - Large Bud - 3.5g - Indoor Garlic Breath'); every store sells only 3.5g"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "flower",
+   "line": null,
+   "strain": "Night Fall",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "judged real (clean strain, the brand's only flower format): 'Large Bud - 3.5g - Indoor Night Fall'. Pre-roll strains stay 'Indica'/'Sativa'/'Hybrid' (the 3pk mixed blends): 'Blend' is not set aside by catalog_match.strain_core, so 'Indica Blend' would stop matching stores' 'Mixed Indica Pre-Roll 3pk' readings. NY indoor 'Large Bud' / 'Premium Flower' 3.5g jars, no line (weedmaps Smoking Scholars 'Kings & Queens - Large Bud - 3.5g - Indoor Garlic Breath'); every store sells only 3.5g"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "flower",
+   "line": null,
+   "strain": "Zourz",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "judged real (clean strain, the brand's only flower format): 'Kings & Queens - Zourz - 3.5g'. Pre-roll strains stay 'Indica'/'Sativa'/'Hybrid' (the 3pk mixed blends): 'Blend' is not set aside by catalog_match.strain_core, so 'Indica Blend' would stop matching stores' 'Mixed Indica Pre-Roll 3pk' readings. NY indoor 'Large Bud' / 'Premium Flower' 3.5g jars, no line (weedmaps Smoking Scholars 'Kings & Queens - Large Bud - 3.5g - Indoor Garlic Breath'); every store sells only 3.5g"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "flower",
+   "line": null,
+   "strain": "Blueberry Sugar",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "judged real (clean strain, the brand's only flower format): 'Kings & Queens | Blueberry Sugar Flower' (2 listings). Pre-roll strains stay 'Indica'/'Sativa'/'Hybrid' (the 3pk mixed blends): 'Blend' is not set aside by catalog_match.strain_core, so 'Indica Blend' would stop matching stores' 'Mixed Indica Pre-Roll 3pk' readings. NY indoor 'Large Bud' / 'Premium Flower' 3.5g jars, no line (weedmaps Smoking Scholars 'Kings & Queens - Large Bud - 3.5g - Indoor Garlic Breath'); every store sells only 3.5g"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "flower",
+   "line": null,
+   "strain": "Papaya",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "judged real (clean strain, the brand's only flower format): 'Flower | Papaya | 3.5g | Indica'. Pre-roll strains stay 'Indica'/'Sativa'/'Hybrid' (the 3pk mixed blends): 'Blend' is not set aside by catalog_match.strain_core, so 'Indica Blend' would stop matching stores' 'Mixed Indica Pre-Roll 3pk' readings. NY indoor 'Large Bud' / 'Premium Flower' 3.5g jars, no line (weedmaps Smoking Scholars 'Kings & Queens - Large Bud - 3.5g - Indoor Garlic Breath'); every store sells only 3.5g"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "flower",
+   "line": null,
+   "strain": "Garlic Budder",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "judged real (clean strain, the brand's only flower format): 'Garlic Budder Flower' (2 listings). Pre-roll strains stay 'Indica'/'Sativa'/'Hybrid' (the 3pk mixed blends): 'Blend' is not set aside by catalog_match.strain_core, so 'Indica Blend' would stop matching stores' 'Mixed Indica Pre-Roll 3pk' readings. NY indoor 'Large Bud' / 'Premium Flower' 3.5g jars, no line (weedmaps Smoking Scholars 'Kings & Queens - Large Bud - 3.5g - Indoor Garlic Breath'); every store sells only 3.5g"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "flower",
+   "line": null,
+   "strain": "Motor Cake",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "judged real (clean strain, the brand's only flower format): 'Motor Cake Flower'. Pre-roll strains stay 'Indica'/'Sativa'/'Hybrid' (the 3pk mixed blends): 'Blend' is not set aside by catalog_match.strain_core, so 'Indica Blend' would stop matching stores' 'Mixed Indica Pre-Roll 3pk' readings. NY indoor 'Large Bud' / 'Premium Flower' 3.5g jars, no line (weedmaps Smoking Scholars 'Kings & Queens - Large Bud - 3.5g - Indoor Garlic Breath'); every store sells only 3.5g"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "flower",
+   "line": null,
+   "strain": "Super Boof",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "judged real (clean strain, the brand's only flower format): 'Super Boof Flower' (2 listings). Pre-roll strains stay 'Indica'/'Sativa'/'Hybrid' (the 3pk mixed blends): 'Blend' is not set aside by catalog_match.strain_core, so 'Indica Blend' would stop matching stores' 'Mixed Indica Pre-Roll 3pk' readings. NY indoor 'Large Bud' / 'Premium Flower' 3.5g jars, no line (weedmaps Smoking Scholars 'Kings & Queens - Large Bud - 3.5g - Indoor Garlic Breath'); every store sells only 3.5g"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "flower",
+   "line": null,
+   "strain": "Grape Mochi",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "judged real (clean strain, the brand's only flower format): 'Large Bud | Indoor Grape Mochi'. Pre-roll strains stay 'Indica'/'Sativa'/'Hybrid' (the 3pk mixed blends): 'Blend' is not set aside by catalog_match.strain_core, so 'Indica Blend' would stop matching stores' 'Mixed Indica Pre-Roll 3pk' readings. NY indoor 'Large Bud' / 'Premium Flower' 3.5g jars, no line (weedmaps Smoking Scholars 'Kings & Queens - Large Bud - 3.5g - Indoor Garlic Breath'); every store sells only 3.5g"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "flower",
+   "line": null,
+   "strain": "McRuntz",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "judged real (clean strain, the brand's only flower format): 'McRuntz | Premium Flower'. Pre-roll strains stay 'Indica'/'Sativa'/'Hybrid' (the 3pk mixed blends): 'Blend' is not set aside by catalog_match.strain_core, so 'Indica Blend' would stop matching stores' 'Mixed Indica Pre-Roll 3pk' readings. NY indoor 'Large Bud' / 'Premium Flower' 3.5g jars, no line (weedmaps Smoking Scholars 'Kings & Queens - Large Bud - 3.5g - Indoor Garlic Breath'); every store sells only 3.5g"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "flower",
+   "line": null,
+   "strain": "Znackz",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "judged real (clean strain, the brand's only flower format): 'Znackz | Premium Flower'. Pre-roll strains stay 'Indica'/'Sativa'/'Hybrid' (the 3pk mixed blends): 'Blend' is not set aside by catalog_match.strain_core, so 'Indica Blend' would stop matching stores' 'Mixed Indica Pre-Roll 3pk' readings. NY indoor 'Large Bud' / 'Premium Flower' 3.5g jars, no line (weedmaps Smoking Scholars 'Kings & Queens - Large Bud - 3.5g - Indoor Garlic Breath'); every store sells only 3.5g"
+  }
+ ]
+}

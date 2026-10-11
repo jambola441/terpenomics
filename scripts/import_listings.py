@@ -239,6 +239,18 @@ READING = (("category", "scraped_category"), ("subtype", "subtype"), ("strain", 
            ("product_line", "product_line"), ("size", "variant"))
 
 
+def _rail_subtype(category: str | None, subtype: str | None) -> str | None:
+    """A stored subtype carried onto a failed row, kept only while its category's rail
+    still offers it. A retired pair (vaporizers/battery, dropped 2026-10-11) falls back
+    to the category's default subtype, or None when there is none on the rail."""
+    import taxonomy
+    s = taxonomy.spec(category)
+    if s is None or not subtype or subtype in s.subtypes:
+        return subtype
+    default = s.default_subtype
+    return default if default in s.subtypes else None
+
+
 def record_reading(records: list[dict], existing: dict[tuple, dict]) -> None:
     """Save each record's own reading — enrichment's category, subtype, strain, line and
     size — before anything overwrites those fields: the catalog overlay replaces them
@@ -248,7 +260,12 @@ def record_reading(records: list[dict], existing: dict[tuple, dict]) -> None:
     for rec in records:
         if rec["_enrich_failed"]:
             stored = existing.get((rec["sku"], rec["variant"] or ""))
-            rec["reading"] = (stored or {}).get("reading")
+            reading = (stored or {}).get("reading")
+            if reading and reading.get("subtype"):
+                fixed = _rail_subtype(reading.get("category"), reading["subtype"])
+                if fixed != reading["subtype"]:
+                    reading = dict(reading, subtype=fixed)
+            rec["reading"] = reading
         else:
             rec["reading"] = {k: rec.get(col) or None for k, col in READING}
         if rec.get("_store_category") and rec["reading"] is not None:
@@ -289,6 +306,7 @@ def protect_failed_enrichment(records: list[dict], existing: dict[tuple, dict]) 
             continue
         for col in IDENTITY:
             rec[col] = stored[col]
+        rec["subtype"] = _rail_subtype(rec.get("scraped_category"), rec.get("subtype"))
         kept += 1
     return kept
 

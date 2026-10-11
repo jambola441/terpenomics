@@ -1,0 +1,1873 @@
+{
+ "brand": "Florette",
+ "_comment": "DRAFT 2026-10-11, batch C, owner policy 2026-10-11: brand-sourced products only (single-store listings without a brand source left to review), no deactivations, no rebuild/--replace. Apply after the bootstrap catalog is pushed; selectors name bootstrap entries. Checked in memory with catalog_fix.apply_plan against catalog_bootstrap.propose.",
+ "edits": [
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Animal Face | ...",
+   "category": "preroll",
+   "strain": "Animal Face",
+   "sizes": [
+    "1g",
+    "1.75g",
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Chemdog D | ...",
+   "category": "preroll",
+   "strain": "Chemdog D",
+   "sizes": [
+    "1.75g",
+    "1g",
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Cosmic Piff | ...",
+   "category": "flower",
+   "strain": "Cosmic Piff",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | 1996 Sour Diesel | ...",
+   "category": "flower",
+   "strain": "1996 Sour Diesel",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | 1996 Sour Diesel | ...",
+   "category": "preroll",
+   "strain": "1996 Sour Diesel",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Acai Bomb | ...",
+   "category": "preroll",
+   "strain": "Acai Bomb",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Alaskan Yeti | ...",
+   "category": "preroll",
+   "strain": "Alaskan Yeti",
+   "sizes": [
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Albany Sour Diesel | ...",
+   "category": "flower",
+   "strain": "Albany Sour Diesel",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Albany Sour Diesel | ...",
+   "category": "vaporizers",
+   "strain": "Albany Sour Diesel",
+   "sizes": [
+    "0.5g",
+    "1g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Albany Sour Diesel | ...",
+   "category": "preroll",
+   "strain": "Albany Sour Diesel",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Albany Sour Diesel | ...",
+   "category": "preroll",
+   "strain": "Albany Sour Diesel",
+   "sizes": [
+    "1.75g",
+    "1g",
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Animal Face | ...",
+   "category": "vaporizers",
+   "strain": "Animal Face",
+   "sizes": [
+    "1g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Animal Face | ...",
+   "category": "preroll",
+   "strain": "Animal Face",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Baby Yoda | ...",
+   "category": "vaporizers",
+   "strain": "Baby Yoda",
+   "sizes": [
+    "0.5g",
+    "1g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Baby Yoda | ...",
+   "category": "preroll",
+   "strain": "Baby Yoda",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Baby Yoda | ...",
+   "category": "preroll",
+   "strain": "Baby Yoda",
+   "sizes": [
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Bernie Hana Butter | ...",
+   "category": "flower",
+   "strain": "Bernie Hana Butter",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Bernie Hana Butter | ...",
+   "category": "vaporizers",
+   "strain": "Bernie Hana Butter",
+   "sizes": [
+    "0.5g",
+    "1g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Bernie Hana Butter | ...",
+   "category": "preroll",
+   "strain": "Bernie Hana Butter",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Bernie Hana Butter | ...",
+   "category": "preroll",
+   "strain": "Bernie Hana Butter",
+   "sizes": [
+    "1.75g",
+    "1g",
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Black Maple | ...",
+   "category": "flower",
+   "strain": "Black Maple",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Black Maple | ...",
+   "category": "vaporizers",
+   "strain": "Black Maple",
+   "sizes": [
+    "0.5g",
+    "1g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Black Maple | ...",
+   "category": "preroll",
+   "strain": "Black Maple",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Black Maple | ...",
+   "category": "preroll",
+   "strain": "Black Maple",
+   "sizes": [
+    "1.75g",
+    "1g",
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Blue Andeze | ...",
+   "category": "flower",
+   "strain": "Blue Andeze",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Blue Andeze | ...",
+   "category": "preroll",
+   "strain": "Blue Andeze",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Blue Cream | ...",
+   "category": "preroll",
+   "strain": "Blue Cream",
+   "sizes": [
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Blue Dream | ...",
+   "category": "vaporizers",
+   "strain": "Blue Dream",
+   "sizes": [
+    "1g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Blue Dream | ...",
+   "category": "preroll",
+   "strain": "Blue Dream",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Blue Dream | ...",
+   "category": "preroll",
+   "strain": "Blue Dream",
+   "sizes": [
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Blue Taffeze | ...",
+   "category": "flower",
+   "strain": "Blue Taffeze",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Blue Zushi | ...",
+   "category": "vaporizers",
+   "strain": "Blue Zushi",
+   "sizes": [
+    "0.5g",
+    "1g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Blue Zushi | ...",
+   "category": "preroll",
+   "strain": "Blue Zushi",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Blue Zushi | ...",
+   "category": "preroll",
+   "strain": "Blue Zushi",
+   "sizes": [
+    "1.75g",
+    "1g",
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Blueberry Diesel | ...",
+   "category": "preroll",
+   "strain": "Blueberry Diesel",
+   "sizes": [
+    "1.2g"
+   ],
+   "line": "Infused"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Blueberry Diesel | ...",
+   "category": "preroll",
+   "strain": "Blueberry Diesel",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Candy Gelato | ...",
+   "category": "flower",
+   "strain": "Candy Gelato",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Cap Junky | ...",
+   "category": "flower",
+   "strain": "Cap Junky",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Cap Junky | ...",
+   "category": "preroll",
+   "strain": "Cap Junky",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Cap Junky | ...",
+   "category": "preroll",
+   "strain": "Cap Junky",
+   "sizes": [
+    "1.75g",
+    "1g",
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Cheddar Cheese | ...",
+   "category": "flower",
+   "strain": "Cheddar Cheese",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Chemdog D | ...",
+   "category": "flower",
+   "strain": "Chemdog D",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Chemdog D | ...",
+   "category": "vaporizers",
+   "strain": "Chemdog D",
+   "sizes": [
+    "1g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Chemdog D | ...",
+   "category": "preroll",
+   "strain": "Chemdog D",
+   "sizes": [
+    "1g",
+    "4g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Cherry Pie | ...",
+   "category": "preroll",
+   "strain": "Cherry Pie",
+   "sizes": [
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Citron | ...",
+   "category": "flower",
+   "strain": "Citron",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Citronella | ...",
+   "category": "flower",
+   "strain": "Citronella",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Citronella | ...",
+   "category": "preroll",
+   "strain": "Citronella",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Citronella | ...",
+   "category": "preroll",
+   "strain": "Citronella",
+   "sizes": [
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Coochie Runtz | ...",
+   "category": "preroll",
+   "strain": "Coochie Runtz",
+   "sizes": [
+    "1.2g"
+   ],
+   "line": "Infused"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Cosmic Piff | ...",
+   "category": "preroll",
+   "strain": "Cosmic Piff",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Cosmic Piff | ...",
+   "category": "preroll",
+   "strain": "Cosmic Piff",
+   "sizes": [
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | DJ Short's Blueberry | ...",
+   "category": "flower",
+   "strain": "DJ Short's Blueberry",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Death Star | ...",
+   "category": "preroll",
+   "strain": "Death Star",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Death Star | ...",
+   "category": "preroll",
+   "strain": "Death Star",
+   "sizes": [
+    "1g",
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Durban Z | ...",
+   "category": "flower",
+   "strain": "Durban Z",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Durban Z | ...",
+   "category": "preroll",
+   "strain": "Durban Z",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Durban Z | ...",
+   "category": "preroll",
+   "strain": "Durban Z",
+   "sizes": [
+    "1g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Gary Payton | ...",
+   "category": "flower",
+   "strain": "Gary Payton",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Gary Payton | ...",
+   "category": "preroll",
+   "strain": "Gary Payton",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Gelato #33 | ...",
+   "category": "flower",
+   "strain": "Gelato #33",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Gelato #41 | ...",
+   "category": "preroll",
+   "strain": "Gelato #41",
+   "sizes": [
+    "1.2g"
+   ],
+   "line": "Infused"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Gelato Sunset | ...",
+   "category": "vaporizers",
+   "strain": "Gelato Sunset",
+   "sizes": [
+    "0.5g",
+    "1g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Glitter Burger | ...",
+   "category": "preroll",
+   "strain": "Glitter Burger",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Glitter Burger | ...",
+   "category": "preroll",
+   "strain": "Glitter Burger",
+   "sizes": [
+    "1g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Gorilla Glue #4 | ...",
+   "category": "flower",
+   "strain": "Gorilla Glue #4",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Gorilla Glue #4 | ...",
+   "category": "preroll",
+   "strain": "Gorilla Glue #4",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Gorilla Glue #4 | ...",
+   "category": "preroll",
+   "strain": "Gorilla Glue #4",
+   "sizes": [
+    "1.75g",
+    "1g",
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Grape Bubblegum | ...",
+   "category": "vaporizers",
+   "strain": "Grape Bubblegum",
+   "sizes": [
+    "0.5g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Grease Monkey | ...",
+   "category": "flower",
+   "strain": "Grease Monkey",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Grease Monkey | ...",
+   "category": "preroll",
+   "strain": "Grease Monkey",
+   "sizes": [
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Habibi | ...",
+   "category": "vaporizers",
+   "strain": "Habibi",
+   "sizes": [
+    "0.5g",
+    "1g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Heir Heads | ...",
+   "category": "flower",
+   "strain": "Heir Heads",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Heir Heads | ...",
+   "category": "preroll",
+   "strain": "Heir Heads",
+   "sizes": [
+    "1.75g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Honey Banana | ...",
+   "category": "flower",
+   "strain": "Honey Banana",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Hooch | ...",
+   "category": "vaporizers",
+   "strain": "Hooch",
+   "sizes": [
+    "0.5g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Hypnotik | ...",
+   "category": "preroll",
+   "strain": "Hypnotik",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Indiana Bubblegum | ...",
+   "category": "flower",
+   "strain": "Indiana Bubblegum",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Jellolato | ...",
+   "category": "preroll",
+   "strain": "Jellolato",
+   "sizes": [
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Jokerz Candy | ...",
+   "category": "preroll",
+   "strain": "Jokerz Candy",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Jokerz Candy | ...",
+   "category": "flower",
+   "strain": "Jokerz Candy",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Kiwi Cherry Gelato | ...",
+   "category": "flower",
+   "strain": "Kiwi Cherry Gelato",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Kiwi Cherry Gelato | ...",
+   "category": "preroll",
+   "strain": "Kiwi Cherry Gelato",
+   "sizes": [
+    "1g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Kiwi Gelato | ...",
+   "category": "flower",
+   "strain": "Kiwi Gelato",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Kiwi Gelato | ...",
+   "category": "preroll",
+   "strain": "Kiwi Gelato",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Kosher Kush | ...",
+   "category": "preroll",
+   "strain": "Kosher Kush",
+   "sizes": [
+    "1g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | LA Runtz | ...",
+   "category": "preroll",
+   "strain": "LA Runtz",
+   "sizes": [
+    "1.2g"
+   ],
+   "line": "Infused"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | LA Runtz | ...",
+   "category": "preroll",
+   "strain": "LA Runtz",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | LA Runtz | ...",
+   "category": "flower",
+   "strain": "LA Runtz",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Lemon Cherry | ...",
+   "category": "flower",
+   "strain": "Lemon Cherry",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Lemon Cherry | ...",
+   "category": "preroll",
+   "strain": "Lemon Cherry",
+   "sizes": [
+    "1.2g"
+   ],
+   "line": "Infused"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Lemon Fresh | ...",
+   "category": "preroll",
+   "strain": "Lemon Fresh",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Lemonade GMO | ...",
+   "category": "flower",
+   "strain": "Lemonade GMO",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Lemonade GMO | ...",
+   "category": "preroll",
+   "strain": "Lemonade GMO",
+   "sizes": [
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Leo Stone's Tourbillon | ...",
+   "category": "flower",
+   "strain": "Leo Stone's Tourbillon",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Lodi Dodi | ...",
+   "category": "vaporizers",
+   "strain": "Lodi Dodi",
+   "sizes": [
+    "0.5g",
+    "1g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Lotta Lato | ...",
+   "category": "preroll",
+   "strain": "Lotta Lato",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Lotta Lato | ...",
+   "category": "preroll",
+   "strain": "Lotta Lato",
+   "sizes": [
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Nimbus Snacks | ...",
+   "category": "preroll",
+   "strain": "Nimbus Snacks",
+   "sizes": [
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | OG Chem | ...",
+   "category": "flower",
+   "strain": "OG Chem",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | OG Chem | ...",
+   "category": "preroll",
+   "strain": "OG Chem",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | OG Chem | ...",
+   "category": "preroll",
+   "strain": "OG Chem",
+   "sizes": [
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | OG Donut | ...",
+   "category": "preroll",
+   "strain": "OG Donut",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Pina Zai | ...",
+   "category": "preroll",
+   "strain": "Pina Zai",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Pineapple Donut | ...",
+   "category": "flower",
+   "strain": "Pineapple Donut",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Pineapple Donut | ...",
+   "category": "vaporizers",
+   "strain": "Pineapple Donut",
+   "sizes": [
+    "0.5g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Pinyatti | ...",
+   "category": "flower",
+   "strain": "Pinyatti",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Pinyatti | ...",
+   "category": "preroll",
+   "strain": "Pinyatti",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Pinyatti | ...",
+   "category": "preroll",
+   "strain": "Pinyatti",
+   "sizes": [
+    "1.75g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Pound Cake | ...",
+   "category": "flower",
+   "strain": "Pound Cake",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Pound Cake | ...",
+   "category": "preroll",
+   "strain": "Pound Cake",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Pound Cake | ...",
+   "category": "preroll",
+   "strain": "Pound Cake",
+   "sizes": [
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Purple Starfruit | ...",
+   "category": "flower",
+   "strain": "Purple Starfruit",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Purple Wreck | ...",
+   "category": "flower",
+   "strain": "Purple Wreck",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Purple Wreck | ...",
+   "category": "preroll",
+   "strain": "Purple Wreck",
+   "sizes": [
+    "1.2g"
+   ],
+   "line": "Infused"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | RS11 | ...",
+   "category": "preroll",
+   "strain": "RS11",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | RS11 | ...",
+   "category": "preroll",
+   "strain": "RS11",
+   "sizes": [
+    "1.75g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Redline Haze | ...",
+   "category": "flower",
+   "strain": "Redline Haze",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Redline Haze | ...",
+   "category": "vaporizers",
+   "strain": "Redline Haze",
+   "sizes": [
+    "0.5g",
+    "1g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Redline Haze | ...",
+   "category": "preroll",
+   "strain": "Redline Haze",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Redline Haze | ...",
+   "category": "preroll",
+   "strain": "Redline Haze",
+   "sizes": [
+    "1.75g",
+    "1g",
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Rozay Runtz | ...",
+   "category": "preroll",
+   "strain": "Rozay Runtz",
+   "sizes": [
+    "1.2g"
+   ],
+   "line": "Infused"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Secret Meetings | ...",
+   "category": "vaporizers",
+   "strain": "Secret Meetings",
+   "sizes": [
+    "0.5g",
+    "1g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Stay Puft | ...",
+   "category": "vaporizers",
+   "strain": "Stay Puft",
+   "sizes": [
+    "1g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Strawberry Lemonade | ...",
+   "category": "flower",
+   "strain": "Strawberry Lemonade",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Strawberry Lemonade | ...",
+   "category": "vaporizers",
+   "strain": "Strawberry Lemonade",
+   "sizes": [
+    "0.5g",
+    "1g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Super Lemon Dragon | ...",
+   "category": "preroll",
+   "strain": "Super Lemon Dragon",
+   "sizes": [
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Super Yuzu | ...",
+   "category": "flower",
+   "strain": "Super Yuzu",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Tahoe OG Kush | ...",
+   "category": "flower",
+   "strain": "Tahoe OG Kush",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Tahoe OG Kush | ...",
+   "category": "preroll",
+   "strain": "Tahoe OG Kush",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Tahoe OG Kush | ...",
+   "category": "preroll",
+   "strain": "Tahoe OG Kush",
+   "sizes": [
+    "1.75g",
+    "1g",
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Tahoe OG Kush | ...",
+   "category": "vaporizers",
+   "strain": "Tahoe OG Kush",
+   "sizes": [
+    "1g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Tartz | ...",
+   "category": "flower",
+   "strain": "Tartz",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Tequila Mintz | ...",
+   "category": "preroll",
+   "strain": "Tequila Mintz",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Tequila Mintz | ...",
+   "category": "preroll",
+   "strain": "Tequila Mintz",
+   "sizes": [
+    "1g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Trop Cherry | ...",
+   "category": "flower",
+   "strain": "Trop Cherry",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Trop Cherry | ...",
+   "category": "preroll",
+   "strain": "Trop Cherry",
+   "sizes": [
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Uptown Haze | ...",
+   "category": "vaporizers",
+   "strain": "Uptown Haze",
+   "sizes": [
+    "0.5g"
+   ],
+   "subtype": "cart"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Uptown Haze | ...",
+   "category": "vaporizers",
+   "strain": "Uptown Haze",
+   "sizes": [
+    "0.5g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Uptown Haze | ...",
+   "category": "preroll",
+   "strain": "Uptown Haze",
+   "sizes": [
+    "1.2g"
+   ],
+   "line": "Infused"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Uptown Haze | ...",
+   "category": "preroll",
+   "strain": "Uptown Haze",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | White Fire Durban | ...",
+   "category": "flower",
+   "strain": "White Fire Durban",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | White Fire Durban | ...",
+   "category": "preroll",
+   "strain": "White Fire Durban",
+   "sizes": [
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | White Rainbow | ...",
+   "category": "flower",
+   "strain": "White Rainbow",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | White Rainbow | ...",
+   "category": "preroll",
+   "strain": "White Rainbow",
+   "sizes": [
+    "1.2g"
+   ],
+   "line": "Infused"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Z Marker #8 | ...",
+   "category": "flower",
+   "strain": "Z Marker #8",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Z Marker #8 | ...",
+   "category": "preroll",
+   "strain": "Z Marker #8",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Z Marker #8 | ...",
+   "category": "preroll",
+   "strain": "Z Marker #8",
+   "sizes": [
+    "1.75g",
+    "1g",
+    "2.5g"
+   ],
+   "line": "Minis"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Sour Durban Cookies | ...",
+   "category": "preroll",
+   "strain": "Sour Durban Cookies",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Blue Ghost Mintz | ...",
+   "category": "preroll",
+   "strain": "Blue Ghost Mintz",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Blue Moon Mintz | ...",
+   "category": "preroll",
+   "strain": "Blue Moon Mintz",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Brain Dead | ...",
+   "category": "preroll",
+   "strain": "Brain Dead",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Brain Stain | ...",
+   "category": "preroll",
+   "strain": "Brain Stain",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Cosmic Kiwi Runtz | ...",
+   "category": "preroll",
+   "strain": "Cosmic Kiwi Runtz",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Death Mintz | ...",
+   "category": "preroll",
+   "strain": "Death Mintz",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Death Star | ...",
+   "category": "preroll",
+   "strain": "Death Star",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Gelato Cookies | ...",
+   "category": "preroll",
+   "strain": "Gelato Cookies",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Ghost Banana | ...",
+   "category": "preroll",
+   "strain": "Ghost Banana",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Glitter Yuzu Wreck | ...",
+   "category": "preroll",
+   "strain": "Glitter Yuzu Wreck",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Grape Starfruit | ...",
+   "category": "preroll",
+   "strain": "Grape Starfruit",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Grape Tartz | ...",
+   "category": "preroll",
+   "strain": "Grape Tartz",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Grapefruit Haze | ...",
+   "category": "preroll",
+   "strain": "Grapefruit Haze",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Honey Banana Face | ...",
+   "category": "preroll",
+   "strain": "Honey Banana Face",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Honey Dream | ...",
+   "category": "preroll",
+   "strain": "Honey Dream",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Jelly Head | ...",
+   "category": "preroll",
+   "strain": "Jelly Head",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Kiwi Bomb | ...",
+   "category": "preroll",
+   "strain": "Kiwi Bomb",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Lemon Bubblegum | ...",
+   "category": "preroll",
+   "strain": "Lemon Bubblegum",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Lemon Curd | ...",
+   "category": "preroll",
+   "strain": "Lemon Curd",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Lemon Starfruit | ...",
+   "category": "preroll",
+   "strain": "Lemon Starfruit",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Melon Head | ...",
+   "category": "preroll",
+   "strain": "Melon Head",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Moonwalker | ...",
+   "category": "preroll",
+   "strain": "Moonwalker",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Pineapple Lemon Grape | ...",
+   "category": "preroll",
+   "strain": "Pineapple Lemon Grape",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Purple Yuzu | ...",
+   "category": "preroll",
+   "strain": "Purple Yuzu",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Rainbow Melon | ...",
+   "category": "preroll",
+   "strain": "Rainbow Melon",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Rainbow Moon | ...",
+   "category": "preroll",
+   "strain": "Rainbow Moon",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Rainbow Skywalker | ...",
+   "category": "preroll",
+   "strain": "Rainbow Skywalker",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Razberry Donut Tartz | ...",
+   "category": "preroll",
+   "strain": "Razberry Donut Tartz",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Sour Face | ...",
+   "category": "preroll",
+   "strain": "Sour Face",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Sour Strawberry Mintz | ...",
+   "category": "preroll",
+   "strain": "Sour Strawberry Mintz",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Star Tarts | ...",
+   "category": "preroll",
+   "strain": "Star Tarts",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Starwalker | ...",
+   "category": "preroll",
+   "strain": "Starwalker",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Strawberry Yuzu Tartz | ...",
+   "category": "preroll",
+   "strain": "Strawberry Yuzu Tartz",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Super Jealousy Mintz | ...",
+   "category": "preroll",
+   "strain": "Super Jealousy Mintz",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Super Mendo Mintz | ...",
+   "category": "preroll",
+   "strain": "Super Mendo Mintz",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Tropical Donuts | ...",
+   "category": "preroll",
+   "strain": "Tropical Donuts",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Yuzu Sunset | ...",
+   "category": "preroll",
+   "strain": "Yuzu Sunset",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  },
+  {
+   "op": "add-product",
+   "why": "https://weedmaps.com/brands/florette/products (brand catalog, pages 1-5, read 2026-10-11): Florette | Sour Blueberry Cookies | ...",
+   "category": "preroll",
+   "strain": "Sour Blueberry Cookies",
+   "sizes": [
+    "4g"
+   ],
+   "line": "Exotics"
+  }
+ ]
+}

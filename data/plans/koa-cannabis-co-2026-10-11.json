@@ -1,0 +1,75 @@
+{
+ "brand": "Koa Cannabis Co.",
+ "_comment": "2026-10-11 draft (catalogs batch A, owner policy 2026-10-11): apply after `catalog_bootstrap.py --brand \"Koa Cannabis Co.\" --push` (no --replace) creates the catalog; selectors name bootstrap entries. Single-store products judged real are included (owner 2026-10-11); typos are left out. Left out as a typo: 'Blue Lobster - 2pk' typed 3.5g.",
+ "edits": [
+  {
+   "op": "set-size",
+   "entry": {
+    "category": "preroll",
+    "strain": "Skywalker OG",
+    "size": "1.4g"
+   },
+   "size": "0.7g",
+   "why": "Koa states the 2pk Doubles as 0.7g (koacannabis.com; https://weedmaps.com/brands/koa/products/koa-koa-star-berry-infused-minis-0-35g-each-2pk '10-packs with 3.5g ... 2-packs with 0.7g')"
+  },
+  {
+   "op": "set-size",
+   "entry": {
+    "category": "preroll",
+    "strain": "White Runtz",
+    "size": "1.4g"
+   },
+   "size": "0.7g",
+   "why": "Koa states the 2pk Doubles as 0.7g (koacannabis.com; https://weedmaps.com/brands/koa/products/koa-koa-star-berry-infused-minis-0-35g-each-2pk '10-packs with 3.5g ... 2-packs with 0.7g')"
+  },
+  {
+   "op": "set-size",
+   "entry": {
+    "category": "preroll",
+    "strain": "Granddaddy Purple",
+    "size": "1.4g"
+   },
+   "size": "0.7g",
+   "why": "Koa states the 2pk Doubles as 0.7g (koacannabis.com; https://weedmaps.com/brands/koa/products/koa-koa-star-berry-infused-minis-0-35g-each-2pk '10-packs with 3.5g ... 2-packs with 0.7g')"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "strain": "Green Crack",
+   "sizes": [
+    "3.5g",
+    "0.7g"
+   ],
+   "why": "10pk live resin infused minis 3.5g (brand: 10-packs with 3.5g); judged real (one store, name and size consistent with the line; owner 2026-10-11: single-store products allowed); also the Doubles 2pk 0.7g (one store)"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "strain": "Blue Dream",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "10pk live resin infused minis 3.5g (brand: 10-packs with 3.5g); judged real (one store, name and size consistent with the line; owner 2026-10-11: single-store products allowed)"
+  },
+  {
+   "op": "add-size",
+   "entry": {
+    "category": "preroll",
+    "strain": "Sour Diesel",
+    "size": "3.5g"
+   },
+   "size": "0.7g",
+   "why": "Doubles 2pk 0.7g (brand: 2-packs with 0.7g); judged real (one store, name and size consistent with the line; owner 2026-10-11: single-store products allowed)"
+  },
+  {
+   "op": "add-size",
+   "entry": {
+    "category": "preroll",
+    "strain": "GG #4",
+    "size": "3.5g"
+   },
+   "size": "0.7g",
+   "why": "Doubles 2pk 0.7g (brand: 2-packs with 0.7g); judged real (one store, name and size consistent with the line; owner 2026-10-11: single-store products allowed)"
+  }
+ ]
+}

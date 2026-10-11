@@ -42,6 +42,9 @@ CSV_COLUMNS = [
     # importer keeps the stored identity of a listing it already holds rather than
     # writing them over it.
     "enrich_failed",
+    # The scraper's variant before enrichment normalized it: the enrich cache keys on
+    # it, and scrape.py --import-only (reenrich_csv.py) restores it before re-enriching.
+    "scraped_variant",
 ]
 
 # ---------------------------------------------------------------------------

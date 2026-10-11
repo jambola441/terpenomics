@@ -1289,6 +1289,23 @@ no generic vape token at all; the curated tokens settle 23 listings deterministi
 It is consulted *before* the model call, so the category it fixes also gives the model
 the right subtype rails, and it overrules the model's answer afterwards.
 
+> **Removed 2026-10-11.** `data/format_tokens.json` and `canonical.find_format_category`
+> are gone (owner decision: fewer hand-written rules). The category is now decided by
+> the Jev classifier from name, description and the store's own category, and rows below
+> `JEV_MIN_CONFIDENCE` fall through to pass A as before. Measured before removal on the
+> 492 active listings a token was forcing: Jev agreed on 438 (all 116 vapes, 271/301
+> merch, 51/75 edible); disagreements were 30 merch hardware rows called vaporizers
+> (15 confident) and 24 1906 "Drops" called tinctures (9 confident). The fix was
+> classifier wording, not rules (`jev_classify.QUESTION_VERSION` 4, 2026-10-11): a
+> device with no strain and no g/mg of oil is merch even when named "Vaporizer";
+> tinctures are bottled liquids, and drops sold as counted pieces are edible. Re-measured
+> on the same 492: 476 agree confidently, 12 agree at low confidence, 4 disagree. Only one
+> of the 4 is confident: Tonic "Zone Vape Kit | CBD Vape Cartridge with Battery", which is
+> arguably a vape. The other three are 2 1906 Boost Drops 3pk and Ooze Fusion, all below the
+> bar. In a regression check on 300 other random active listings, 5 differ from the stored
+> category: 4 have no stored category, and 1 is "Flower Jar | Kombucha" (edible -> flower,
+> 0.76, store says Flower). Mentions of format tokens elsewhere in this file are historical.
+
 Taxonomy rulings encoded so far: beverages are dosed in mg, not volume; topical scent
 names ARE strains; version suffixes ("2.0") stay in the strain; concentrate `diamonds`
 is its own subtype; and a word that only restates the format is not a strain — "Milk
