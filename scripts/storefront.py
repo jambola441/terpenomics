@@ -736,7 +736,7 @@ def _size_complete(entry: dict) -> bool:
     s = sizes.parse(entry.get("variant"), category=entry["category"])
     measure = taxonomy.SPECS[entry["category"]].measure
     return (s.grams is not None) if measure == "weight" else \
-        (s.mg is not None) if measure == "dose" else True
+        (s.mg is not None or s.ml is not None) if measure == "dose" else True
 
 
 def _fold_merch(entries: list[dict]) -> list[dict]:
@@ -892,7 +892,7 @@ def build(recipe: dict, items: list[Item]) -> tuple[dict, dict]:
 
 def _total(entry: dict) -> str:
     s = sizes.parse(entry.get("variant"), category=entry["category"])
-    return f"{s.grams:g}g" if s.grams is not None else f"{s.mg:g}mg" if s.mg is not None else ""
+    return f"{s.grams:g}g" if s.grams is not None else f"{s.mg:g}mg" if s.mg is not None else s.label()
 
 
 def _names(entry: dict) -> dict:

@@ -237,6 +237,14 @@
     {"listing": "MFNY - White Fire OG Live Resin Cart - .5g", "entry": {"category": "vaporizers", "subtype": "cart", "line": "Live Resin", "strain": "White Fire", "size": "0.5g"}},
     {"listing": "MFNY | Vape | Live Resin | 510 | Candy Rain | 0.5g | Indica | THC 74.52%", "entry": {"category": "vaporizers", "subtype": "cart", "line": "Live Resin", "strain": "Candy Rain", "size": "0.5g"}},
     {"listing": "X| MFNY | Candy Rain x Candy Rain | Live Resin Infused Pre Roll | .75g", "entry": {"category": "preroll", "strain": "Candy Rain x Candy Rain", "size": "0.75g"}},
-    {"listing": "MFNY Electric Lime x Lemon Cane Live Resin Infused Pre-Roll .75g", "entry": {"category": "preroll", "strain": "Electric Lime x Lemon Cane", "size": "0.75g"}}
+    {"listing": "MFNY Electric Lime x Lemon Cane Live Resin Infused Pre-Roll .75g", "entry": {"category": "preroll", "strain": "Electric Lime x Lemon Cane", "size": "0.75g"}},
+    {"listing": "Hash Burger Live Rosin Tincture | 15mL", "entry": {"category": "tinctures", "line": "Live Rosin", "strain": "Hash Burger", "size": "15mL"}},
+    {"listing": "MFNY - Hash Burger Live Resin Tincture Drops - 391.7mg", "entry": {"category": "tinctures", "line": "Live Resin", "strain": "Hash Burger", "size": "15mL"}},
+    {"listing": "Chemdog Live Rosin Tincture | 15mL", "entry": {"category": "tinctures", "line": "Classics Live Rosin", "strain": "Chemdog", "size": "15mL"}},
+    {"listing": "MFNY - Sour Diesel Live Resin Tincture", "entry": {"category": "tinctures", "line": "Classics Live Resin", "strain": "Sour Diesel", "size": "15mL"}},
+    {"listing": "\"Belafonte\" Banana Live Resin Tincture | 15mL", "entry": {"category": "tinctures", "strain": "The \"Belafonte\"", "size": "15mL"}},
+    {"listing": "Honey Banana | Live Resin Tincture", "entry": {"category": "tinctures", "strain": "Honey Banana", "size": "15mL"}},
+    {"listing": "Rainbow Driver Live Resin Tincture | 15mL", "entry": {"category": "tinctures", "strain": "Rainbow Driver", "size": "15mL"}},
+    {"listing": "MFNY | Live Resin Intimacy Oil 60mL | Candy Rain (I)", "entry": {"category": "topical", "line": "All Night Affair", "strain": "Candy Rain", "size": "60ml"}}
   ]
 }

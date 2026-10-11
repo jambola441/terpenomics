@@ -595,3 +595,36 @@ def test_exact_entries_first_and_too_many_options_trimmed_by_name():
     assert len(cands) == cm.MAX_OPTIONS and cands[0][0] == "Alley Oop|flower"
     exact = [("a", {}, []), ("b", {}, ["size"])]
     assert cm.closest(exact, "x", idx) == [("a", {}, [])]
+
+
+class TestVolumeSizes:
+    """MFNY sizes its tinctures by the bottle ("15mL"): the mg on the label is a batch's
+    lab total (344-456mg), which stores copy as the size (owner, 2026-10-11)."""
+
+    MFNY = {"brand_name": "MFNY", "brand_slug": "mfny", "entries": [
+        {"id": "t1", "product_key": "lr-hb", "is_active": True, "name": "Hash Burger", "category": "tinctures",
+         "subtype": "tincture", "product_line": "Live Resin", "strain": "Hash Burger", "variant": "15mL"},
+        {"id": "t2", "product_key": "lro-hb", "is_active": True, "name": "Hash Burger", "category": "tinctures",
+         "subtype": "tincture", "product_line": "Live Rosin", "strain": "Hash Burger", "variant": "15mL"},
+    ]}
+
+    def test_a_volume_reads_for_a_dose_category_only(self):
+        assert sizes.parse("15mL", category="tinctures") == sizes.Size(ml=15.0)
+        assert sizes.parse("15mL", category="tinctures").label() == "15mL"
+        assert sizes.parse("MFNY | Chemdog | 343.96mg 15mL", category="tinctures") == sizes.Size(mg=343.96, ml=15.0)
+        assert sizes.parse("1ml cart", category="vaporizers").ml is None
+
+    def test_a_volume_is_compared_with_a_volume_only(self):
+        bottle = sizes.parse("15mL", category="tinctures")
+        assert sizes.same_size(bottle, sizes.parse("15 ml | 418mg", category="tinctures")) is True
+        assert sizes.same_size(bottle, sizes.parse("30mL", category="tinctures")) is False
+        assert sizes.same_size(bottle, sizes.parse("418mg", category="tinctures")) is None
+        # a brand's fixed-mg tincture is unchanged: the store's volume is silent beside it
+        assert sizes.same_size(sizes.parse("150mg", category="tinctures"),
+                               sizes.parse("150mg | 30mL", category="tinctures")) is True
+
+    def test_the_join_takes_the_bottle_and_the_line(self):
+        idx = cm.CatalogIndex(self.MFNY)
+        r = {"category": "tinctures", "subtype": "tincture", "strain": "Hash Burger", "size": "15mL",
+             "product_line": "Live Rosin"}
+        assert idx.join(r)[0] == "lro-hb"
