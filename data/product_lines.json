@@ -995,5 +995,9 @@
       "line": "Protab Max",
       "category": "edible"
     }
-  ]
+  ],
+  "Static Room": [
+    {"line": "Hash Hole", "also": ["Churroz Hash Hole", "Hash Hole Blunt"], "category": "preroll"}
+  ],
+  "_comment_static_room": "From the Static Room draft (2026-10-11, catalogs batch A). Every Static Room pre-roll in NY is a 2g Churroz Hash Hole: a flower strain wrapped around a ring of their static sift hash, written '<flower> x <hash>' ('Infused Preroll | Churroz | Hash Hole | Mega-Z Blue X Yellow Burst | 2g'). The line is here so enrichment strips it from the strain; the strain is the flower strain, as with Jaunty's Live Rosin Hash Hole. Their hash is all Static Sift, 1g, so it carries no line."
 }

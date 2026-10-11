@@ -263,5 +263,9 @@
   "turn": {
     "Sour Apple Soda": "Sour Apple",
     "Sour Apple Seltzer": "Sour Apple"
-  }
+  },
+  "Static Room": {"YellowBurst": "Yellow Burst", "Trop Cherry": "Tropicana Cherry", "EL Tigerz": "El Tigrez", "Mega-Z Blue": "Mega Z Blue", "Mega-Z Green": "Mega Z Green", "Mega-Z Red": "Mega Z Red", "Party Poppers": "Party Popperz", "A.M.A 2.0": "A.M.A. 2.0", "A.M.A.2.0": "A.M.A. 2.0"},
+  "Muha Meds": {"Tempation": "Temptation", "Grandaddy Purp": "Grand Daddy Purp"},
+  "Koa Cannabis Co.": {"GG#4": "GG #4", "GG4": "GG #4", "Gg #4": "GG #4", "Skywalker Og": "Skywalker OG", "Granddaddy Purp": "Granddaddy Purple"},
+  "House of Sacci": {"Blond Hash": "Blonde Hash", "Devils Drip": "Devil's Drip", "Rs 11": "RS11", "RS 11": "RS11", "Puffin Z": "Puffins Z", "ZPK - Zour Patch Kidz": "Zour Patch Kidz", "ZPK": "Zour Patch Kidz"}
 }

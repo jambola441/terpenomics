@@ -1,0 +1,56 @@
+{
+ "brand": "Muha Meds",
+ "_comment": "2026-10-11 draft (catalogs batch A): apply after `catalog_bootstrap.py --brand \"Muha Meds\" --push` creates the catalog; selectors name bootstrap entries. Measure with `catalog_fix.py plan --measure` first.",
+ "edits": [
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "strain": "Temptation",
+   "sizes": [
+    "1g"
+   ],
+   "why": "cart, 2 stores ('Temptation Cart | Hybrid', '510 Vape Cart Tempation (H)'); the typo split the consensus",
+   "subtype": "cart"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "strain": "Temptation",
+   "sizes": [
+    "2g"
+   ],
+   "why": "AIO 2g, 1 store ('AIO Vape Temptation (H)'); pairs with the cart like Fatso/Habibi/Cali Gas OG",
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "strain": "Grand Daddy Purp",
+   "sizes": [
+    "2g"
+   ],
+   "why": "AIO 2g, 2 stores ('Grand Daddy Purp AIO | 2g', 'Vape AIO | Muha Meds | Grand Daddy Purp')",
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "strain": "Grand Daddy Purp",
+   "sizes": [
+    "1g"
+   ],
+   "why": "cart, 1 store ('510 Vape Cart Grandaddy Purp (I)')",
+   "subtype": "cart"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "strain": "Sour Diesel",
+   "sizes": [
+    "2g"
+   ],
+   "why": "AIO 2g, 1-2 stores ('Sour Diesel - Sativa AIO | 2g'; one store writes 'Super Sour Diesel', open question)",
+   "subtype": "all-in-one"
+  }
+ ]
+}

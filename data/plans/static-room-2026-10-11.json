@@ -1,0 +1,176 @@
+{
+ "brand": "Static Room",
+ "_comment": "2026-10-11 draft (catalogs batch A): apply after `catalog_bootstrap.py --brand \"Static Room\" --push` creates the catalog; selectors name bootstrap entries. Measure with `catalog_fix.py plan --measure` first.",
+ "edits": [
+  {
+   "op": "rekey",
+   "entry": {
+    "category": "preroll",
+    "strain": "Churroz Hash Hole El Tigrez x Wedding Crasher Sift Hash"
+   },
+   "why": "hash holes: strain is the flower strain (as Jaunty's Hash Hole), the sift hash goes in the name; stores write 'Infused Preroll | Churroz | Hash Hole | <flower> X <hash> | 2g'",
+   "line": "Hash Hole",
+   "strain": "El Tigrez"
+  },
+  {
+   "op": "rekey",
+   "entry": {
+    "category": "preroll",
+    "strain": "Hash Hole A.M.A.2.0 x Garlic Popsicle"
+   },
+   "why": "hash holes: strain is the flower strain (as Jaunty's Hash Hole), the sift hash goes in the name; stores write 'Infused Preroll | Churroz | Hash Hole | <flower> X <hash> | 2g'",
+   "line": "Hash Hole",
+   "strain": "A.M.A. 2.0"
+  },
+  {
+   "op": "rekey",
+   "entry": {
+    "category": "preroll",
+    "strain": "Hash Hole Lemon Popperz x Honey Banana Sift Hash"
+   },
+   "why": "hash holes: strain is the flower strain (as Jaunty's Hash Hole), the sift hash goes in the name; stores write 'Infused Preroll | Churroz | Hash Hole | <flower> X <hash> | 2g'",
+   "line": "Hash Hole",
+   "strain": "Lemon Popperz"
+  },
+  {
+   "op": "rekey",
+   "entry": {
+    "category": "preroll",
+    "strain": "Hash Hole Mega Z Blue x YellowBurst Sift Hash"
+   },
+   "why": "hash holes: strain is the flower strain (as Jaunty's Hash Hole), the sift hash goes in the name; stores write 'Infused Preroll | Churroz | Hash Hole | <flower> X <hash> | 2g'",
+   "line": "Hash Hole",
+   "strain": "Mega Z Blue"
+  },
+  {
+   "op": "rekey",
+   "entry": {
+    "category": "preroll",
+    "strain": "Hash Hole Mega Z Green x Yellow Burst Sift Hash"
+   },
+   "why": "hash holes: strain is the flower strain (as Jaunty's Hash Hole), the sift hash goes in the name; stores write 'Infused Preroll | Churroz | Hash Hole | <flower> X <hash> | 2g'",
+   "line": "Hash Hole",
+   "strain": "Mega Z Green"
+  },
+  {
+   "op": "rekey",
+   "entry": {
+    "category": "preroll",
+    "strain": "Hash Hole Party Poppers x Trop Cherry Sift Hash"
+   },
+   "why": "hash holes: strain is the flower strain (as Jaunty's Hash Hole), the sift hash goes in the name; stores write 'Infused Preroll | Churroz | Hash Hole | <flower> X <hash> | 2g'",
+   "line": "Hash Hole",
+   "strain": "Party Popperz"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "strain": "Cherry Popperz",
+   "sizes": [
+    "2g"
+   ],
+   "why": "Hash Hole 2g single, one store (Dispense menu 'Infused Preroll | Churroz | Hash Hole | ... | 2g')",
+   "line": "Hash Hole"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "strain": "Bubblegum Popperz",
+   "sizes": [
+    "2g"
+   ],
+   "why": "Hash Hole 2g single, one store (Dispense menu 'Infused Preroll | Churroz | Hash Hole | ... | 2g')",
+   "line": "Hash Hole"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "strain": "Mega Z Red",
+   "sizes": [
+    "2g"
+   ],
+   "why": "Hash Hole 2g single, one store (Dispense menu 'Infused Preroll | Churroz | Hash Hole | ... | 2g')",
+   "line": "Hash Hole"
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "strain": "Banana Sorbet",
+   "sizes": [
+    "1g"
+   ],
+   "why": "Static Sift hash 1g, one or two stores ('Static Sift Hash <strain>', 'Hash | Static Sift | <strain> | 1g'); every Static Room hash is static sift, so no line",
+   "subtype": "hash"
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "strain": "Honey Banana",
+   "sizes": [
+    "1g"
+   ],
+   "why": "Static Sift hash 1g, one or two stores ('Static Sift Hash <strain>', 'Hash | Static Sift | <strain> | 1g'); every Static Room hash is static sift, so no line",
+   "subtype": "hash"
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "strain": "Stardust",
+   "sizes": [
+    "1g"
+   ],
+   "why": "Static Sift hash 1g, one or two stores ('Static Sift Hash <strain>', 'Hash | Static Sift | <strain> | 1g'); every Static Room hash is static sift, so no line",
+   "subtype": "hash"
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "strain": "Tropicana Cherry",
+   "sizes": [
+    "1g"
+   ],
+   "why": "Static Sift hash 1g, one or two stores ('Static Sift Hash <strain>', 'Hash | Static Sift | <strain> | 1g'); every Static Room hash is static sift, so no line",
+   "subtype": "hash"
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "strain": "Yellow Burst",
+   "sizes": [
+    "1g"
+   ],
+   "why": "Static Sift hash 1g, one or two stores ('Static Sift Hash <strain>', 'Hash | Static Sift | <strain> | 1g'); every Static Room hash is static sift, so no line",
+   "subtype": "hash"
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "strain": "Strawberry Sorbet",
+   "sizes": [
+    "1g"
+   ],
+   "why": "Static Sift hash 1g, one or two stores ('Static Sift Hash <strain>', 'Hash | Static Sift | <strain> | 1g'); every Static Room hash is static sift, so no line",
+   "subtype": "hash"
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "strain": "Gush Mintz",
+   "sizes": [
+    "1g"
+   ],
+   "why": "Static Sift hash 1g, one or two stores ('Static Sift Hash <strain>', 'Hash | Static Sift | <strain> | 1g'); every Static Room hash is static sift, so no line",
+   "subtype": "hash"
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "strain": "Wedding Crashers",
+   "sizes": [
+    "1g"
+   ],
+   "why": "Static Sift hash 1g, one or two stores ('Static Sift Hash <strain>', 'Hash | Static Sift | <strain> | 1g'); every Static Room hash is static sift, so no line",
+   "subtype": "hash"
+  }
+ ]
+}

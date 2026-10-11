@@ -1,0 +1,279 @@
+{
+ "brand": "House of Sacci",
+ "_comment": "2026-10-11 draft (catalogs batch A): apply after `catalog_bootstrap.py --brand \"House of Sacci\" --push` creates the catalog; selectors name bootstrap entries. Measure with `catalog_fix.py plan --measure` first.",
+ "edits": [
+  {
+   "op": "add-product",
+   "category": "flower",
+   "strain": "Devil's Drip",
+   "sizes": [
+    "0.7g"
+   ],
+   "why": "Dime bag 0.7g flower (houseofsacci.com/premium-cannabis-products 'DIME BAGS'); stores 'House of Sacci - <strain> - .7g'",
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "strain": "Permanent Marker",
+   "sizes": [
+    "0.7g"
+   ],
+   "why": "Dime bag 0.7g flower (houseofsacci.com/premium-cannabis-products 'DIME BAGS'); stores 'House of Sacci - <strain> - .7g'",
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "strain": "Biscotti Pancakes",
+   "sizes": [
+    "0.7g"
+   ],
+   "why": "Dime bag 0.7g flower (houseofsacci.com/premium-cannabis-products 'DIME BAGS'); stores 'House of Sacci - <strain> - .7g'",
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "strain": "Momochi",
+   "sizes": [
+    "0.7g"
+   ],
+   "why": "Dime bag 0.7g flower (houseofsacci.com/premium-cannabis-products 'DIME BAGS'); stores 'House of Sacci - <strain> - .7g'",
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "strain": "RS11",
+   "sizes": [
+    "0.7g"
+   ],
+   "why": "Dime bag 0.7g flower (houseofsacci.com/premium-cannabis-products 'DIME BAGS'); stores 'House of Sacci - <strain> - .7g'",
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "strain": "Trop Cherry",
+   "sizes": [
+    "0.7g"
+   ],
+   "why": "Dime bag 0.7g flower (houseofsacci.com/premium-cannabis-products 'DIME BAGS'); stores 'House of Sacci - <strain> - .7g'",
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "strain": "White Diamonds",
+   "sizes": [
+    "0.7g"
+   ],
+   "why": "Dime bag 0.7g flower (houseofsacci.com/premium-cannabis-products 'DIME BAGS'); stores 'House of Sacci - <strain> - .7g'",
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "strain": "Devil's Drip",
+   "sizes": [
+    "3.5g",
+    "14g"
+   ],
+   "why": "flower jar/bag; site sells 1/8, 1/2 oz and 1 oz",
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "strain": "Permanent Marker",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "flower jar/bag; site sells 1/8, 1/2 oz and 1 oz",
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "strain": "White Diamonds",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "flower jar/bag; site sells 1/8, 1/2 oz and 1 oz",
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "strain": "Garlic Sauce",
+   "sizes": [
+    "28g"
+   ],
+   "why": "flower jar/bag; site sells 1/8, 1/2 oz and 1 oz",
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "strain": "Devil's Drip",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "7 x 0.5g pre-rolls 3.5g (site 'PACK OF 7 PRE-ROLLS'); one store each"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "strain": "Garlic Sauce",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "7 x 0.5g pre-rolls 3.5g (site 'PACK OF 7 PRE-ROLLS'); one store each"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "strain": "Permanent Marker",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "7 x 0.5g pre-rolls 3.5g (site 'PACK OF 7 PRE-ROLLS'); one store each"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "strain": "Biohazard",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "7 x 0.5g pre-rolls 3.5g (site 'PACK OF 7 PRE-ROLLS'); one store each"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "strain": "Hazmat",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "7 x 0.5g pre-rolls 3.5g (site 'PACK OF 7 PRE-ROLLS'); one store each"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "strain": "Sherbadelic",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "7 x 0.5g pre-rolls 3.5g (site 'PACK OF 7 PRE-ROLLS'); one store each"
+  },
+  {
+   "op": "add-size",
+   "entry": {
+    "category": "preroll",
+    "strain": "Sunny Z",
+    "size": "3.5g"
+   },
+   "size": "0.5g",
+   "why": "0.5g single, one store ('House of Sacci - Sunny Z Pre-roll - .5g')"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "strain": "Trop Cherry",
+   "sizes": [
+    "0.5g"
+   ],
+   "why": "0.5g single, one store ('House of Sacci - <strain> Pre-roll - .5g'); site spells PUFFINS Z"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "strain": "Puffins Z",
+   "sizes": [
+    "0.5g"
+   ],
+   "why": "0.5g single, one store ('House of Sacci - <strain> Pre-roll - .5g'); site spells PUFFINS Z"
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "strain": "Blonde Hash Indica",
+   "sizes": [
+    "1g"
+   ],
+   "why": "classic hash 1g (site 'PREMIUM HASH'); stores 'House of Sacci - Blonde Hash Indica - 1g', 'Hash | Brown Hash | 1g | Sativa'. Colour + type is the product name; no line (owner to confirm)",
+   "subtype": "hash"
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "strain": "Blonde Hash Sativa",
+   "sizes": [
+    "1g"
+   ],
+   "why": "classic hash 1g (site 'PREMIUM HASH'); stores 'House of Sacci - Blonde Hash Indica - 1g', 'Hash | Brown Hash | 1g | Sativa'. Colour + type is the product name; no line (owner to confirm)",
+   "subtype": "hash"
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "strain": "Brown Hash Indica",
+   "sizes": [
+    "1g"
+   ],
+   "why": "classic hash 1g (site 'PREMIUM HASH'); stores 'House of Sacci - Blonde Hash Indica - 1g', 'Hash | Brown Hash | 1g | Sativa'. Colour + type is the product name; no line (owner to confirm)",
+   "subtype": "hash"
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "strain": "Brown Hash Sativa",
+   "sizes": [
+    "1g"
+   ],
+   "why": "classic hash 1g (site 'PREMIUM HASH'); stores 'House of Sacci - Blonde Hash Indica - 1g', 'Hash | Brown Hash | 1g | Sativa'. Colour + type is the product name; no line (owner to confirm)",
+   "subtype": "hash"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "strain": "Laughing Gas",
+   "sizes": [
+    "2g"
+   ],
+   "why": "2g AIO (site '2G AIO VAPE'), one store ('Vape AIO | House of Sacci | <strain> | 2g')",
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "strain": "Rose Runtz",
+   "sizes": [
+    "2g"
+   ],
+   "why": "2g AIO (site '2G AIO VAPE'), one store ('Vape AIO | House of Sacci | <strain> | 2g')",
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "strain": "Sweet Mint",
+   "sizes": [
+    "2g"
+   ],
+   "why": "2g AIO (site '2G AIO VAPE'), one store ('Vape AIO | House of Sacci | <strain> | 2g')",
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "strain": "Zour Patch Kidz",
+   "sizes": [
+    "2g"
+   ],
+   "why": "2g AIO (site '2G AIO VAPE'), one store ('Vape AIO | House of Sacci | <strain> | 2g')",
+   "subtype": "all-in-one"
+  }
+ ]
+}
