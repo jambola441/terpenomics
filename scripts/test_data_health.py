@@ -162,7 +162,9 @@ def test_enrichment_answers_jev_was_unsure_of_are_grouped_by_brand_and_field():
                                                            "p": {**sure, "strain": 0.31}, "size_by": "code"}},
         {"slug": "store-A", "cache_key": "s2|1g", "entry": {"src": "jev", "strain": "Lemon",
                                                            "p": {**sure, "strain": 0.45}, "size_by": "code"}},
-        {"slug": "store-B", "cache_key": "s3|", "entry": {"src": "jev", "p": sure, "size_by": "field"}},
+        # An unsure category or subtype is the review queue's (review_category), not a finding.
+        {"slug": "store-B", "cache_key": "s3|", "entry": {"src": "jev", "size_by": "field",
+                                                          "p": {**sure, "category": 0.2, "subtype": 0.3}}},
         {"slug": "store-B", "cache_key": "gone|", "entry": {"src": "jev", "p": {**sure, "strain": 0.1}}},
     ]
     d = data(ls)
