@@ -1,10 +1,12 @@
 """The catalog review queue (routes/admin/review.py).
 
 Listings the matcher left for review come one at a time, the brand with the most
-left first, like products in a row; a person's call is recorded and nothing else
-changes; undo puts the last card back.
+left first, like products in a row; a person's call is recorded; `entry` makes the
+listing a manual match with the entry's identity (anything else changes nothing
+else); undo puts the last card back, and an `entry` listing's previous match.
 """
 from datetime import timedelta
+from uuid import UUID
 
 import pytest
 from fastapi import FastAPI
@@ -168,9 +170,39 @@ def test_decision_validation(client, queue):
         row = session.exec(select(ReviewDecision)).one()
         assert (row.decision, str(row.entry_id), row.reason, row.reviewer, row.note) == (
             "entry", E["yuzu20"], "review_near", "admin@example.com", "40pk missing")
-        # Recorded only: the listing's match is untouched.
+        # entry: the listing is now a manual match to it, out of the queue.
         listing = session.get(Listing, row.listing_id)
-        assert (listing.catalog_entry_id, listing.catalog_match_method) == (None, "review_near")
+        assert (str(listing.catalog_entry_id), listing.catalog_match_method) == (E["yuzu20"], "manual")
+
+
+def test_entry_makes_a_manual_match_with_the_entrys_identity(client, queue):
+    L, E = queue["listings"], queue["entries"]
+    assert _decide(client, L["c_unsure"], "entry", entry_id=E["yuzu_sleep"]).status_code == 200
+    with Session(engine) as session:
+        listing = session.get(Listing, UUID(L["c_unsure"]))
+        assert (str(listing.catalog_entry_id), listing.catalog_match_method, listing.catalog_match_confidence) == (
+            E["yuzu_sleep"], "manual", 1.0)
+        assert (listing.product_line, listing.strain, listing.scraped_category) == ("Sleep", "Yuzu Lemon", "edible")
+        row = session.exec(select(ReviewDecision)).one()
+        assert (row.reason, str(row.prev_entry_id), row.prev_confidence) == ("review_unsure", E["yuzu20"], None)
+    # Out of the queue: never offered again, and no longer counted.
+    seen = set()
+    while (res := client.get("/admin/review/next", params={"exclude": ",".join(seen)})).status_code == 200:
+        seen.add(res.json()["listing"]["id"])
+    assert L["c_unsure"] not in seen
+
+
+def test_undo_of_entry_restores_the_previous_match(client, queue):
+    L, E = queue["listings"], queue["entries"]
+    _decide(client, L["c_unsure"], "entry", entry_id=E["yuzu_sleep"])
+    res = client.post("/admin/review/undo")
+    assert res.status_code == 200, res.text
+    assert res.json()["card"]["listing"]["id"] == L["c_unsure"]
+    with Session(engine) as session:
+        listing = session.get(Listing, UUID(L["c_unsure"]))
+        assert (str(listing.catalog_entry_id), listing.catalog_match_method, listing.catalog_match_confidence) == (
+            E["yuzu20"], "review_unsure", None)
+        assert session.exec(select(ReviewDecision)).first() is None
 
 
 def test_undo_deletes_my_last_decision_and_returns_its_card(client, queue):
@@ -216,3 +248,80 @@ def test_progress_counts(client, queue):
     only = client.get("/admin/review/progress", params={"brand": "wyld"}).json()
     assert [b["brand"] for b in only["brands"]] == ["Wyld"]
     assert only["totals"]["total"] == 4
+
+
+# --- review_category: Jev unsure of the category or subtype ------------------
+
+@pytest.fixture
+def unsure(queue):
+    """A brandless-catalog listing the importer sent to the queue: Jev read it as an
+    edible gummy, unsurely."""
+    with Session(engine) as session:
+        store = session.exec(select(Dispensary)).first()
+        listing = Listing(dispensary_id=store.id, scraped_name="Kiva Lost Farm Chews", scraped_brand="Kiva",
+                          scraped_category="edible", subtype="gummy", catalog_match_method="review_category",
+                          verified_fields={"strain": {"value": "x", "by": "a", "at": "t", "name_hash": "old"}},
+                          reading={"category": "edible", "subtype": "gummy", "p": {"category": 0.95, "subtype": 0.42}})
+        session.add(listing)
+        session.commit()
+        return str(listing.id)
+
+
+def test_a_category_card_offers_the_taxonomy_not_entries(client, unsure):
+    card = client.get("/admin/review/next", params={"reason": "review_category"}).json()
+    assert card["listing"]["id"] == unsure and card["reason"] == "review_category"
+    assert card["candidates"] == []
+    choice = card["category_choice"]
+    assert (choice["category"], choice["subtype"], choice["p"]) == ("edible", "gummy", {"category": 0.95, "subtype": 0.42})
+    by_cat = {c["category"]: c["subtypes"] for c in choice["choices"]}
+    assert "chocolate" in by_cat["edible"] and by_cat["preroll"] == []     # preroll keeps no subtype
+    assert card["progress"]["totals"]["by_reason"]["review_category"] == {"total": 1, "decided": 0}
+    # A catalog card has no category question.
+    assert client.get("/admin/review/next", params={"reason": "review_near"}).json()["category_choice"] is None
+
+
+def test_category_decision_validation(client, queue, unsure):
+    L = queue["listings"]
+    assert _decide(client, unsure, "category").status_code == 422                                    # no category
+    assert _decide(client, unsure, "category", category="snacks", subtype="gummy").status_code == 422
+    assert _decide(client, unsure, "category", category="edible", subtype="cart").status_code == 422  # not edible's
+    assert _decide(client, unsure, "category", category="preroll", subtype="single").status_code == 422
+    assert _decide(client, unsure, "skip", category="edible").status_code == 422
+    assert _decide(client, unsure, "none").status_code == 422                 # a catalog call
+    assert _decide(client, L["c_yuzu"], "category", category="edible", subtype="gummy").status_code == 422
+
+
+def test_category_decision_sets_and_verifies_then_undo_restores(client, unsure):
+    res = _decide(client, unsure, "category", category="edible", subtype="chocolate")
+    assert res.status_code == 200, res.text
+    with Session(engine) as session:
+        listing = session.get(Listing, UUID(unsure))
+        assert (listing.scraped_category, listing.subtype, listing.catalog_match_method) == ("edible", "chocolate", None)
+        held = verification_fields(listing)
+        assert held == {"category": "edible", "subtype": "chocolate"}            # the old strain claim had lapsed
+        assert listing.verified_fields["strain"]["name_hash"] == "old"            # and is kept
+        row = session.exec(select(ReviewDecision)).one()
+        assert (row.decision, row.category, row.subtype, row.prev_category, row.prev_subtype, row.reason) == (
+            "category", "edible", "chocolate", "edible", "gummy", "review_category")
+    assert client.get("/admin/review/next", params={"reason": "review_category"}).status_code == 204
+
+    res = client.post("/admin/review/undo")
+    assert res.status_code == 200 and res.json()["card"]["listing"]["id"] == unsure
+    with Session(engine) as session:
+        listing = session.get(Listing, UUID(unsure))
+        assert (listing.scraped_category, listing.subtype, listing.catalog_match_method) == ("edible", "gummy", "review_category")
+        assert set(listing.verified_fields) == {"strain"}
+        assert session.exec(select(ReviewDecision)).first() is None
+
+
+def test_a_category_without_subtypes_takes_none(client, unsure):
+    assert _decide(client, unsure, "category", category="preroll").status_code == 200
+    with Session(engine) as session:
+        listing = session.get(Listing, UUID(unsure))
+        assert (listing.scraped_category, listing.subtype) == ("preroll", None)
+
+
+def verification_fields(listing):
+    import verification
+    return verification.verified_fields({"verified_fields": listing.verified_fields,
+                                         "scraped_name": listing.scraped_name})

@@ -1,0 +1,46 @@
+{
+ "brand": "Moondust",
+ "_comment": "DRAFT 2026-10-11, batch C, owner policy 2026-10-11: brand-sourced products only (single-store listings without a brand source left to review), no deactivations, no rebuild/--replace. Apply after the bootstrap catalog is pushed; selectors name bootstrap entries. Checked in memory with catalog_fix.apply_plan against catalog_bootstrap.propose.",
+ "edits": [
+  {
+   "op": "add-product",
+   "why": "judged real: 1 store 'Vape AIO | Moondust | Apple Motorbreath - Live Resin' 2g, same menu as the brand's other 2g strains; Moondust (Oklahoma brand, NY: 2g live resin disposables per https://www.headset.io/brands/moon-dust); no brand site reachable",
+   "category": "vaporizers",
+   "strain": "Apple Motorbreath",
+   "sizes": [
+    "2g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "judged real: 1 store 'Vape AIO | Moondust | Tiger's Blood - Live Resin' 2g, same menu as the brand's other 2g strains; Moondust (Oklahoma brand, NY: 2g live resin disposables per https://www.headset.io/brands/moon-dust); no brand site reachable",
+   "category": "vaporizers",
+   "strain": "Tiger's Blood",
+   "sizes": [
+    "2g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-size",
+   "entry": {
+    "category": "vaporizers",
+    "strain": "Forbidden Passion",
+    "size": "2g"
+   },
+   "size": "1g",
+   "why": "judged real, not a typo: the listing NAME itself says 'Moon Dust - Forbidden Passion AIO Vape - 1g' and the same store lists the 2g separately ('... AIO Vape - 2g'), so it sells both sizes"
+  },
+  {
+   "op": "add-size",
+   "entry": {
+    "category": "vaporizers",
+    "strain": "Watermelon Bubblegum",
+    "size": "2g"
+   },
+   "size": "1g",
+   "why": "judged real, not a typo: the listing NAME itself says 'Moon Dust - Watermelon Bubblegum AIO Vape - 1g' and the same store lists the 2g separately ('... AIO Vape - 2g'), so it sells both sizes"
+  }
+ ]
+}

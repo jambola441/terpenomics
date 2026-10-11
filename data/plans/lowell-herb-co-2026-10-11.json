@@ -17,24 +17,6 @@
   {
    "op": "rekey",
    "entry": {
-    "strain": "Dreamweaver Outlaw"
-   },
-   "line": "Outlaw",
-   "strain": "Dreamweaver",
-   "why": "Outlaw is the 1g single line; stores: 'Dreamweaver Outlaw Preroll - 1g' (2), 'Dreamweaver - 1G Indica Blend Outlaw Preroll'. Lowell NY prerolls: Smokes 6 x 0.6g (3.6g, no line), Quicks 10 x 0.35g (3.5g; 20pk 7g), Outlaw 1g single (weedmaps 'Lowell Outlaw | Trailblazer (S) | Pre-Roll 1G'; thetravelagency.co NY Quicks 10pk 1/8oz)"
-  },
-  {
-   "op": "rekey",
-   "entry": {
-    "strain": "Closing Time",
-    "size": "3.5g"
-   },
-   "line": "Quicks",
-   "why": "10pk 3.5g is Quicks (10 x .35g): 'Lowell Quicks | Closing Time | 10 x Mini Joint Pack', 'Quicks Sunny Daze Prerolls 10pk', 'Lowell Quicks | Star Gazer | 10 .35g'. Lowell NY prerolls: Smokes 6 x 0.6g (3.6g, no line), Quicks 10 x 0.35g (3.5g; 20pk 7g), Outlaw 1g single (weedmaps 'Lowell Outlaw | Trailblazer (S) | Pre-Roll 1G'; thetravelagency.co NY Quicks 10pk 1/8oz)"
-  },
-  {
-   "op": "rekey",
-   "entry": {
     "strain": "Stargazer",
     "size": "3.5g"
    },
@@ -42,13 +24,18 @@
    "why": "10pk 3.5g is Quicks (10 x .35g): 'Lowell Quicks | Closing Time | 10 x Mini Joint Pack', 'Quicks Sunny Daze Prerolls 10pk', 'Lowell Quicks | Star Gazer | 10 .35g'. Lowell NY prerolls: Smokes 6 x 0.6g (3.6g, no line), Quicks 10 x 0.35g (3.5g; 20pk 7g), Outlaw 1g single (weedmaps 'Lowell Outlaw | Trailblazer (S) | Pre-Roll 1G'; thetravelagency.co NY Quicks 10pk 1/8oz)"
   },
   {
-   "op": "rekey",
+   "op": "deactivate",
    "entry": {
     "strain": "Sunny Daze",
+    "line": "",
     "size": "3.5g"
    },
-   "line": "Quicks",
-   "why": "10pk 3.5g is Quicks (10 x .35g): 'Lowell Quicks | Closing Time | 10 x Mini Joint Pack', 'Quicks Sunny Daze Prerolls 10pk', 'Lowell Quicks | Star Gazer | 10 .35g'. Lowell NY prerolls: Smokes 6 x 0.6g (3.6g, no line), Quicks 10 x 0.35g (3.5g; 20pk 7g), Outlaw 1g single (weedmaps 'Lowell Outlaw | Trailblazer (S) | Pre-Roll 1G'; thetravelagency.co NY Quicks 10pk 1/8oz)"
+   "into": {
+    "strain": "Sunny Daze",
+    "line": "Quicks",
+    "size": "3.5g"
+   },
+   "why": "duplicate of Quicks Sunny Daze: the bootstrap already filed the Quicks one (line rule)"
   },
   {
    "op": "add-product",
@@ -71,17 +58,6 @@
     "3.5g"
    ],
    "why": "2 listings: 'Lowell Smokes Quicks Trailblazer Preroll 10pk', 'Lowell Quicks | Trail Blazer | 10 x .35g Pack' (typed 3.6g)"
-  },
-  {
-   "op": "add-product",
-   "category": "preroll",
-   "subtype": null,
-   "line": "Outlaw",
-   "strain": "Trailblazer",
-   "sizes": [
-    "1g"
-   ],
-   "why": "4 listings: 'Lowell Smokes - Trailblazer Outlaw Preroll - 1g' (2), 'Trailblazer - 1G Sativa Blend Outlaw Preroll', 'Trailblazer | Single'"
   },
   {
    "op": "add-product",

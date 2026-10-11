@@ -2,9 +2,10 @@
 -- listing the matcher left for review (catalog_match_method review_unsure,
 -- review_missing or review_near; scripts/catalog_match.py review_reason).
 --
--- Recorded only: a decision never changes the listing's match or the catalog.
--- Every issue is fixed in the catalog, and these rows are what the catalog-fix
--- proposals are drawn up from. routes/admin/review.py writes them; models.py
+-- A decision entry makes the listing a manual match to entry_id (trusted, by
+-- review; since 2026-10-11, see 0018). Every other decision is recorded only: it
+-- never changes the listing's match or the catalog. Catalog issues are fixed in
+-- the catalog, and these rows are what the catalog-fix proposals are drawn up from. routes/admin/review.py writes them; models.py
 -- (ReviewDecision) maps onto this table.
 --
 --   decision  entry    the listing is entry_id (one of the candidates offered)

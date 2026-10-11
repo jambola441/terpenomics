@@ -31,7 +31,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from scraper_common import normalize_variant  # noqa: E402
-from canonical import canonicalize, find_format_category  # noqa: E402
+from canonical import canonicalize  # noqa: E402
 import verification  # noqa: E402
 import attributes as attribute_registry  # noqa: E402
 import enrichers  # noqa: E402
@@ -66,12 +66,10 @@ classify_by_token = taxonomy.token_subtype
 
 
 def _hint_category(row: dict) -> str:
-    """The scraper's category, overridden by a curated device/format token when one
-    is present ("Select Briq V2" is a vape, whatever the source category said).
-    Used both as the hint sent to the model and as the value the model's answer is
-    overruled by, so category, subtype and variant are all settled consistently."""
-    forced = find_format_category(row.get("brand", ""), row.get("name", ""))
-    return forced or row.get("category", "")
+    """The scraper's (store's) category, sent to the model as a hint. The model
+    decides; data/format_tokens.json used to override it here and was removed
+    2026-10-11 in favour of the classifier."""
+    return row.get("category", "")
 
 
 def _hint_subtype(row: dict) -> str | None:
@@ -161,6 +159,20 @@ def _cache_key(row: dict) -> str | None:
     if not sku:
         return None
     return f"{sku}|{(row.get('variant') or '').strip()}"
+
+
+def _on_rail(entry: dict) -> bool:
+    """Whether a cached (category, subtype) is still a pair the taxonomy offers. An
+    LLM-path entry carries no "jq" when Jev did not classify the row, so the
+    QUESTION_VERSION gate passes it whatever it says; when a subtype leaves a rail
+    (vaporizers lost battery and other, 2026-10-11) its entries must be asked again,
+    or they replay the retired pair forever. Unknown categories, categories that keep
+    no subtype, and a blank subtype pass."""
+    spec = taxonomy.spec(entry.get("category"))
+    sub = entry.get("subtype")
+    if spec is None or not sub or not taxonomy.keeps_subtype(spec.name):
+        return True
+    return sub in spec.subtypes
 
 
 def _slug_for_rows(rows: list[dict]) -> str | None:
@@ -710,8 +722,8 @@ def _classify_with_jev(pending: list[tuple[int, dict]], categories: list, subtyp
 
     Returns (classified, rest, usage). `rest` — failed calls and answers below
     JEV_MIN_CONFIDENCE — goes through pass A unchanged. The overrides are the ones
-    pass A's applier makes, in the same order: a curated device token fixes the
-    category, the owning enricher's name tokens and the rails fix the subtype.
+    pass A's applier makes, in the same order: the owning enricher's name tokens
+    and the rails fix the subtype.
     """
     bar = JEV_MIN_CONFIDENCE if min_confidence is None else min_confidence
     usage = jev.Usage()
@@ -723,17 +735,16 @@ def _classify_with_jev(pending: list[tuple[int, dict]], categories: list, subtyp
             rest.append((oi, row))
             continue
         name = row.get("name", "")
-        forced = find_format_category(row.get("brand", ""), name)
-        cat = forced or _valid_category(a.category, row.get("category"))
+        cat = _valid_category(a.category, row.get("category"))
         owner = enrichers.for_category(cat)
         sub_answer, p_sub = a.subtype_for(cat)
         if len(SUBTYPES.get(cat, ())) <= 1 or not owner.needs_model:
             p_sub = 1.0          # nothing to choose, or the owner's tokens decide (merch)
-        if min(1.0 if forced else a.p_category, p_sub) < bar:
+        if min(a.p_category, p_sub) < bar:
             rest.append((oi, row))
             continue
         if probs is not None:
-            probs[oi] = (1.0 if forced else a.p_category, p_sub)
+            probs[oi] = (a.p_category, p_sub)
         categories[oi] = cat
         subtypes[oi] = _valid_subtype(sub_answer, cat, owner.token_subtype(name) or hint_sub)
         classified.append((oi, row))
@@ -1200,11 +1211,8 @@ def _run_enrich(
                 if it is None:
                     failed_rows.add(oi)
                     it = {}
-                # A curated device token is a string fact about the name, so it wins
-                # over the model; _valid_subtype then snaps the subtype into that
-                # category's rail.
-                forced = find_format_category(row.get("brand", ""), row.get("name", ""))
-                cat = forced or _valid_category(it.get("category"), row.get("category"))
+                # _valid_subtype below snaps the subtype into the category's rail.
+                cat = _valid_category(it.get("category"), row.get("category"))
                 categories[oi] = cat
                 # A row hinted as something else can still come back as a category
                 # that has an owner, so the owner gets the last word here too — not
@@ -1399,6 +1407,10 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
     # failed (and have deliberate nulls "restored"), so it is cleared up front.
     for row in rows:
         row.pop("enrich_failed", None)
+        # Kept so a re-enrichment from the CSV (scrape.py --import-only) can ask with
+        # the scraper's variant — the cache key — rather than the normalized one.
+        if not row.get("scraped_variant"):
+            row["scraped_variant"] = row.get("variant") or ""
 
     if no_enrich:
         for row in rows:
@@ -1427,6 +1439,7 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
     product_lines: list[str | None] = []
     variants:      list[str | None] = []
     pending:       list[tuple[int, dict]] = []
+    asked:         list[tuple[int, str | None]] = []   # (row, cache key): from the cache or this run
 
     for i, row in enumerate(rows):
         # A row a human has signed off on entirely never reaches the model — the
@@ -1466,12 +1479,14 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
         if entry and "variant" in entry and "category" in entry \
                 and entry.get("v") == _ENRICH_VERSION \
                 and entry.get("jq") in (None, jev_classify.QUESTION_VERSION) \
-                and entry.get("jx") in (None, jev_extract.QUESTION_VERSION):
+                and entry.get("jx") in (None, jev_extract.QUESTION_VERSION) \
+                and _on_rail(entry):
             categories.append(entry.get("category"))
             subtypes.append(entry.get("subtype"))
             strains.append(entry.get("strain"))
             product_lines.append(entry.get("product_line"))
             variants.append(entry.get("variant"))
+            asked.append((i, key))
         else:
             categories.append(None)
             subtypes.append(_hint_subtype(row))
@@ -1479,6 +1494,7 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
             product_lines.append(None)
             variants.append(None)
             pending.append((i, row))
+            asked.append((i, key))
 
     no_model = sum(1 for r in rows if enrichers.skips_model(_hint_category(r)))
     cached_count = len(rows) - len(pending) - no_model
@@ -1504,6 +1520,22 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
         # shape in the registry get anything; the rest keep None.
         row["attributes"]   = attribute_registry.for_category(
             row["category"], row.get("name", "")) or None
+
+    # Jev's probability for category and subtype, from the cache entry this run read or
+    # wrote, for the importer's review-queue bar (import_listings.mark_unsure_category).
+    # Keyed as read: the row's variant has been normalised since.
+    for row in rows:
+        row.pop("p_category", None)
+        row.pop("p_subtype", None)
+    for i, key in asked:
+        row = rows[i]
+        entry = cache.get(key or "") or {}
+        if row.get("enrich_failed") or entry.get("src") != "jev":
+            continue
+        p = entry.get("p") or {}
+        for field in ("category", "subtype"):
+            if isinstance(p.get(field), (int, float)):
+                row[f"p_{field}"] = p[field]
 
     # Deterministic canonicalization last: curated product lines and strain aliases
     # override the model, so identity is consistent across dispensaries and runs.

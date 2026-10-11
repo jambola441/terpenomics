@@ -2,10 +2,10 @@
 canonical.py — Deterministic post-enrichment canonicalization.
 
 The LLM decides *what* a listing is; this module makes the answer *consistent*.
-Three curated, brand-scoped vocabularies back that up. Two are applied after
-enrichment (product_lines, strain_aliases); format_tokens is consulted by
-enrich.py *before* the model call, so the category it settles also gives the
-model the right subtype rails to answer within.
+Two curated, brand-scoped vocabularies back that up, both applied after
+enrichment (product_lines, strain_aliases). A third, format_tokens, used to force
+the category before the model call; it was removed 2026-10-11 and the category is
+now the classifier's call.
 
   product_lines   data/product_lines.json — {brand: [line, ...]}
                   A line is assigned when its text actually appears in the product
@@ -32,12 +32,7 @@ model the right subtype rails to answer within.
                   — only a shared map can. "" as the canonical value clears the
                   strain.
 
-  format_tokens   data/format_tokens.json — {brand: {token: category}}
-                  Settles the category for products identifiable only by a brand's
-                  hardware name ("Select Briq V2" is a vape with no vape word in
-                  it). See find_format_category.
-
-All three files use "*" as a brand key for entries that apply to every brand.
+Both files use "*" as a brand key for entries that apply to every brand.
 
 Why deterministic: these fixes cost nothing per run, are auditable, apply
 identically across every dispensary, and compound — each entry added from an
@@ -57,7 +52,6 @@ from pathlib import Path
 _DATA_DIR = Path(__file__).parent.parent / "data"
 _LINES_PATH = _DATA_DIR / "product_lines.json"
 _ALIASES_PATH = _DATA_DIR / "strain_aliases.json"
-_FORMATS_PATH = _DATA_DIR / "format_tokens.json"
 
 _ANY = "*"
 
@@ -178,27 +172,6 @@ def canonical_strain(brand: str, strain: str) -> str | None:
         if table and key in {k.lower() for k in table}:
             return next(v for k, v in table.items() if k.lower() == key)
     return None
-
-
-# An oil amount: "1g", ".5G", "1.0g", "2000mg" (not "510", "3DXL").
-_OIL_AMOUNT = re.compile(r"(?<![\w.])(?:\d+(?:\.\d+)?|\.\d+)\s*(?:g|mg)\b", re.I)
-
-
-def find_format_category(brand: str, name: str) -> str | None:
-    """Category implied by a curated device/format token in the name, else None.
-
-    Covers products whose only category signal is a brand's hardware name — a
-    "Select Briq V2" or "Florist Farms Rechargeable OVL" carries no generic vape
-    word, so the model reads "1G <something>" and answers concentrate. Longest
-    token wins. A hardware token (merch) yields to an oil amount in the name: since
-    2026-10-11 a battery or device sold alone is merch, but Rove's "Ready to Use
-    Vaporizer 1.0g" and a "1g ... Starter Kit" carry oil and stay vapes."""
-    own, shared = _for_brand(_load(_FORMATS_PATH, "formats"), brand)
-    merged = {**(shared or {}), **(own or {})}
-    oil = _OIL_AMOUNT.search(name or "")
-    hits = [(tok, cat) for tok, cat in merged.items()
-            if _pattern(tok).search(name or "") and not (cat == "merch" and oil)]
-    return max(hits, key=lambda tc: len(tc[0]))[1] if hits else None
 
 
 def _strip_line_from_strain(strain: str, line: str) -> str:

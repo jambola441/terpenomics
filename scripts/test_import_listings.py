@@ -366,6 +366,20 @@ def test_masked_catalog_strain_is_not_copied():
     assert rec["strain"] == "Alaskan Thunder Fuck" and stats["masked_strain_skipped"] == 1
 
 
+def test_overlay_entry_applies_identity_and_catalog_size_like_an_import():
+    """The review queue's manual match (overlay_entry) overlays as apply_catalog +
+    assign_sizes would: entry identity, and a mistyped dose size from the catalog."""
+    entry = {"id": "e1", "name": "Balance Yuzu Lemon", "category": "edible", "strain": "Yuzu Lemon",
+             "product_line": None, "variant": "20pk 100mg"}
+    catalog = {"entries": [entry]}
+    rec = {"scraped_name": "Camino Yuzu Lemon 20pk 50mg", "scraped_category": "tincture",
+           "subtype": None, "strain": "Yuzu", "product_line": "Balance", "variant": "50mg"}
+    import_listings.overlay_entry(rec, catalog, entry)
+    assert (rec["scraped_category"], rec["strain"], rec["product_line"]) == ("edible", "Yuzu Lemon", None)
+    want = catalog_match.catalog_size("50mg", rec["scraped_name"], entry, [entry], None) or "50mg"
+    assert rec["size"] == want
+
+
 def test_manual_match_survives_reimport(db, tmp_path):
     eid, other = add_catalog(db, [
         {"name": "manual pick", "category": "flower", "strain": "Picked", "product_line": "Hand"},
@@ -457,3 +471,47 @@ def test_the_stores_own_category_is_kept_on_the_reading():
     import_listings.record_reading([rec], {})
     assert rec["reading"]["store_category"] == "Vaporizers"
     assert rec["reading"]["category"] == "vaporizers"
+
+
+# --- an unsure category or subtype goes to the review queue -----------------
+
+def test_an_unsure_category_without_a_catalog_goes_to_review(db, tmp_path):
+    run(tmp_path, [row("A", "Acme Mystery", p_category="0.55", p_subtype="0.97"),
+                   row("B", "Acme Sure Thing", p_category="0.99", p_subtype="0.9"),
+                   row("C", "Acme Old Run")])                       # no probabilities: not Jev's
+    got = {r["sku"]: r for r in listings(db)}
+    assert got["A"]["catalog_match_method"] == "review_category"
+    assert got["A"]["reading"]["p"] == {"category": 0.55, "subtype": 0.97}
+    assert got["B"]["catalog_match_method"] is None and got["C"]["catalog_match_method"] is None
+    # Jev sure on the next run: out of the queue.
+    run(tmp_path, [row("A", "Acme Mystery", p_category="0.91", p_subtype="0.97")], name="2.csv")
+    assert {r["sku"]: r for r in listings(db)}["A"]["catalog_match_method"] is None
+
+
+def test_an_unsure_subtype_with_no_catalog_match_goes_to_review_but_a_match_stays(db, tmp_path):
+    add_catalog(db, [{"name": "acme blue dream", "category": "flower", "subtype": "flower",
+                      "strain": "Blue Dream", "variant": "3.5g"}])
+    run(tmp_path, [row("A", "Acme Blue Dream", strain="Blue Dream", p_category="0.99", p_subtype="0.3"),
+                   row("B", "Acme Blue Dreams", strain="Blue Dreams", p_category="0.99", p_subtype="0.3"),
+                   row("C", "Acme Zzz Gummies", category="edible", subtype="gummy", strain="Zzz",
+                       variant="100mg", p_category="0.99", p_subtype="0.3")])
+    got = {r["sku"]: r for r in listings(db)}
+    assert got["A"]["catalog_match_method"] == "attributes"           # the catalog decided
+    assert got["B"]["catalog_match_method"] == "review_near"          # the catalog's own reason
+    assert got["C"]["catalog_match_method"] == "review_category"      # nothing close in the catalog
+
+
+def test_a_verified_category_is_kept_and_not_sent_back_to_review(db, tmp_path):
+    import verification
+    rows = [row("A", "Acme Mystery", category="edible", subtype="gummy", p_category="0.4", p_subtype="0.4")]
+    run(tmp_path, rows)
+    claim = verification.claim({"category": "vaporizers", "subtype": "cart"}, "Acme Mystery", "reviewer")
+    db.execute("UPDATE listings SET verified_fields=%s, scraped_category='vaporizers', subtype='cart', "
+               "catalog_match_method=NULL", (psycopg2.extras.Json(claim),))
+    run(tmp_path, rows, name="2.csv")
+    [r] = listings(db)
+    assert (r["scraped_category"], r["subtype"], r["catalog_match_method"]) == ("vaporizers", "cart", None)
+    # Renamed by the store: the claim lapses and Jev's unsure answer is back in review.
+    run(tmp_path, [dict(rows[0], name="Acme Mystery v2")], name="3.csv")
+    [r] = listings(db)
+    assert (r["scraped_category"], r["catalog_match_method"]) == ("edible", "review_category")
