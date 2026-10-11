@@ -16,6 +16,11 @@ A Size carries what the text states and nothing it does not:
   pack      units in the package (5 prerolls, 10 gummies)
   unit_g    weight of one unit, when a pack states it (0.6g each)
   unit_mg   dose of one unit, when a pack states it (10mg each)
+  ml        the bottle's volume, for a dose category whose brand sizes it by volume
+            (MFNY's tinctures are "15mL": the mg on their labels is a per-batch lab
+            total, 344-456mg, so no mg size could match). A volume is compared only
+            with a volume; against a side that states none it is silent, so a store's
+            "418mg" neither fits nor contradicts a "15mL" entry.
 
 Totals are derived when the parts are present (5 x 0.6g -> 3g, 10 x 10mg each ->
 100mg), because that is how a store and a brand end up writing the same package
@@ -54,6 +59,7 @@ _OZ_WORDS = {"eighth ounce": 3.5, "eighth oz": 3.5, "quarter ounce": 7.0,
              "eighth": 3.5, "quarter": 7.0, "ounce": 28.0}
 _OZ_WORD_RES = [(re.compile(r"\b" + r"[\s-]*".join(word.split()) + r"\b"), g)
                 for word, g in sorted(_OZ_WORDS.items(), key=lambda kv: -len(kv[0]))]
+_ML = re.compile(rf"{_NUM}\s*(?:ml|milliliters?|millilitres?)\b", re.I)
 _FL_OZ = re.compile(rf"{_NUM}\s*fl\.?\s*oz\b", re.I)
 _RATIO = re.compile(r"\b\d+\s*:\s*\d+(?:\s*:\s*\d+)*\b")
 # What Size.label() writes for a pack: the count, then the package total ("2pk 40mg").
@@ -74,6 +80,7 @@ class Size:
     pack: int | None = None
     unit_g: float | None = None
     unit_mg: float | None = None
+    ml: float | None = None
 
     def is_empty(self) -> bool:
         return self == Size()
@@ -89,6 +96,8 @@ class Size:
             parts.append(f"{self.grams:g}g")
         elif self.mg is not None:
             parts.append(f"{self.mg:g}mg")
+        elif self.ml is not None:
+            parts.append(f"{self.ml:g}mL")
         return " ".join(parts)
 
 
@@ -174,8 +183,12 @@ def parse(*texts: str | None, category: str | None = None) -> Size:
     # A weight's "1pk" says nothing a size check needs.
     if pack == 1 and cat not in DOSE_CATEGORIES:
         pack = None
+    # A volume is a size only for a dose category (a tincture's bottle); a vape's "1ml"
+    # is its weight's business. The largest volume stated is the bottle.
+    mls = _floats(_ML, text) if cat in DOSE_CATEGORIES else []
     return Size(grams=_round(total_g), mg=_round(total_mg), pack=pack,
-                unit_g=_round(unit_g), unit_mg=_round(unit_mg))
+                unit_g=_round(unit_g), unit_mg=_round(unit_mg),
+                ml=_round(max(mls)) if mls else None)
 
 
 def _gram_mentions(text: str) -> list[float]:
@@ -253,6 +266,11 @@ def same_size(a: Size, b: Size) -> bool | None:
     # single is not a 10-pack of 100mg. A side that states no count leaves it open.
     if a.pack is not None and b.pack is not None and a.pack != b.pack:
         return False
+    # A volume is compared with a volume only, and decides when both state one: a
+    # volume-sized entry carries no mg, and the mg a store copies off the label is a
+    # batch's lab total, not a package size.
+    if a.ml is not None and b.ml is not None:
+        return abs(a.ml - b.ml) <= max(0.5, 0.02 * max(a.ml, b.ml))
     if a.grams is not None and b.grams is not None:
         return abs(a.grams - b.grams) <= max(0.02, 0.03 * max(a.grams, b.grams))
     if a.mg is not None and b.mg is not None:

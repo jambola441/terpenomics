@@ -576,6 +576,8 @@ def choose_sizes(records: list[dict], catalogs: dict, prices=None, *, use_jev: b
         if not hit or not unit or rec.get("catalog_match_method") not in catalog_match.OVERLAY_METHODS:
             continue
         catalog, entry = hit
+        if sizes.parse(entry.get("variant"), category=entry.get("category") or category).ml is not None:
+            continue                        # a volume-sized entry's size is its own (catalog_size)
         siblings = products.get((id(catalog), catalog_store._product_key(entry)), [entry])
         item = size_choice.Item(
             name=rec.get("scraped_name") or "", category=category, variant=rec.get("variant"),

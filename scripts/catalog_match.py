@@ -522,6 +522,10 @@ def catalog_size(variant: str | None, name: str | None, entry: dict,
     category = entry.get("category")
     if category not in sizes.DOSE_CATEGORIES:
         return None
+    # A volume-sized entry (MFNY's "15mL" tinctures) is the size: the mg a store gives
+    # is the batch's lab total, and a trusted match takes the entry's attributes.
+    if sizes.parse(entry.get("variant"), category=category).ml is not None:
+        return entry["variant"]
     mine = sizes.parse(variant, name, category=category)
     if mine.mg is None:
         return None

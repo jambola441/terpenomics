@@ -193,6 +193,12 @@ def spell_size(label: str, category: str | None) -> str:
         return f"{label}: {z.pack} pieces, {z.grams:g}g in total"
     if z.grams is not None:
         return f"{label}: {z.grams:g}g in total"
+    if z.ml is not None:
+        # Volume-sized (MFNY's tinctures): the brand's mg is a per-batch lab total that
+        # stores copy, so a listing's mg figure says nothing against this package.
+        return (f"{label}: a {z.ml:g}mL bottle. Its THC in mg differs from batch to batch, so "
+                f"a listing stating any mg figure, or no size at all, can be this package; only "
+                f"a different volume rules it out")
     return label
 
 

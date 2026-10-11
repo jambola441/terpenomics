@@ -249,3 +249,8 @@ def test_one_size_offered_and_picked_needs_only_to_beat_none(monkeypatch):
     assert not cr.trusted(reading(size_options=1, size=None, p={"size": 0.6}))   # "none" picked
     assert not cr.trusted(reading(size_options=2, p={"size": 0.55}))
     assert not cr.trusted(reading(size_options=1, p={"size": 0.45}))
+
+
+def test_a_volume_size_is_spelled_as_a_bottle_that_any_mg_fits():
+    label = cr.spell_size("15mL", "tinctures")
+    assert label.startswith("15mL: a 15mL bottle") and "any mg figure" in label

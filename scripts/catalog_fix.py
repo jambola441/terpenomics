@@ -116,7 +116,9 @@ def _variant(s: sizes.Size, category: str | None) -> str:
 
 
 def _total(s: sizes.Size) -> str:
-    return f"{s.grams:g}g" if s.grams is not None else f"{s.mg:g}mg"
+    if s.grams is not None:
+        return f"{s.grams:g}g"
+    return f"{s.mg:g}mg" if s.mg is not None else s.label()
 
 
 def _desc(e: dict) -> str:
@@ -429,7 +431,7 @@ def plan_rekey(catalogs: dict, entry_ids, line: str | None = None, strain: str |
     groups: list[tuple[sizes.Size, list[dict]]] = []
     for m in go:
         s = sizes.parse(m.get("variant"), category=category)
-        if s.is_empty() or (s.grams is None and s.mg is None):
+        if s.is_empty() or (s.grams is None and s.mg is None and s.ml is None):
             raise Refused(f"cannot tell the size of {_desc(m)}: set-size it first")
         group = next((g for g in groups if sizes.same_size(s, g[0]) is True), None)
         if group:

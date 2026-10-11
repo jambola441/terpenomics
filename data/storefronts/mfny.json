@@ -36,21 +36,10 @@
     "Gummy packs print an effect label down the side (Sleepy MF-er on Blueberry x Blueberry 2.0, Sexy MF-er on Strawberry Lemonade x Lemon Cane, Mellow MF-er, Focused); the site never uses them and stores write them on 2 of ~100 gummy listings. Not a line: the store-only 'Sleepy MF-er Blueberry x Blueberry 2.0' got its line from one store name, echoed by its matched listings.",
     "Live rosin badders the site does not list (The Belafonte, Hash Burger; one store lists both the resin and the rosin badder of each, at different THC) arrive line-less from the stores and match the site's Live Resin product by strain alone (concentrate subtype does not decide in split_store_products), so their store names land on the resin entry. Not fixable in this recipe.",
     "Store-only vapes and badders arrive without a line (enrichment does not record 'Live Resin' as a line): Strawpaya badder 1g, Super Lemon Haze cart 0.5g and AIO 1g, Superboof AIO 1g. Set their line to Live Resin by admin edit; a recipe rule cannot reach a product the site lacks.",
-    "2026-10-11 (r2, owner-corrected): Sour Peach x Rainbow Beltz 2.0 gummies get line Live Resin, like the brand's other gummies: the package photo says Live Resin. Several stores write it as rosin ('Live Rosin Gummies'); that is the stores' wording, not the product."
+    "2026-10-11 (r2, owner-corrected): Sour Peach x Rainbow Beltz 2.0 gummies get line Live Resin, like the brand's other gummies: the package photo says Live Resin. Several stores write it as rosin ('Live Rosin Gummies'); that is the stores' wording, not the product.",
+    "2026-10-11 (owner): tinctures and the intimacy oil are in, sized by volume: tinctures '15mL' (every image says 15ml; the mg stores list, 344-1000mg, is a batch's lab total, so no mg size could match; sizes.py compares a volume only with a volume), the oil '60mL'. One product per strain and extract line, Classics in front where the title has it; '\"Belafonte\" Banana' is cultivar The Belafonte (its product page). All Night Affair is the oil's product name (line), its cultivar Candy Rain (product page: 'formulated with MFNY's top-tier Candy Rain live resin'), so stores' 'Candy Rain Intimacy Oil' is the same product. Rainbow Driver Live Resin Tincture is sold at stores but not on the site: a push brings it from the stores' consensus at 15mL (two stores write '15mL'); store_skip drops the mg-sized store tinctures. The curated entries of data/plans/mfny-2026-10-11-tinctures.json have no external id, so a push neither matches nor retires them (brand_catalog.push: NULL never matches): after the push lands the site's 15mL entries, deactivate the curated ones into them, or they stand as duplicates."
   ],
   "skip": [
-    {
-      "when": {
-        "title": "(?i)tincture"
-      },
-      "why": "tincture: the site gives the bottle volume, never the dose"
-    },
-    {
-      "when": {
-        "title": "(?i)intimacy oil"
-      },
-      "why": "topical: no dose on the site"
-    },
     {
       "when": {
         "title": "(?i)^(?!.*\\b(?:mini|mii|four pack|classics)\\b).*\\bpre-?rolls?\\b"
@@ -59,6 +48,24 @@
     }
   ],
   "category": [
+    {
+      "when": {
+        "title": "(?i)\\btincture\\b"
+      },
+      "set": {
+        "category": "tinctures",
+        "subtype": "tincture"
+      }
+    },
+    {
+      "when": {
+        "title": "(?i)\\bintimacy oil\\b"
+      },
+      "set": {
+        "category": "topical",
+        "subtype": "topical"
+      }
+    },
     {
       "when": {
         "title": "(?i)pre-?rolls?|bagel\\s*hole"
@@ -142,6 +149,55 @@
     }
   ],
   "title": [
+    {
+      "when": {
+        "category": "^tinctures$"
+      },
+      "match": "^\"Belafonte\"\\s+Banana\\s+(?P<line>Live\\s+Res[ie]n)\\s+Tincture$",
+      "set": {
+        "strain": "The \"Belafonte\"",
+        "size": "15mL"
+      }
+    },
+    {
+      "when": {
+        "category": "^tinctures$"
+      },
+      "match": "^Classics\\s+(?P<strain>.+?)\\s+Live\\s+Rosin\\s+Tincture$",
+      "set": {
+        "line": "Classics Live Rosin",
+        "size": "15mL"
+      }
+    },
+    {
+      "when": {
+        "category": "^tinctures$"
+      },
+      "match": "^Classics\\s+(?P<strain>.+?)\\s+Live\\s+Resin\\s+Tincture$",
+      "set": {
+        "line": "Classics Live Resin",
+        "size": "15mL"
+      }
+    },
+    {
+      "when": {
+        "category": "^tinctures$"
+      },
+      "match": "^(?:MFNY\\s+)?(?P<strain>.+?)\\s+(?P<line>Live\\s+Res[ie]n|Live\\s+Rosin)\\s+Tincture$",
+      "set": {
+        "size": "15mL"
+      }
+    },
+    {
+      "when": {
+        "category": "^topical$"
+      },
+      "match": "^(?P<line>All Night Affair)\\s+Intimacy\\s+Oil$",
+      "set": {
+        "strain": "Candy Rain",
+        "size": "60mL"
+      }
+    },
     {
       "when": {
         "category": "^preroll$"
@@ -416,5 +472,14 @@
     "names": {
       "White Fire OG": "White Fire"
     }
-  }
+  },
+  "store_skip": [
+    {
+      "when": {
+        "subtype": "^tincture$",
+        "size": "mg$"
+      },
+      "why": "MFNY tinctures are sized by the 15mL bottle (owner, 2026-10-11); a store tincture sized in mg is a batch's lab total, not another size, and the 15mL product (site, or Rainbow Driver from the stores' 15mL) covers it"
+    }
+  ]
 }

@@ -1,0 +1,142 @@
+{
+ "brand": "MFNY",
+ "_comment": "DRAFT 2026-10-11 (owner decision): MFNY tinctures sized by the 15mL bottle, one product per strain and extract line. Not written; apply with --write after approval. These curated entries (no external id) bridge until the next storefront push, which proposes the same products from the recipe (data/storefronts/mfny.json: tincture rules, store_skip). A push does not retire entries without an external id, so after it lands, deactivate these into the site's 15mL entries. The intimacy oil needs no edit: 'All Night Affair Candy Rain 60ml' is already active and now reads as a size (sizes.py volumes).",
+ "edits": [
+  {
+   "op": "add-product",
+   "category": "tinctures",
+   "subtype": "tincture",
+   "line": "Live Resin",
+   "strain": "The \"Belafonte\"",
+   "sizes": [
+    "15mL"
+   ],
+   "why": "site '\"Belafonte\" Banana Live Resin Tincture' (cultivar The Belafonte on its page); stores 'MFNY The Belafonte Live Resin Tincture 15mL'"
+  },
+  {
+   "op": "add-product",
+   "category": "tinctures",
+   "subtype": "tincture",
+   "line": "Live Resin",
+   "strain": "Hash Burger",
+   "sizes": [
+    "15mL"
+   ],
+   "why": "site 'Hash Burger Live Resin Tincture'; stores 'Hash Burger Live Resin Tincture | 15mL'"
+  },
+  {
+   "op": "add-product",
+   "category": "tinctures",
+   "subtype": "tincture",
+   "line": "Live Rosin",
+   "strain": "Hash Burger",
+   "sizes": [
+    "15mL"
+   ],
+   "why": "site 'Hash Burger Live Rosin Tincture'; stores 'Hash Burger Live Rosin Tincture | 15mL' (5 listings)"
+  },
+  {
+   "op": "add-product",
+   "category": "tinctures",
+   "subtype": "tincture",
+   "line": "Live Resin",
+   "strain": "Honey Banana",
+   "sizes": [
+    "15mL"
+   ],
+   "why": "site 'Honey Banana Live Resin Tincture'; 8 store listings"
+  },
+  {
+   "op": "add-product",
+   "category": "tinctures",
+   "subtype": "tincture",
+   "line": "Live Resin",
+   "strain": "Lemon Cane",
+   "sizes": [
+    "15mL"
+   ],
+   "why": "site 'Lemon Cane Live Resin Tincture'; stores 'MFNY 15mL Live Resin Tincture- Lemon Cane'"
+  },
+  {
+   "op": "add-product",
+   "category": "tinctures",
+   "subtype": "tincture",
+   "line": "Live Resin",
+   "strain": "Oishii",
+   "sizes": [
+    "15mL"
+   ],
+   "why": "site 'Oishii Live Resin Tincture'; 6 store listings"
+  },
+  {
+   "op": "add-product",
+   "category": "tinctures",
+   "subtype": "tincture",
+   "line": "Live Resin",
+   "strain": "Rainbow Driver",
+   "sizes": [
+    "15mL"
+   ],
+   "why": "not on the site; 10 store listings 'Rainbow Driver Live Resin Tincture | 15mL'"
+  },
+  {
+   "op": "add-product",
+   "category": "tinctures",
+   "subtype": "tincture",
+   "line": "Live Resin",
+   "strain": "Skunk",
+   "sizes": [
+    "15mL"
+   ],
+   "why": "site 'MFNY Skunk Live Resin Tincture' (leading MFNY dropped, as for every Skunk product); stores 'MFNY Skunk Live Resin Tincture | 15mL'"
+  },
+  {
+   "op": "add-product",
+   "category": "tinctures",
+   "subtype": "tincture",
+   "line": "Live Resin",
+   "strain": "Turbo Blueberry",
+   "sizes": [
+    "15mL"
+   ],
+   "why": "site 'Turbo Blueberry Live Resin Tincture'; 7 store listings"
+  },
+  {
+   "op": "add-product",
+   "category": "tinctures",
+   "subtype": "tincture",
+   "line": "Classics Live Resin",
+   "strain": "Sour Diesel",
+   "sizes": [
+    "15mL"
+   ],
+   "why": "site 'Classics Sour Diesel Live Resin Tincture'; 9 store listings"
+  },
+  {
+   "op": "add-product",
+   "category": "tinctures",
+   "subtype": "tincture",
+   "line": "Classics Live Rosin",
+   "strain": "Chemdog",
+   "sizes": [
+    "15mL"
+   ],
+   "why": "site 'Classics Chemdog Live Rosin Tincture'; 8 store listings"
+  },
+  {
+   "op": "deactivate",
+   "entry": "e88fd70f-7e6f-48ec-b17c-85522ef37a95",
+   "why": "bootstrap Hash Burger tincture 391.7mg, line-less: a batch lab total read as a size; its store names are both the Live Resin and the Live Rosin 15mL bottles added above. A true duplicate. No 'into': an entry this plan adds is not selectable, and its listings re-match at the next import."
+  },
+  {
+   "op": "deactivate",
+   "entry": "ccd329fe-79fd-4cea-a109-7b6021da1e2a",
+   "why": "bootstrap Hash Burger tincture 1000mg, line-less: a batch lab total read as a size; its store names are both the Live Resin and the Live Rosin 15mL bottles added above. A true duplicate. No 'into': an entry this plan adds is not selectable, and its listings re-match at the next import."
+  },
+  {
+   "op": "deactivate",
+   "entry": "fa715ed8-e653-4796-bb4b-18ca925b1f02",
+   "why": "bootstrap Hash Burger tincture 1500mg, line-less: a batch lab total read as a size; its store names are both the Live Resin and the Live Rosin 15mL bottles added above. A true duplicate. No 'into': an entry this plan adds is not selectable, and its listings re-match at the next import."
+  }
+ ]
+}
