@@ -995,5 +995,9 @@
       "line": "Protab Max",
       "category": "edible"
     }
+  ],
+  "_comment_birdies": "Batch C draft (2026-10-11). Birdies' NY pre-rolls are all the Classic line in Indica / Hybrid / Sativa, 2 x 0.7g = 1.4g and 5 x 0.7g = 3.5g; every store prints 'Classic' but enrichment recorded it on 2 of 8 bootstrap products (Leafly brand catalog https://www.leafly.com/brands/birdies/catalog).",
+  "Birdies": [
+    {"line": "Classic", "category": "preroll"}
   ]
 }

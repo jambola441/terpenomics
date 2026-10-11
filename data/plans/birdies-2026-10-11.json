@@ -1,0 +1,82 @@
+{
+ "brand": "Birdies",
+ "_comment": "DRAFT 2026-10-11, batch C. Apply after the bootstrap catalog is pushed (catalog_bootstrap.py --brand \"Birdies\" --push --via-http); selectors name bootstrap entries. Not measured: --measure needs the catalog in the database.",
+ "edits": [
+  {
+   "op": "rekey",
+   "entry": {
+    "category": "preroll",
+    "strain": "Hybrid",
+    "size": "1.4g",
+    "line": ""
+   },
+   "line": "Classic",
+   "why": "store names: every Birdies listing (35, 3+ stores) reads \"Classic <type>\", 2pk 0.7g = 1.4g and 5pk 0.7g = 3.5g; Leafly brand catalog https://www.leafly.com/brands/birdies/catalog lists Classic Indica 1.4g [2pk] / 3.5g [5pk]; enrichment dropped the line"
+  },
+  {
+   "op": "rekey",
+   "entry": {
+    "category": "preroll",
+    "strain": "Hybrid",
+    "size": "3.5g",
+    "line": ""
+   },
+   "line": "Classic",
+   "why": "store names: every Birdies listing (35, 3+ stores) reads \"Classic <type>\", 2pk 0.7g = 1.4g and 5pk 0.7g = 3.5g; Leafly brand catalog https://www.leafly.com/brands/birdies/catalog lists Classic Indica 1.4g [2pk] / 3.5g [5pk]; enrichment dropped the line"
+  },
+  {
+   "op": "rekey",
+   "entry": {
+    "category": "preroll",
+    "strain": "Indica",
+    "size": "1.4g",
+    "line": ""
+   },
+   "line": "Classic",
+   "why": "store names: every Birdies listing (35, 3+ stores) reads \"Classic <type>\", 2pk 0.7g = 1.4g and 5pk 0.7g = 3.5g; Leafly brand catalog https://www.leafly.com/brands/birdies/catalog lists Classic Indica 1.4g [2pk] / 3.5g [5pk]; enrichment dropped the line"
+  },
+  {
+   "op": "deactivate",
+   "entry": {
+    "category": "preroll",
+    "strain": "Indica",
+    "size": "3.5g",
+    "line": ""
+   },
+   "into": {
+    "category": "preroll",
+    "strain": "Indica",
+    "size": "3.5g",
+    "line": "Classic"
+   },
+   "why": "store names: every Birdies listing (35, 3+ stores) reads \"Classic <type>\", 2pk 0.7g = 1.4g and 5pk 0.7g = 3.5g; Leafly brand catalog https://www.leafly.com/brands/birdies/catalog lists Classic Indica 1.4g [2pk] / 3.5g [5pk]; line-less copy of the Classic entry"
+  },
+  {
+   "op": "rekey",
+   "entry": {
+    "category": "preroll",
+    "strain": "Sativa",
+    "size": "1.4g",
+    "line": ""
+   },
+   "line": "Classic",
+   "why": "store names: every Birdies listing (35, 3+ stores) reads \"Classic <type>\", 2pk 0.7g = 1.4g and 5pk 0.7g = 3.5g; Leafly brand catalog https://www.leafly.com/brands/birdies/catalog lists Classic Indica 1.4g [2pk] / 3.5g [5pk]; enrichment dropped the line"
+  },
+  {
+   "op": "deactivate",
+   "entry": {
+    "category": "preroll",
+    "strain": "Sativa",
+    "size": "3.5g",
+    "line": ""
+   },
+   "into": {
+    "category": "preroll",
+    "strain": "Sativa",
+    "size": "3.5g",
+    "line": "Classic"
+   },
+   "why": "store names: every Birdies listing (35, 3+ stores) reads \"Classic <type>\", 2pk 0.7g = 1.4g and 5pk 0.7g = 3.5g; Leafly brand catalog https://www.leafly.com/brands/birdies/catalog lists Classic Indica 1.4g [2pk] / 3.5g [5pk]; line-less copy of the Classic entry"
+  }
+ ]
+}

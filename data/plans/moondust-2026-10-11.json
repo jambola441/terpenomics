@@ -1,0 +1,36 @@
+{
+ "brand": "Moondust",
+ "_comment": "DRAFT 2026-10-11, batch C. Apply after the bootstrap catalog is pushed (catalog_bootstrap.py --brand \"Moondust\" --push --via-http); selectors name bootstrap entries. Not measured: --measure needs the catalog in the database.",
+ "edits": [
+  {
+   "op": "add-product",
+   "why": "no brand site reachable (Oklahoma brand, NY share per https://www.headset.io/brands/moon-dust: 2g live resin disposables); store names: AIO vapes \"Live Resin AIO Vape - 2g\", pre-rolls \"Moonrock Preroll - 1g\" / \"Infused Pre-Rolls\"; 1 store 'Vape AIO | Moondust | Apple Motorbreath - Live Resin' 2g",
+   "category": "vaporizers",
+   "strain": "Apple Motorbreath",
+   "sizes": [
+    "2g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "no brand site reachable (Oklahoma brand, NY share per https://www.headset.io/brands/moon-dust: 2g live resin disposables); store names: AIO vapes \"Live Resin AIO Vape - 2g\", pre-rolls \"Moonrock Preroll - 1g\" / \"Infused Pre-Rolls\"; 1 store 'Vape AIO | Moondust | Red White & Glue - Live Resin' 2g",
+   "category": "vaporizers",
+   "strain": "Red White & Glue",
+   "sizes": [
+    "2g"
+   ],
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "why": "no brand site reachable (Oklahoma brand, NY share per https://www.headset.io/brands/moon-dust: 2g live resin disposables); store names: AIO vapes \"Live Resin AIO Vape - 2g\", pre-rolls \"Moonrock Preroll - 1g\" / \"Infused Pre-Rolls\"; 1 store 'Vape AIO | Moondust | Tiger's Blood - Live Resin' 2g",
+   "category": "vaporizers",
+   "strain": "Tiger's Blood",
+   "sizes": [
+    "2g"
+   ],
+   "subtype": "all-in-one"
+  }
+ ]
+}

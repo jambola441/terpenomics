@@ -1,0 +1,163 @@
+{
+ "brand": "Supernaturals",
+ "_comment": "DRAFT 2026-10-11, batch C. Apply after the bootstrap catalog is pushed (catalog_bootstrap.py --brand \"Supernaturals\" --push --via-http); selectors name bootstrap entries. Not measured: --measure needs the catalog in the database.",
+ "edits": [
+  {
+   "op": "add-product",
+   "why": "supernaturalsny.com/coa (Joint 1pk; Joint 2pk; Joint 5pk; Microtokes .25g 10pk; 10mg gummies 10pk); 1 store 'Chamomile Elderberry Sleep Gummies | 10pk | 100mg'",
+   "category": "edible",
+   "strain": "Chamomile Elderberry Sleep",
+   "sizes": [
+    "10pk 100mg"
+   ],
+   "subtype": "gummy"
+  },
+  {
+   "op": "add-product",
+   "why": "supernaturalsny.com/coa (Joint 1pk; Joint 2pk; Joint 5pk; Microtokes .25g 10pk; 10mg gummies 10pk); 1 store 'Peach Matcha Energy Gummies | 10pk | 100mg'",
+   "category": "edible",
+   "strain": "Peach Matcha Energy",
+   "sizes": [
+    "10pk 100mg"
+   ],
+   "subtype": "gummy"
+  },
+  {
+   "op": "add-product",
+   "why": "supernaturalsny.com/coa (Joint 1pk; Joint 2pk; Joint 5pk; Microtokes .25g 10pk; 10mg gummies 10pk); 1 store 'Rosemary Lemon Focus Gummies | 10pk | 100mg'",
+   "category": "edible",
+   "strain": "Rosemary Lemon Focus",
+   "sizes": [
+    "10pk 100mg"
+   ],
+   "subtype": "gummy"
+  },
+  {
+   "op": "add-product",
+   "why": "supernaturalsny.com/coa (Joint 1pk; Joint 2pk; Joint 5pk; Microtokes .25g 10pk; 10mg gummies 10pk); 1 store 'Watermelon Tulsi Chill Gummies | 10pk | 100mg'",
+   "category": "edible",
+   "strain": "Watermelon Tulsi Chill",
+   "sizes": [
+    "10pk 100mg"
+   ],
+   "subtype": "gummy"
+  },
+  {
+   "op": "add-product",
+   "why": "supernaturalsny.com/coa (Joint 1pk; Joint 2pk; Joint 5pk; Microtokes .25g 10pk; 10mg gummies 10pk); Joint 1 pack; 1 store 'Sour Dubb Joint' 0.75g",
+   "category": "preroll",
+   "strain": "Sour Dubb",
+   "sizes": [
+    "0.75g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "supernaturalsny.com/coa (Joint 1pk; Joint 2pk; Joint 5pk; Microtokes .25g 10pk; 10mg gummies 10pk); Joint 2 pack, stores write '2pk .75g' = 1.5g",
+   "category": "preroll",
+   "strain": "Hawaiian Haze",
+   "sizes": [
+    "1.5g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "supernaturalsny.com/coa (Joint 1pk; Joint 2pk; Joint 5pk; Microtokes .25g 10pk; 10mg gummies 10pk); Joint 2 pack, stores write '2pk .75g' = 1.5g",
+   "category": "preroll",
+   "strain": "Lavender Rose Spliff",
+   "sizes": [
+    "1.5g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "supernaturalsny.com/coa (Joint 1pk; Joint 2pk; Joint 5pk; Microtokes .25g 10pk; 10mg gummies 10pk); Joint 2 pack, stores write '2pk .75g' = 1.5g",
+   "category": "preroll",
+   "strain": "Mint Spliff",
+   "sizes": [
+    "1.5g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "supernaturalsny.com/coa (Joint 1pk; Joint 2pk; Joint 5pk; Microtokes .25g 10pk; 10mg gummies 10pk); Joint 2 pack, stores write '2pk .75g' = 1.5g",
+   "category": "preroll",
+   "strain": "Purple Mandy",
+   "sizes": [
+    "1.5g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "supernaturalsny.com/coa (Joint 1pk; Joint 2pk; Joint 5pk; Microtokes .25g 10pk; 10mg gummies 10pk); 2pk, stores write '2pk .7g' = 1.4g",
+   "category": "preroll",
+   "strain": "CBG Cake",
+   "sizes": [
+    "1.4g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "supernaturalsny.com/coa (Joint 1pk; Joint 2pk; Joint 5pk; Microtokes .25g 10pk; 10mg gummies 10pk); 2pk, stores write '2pk .7g' = 1.4g",
+   "category": "preroll",
+   "strain": "Black Cherry Gelato",
+   "sizes": [
+    "1.4g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "supernaturalsny.com/coa (Joint 1pk; Joint 2pk; Joint 5pk; Microtokes .25g 10pk; 10mg gummies 10pk); 5pk .7g = 3.5g; 1 store",
+   "category": "preroll",
+   "strain": "Super Lemon Piss",
+   "sizes": [
+    "3.5g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "supernaturalsny.com/coa (Joint 1pk; Joint 2pk; Joint 5pk; Microtokes .25g 10pk; 10mg gummies 10pk); 5pk .7g = 3.5g; 1 store",
+   "category": "preroll",
+   "strain": "Cast Iron Cake",
+   "sizes": [
+    "3.5g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "supernaturalsny.com/coa (Joint 1pk; Joint 2pk; Joint 5pk; Microtokes .25g 10pk; 10mg gummies 10pk); 5pk .7g = 3.5g; 1 store",
+   "category": "preroll",
+   "strain": "Rainbow Cherry Sherbet",
+   "sizes": [
+    "3.5g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "supernaturalsny.com/coa (Joint 1pk; Joint 2pk; Joint 5pk; Microtokes .25g 10pk; 10mg gummies 10pk); Microtokes .25g x 10 = 2.5g; 1 store '10pk 2.5G'",
+   "category": "preroll",
+   "strain": "Blueberry",
+   "sizes": [
+    "2.5g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "supernaturalsny.com/coa (Joint 1pk; Joint 2pk; Joint 5pk; Microtokes .25g 10pk; 10mg gummies 10pk); Microtokes .25g x 10 = 2.5g; 1 store '10pk 2.5G'",
+   "category": "preroll",
+   "strain": "Papaya Runtz",
+   "sizes": [
+    "2.5g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "supernaturalsny.com/coa (Joint 1pk; Joint 2pk; Joint 5pk; Microtokes .25g 10pk; 10mg gummies 10pk); Microtokes .25g x 10 = 2.5g; 1 store '10pk 2.5G'",
+   "category": "preroll",
+   "strain": "Purple Mandy",
+   "sizes": [
+    "2.5g"
+   ]
+  }
+ ]
+}

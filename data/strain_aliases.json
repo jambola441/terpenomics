@@ -263,5 +263,20 @@
   "turn": {
     "Sour Apple Soda": "Sour Apple",
     "Sour Apple Seltzer": "Sour Apple"
+  },
+  "Royal Genetics": {
+    "Kush Mintz": "Kush Mints"
+  },
+  "Florette": {
+    "Lotta Latto": "Lotta Lato",
+    "GG#4": "GG #4",
+    "Tahoe OG Kush": "Tahoe OG"
+  },
+  "Moondust": {
+    "Red, White & Glue": "Red White & Glue",
+    "Red White and Glue": "Red White & Glue"
+  },
+  "Supernaturals": {
+    "Lavender Rose": "Lavender Rose Spliff"
   }
 }

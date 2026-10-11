@@ -1,0 +1,208 @@
+{
+ "brand": "Florette",
+ "_comment": "DRAFT 2026-10-11, batch C. Apply after the bootstrap catalog is pushed (catalog_bootstrap.py --brand \"Florette\" --push --via-http); selectors name bootstrap entries. Not measured: --measure needs the catalog in the database.",
+ "edits": [
+  {
+   "op": "add-product",
+   "why": "florettecannabis.com/products (formats: 1g single, 5pk 2.5g, Mini 5pk 1.75g, Infused single 1.2G, Pure Flower Resin vape 0.5g; flower 3.5G); 1 store 'Blue Taffeze - 3.5g'",
+   "category": "flower",
+   "strain": "Blue Taffeze",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "florettecannabis.com/products (formats: 1g single, 5pk 2.5g, Mini 5pk 1.75g, Infused single 1.2G, Pure Flower Resin vape 0.5g; flower 3.5G); 1 store 'Gary Payton - 3.5g'",
+   "category": "flower",
+   "strain": "Gary Payton",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "florettecannabis.com/products (formats: 1g single, 5pk 2.5g, Mini 5pk 1.75g, Infused single 1.2G, Pure Flower Resin vape 0.5g; flower 3.5G); 1 store 'Grease Monkey - 3.5g'",
+   "category": "flower",
+   "strain": "Grease Monkey",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "florettecannabis.com/products (formats: 1g single, 5pk 2.5g, Mini 5pk 1.75g, Infused single 1.2G, Pure Flower Resin vape 0.5g; flower 3.5G); 1 store 'Pound Cake - 3.5g'",
+   "category": "flower",
+   "strain": "Pound Cake",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "florettecannabis.com/products (formats: 1g single, 5pk 2.5g, Mini 5pk 1.75g, Infused single 1.2G, Pure Flower Resin vape 0.5g; flower 3.5G); 1 store 'Pinyatti - 3.5g'",
+   "category": "flower",
+   "strain": "Pinyatti",
+   "sizes": [
+    "3.5g"
+   ],
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "why": "florettecannabis.com/products (formats: 1g single, 5pk 2.5g, Mini 5pk 1.75g, Infused single 1.2G, Pure Flower Resin vape 0.5g; flower 3.5G); 1 store each size ('.35g (5pk)' = 1.75g, '.5g (5pk)' / '5 x .5g' = 2.5g, '1g' single)",
+   "category": "preroll",
+   "strain": "Bernie Hana Butter",
+   "sizes": [
+    "1.75g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "florettecannabis.com/products (formats: 1g single, 5pk 2.5g, Mini 5pk 1.75g, Infused single 1.2G, Pure Flower Resin vape 0.5g; flower 3.5G); 1 store each size ('.35g (5pk)' = 1.75g, '.5g (5pk)' / '5 x .5g' = 2.5g, '1g' single)",
+   "category": "preroll",
+   "strain": "Black Maple",
+   "sizes": [
+    "1.75g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "florettecannabis.com/products (formats: 1g single, 5pk 2.5g, Mini 5pk 1.75g, Infused single 1.2G, Pure Flower Resin vape 0.5g; flower 3.5G); 1 store each size ('.35g (5pk)' = 1.75g, '.5g (5pk)' / '5 x .5g' = 2.5g, '1g' single)",
+   "category": "preroll",
+   "strain": "Blue Zushi",
+   "sizes": [
+    "1.75g",
+    "2.5g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "florettecannabis.com/products (formats: 1g single, 5pk 2.5g, Mini 5pk 1.75g, Infused single 1.2G, Pure Flower Resin vape 0.5g; flower 3.5G); 1 store each size ('.35g (5pk)' = 1.75g, '.5g (5pk)' / '5 x .5g' = 2.5g, '1g' single)",
+   "category": "preroll",
+   "strain": "Cap Junky",
+   "sizes": [
+    "1.75g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "florettecannabis.com/products (formats: 1g single, 5pk 2.5g, Mini 5pk 1.75g, Infused single 1.2G, Pure Flower Resin vape 0.5g; flower 3.5G); 1 store each size ('.35g (5pk)' = 1.75g, '.5g (5pk)' / '5 x .5g' = 2.5g, '1g' single)",
+   "category": "preroll",
+   "strain": "Chemdog D",
+   "sizes": [
+    "1.75g",
+    "2.5g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "florettecannabis.com/products (formats: 1g single, 5pk 2.5g, Mini 5pk 1.75g, Infused single 1.2G, Pure Flower Resin vape 0.5g; flower 3.5G); 1 store each size ('.35g (5pk)' = 1.75g, '.5g (5pk)' / '5 x .5g' = 2.5g, '1g' single)",
+   "category": "preroll",
+   "strain": "GG #4",
+   "sizes": [
+    "1.75g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "florettecannabis.com/products (formats: 1g single, 5pk 2.5g, Mini 5pk 1.75g, Infused single 1.2G, Pure Flower Resin vape 0.5g; flower 3.5G); 1 store each size ('.35g (5pk)' = 1.75g, '.5g (5pk)' / '5 x .5g' = 2.5g, '1g' single)",
+   "category": "preroll",
+   "strain": "Tahoe OG",
+   "sizes": [
+    "1.75g",
+    "2.5g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "florettecannabis.com/products (formats: 1g single, 5pk 2.5g, Mini 5pk 1.75g, Infused single 1.2G, Pure Flower Resin vape 0.5g; flower 3.5G); 1 store each size ('.35g (5pk)' = 1.75g, '.5g (5pk)' / '5 x .5g' = 2.5g, '1g' single)",
+   "category": "preroll",
+   "strain": "Blue Dream",
+   "sizes": [
+    "2.5g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "florettecannabis.com/products (formats: 1g single, 5pk 2.5g, Mini 5pk 1.75g, Infused single 1.2G, Pure Flower Resin vape 0.5g; flower 3.5G); 1 store each size ('.35g (5pk)' = 1.75g, '.5g (5pk)' / '5 x .5g' = 2.5g, '1g' single)",
+   "category": "preroll",
+   "strain": "Cherry Pie",
+   "sizes": [
+    "2.5g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "florettecannabis.com/products (formats: 1g single, 5pk 2.5g, Mini 5pk 1.75g, Infused single 1.2G, Pure Flower Resin vape 0.5g; flower 3.5G); 1 store each size ('.35g (5pk)' = 1.75g, '.5g (5pk)' / '5 x .5g' = 2.5g, '1g' single)",
+   "category": "preroll",
+   "strain": "Citronella",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "florettecannabis.com/products (formats: 1g single, 5pk 2.5g, Mini 5pk 1.75g, Infused single 1.2G, Pure Flower Resin vape 0.5g; flower 3.5G); 1 store each size ('.35g (5pk)' = 1.75g, '.5g (5pk)' / '5 x .5g' = 2.5g, '1g' single)",
+   "category": "preroll",
+   "strain": "Lemon Fresh",
+   "sizes": [
+    "1g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "florettecannabis.com/products (formats: 1g single, 5pk 2.5g, Mini 5pk 1.75g, Infused single 1.2G, Pure Flower Resin vape 0.5g; flower 3.5G); 1 store each size ('.35g (5pk)' = 1.75g, '.5g (5pk)' / '5 x .5g' = 2.5g, '1g' single)",
+   "category": "preroll",
+   "strain": "Pound Cake",
+   "sizes": [
+    "1g",
+    "2.5g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "florettecannabis.com/products (formats: 1g single, 5pk 2.5g, Mini 5pk 1.75g, Infused single 1.2G, Pure Flower Resin vape 0.5g; flower 3.5G); 1 store each size ('.35g (5pk)' = 1.75g, '.5g (5pk)' / '5 x .5g' = 2.5g, '1g' single)",
+   "category": "preroll",
+   "strain": "Lotta Lato",
+   "sizes": [
+    "1g",
+    "2.5g"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "florettecannabis.com/products (formats: 1g single, 5pk 2.5g, Mini 5pk 1.75g, Infused single 1.2G, Pure Flower Resin vape 0.5g; flower 3.5G); Infused Pre-Roll Single 1.2G; 1 store 'Gelato #41 | Infused Joint | 1.2g'",
+   "category": "preroll",
+   "strain": "Gelato #41",
+   "sizes": [
+    "1.2g"
+   ],
+   "line": "Infused"
+  },
+  {
+   "op": "add-product",
+   "why": "florettecannabis.com/products (formats: 1g single, 5pk 2.5g, Mini 5pk 1.75g, Infused single 1.2G, Pure Flower Resin vape 0.5g; flower 3.5G); Infused Pre-Roll Single 1.2G; 1 store 'Lemon Cherry | Infused Joint | 1.2g'",
+   "category": "preroll",
+   "strain": "Lemon Cherry",
+   "sizes": [
+    "1.2g"
+   ],
+   "line": "Infused"
+  },
+  {
+   "op": "add-product",
+   "why": "florettecannabis.com/products (formats: 1g single, 5pk 2.5g, Mini 5pk 1.75g, Infused single 1.2G, Pure Flower Resin vape 0.5g; flower 3.5G); Pure Flower Resin vape 0.5g; 1 store 'Baby Yoda Pure Flower Resin Disposable Vape - .5g'",
+   "category": "vaporizers",
+   "strain": "Baby Yoda",
+   "sizes": [
+    "0.5g"
+   ],
+   "subtype": "all-in-one"
+  }
+ ]
+}
