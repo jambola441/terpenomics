@@ -79,5 +79,47 @@
     {"listing": "Boutiq | Switch Liquid Diamonds Triple Tank AIO | J13 x Gelato 41 x GDP", "entry": {"category": "vaporizers", "line": "Switch V5", "strain": "J-13 x Gelato 41 x GDP", "size": "2g"}},
     {"listing": "BTQ Switch V5 GUM | Z-41 x Lemon Cherry x Mango Melon | Hyb-Hyb-Ind | 2g | AIO", "entry": {"category": "vaporizers", "line": "Switch V5", "strain": "Z-41 x Lemon Cherry x Mango Melon", "size": "2g"}},
     {"listing": "Boutiq (Snack Pack) - Grape Soda X Rainbow Belts | (5 x .05g) Diamond Infused PreRolls", "entry": {"category": "preroll", "line": "Snack Pack", "strain": "Grape Soda x Rainbow Belts", "size": "2.5g"}}
+  ],
+  "koa-cannabis-co": [
+    {"listing": "Infused Pre-Rolls | KOA | Northern Lights - 10pk", "entry": {"category": "preroll", "strain": "Northern Lights", "size": "3.5g"}},
+    {"listing": "Koa | Sour Diesel | Sativa | Infused Preroll 10-Pack", "entry": {"category": "preroll", "strain": "Sour Diesel", "size": "3.5g"}},
+    {"listing": "Captain Crunch - 10Pk Live Resin Infused Prerolls", "entry": {"category": "preroll", "strain": "Captain Crunch", "size": "3.5g"}},
+    {"listing": "White Runtz - 2PK Infused Prerolls", "entry": {"category": "preroll", "strain": "White Runtz", "size": "0.7g"}},
+    {"listing": "Infused Pre-Rolls | Koa | Skywalker Og - 2pk", "entry": {"category": "preroll", "strain": "Skywalker OG", "size": "0.7g"}},
+    {"listing": "Koa Cannabis Co. - Granddaddy Purple | Infused Pre-roll 2pk", "entry": {"category": "preroll", "strain": "Granddaddy Purple", "size": "0.7g"}}
+  ],
+  "static-room": [
+    {"listing": "Static Room | Infused Preroll | Churroz | Hash Hole | Party Popperz X Tropicana Cherry | 2g | Hybrid | THC 31.12%", "entry": {"category": "preroll", "line": "Hash Hole", "strain": "Party Popperz", "size": "2g"}},
+    {"listing": "Static Room | Infused Preroll | Churroz | Hash Hole | Cherry Popperz X Garlic Popsicle | 2g | Hybrid | THC 31.72%", "entry": {"category": "preroll", "line": "Hash Hole", "strain": "Cherry Popperz", "size": "2g"}},
+    {"listing": "Static Room | Hash Hole A.M.A.2.0 x Garlic Popsicle", "entry": {"category": "preroll", "line": "Hash Hole", "strain": "A.M.A. 2.0", "size": "2g"}},
+    {"listing": "Static Room | Mega Z Blue x YellowBurst - Hash Hole Blunt", "entry": {"category": "preroll", "line": "Hash Hole", "strain": "Mega Z Blue", "size": "2g"}},
+    {"listing": "Static Room | Static Sift Hash Lemon Sorbet", "entry": {"category": "concentrate", "subtype": "hash", "strain": "Lemon Sorbet", "size": "1g"}},
+    {"listing": "Static Room | Hash | Static Sift | Papaya Sorbet | 1g | Hybrid | THC 63.86%", "entry": {"category": "concentrate", "subtype": "hash", "strain": "Papaya Sorbet", "size": "1g"}}
+  ],
+  "muha-meds": [
+    {"listing": "Muha Meds Mate - Jet Fuel | 3.5g 5pk Infused Joints", "entry": {"category": "preroll", "strain": "Jet Fuel", "size": "3.5g"}},
+    {"listing": "Muha Meds | 5pk Infused Prerolls Super Boof (S)", "entry": {"category": "preroll", "strain": "Super Boof", "size": "3.5g"}},
+    {"listing": "Infused Pre-Rolls | Muha Meds | Adios MF - 5pk", "entry": {"category": "preroll", "strain": "Adios MF", "size": "3.5g"}},
+    {"listing": "Muha Meds | 510 Vape Cart Tempation (H)", "entry": {"category": "vaporizers", "subtype": "cart", "strain": "Temptation", "size": "1g"}},
+    {"listing": "Muha Meds | Habibi Cart | Sativa", "entry": {"category": "vaporizers", "subtype": "cart", "strain": "Habibi", "size": "1g"}},
+    {"listing": "Vape AIO | Muha Meds | Fatso", "entry": {"category": "vaporizers", "subtype": "all-in-one", "strain": "Fatso", "size": "2g"}},
+    {"listing": "Vape AIO | Muha Meds | Super Sour Diesel", "entry": {"category": "vaporizers", "subtype": "all-in-one", "strain": "Sour Diesel", "size": "2g"}}
+  ],
+  "munchkins": [
+    {"listing": "Munchkins | 28pk Prerolls - Cheetah Piss (H)", "entry": {"category": "preroll", "strain": "Cheetah Piss", "size": "14g"}},
+    {"listing": "Pre-Rolls | Munchkins | Maui Wowie - 28pk", "entry": {"category": "preroll", "strain": "Maui Wowie", "size": "14g"}},
+    {"listing": "Munchkins | Mimosa - Hybrid (small buds)", "entry": {"category": "flower", "subtype": "smalls", "strain": "Mimosa", "size": "28g"}},
+    {"listing": "Munchkins | Flower Bag Rainbow Beltz (H)", "entry": {"category": "flower", "subtype": "smalls", "strain": "Rainbow Beltz", "size": "28g"}},
+    {"listing": "Munchkins | Flower Bag Girl Scout Cookies (I)", "entry": {"category": "flower", "subtype": "smalls", "strain": "Girl Scout Cookies", "size": "3.5g"}},
+    {"listing": "Flower | Munchkins | Trop Cherry", "entry": {"category": "flower", "subtype": "smalls", "strain": "Trop Cherry", "size": "28g"}}
+  ],
+  "house-of-sacci": [
+    {"listing": "House Of Sacci | Preroll | Garlic Sauce | Dog Walkers | .5g | 7 Pack | 3.5g | Hybrid | 30.58% THC", "entry": {"category": "preroll", "strain": "Garlic Sauce", "size": "3.5g"}},
+    {"listing": "House of Sacci - Devil's Drip Prerolls 7pk - 3.5g", "entry": {"category": "preroll", "strain": "Devil's Drip", "size": "3.5g"}},
+    {"listing": "Vape AIO | House of Sacci | Laughing Gas", "entry": {"category": "vaporizers", "subtype": "all-in-one", "strain": "Laughing Gas", "size": "2g"}},
+    {"listing": "House Of Sacci | Hash | Blond Hash | 1g | Indica | 53.94% THC", "entry": {"category": "concentrate", "subtype": "hash", "strain": "Blonde Hash Indica", "size": "1g"}},
+    {"listing": "Concentrate | House of Sacci | Brown Hash Bar Sativa", "entry": {"category": "concentrate", "subtype": "hash", "strain": "Brown Hash Sativa", "size": "1g"}},
+    {"listing": "House of Sacci - Biscotti Pancakes - .7g", "entry": {"category": "flower", "subtype": "flower", "strain": "Biscotti Pancakes", "size": "0.7g"}},
+    {"listing": "House Of Sacci | Flower | Jar | Permanent Marker | 3.5g | Indica | 24.95% THC", "entry": {"category": "flower", "subtype": "flower", "strain": "Permanent Marker", "size": "3.5g"}}
   ]
 }
