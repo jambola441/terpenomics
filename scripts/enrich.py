@@ -161,6 +161,20 @@ def _cache_key(row: dict) -> str | None:
     return f"{sku}|{(row.get('variant') or '').strip()}"
 
 
+def _on_rail(entry: dict) -> bool:
+    """Whether a cached (category, subtype) is still a pair the taxonomy offers. An
+    LLM-path entry carries no "jq" when Jev did not classify the row, so the
+    QUESTION_VERSION gate passes it whatever it says; when a subtype leaves a rail
+    (vaporizers lost battery and other, 2026-10-11) its entries must be asked again,
+    or they replay the retired pair forever. Unknown categories, categories that keep
+    no subtype, and a blank subtype pass."""
+    spec = taxonomy.spec(entry.get("category"))
+    sub = entry.get("subtype")
+    if spec is None or not sub or not taxonomy.keeps_subtype(spec.name):
+        return True
+    return sub in spec.subtypes
+
+
 def _slug_for_rows(rows: list[dict]) -> str | None:
     for row in rows:
         slug = (row.get("dispensary_slug") or "").strip()
@@ -1460,7 +1474,8 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
         if entry and "variant" in entry and "category" in entry \
                 and entry.get("v") == _ENRICH_VERSION \
                 and entry.get("jq") in (None, jev_classify.QUESTION_VERSION) \
-                and entry.get("jx") in (None, jev_extract.QUESTION_VERSION):
+                and entry.get("jx") in (None, jev_extract.QUESTION_VERSION) \
+                and _on_rail(entry):
             categories.append(entry.get("category"))
             subtypes.append(entry.get("subtype"))
             strains.append(entry.get("strain"))

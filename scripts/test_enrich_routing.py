@@ -121,6 +121,29 @@ def test_a_cached_answer_from_an_older_jev_question_is_asked_again(fakes, monkey
     assert rows[0]["subtype"] == "gummy" and rows[0]["strain"] == "Plain"
 
 
+def test_a_cached_subtype_no_longer_on_its_rail_is_asked_again(fakes, monkeypatch):
+    # An LLM-path entry has no "jq", so only the rail check catches a retired subtype.
+    monkeypatch.setenv("ENRICH_CLASSIFIER", "jev")
+    monkeypatch.setattr(enrich.jev_classify, "classify", jev_answers((0.97, 0.93)))
+    stale = {"v": enrich._ENRICH_VERSION, "category": "vaporizers", "subtype": "battery",
+             "strain": "Old", "product_line": None, "variant": ""}
+    fresh = dict(stale, category="edible", subtype="gummy")
+    (enrich._CACHE_DIR / "test-store.haiku-or.json").write_text(
+        json.dumps({"a|100mg": stale, "b|100mg": fresh}))
+    rows = [gummy("Sure Gummies 10pk", "a"), gummy("Cached Gummies 10pk", "b")]
+    enrich.enrich(rows, model="haiku-or", brand_examples={})
+    assert rows[0]["category"] == "edible" and rows[0]["strain"] == "Plain"
+    assert rows[1]["strain"] == "Old"            # an on-rail entry is still trusted
+
+
+def test_on_rail():
+    assert not enrich._on_rail({"category": "vaporizers", "subtype": "other"})
+    assert enrich._on_rail({"category": "vaporizers", "subtype": "cart"})
+    assert enrich._on_rail({"category": "preroll", "subtype": "infused"})   # keeps none
+    assert enrich._on_rail({"category": "nonsense", "subtype": "x"})
+    assert enrich._on_rail({"category": "edible", "subtype": None})
+
+
 def test_llm_classifier_never_asks_jev(fakes, monkeypatch):
     monkeypatch.setenv("ENRICH_CLASSIFIER", "llm")
     monkeypatch.setattr(enrich.jev_classify, "classify",
