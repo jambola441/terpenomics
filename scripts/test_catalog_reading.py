@@ -241,7 +241,9 @@ def test_examples_are_capped_and_brand_scoped(monkeypatch):
     assert seen and all("Examples" not in i for _, i in seen)
 
 
-def test_one_size_offered_and_picked_needs_only_to_beat_none():
+def test_one_size_offered_and_picked_needs_only_to_beat_none(monkeypatch):
+    assert cr.ONE_SIZE_AT == cr.TRUST_AT        # off until the owner picks the bar
+    monkeypatch.setattr(cr, "ONE_SIZE_AT", 0.5)
     one = reading(size_options=1, p={"size": 0.55})
     assert cr.trusted(one) and "size" not in cr.unsure_steps(one)
     assert not cr.trusted(reading(size_options=1, size=None, p={"size": 0.6}))   # "none" picked

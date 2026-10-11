@@ -72,8 +72,10 @@ NARROW_AT = float(os.environ.get("CATALOG_READING_NARROW_AT", "0.9"))
 TRUST_AT = float(os.environ.get("CATALOG_READING_TRUST_AT", "0.9"))
 # A size question with one package offered asks "this package or none": picking the
 # package over none is enough (owner's reviews, 2026-10-11: 16 of 16 such picks under
-# 0.9 were right, down to 0.55; the misses were weak "none" answers).
-ONE_SIZE_AT = float(os.environ.get("CATALOG_READING_ONE_SIZE_AT", "0.5"))
+# 0.9 were right, down to 0.55; the misses were weak "none" answers). Off until the owner
+# picks the bar (spot checks: wrong picks ~7% at 0.5-0.6, ~2% at 0.6-0.7, <1% above): the
+# default is the trust bar itself.
+ONE_SIZE_AT = float(os.environ.get("CATALOG_READING_ONE_SIZE_AT", str(TRUST_AT)))
 
 DESCRIPTION_CHARS = 1000
 
