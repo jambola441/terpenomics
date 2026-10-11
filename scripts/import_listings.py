@@ -19,6 +19,12 @@ Three sources, each overriding the one before it:
                          at a third.
   3. a human claim       verified_fields, bound to the scraped name
 
+A listing whose category or subtype Jev was unsure of at enrichment (its probability,
+carried in the CSV's p_category / p_subtype, under CATEGORY_REVIEW_BELOW) and that
+the catalog did not settle goes to the review queue with catalog_match_method
+'review_category' (mark_unsure_category; owner decision 2026-10-11). A reviewer's
+call there is a verified category and subtype, which every later import keeps.
+
 And one thing that is never a source: a failed enrichment. A row the model did not
 answer (enrich_failed) carries fallback values; for a listing we already hold, the
 stored identity is kept rather than overwritten with them. Before this, a missing API
@@ -76,6 +82,13 @@ IDENTITY = ("scraped_category", "subtype", "strain", "product_line")
 # verification.VERIFIABLE name -> listings column. `variant` is deliberately absent:
 # it is part of the upsert key, and overlaying it re-keyed the listing — a new row
 # with no claims was inserted and the verified one deactivated as stale.
+# Below this probability for its category or subtype (Jev's, at enrichment) a listing
+# goes to the review queue. enrich.JEV_MIN_CONFIDENCE's default: the bar under which
+# Jev's answer would otherwise have gone to the LLM.
+CATEGORY_REVIEW_BELOW = 0.80
+# The catalog_match_method a listing has when the catalog said nothing of its own about
+# it: no catalog for the brand (None) or no match and no review reason ("none").
+_UNSETTLED = (None, "none")
 VERIFIED_COLUMN = {"category": "scraped_category", "subtype": "subtype",
                    "strain": "strain", "product_line": "product_line"}
 # Widths of the listings columns that have one (models.ListingBase max_length). A value
@@ -134,6 +147,13 @@ def load_env(project_root: str) -> None:
 
 def parse_bool(val) -> bool:
     return str(val).strip().upper() in ("TRUE", "1", "YES")
+
+
+def parse_p(val) -> float | None:
+    try:
+        return float(val) if str(val or "").strip() else None
+    except ValueError:
+        return None
 
 
 def parse_int(val):
@@ -200,6 +220,10 @@ def build_record(row: dict, dispensary_id: str, now: datetime) -> dict | None:
         # The store's own filing ("Vaporizers", "Vape Pens"), before map_category: kept
         # on the reading for catalog_reading's category question.
         "_store_category": _clean(row, "raw_category"),
+        # Jev's probability for its category and subtype (enrich.py); None when it
+        # did not answer them.
+        "_p": {k: v for k in ("category", "subtype")
+               if (v := parse_p(row.get(f"p_{k}"))) is not None},
     }
 
 
@@ -251,6 +275,8 @@ def record_reading(records: list[dict], existing: dict[tuple, dict]) -> None:
             rec["reading"] = (stored or {}).get("reading")
         else:
             rec["reading"] = {k: rec.get(col) or None for k, col in READING}
+            if rec.get("_p"):
+                rec["reading"]["p"] = dict(rec["_p"])
         if rec.get("_store_category") and rec["reading"] is not None:
             rec["reading"] = dict(rec["reading"], store_category=rec["_store_category"])
 
@@ -591,6 +617,32 @@ def apply_verification(records: list[dict], existing: dict[tuple, dict]) -> int:
                 touched = True
         protected += touched
     return protected
+
+
+def mark_unsure_category(records: list[dict], existing: dict[tuple, dict]) -> int:
+    """Send a listing whose category or subtype Jev picked under CATEGORY_REVIEW_BELOW
+    to the review queue (catalog_match_method 'review_category'). Only a listing the
+    catalog said nothing about: a catalog match, trusted or not, or a catalog review
+    reason of its own, decides first (and a trusted match overlays the category). A
+    field a person verified is not unsure. Runs after apply_catalog and
+    apply_verification; recomputed every import, so a listing Jev has become sure of
+    leaves the queue. Returns the number marked."""
+    marked = 0
+    for rec in records:
+        p = rec.get("_p") or {}
+        unsure = {f for f, v in p.items() if v < CATEGORY_REVIEW_BELOW}
+        if not unsure or rec["_enrich_failed"]:
+            continue
+        if rec["catalog_match_method"] not in _UNSETTLED or rec["catalog_entry_id"]:
+            continue
+        stored = existing.get((rec["sku"], rec["variant"] or ""))
+        held = verification.verified_fields(
+            {"verified_fields": (stored or {}).get("verified_fields"), "scraped_name": rec["scraped_name"]})
+        if unsure <= set(held):
+            continue
+        rec["catalog_match_method"] = "review_category"
+        marked += 1
+    return marked
 
 
 def drop_unkept_subtypes(records: list[dict]) -> int:
@@ -935,6 +987,9 @@ def main(argv=None) -> int:
         protected = apply_verification(records, existing)
         if protected:
             print(f"  verified: kept {protected} human-signed row(s) from being overwritten")
+        unsure = mark_unsure_category(records, existing)
+        if unsure:
+            print(f"  review: {unsure} listing(s) with an unsure category or subtype to the review queue")
         drop_unkept_subtypes(records)
         fixed = assign_sizes(records, catalogs)
         if fixed:

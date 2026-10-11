@@ -1049,12 +1049,24 @@ export type LogoCandidate = { url: string; kind: string }
 
 /* ── Catalog review queue (routes/admin/review.py) ─────────────────────────── */
 
-/** Why the matcher left a listing for review (catalog_match_method). */
-export type ReviewReason = 'review_unsure' | 'review_missing' | 'review_near'
+/** Why a listing is in the review queue (catalog_match_method): the matcher's
+ *  three, or review_category — Jev was unsure of its category or subtype. */
+export type ReviewReason = 'review_unsure' | 'review_missing' | 'review_near' | 'review_category'
 
-/** entry: it is this candidate · none: none of these · missing: the catalog lacks
- *  the product or size · skip. Recorded only: nothing else changes. */
-export type ReviewDecisionKind = 'entry' | 'none' | 'missing' | 'skip'
+/** entry: it is this candidate (a manual match) · none: none of these · missing:
+ *  the catalog lacks the product or size · skip · category: the listing's category
+ *  and subtype are these (review_category only; set and verified on the listing). */
+export type ReviewDecisionKind = 'entry' | 'none' | 'missing' | 'skip' | 'category'
+
+/** A review_category card's question (scripts/taxonomy.py). */
+export type ReviewCategoryChoice = {
+  category: string | null
+  subtype: string | null
+  /** Jev's probability for each, at enrichment. */
+  p: { category?: number; subtype?: number }
+  /** Every category and its subtypes; [] when the category keeps none. */
+  choices: { category: string; subtypes: string[] }[]
+}
 
 export type ReviewCounts = {
   total: number
@@ -1120,5 +1132,7 @@ export type ReviewCard = {
   reason: ReviewReason
   reading: ReviewReading | null
   candidates: ReviewCandidate[]
+  /** Set for review_category only; candidates is then empty. */
+  category_choice: ReviewCategoryChoice | null
   progress?: ReviewProgress
 }

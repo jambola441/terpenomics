@@ -5,7 +5,9 @@ import { badge, navBtnStyle, selectStyle } from './components/AdminTable'
 import { ProductImage } from './components/ui'
 import { Icon } from './components/Icon'
 import api from './api/client'
-import type { ReviewCandidate, ReviewCard, ReviewDecisionKind, ReviewProgress, ReviewReading, ReviewReason } from './types'
+import type {
+  ReviewCandidate, ReviewCard, ReviewCategoryChoice, ReviewDecisionKind, ReviewProgress, ReviewReading, ReviewReason,
+} from './types'
 import { money } from './utils/partners'
 import { t, font, radius, tone } from './theme'
 
@@ -18,8 +20,13 @@ import { t, font, radius, tone } from './theme'
  * which entry it is (1-4), none of these (N), that the catalog is missing the
  * product or size (C), or skips (S); U undoes the last call.
  *
- * Decisions are recorded only — they never change the listing's match or the
- * catalog. Every issue is fixed in the catalog, from these records.
+ * A pick (1-4) makes the listing a manual match to that entry; the other calls
+ * are recorded only, and catalog issues are fixed in the catalog from them.
+ *
+ * An "Unsure category" card (review_category: Jev was unsure of the listing's
+ * category or subtype) offers the categories instead of entries: 1-9 picks the
+ * category, then 1-9 its subtype; Enter keeps the current pair, Esc goes back a
+ * step. The call is set and verified on the listing.
  *
  * The card after the one on screen is fetched in the background, so the next
  * card appears as soon as a key is pressed; the decision saves behind it.
@@ -29,6 +36,14 @@ const REASON: Record<ReviewReason, { label: string; hint: string; tone: keyof ty
   review_unsure:  { label: 'Unsure reading',  hint: 'Read against the catalog, but some step unsurely', tone: 'warning' },
   review_missing: { label: 'Catalog missing?', hint: 'The catalog most likely lacks this product',     tone: 'danger' },
   review_near:    { label: 'One off',          hint: 'One entry differs on one attribute (often size)', tone: 'info' },
+  review_category: { label: 'Unsure category', hint: 'Jev was unsure of its category or subtype — pick them', tone: 'warning' },
+}
+
+type CategoryPick = { category: string; subtype: string | null }
+
+/** The subtypes offered for `category` on this card ([] when it keeps none). */
+function subtypesOf(choice: ReviewCategoryChoice, category: string): string[] {
+  return choice.choices.find(c => c.category === category)?.subtypes ?? []
 }
 
 // Below this a reading step counts as unsure (catalog_reading TRUST_AT / NARROW_AT).
@@ -47,6 +62,8 @@ export default function ReviewQueue() {
   const [cleared, setCleared] = useState<string | null>(null)
   const [session, setSession] = useState({ count: 0, started: Date.now() })
   const [busy, setBusy] = useState(false)
+  // review_category: the category picked, while its subtype is chosen.
+  const [pickedCat, setPickedCat] = useState<string | null>(null)
   const prefetch = useRef<Prefetch | null>(null)
   const filter = brand || undefined
 
@@ -75,7 +92,9 @@ export default function ReviewQueue() {
 
   useEffect(() => { load() }, [load])
 
-  async function decide(decision: ReviewDecisionKind, entryId?: string) {
+  useEffect(() => { setPickedCat(null) }, [card?.listing.id])
+
+  async function decide(decision: ReviewDecisionKind, entryId?: string, pick?: CategoryPick) {
     if (!card || busy) return
     const decided = card
     const pending = prefetch.current?.after === decided.listing.id
@@ -85,7 +104,8 @@ export default function ReviewQueue() {
     setBusy(true)
     setError(null)
     const saved = api.review.decide(
-      { listing_id: decided.listing.id, decision, entry_id: entryId, note: note.trim() || undefined })
+      { listing_id: decided.listing.id, decision, entry_id: entryId, note: note.trim() || undefined,
+        category: pick?.category, subtype: pick ? pick.subtype : undefined })
     setNote('')
     try {
       // The next card goes up as soon as it is here; the save finishes behind it.
@@ -141,7 +161,26 @@ export default function ReviewQueue() {
     window.setTimeout(() => setCleared(c => (c === name ? null : c)), 3500)
   }
 
+  /** review_category: pick a category; one without subtypes is the call. */
+  function pickCategory(category: string) {
+    if (!card?.category_choice) return
+    if (subtypesOf(card.category_choice, category).length === 0) decide('category', undefined, { category, subtype: null })
+    else setPickedCat(category)
+  }
+
+  /** review_category: keep the listing's current category and subtype, when valid. */
+  function keepCategory() {
+    const choice = card?.category_choice
+    if (!choice?.category) return
+    const subs = subtypesOf(choice, choice.category)
+    if (!choice.choices.some(c => c.category === choice.category)) return
+    if (subs.length === 0) decide('category', undefined, { category: choice.category, subtype: null })
+    else if (choice.subtype && subs.includes(choice.subtype)) decide('category', undefined, { category: choice.category, subtype: choice.subtype })
+    else setPickedCat(choice.category)
+  }
+
   // Keys: 1-4 pick, N none, C catalog missing, S skip, U undo. Not while typing.
+  // On an "Unsure category" card: 1-9 category then subtype, Enter keep, Esc back.
   const keyRef = useRef<(e: KeyboardEvent) => void>(() => {})
   keyRef.current = (e: KeyboardEvent) => {
     const el = e.target as HTMLElement | null
@@ -151,6 +190,19 @@ export default function ReviewQueue() {
     if (k === 'u') { e.preventDefault(); undo(); return }
     if (!card) return
     const n = Number(k)
+    const choice = card.category_choice
+    if (choice) {
+      const options = pickedCat ? subtypesOf(choice, pickedCat) : choice.choices.map(c => c.category)
+      if (n >= 1 && n <= Math.min(9, options.length)) {
+        e.preventDefault()
+        if (pickedCat) decide('category', undefined, { category: pickedCat, subtype: options[n - 1] })
+        else pickCategory(options[n - 1])
+      }
+      else if (k === 'enter' && !pickedCat) { e.preventDefault(); keepCategory() }
+      else if ((k === 'escape' || k === 'backspace') && pickedCat) { e.preventDefault(); setPickedCat(null) }
+      else if (k === 's') { e.preventDefault(); decide('skip') }
+      return
+    }
     if (n >= 1 && n <= card.candidates.length) { e.preventDefault(); decide('entry', card.candidates[n - 1].id) }
     else if (k === 'n') { e.preventDefault(); decide('none') }
     else if (k === 'c') { e.preventDefault(); decide('missing') }
@@ -206,10 +258,21 @@ export default function ReviewQueue() {
 
         {card ? (
           <>
-            <Card card={card} onPick={id => decide('entry', id)} disabled={busy} />
+            <Card card={card} onPick={id => decide('entry', id)} disabled={busy}
+                  picker={card.category_choice && (
+                    <CategoryPicker choice={card.category_choice} picked={pickedCat} disabled={busy}
+                                    onCategory={pickCategory} onBack={() => setPickedCat(null)}
+                                    onSubtype={sub => pickedCat && decide('category', undefined, { category: pickedCat, subtype: sub })} />
+                  )} />
             <div style={{ display: 'flex', gap: 8, marginTop: 16, flexWrap: 'wrap', alignItems: 'center' }}>
-              <Action k="N" label="None of these" onClick={() => decide('none')} disabled={busy} />
-              <Action k="C" label="Catalog missing this product / size" onClick={() => decide('missing')} disabled={busy} />
+              {card.category_choice ? (
+                <Action k="Enter" label="Keep as is" onClick={keepCategory} disabled={busy || !card.category_choice.category} />
+              ) : (
+                <>
+                  <Action k="N" label="None of these" onClick={() => decide('none')} disabled={busy} />
+                  <Action k="C" label="Catalog missing this product / size" onClick={() => decide('missing')} disabled={busy} />
+                </>
+              )}
               <Action k="S" label="Skip" onClick={() => decide('skip')} disabled={busy} />
               <Action k="U" label="Undo last" onClick={undo} disabled={busy} icon="undo" />
               <input
@@ -241,7 +304,9 @@ export default function ReviewQueue() {
   )
 }
 
-function Card({ card, onPick, disabled }: { card: ReviewCard; onPick: (id: string) => void; disabled: boolean }) {
+function Card({ card, onPick, disabled, picker }: {
+  card: ReviewCard; onPick: (id: string) => void; disabled: boolean; picker?: ReactNode
+}) {
   const l = card.listing
   const reason = REASON[card.reason]
   return (
@@ -274,14 +339,14 @@ function Card({ card, onPick, disabled }: { card: ReviewCard; onPick: (id: strin
         )}
       </section>
 
-      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 10 }}>
+      {picker ?? <section style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 10 }}>
         {card.candidates.length === 0 && (
           <div style={{ ...panel, gridColumn: '1 / -1', color: t.text3 }}>No catalog entries to offer — N or C.</div>
         )}
         {card.candidates.map((c, i) => (
           <Candidate key={c.id} n={i + 1} c={c} onPick={() => onPick(c.id)} disabled={disabled} />
         ))}
-      </section>
+      </section>}
     </div>
   )
 }
@@ -317,6 +382,51 @@ function Reading({ reading }: { reading: ReviewReading }) {
         <span style={{ ...badge, fontSize: 12, padding: '3px 8px', background: t.surface2, color: t.text3 }}>store files it: {reading.store_category}</span>
       )}
     </div>
+  )
+}
+
+/** review_category: the categories, then the picked one's subtypes; the listing's
+ *  current value is marked, with Jev's probability for it. */
+function CategoryPicker({ choice, picked, disabled, onCategory, onSubtype, onBack }: {
+  choice: ReviewCategoryChoice; picked: string | null; disabled: boolean
+  onCategory: (c: string) => void; onSubtype: (s: string) => void; onBack: () => void
+}) {
+  const step = picked ? 'subtype' : 'category'
+  const options = picked ? subtypesOf(choice, picked) : choice.choices.map(c => c.category)
+  const current = picked ? (picked === choice.category ? choice.subtype : null) : choice.category
+  const p = picked ? choice.p.subtype : choice.p.category
+  return (
+    <section style={{ ...panel, display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontWeight: 600 }}>{picked ? `${picked} — which subtype?` : 'Which category?'}</span>
+        {current && p !== undefined && (
+          <span style={{ fontSize: 12, color: t.text3 }}>Jev: {current} {Math.round(p * 100)}%</span>
+        )}
+        <div style={{ flex: 1 }} />
+        {picked && (
+          <button onClick={onBack} disabled={disabled} style={{ ...navBtnStyle, padding: '4px 8px' }}>
+            <Kbd>Esc</Kbd>Category
+          </button>
+        )}
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 8 }}>
+        {options.map((o, i) => (
+          <button
+            key={o}
+            onClick={() => (step === 'category' ? onCategory(o) : onSubtype(o))}
+            disabled={disabled}
+            style={{
+              ...navBtnStyle, justifyContent: 'flex-start', padding: '8px 10px',
+              borderColor: o === current ? t.accentDim : t.border,
+              background: o === current ? t.accentTint : undefined,
+            }}
+          >
+            {i < 9 ? <Kbd>{String(i + 1)}</Kbd> : <span style={{ minWidth: 18 }} />}
+            {o}
+          </button>
+        ))}
+      </div>
+    </section>
   )
 }
 

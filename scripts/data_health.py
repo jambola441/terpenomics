@@ -411,7 +411,9 @@ def unsure_answers(data: Data) -> list[Finding]:
     """Active listings whose enrichment answer Jev gave under UNSURE (enrich.py,
     ENRICH_LLM=0 keeps Jev's best pick whatever its probability, and its probability per
     field), and sizes the chooser left at the store's figure. Grouped by brand and field,
-    so a brand whose names Jev reads badly shows as one finding."""
+    so a brand whose names Jev reads badly shows as one finding. Category and subtype are
+    not here: an unsure one sends its listing to the review queue (catalog_match_method
+    review_category, import_listings.mark_unsure_category; owner decision 2026-10-11)."""
     by_key = {}
     slug_of = {d["id"]: d.get("slug") for d in data.dispensaries.values()}
     for l in data.listings:
@@ -424,7 +426,7 @@ def unsure_answers(data: Data) -> list[Finding]:
             continue
         brand = l.get("scraped_brand") or "(no brand)"
         p = entry.get("p") or {}
-        for field in ("category", "subtype", "strain", "product_line"):
+        for field in ("strain", "product_line"):
             if p.get(field, 1.0) < UNSURE:
                 groups[(brand, field)].append(f'{l.get("scraped_name")} -> {entry.get(field)!r}')
         if entry.get("size_by") == "field":
