@@ -31,5 +31,10 @@
   "revert": [
     {"listing": "Revert Distillate Infused Ground Flower Pre Roll 2 Pack Durban Poison", "entry": {"category": "preroll", "line": "Infused", "strain": "Durban Poison", "size": "1.5g"}},
     {"listing": "Revert - 0.7g Infused Preroll - Cherry Rush - Sativa", "entry": {"category": "preroll", "line": "Infused", "strain": "Cherry Rush", "size": "0.7g"}}
+  ],
+  "grassroots": [
+    {"listing": "Grassroots - Dark Heart Titan Express Prerolls 5pk - 2g", "entry": {"category": "preroll", "line": "Shorties", "strain": "Titan Express", "size": "2g"}},
+    {"listing": "Grassroots - Dark Heart Triple Stack Diamond Infused Prerolls 5pk - 2g", "entry": {"category": "preroll", "line": "Diamond Infused", "strain": "Triple Stack", "size": "2g"}},
+    {"listing": "Grassroots - Dark Heart Collection Zesty Garlic Cookies Prerolls 2pk - 0.8g", "entry": {"category": "preroll", "line": "2-Pack", "strain": "Zesty Garlic Cookies", "size": "0.8g"}}
   ]
 }
