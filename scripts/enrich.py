@@ -1439,6 +1439,7 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
     product_lines: list[str | None] = []
     variants:      list[str | None] = []
     pending:       list[tuple[int, dict]] = []
+    asked:         list[tuple[int, str | None]] = []   # (row, cache key): from the cache or this run
 
     for i, row in enumerate(rows):
         # A row a human has signed off on entirely never reaches the model — the
@@ -1485,6 +1486,7 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
             strains.append(entry.get("strain"))
             product_lines.append(entry.get("product_line"))
             variants.append(entry.get("variant"))
+            asked.append((i, key))
         else:
             categories.append(None)
             subtypes.append(_hint_subtype(row))
@@ -1492,6 +1494,7 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
             product_lines.append(None)
             variants.append(None)
             pending.append((i, row))
+            asked.append((i, key))
 
     no_model = sum(1 for r in rows if enrichers.skips_model(_hint_category(r)))
     cached_count = len(rows) - len(pending) - no_model
@@ -1517,6 +1520,22 @@ def enrich(rows: list[dict], batch_size: int = 50, no_enrich: bool = False,
         # shape in the registry get anything; the rest keep None.
         row["attributes"]   = attribute_registry.for_category(
             row["category"], row.get("name", "")) or None
+
+    # Jev's probability for category and subtype, from the cache entry this run read or
+    # wrote, for the importer's review-queue bar (import_listings.mark_unsure_category).
+    # Keyed as read: the row's variant has been normalised since.
+    for row in rows:
+        row.pop("p_category", None)
+        row.pop("p_subtype", None)
+    for i, key in asked:
+        row = rows[i]
+        entry = cache.get(key or "") or {}
+        if row.get("enrich_failed") or entry.get("src") != "jev":
+            continue
+        p = entry.get("p") or {}
+        for field in ("category", "subtype"):
+            if isinstance(p.get(field), (int, float)):
+                row[f"p_{field}"] = p[field]
 
     # Deterministic canonicalization last: curated product lines and strain aliases
     # override the model, so identity is consistent across dispensaries and runs.

@@ -42,6 +42,11 @@ CSV_COLUMNS = [
     # importer keeps the stored identity of a listing it already holds rather than
     # writing them over it.
     "enrich_failed",
+    # Jev's probability for the category and subtype it picked (enrich.py, from the
+    # cache entry's "p"); blank when Jev did not answer them. The importer sends a
+    # listing it is unsure of to the review queue (import_listings.mark_unsure_category).
+    "p_category",
+    "p_subtype",
     # The scraper's variant before enrichment normalized it: the enrich cache keys on
     # it, and scrape.py --import-only (reenrich_csv.py) restores it before re-enriching.
     "scraped_variant",

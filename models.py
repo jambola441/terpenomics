@@ -470,13 +470,17 @@ LISTING_PRODUCT_SIZE = func.coalesce(Listing.size, Listing.variant)
 # Catalog review queue
 # ---------------------------
 
-# The catalog_match_method values that put a listing in the review queue
-# (scripts/catalog_match.py review_reason).
-REVIEW_REASONS = ("review_unsure", "review_missing", "review_near")
+# The catalog_match_method values that put a listing in the review queue: the
+# catalog matcher's (scripts/catalog_match.py review_reason), and review_category, a
+# listing the catalog did not settle whose category or subtype Jev was unsure of at
+# enrichment (scripts/import_listings.py mark_unsure_category).
+CATALOG_REVIEW_REASONS = ("review_unsure", "review_missing", "review_near")
+REVIEW_REASONS = (*CATALOG_REVIEW_REASONS, "review_category")
 
 # What a reviewer can say about a listing: it is this catalog entry, none of the
-# entries offered, the catalog lacks the product (or its size), or skip.
-REVIEW_DECISIONS = ("entry", "none", "missing", "skip")
+# entries offered, the catalog lacks the product (or its size), skip, or (for
+# review_category) its category and subtype are these.
+REVIEW_DECISIONS = ("entry", "none", "missing", "skip", "category")
 
 
 class ReviewDecision(SQLModel, table=True):
@@ -492,7 +496,8 @@ class ReviewDecision(SQLModel, table=True):
     the queue; undo deletes the row and puts it back.
 
     A new table, so create_all makes it at startup; db/migrations/0017 has it on
-    record with the rest, and 0018 adds prev_entry_id and prev_confidence.
+    record with the rest, 0018 adds prev_entry_id and prev_confidence, and 0019 the
+    `category` decision's columns.
     """
 
     __tablename__ = "review_decisions"
@@ -514,6 +519,15 @@ class ReviewDecision(SQLModel, table=True):
     # (db/migrations/0018).
     prev_entry_id:   Optional[UUID]  = Field(default=None, foreign_key="brand_catalog_entries.id")
     prev_confidence: Optional[float] = Field(default=None)
+    # For a decision `category`: the category and subtype the reviewer chose, which
+    # the listing takes and verifies, and its category, subtype and verified_fields
+    # before, which undo restores (db/migrations/0019).
+    category:      Optional[str]  = Field(default=None, sa_type=Text)
+    subtype:       Optional[str]  = Field(default=None, sa_type=Text)
+    prev_category: Optional[str]  = Field(default=None, sa_type=Text)
+    prev_subtype:  Optional[str]  = Field(default=None, sa_type=Text)
+    prev_verified: Optional[dict] = Field(
+        default=None, sa_column=Column("prev_verified", JSONB_, nullable=True))
     created_at: datetime       = Field(default_factory=utcnow, nullable=False)
 
 

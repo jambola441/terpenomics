@@ -269,6 +269,13 @@ def test_without_the_llm_jev_answers_everything_and_the_answers_are_cached(fakes
     assert cache["b|"]["p"] == {"category": 0.97, "subtype": 0.93, "strain": 0.6,
                                 "product_line": 0.9, "size": 0.9}
     assert cache["c|100mg"]["p"]["category"] == 0.4
+    # The category and subtype probabilities ride on the row to the CSV, for the
+    # importer's review-queue bar; from the cache on the next run too.
+    assert [(r.get("p_category"), r.get("p_subtype")) for r in rows] == [
+        (0.97, 0.93), (0.97, 0.93), (0.4, 0.93), (None, None)]
+    again = [dict(gummy("Mystery c 10pk", "c"), category="other")]
+    enrich.enrich(again, model="haiku-or", brand_examples={})
+    assert (again[0]["p_category"], again[0]["p_subtype"]) == (0.4, 0.93)
 
 
 def test_without_the_llm_a_size_field_in_another_unit_is_not_kept(fakes, monkeypatch):
