@@ -70,6 +70,10 @@ NARROW_AT = float(os.environ.get("CATALOG_READING_NARROW_AT", "0.9"))
 # The matcher trusts a join only when category, strain and size were read at least this
 # surely (catalog_match.resolve); below it the listing goes to review.
 TRUST_AT = float(os.environ.get("CATALOG_READING_TRUST_AT", "0.9"))
+# A size question with one package offered asks "this package or none": picking the
+# package over none is enough (owner's reviews, 2026-10-11: 16 of 16 such picks under
+# 0.9 were right, down to 0.55; the misses were weak "none" answers).
+ONE_SIZE_AT = float(os.environ.get("CATALOG_READING_ONE_SIZE_AT", "0.5"))
 
 DESCRIPTION_CHARS = 1000
 
@@ -251,6 +255,8 @@ class _Walk:
         key, field, out, _ = step
         if key == "strain":
             self.strain_values = values
+        if key == "size":
+            self.reading["size_options"] = len(values)
         value = None if pick in (None, NONE) else values[int(pick[1:])]
         self.p[key] = round(p, 3)
         if key in SOFT and (value is None or p < NARROW_AT):
@@ -352,8 +358,9 @@ def read(catalog: dict, listings: list[dict], *, usage: jev.Usage | None = None,
         if w.failed:
             continue
         r = {f: w.reading.get(f) for f in ("category", "subtype", "strain", "product_line", "size")}
-        if "strain_from_name" in w.reading:
-            r["strain_from_name"] = w.reading["strain_from_name"]
+        for extra in ("strain_from_name", "size_options"):
+            if extra in w.reading:
+                r[extra] = w.reading[extra]
         if w.listing.get("store_category"):
             r["store_category"] = w.listing["store_category"]
         out[str(w.listing["id"])] = dict(r, p=w.p, by="catalog")
@@ -376,7 +383,12 @@ def trusted(reading: dict | None) -> bool:
     p = reading.get("p") or {}
     if "strain_from_name" in reading and reading["strain_from_name"] != reading.get("strain"):
         return False
-    return p.get("strain", 0.0) >= TRUST_AT and p.get("size", 0.0) >= TRUST_AT
+    return p.get("strain", 0.0) >= TRUST_AT and p.get("size", 0.0) >= size_bar(reading)
+
+
+def size_bar(reading: dict) -> float:
+    """The size's bar: ONE_SIZE_AT where the product offered one package and it was picked."""
+    return ONE_SIZE_AT if reading.get("size_options") == 1 and reading.get("size") else TRUST_AT
 
 
 def unsure_steps(reading: dict | None) -> list[str]:
@@ -385,8 +397,8 @@ def unsure_steps(reading: dict | None) -> list[str]:
     if not reading or reading.get("by") != "catalog":
         return []
     p = reading.get("p") or {}
-    out = [k for k, v in p.items()
-           if k in ("strain", "size", *SOFT) and v < (NARROW_AT if k in SOFT else TRUST_AT)]
+    bar = {"size": size_bar(reading), **{k: NARROW_AT for k in SOFT}}
+    out = [k for k, v in p.items() if k in ("strain", "size", *SOFT) and v < bar.get(k, TRUST_AT)]
     if "strain_from_name" in reading and reading["strain_from_name"] != reading.get("strain"):
         out.append("strain_from_name")
     return out
