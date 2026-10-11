@@ -21,7 +21,7 @@
       "url": "a.card-product@href"
     }
   },
-  "learned": "2026-10-05, by an agent pass: 101 products over six category pages (flower 26, pre-roll 21, infused pre-roll 16, kief ground flower 20, vape 12, edibles 6). NY-only brand (OCM-PROC-24-000095). 2026-10-11, owner: infused pre-rolls (0.7g singles, 2-packs, The Infused Pack) take the line Infused; plain ones stay line-less.",
+  "learned": "2026-10-05, by an agent pass: 101 products over six category pages (flower 26, pre-roll 21, infused pre-roll 16, kief ground flower 20, vape 12, edibles 6). NY-only brand (OCM-PROC-24-000095). 2026-10-11, owner: infused pre-rolls (0.7g singles and 2-packs) take the line Infused; the mixed The Infused Pack stays line-less, or line fill would give every strain a 3.5g pack; plain ones stay line-less.",
   "notes": [
     "Webflow CMS. /products shows one grid that stops at 100 items (it missed /products/cap-junkie, a 3.5g flower), so the recipe reads the six /category/<slug> pages instead, each well under the cap. A new category on the site (sitemap.xml lists them under /category/) needs adding to urls.",
     "Each card: fs-list-field=category is the site's format (Flower, Pre-roll, Infused pre-roll, Kief infused ground-flower, Vape, Edibles), h2 the bare strain or flavour, and a nested fs-list-field=size one size (14g, 3.5g, 0.5g, 1g, 0.7g, 2g, 100mg). Pack counts are only in the h2 ('Blue Dream 10 Pack', 'Wedding Mintz 2 PK').",
@@ -141,7 +141,6 @@
       },
       "match": "^(?P<strain>The Infused Pack)$",
       "set": {
-        "line": "Infused",
         "size": "5 x 0.7g"
       }
     },
