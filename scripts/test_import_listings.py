@@ -281,6 +281,18 @@ def test_a_sure_catalog_reading_joins_and_overlays(db, tmp_path, monkeypatch):
     assert r["reading"]["by"] == "catalog" and r["reading"]["strain"] == "Blue Dream"
 
 
+def test_a_catalog_reading_lands_on_its_own_row_after_other_brands_rows(db, tmp_path, monkeypatch):
+    """The brand's listing is the store's second row: its reading goes on it, not past
+    the end of the brand's own list (2026-10-11: IndexError on every store)."""
+    _fake_jev(monkeypatch, 0.95)
+    add_catalog(db, [{"name": "blue dream", "category": "flower", "strain": "Blue Dream",
+                      "product_line": "Gold", "subtype": "smalls", "variant": "3.5g"}])
+    run(tmp_path, [row("B", "Nobody | Thing | 3.5g", brand="Nobody"),
+                   row("A", "Acme | Blue Dream Smalls | 3.5g", strain="Blue Dream Smalls", subtype="smalls")])
+    r = next(x for x in listings(db) if x["sku"] == "A")
+    assert r["catalog_match_method"] == "attributes" and r["reading"]["strain"] == "Blue Dream"
+
+
 def test_an_unsure_catalog_reading_goes_to_review_without_overlay(db, tmp_path, monkeypatch):
     _fake_jev(monkeypatch, 0.6)
     add_catalog(db, [{"name": "blue dream", "category": "flower", "strain": "Blue Dream",
