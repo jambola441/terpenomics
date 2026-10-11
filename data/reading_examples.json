@@ -7,7 +7,22 @@
     {"listing": "Ayrloom - Black Cherry 1:1 THC:CBD Single - 10mg", "entry": {"category": "edible", "strain": "Black Cherry", "size": "5mg"}},
     {"listing": "X| Ayrloom | Beverage Enhancer | Tincture (300THC)", "size_field": "30mg", "entry": {"category": "tinctures", "strain": "Unflavored Beverage Enhancer", "size": "300mg"}},
     {"listing": "Ayrloom Tincture Drops (150mg THC: 450mg CBD) - Low Dose Everyday drops", "size_field": "600mg", "entry": {"category": "tinctures", "strain": "Everyday", "size": "150mg"}},
-    {"listing": "Tincture | Ayrloom | High Dose Drops", "size_field": "100mg", "entry": {"category": "tinctures", "strain": "High Dose", "size": "1000mg"}}
+    {"listing": "Tincture | Ayrloom | High Dose Drops", "size_field": "100mg", "entry": {"category": "tinctures", "strain": "High Dose", "size": "1000mg"}},
+    {"listing": "ayrloom | Revive 1:1 Topical | 1000MG THC : 1000MG CBD", "size_field": "2000mg", "entry": {"category": "topical", "strain": "Revive", "size": "1000mg"}},
+    {"listing": "Restore (1:1 THC:CBD) 1000mg THC x 1000mg CBD - 2.3oz - Topicals - Ayrloom", "entry": {"category": "topical", "strain": "Restore", "size": "1000mg"}},
+    {"listing": "Ayrloom - Root Beer 2:1 THC:CBD Single - 10mg", "entry": {"category": "edible", "strain": "Root Beer", "size": "10mg"}},
+    {"listing": "ayrloom | Half + Half | 2:1 | 10MG THC : 5MG CBD", "entry": {"category": "edible", "strain": "Half + Half", "size": "10mg"}},
+    {"listing": "X| Ayrloom | Lemonade | Beverage 12oz | 10THC:5CBD | Single", "entry": {"category": "edible", "strain": "Lemonade", "size": "10mg"}},
+    {"listing": "ayrloom | Rosé | 1:1 | 10MG THC : 10MG CBC", "entry": {"category": "edible", "strain": "Rosé", "size": "10mg"}},
+    {"listing": "ayrloom | Blueberry Lavender \"Pillow Talk\" | 1:1 | 5MG THC : 5MG CBN 10 Pack", "entry": {"category": "edible", "strain": "Pillow Talk", "size": "10pk 50mg"}},
+    {"listing": "ayrloom | Orange Pomegranate “Sol Burst” | 2:1 10MG THC : 5MG THCV", "entry": {"category": "edible", "strain": "Sol Burst", "size": "10pk 100mg"}},
+    {"listing": "ayrloom | Sour Watermelon | 1:1:1 | 10MG THC : 10MG CBD : 10MG CBG 10 Pack", "entry": {"category": "edible", "strain": "Sour Watermelon", "size": "10pk 100mg"}},
+    {"listing": "Ayrloom - Pillow Talk 1:1 Drops THC:CBN - 300mg", "entry": {"category": "tinctures", "strain": "Pillow Talk", "size": "300mg"}},
+    {"listing": "ayrloom | Mood Energy | AIO | 1g | THC : THCV : CBG", "entry": {"category": "vaporizers", "strain": "Energy", "size": "1g", "line": "Mood"}},
+    {"listing": "ayrloom | Lychee Dream Infused Pre-Roll | 5 Pack | 3g", "entry": {"category": "preroll", "strain": "Lychee Dream", "size": "3g"}},
+    {"listing": "Pillow Talk Blueberry Lavender -Indica- 100MG 10:5 THC:CBN 10pk Gummies (Edibles)", "entry": {"category": "edible", "strain": "Pillow Talk", "size": "10pk 100mg"}},
+    {"listing": "\"Up\" Yuzu Citrus - 10mg Beverage", "entry": {"category": "edible", "strain": "Yuzu Citrus", "size": "10mg"}},
+    {"listing": "Ayrloom | Pillow Talk Drops | 1:5 | 300MG THC : 1500MG CBN", "entry": {"category": "tinctures", "strain": "Pillow Talk", "size": "300mg"}}
   ],
   "gr-n": [
     {"listing": "Dark Chocolate Sea Salt Mini Bar (Sleepy Indica) - 100mg Chocolate", "entry": {"category": "edible", "line": "Mini Bar", "strain": "1:1 Dark Chocolate", "size": "10pk 100mg"}},
