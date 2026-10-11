@@ -1,0 +1,128 @@
+{
+ "brand": "Punch Bar",
+ "edits": [
+  {
+   "op": "set-size",
+   "entry": {
+    "strain": "Milk Chocolate",
+    "size": "100mg"
+   },
+   "size": "10pk 100mg",
+   "why": "every NY PunchBar is 10 x 10mg. punchedibles.com/chocolates: PunchBar collections Original (8), Cream (3, white chocolate), Sugar Free (5), all 100mg; NY bars are 10 x 10mg (punchedibles.com/ny: 22g, 10 pieces); NY Solventless = hash rosin (weedmaps 'Mint Dark Chocolate | PunchBar | 100mg | NY'). Stores: 'Punch | Original | Smores', 'Punch | Cream | Strawberry Cheesecake', 'Chocolate Cream | Cookies n'Cream', 'Punch | Chocolate | Solventless | Dark Chocolate Raspberry'"
+  },
+  {
+   "op": "set-size",
+   "entry": {
+    "strain": "Sugar Free Dark Chocolate"
+   },
+   "size": "10pk 100mg",
+   "why": "every NY PunchBar is 10 x 10mg. punchedibles.com/chocolates: PunchBar collections Original (8), Cream (3, white chocolate), Sugar Free (5), all 100mg; NY bars are 10 x 10mg (punchedibles.com/ny: 22g, 10 pieces); NY Solventless = hash rosin (weedmaps 'Mint Dark Chocolate | PunchBar | 100mg | NY'). Stores: 'Punch | Original | Smores', 'Punch | Cream | Strawberry Cheesecake', 'Chocolate Cream | Cookies n'Cream', 'Punch | Chocolate | Solventless | Dark Chocolate Raspberry'"
+  },
+  {
+   "op": "rekey",
+   "entry": {
+    "strain": "Sugar Free Dark Chocolate"
+   },
+   "line": "Sugar Free",
+   "strain": "Dark Chocolate",
+   "why": "Sugar Free is the collection: 'Punch | Sugar Free | Dark Chocolate | 100mg'. punchedibles.com/chocolates: PunchBar collections Original (8), Cream (3, white chocolate), Sugar Free (5), all 100mg; NY bars are 10 x 10mg (punchedibles.com/ny: 22g, 10 pieces); NY Solventless = hash rosin (weedmaps 'Mint Dark Chocolate | PunchBar | 100mg | NY'). Stores: 'Punch | Original | Smores', 'Punch | Cream | Strawberry Cheesecake', 'Chocolate Cream | Cookies n'Cream', 'Punch | Chocolate | Solventless | Dark Chocolate Raspberry'"
+  },
+  {
+   "op": "rekey",
+   "entry": {
+    "strain": "Milk Chocolate"
+   },
+   "line": "Original",
+   "why": "the classic bars are Punch Originals. punchedibles.com/chocolates: PunchBar collections Original (8), Cream (3, white chocolate), Sugar Free (5), all 100mg; NY bars are 10 x 10mg (punchedibles.com/ny: 22g, 10 pieces); NY Solventless = hash rosin (weedmaps 'Mint Dark Chocolate | PunchBar | 100mg | NY'). Stores: 'Punch | Original | Smores', 'Punch | Cream | Strawberry Cheesecake', 'Chocolate Cream | Cookies n'Cream', 'Punch | Chocolate | Solventless | Dark Chocolate Raspberry'"
+  },
+  {
+   "op": "rekey",
+   "entry": {
+    "strain": "Toffee Milk Chocolate"
+   },
+   "line": "Original",
+   "why": "the classic bars are Punch Originals. punchedibles.com/chocolates: PunchBar collections Original (8), Cream (3, white chocolate), Sugar Free (5), all 100mg; NY bars are 10 x 10mg (punchedibles.com/ny: 22g, 10 pieces); NY Solventless = hash rosin (weedmaps 'Mint Dark Chocolate | PunchBar | 100mg | NY'). Stores: 'Punch | Original | Smores', 'Punch | Cream | Strawberry Cheesecake', 'Chocolate Cream | Cookies n'Cream', 'Punch | Chocolate | Solventless | Dark Chocolate Raspberry'"
+  },
+  {
+   "op": "rekey",
+   "entry": {
+    "strain": "Milk Chocolate Caramel Bits"
+   },
+   "line": "Original",
+   "why": "the classic bars are Punch Originals. punchedibles.com/chocolates: PunchBar collections Original (8), Cream (3, white chocolate), Sugar Free (5), all 100mg; NY bars are 10 x 10mg (punchedibles.com/ny: 22g, 10 pieces); NY Solventless = hash rosin (weedmaps 'Mint Dark Chocolate | PunchBar | 100mg | NY'). Stores: 'Punch | Original | Smores', 'Punch | Cream | Strawberry Cheesecake', 'Chocolate Cream | Cookies n'Cream', 'Punch | Chocolate | Solventless | Dark Chocolate Raspberry'"
+  },
+  {
+   "op": "rekey",
+   "entry": {
+    "strain": "Dark Chocolate Almond"
+   },
+   "line": "Original",
+   "why": "the classic bars are Punch Originals. punchedibles.com/chocolates: PunchBar collections Original (8), Cream (3, white chocolate), Sugar Free (5), all 100mg; NY bars are 10 x 10mg (punchedibles.com/ny: 22g, 10 pieces); NY Solventless = hash rosin (weedmaps 'Mint Dark Chocolate | PunchBar | 100mg | NY'). Stores: 'Punch | Original | Smores', 'Punch | Cream | Strawberry Cheesecake', 'Chocolate Cream | Cookies n'Cream', 'Punch | Chocolate | Solventless | Dark Chocolate Raspberry'"
+  },
+  {
+   "op": "rekey",
+   "entry": {
+    "strain": "Cookies n' Cream"
+   },
+   "line": "Cream",
+   "why": "Cream = white-chocolate collection ('Strawberry Cheesecake White Chocolate PunchBar 100mg (NY)'). punchedibles.com/chocolates: PunchBar collections Original (8), Cream (3, white chocolate), Sugar Free (5), all 100mg; NY bars are 10 x 10mg (punchedibles.com/ny: 22g, 10 pieces); NY Solventless = hash rosin (weedmaps 'Mint Dark Chocolate | PunchBar | 100mg | NY'). Stores: 'Punch | Original | Smores', 'Punch | Cream | Strawberry Cheesecake', 'Chocolate Cream | Cookies n'Cream', 'Punch | Chocolate | Solventless | Dark Chocolate Raspberry'"
+  },
+  {
+   "op": "rekey",
+   "entry": {
+    "strain": "Strawberry Cheesecake"
+   },
+   "line": "Cream",
+   "why": "Cream = white-chocolate collection ('Strawberry Cheesecake White Chocolate PunchBar 100mg (NY)'). punchedibles.com/chocolates: PunchBar collections Original (8), Cream (3, white chocolate), Sugar Free (5), all 100mg; NY bars are 10 x 10mg (punchedibles.com/ny: 22g, 10 pieces); NY Solventless = hash rosin (weedmaps 'Mint Dark Chocolate | PunchBar | 100mg | NY'). Stores: 'Punch | Original | Smores', 'Punch | Cream | Strawberry Cheesecake', 'Chocolate Cream | Cookies n'Cream', 'Punch | Chocolate | Solventless | Dark Chocolate Raspberry'"
+  },
+  {
+   "op": "rekey",
+   "entry": {
+    "strain": "Dark Chocolate Raspberry"
+   },
+   "line": "Solventless",
+   "why": "made with solventless hash rosin: 'Dark Chocolate Raspberry Hash Rosin 10pk', 'Solventless Mint Dark Chocolate 10pk'. punchedibles.com/chocolates: PunchBar collections Original (8), Cream (3, white chocolate), Sugar Free (5), all 100mg; NY bars are 10 x 10mg (punchedibles.com/ny: 22g, 10 pieces); NY Solventless = hash rosin (weedmaps 'Mint Dark Chocolate | PunchBar | 100mg | NY'). Stores: 'Punch | Original | Smores', 'Punch | Cream | Strawberry Cheesecake', 'Chocolate Cream | Cookies n'Cream', 'Punch | Chocolate | Solventless | Dark Chocolate Raspberry'"
+  },
+  {
+   "op": "rekey",
+   "entry": {
+    "strain": "Mint Dark Chocolate"
+   },
+   "line": "Solventless",
+   "why": "made with solventless hash rosin: 'Dark Chocolate Raspberry Hash Rosin 10pk', 'Solventless Mint Dark Chocolate 10pk'. punchedibles.com/chocolates: PunchBar collections Original (8), Cream (3, white chocolate), Sugar Free (5), all 100mg; NY bars are 10 x 10mg (punchedibles.com/ny: 22g, 10 pieces); NY Solventless = hash rosin (weedmaps 'Mint Dark Chocolate | PunchBar | 100mg | NY'). Stores: 'Punch | Original | Smores', 'Punch | Cream | Strawberry Cheesecake', 'Chocolate Cream | Cookies n'Cream', 'Punch | Chocolate | Solventless | Dark Chocolate Raspberry'"
+  },
+  {
+   "op": "add-product",
+   "category": "edible",
+   "subtype": "chocolate",
+   "line": "Original",
+   "strain": "S'mores Milk Chocolate",
+   "sizes": [
+    "10pk 100mg"
+   ],
+   "why": "4 listings at 3+ stores: 'PUNCH Bar - Smores Milk Chocolate 10pk - 100mg', 'Punch | Original | Smores Milk Chocolate | 100mg'"
+  },
+  {
+   "op": "add-product",
+   "category": "edible",
+   "subtype": "chocolate",
+   "line": "Original",
+   "strain": "Dark Chocolate Sea Salt",
+   "sizes": [
+    "10pk 100mg"
+   ],
+   "why": "one store: 'PUNCH Bar - Dark Chocolate Sea Salt 10pk - 100mg'"
+  },
+  {
+   "op": "add-product",
+   "category": "edible",
+   "subtype": "chocolate",
+   "line": "Sugar Free",
+   "strain": "Milk Chocolate",
+   "sizes": [
+    "10pk 100mg"
+   ],
+   "why": "2 listings: 'PUNCH Bar - Sugar Free Milk Chocolate 10pk - 100mg'"
+  }
+ ]
+}

@@ -10,8 +10,10 @@
     "Gold Cuts",
     "Gassers"
   ],
-  "Lowell Smokes": [
-    "Quicks"
+  "_comment_lowell": "Lowell Herb Co. NY pre-rolls (2026-10-11, batch B draft): Quicks are 10 x 0.35g (3.5g) and 20 x 0.35g (7g) packs, Outlaw the 1g single (weedmaps 'Lowell Outlaw | Trailblazer (S) | Pre-Roll 1G'); the 6 x 0.6g (3.6g) Smokes packs carry no line, since 'Lowell Smokes' is what the brand calls all its pre-rolls. Keyed by the brand as listings carry it: the old 'Lowell Smokes' key never reached a 'Lowell Herb Co.' listing.",
+  "Lowell Herb Co.": [
+    "Quicks",
+    "Outlaw"
   ],
   "Eaton Botanicals": [
     "Little Pandas",
@@ -995,5 +997,11 @@
       "line": "Protab Max",
       "category": "edible"
     }
+  ],
+  "_comment_foy": "Foy (2026-10-11, batch B draft) sells one chew per effect, and the effect is the only family name, so it is the line and the flavour the strain: Daytime Mango (THC:CBD:CBG), Good Mood Peach (THC:CBD:CBC), Sleep Strawberry (THC:CBD:CBN; stores write 'Sleep/Nighttime' or 'Nighttime Strawberry'), in 20pk 100mg and 4pk 20mg.",
+  "Foy": [
+    "Daytime",
+    "Good Mood",
+    {"line": "Sleep", "also": ["Nighttime"]}
   ]
 }

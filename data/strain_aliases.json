@@ -263,5 +263,35 @@
   "turn": {
     "Sour Apple Soda": "Sour Apple",
     "Sour Apple Seltzer": "Sour Apple"
+  },
+  "Lowell Herb Co.": {
+    "Star Gazer": "Stargazer",
+    "Trail Blazer": "Trailblazer",
+    "Dream Weaver": "Dreamweaver",
+    "Dreamweavers": "Dreamweaver",
+    "Dreamweaver Outlaw": "Dreamweaver",
+    "Trailblazer Outlaw": "Trailblazer",
+    "Smokes Trailblazer": "Trailblazer",
+    "All-Terrain": "All Terrain"
+  },
+  "Punch Bar": {
+    "Cookies & Cream": "Cookies n' Cream",
+    "Cookies n'Cream": "Cookies n' Cream",
+    "Cookies n": "Cookies n' Cream",
+    "Caramel Bits Milk Chocolate": "Milk Chocolate Caramel Bits",
+    "Smores": "S'mores Milk Chocolate",
+    "S'mores": "S'mores Milk Chocolate",
+    "Smores Milk Chocolate": "S'mores Milk Chocolate",
+    "Raspberry": "Dark Chocolate Raspberry",
+    "Mint Dark Chocolate Hash Rosin": "Mint Dark Chocolate"
+  },
+  "Foy": {
+    "Daytime": "Mango",
+    "Daytime Mango": "Mango",
+    "Good Mood": "Peach",
+    "Sleep": "Strawberry",
+    "Nighttime": "Strawberry",
+    "Strawberry Sleep": "Strawberry",
+    "Nighttime Strawberry": "Strawberry"
   }
 }
