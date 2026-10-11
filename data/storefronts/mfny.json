@@ -36,7 +36,7 @@
     "Gummy packs print an effect label down the side (Sleepy MF-er on Blueberry x Blueberry 2.0, Sexy MF-er on Strawberry Lemonade x Lemon Cane, Mellow MF-er, Focused); the site never uses them and stores write them on 2 of ~100 gummy listings. Not a line: the store-only 'Sleepy MF-er Blueberry x Blueberry 2.0' got its line from one store name, echoed by its matched listings.",
     "Live rosin badders the site does not list (The Belafonte, Hash Burger; one store lists both the resin and the rosin badder of each, at different THC) arrive line-less from the stores and match the site's Live Resin product by strain alone (concentrate subtype does not decide in split_store_products), so their store names land on the resin entry. Not fixable in this recipe.",
     "Store-only vapes and badders arrive without a line (enrichment does not record 'Live Resin' as a line): Strawpaya badder 1g, Super Lemon Haze cart 0.5g and AIO 1g, Superboof AIO 1g. Set their line to Live Resin by admin edit; a recipe rule cannot reach a product the site lacks.",
-    "2026-10-11 (r2): Sour Peach x Rainbow Beltz 2.0 gummies get line Live Rosin. The site card says neither extract, but every store writes it as rosin ('Sour Peach x Rainbow Beltz 2.0 | Live Rosin Gummies | 10 pk', 'Rosin Gummies', 9 listings at 5+ stores), and line-less it could not be read: stores' 'Live Rosin' left no line-less entry among the options.",
+    "2026-10-11 (r2, owner-corrected): Sour Peach x Rainbow Beltz 2.0 gummies get line Live Resin, like the brand's other gummies: the package photo says Live Resin. Several stores write it as rosin ('Live Rosin Gummies'); that is the stores' wording, not the product.",
     "2026-10-11 (owner): tinctures and the intimacy oil are in, sized by volume: tinctures '15mL' (every image says 15ml; the mg stores list, 344-1000mg, is a batch's lab total, so no mg size could match; sizes.py compares a volume only with a volume), the oil '60mL'. One product per strain and extract line, Classics in front where the title has it; '\"Belafonte\" Banana' is cultivar The Belafonte (its product page). All Night Affair is the oil's product name (line), its cultivar Candy Rain (product page: 'formulated with MFNY's top-tier Candy Rain live resin'), so stores' 'Candy Rain Intimacy Oil' is the same product. Rainbow Driver Live Resin Tincture is sold at stores but not on the site: a push brings it from the stores' consensus at 15mL (two stores write '15mL'); store_skip drops the mg-sized store tinctures. The curated entries of data/plans/mfny-2026-10-11-tinctures.json have no external id, so a push neither matches nor retires them (brand_catalog.push: NULL never matches): after the push lands the site's 15mL entries, deactivate the curated ones into them, or they stand as duplicates."
   ],
   "skip": [
@@ -403,7 +403,18 @@
     {
       "when": {
         "category": "^edible$",
-        "title": "^(?:Blueberry x Blueberry Muffin|Cherry x Poddy Mouth|Sour Peach x Rainbow Beltz 2\\.0)\\b"
+        "title": "^(?:Sour Peach x Rainbow Beltz 2\\.0)\\b"
+      },
+      "match": "^(?P<strain>.+?)(?:\\s+Gum+ies)?$",
+      "set": {
+        "line": "Live Resin",
+        "size": "10pk 100mg"
+      }
+    },
+    {
+      "when": {
+        "category": "^edible$",
+        "title": "^(?:Blueberry x Blueberry Muffin|Cherry x Poddy Mouth)\\b"
       },
       "match": "^(?P<strain>.+?)(?:\\s+Gum+ies)?$",
       "set": {
