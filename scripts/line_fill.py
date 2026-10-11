@@ -162,17 +162,14 @@ def sync(catalog: dict, write: bool = False) -> tuple[int, int, int]:
 
 
 def sync_brand(brand: str) -> None:
-    """For a command that just wrote a brand's catalog (a push, a curation plan).
-
-    Only a catalog line fill was turned on for (it holds inferred entries, active or
-    retired, from a `--write` run) is synced: a push never starts filling a brand.
-    """
+    """For a command that just wrote a brand's catalog (a push, a curation plan, a
+    catalog_fix edit). Every catalog is synced (owner's rule, 2026-10-09: a line's sizes
+    are the rule); until 2026-10-11 only catalogs already holding inferred entries were,
+    so Level, Cannabals and Flav fell 18 sizes behind."""
     import catalog_fix
     try:
         [catalog] = load(brand)
     except catalog_fix.Refused:
-        return
-    if not any(e.get("source") == INFERRED for e in catalog.get("entries") or []):
         return
     added, revived, retired = sync(catalog, write=True)
     print(f"  line fill: {added} inferred sizes added, {revived} brought back, {retired} taken back")

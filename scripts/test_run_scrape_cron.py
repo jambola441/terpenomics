@@ -21,12 +21,13 @@ class FakeProc:
 @pytest.fixture
 def run(monkeypatch, tmp_path):
     """A run with its files in tmp_path; records alerts and the sweeps it starts."""
-    seen = {"alerts": [], "started": []}
+    seen = {"alerts": [], "started": [], "filled": []}
     monkeypatch.setattr(cron, "CACHE_DIR", tmp_path)
     monkeypatch.setattr(cron, "LOCK_FILE", tmp_path / "_cron.lock")
     monkeypatch.setattr(cron, "STATUS_FILE", tmp_path / "_cron_status.json")
     monkeypatch.setattr(cron, "SUMMARY_FILE", tmp_path / "_last_run.json")
     monkeypatch.setattr(cron, "_alert", seen["alerts"].append)
+    monkeypatch.setattr(cron, "_sync_line_fill", lambda: seen["filled"].append(True))
 
     def popen(cmd, **kwargs):
         seen["started"].append(cmd)
@@ -55,3 +56,13 @@ def test_the_switch_is_off_unless_set(run, monkeypatch, tmp_path, value):
     assert cron.run_pipeline() == 0
     assert len(run["started"]) == 1 and run["alerts"] == []
     assert json.loads((tmp_path / "_cron_status.json").read_text())["state"] == "ok"
+
+
+def test_a_run_brings_line_fill_up_to_date_first_and_a_paused_one_does_not(run, monkeypatch):
+    monkeypatch.delenv(cron.PAUSE_ENV, raising=False)
+    cron.run_pipeline()
+    assert run["filled"] == [True] and len(run["started"]) == 1
+    run["filled"].clear()
+    monkeypatch.setenv(cron.PAUSE_ENV, "1")
+    cron.run_pipeline()
+    assert run["filled"] == []
