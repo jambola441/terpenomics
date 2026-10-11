@@ -41,5 +41,14 @@
     {"listing": "Runtz - Pink Runtz Prerolls 2pk - 1.5g", "entry": {"category": "preroll", "strain": "Pink Runtz", "size": "1.5g"}},
     {"listing": "Pre-Rolls | Runtz | Pluto - 2pk", "entry": {"category": "preroll", "strain": "Pluto", "size": "1.5g"}},
     {"listing": "Pre-Rolls | Runtz | Lemon Candy Runtz - 5pk", "entry": {"category": "preroll", "strain": "Lemon Candy Runtz", "size": "3.75g"}}
+  ],
+  "eureka": [
+    {"listing": "Platinum Bubba | Reload", "entry": {"category": "vaporizers", "line": "Classic RELOAD", "strain": "Platinum Bubba OG", "size": "1g"}},
+    {"listing": "Mango Haze | Classic Preload", "entry": {"category": "vaporizers", "line": "Classic PRELOAD", "strain": "Mango Haze", "size": "2g"}},
+    {"listing": "Durban Poison (S) 1g - Reload - Live Resin - Vape Carts - Eureka", "entry": {"category": "vaporizers", "line": "Premium RELOAD", "strain": "Durban Poison", "size": "1g"}}
+  ],
+  "leal": [
+    {"listing": "Leal | Preroll Chronic Tonic (SH)", "entry": {"category": "preroll", "strain": "Chronic Tonic", "size": "1g"}},
+    {"listing": "Lemon Venom - 1G 5PK Prerolls", "entry": {"category": "preroll", "strain": "Lemon Venom", "size": "5g"}}
   ]
 }
