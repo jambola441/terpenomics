@@ -428,6 +428,36 @@ def _overlay(rec: dict, entry: dict, stats: dict, is_masked, synonyms: bool = Tr
     stats["overlaid"] += 1
 
 
+def overlay_entry(rec: dict, catalog: dict, entry: dict) -> None:
+    """Apply a manual match's identity to one record right away, exactly as the next
+    import would: _overlay (category, subtype with format synonyms, unmasked strain,
+    product_line) and then the size assign_sizes gives a trusted match. For callers
+    outside an import, such as the review queue (routes/admin/review.py) when a
+    reviewer assigns an entry. `catalog` is a catalog_store-shaped dict (its
+    `entries`), `entry` one of them."""
+    import catalog_match
+    from catalog_enricher import _is_masked
+    stats = {"overlaid": 0, "masked_strain_skipped": 0, "subtype_from_name": 0}
+    _overlay(rec, entry, stats, _is_masked, catalog_match.format_synonyms(catalog))
+    rec["size"] = rec.get("variant")
+    size = _catalog_size_of(rec, entry, [e for e in catalog.get("entries") or []
+                                         if e.get("is_active", True)
+                                         and _product_of(e) == _product_of(entry)] or [entry])
+    if size:
+        rec["size"] = size
+
+
+def _product_of(entry: dict) -> str:
+    import catalog_store
+    return entry.get("product_key") or catalog_store._product_key(entry)
+
+
+def _catalog_size_of(rec: dict, entry: dict, product_entries: list[dict]):
+    import catalog_match
+    return catalog_match.catalog_size(rec.get("variant"), rec.get("scraped_name"), entry,
+                                      product_entries, rec.get("description"))
+
+
 def assign_sizes(records: list[dict], catalogs: dict) -> int:
     """Set each record's `size`, the size its product page groups on: the store's own
     (`variant`, which stays as typed because it is part of the row's key), or for a
@@ -439,7 +469,7 @@ def assign_sizes(records: list[dict], catalogs: dict) -> int:
     by_id = catalog_store.entries_by_id(catalogs) if catalogs else {}
 
     def product_of(catalog: dict, entry: dict) -> tuple:
-        return id(catalog), entry.get("product_key") or catalog_store._product_key(entry)
+        return id(catalog), _product_of(entry)
 
     products: dict[tuple, list[dict]] = {}
     for catalog, entry in by_id.values():
@@ -452,9 +482,7 @@ def assign_sizes(records: list[dict], catalogs: dict) -> int:
         if not hit or rec.get("catalog_match_method") not in catalog_match.OVERLAY_METHODS:
             continue
         catalog, entry = hit
-        size = catalog_match.catalog_size(rec["variant"], rec["scraped_name"], entry,
-                                          products.get(product_of(catalog, entry), [entry]),
-                                          rec.get("description"))
+        size = _catalog_size_of(rec, entry, products.get(product_of(catalog, entry), [entry]))
         if size:
             fixed += size != rec["variant"]     # Ayrloom's "150mg" can come back as itself
             rec["size"] = size
