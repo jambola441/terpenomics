@@ -1,0 +1,26 @@
+{
+ "brand": "ayrloom",
+ "edits": [
+  {
+   "op": "add-product",
+   "why": "ayrloom.com/products.json sells sour raspberry lemonade as '10mg / 10 pack' and '10mg / 2 pack' (same family as sour watermelon / strawberry kiwi, filed 10pk 100mg / 2pk 20mg); only the unparsed-size copies exist, inactive; 5 listings at stores read review_missing",
+   "category": "edible",
+   "subtype": "gummy",
+   "strain": "Sour Raspberry Lemonade",
+   "sizes": [
+    "10pk 100mg",
+    "2pk 20mg"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "store menus (6 listings, 4+ stores): 'Sour Peach Hibiscus 1:1:1 THC:CBD:CBG Gummies 10pk - 100mg', the fourth flavor of the 1:1:1 sour gummy family; not yet on ayrloom.com",
+   "category": "edible",
+   "subtype": "gummy",
+   "strain": "Sour Peach Hibiscus",
+   "sizes": [
+    "10pk 100mg"
+   ]
+  }
+ ]
+}
