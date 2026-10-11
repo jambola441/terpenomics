@@ -79,5 +79,35 @@
     {"listing": "Boutiq | Switch Liquid Diamonds Triple Tank AIO | J13 x Gelato 41 x GDP", "entry": {"category": "vaporizers", "line": "Switch V5", "strain": "J-13 x Gelato 41 x GDP", "size": "2g"}},
     {"listing": "BTQ Switch V5 GUM | Z-41 x Lemon Cherry x Mango Melon | Hyb-Hyb-Ind | 2g | AIO", "entry": {"category": "vaporizers", "line": "Switch V5", "strain": "Z-41 x Lemon Cherry x Mango Melon", "size": "2g"}},
     {"listing": "Boutiq (Snack Pack) - Grape Soda X Rainbow Belts | (5 x .05g) Diamond Infused PreRolls", "entry": {"category": "preroll", "line": "Snack Pack", "strain": "Grape Soda x Rainbow Belts", "size": "2.5g"}}
+  ],
+  "foy": [
+    {"listing": "Daytime Chews with Organic Adaptogens 1:1:1 THC/CBD/CBG - 100mg, 20 pck", "entry": {"category": "edible", "line": "Daytime", "strain": "Mango", "size": "20pk 100mg"}},
+    {"listing": "Sleep/Nighttime 4-pck Chews with Organic Adaptogens 1:1:1 THC/CBD/CBN", "entry": {"category": "edible", "line": "Sleep", "strain": "Strawberry", "size": "4pk 20mg"}},
+    {"listing": "Daytime 4-pck Chews with Organic Adaptogens 1:1:1 THC/CBD/CBG", "entry": {"category": "edible", "line": "Daytime", "strain": "Mango", "size": "4pk 20mg"}},
+    {"listing": "Sleep/Nighttime Chews with Organic Adaptogens 1:1:1 THC/CBD/CBN - 100mg, 20 pck", "entry": {"category": "edible", "line": "Sleep", "strain": "Strawberry", "size": "20pk 100mg"}},
+    {"listing": "Good Mood Chews w/ Organic Adaptogens 1:1:1 THC/CBD/CBC - 100mg, 20 pck", "entry": {"category": "edible", "line": "Good Mood", "strain": "Peach", "size": "20pk 100mg"}},
+    {"listing": "Foy - Peach Good Mood 1:1:1 THC:CBD:CBG Gummies 4pk - 20mg", "size_field": "20mg", "entry": {"category": "edible", "line": "Good Mood", "strain": "Peach", "size": "4pk 20mg"}}
+  ],
+  "lowell-herb-co": [
+    {"listing": "Lowell Smokes - Afternoon Delight Prerolls 10pk - 3.5g", "entry": {"category": "preroll", "line": "Quicks", "strain": "Afternoon Delight", "size": "3.5g"}},
+    {"listing": "Lowell Smokes - Stargazer Prerolls 20pk - 7g", "entry": {"category": "preroll", "line": "Quicks", "strain": "Stargazer", "size": "7g"}},
+    {"listing": "Lowell Smokes - Dreamweaver | 1G Pre-Roll + Matches", "entry": {"category": "preroll", "line": "Outlaw", "strain": "Dreamweaver", "size": "1g"}},
+    {"listing": "Lowell Smokes - Trailblazer Outlaw Preroll - 1g", "entry": {"category": "preroll", "line": "Outlaw", "strain": "Trailblazer", "size": "1g"}},
+    {"listing": "Lowell Smokes - Mind Safari Prerolls 6pk - 3.6g", "entry": {"category": "preroll", "line": "Smokes", "strain": "Mind Safari", "size": "3.6g"}}
+  ],
+  "punch-bar": [
+    {"listing": "X| Punch Bar | Toffee Milk Chocolate | 100mg", "entry": {"category": "edible", "line": "Original", "strain": "Toffee Milk Chocolate", "size": "10pk 100mg"}},
+    {"listing": "Punch | Sugar Free | Dark Chocolate | 100mg", "entry": {"category": "edible", "line": "Sugar Free", "strain": "Dark Chocolate", "size": "10pk 100mg"}},
+    {"listing": "Punch | Chocolate | Cream | Cookies n' Cream | 100mg", "entry": {"category": "edible", "line": "Cream", "strain": "Cookies n' Cream", "size": "10pk 100mg"}}
+  ],
+  "kings-queens": [
+    {"listing": "Kings & Queens | Creme Brulee Flower", "entry": {"category": "flower", "strain": "Creme Brulee", "size": "3.5g"}},
+    {"listing": "Pre-Rolls | Kings & Queens | Indica Mixed - Indoor", "entry": {"category": "preroll", "strain": "Indica", "size": "3g"}}
+  ],
+  "papa-s-herb": [
+    {"listing": "Papa's Herb | Guava", "entry": {"category": "flower", "strain": "Guava", "size": "28g"}},
+    {"listing": "Papa's Herb - Skywalker OG Preroll - 1g", "entry": {"category": "preroll", "strain": "Skywalker OG", "size": "1g"}},
+    {"listing": "Papa's Herb | King Kong OG Pre-Roll 7pk", "entry": {"category": "preroll", "strain": "King Kong OG", "size": "7g"}},
+    {"listing": "Papa's Herb | Pineapple Express AIO", "entry": {"category": "vaporizers", "strain": "Pineapple Express", "size": "1g"}}
   ]
 }

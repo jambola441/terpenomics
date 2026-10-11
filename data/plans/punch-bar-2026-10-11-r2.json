@@ -1,0 +1,5 @@
+{"brand": "Punch Bar", "edits": [
+ {"op":"deactivate","entry":{"line":"","strain":"S'mores Milk Chocolate"},"into":{"line":"Original","strain":"S'mores Milk Chocolate"},"why":"true duplicate: a line-less copy of Original S'mores Milk Chocolate (stores: 'Punch | Original | Smores Milk Chocolate | 100mg'); its 100mg is the same 10 x 10mg bar"},
+ {"op":"set-size","entry":{"line":"Cream","strain":"Cookies n' Cream"},"size":"10pk 100mg","why":"every NY PunchBar is 10 pieces, 100mg (punchedibles.com/ny: 22g, 10 pieces); stores: 'PUNCH Bar - Cookies n' Cream Chocolate 10pk - 100mg'"},
+ {"op":"set-size","entry":{"line":"Solventless","strain":"Dark Chocolate Raspberry"},"size":"10pk 100mg","why":"as above; 'PUNCH Bar - Dark Chocolate Raspberry Hash Rosin 10pk - 100mg'"}
+]}
