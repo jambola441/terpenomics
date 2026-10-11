@@ -1,7 +1,37 @@
 {
-  "_comment": "Line-less products line_fill.py fills like a named line, by brand: each listed category/subtype is one line whose sizes every product of it comes in. Only where the owner has said so: line-less products are often several real lines (line_fill.py). Ayrloom (owner, 2026-10-11): every all-in-one flavor is sold in 0.5g, 1g and 2g, and every drink flavor at 5mg and 10mg.",
+  "_comment": "Line-less products line_fill.py fills like a named line, by brand: each listed category/subtype is one line whose sizes every product of it comes in. Only where the owner has said so: line-less products are often several real lines (line_fill.py). Ayrloom (owner, 2026-10-11): every all-in-one flavor is sold in 0.5g, 1g and 2g, and every drink flavor at 5mg and 10mg. Owner, 2026-10-11 (line-less interview, batch 1): Hashtag Honey and New York Honey all-in-ones, Hepworth carts and ElectraLeaf pre-rolls are each one line.",
   "Ayrloom": [
-    {"category": "vaporizers", "subtype": "all-in-one"},
-    {"category": "edible", "subtype": "beverage"}
+    {
+      "category": "vaporizers",
+      "subtype": "all-in-one"
+    },
+    {
+      "category": "edible",
+      "subtype": "beverage"
+    }
+  ],
+  "Hashtag Honey": [
+    {
+      "category": "vaporizers",
+      "subtype": "all-in-one"
+    }
+  ],
+  "New York Honey": [
+    {
+      "category": "vaporizers",
+      "subtype": "all-in-one"
+    }
+  ],
+  "Hepworth": [
+    {
+      "category": "vaporizers",
+      "subtype": "cart"
+    }
+  ],
+  "ElectraLeaf": [
+    {
+      "category": "preroll",
+      "subtype": null
+    }
   ]
 }
