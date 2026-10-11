@@ -50,5 +50,9 @@
   "leal": [
     {"listing": "Leal | Preroll Chronic Tonic (SH)", "entry": {"category": "preroll", "strain": "Chronic Tonic", "size": "1g"}},
     {"listing": "Lemon Venom - 1G 5PK Prerolls", "entry": {"category": "preroll", "strain": "Lemon Venom", "size": "5g"}}
+  ],
+  "jaunty": [
+    {"listing": "Northern Lights | AIO Palm | 1.5g", "entry": {"category": "vaporizers", "line": "Palms", "strain": "Northern Lights", "size": "1.5g"}},
+    {"listing": "Super Lemon Haze | 510 | CDT", "entry": {"category": "vaporizers", "line": "Classic", "strain": "Super Lemon Haze", "size": "1g"}}
   ]
 }
