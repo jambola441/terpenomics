@@ -107,9 +107,8 @@ python scripts/backfill_merch_identity.py        # dry run; --run to apply
 python scripts/backfill_attributes.py            # dry run; --run to apply
 ```
 
-Run them after editing `MerchEnricher.tokens`, `data/format_tokens.json`,
-`data/product_lines.json` or `scripts/attributes.py`. They rewrite the affected
-columns in place without re-scraping or re-enriching anything.
+Run them after editing `MerchEnricher.tokens`, `data/product_lines.json` or
+`scripts/attributes.py`. They rewrite the affected columns in place without re-scraping or re-enriching anything.
 
 ---
 
