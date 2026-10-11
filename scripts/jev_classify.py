@@ -41,7 +41,8 @@ import taxonomy  # noqa: E402
 
 # Bump when a question or option text changes: enrich.py stamps cached answers with
 # it, so answers given to an older question are re-asked rather than trusted.
-QUESTION_VERSION = 3   # 3: vape battery/other dropped, kits are AIOs, devices merch (2026-10-11)
+QUESTION_VERSION = 4   # 3: vape battery/other dropped, kits are AIOs, devices merch (2026-10-11)
+                       # 4: oil-less devices named "Vaporizer" are merch; countable drops are edible (2026-10-11)
 
 # Jev degrades on large irrelevant state; the first few hundred characters of a
 # description carry the format words, the rest is marketing copy.
@@ -55,18 +56,21 @@ CATEGORY_CRITERIA: dict[str, str] = {
     "vaporizers": "Vapes: cartridges (510 carts), pods, all-in-one or disposable vape "
                   "pens, and starter kits sold with oil. Anything named vape, cart, pod, AIO or "
                   "disposable is a vaporizer even if the store files it as a concentrate. "
-                  "A battery or device sold without oil is merch.",
+                  "A vaporizer or kit counts only when sold with oil (a strain, or g/mg of oil).",
     "edible": "Eaten or drunk: gummies, chews, chocolates, beverages and drinks, "
-              "tablets, pills and capsules, other foods. Dosed in mg of THC. An edible "
+              "tablets, pills, capsules and 'drops' sold as countable pieces (packs of N, "
+              "tins), other foods. Dosed in mg of THC. An edible "
               "made with live resin or rosin (a live resin gummy or rope) is an edible.",
     "concentrate": "Extracts for dabbing, not in a vape and not an edible: diamonds, "
                    "rosin, live resin, badder, sauce, sugar, hash, RSO.",
-    "tinctures": "Tinctures: drops, oils or sprays taken by mouth, dosed in total mg.",
+    "tinctures": "Tinctures: liquids taken by dropper or spray, sold as a bottle, dosed in "
+                 "total mg. Pieces counted in packs or tins are edibles.",
     "topical": "Topicals applied to the skin: balms, lotions, salves, creams, roll-ons, "
                "patches, bath products.",
     "merch": "Accessories with no cannabis in them: grinders, rolling papers, cones, "
              "lighters, trays, glass, apparel, gift cards, and hardware sold without "
-             "cannabis: vape batteries, chargers and vaporizer devices (dry herb).",
+             "cannabis: vape batteries, 510 batteries, pens, chargers and vaporizer "
+             "devices with no strain and no g/mg of oil, even when named 'Vaporizer'.",
     "other": "None of the above.",
 }
 

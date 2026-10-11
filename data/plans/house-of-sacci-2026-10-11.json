@@ -1,0 +1,340 @@
+{
+ "brand": "House of Sacci",
+ "_comment": "2026-10-11 draft (catalogs batch A, owner policy 2026-10-11): apply after `catalog_bootstrap.py --brand \"House of Sacci\" --push` (no --replace) creates the catalog; selectors name bootstrap entries. Single-store products judged real are included (owner 2026-10-11); typos are left out. Left out: 'Trop Cherry Hash Infused Prerolls 7pk' (one listing; the site's infused pre-roll is a 5pk, so pack or name is wrong).",
+ "edits": [
+  {
+   "op": "rekey",
+   "entry": {
+    "category": "concentrate",
+    "strain": "White Diamonds"
+   },
+   "why": "White Diamonds is a strain; the product is their 1g hash (https://weedmaps.com/brands/house-of-sacci/products/house-of-sacci-white-diamond-hash-1g)",
+   "subtype": "hash"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "strain": "White Diamonds",
+   "sizes": [
+    "3.5g",
+    "0.7g"
+   ],
+   "why": "brand listing '1/8 OZ PREMIUM FLOWER': https://weedmaps.com/brands/house-of-sacci/products/house-of-sacci-c09f210c-78e6-40b1-8307-128a543dd9f5; also a dime bag 0.7g (one store)",
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "strain": "Puffins Z",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "brand listing '1/8 OZ PREMIUM FLOWER': https://weedmaps.com/brands/house-of-sacci/products/house-of-sacci-puffin-z-1-8-oz-premium-flower",
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "strain": "NYC Vapor",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "brand listing '1/8 OZ PREMIUM FLOWER': https://weedmaps.com/brands/house-of-sacci/products/house-of-sacci-nyc-vapor-1-8-oz-premium-flower",
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "strain": "Sunny Z",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "brand listing '1/8 OZ PREMIUM FLOWER': https://weedmaps.com/brands/house-of-sacci/products/house-of-sacci-sunny-z-1-8-oz-premium-flower",
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "strain": "Gelato 41",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "brand listing '1/8 OZ PREMIUM FLOWER': https://weedmaps.com/brands/house-of-sacci/products/house-of-sacci-gelato-41-1-8-oz-premium-flower",
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "strain": "Maui Waui",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "brand listing '1/8 OZ PREMIUM FLOWER': https://weedmaps.com/brands/house-of-sacci/products/house-of-sacci-maui-waui-1-8-oz-premium-flower",
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "strain": "Momochi",
+   "sizes": [
+    "0.7g"
+   ],
+   "why": "brand listing 'Momochi | Buds | 0.7g': https://weedmaps.com/brands/house-of-sacci/products/house-of-sacci-momochi-buds-0-7g",
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "strain": "Permanent Marker",
+   "sizes": [
+    "0.7g"
+   ],
+   "why": "brand listing 'Permanent Marker | Ground | 0.7g': https://weedmaps.com/brands/house-of-sacci/products/house-of-sacci-permanent-marker-ground-0-7g",
+   "subtype": "preground"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "strain": "Devil's Drip",
+   "sizes": [
+    "0.7g",
+    "3.5g",
+    "14g"
+   ],
+   "why": "dime bag 0.7g at 2 stores ('DimeBag | Devils Drip | .7g', 'Devil's Drip - .7g'); site sells DIME BAGS; also 3.5g and 14g, one store each (site sells 1/8 and 1/2 oz)",
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "strain": "Garlic Sauce",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "7 x 0.5g at 2 stores ('Garlic Sauce | Dog Walkers | .5g | 7 Pack', 'Garlic Sauce Prerolls 7pk - 3.5g'); site 'PACK OF 7 PRE-ROLLS'"
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "strain": "Blonde Hash Indica",
+   "sizes": [
+    "1g"
+   ],
+   "why": "brand listing 'Blonde Indica Hash' 1g (https://weedmaps.com/brands/house-of-sacci/products); 1 store; named '<colour> Hash <type>' as most stores write it (Blonde/Brown is the hash, Indica/Sativa the source), so the four stay apart",
+   "subtype": "hash"
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "strain": "Blonde Hash Sativa",
+   "sizes": [
+    "1g"
+   ],
+   "why": "hash 1g at 2 stores; the strain field ('Sativa', 'Brown Hash') split the consensus; named '<colour> Hash <type>' as most stores write it (Blonde/Brown is the hash, Indica/Sativa the source), so the four stay apart",
+   "subtype": "hash"
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "strain": "Brown Hash Indica",
+   "sizes": [
+    "1g"
+   ],
+   "why": "hash 1g at 2 stores; the strain field ('Sativa', 'Brown Hash') split the consensus; named '<colour> Hash <type>' as most stores write it (Blonde/Brown is the hash, Indica/Sativa the source), so the four stay apart",
+   "subtype": "hash"
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "strain": "Brown Hash Sativa",
+   "sizes": [
+    "1g"
+   ],
+   "why": "hash 1g at 3 stores; the strain field ('Sativa', 'Brown Hash') split the consensus; named '<colour> Hash <type>' as most stores write it (Blonde/Brown is the hash, Indica/Sativa the source), so the four stay apart",
+   "subtype": "hash"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "strain": "Laughing Gas",
+   "sizes": [
+    "2g"
+   ],
+   "why": "brand listing '2G PREMIUM CANNABIS VAPE': https://weedmaps.com/brands/house-of-sacci/products/house-of-sacci-dc48663e-d062-40ef-ae49-03da0c4a227b",
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "strain": "Sweet Mint",
+   "sizes": [
+    "2g"
+   ],
+   "why": "brand listing '2G PREMIUM CANNABIS VAPE': https://weedmaps.com/brands/house-of-sacci/products/house-of-sacci-968fa39e-fc2d-4dec-80c3-58a6532a9fee",
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "strain": "Zour Patch Kidz",
+   "sizes": [
+    "2g"
+   ],
+   "why": "brand listing '2G PREMIUM CANNABIS VAPE': https://weedmaps.com/brands/house-of-sacci/products/house-of-sacci-zour-patch-kidz-2-gram-cannabis-vape",
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "strain": "Zour Patch Kidz",
+   "sizes": [
+    "1g"
+   ],
+   "why": "brand listing 'Cartridge | 1g' (site '1G QUARTZ VAPE'): https://weedmaps.com/brands/house-of-sacci/products/house-of-sacci-zpk-cartridge-1g; no NY listing now",
+   "subtype": "cart"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "strain": "Laughing Gas",
+   "sizes": [
+    "1g"
+   ],
+   "why": "brand listing 'Cartridge | 1g' (site '1G QUARTZ VAPE'): https://weedmaps.com/brands/house-of-sacci/products/house-of-sacci-laughing-gas-cartridge-1g; no NY listing now",
+   "subtype": "cart"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "strain": "Biscotti Pancakes",
+   "sizes": [
+    "0.7g"
+   ],
+   "why": "dime bag 0.7g ('House of Sacci - <strain> - .7g'; site sells DIME BAGS and lists the strain); judged real (one store, name and size consistent with the brand's formats; owner 2026-10-11: single-store products allowed)",
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "strain": "RS11",
+   "sizes": [
+    "0.7g"
+   ],
+   "why": "dime bag 0.7g ('House of Sacci - <strain> - .7g'; site sells DIME BAGS and lists the strain); judged real (one store, name and size consistent with the brand's formats; owner 2026-10-11: single-store products allowed)",
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "strain": "Trop Cherry",
+   "sizes": [
+    "0.7g"
+   ],
+   "why": "dime bag 0.7g ('House of Sacci - <strain> - .7g'; site sells DIME BAGS and lists the strain); judged real (one store, name and size consistent with the brand's formats; owner 2026-10-11: single-store products allowed)",
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "strain": "Permanent Marker",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "jar 3.5g ('Flower | Jar | Permanent Marker | 3.5g'); judged real (one store, name and size consistent with the brand's formats; owner 2026-10-11: single-store products allowed)",
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "strain": "Garlic Sauce",
+   "sizes": [
+    "28g"
+   ],
+   "why": "1 oz (site sells 1 oz; 'Flower | House of Sacci | Garlic Sauce | 28g'); judged real (one store, name and size consistent with the brand's formats; owner 2026-10-11: single-store products allowed)",
+   "subtype": "flower"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "strain": "Devil's Drip",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "7 x 0.5g pre-rolls 3.5g (site 'PACK OF 7 PRE-ROLLS'); 'Dog Walkers' is one store's word for half-gram joints, not a line; judged real (one store, name and size consistent with the brand's formats; owner 2026-10-11: single-store products allowed)"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "strain": "Permanent Marker",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "7 x 0.5g pre-rolls 3.5g (site 'PACK OF 7 PRE-ROLLS'); 'Dog Walkers' is one store's word for half-gram joints, not a line; judged real (one store, name and size consistent with the brand's formats; owner 2026-10-11: single-store products allowed)"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "strain": "Biohazard",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "7 x 0.5g pre-rolls 3.5g (site 'PACK OF 7 PRE-ROLLS'); 'Dog Walkers' is one store's word for half-gram joints, not a line; judged real (one store, name and size consistent with the brand's formats; owner 2026-10-11: single-store products allowed)"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "strain": "Hazmat",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "7 x 0.5g pre-rolls 3.5g (site 'PACK OF 7 PRE-ROLLS'); 'Dog Walkers' is one store's word for half-gram joints, not a line; judged real (one store, name and size consistent with the brand's formats; owner 2026-10-11: single-store products allowed)"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "strain": "Sherbadelic",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "7 x 0.5g pre-rolls 3.5g (site 'PACK OF 7 PRE-ROLLS'); 'Dog Walkers' is one store's word for half-gram joints, not a line; judged real (one store, name and size consistent with the brand's formats; owner 2026-10-11: single-store products allowed)"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "strain": "Trop Cherry",
+   "sizes": [
+    "0.5g"
+   ],
+   "why": "0.5g single ('House of Sacci - Trop Cherry Preroll - .5g'); judged real (one store, name and size consistent with the brand's formats; owner 2026-10-11: single-store products allowed)"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "strain": "Puffins Z",
+   "sizes": [
+    "0.5g"
+   ],
+   "why": "0.5g single ('House of Sacci - Puffin Z Pre-roll - .5g'; site spells PUFFINS Z); judged real (one store, name and size consistent with the brand's formats; owner 2026-10-11: single-store products allowed)"
+  },
+  {
+   "op": "add-size",
+   "entry": {
+    "category": "preroll",
+    "strain": "Sunny Z",
+    "size": "3.5g"
+   },
+   "size": "0.5g",
+   "why": "0.5g single ('House of Sacci - Sunny Z Pre-roll - .5g'); judged real (one store, name and size consistent with the brand's formats; owner 2026-10-11: single-store products allowed)"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "strain": "Rose Runtz",
+   "sizes": [
+    "2g"
+   ],
+   "why": "2g AIO (site '2G AIO VAPE'; 'Vape AIO | House of Sacci | Rose Runtz | 2g'); judged real (one store, name and size consistent with the brand's formats; owner 2026-10-11: single-store products allowed)",
+   "subtype": "all-in-one"
+  }
+ ]
+}

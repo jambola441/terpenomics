@@ -11,7 +11,8 @@ Usage
   python scripts/scrape.py --slug the-spot-bk --dry-run
   python scripts/scrape.py --all                      # every store whose status is "active"
   python scripts/scrape.py --all --include-pending    # ... plus "pending" ones
-  python scripts/scrape.py --all --import-only        # re-import the newest CSV per store
+  python scripts/scrape.py --all --import-only        # re-enrich + re-import the newest CSV per store
+  python scripts/scrape.py --all --import-only --no-enrich   # re-import it as it stands
   python scripts/scrape.py --all --summary run.json   # per-store results for monitoring
   python scripts/scrape.py --all --via-http           # from a sandbox: the database over HTTPS
 
@@ -21,6 +22,12 @@ import fails, or enrichment answered fewer than half its rows. Before, this scri
 exited 0 no matter what, so a run with every Dutchie store broken reported "ok". A
 partial scrape (fewer products than the platform reported) is imported, retires
 nothing, and is reported as a warning rather than a failure.
+
+--import-only skips the scrape but not enrichment: the newest CSV's rows go back
+through enrich() (scripts/reenrich_csv.py — same ENRICH_LLM, ENRICH_CACHE, --model and
+cache version gates; current cached answers are free), the CSV is rewritten in place,
+then imported. A taxonomy or prompt change thus reaches listings without a re-scrape.
+Add --no-enrich to import the CSV exactly as it stands.
 """
 
 import argparse
@@ -135,6 +142,14 @@ def build_scraper_cmd(d: dict, out: str, parallel: bool = False, no_enrich: bool
     return cmd
 
 
+def build_reenrich_cmd(csv_file: Path, model: str = "haiku") -> list[str]:
+    """--import-only's enrichment step: reenrich_csv.py rewrites the CSV in place."""
+    cmd = [sys.executable, str(SCRIPTS / "reenrich_csv.py"), "--csv", str(csv_file)]
+    if model != "haiku":
+        cmd.extend(["--model", model])
+    return cmd
+
+
 # The child currently running, so a SIGTERM to this process (run_scrape_cron's
 # timeout) can take it down too. Each child runs in its own session to be killable
 # as a tree on its own timeout — which also puts it out of reach of a kill aimed at
@@ -224,7 +239,30 @@ def run_one(d: dict, dry_run: bool, import_only: bool = False, scrape_only: bool
             if latest is None:
                 result.update(stage="import", detail="no CSV found")
                 return result
-            result["rows"] = count_rows(latest)
+            rows = count_rows(latest)
+            result["rows"] = rows
+            if not no_enrich:
+                # Re-enrich the CSV's rows through the same enrich() a scrape uses, so a
+                # taxonomy or prompt change reaches listings without a re-scrape. Cached
+                # answers still current under the version gates cost nothing.
+                if dry_run:
+                    print(f"  [dry-run] would re-enrich: {latest.name}")
+                else:
+                    code = run_bounded(build_reenrich_cmd(latest, model), SCRAPER_TIMEOUT_SEC)
+                    if code != 0:
+                        result.update(stage="enrich", detail="re-enrich timed out" if code == 124
+                                      else f"re-enrich exited {code}")
+                        return result
+                    usage = read_usage(latest)
+                    result["usage"] = usage
+                    degraded = (usage.get("failed_rows", 0)
+                                and usage["failed_rows"] > (1 - MIN_ENRICHED_SHARE) * rows)
+                    ok, detail = run_import(latest, dry_run=False)
+                    if degraded:
+                        ok, detail = False, (f"enrichment answered only {rows - usage['failed_rows']}"
+                                             f"/{rows} rows; {detail}")
+                    result.update(ok=ok, stage="import", detail=detail)
+                    return result
             ok, detail = run_import(latest, dry_run)
             result.update(ok=ok, stage="import", detail=detail)
             return result
@@ -321,10 +359,12 @@ def main() -> None:
     parser.add_argument("--include-pending", action="store_true",
                         help="With --all, also run stores whose status is 'pending'")
     parser.add_argument("--dry-run",     action="store_true", help="Print commands without running")
-    parser.add_argument("--import-only", action="store_true", help="Skip scraping; import existing CSVs from data/scrapes/")
+    parser.add_argument("--import-only", action="store_true", help="Skip scraping; re-enrich the newest CSV per store in data/scrapes/ "
+                             "(cache applies), then import it. With --no-enrich, import as is")
     parser.add_argument("--scrape-only", action="store_true", help="Scrape to CSV only; skip DB import")
     parser.add_argument("--parallel",    action="store_true", help="Fetch pages concurrently within each dispensary scrape")
-    parser.add_argument("--no-enrich",   action="store_true", help="Skip enrichment; write raw scraped data only")
+    parser.add_argument("--no-enrich",   action="store_true", help="Skip enrichment; write raw scraped data only (with --import-only: "
+                             "import the CSV without re-enriching)")
     parser.add_argument("--model",       default="haiku", help="Enrichment model id (see MODELS in scripts/enrich.py)")
     parser.add_argument("--passes",      type=int, default=50, help="Flowhub: max page sweeps until all reported products collected (default 50)")
     parser.add_argument("--summary",     help="Write a JSON summary of this run (per store) to this path")
