@@ -61,5 +61,20 @@
     {"listing": "1906 | Boost (Sativa) 20-Pack Tablets", "entry": {"category": "edible", "line": "Drops", "strain": "Boost", "size": "20pk 100mg"}},
     {"listing": "1906 | Love | Tablets | 75mg | 30pk", "entry": {"category": "edible", "line": "Drops", "strain": "Love", "size": "30pk 75mg"}},
     {"listing": "1906 New Highs Drop Pouch Infused Plant-Based 4 Pills - Love - 2.5mgTHc/2.5mgCBd", "entry": {"category": "edible", "line": "Drops", "strain": "Love", "size": "4pk 10mg"}}
+  ],
+  "harney-brothers": [
+    {"listing": "Harney Brothers Cannabis | Beverage | Butterfly Disco Lemonade | 1:1 | THC:CBD | 10mg | 16oz", "entry": {"category": "edible", "strain": "Butterfly Disco Lemonade", "size": "10mg"}},
+    {"listing": "Harney Brothers Cannabis | Beverage | Sparkling Water | Orange Mango | 1:1 | THC:CBD | 10mg | 12oz", "entry": {"category": "edible", "strain": "Orange Mango Seltzer", "size": "10mg"}},
+    {"listing": "HBC - Focus Coffee Shot - 10mg - 2oz", "entry": {"category": "edible", "line": "Shot", "strain": "Focus Coffee", "size": "10mg"}},
+    {"listing": "Sleep Tea - 10MG 5PK Tea Sachets", "entry": {"category": "edible", "line": "Tea Sachets", "strain": "Sleep", "size": "5pk 50mg"}},
+    {"listing": "Harney Brothers - Peach | 50mg Liquid Gummy", "entry": {"category": "edible", "strain": "Peach", "size": "50mg"}},
+    {"listing": "HBC - Supah Mango - 80mg - 2oz", "entry": {"category": "edible", "line": "Supah", "strain": "Mango", "size": "80mg"}}
+  ],
+  "boutiq": [
+    {"listing": "BTQ 510 V1| Starfruit | Hybrid | 1g | Vape Cartridge", "entry": {"category": "vaporizers", "line": "510 Cart", "strain": "Starfruit", "size": "1g"}},
+    {"listing": "Boutiq | Vape | 510 | Glowberry | Liquid Live Diamond | Indica | 1g | THC 84.27%", "entry": {"category": "vaporizers", "line": "510 Cart", "strain": "Glowberry", "size": "1g"}},
+    {"listing": "Boutiq | Switch Liquid Diamonds Triple Tank AIO | J13 x Gelato 41 x GDP", "entry": {"category": "vaporizers", "line": "Switch V5", "strain": "J-13 x Gelato 41 x GDP", "size": "2g"}},
+    {"listing": "BTQ Switch V5 GUM | Z-41 x Lemon Cherry x Mango Melon | Hyb-Hyb-Ind | 2g | AIO", "entry": {"category": "vaporizers", "line": "Switch V5", "strain": "Z-41 x Lemon Cherry x Mango Melon", "size": "2g"}},
+    {"listing": "Boutiq (Snack Pack) - Grape Soda X Rainbow Belts | (5 x .05g) Diamond Infused PreRolls", "entry": {"category": "preroll", "line": "Snack Pack", "strain": "Grape Soda x Rainbow Belts", "size": "2.5g"}}
   ]
 }
