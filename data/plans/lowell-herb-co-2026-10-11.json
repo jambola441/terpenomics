@@ -98,12 +98,23 @@
    "op": "add-product",
    "category": "preroll",
    "subtype": null,
-   "line": null,
-   "strain": "Rip Van Winkle",
+   "line": "Quicks",
+   "strain": "Subway Sesh",
    "sizes": [
-    "3.6g"
+    "3.5g"
    ],
-   "why": "one store: 'Pre-Rolls | Lowell Herb Co. | Rip Van Winkle | 6pk - Smokes' (typed 3.5g; Smokes 6pk is 6 x 0.6g = 3.6g)"
+   "why": "brand lineup, no NY store listing yet: 'Lowell Herb Co. Subway Sesh | Quicks | 10pk', 1/8oz, Red Hook NY (https://www.thetravelagency.co/products/lowell-herb-co-subway-sesh-quicks-10pk-for-sale-new-york-ny)"
+  },
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "subtype": null,
+   "line": "Quicks",
+   "strain": "State Of Mind",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "brand lineup, no NY store listing yet: 'Lowell Herb Co. State Of Mind | Quicks | 10pk', 1/8oz (https://www.thetravelagency.co/products/lowell-herb-co-state-of-mind-quicks-10pk-for-sale-new-york-ny)"
   }
  ]
 }

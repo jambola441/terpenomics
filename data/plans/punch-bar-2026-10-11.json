@@ -106,17 +106,6 @@
    "op": "add-product",
    "category": "edible",
    "subtype": "chocolate",
-   "line": "Original",
-   "strain": "Dark Chocolate Sea Salt",
-   "sizes": [
-    "10pk 100mg"
-   ],
-   "why": "one store: 'PUNCH Bar - Dark Chocolate Sea Salt 10pk - 100mg'"
-  },
-  {
-   "op": "add-product",
-   "category": "edible",
-   "subtype": "chocolate",
    "line": "Sugar Free",
    "strain": "Milk Chocolate",
    "sizes": [
