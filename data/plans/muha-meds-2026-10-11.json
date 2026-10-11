@@ -1,6 +1,6 @@
 {
  "brand": "Muha Meds",
- "_comment": "2026-10-11 draft (catalogs batch A, owner policy 2026-10-11): apply after `catalog_bootstrap.py --brand \"Muha Meds\" --push` (no --replace) creates the catalog; selectors name bootstrap entries. Single-store products without a brand source are left to review.",
+ "_comment": "2026-10-11 draft (catalogs batch A, owner policy 2026-10-11): apply after `catalog_bootstrap.py --brand \"Muha Meds\" --push` (no --replace) creates the catalog; selectors name bootstrap entries. Single-store products judged real are included (owner 2026-10-11); typos are left out. Pre-rolls get no line: NY sells one pre-roll format (5pk 3.5g infused), and only one store writes 'Mate'.",
  "edits": [
   {
    "op": "add-product",
@@ -10,6 +10,36 @@
     "2g"
    ],
    "why": "AIO 2g at 2 stores ('Grand Daddy Purp AIO | 2g', 'Vape AIO | Muha Meds | Grand Daddy Purp')",
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "strain": "Temptation",
+   "sizes": [
+    "2g"
+   ],
+   "why": "AIO 2g ('AIO Vape Temptation (H)'); pairs with the cart as Fatso/Habibi/Cali Gas OG do; judged real (one store, name and size consistent with the line; owner 2026-10-11: single-store products allowed)",
+   "subtype": "all-in-one"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "strain": "Grand Daddy Purp",
+   "sizes": [
+    "1g"
+   ],
+   "why": "cart 1g ('510 Vape Cart Grandaddy Purp (I)'); pairs with the 2g AIO; judged real (one store, name and size consistent with the line; owner 2026-10-11: single-store products allowed)",
+   "subtype": "cart"
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "strain": "Sour Diesel",
+   "sizes": [
+    "2g"
+   ],
+   "why": "AIO 2g at 2 stores ('Sour Diesel - Sativa AIO | 2g'; one store writes 'Super Sour Diesel', judged the same product: the cart is Sour Diesel)",
    "subtype": "all-in-one"
   }
  ]
