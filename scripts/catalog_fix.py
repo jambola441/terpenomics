@@ -292,7 +292,7 @@ def plan_add_product(catalogs: dict, brand: str, category: str, strain: str, siz
     rows = []
     for i, (variant, x) in enumerate(by_variant.items()):
         external_id = f"{key}:{_total(x)}" if bootstrap else None
-        if external_id in taken:
+        if external_id and external_id in taken:
             raise Refused(f"external id {external_id} is taken (an inactive entry?); reactivate that one instead")
         rows.append({"catalog_id": catalog["id"], "external_id": external_id, "product_key": key,
                      "name": name, "product_line": line,

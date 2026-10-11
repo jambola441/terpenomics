@@ -72,6 +72,20 @@ def sizes_by_product(brand: str | None, line: str) -> bool:
                for e in own or [])
 
 
+LINELESS_PATH = Path(__file__).resolve().parent.parent / "data" / "line_fill.json"
+
+
+def fills_lineless(brand: str | None, category: str | None, subtype: str | None) -> bool:
+    """Whether data/line_fill.json says the brand's line-less products of this kind are one line."""
+    import json
+    try:
+        data = json.loads(LINELESS_PATH.read_text())
+    except FileNotFoundError:
+        return False
+    own = next((v for k, v in data.items() if not k.startswith("_") and norm_name(k) == norm_name(brand or "")), [])
+    return any(r.get("category") == category and (r.get("subtype") or None) == (subtype or None) for r in own)
+
+
 def wanted(catalog: dict) -> dict[str, dict]:
     """The inferred entries the catalog's stated entries call for, by external id."""
     products: dict[str, list[dict]] = defaultdict(list)
@@ -84,6 +98,8 @@ def wanted(catalog: dict) -> dict[str, dict]:
         if line and es[0].get("category") not in POTENCY_SIZED \
                 and not sizes_by_product(catalog.get("brand_name"), line):
             lines[(es[0].get("category"), es[0].get("subtype") or "", norm_name(line))].append(key)
+        elif not line and fills_lineless(catalog.get("brand_name"), es[0].get("category"), es[0].get("subtype")):
+            lines[(es[0].get("category"), es[0].get("subtype") or "", "")].append(key)
     out: dict[str, dict] = {}
     for (category, _, _), keys in lines.items():
         if len(keys) < 2:

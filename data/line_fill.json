@@ -1,0 +1,7 @@
+{
+  "_comment": "Line-less products line_fill.py fills like a named line, by brand: each listed category/subtype is one line whose sizes every product of it comes in. Only where the owner has said so: line-less products are often several real lines (line_fill.py). Ayrloom (owner, 2026-10-11): every all-in-one flavor is sold in 0.5g, 1g and 2g, and every drink flavor at 5mg and 10mg.",
+  "Ayrloom": [
+    {"category": "vaporizers", "subtype": "all-in-one"},
+    {"category": "edible", "subtype": "beverage"}
+  ]
+}
