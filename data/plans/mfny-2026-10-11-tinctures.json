@@ -1,6 +1,6 @@
 {
  "brand": "MFNY",
- "_comment": "DRAFT 2026-10-11 (owner decision): MFNY tinctures sized by the 15mL bottle, one product per strain and extract line. Not written; apply with --write after approval. These curated entries bridge until the next storefront push, which proposes the same products from the recipe (data/storefronts/mfny.json: tincture rules, store_skip) and retires these. The intimacy oil needs no edit: 'All Night Affair Candy Rain 60ml' is already active and now reads as a size (sizes.py volumes).",
+ "_comment": "DRAFT 2026-10-11 (owner decision): MFNY tinctures sized by the 15mL bottle, one product per strain and extract line. Not written; apply with --write after approval. These curated entries (no external id) bridge until the next storefront push, which proposes the same products from the recipe (data/storefronts/mfny.json: tincture rules, store_skip). A push does not retire entries without an external id, so after it lands, deactivate these into the site's 15mL entries. The intimacy oil needs no edit: 'All Night Affair Candy Rain 60ml' is already active and now reads as a size (sizes.py volumes).",
  "edits": [
   {
    "op": "add-product",

@@ -93,3 +93,16 @@ def test_a_trusted_match_gives_the_listing_its_category_too():
     entry_ = {"category": "vaporizers", "subtype": "pod", "strain": "Cherry Gelato", "product_line": "Melted Diamonds"}
     import_listings._overlay(rec, entry_, Counter(), lambda s: False)
     assert (rec["scraped_category"], rec["product_line"]) == ("vaporizers", "Melted Diamonds")
+
+
+def test_a_volume_sized_entry_gives_its_size(monkeypatch):
+    """MFNY's tinctures are "15mL" in the catalog; a store's mg is the batch's lab total.
+    A trusted match takes the entry's size, and the chooser leaves it alone."""
+    catalogs = {"mfny": {"brand_name": "MFNY", "entries": [entry("t1", "15mL", "hb", "tinctures"),
+                                                           entry("o1", "60ml", "oil", "topical")]}}
+    jev_says(monkeypatch, 391.7)
+    tincture = record("Hash Burger Live Resin Tincture | 15mL", "418mg", "t1", "tinctures")
+    oil = record("MFNY | Live Resin Intimacy Oil 60mL | Candy Rain (I)", "4mg", "o1", "topical")
+    sized([tincture, oil], catalogs)
+    assert (tincture["catalog_entry_id"], tincture["size"]) == ("t1", "15mL")
+    assert oil["size"] == "60ml"
