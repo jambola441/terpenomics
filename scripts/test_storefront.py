@@ -626,3 +626,17 @@ def test_a_line_less_store_product_never_takes_a_site_lines_name():
     # Within its own line the store size still joins the site product.
     lined = dict(p, product_line="Kief Coated", name="Kief Coated Gorilla Glue")
     assert storefront._as_site_size(lined, storefront._names(lined), site)["product_key"] == "kc-gg"
+
+
+def test_store_lines_give_a_line_less_store_product_its_line():
+    rd = {"name": "Rainbow Driver", "strain": "Rainbow Driver", "product_line": None, "subtype": "tincture",
+          "variant": "15mL", "product_key": "lb:tinctures:tincture::rainbowdriver",
+          "external_id": "lb:tinctures:tincture::rainbowdriver:15ml"}
+    other = {**rd, "name": "Skunk", "strain": "Skunk", "product_key": "lb:tinctures:tincture::skunk",
+             "external_id": "lb:tinctures:tincture::skunk:15ml"}
+    rules = [{"when": {"subtype": "^tincture$", "name": "^Rainbow Driver$"}, "line": "Live Resin", "why": "x"}]
+    got, kept = storefront.line_store_products([rd, other], rules)
+    assert (got["product_line"], got["name"], got["product_key"], got["external_id"]) == (
+        "Live Resin", "Live Resin Rainbow Driver", "lb:tinctures:tincture:liveresin:rainbowdriver",
+        "lb:tinctures:tincture:liveresin:rainbowdriver:15ml")
+    assert kept == other

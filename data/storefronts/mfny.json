@@ -37,7 +37,8 @@
     "Live rosin badders the site does not list (The Belafonte, Hash Burger; one store lists both the resin and the rosin badder of each, at different THC) arrive line-less from the stores and match the site's Live Resin product by strain alone (concentrate subtype does not decide in split_store_products), so their store names land on the resin entry. Not fixable in this recipe.",
     "Store-only vapes and badders arrive without a line (enrichment does not record 'Live Resin' as a line): Strawpaya badder 1g, Super Lemon Haze cart 0.5g and AIO 1g, Superboof AIO 1g. Set their line to Live Resin by admin edit; a recipe rule cannot reach a product the site lacks.",
     "2026-10-11 (r2, owner-corrected): Sour Peach x Rainbow Beltz 2.0 gummies get line Live Resin, like the brand's other gummies: the package photo says Live Resin. Several stores write it as rosin ('Live Rosin Gummies'); that is the stores' wording, not the product.",
-    "2026-10-11 (owner): tinctures and the intimacy oil are in, sized by volume: tinctures '15mL' (every image says 15ml; the mg stores list, 344-1000mg, is a batch's lab total, so no mg size could match; sizes.py compares a volume only with a volume), the oil '60mL'. One product per strain and extract line, Classics in front where the title has it; '\"Belafonte\" Banana' is cultivar The Belafonte (its product page). All Night Affair is the oil's product name (line), its cultivar Candy Rain (product page: 'formulated with MFNY's top-tier Candy Rain live resin'), so stores' 'Candy Rain Intimacy Oil' is the same product. Rainbow Driver Live Resin Tincture is sold at stores but not on the site: a push brings it from the stores' consensus at 15mL (two stores write '15mL'); store_skip drops the mg-sized store tinctures. The curated entries of data/plans/mfny-2026-10-11-tinctures.json have no external id, so a push neither matches nor retires them (brand_catalog.push: NULL never matches): after the push lands the site's 15mL entries, deactivate the curated ones into them, or they stand as duplicates."
+    "2026-10-11 (owner): tinctures and the intimacy oil are in, sized by volume: tinctures '15mL' (every image says 15ml; the mg stores list, 344-1000mg, is a batch's lab total, so no mg size could match; sizes.py compares a volume only with a volume), the oil '60mL'. One product per strain and extract line, Classics in front where the title has it; '\"Belafonte\" Banana' is cultivar The Belafonte (its product page). All Night Affair is the oil's product name (line), its cultivar Candy Rain (product page: 'formulated with MFNY's top-tier Candy Rain live resin'), so stores' 'Candy Rain Intimacy Oil' is the same product. Rainbow Driver Live Resin Tincture is sold at stores but not on the site: a push brings it from the stores' consensus at 15mL (two stores write '15mL'); store_skip drops the mg-sized store tinctures. The curated entries of data/plans/mfny-2026-10-11-tinctures.json have no external id, so a push neither matches nor retires them (brand_catalog.push: NULL never matches): after the push lands the site's 15mL entries, deactivate the curated ones into them, or they stand as duplicates.",
+    "2026-10-12: store_lines gives the store-only Rainbow Driver tincture line Live Resin (its consensus stayed line-less: matched listings take the entry's blank line). After the 2026-10-11 push, 21 MFNY listings still held pre-push readings (not re-imported since, e.g. 'MFNY Skunk Live Resin Tincture | 15mL', 'MFNY  The Belafonte Live Resin Tincture 15mL'); re-read now, they join their 15mL entries."
   ],
   "skip": [
     {
@@ -480,6 +481,16 @@
         "size": "mg$"
       },
       "why": "MFNY tinctures are sized by the 15mL bottle (owner, 2026-10-11); a store tincture sized in mg is a batch's lab total, not another size, and the 15mL product (site, or Rainbow Driver from the stores' 15mL) covers it"
+    }
+  ],
+  "store_lines": [
+    {
+      "when": {
+        "subtype": "^tincture$",
+        "name": "^Rainbow Driver$"
+      },
+      "line": "Live Resin",
+      "why": "every store writes 'Rainbow Driver Live Resin Tincture | 15mL'; the site does not list it, and line-less it is no option once the reader reads 'Live Resin' (10 listings in review_missing after the 2026-10-11 push)"
     }
   ]
 }
