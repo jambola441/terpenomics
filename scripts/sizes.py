@@ -44,7 +44,20 @@ _GRAMS = re.compile(rf"{_NUM}\s*(?:g|gr|gram|grams)\b", re.I)
 _MG = re.compile(rf"{_NUM}\s*(?:mg|milligrams?)\b", re.I)
 # "5pk", "5 pack", "5-pack", "5ct", "10 count", "2 pcs", "5 x" (when followed by a size)
 _PACK = re.compile(r"\b(\d+)\s*[-\s]?(?:pk|pack|packs|ct|count|pcs|pieces|pc)\b", re.I)
-_PACK_X = re.compile(rf"\b(\d+)\s*(?:pk\s*)?x\s*{_NUM}\s*(g|gr|grams?|mg)\b", re.I)
+_PACK_X = re.compile(rf"\b(\d+)\s*(?:pk\s*)?[x×]\s*{_NUM}\s*(g|gr|grams?|mg)\b", re.I)
+# A count in words: "Four Pack", "two-pack", MFNY's "Two-Fer" (a pack of two carts).
+_WORD_COUNTS = {"two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8,
+                "ten": 10, "twelve": 12}
+_PACK_WORD = re.compile(r"\b(" + "|".join(_WORD_COUNTS) + r")[\s-]*(?:pk|pack)s?\b", re.I)
+_TWO_FER = re.compile(r"\btwo[\s-]*fers?\b", re.I)
+# The pack convention: a size with no count is ONE unit ("1g", "0.75g"); a pack is
+# written "N × unit" with the multiplication sign ("2 × 0.5g": two 0.5g carts, 1g in
+# all). A catalog entry keeps such a label as written, so the count is part of the
+# product's identity and a 2-pack never shares a size with the single of its total.
+# Store text and older recipes write "2 x 0.5g": read alike, stored as the package
+# total, as entries always had it (entry_variant). Opting in is writing the sign.
+PACK_SIGN = "×"
+_PACK_LABEL = re.compile(rf"\s*(\d+)\s*×\s*{_NUM}\s*(g|mg)\s*", re.I)
 _EACH = re.compile(rf"{_NUM}\s*(g|mg)\s*(?:each|ea\.?|per\s+\w+)\b", re.I)
 _OZ_FRAC = re.compile(r"\b(\d+)\s*/\s*(\d+)[\s-]*(?:oz|ounce)\b", re.I)
 # "1/2 Gram Joints" is 0.5g a joint, not the "2 Gram" _GRAMS would read inside it;
@@ -101,6 +114,41 @@ class Size:
         return " ".join(parts)
 
 
+def pack_label(text: str | None) -> str | None:
+    """`text` written as a pack label, normalized ("2×.5g" -> "2 × 0.5g"); None when it
+    is not one. A count of one is no pack: "1 × 1g" is "1g"."""
+    m = _PACK_LABEL.fullmatch(text or "")
+    if not m:
+        return None
+    n, unit, u = int(m.group(1)), float(m.group(2)), m.group(3).lower()
+    return f"{unit:g}{u}" if n == 1 else f"{n} {PACK_SIGN} {unit:g}{u}"
+
+
+def entry_variant(text: str | None, size: "Size", category: str | None) -> str | None:
+    """The variant a catalog entry stores for a size stated as `text` and read as `size`:
+    a pack label as written ("4 × 0.75g"), otherwise the package total for a weight
+    ("4 x 0.75g" -> "3g", as entries always had it) and the label for the rest."""
+    label = pack_label(text)
+    if label:
+        return label
+    if size.is_empty():
+        return None
+    if category in WEIGHT_CATEGORIES and size.grams is not None:
+        return f"{size.grams:g}g"
+    return size.label() or None
+
+
+def same_variant(a: str | None, b: str | None, category: str | None) -> bool:
+    """Whether two catalog variants are one size. Where either is a pack label, the
+    convention holds: the other's missing count is one ("1g" is not "2 × 0.5g"). Else
+    sizes.same_size on the totals, as before."""
+    sa, sb = parse(a, category=category), parse(b, category=category)
+    if pack_label(a) or pack_label(b):
+        if (sa.pack or 1) != (sb.pack or 1):
+            return False
+    return same_size(sa, sb) is True
+
+
 def _floats(pattern: re.Pattern, text: str) -> list[float]:
     out = []
     for m in pattern.finditer(text):
@@ -138,6 +186,8 @@ def parse(*texts: str | None, category: str | None = None) -> Size:
             unit_mg = val
     if pack is None:
         packs = [int(p) for p in _PACK.findall(text)]
+        packs += [_WORD_COUNTS[w.lower()] for w in _PACK_WORD.findall(text)]
+        packs += [2] * bool(_TWO_FER.search(text))
         pack = max(packs) if packs else None
     for m in _EACH.finditer(text):
         val = float(m.group(1))

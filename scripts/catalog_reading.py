@@ -185,8 +185,10 @@ def instructions_for(key: str, base: str, examples: list[tuple[dict, dict]], rea
     return f"{base} Examples from this brand's listings: {'; '.join(said)}."
 
 
-def spell_size(label: str, category: str | None) -> str:
-    """A catalog size with what it means: what a store's partial size is matched against."""
+def spell_size(label: str, category: str | None, single: bool = False) -> str:
+    """A catalog size with what it means: what a store's partial size is matched against.
+    `single`: the product also comes in packs written "N × unit" (sizes.PACK_SIGN), so a
+    size with no count is said to be one piece."""
     z = sizes.parse(label, category=category)
     if z.mg is not None and z.pack:
         return f"{label}: {z.pack} pieces, {z.mg:g}mg THC in the whole package (THC only)"
@@ -194,6 +196,8 @@ def spell_size(label: str, category: str | None) -> str:
         return f"{label}: {z.mg:g}mg THC in the whole package (THC only)"
     if z.grams is not None and z.pack:
         return f"{label}: {z.pack} pieces, {z.grams:g}g in total"
+    if z.grams is not None and single:
+        return f"{label}: one single piece of {z.grams:g}g"
     if z.grams is not None:
         return f"{label}: {z.grams:g}g in total"
     if z.ml is not None:
@@ -205,14 +209,14 @@ def spell_size(label: str, category: str | None) -> str:
     return label
 
 
-def option_label(key: str, value: str, category: str | None) -> str:
+def option_label(key: str, value: str, category: str | None, single: bool = False) -> str:
     if key == "category" and value in jev_classify.CATEGORY_CRITERIA:
         return f"{value}: {jev_classify.CATEGORY_CRITERIA[value]}"
     if key == "subtype":
         crit = jev_classify.SUBTYPE_CRITERIA.get(category or "", {})
         return f"{value}: {crit[value]}" if value in crit else value
     if key == "size":
-        return spell_size(value, category)
+        return spell_size(value, category, single)
     return value
 
 
@@ -256,8 +260,9 @@ class _Walk:
             extra = {k: self.reading[k] for k in ("category", "subtype", "product_line")
                      if self.reading.get(k)}
         options = {NONE: "None of these"}
+        single = key == "size" and any(sizes.pack_label(v) for v in values)
         for i, v in enumerate(values):
-            options[f"o{i}"] = option_label(key, v, self.reading.get("category"))
+            options[f"o{i}"] = option_label(key, v, self.reading.get("category"), single)
         return dict(base_state(brand, self.listing), **extra), \
             {key: jev.Choice(instructions_for(key, instructions, examples, self.reading, values,
                                               self.listing.get("name") or ""), options)}, values

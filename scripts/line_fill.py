@@ -60,6 +60,8 @@ def _size(variant: str | None, category: str | None) -> tuple[str | None, sizes.
     s = sizes.parse(variant, category=category)
     if s.is_empty() or not s.label():
         return None, None
+    if sizes.pack_label(variant):
+        return sizes.pack_label(variant), s     # "2 × 0.5g" stays a pack (sizes.PACK_SIGN)
     if category in sizes.WEIGHT_CATEGORIES:
         return (f"{s.grams:g}g" if s.grams is not None else s.label()), s
     return s.label(), s
@@ -133,7 +135,7 @@ def wanted(catalog: dict) -> dict[str, dict]:
         sized = {label: s for k in keys for label, s in own[k].items() if only is None or label in only}
         for k in keys:
             for label, s in sized.items():
-                if label in own[k] or any(sizes.same_size(s, o) is True for o in own[k].values()):
+                if label in own[k] or any(sizes.same_variant(label, o, category) for o in own[k]):
                     continue
                 base = products[k][0]
                 external_id = f"{INFERRED}:{k}:{label}"

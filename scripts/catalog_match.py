@@ -272,6 +272,11 @@ class CatalogIndex:
         """
         product = self.products[key]
         want = sizes.parse(listing_variant, name, category=category or product.category)
+        # The entry stating the listing's pack count first: "2pk .5g" is the "2 × 0.5g"
+        # Two-Fer, not the 1g single of the same total listed before it.
+        fit = fitting_entry(product.entries, want, category or product.category)
+        if fit:
+            return fit
         for e in product.entries:
             if sizes.same_size(want, sizes.parse(e.get("variant"), category=product.category)):
                 return e
@@ -416,6 +421,8 @@ def fitting_entry(entries: list[dict], want: sizes.Size, category: str | None) -
     if not fits:
         return False
     if len({s for _, s in fits}) > 1:
+        # The same count: under the pack convention (sizes.PACK_SIGN) a listing that
+        # states none ("1g") is the single beside the "2 × 0.5g" Two-Fer, a "2pk" the pack.
         fits = [(e, s) for e, s in fits if s.pack == want.pack] or fits
     if len({s for _, s in fits}) > 1:
         return None

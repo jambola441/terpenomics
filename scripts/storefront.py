@@ -733,7 +733,9 @@ def _title_case(s: str | None) -> str | None:
     return " ".join(word(w) for w in s.split(" "))
 
 
-def _variant(size: sizes.Size, measure: str) -> str | None:
+def _variant(size: sizes.Size, measure: str, stated: str | None = None) -> str | None:
+    if sizes.pack_label(stated):
+        return sizes.pack_label(stated)    # "2 × 0.5g": the pack convention (sizes.PACK_SIGN)
     if measure == "weight" and size.grams is not None:
         return f"{size.grams:g}g"          # the package total, as bootstrap entries have it
     return size.label() or None
@@ -847,7 +849,7 @@ def build(recipe: dict, items: list[Item]) -> tuple[dict, dict]:
             subtype = None
         name = " ".join(x for x in (line, strain) if x) or it.title
         product_key = f"sf:{category}:{subtype or ''}:{squash(line)}:{squash(strain or name)}"
-        variant = _variant(size, spec.measure) or it.variant
+        variant = _variant(size, spec.measure, stated) or it.variant
         entries.append({
             "external_id": f"{product_key}:{squash(variant) or 'nosize'}:{it.id}",
             "product_key": product_key,
@@ -1089,6 +1091,49 @@ def line_store_products(only_stores: list[dict], rules: list[dict] | None) -> li
     return [_store_line(e, rules) for e in only_stores]
 
 
+def pack_store_sizes(only_stores: list[dict], doc: dict) -> list[dict]:
+    """Store products' totals written as the brand's pack labels (sizes.PACK_SIGN).
+
+    Under the pack convention a bare size is one unit, but the stores' consensus gives
+    package totals: MFNY's store-only 3-packs arrive as "2.25g", which would read as one
+    2.25g pre-roll. Where the site writes a pack of that total in the product's
+    category and line ("3 × 0.75g" here from the line's fill_sizes, "4 × 0.75g" from the
+    site), and the site has no single of that total there, the store size is that
+    pack. Brands whose recipes write no pack label are untouched."""
+    import line_fill
+    packs: dict[tuple, list[str]] = defaultdict(list)
+    singles: dict[tuple, list[sizes.Size]] = defaultdict(list)
+    for e in doc["entries"]:
+        where = (e["category"], squash(e.get("product_line")))
+        (packs[where].append(e["variant"]) if sizes.pack_label(e.get("variant"))
+         else singles[where].append(sizes.parse(e.get("variant"), category=e["category"])))
+    out = []
+    for p in only_stores:
+        where = (p["category"], squash(p.get("product_line")))
+        filled = line_fill.fill_sizes(doc.get("brand_name"), p["category"], p.get("product_line") or "") or ()
+        labels = set(packs.get(where, [])) | {s for s in filled if sizes.pack_label(s)}
+        mine = sizes.parse(p.get("variant"), category=p["category"])
+        fit = [lab for lab in labels if mine.grams is not None
+               and sizes.same_size(mine, sizes.parse(lab, category=p["category"])) is True]
+        if not fit and mine.grams is not None and mine.pack is None:
+            # No pack of the total: the one unit the line's packs use that it divides
+            # into a whole count ("2.25g" of 0.75g units is "3 × 0.75g").
+            units = {sizes.parse(lab, category=p["category"]).unit_g for lab in labels}
+            counts = [(round(mine.grams / u), u) for u in units if u]
+            fit = [f"{n} {sizes.PACK_SIGN} {u:g}g" for n, u in counts
+                   if n > 1 and abs(n * u - mine.grams) < 0.01]
+        if p["category"] not in sizes.WEIGHT_CATEGORIES or sizes.pack_label(p.get("variant")) \
+                or len(fit) != 1 or any(sizes.same_size(mine, s) is True for s in singles.get(where, [])):
+            out.append(p)
+            continue
+        ext = p.get("external_id") or ""
+        old = squash(p.get("variant")) or "nosize"
+        head, _, tail = ext.partition(f"{p['product_key']}:{old}")
+        out.append({**p, "variant": fit[0],
+                    "external_id": f"{head}{p['product_key']}:{squash(fit[0])}{tail}" if _ else ext})
+    return out
+
+
 def _store_line(e: dict, rules: list[dict] | None) -> dict:
     """One store product with the line its `store_lines` rule gives it. Also applied
     before the store product is compared with the site's (split_store_products), so a
@@ -1261,6 +1306,7 @@ def main() -> None:
                 recipe.get("merch_counts"), recipe.get("store_lines"))
             only_stores, dropped = skip_store_products(only_stores, recipe.get("store_skip"))
             only_stores = line_store_products(only_stores, recipe.get("store_lines"))
+            only_stores = pack_store_sizes(only_stores, doc)
         if args.command == "check":
             print_check(report, found, only_stores, dropped)
         elif args.command == "fetch":
