@@ -82,6 +82,9 @@ def patches(rows: list[dict], catalog: dict, decisions: list,
                 want.update({k: rec.get(k) for k in OVERLAID})
             else:
                 want["size"] = row.get("variant")       # an untrusted listing shows the store's
+                # and only a line its catalog has (catalog_match.catalog_line)
+                want["product_line"] = cm.catalog_line(catalog, entry.get("id"), d.listing.get("reading"),
+                                                       row.get("scraped_category"))
         diff = {k: v for k, v in want.items() if not _same(row.get(k), v)}
         if diff:
             out[lid] = diff

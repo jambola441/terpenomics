@@ -415,7 +415,36 @@ def apply_catalog(records: list[dict], existing: dict[tuple, dict], catalogs: di
             rec["catalog_match_method"] = d.method
             if d.method in catalog_match.OVERLAY_METHODS:
                 _overlay(rec, d.entry, stats, _is_masked, catalog_match.format_synonyms(catalog))
+    stats["line_from_catalog"] = catalog_lines_only(records, catalogs, by_id)
     return stats
+
+
+def catalog_lines_only(records: list[dict], catalogs: dict, by_id: dict | None = None) -> int:
+    """For a brand with a catalog, the line on a listing comes from the catalog only.
+    A trusted (overlaid) record already carries its entry's line; every other record
+    of such a brand drops enrichment's guessed line (data/product_lines.json,
+    canonical.find_product_line, the old LLM pass: "Mini Preroll" -> "Mini") for
+    catalog_match.catalog_line: the line of the entry it points at, else the reading's
+    line when the catalog has it, else None. The reading keeps its own product_line,
+    so the join and the review queue still see what was read. Brands without a
+    catalog are left alone. Returns how many records' line changed."""
+    import catalog_match
+    import catalog_store
+    by_id = by_id if by_id is not None else catalog_store.entries_by_id(catalogs)
+    changed = 0
+    for rec in records:
+        catalog = catalogs.get(catalog_store.brand_key(rec.get("scraped_brand")))
+        if not catalog:
+            continue
+        eid = str(rec["catalog_entry_id"]) if rec.get("catalog_entry_id") else ""
+        if rec.get("catalog_match_method") in catalog_match.OVERLAY_METHODS and eid in by_id:
+            continue
+        line = catalog_match.catalog_line(catalog, eid or None, rec.get("reading"),
+                                          rec.get("scraped_category"))
+        if (rec.get("product_line") or None) != line:
+            changed += 1
+            rec["product_line"] = line
+    return changed
 
 
 def _keep_stored_match(rec: dict, stored: dict | None, by_id: dict, stats: dict,
