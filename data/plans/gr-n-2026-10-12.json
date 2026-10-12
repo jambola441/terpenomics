@@ -1,0 +1,18 @@
+{
+ "brand": "Grön",
+ "_comment": "DRAFT 2026-10-12 (wave 4), from Grön's untrusted listings. Most untrusted listings pointed at the right product with the size or the ratio-prefixed strain read below 0.9; those are handled by reading examples (data/reading_examples.json 'gr-n') and by Pearls' sizes_by_product (data/product_lines.json), which takes back the 10pk 25mg line fill had copied from Tart Cherry to every Pearl (15 inferred sizes; the write below runs the line fill sync). This plan adds the Pearls 2-packs stores sell. Not written: apply with --write after approval.",
+ "edits": [
+  {
+   "op": "add-size",
+   "entry": {"category": "edible", "line": "Pearls", "strain": "Blackberry Lemonade", "size": "10pk 100mg"},
+   "size": "2pk 20mg",
+   "why": "'1:1:1 Blackberry Lemonade Pearls 2-Pack - CBN/CBD/THC - Sleepy Indica' (size field 20mg); recipe notes: Grön NY sells a Pearls 2-pack, 2 x 10mg."
+  },
+  {
+   "op": "add-size",
+   "entry": {"category": "edible", "line": "Pearls", "strain": "Wildberry", "size": "10pk 100mg"},
+   "size": "2pk 20mg",
+   "why": "'2:1 Wildberry Pearls 2-Pack - THC/CBN - Indica' (the store's 10mg field is the per-piece dose); recipe notes: Pearls 2-pack, 2 x 10mg."
+  }
+ ]
+}
