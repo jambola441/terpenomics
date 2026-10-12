@@ -454,5 +454,11 @@
     {"listing": "Cannabals | Cones | White Chocolate | 100mg", "entry": {"category": "edible", "subtype": "chocolate", "strain": "White Chocolate", "size": "10pk 100mg"}},
     {"listing": "Cannabals | Brick | Strawberry Lemonade (H) | Live Resin Gummies | 100mg", "entry": {"category": "edible", "line": "Brick", "strain": "Strawberry Lemonade", "size": "100mg"}},
     {"listing": "Cannabals - Strawberry Lemonade Live Resin 10pk Gummies - 100mg", "entry": {"category": "edible", "line": "Live Resin", "strain": "Strawberry Lemonade", "size": "10pk 100mg"}}
+  ],
+  "stiiizy": [
+    {"listing": "Stiiizy | Vape | AIO | Blue Burst | .5g | Hybrid | 79.46% Thc", "entry": {"category": "vaporizers", "subtype": "all-in-one", "line": "LIIIL", "strain": "Blue Burst"}},
+    {"listing": "Stiiizy | Vape | AIO | Skywalker OG | 1g | Indica | 84.12% Thc", "entry": {"category": "vaporizers", "subtype": "all-in-one", "line": "All-in-One", "strain": "Skywalker OG"}},
+    {"listing": "Tahoe OG Live Resin Liquid Diamonds All-In-One | 1g", "entry": {"category": "vaporizers", "subtype": "all-in-one", "line": "Liquid Diamonds", "strain": "Tahoe OG"}},
+    {"listing": "Stiiizy - Pink Lemonade Gummies 10pk - 100mg", "entry": {"category": "edible", "line": "Lemonade", "strain": "Pink"}}
   ]
 }
