@@ -11,9 +11,8 @@ review queue (catalog_match_method in models.REVIEW_REASONS), the listing gets
     catalog_match_confidence = 1.0
 
 and the decision keeps the match it replaces (prev_entry_id, prev_confidence; the
-method is already its `reason`), so undo can put it back. Identity is not overlaid
-here: the next import keeps the manual match and overlays the entry onto the listing
-(import_listings.apply_catalog).
+method is already its `reason`), so undo can put it back. No identity column is
+written, here or by later imports: the shop reads the entry (services/shop_listings.py).
 
 Needs db/migrations/0018 applied before --write (prev_entry_id / prev_confidence).
 

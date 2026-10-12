@@ -32,3 +32,61 @@ def _fresh_response_cache():
     response_cache.clear()
     yield
     response_cache.clear()
+
+
+# ---------------------------------------------------------------------------
+# Shop listings: customer surfaces show only trusted listings and read the product's
+# identity from the matched catalog entry (services/shop_listings.py). Most API tests
+# describe a listing by its own columns, so a listing saved with no match at all
+# (catalog_entry_id and catalog_match_method both unset) is given an entry that
+# mirrors those columns and an 'attributes' match — as if the import had trusted it.
+# A test about untrusted listings sets catalog_match_method itself and is left alone.
+# Later edits to a mirrored listing's identity follow it onto its entry.
+# ---------------------------------------------------------------------------
+
+_MIRRORED: dict = {}      # listing id -> entry id
+
+
+def _mirror(session, listing):
+    from models import BrandCatalog, BrandCatalogEntry
+    from sqlmodel import select
+    catalog = session.exec(select(BrandCatalog).where(BrandCatalog.brand_slug == "__test_shop__")).first() \
+        or next((o for o in session.new if isinstance(o, BrandCatalog)
+                 and o.brand_slug == "__test_shop__"), None)
+    if catalog is None:
+        catalog = BrandCatalog(brand_slug="__test_shop__", brand_name="test", source_method="test")
+        session.add(catalog)
+    entry = BrandCatalogEntry(catalog_id=catalog.id, name=listing.scraped_name or "x")
+    session.add(entry)
+    return entry
+
+
+def _copy(entry, listing):
+    entry.category, entry.subtype = listing.scraped_category, listing.subtype
+    entry.product_line, entry.strain = listing.product_line, listing.strain
+    entry.variant = listing.size if listing.size is not None else listing.variant
+
+
+@pytest.fixture(autouse=True)
+def _trusted_by_default():
+    from sqlalchemy import event
+    from sqlalchemy.orm import Session as OrmSession
+    from models import BrandCatalogEntry, Listing
+
+    def before_flush(session, ctx, instances):
+        for obj in list(session.new):
+            if isinstance(obj, Listing) and obj.catalog_entry_id is None and obj.catalog_match_method is None:
+                entry = _mirror(session, obj)
+                _copy(entry, obj)
+                obj.catalog_entry_id, obj.catalog_match_method = entry.id, "attributes"
+                _MIRRORED[obj.id] = entry.id
+        for obj in list(session.dirty):
+            if isinstance(obj, Listing) and obj.id in _MIRRORED and _MIRRORED[obj.id] == obj.catalog_entry_id:
+                entry = session.get(BrandCatalogEntry, obj.catalog_entry_id)
+                if entry is not None:
+                    _copy(entry, obj)
+
+    event.listen(OrmSession, "before_flush", before_flush)
+    yield
+    event.remove(OrmSession, "before_flush", before_flush)
+    _MIRRORED.clear()

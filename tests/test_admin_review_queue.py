@@ -175,14 +175,19 @@ def test_decision_validation(client, queue):
         assert (str(listing.catalog_entry_id), listing.catalog_match_method) == (E["yuzu20"], "manual")
 
 
-def test_entry_makes_a_manual_match_with_the_entrys_identity(client, queue):
+def test_entry_makes_a_manual_match_and_leaves_the_listings_columns(client, queue):
     L, E = queue["listings"], queue["entries"]
+    with Session(engine) as session:
+        before = session.get(Listing, UUID(L["c_unsure"]))
+        cols = (before.product_line, before.strain, before.scraped_category, before.subtype, before.size)
     assert _decide(client, L["c_unsure"], "entry", entry_id=E["yuzu_sleep"]).status_code == 200
     with Session(engine) as session:
         listing = session.get(Listing, UUID(L["c_unsure"]))
         assert (str(listing.catalog_entry_id), listing.catalog_match_method, listing.catalog_match_confidence) == (
             E["yuzu_sleep"], "manual", 1.0)
-        assert (listing.product_line, listing.strain, listing.scraped_category) == ("Sleep", "Yuzu Lemon", "edible")
+        # the shop reads the entry's identity; the listing keeps its own columns
+        assert (listing.product_line, listing.strain, listing.scraped_category, listing.subtype,
+                listing.size) == cols
         row = session.exec(select(ReviewDecision)).one()
         assert (row.reason, str(row.prev_entry_id), row.prev_confidence) == ("review_unsure", E["yuzu20"], None)
     # Out of the queue: never offered again, and no longer counted.

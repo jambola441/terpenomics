@@ -117,7 +117,9 @@ def test_insert_then_update(db, tmp_path):
     assert run(tmp_path, [row("A", "Acme Blue Dream", strain="Blue Dream", price_cents="3500"),
                           row("B", "Acme OG Kush", strain="OG Kush")], name="2.csv") == 0
     got = {r["sku"]: r for r in listings(db)}
-    assert got["A"]["price_cents"] == 3500 and got["B"]["strain"] == "OG Kush"
+    assert got["A"]["price_cents"] == 3500 and got["B"]["reading"]["strain"] == "OG Kush"
+    # no derived identity on a listing (NOT_WRITTEN): enrichment's values are on the reading
+    assert all(r[c] is None for r in got.values() for c in ("subtype", "strain", "product_line"))
 
 
 def test_failed_enrichment_keeps_stored_identity(db, tmp_path):
@@ -125,7 +127,8 @@ def test_failed_enrichment_keeps_stored_identity(db, tmp_path):
     run(tmp_path, [row("A", "Acme Blue Dream", strain="", subtype="other", product_line="",
                        enrich_failed="True")], name="2.csv")
     [r] = listings(db)
-    assert (r["strain"], r["subtype"], r["product_line"]) == ("Blue Dream", "flower", "Gold")
+    assert (r["reading"]["strain"], r["reading"]["subtype"], r["reading"]["product_line"]) == \
+        ("Blue Dream", "flower", "Gold")                                   # the reading on file
 
 
 def test_failed_enrichment_adopts_the_stored_variant(db, tmp_path):
@@ -141,7 +144,7 @@ def test_failed_enrichment_adopts_the_stored_variant(db, tmp_path):
 def test_unenriched_new_listing_still_imports(db, tmp_path):
     run(tmp_path, [row("N", "Acme New Thing", strain="", subtype="other", enrich_failed="True")])
     [r] = listings(db)
-    assert r["subtype"] == "other"
+    assert r["sku"] == "N" and r["subtype"] is None      # imported; a failed enrichment has no reading
 
 
 def test_stale_marking_retires_absent_rows_and_leaves_inactive_ones_alone(db, tmp_path):
@@ -198,7 +201,7 @@ def test_the_attribute_join_overlays_identity_and_keeps_the_reading(db, tmp_path
     run(tmp_path, [row("A", "Acme Blue Dream", strain="Blue Dream", product_line="")])
     [r] = listings(db)
     assert r["catalog_match_method"] == "attributes" and str(r["catalog_entry_id"]) == eid
-    assert (r["strain"], r["product_line"]) == ("Blue Dream", "Gold")     # the entry's, for display
+    assert (r["strain"], r["product_line"]) == (None, None)    # the shop reads the entry's
     assert r["reading"] == {"category": "flower", "subtype": "flower", "strain": "Blue Dream",
                             "product_line": None, "size": "3.5g"}          # what the listing said
 
@@ -209,7 +212,7 @@ def test_a_name_never_matches_on_its_own(db, tmp_path):
                       "variant": "3.5g"}])
     run(tmp_path, [row("A", "Acme Blue Dream", strain="Blue Dreem")])
     [r] = listings(db)
-    assert r["catalog_entry_id"] is None and r["strain"] == "Blue Dreem"
+    assert r["catalog_entry_id"] is None and r["reading"]["strain"] == "Blue Dreem"
 
 
 def test_a_mistyped_dose_is_stored_with_its_catalog_size(db, tmp_path):
@@ -228,8 +231,9 @@ def test_a_mistyped_dose_is_stored_with_its_catalog_size(db, tmp_path):
     db.execute("SELECT sku, variant, size, catalog_match_method FROM listings ORDER BY sku")
     # A's 50mg is no size the product comes in: no join; one attribute from the product,
     # so it goes to the review queue as a near miss. B joins and keeps its size.
-    assert db.fetchall() == [("A", "50mg", "50mg", "review_near"), ("B", "100mg", "100mg", "attributes"),
-                             ("C", "3.5g", "3.5g", None)]
+    # size is no longer written (NOT_WRITTEN): the shop reads a trusted match's entry size
+    assert db.fetchall() == [("A", "50mg", None, "review_near"), ("B", "100mg", None, "attributes"),
+                             ("C", "3.5g", None, None)]
 
 
 def test_only_a_trusted_match_corrects_a_size():
@@ -277,7 +281,7 @@ def test_a_sure_catalog_reading_joins_and_overlays(db, tmp_path, monkeypatch):
     run(tmp_path, [row("A", "Acme | Blue Dream Smalls | 3.5g", strain="Blue Dream Smalls", subtype="smalls")])
     [r] = listings(db)
     assert r["catalog_match_method"] == "attributes"
-    assert (r["strain"], r["product_line"], r["subtype"]) == ("Blue Dream", "Gold", "smalls")
+    assert (r["strain"], r["product_line"], r["subtype"]) == (None, None, None)   # not written
     assert r["reading"]["by"] == "catalog" and r["reading"]["strain"] == "Blue Dream"
 
 
@@ -300,7 +304,7 @@ def test_an_unsure_catalog_reading_goes_to_review_without_overlay(db, tmp_path, 
     run(tmp_path, [row("A", "Acme | Blue Dream | 3.5g", strain="Blue Dreem")])
     [r] = listings(db)
     assert r["catalog_match_method"] == "review_unsure" and r["catalog_entry_id"] is not None
-    assert (r["strain"], r["product_line"]) == ("Blue Dreem", None)
+    assert (r["strain"], r["product_line"]) == (None, None)
 
 
 def test_a_format_word_in_the_name_beats_the_entrys_subtype(db, tmp_path):
@@ -310,7 +314,9 @@ def test_a_format_word_in_the_name_beats_the_entrys_subtype(db, tmp_path):
     run(tmp_path, [row("A", "Acme Blue Dream AIO", category="vaporizers", subtype="pod",
                        variant="1g", strain="Blue Dream")])
     [r] = listings(db)
-    assert r["catalog_match_method"] == "attributes" and r["subtype"] == "all-in-one"
+    # trusted; the name's format word now only shapes the in-memory overlay (size steps):
+    # the shop shows the entry's subtype, so a merged AIO/pod entry is a catalog fix
+    assert r["catalog_match_method"] == "attributes" and r["subtype"] is None
 
 
 def test_a_preroll_keeps_no_subtype(db, tmp_path):
@@ -327,7 +333,7 @@ def test_a_preroll_keeps_no_subtype(db, tmp_path):
     run(tmp_path, rows)
     got = {r["sku"]: r for r in listings(db)}
     assert got["A"]["catalog_match_method"] == "attributes"
-    assert [got[k]["subtype"] for k in "ABC"] == [None, None, "flower"]
+    assert [got[k]["subtype"] for k in "ABC"] == [None, None, None]     # never written
     claim = verification.claim({"subtype": "infused"}, "Acme OG Kush Infused", "tester")
     db.execute("UPDATE listings SET verified_fields=%s WHERE sku='B'", (psycopg2.extras.Json(claim),))
     run(tmp_path, rows, name="2.csv")
@@ -343,7 +349,7 @@ def test_migration_0007_clears_stored_preroll_subtypes(db, tmp_path):
     migration = Path(__file__).resolve().parent.parent / "db/migrations/0007_preroll_no_subtype.sql"
     db.execute(migration.read_text())
     db.execute(migration.read_text())                                       # idempotent
-    assert {r["sku"]: r["subtype"] for r in listings(db)} == {"A": None, "C": "flower"}
+    assert {r["sku"]: r["subtype"] for r in listings(db)} == {"A": None, "C": None}
     db.execute("SELECT category, subtype FROM brand_catalog_entries ORDER BY 1")
     assert db.fetchall() == [("preroll", None), ("vaporizers", "cart")]
 
@@ -375,7 +381,8 @@ def test_overlay_entry_applies_identity_and_catalog_size_like_an_import():
     rec = {"scraped_name": "Camino Yuzu Lemon 20pk 50mg", "scraped_category": "tincture",
            "subtype": None, "strain": "Yuzu", "product_line": "Balance", "variant": "50mg"}
     import_listings.overlay_entry(rec, catalog, entry)
-    assert (rec["scraped_category"], rec["strain"], rec["product_line"]) == ("edible", "Yuzu Lemon", None)
+    # in memory only; the category is not overlaid (the shop reads the entry's)
+    assert (rec["scraped_category"], rec["strain"], rec["product_line"]) == ("tincture", "Yuzu Lemon", None)
     want = catalog_match.catalog_size("50mg", rec["scraped_name"], entry, [entry], None) or "50mg"
     assert rec["size"] == want
 
@@ -389,7 +396,7 @@ def test_manual_match_survives_reimport(db, tmp_path):
     run(tmp_path, [row("A", "Acme Blue Dream")], name="2.csv")
     [r] = listings(db)
     assert r["catalog_match_method"] == "manual" and str(r["catalog_entry_id"]) == eid
-    assert (r["strain"], r["product_line"]) == ("Picked", "Hand")
+    assert (r["strain"], r["product_line"]) == (None, None)    # the shop reads the entry's
 
 
 def test_human_claim_beats_the_catalog(db, tmp_path):
@@ -399,7 +406,11 @@ def test_human_claim_beats_the_catalog(db, tmp_path):
     claim = verification.claim({"strain": "Blue Dream #4"}, "Acme Blue Dream", "tester")
     db.execute("UPDATE listings SET verified_fields=%s", (psycopg2.extras.Json(claim),))
     run(tmp_path, [row("A", "Acme Blue Dream")], name="2.csv")
-    assert listings(db)[0]["strain"] == "Blue Dream #4"
+    # the claim stays on verified_fields; no identity column is written any more
+    db.execute("SELECT verified_fields, strain FROM listings")
+    vf, strain = db.fetchone()
+    assert verification.verified_fields({"verified_fields": vf, "scraped_name": "Acme Blue Dream"}) == \
+        {"strain": "Blue Dream #4"} and strain is None
 
 
 def test_no_catalog_flag_leaves_match_columns_alone(db, tmp_path):

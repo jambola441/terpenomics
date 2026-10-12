@@ -4,14 +4,15 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
-from sqlalchemy import func, text
+from sqlalchemy import case, func
 from sqlmodel import Session, select, or_
 
 from database import engine, get_session
 from models import (
-    Customer, Dispensary, Listing, ListingTerpene, ListingCannabinoid,
-    Terpene, Cannabinoid, Purchase, PurchaseItem, LISTING_PRODUCT_SIZE,
+    Customer, Dispensary, Listing as RawListing, ListingTerpene, ListingCannabinoid,
+    Terpene, Cannabinoid, Purchase, PurchaseItem,
 )
+from services.shop_listings import shop_listing
 from routes.admin.serializers import serialize_purchase_item
 from services.display_name import compose as compose_display_name
 from services.listing_photos import listing_photos
@@ -20,6 +21,12 @@ from services.market import context_for, context_or_empty
 from services.response_cache import cached_json
 
 router = APIRouter()
+
+# Every catalogue route reads the shop's listings: trusted matches only, with the
+# product's identity from the matched catalog entry (services/shop_listings.py).
+# A customer's own purchase history reads the raw listing (RawListing).
+Listing = shop_listing()
+LISTING_PRODUCT_SIZE = func.coalesce(Listing.size, Listing.variant)
 
 
 # ---------------------------
@@ -924,42 +931,44 @@ def list_portal_products(
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
 ):
-    conditions = ["1=1"]
-    params: dict = {}
-
+    # Was the `products` view over raw listing columns (db/migrations/0008); now the
+    # same aggregate over the shop's listings, so it shows trusted listings only and
+    # the catalog entry's identity (services/shop_listings.py). The view is left in
+    # place for admin SQL.
+    size = func.coalesce(Listing.size, Listing.variant)
+    keys = (Listing.scraped_brand.label("brand"), Listing.scraped_category.label("category"),
+            Listing.subtype.label("subtype"), Listing.product_line.label("product_line"),
+            Listing.strain.label("strain"), size.label("variant"))
+    in_stock = Listing.in_stock == True  # noqa: E712
+    stmt = (
+        select(*keys,
+               func.count().label("listing_count"),
+               func.count(func.distinct(Listing.dispensary_id)).label("dispensary_count"),
+               func.min(Listing.price_cents).filter(in_stock).label("min_price_cents"),
+               func.max(Listing.price_cents).filter(in_stock).label("max_price_cents"),
+               func.max(case((in_stock, 1), else_=0)).label("any_in_stock"))
+        .where(Listing.is_active == True)  # noqa: E712
+        .group_by(*keys)
+    )
     if q:
-        conditions.append(
-            "(brand ILIKE :q OR category ILIKE :q OR subtype ILIKE :q"
-            " OR product_line ILIKE :q OR strain ILIKE :q)"
-        )
-        params["q"] = f"%{q.strip()}%"
+        like = f"%{q.strip()}%"
+        stmt = stmt.where(or_(Listing.scraped_brand.ilike(like), Listing.scraped_category.ilike(like),
+                              Listing.subtype.ilike(like), Listing.product_line.ilike(like),
+                              Listing.strain.ilike(like)))
     if category:
-        conditions.append("category = :category")
-        params["category"] = category
+        stmt = stmt.where(Listing.scraped_category == category)
     if brand:
-        conditions.append("brand ILIKE :brand")
-        params["brand"] = f"%{brand.strip()}%"
+        stmt = stmt.where(Listing.scraped_brand.ilike(f"%{brand.strip()}%"))
+    stmt = stmt.order_by(*keys).offset(offset).limit(limit)
 
-    where = " AND ".join(conditions)
-    sql = text(f"""
-        SELECT brand, category, subtype, product_line, strain, variant,
-               listing_count, dispensary_count,
-               min_price_cents, max_price_cents,
-               any_in_stock
-        FROM products
-        WHERE {where}
-        ORDER BY brand, category, subtype, product_line, strain, variant
-        LIMIT :limit OFFSET :offset
-    """)
-    params["limit"] = limit
-    params["offset"] = offset
-
-    with engine.connect() as conn:
-        rows = conn.execute(sql, params).mappings().all()
+    with Session(engine) as session:
+        rows = [dict(r._mapping) for r in session.exec(stmt).all()]
+    for r in rows:
+        r["any_in_stock"] = bool(r["any_in_stock"])
 
     return [
         {
-            **dict(r),
+            **r,
             "display_name": compose_display_name(
                 brand=r["brand"],
                 product_line=r["product_line"],
@@ -1000,9 +1009,9 @@ def get_portal_purchases(
         return []
 
     rows = session.exec(
-        select(Purchase, PurchaseItem, Listing)
+        select(Purchase, PurchaseItem, RawListing)
         .join(PurchaseItem, PurchaseItem.purchase_id == Purchase.id, isouter=True)
-        .join(Listing, Listing.id == PurchaseItem.listing_id, isouter=True)
+        .join(RawListing, RawListing.id == PurchaseItem.listing_id, isouter=True)
         .where(Purchase.id.in_(purchase_ids))
         .order_by(Purchase.purchased_at.desc())
     ).all()

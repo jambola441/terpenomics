@@ -77,6 +77,13 @@ COLUMNS = [
     "reading", "catalog_entry_id", "catalog_match_confidence", "catalog_match_method",
     "created_at", "updated_at", "last_seen_at",
 ]
+# Derived identity the import no longer writes (owner, 2026-10-12): a listing keeps
+# what its scrape wrote plus its match; the shop reads the product's identity from
+# the matched catalog entry (services/shop_listings.py). Enrichment's values for these
+# live on in `reading` (record_reading). The columns stay for now — inserted NULL,
+# never updated — until nothing reads them.
+NOT_WRITTEN = ("subtype", "strain", "product_line", "size")
+WRITTEN_COLUMNS = [c for c in COLUMNS if c not in NOT_WRITTEN]
 # Identity fields a failed enrichment must not overwrite.
 IDENTITY = ("scraped_category", "subtype", "strain", "product_line")
 # verification.VERIFIABLE name -> listings column. `variant` is deliberately absent:
@@ -451,14 +458,14 @@ def _overlay(rec: dict, entry: dict, stats: dict, is_masked, synonyms: bool = Tr
     it is, not about how to spell it on our menu. Fix those once in the admin and
     they flow everywhere.
 
-    The category is the entry's too: a listing a model filed as a concentrate whose
-    name is Rove's "Melted Diamonds Reload" vape is a vape. (Of 11,586 trusted matches
-    on 2026-10-07, 7 disagreed with the listing's category, 1906's tablets filed as
-    tinctures among them.)
+    Since 2026-10-12 none of this is persisted (NOT_WRITTEN): the import keeps the
+    overlaid record in memory only, for the size steps that read it (assign_sizes,
+    choose_sizes); the shop reads the entry itself (services/shop_listings.py),
+    category included.
     """
     import catalog_match
-    if entry.get("category"):
-        rec["scraped_category"] = entry["category"]
+    # The category is not overlaid: scraped_category is persisted and stays the
+    # scrape's; the shop reads the entry's (services/shop_listings.py).
     subtype = catalog_match.matched_subtype(entry, rec.get("scraped_name"), synonyms)
     if subtype:
         stats["subtype_from_name"] += subtype != entry.get("subtype")
@@ -691,7 +698,7 @@ def _upsert_sql(with_catalog: bool) -> str:
                                 THEN listings.catalog_match_method ELSE EXCLUDED.catalog_match_method END,
     """ if with_catalog else ""
     return f"""
-        INSERT INTO listings ({", ".join(COLUMNS)})
+        INSERT INTO listings ({", ".join(WRITTEN_COLUMNS)})
         VALUES %s
         ON CONFLICT (dispensary_id, sku, COALESCE(variant, ''))
         WHERE sku IS NOT NULL
@@ -704,14 +711,10 @@ def _upsert_sql(with_catalog: bool) -> str:
             scraped_name     = EXCLUDED.scraped_name,
             scraped_brand    = EXCLUDED.scraped_brand,
             scraped_category = EXCLUDED.scraped_category,
-            subtype          = EXCLUDED.subtype,
-            strain           = EXCLUDED.strain,
             classification   = EXCLUDED.classification,
             description      = EXCLUDED.description,
-            product_line     = EXCLUDED.product_line,
             attributes       = EXCLUDED.attributes,
             reading          = COALESCE(EXCLUDED.reading, listings.reading),
-            size             = EXCLUDED.size,
             {catalog}
             -- A scrape that found no link (a store without one, a lookup that failed)
             -- must not blank one an earlier run recorded.
@@ -723,7 +726,8 @@ def _upsert_sql(with_catalog: bool) -> str:
 
 
 def _as_tuple(rec: dict) -> tuple:
-    return tuple(Json(rec[c]) if c in ("attributes", "reading") and rec[c] else rec[c] for c in COLUMNS)
+    return tuple(Json(rec[c]) if c in ("attributes", "reading") and rec[c] else rec[c]
+                 for c in WRITTEN_COLUMNS)
 
 
 class PostgresStore:
@@ -834,7 +838,7 @@ class RestStore:
         new, known = [], []
         for rec in records:
             row = {c: rec[c].isoformat() if isinstance(rec[c], datetime) else rec[c]
-                   for c in COLUMNS}
+                   for c in WRITTEN_COLUMNS}
             row["attributes"] = rec["attributes"] or None
             stored = existing.get((rec["sku"], rec["variant"] or ""))
             if stored is None:

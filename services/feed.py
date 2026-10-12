@@ -29,11 +29,15 @@ from sqlmodel import Session, select
 from models import (
     FeaturedListing,
     ItemFeedback,
-    Listing,
     Purchase,
     PurchaseItem,
 )
 from services.market import same_product
+from services.shop_listings import shop_listing
+
+# The shop's listings: trusted matches only, identity from the catalog entry
+# (services/shop_listings.py).
+Listing = shop_listing()
 
 # How much of a store's shelf a ranking may scan. A rail shows a handful; this
 # bounds what it costs to find them when a store carries thousands of rows.
@@ -159,8 +163,8 @@ def _market_comparison(
     every screen that makes this comparison -- a deal here has to mean the same
     thing as "3 other stores" on the menu.
     """
-    mine = aliased(Listing)
-    other = aliased(Listing)
+    mine = shop_listing()
+    other = shop_listing()
 
     avg_other = func.avg(other.price_cents)
     store_count = func.count(func.distinct(other.dispensary_id))

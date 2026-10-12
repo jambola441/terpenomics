@@ -51,7 +51,13 @@ def _display_name(listing: Listing) -> str:
         category=listing.scraped_category,
     )
 
+from services.shop_listings import shop_listing  # noqa: E402
+
 router = APIRouter(prefix="/me/orders", tags=["orders"])
+
+# Only a shop listing can be ordered — a trusted match, named from its catalog entry
+# (services/shop_listings.py); any other id is unknown to a shopper.
+ShopListing = shop_listing()
 
 # Ambiguous glyphs removed: this gets read aloud at a counter and copied off a
 # phone screen, so 0/O and 1/I/L would cost more than the entropy they add.
@@ -176,7 +182,7 @@ def create_order(
         )
 
     listings = session.exec(
-        select(Listing).where(Listing.id.in_(list(merged.keys())))
+        select(ShopListing).where(ShopListing.id.in_(list(merged.keys())))
     ).all()
     by_id = {l.id: l for l in listings}
     # The order keeps the photo the shopper saw on the card.
