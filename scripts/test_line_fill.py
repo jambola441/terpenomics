@@ -83,6 +83,24 @@ def test_a_line_whose_products_come_in_their_own_sizes_is_not_filled():
     assert line_fill.wanted({**drops, "brand_name": "Another Brand"})        # the switch is per brand
 
 
+def test_a_line_with_fill_sizes_fills_only_those(monkeypatch, tmp_path):
+    """MFNY's Live Resin Infused pre-rolls: 0.75g, 1.5g, 2.25g and 3g for every strain;
+    the older 1g only where a strain states it."""
+    rules = tmp_path / "line_fill.json"
+    rules.write_text('{"MFNY": [{"category": "preroll", "line": "Live Resin Infused",'
+                     ' "fill_sizes": ["0.75g", "1.5g", "2.25g", "3g"]}]}')
+    monkeypatch.setattr(line_fill, "LINELESS_PATH", rules)
+    lri = "Live Resin Infused"
+    cat = {"id": "c4", "brand_name": "MFNY", "entries": [
+        e("hb", "Hash Burger", lri, "1g", "preroll", None), e("hb", "Hash Burger", lri, "3g", "preroll", None),
+        e("cr", "Candy Rain", lri, "1.5g", "preroll", None),
+        e("gm", "Gelato", None, "1g", "preroll", None), e("ms", "Mints", None, "3g", "preroll", None)]}
+    assert sorted((r["strain"], r["variant"]) for r in line_fill.wanted(cat).values()) == \
+        [("Candy Rain", "3g"), ("Hash Burger", "1.5g")]
+    # The rule is not a line-less fill of the category.
+    assert not line_fill.fills_lineless("MFNY", "preroll", None)
+
+
 def test_line_less_products_are_filled_only_where_data_line_fill_says(monkeypatch, tmp_path):
     rules = tmp_path / "line_fill.json"
     rules.write_text('{"Ayrloom": [{"category": "vaporizers", "subtype": "all-in-one"}]}')

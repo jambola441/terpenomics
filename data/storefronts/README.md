@@ -102,15 +102,21 @@ name with a `title` rule for the one category instead.
 
 **`store_skip`** drops a product only stores list when it is not a product either: a size
 some stores give a product the site lists in another (`{"when": {"name": "^Cotton Candy$",
-"size": "^100mg$"}, "why": "..."}`; `name`, `size` and `subtype` are regexes on the store
-product's name, size and subtype: the name carries the line where a line rule gave it one,
-"Pips Sativa" rather than "Sativa"). `check` prints what it dropped and why.
+"size": "^100mg$"}, "why": "..."}`; `name`, `size`, `subtype`, `category` and `line` are
+regexes on the store product's name, size, subtype, category and line (a line-less product's
+line is ""): the name carries the line where a line rule gave it one, "Pips Sativa" rather
+than "Sativa"). `check` prints what it dropped and why.
 
 **`store_lines`** gives a product only stores list the line their names state when the
 stores' consensus has none (`{"when": {"subtype": "^tincture$", "name": "^Rainbow Driver$"},
 "line": "Live Resin", "why": "..."}`; `when` as in `store_skip`). Line, name and id change
 together, so the push replaces the line-less entry. A consensus can stay line-less for
-good: listings matched to a line-less entry take its blank line.
+good: listings matched to a line-less entry take its blank line. The rule also renames a
+line the brand no longer uses (MFNY's 'Mini', echoed by listings matched to the old
+entries: `{"when": {"category": "^preroll$", "line": "^(?:Mini)?$"}, "line": "Live Resin
+Infused"}`), and it is applied before the store product is compared with the site's, so a
+store size of a site product joins it rather than standing beside it or going to review.
+Two store products it gives one identity are pushed as one entry.
 
 **`merch_counts`** for a papers brand whose pages name widths and pack counts apart
 (RAW: "available in 1¼ and King Size", "50 and 32 leaves"): the retail counts per width,

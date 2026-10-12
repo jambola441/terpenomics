@@ -107,6 +107,9 @@ GROUPS = {"line", "strain", "strain2", "size", "size2"}
 TITLE_FIELDS = FIELDS + ("category",)
 SET_KEYS = {"category", "subtype", "line", "strain", "size"}
 MAX_UNPARSED = 0.10
+# What a store_skip / store_lines `when` may test: regexes on the store product's name
+# (with its line), size, subtype, category and line (a line-less product's is "").
+STORE_WHEN = {"name", "size", "subtype", "category", "line"}
 # Categories whose subtype is a format named in the listing ("Cart", "AIO", "Gummies")
 # and so can tell two store and site products apart (split_store_products).
 SUBTYPE_DECIDES = {"vaporizers", "edible"}
@@ -543,12 +546,12 @@ def validate(recipe: dict, where: str = "recipe") -> dict:
             bad(f"store_aliases.{table}: only lines and names are mapped")
     for i, rule in enumerate(recipe.get("store_lines") or []):
         when = rule.get("when") or {}
-        if not when or set(when) - {"name", "size", "subtype"} or not rule.get("line") or not rule.get("why"):
-            bad(f"store_lines[{i}] needs a line, a why and a when on name, size and/or subtype")
+        if not when or set(when) - STORE_WHEN or not rule.get("line") or not rule.get("why"):
+            bad(f"store_lines[{i}] needs a line, a why and a when on {', '.join(sorted(STORE_WHEN))}")
     for i, rule in enumerate(recipe.get("store_skip") or []):
         when = rule.get("when") or {}
-        if not when or set(when) - {"name", "size", "subtype"} or not rule.get("why"):
-            bad(f"store_skip[{i}] needs a why and a when on name, size and/or subtype")
+        if not when or set(when) - STORE_WHEN or not rule.get("why"):
+            bad(f"store_skip[{i}] needs a why and a when on {', '.join(sorted(STORE_WHEN))}")
         for f, pattern in when.items():
             try:
                 re.compile(pattern)
@@ -939,7 +942,8 @@ def _aliased(entry: dict, aliases: dict) -> dict:
 
 
 def split_store_products(doc: dict, listings: list[dict], aliases: dict | None = None,
-                         merch_counts: dict | None = None) -> tuple[list[dict], list[dict], dict]:
+                         merch_counts: dict | None = None,
+                         lines: list[dict] | None = None) -> tuple[list[dict], list[dict], dict]:
     """The products stores sell under the brand, as catalog_bootstrap.propose() builds
     them from our listings: those the site's catalog has, and those only stores have.
     The third value is always empty: store names are no longer carried onto site
@@ -966,6 +970,7 @@ def split_store_products(doc: dict, listings: list[dict], aliases: dict | None =
             (found if _merch_site_has(p, site["merch"]) else only_stores).append(
                 p if _merch_site_has(p, site["merch"]) else _merch_as_site_size(p, site["merch"]))
             continue
+        p = _store_line(p, lines)        # the recipe's store_lines, before comparing
         total, names = _total(p), _names(_aliased(p, aliases or {}))
         hits = []
         for t, n, e in site[p["category"]]:
@@ -1071,8 +1076,8 @@ def _as_site_size(p: dict, names: dict, site: list[tuple], synonyms: bool = True
 
 
 def _store_match(e: dict, when: dict) -> bool:
-    return all(re.search(pat, e.get({"name": "name", "size": "variant"}.get(f, f)) or "", re.I)
-               for f, pat in when.items())
+    fields = {"name": "name", "size": "variant", "line": "product_line"}
+    return all(re.search(pat, e.get(fields.get(f, f)) or "", re.I) for f, pat in when.items())
 
 
 def line_store_products(only_stores: list[dict], rules: list[dict] | None) -> list[dict]:
@@ -1081,22 +1086,27 @@ def line_store_products(only_stores: list[dict], rules: list[dict] | None) -> li
     'Live Resin Tincture', but listings matched to a line-less entry carry no line, so
     the consensus never gains one). Line, name and identity change together, as a
     bootstrap would have keyed the product with that line."""
-    out = []
-    for e in only_stores:
-        rule = next((r for r in rules or [] if _store_match(e, r["when"])), None)
-        if not rule or (e.get("product_line") or "") == rule["line"]:
-            out.append(e)
-            continue
-        old = e["product_key"]
-        parts = old.split(":")
-        if len(parts) >= 5:
-            parts[3] = squash(rule["line"])
-        key = ":".join(parts)
-        ext = e.get("external_id") or ""
-        out.append({**e, "product_line": rule["line"], "product_key": key,
-                    "name": " ".join(x for x in (rule["line"], e.get("strain") or e.get("name")) if x),
-                    "external_id": key + ext[len(old):] if ext.startswith(old) else ext})
-    return out
+    return [_store_line(e, rules) for e in only_stores]
+
+
+def _store_line(e: dict, rules: list[dict] | None) -> dict:
+    """One store product with the line its `store_lines` rule gives it. Also applied
+    before the store product is compared with the site's (split_store_products), so a
+    store product whose consensus line is an old catalog line (MFNY's 'Mini', echoed by
+    listings matched to the old entries) or none joins the site product of the line the
+    rule names instead of standing beside it or going to review."""
+    rule = next((r for r in rules or [] if _store_match(e, r["when"])), None)
+    if not rule or (e.get("product_line") or "") == rule["line"]:
+        return e
+    old = e["product_key"]
+    parts = old.split(":")
+    if len(parts) >= 5:
+        parts[3] = squash(rule["line"])
+    key = ":".join(parts)
+    ext = e.get("external_id") or ""
+    return {**e, "product_line": rule["line"], "product_key": key,
+            "name": " ".join(x for x in (rule["line"], e.get("strain") or e.get("name")) if x),
+            "external_id": key + ext[len(old):] if ext.startswith(old) else ext}
 
 
 def skip_store_products(only_stores: list[dict], rules: list[dict] | None) -> tuple[list[dict], list[tuple]]:
@@ -1122,6 +1132,15 @@ def with_store_products(doc: dict, only_stores: list[dict], terms: dict | None =
     site = [{**e, "match_terms": sorted(set(e["match_terms"]) | terms.get(e["external_id"], set()))}
             for e in doc["entries"]]
     only_stores = [e for e in only_stores if not e.get("review")]
+    # A store_lines rule can give two store products one identity (MFNY's White Fire OG
+    # x The Belafonte 0.75g, once under 'Mini' and once line-less): one entry, both names.
+    unique: dict[str, dict] = {}
+    for e in only_stores:
+        first = unique.setdefault(e.get("external_id") or id(e), e)
+        if first is not e:
+            unique[e["external_id"]] = {**first, "match_terms": sorted(
+                set(first.get("match_terms") or []) | set(e.get("match_terms") or []))}
+    only_stores = list(unique.values())
     return {**doc, "entries": site + only_stores,
             "product_count": len({e["product_key"] for e in site + only_stores})}
 
@@ -1239,7 +1258,7 @@ def main() -> None:
         if not args.offline:
             found, only_stores, terms = split_store_products(
                 doc, store_listings(recipe["brand"], args.via_http), recipe.get("store_aliases"),
-                recipe.get("merch_counts"))
+                recipe.get("merch_counts"), recipe.get("store_lines"))
             only_stores, dropped = skip_store_products(only_stores, recipe.get("store_skip"))
             only_stores = line_store_products(only_stores, recipe.get("store_lines"))
         if args.command == "check":

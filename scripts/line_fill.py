@@ -75,15 +75,33 @@ def sizes_by_product(brand: str | None, line: str) -> bool:
 LINELESS_PATH = Path(__file__).resolve().parent.parent / "data" / "line_fill.json"
 
 
-def fills_lineless(brand: str | None, category: str | None, subtype: str | None) -> bool:
-    """Whether data/line_fill.json says the brand's line-less products of this kind are one line."""
+def _rules(brand: str | None) -> list[dict]:
+    """The brand's rules in data/line_fill.json."""
     import json
     try:
         data = json.loads(LINELESS_PATH.read_text())
     except FileNotFoundError:
-        return False
-    own = next((v for k, v in data.items() if not k.startswith("_") and norm_name(k) == norm_name(brand or "")), [])
-    return any(r.get("category") == category and (r.get("subtype") or None) == (subtype or None) for r in own)
+        return []
+    return next((v for k, v in data.items() if not k.startswith("_") and norm_name(k) == norm_name(brand or "")), [])
+
+
+def fills_lineless(brand: str | None, category: str | None, subtype: str | None) -> bool:
+    """Whether data/line_fill.json says the brand's line-less products of this kind are one line."""
+    return any(not r.get("line") and r.get("category") == category
+               and (r.get("subtype") or None) == (subtype or None) for r in _rules(brand))
+
+
+def fill_sizes(brand: str | None, category: str | None, line: str) -> set[str] | None:
+    """The sizes a named line fills, where data/line_fill.json names them ({"category",
+    "line", "fill_sizes"}): MFNY's Live Resin Infused pre-rolls come in 0.75g, 1.5g,
+    2.25g and 3g for every strain, but the older 1g (a 2 x 0.5g Mini or a 1g single)
+    only for the strains sold that way (owner, 2026-10-12), so 1g is not filled. None:
+    every size the line's products come in."""
+    for r in _rules(brand):
+        if r.get("line") and r.get("fill_sizes") and r.get("category") == category \
+                and norm_name(r["line"]) == norm_name(line):
+            return {_size(s, category)[0] or s for s in r["fill_sizes"]}
+    return None
 
 
 def wanted(catalog: dict) -> dict[str, dict]:
@@ -101,16 +119,18 @@ def wanted(catalog: dict) -> dict[str, dict]:
         elif not line and fills_lineless(catalog.get("brand_name"), es[0].get("category"), es[0].get("subtype")):
             lines[(es[0].get("category"), es[0].get("subtype") or "", "")].append(key)
     out: dict[str, dict] = {}
-    for (category, _, _), keys in lines.items():
+    for (category, _, line_key), keys in lines.items():
         if len(keys) < 2:
             continue
+        only = fill_sizes(catalog.get("brand_name"), category,
+                          products[keys[0]][0].get("product_line") or "") if line_key else None
         own = {k: dict(filter(lambda kv: kv[0], (_size(e.get("variant"), category) for e in products[k])))
                for k in keys}
         carriers: dict[str, list[str]] = defaultdict(list)
         for k in keys:
             for label in own[k]:
                 carriers[label].append(products[k][0].get("name") or "")
-        sized = {label: s for k in keys for label, s in own[k].items()}
+        sized = {label: s for k in keys for label, s in own[k].items() if only is None or label in only}
         for k in keys:
             for label, s in sized.items():
                 if label in own[k] or any(sizes.same_size(s, o) is True for o in own[k].values()):

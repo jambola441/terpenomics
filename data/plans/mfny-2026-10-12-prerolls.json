@@ -1,0 +1,18 @@
+{
+ "brand": "MFNY",
+ "_comment": "2026-10-12, owner-approved pre-roll line plan: run AFTER `storefront.py push --brand MFNY`. The push files every MFNY pre-roll but Classics and BagelHole under line Live Resin Infused and retires the old 'Mini' entries; the two curated 2.25g entries (data/plans/mfny-2026-10-12-audit.json) carry no external id, so the push leaves them under 'Mini'. Not written: apply with --write after approval.",
+ "edits": [
+  {
+   "op": "deactivate",
+   "entry": {"category": "preroll", "line": "Mini", "strain": "Super Lemon Haze x Super Lemon Haze", "size": "2.25g"},
+   "into": {"category": "preroll", "line": "Live Resin Infused", "strain": "Super Lemon Haze x Super Lemon Haze", "size": "2.25g"},
+   "why": "a duplicate after the push: the stores' consensus brings Live Resin Infused Super Lemon Haze 2.25g (4 stores); its names move over"
+  },
+  {
+   "op": "deactivate",
+   "entry": {"category": "preroll", "line": "Mini", "strain": "White Fire OG x White Fire OG", "size": "2.25g"},
+   "into": {"category": "preroll", "line": "Live Resin Infused", "strain": "White Fire OG x White Fire OG", "size": "2.25g"},
+   "why": "a duplicate after the push: the push brings Live Resin Infused White Fire OG (3g, from the stores) and the line fill gives it 2.25g; its names move over ('Mini' is no longer a line, and a storefront catalog refuses a rekey)"
+  }
+ ]
+}
