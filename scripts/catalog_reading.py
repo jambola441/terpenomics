@@ -116,8 +116,11 @@ MAX_OPTIONS = 254          # Jev takes 255 options, one of them "none"
 # product being read whose answer is one of its options, nearest the listing's name first.
 EXAMPLES_PATH = Path(__file__).resolve().parent.parent / "data" / "reading_examples.json"
 EXAMPLES_SHOWN = 3
-# The catalog field each question with examples answers.
-EXAMPLE_FIELDS = {"line": "product_line", "strain": "strain", "size": "variant"}
+# The catalog field each question with examples answers. Subtype too (2026-10-12): a store
+# that pastes its cart description under 'MFNY Skunk Live Resin Vape Pen | .5g' had the pen
+# read as a cart at p 0.91 and trusted on the 0.5g cart; the brand's own 'Vape Pen' listings
+# filed as all-in-one are what tells the two apart.
+EXAMPLE_FIELDS = {"subtype": "subtype", "line": "product_line", "strain": "strain", "size": "variant"}
 # Selector keys (catalog_fix's) -> catalog entry fields.
 _SELECTOR = {"category": "category", "subtype": "subtype", "line": "product_line",
              "strain": "strain", "size": "variant"}
