@@ -1,0 +1,39 @@
+{
+ "brand": "MFNY",
+ "_comment": "2026-10-12, owner-approved. Run AFTER `storefront.py push --brand MFNY` (which renames BagelHole Honey Banana and gives Strawberry Mango x Honey Banana its Live Resin line through the recipe). The curated entry below carries no external id, so later pushes leave it.",
+ "edits": [
+  {
+   "op": "add-product",
+   "why": "Grape x Grape Guava gummies come in both extract lines; the site lists only the Live Resin one. Hii Williamsburg sells 'Grape x Grape Guava Live Rosin Gummies' (https://hiinyc.com/stores/hii-williamsburg/product/grape-x-grape-guava-live-rosin-gummies), package image 'Full Spectrum Live Rosin Infused', lot GGULRG001. 10pk 100mg as the Live Resin one; the grid fills the line's other sizes",
+   "category": "edible",
+   "subtype": "gummy",
+   "line": "Live Rosin",
+   "strain": "Grape x Grape Guava",
+   "sizes": [
+    "10pk 100mg"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "Sour Peach x Rainbow Beltz 2.0 gummies come in both extract lines (owner rule 2026-10-12: a store title overrules a package image). The site lists the Live Resin one; store titles say Live Rosin: Royale Flower 'MFNY Sour Peach x Rainbow Beltz 2.0 10ct Live Rosin Gummies' (https://royaleflower.com/dutchie-menu/?dtche%5Bproduct%5D=mfny-sour-peach-x-rainbow-beltz-2-0-10ct-live-rosin-gummies), Brooklyn Organic Buds 'MFNY Sour Peach x Rainbow Beltz 2.0 Live Rosin Gummies 100mg 10 pk' (https://brooklynorganicbuds.com/store/product/mfny-sour-peach-x-rainbow-beltz-2-0-live-rosin-gummies-100mg-10-pk)",
+   "category": "edible",
+   "subtype": "gummy",
+   "line": "Live Rosin",
+   "strain": "Sour Peach x Rainbow Beltz 2.0",
+   "sizes": [
+    "10pk 100mg"
+   ]
+  },
+  {
+   "op": "add-product",
+   "why": "Strawberry Mango x Honey Banana gummies come in both extract lines (owner rule 2026-10-12: a store title overrules a package image): BOB's title says Live Rosin, OC's says Live Resin. The line-less store entry becomes Live Resin through the recipe's store_lines; this adds the Live Rosin one",
+   "category": "edible",
+   "subtype": "gummy",
+   "line": "Live Rosin",
+   "strain": "Strawberry Mango x Honey Banana",
+   "sizes": [
+    "10pk 100mg"
+   ]
+  }
+ ]
+}

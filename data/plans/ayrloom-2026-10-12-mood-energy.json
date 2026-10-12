@@ -1,0 +1,11 @@
+{
+ "brand": "ayrloom",
+ "edits": [
+  {
+   "op": "set-subtype",
+   "why": "Mood Energy 0.5g from ayrloom.com/products.json (variant 41618587648055, product 7113349693495) has no subtype while its own 1g and every other Mood vape entry are all-in-one (the products.json tags name no format). A re-fetch never rewrites identity fields, so the plan is its source; the key is the Shopify product id and does not change, and the grid sync retires the inferred Mood Energy 0.5g all-in-one that stood in for it",
+   "entry": "68290fad-315b-49c8-ae4a-88e0cdbf28d9",
+   "subtype": "all-in-one"
+  }
+ ]
+}

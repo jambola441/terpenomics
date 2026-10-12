@@ -5,6 +5,7 @@ conventions worked out by hand, written down once.
   python3 scripts/catalog_fix.py add-term ENTRY "store name"       # a store's name for this product
   python3 scripts/catalog_fix.py add-size ENTRY 2.5g               # a size the product comes in
   python3 scripts/catalog_fix.py set-size ENTRY "10pk 100mg"       # the entry's own size is wrong
+  python3 scripts/catalog_fix.py set-subtype ENTRY all-in-one      # a fetched entry missing its format
   python3 scripts/catalog_fix.py deactivate ENTRY [--into ENTRY]   # a duplicate; its names move over
   python3 scripts/catalog_fix.py reactivate ENTRY                  # an entry taken out that is sold again
   python3 scripts/catalog_fix.py add-product "Find." --category flower --subtype flower \
@@ -33,7 +34,7 @@ measure counts them as having stayed put.
 A plan file curates a catalog in one go (the catalog-audit skill, "Curating a
 store-built catalog"): {"brand": ..., "edits": [{"op": ..., "why": ..., ...}]}, the ops
 being the commands above with their arguments as keys ("entry", "into", "size",
-"term", "name"; add-product: "category", "subtype", "line", "strain", "sizes", "terms";
+"term", "name", "subtype"; add-product: "category", "subtype", "line", "strain", "sizes", "terms";
 rekey: "entry" or "entries", "line", "strain", "subtype", "only", where a key left out
 keeps the entries' own value and "line": "" clears it).
 An entry is its id or a selector, {"strain", "category", "subtype", "line", "size"},
@@ -185,6 +186,48 @@ def plan_set_size(catalogs: dict, entry_id: str, size: str, force: bool = False)
     plan = Plan(catalog, _copy_with(catalog, entry_id, variant=variant), entry.get("category"))
     plan.writes.append(("update", TABLE, f"id=eq.{entry['id']}", {"variant": variant}))
     plan.notes.append(f"{_desc(entry)}: size {entry.get('variant')} -> {variant}")
+    return plan
+
+
+def plan_set_subtype(catalogs: dict, entry_id: str, subtype: str) -> Plan:
+    """A fetched catalog's entry (Shopify, WooCommerce: its product key is the site's
+    product id, and a re-fetch never rewrites identity fields) whose subtype the site's
+    tags left out, while the product's other sizes have one. Set in place: the key does
+    not change, so no listing moves and the grid sync retires any inferred twin.
+    Bootstrap catalogs key on the subtype (rekey); storefront recipes set it in the
+    recipe, or a push puts it back."""
+    import taxonomy
+    catalog, entry = find(catalogs, entry_id)
+    method = catalog.get("source_method") or ""
+    if method == BOOTSTRAP:
+        raise Refused("a bootstrap catalog's product key names the subtype: rekey --subtype instead")
+    if method.startswith("storefront"):
+        raise Refused("a storefront recipe makes this entry: set the subtype in data/storefronts/ "
+                      "(a title rule's set.subtype), or the next push brings it back")
+    category = entry.get("category")
+    if not taxonomy.keeps_subtype(category):
+        raise Refused(f"{category} keeps no subtype")
+    rail = taxonomy.SPECS[category].subtypes if category in taxonomy.SPECS else ()
+    if rail and subtype not in rail:
+        raise Refused(f'"{subtype}" is not a {category} subtype ({", ".join(rail)})')
+    if (entry.get("subtype") or None) == subtype:
+        raise Refused(f"{_desc(entry)} is already {subtype}")
+    others = {e.get("subtype") or None for e in _product_entries(catalog, entry)
+              if str(e["id"]) != str(entry_id) and e.get("source") != "inferred"}
+    if others and others != {subtype}:
+        raise Refused(f"the product's other sizes are {', '.join(sorted(map(str, others)))}: "
+                      "one product keeps one subtype")
+    twins = [e for e in catalog["entries"] if e.get("is_active", True) and str(e["id"]) != str(entry_id)
+             and e.get("source") != "inferred" and e.get("category") == category
+             and (e.get("subtype") or None) == subtype
+             and norm_name(e.get("product_line") or "") == norm_name(entry.get("product_line") or "")
+             and norm_name(e.get("strain") or "") == norm_name(entry.get("strain") or "")
+             and sizes.same_variant(e.get("variant"), entry.get("variant"), category)]
+    if twins:
+        raise Refused(f"{', '.join(_desc(e) for e in twins)} is that product already: deactivate one instead")
+    plan = Plan(catalog, _copy_with(catalog, entry_id, subtype=subtype), category)
+    plan.writes.append(("update", TABLE, f"id=eq.{entry['id']}", {"subtype": subtype}))
+    plan.notes.append(f"{_desc(entry)}: subtype {entry.get('subtype') or 'none'} -> {subtype}")
     return plan
 
 
@@ -518,7 +561,7 @@ def resolve_entry(catalogs: dict, brand: str, ref) -> str:
     return str(hits[0]["id"])
 
 
-OPS = ("add-product", "add-size", "set-size", "add-term", "drop-term", "deactivate", "reactivate", "rekey")
+OPS = ("add-product", "add-size", "set-size", "set-subtype", "add-term", "drop-term", "deactivate", "reactivate", "rekey")
 
 
 def apply_plan(catalogs: dict, doc: dict) -> Plan:
@@ -548,6 +591,8 @@ def apply_plan(catalogs: dict, doc: dict) -> Plan:
                     step = plan_add_size(state, entry, edit.get("size"), force)
                 elif op == "set-size":
                     step = plan_set_size(state, entry, edit.get("size"), force)
+                elif op == "set-subtype":
+                    step = plan_set_subtype(state, entry, edit.get("subtype"))
                 elif op == "add-term":
                     step = plan_add_term(state, entry, edit.get("name") or edit.get("term"), force)
                 elif op == "drop-term":
@@ -778,14 +823,14 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     sub = ap.add_subparsers(dest="command", required=True)
     for name, extra in (("drop-term", "term"), ("add-term", "name"), ("add-size", "size"),
-                        ("set-size", "size"), ("deactivate", None), ("reactivate", None)):
+                        ("set-size", "size"), ("set-subtype", "subtype"), ("deactivate", None), ("reactivate", None)):
         p = sub.add_parser(name)
         p.add_argument("entry")
         if extra:
             p.add_argument(extra)
         if name == "deactivate":
             p.add_argument("--into", help="the surviving entry, which takes the duplicate's store names")
-        elif name != "reactivate":
+        elif name not in ("reactivate", "set-subtype"):
             p.add_argument("--force", action="store_true", help="do it despite the refusal's reason")
         p.add_argument("--measure", action="store_true", help="run the matcher before and after first")
         p.add_argument("--write", action="store_true", help="write the edit (after the user approved it)")
@@ -847,6 +892,8 @@ def main(argv: list[str] | None = None) -> int:
             plan = plan_add_size(catalogs, args.entry, args.size, args.force)
         elif args.command == "set-size":
             plan = plan_set_size(catalogs, args.entry, args.size, args.force)
+        elif args.command == "set-subtype":
+            plan = plan_set_subtype(catalogs, args.entry, args.subtype)
         elif args.command == "reactivate":
             plan = plan_reactivate(catalogs, args.entry)
         else:

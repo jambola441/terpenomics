@@ -359,3 +359,42 @@ def test_measure_reads_each_listing_against_the_catalog_it_resolves(monkeypatch)
     assert cf.read_against(cat, rows, use_jev=False)[0]["reading"] == {"old": True}
     monkeypatch.setenv("CATALOG_READING", "0")
     assert cf.read_against(cat, rows, use_jev=True)[0]["reading"] == {"old": True}
+
+
+def shopify_catalogs():
+    def e(id, variant, subtype, pk="7113349693495"):
+        return {"id": id, "catalog_id": "c2", "name": "mood: energy", "product_line": "Mood",
+                "strain": "Energy", "category": "vaporizers", "subtype": subtype, "variant": variant,
+                "product_key": pk, "is_active": True, "match_terms": [], "source": "shopify_products_json",
+                "external_id": f"x-{id}"}
+    return {"ayrloom": {"id": "c2", "brand_name": "Ayrloom", "brand_slug": "ayrloom",
+                        "source_method": "shopify_products_json",
+                        "entries": [e("e1", "1g", "all-in-one"), e("e05", "0.5g", None)]}}
+
+
+def test_set_subtype_fills_a_fetched_entrys_missing_format_in_place():
+    plan = cf.plan_set_subtype(shopify_catalogs(), "e05", "all-in-one")
+    (op, _, query, row), = plan.writes
+    assert (op, query, row) == ("update", "id=eq.e05", {"subtype": "all-in-one"})
+    assert {e["id"]: e["subtype"] for e in plan.changed["entries"]}["e05"] == "all-in-one"
+    plan = cf.apply_plan(shopify_catalogs(), {"brand": "ayrloom", "edits": [
+        {"op": "set-subtype", "entry": "e05", "subtype": "all-in-one"}]})
+    assert len(plan.writes) == 1
+
+
+def test_set_subtype_refusals():
+    with pytest.raises(cf.Refused, match="rekey"):
+        cf.plan_set_subtype(catalogs(), "rasp", "gummy")
+    with pytest.raises(cf.Refused, match="recipe"):
+        cf.plan_set_subtype(catalogs("storefront_html"), "rasp", "gummy")
+    with pytest.raises(cf.Refused, match="not a vaporizers subtype"):
+        cf.plan_set_subtype(shopify_catalogs(), "e05", "gummy")
+    with pytest.raises(cf.Refused, match="one product keeps one subtype"):
+        cf.plan_set_subtype(shopify_catalogs(), "e05", "cart")
+    with pytest.raises(cf.Refused, match="already"):
+        cf.plan_set_subtype(shopify_catalogs(), "e1", "all-in-one")
+    c = shopify_catalogs()
+    c["ayrloom"]["entries"].append({**c["ayrloom"]["entries"][0], "id": "dup", "variant": "0.5g",
+                                    "product_key": "other"})
+    with pytest.raises(cf.Refused, match="is that product already"):
+        cf.plan_set_subtype(c, "e05", "all-in-one")
