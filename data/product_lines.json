@@ -857,6 +857,7 @@
     "Infused"
   ],
   "_comment_cannabals": "From the Cannabals curation (2026-10-08), checked against Cirona's NYS Wholesale Catalog (Winter-Spring 2025) and the CANNABALS Fall 2026 sheet. Puffs are the diamond infused 7 x 0.5g pre-rolls (catalog p9, 'PUFFS by Cannabals'); one store writes 'Puff'. Chubby Puff is the 6g all-in-one (package 'CHUBBY PUFF 1200'); one store writes 'Chubby Puffy'. Brick is the 100mg scored gummy bar (catalog p4, 'BRICK by Cannabals'). Mood State is the brand's family across vapes and gummies (catalog p6, p7), so it takes no category. A category keeps 'Puff' and 'Brick' from firing on vape descriptions ('1200+ puffs').",
+  "_comment_cannabals": "Cannabals' Mood State gummies come in their own counts: Blueberry Dreams (1:1 THC:CBN sleep) as a 20pk 100mg, the other moods as 10pk 100mg, so line fill keeps each to its own sizes (sizes_by_product): filling gave each the other count, and Blueberry Dreams listings had three packages to choose from (2026-10-12).",
   "Cannabals": [
     {
       "line": "Puffs",
@@ -879,7 +880,10 @@
       ],
       "category": "edible"
     },
-    "Mood State"
+    {
+      "line": "Mood State",
+      "sizes_by_product": true
+    }
   ],
   "Bonanza": [
     {

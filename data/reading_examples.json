@@ -434,5 +434,17 @@
     {"listing": "Off Hours | Green Crack 510 (S)", "entry": {"category": "vaporizers", "subtype": "cart", "line": "Originals", "strain": "Green Crack", "size": "1g"}},
     {"listing": "Off Hours | Maui Wowie 510 Cartridge", "entry": {"category": "vaporizers", "subtype": "cart", "line": "Originals", "strain": "Maui Wowie", "size": "1g"}},
     {"listing": "Off hours - Originals 1G Vape Cartridge - Blue Dream", "entry": {"category": "vaporizers", "subtype": "cart", "line": "Originals", "strain": "Blue Dream", "size": "1g"}}
+  ],
+  "cannabals": [
+    {"listing": "Cannabals | Super Lemon Haze Disposable Vape", "entry": {"category": "vaporizers", "subtype": "all-in-one", "strain": "Super Lemon Haze", "size": "1g"}},
+    {"listing": "Vape AIO | Cannabals | Watermelon Z", "entry": {"category": "vaporizers", "subtype": "all-in-one", "strain": "Watermelon Z", "size": "1g"}},
+    {"listing": "Cannabals - Strawberry Cough Chubby Puff Disposable Vape - 6g", "entry": {"category": "vaporizers", "subtype": "all-in-one", "line": "Chubby Puff", "strain": "Strawberry Cough", "size": "6g"}},
+    {"listing": "Vape AIO | Cannabals | Blue Dream - Liquid Diamonds", "entry": {"category": "vaporizers", "subtype": "all-in-one", "line": "Liquid Diamond", "strain": "Blue Dream", "size": "2g"}},
+    {"listing": "Mood State | Lemon Berry (Recovery) | Disposable Vape Pen", "entry": {"category": "vaporizers", "subtype": "all-in-one", "line": "Mood State", "strain": "Lemon Berry", "size": "1g"}},
+    {"listing": "Cannabals | Maui Wowie 7pk | Diamond Infused Prerolls", "entry": {"category": "preroll", "line": "Puffs", "strain": "Maui Wowie", "size": "3.5g"}},
+    {"listing": "X| Cannabals | Puffs | Sour Diesel | Pre Rolls | 0.5g | 7ct", "entry": {"category": "preroll", "line": "Puffs", "strain": "Sour Diesel", "size": "3.5g"}},
+    {"listing": "Cannabals | Cones | White Chocolate | 100mg", "entry": {"category": "edible", "subtype": "chocolate", "strain": "White Chocolate", "size": "10pk 100mg"}},
+    {"listing": "Cannabals | Brick | Strawberry Lemonade (H) | Live Resin Gummies | 100mg", "entry": {"category": "edible", "line": "Brick", "strain": "Strawberry Lemonade", "size": "100mg"}},
+    {"listing": "Cannabals - Strawberry Lemonade Live Resin 10pk Gummies - 100mg", "entry": {"category": "edible", "line": "Live Resin", "strain": "Strawberry Lemonade", "size": "10pk 100mg"}}
   ]
 }
