@@ -17,6 +17,7 @@ writing a fix is scripts/catalog_fix.py's.
 from __future__ import annotations
 
 import argparse
+import difflib
 import json
 import math
 import re
@@ -49,9 +50,11 @@ PEERS = 3           # trusted listings an entry needs before its price or titles
 # price-outlier: off the other listings' median by this ratio. On 2026-10-12's 6,710 priced
 # trusted listings the tails flatten here: 0.8/1.25 flags 262, 0.7/1.4 flags 70, 0.6/1.6 flags 28.
 PRICE_LOW, PRICE_HIGH = 0.6, 1.6
-# odd-title: mean token overlap with the entry's other titles under this. Of 6,680 comparable
-# listings, 71 fall under 0.25 and 129 under 0.3 (the knee); 0.2 drops ATF-for-Alaskan-Thunder cases.
-TITLE_SIM = 0.25
+# odd-title: mean title_similarity with the entry's other titles under this. Unrelated titles
+# still score ~0.3 on the spaces-removed comparison, so the floor sits higher than a Jaccard
+# one. Of 6,680 comparable listings, 28 fall under 0.4, 59 under 0.45 and 155 under 0.55;
+# 0.45 keeps flavour mix-ups like "Livewire Sour Rope" -> "Livewire Razz Lemonade".
+TITLE_SIM = 0.45
 SECTIONS = [        # (kind, title), in the order the report prints them
     ("stale-store", "Stores the daily run missed"),
     ("grid-gap", "Catalog groups that are not full grids (should be 0)"),
@@ -64,7 +67,7 @@ SECTIONS = [        # (kind, title), in the order the report prints them
     ("unsure", f"Enrichment answers Jev gave under {UNSURE:.0%}, by brand and field"),
     ("price-outlier", f"Trusted listings priced under {PRICE_LOW:g}x or over {PRICE_HIGH:g}x their entry's "
                       "other listings (candidates: judge each)"),
-    ("odd-title", f"Trusted listings whose title shares under {TITLE_SIM:.0%} of its words with the "
+    ("odd-title", f"Trusted listings whose title scores under {TITLE_SIM:g} similarity to the "
                   "entry's other titles (candidates: judge each)"),
     ("price", f"Listings priced {PRICE_FAR:g}x off their product's usual price (a wrong size or product?)"),
 ]
@@ -551,28 +554,43 @@ x mg g gram grams oz ounce eighth quarter half thc cbd cbn cbg indica sativa hyb
 cart carts cartridge vape vapes pod pods disposable aio all in one ready to use gummy gummies
 chew chews edible edibles flower whole bud buds smalls popcorn mini minis the and of with a by
 new sale special deal for each single unit units ml fl pcs piece pieces rolls serving servings
-concentrate badder budder sauce diamonds front back body high euphoria thread rso
+concentrate badder budder sauce diamonds body high euphoria thread rso
 """.split())
 
 
-def title_tokens(name: str, brand_words: set[str]) -> set[str]:
-    """A scraped title's identity words: no store prefix ("X|"), brand, sizes, numbers,
-    pack words or filler. "X|" is one store's prefix; a longer
+# Shelf tags some stores (The Spot) append to titles: "| MFNY  -tf1 front", "- refrigerator TF1",
+# "-BF SHELF 3". A trailing " -code" segment goes, and so do these words anywhere.
+SHELF_WORDS = {"refrigerator", "fridge", "front", "middle", "back", "top", "bottom", "shelf", "tac"}
+SHELF_TAG = re.compile(r"\s-\s*(?:[a-z]{0,3}\d+\w*|[\w ]*\b(?:%s)\b)[\w ]*$" % "|".join(SHELF_WORDS), re.I)
+
+
+def title_words(name: str, brand_words: set[str]) -> list[str]:
+    """A scraped title's identity words, in order: no store prefix ("X|"), shelf tag,
+    brand, sizes, numbers, pack words or filler. "X|" is one store's prefix; a longer
     prefix is a brand or a category, which the other rules drop."""
-    name = re.sub(r"^\s*\w{1,2}\s*\|", "", name or "")
-    return {t for t in norm_name(name).replace("_", " ").split()
-            if t not in TITLE_FILLER and t not in brand_words and not re.search(r"\d", t)}
+    name = SHELF_TAG.sub("", re.sub(r"^\s*\w{1,2}\s*\|", "", name or "").rstrip())
+    words = norm_name(name).replace("_", " ").split()
+    return list(dict.fromkeys(t for t in words if t not in TITLE_FILLER and t not in SHELF_WORDS
+                              and t not in brand_words and not re.search(r"\d", t)))
 
 
-def _jaccard(a: set, b: set) -> float:
-    return len(a & b) / len(a | b) if a | b else 1.0
+def title_tokens(name: str, brand_words: set[str]) -> set[str]:
+    return set(title_words(name, brand_words))
+
+
+def title_similarity(a: list[str], b: list[str]) -> float:
+    """The better of word overlap (Jaccard) and the similarity of the titles with spaces
+    removed, so "hashburger" meets "hash burger" and "shiskaberry" meets "shishkaberry"."""
+    sa, sb = set(a), set(b)
+    jaccard = len(sa & sb) / len(sa | sb) if sa | sb else 1.0
+    return max(jaccard, difflib.SequenceMatcher(None, "".join(a), "".join(b)).ratio())
 
 
 def odd_titles(data: Data) -> list[Finding]:
-    """Trusted listings whose title words overlap the entry's other titles (mean Jaccard)
-    under TITLE_SIM, on entries with PEERS or more trusted listings. Titles name the
-    strain or flavour, so a listing that shares almost none of it with its siblings
-    is the one to read. A candidate only: the agent judges each."""
+    """Trusted listings whose title is unlike the entry's other titles (mean
+    title_similarity under TITLE_SIM), on entries with PEERS or more trusted listings.
+    Titles name the strain or flavour, so a listing that shares almost none of it with
+    its siblings is the one to read. A candidate only: the agent judges each."""
     entries = catalog_store.entries_by_id(data.catalogs)
     out = []
     for eid, rows in _trusted_by_entry(data).items():
@@ -582,18 +600,18 @@ def odd_titles(data: Data) -> list[Finding]:
         brand_words = set(norm_name(catalog["brand_name"]).split())
         brand_words |= {w for alias, canon in data.aliases.items() if canon == catalog["brand_name"]
                         for w in alias.split()}
-        toks = {l["id"]: title_tokens(l.get("scraped_name"), brand_words) for l in rows}
+        words = {l["id"]: title_words(l.get("scraped_name"), brand_words) for l in rows}
         for l in rows:
-            mine = toks[l["id"]]
-            others = [toks[o["id"]] for o in rows if o is not l and toks[o["id"]]]
+            mine = words[l["id"]]
+            others = [words[o["id"]] for o in rows if o is not l and words[o["id"]]]
             if not mine or len(others) < PEERS - 1:
                 continue
-            sim = sum(_jaccard(mine, o) for o in others) / len(others)
+            sim = sum(title_similarity(mine, o) for o in others) / len(others)
             if sim >= TITLE_SIM:
                 continue
             common = [t for t, _ in Counter(t for o in others for t in o).most_common(4)]
             out.append(_candidate("odd-title", l, catalog, entry, data,
-                                  f'overlap {sim:.2f}; its words {sorted(mine)}, the others say {common}',
+                                  f'similarity {sim:.2f}; its words {mine}, the others say {common}',
                                   (-sim,)))
     return out
 

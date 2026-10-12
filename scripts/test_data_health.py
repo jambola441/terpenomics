@@ -229,6 +229,21 @@ def test_title_tokens_drop_brand_sizes_filler_and_the_x_prefix():
                            {"stiiizy"}) == {"orange", "sunset"}
 
 
+def test_title_words_drop_shelf_tags():
+    assert dh.title_words("#5 Hashburger -Indica- 77.72% THC | 1g Live Resin Badder | MFNY - refrigerator TF1",
+                          {"mfny"}) == ["hashburger"]
+    assert dh.title_words("Chemdog | 0.5g Cart | MFNY     -W6 FRONT", {"mfny"}) == ["chemdog"]
+    assert dh.title_words("Ice Cream Souffle | 1g Live Rosin | Jaunty   -BF SHELF 3", {"jaunty"}) == \
+        ["ice", "cream", "souffle"]
+    assert dh.title_words("Bloomfruit 91.72% TAC | Jaunty -H8 Middle", {"jaunty"}) == ["bloomfruit"]
+
+
+def test_titles_compare_with_spaces_removed():
+    assert dh.title_similarity(["hashburger"], ["hash", "burger"]) == 1.0
+    assert dh.title_similarity(["shiskaberry"], ["shishkaberry"]) > 0.9
+    assert dh.title_similarity(["blue", "burst"], ["orange", "sunset"]) < dh.TITLE_SIM
+
+
 def test_a_trusted_listing_whose_title_shares_nothing_with_its_siblings_is_a_candidate():
     rows = [listing(1, "A", "STIIIZY 40's Orange Sunset 1g", "os1", "attributes"),
             listing(2, "B", "Orange Sunset 40s Infused Pre-Roll", "os1", "attributes"),
