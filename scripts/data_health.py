@@ -46,6 +46,7 @@ PRICE_STORES = 3    # stores whose prices make an entry's usual price
 PRICE_FAR = 2.5     # a price this many times off the usual price (either way) is an outlier
 SECTIONS = [        # (kind, title), in the order the report prints them
     ("stale-store", "Stores the daily run missed"),
+    ("grid-gap", "Catalog groups that are not full grids (should be 0)"),
     ("missing-size", "Sizes 2+ stores sell that the matched product lacks"),
     ("review-cluster", "Products with review-only listings at 2+ stores"),
     ("near-miss", "Products stores' readings miss on one attribute, at 2+ stores"),
@@ -407,6 +408,26 @@ def stale_curated(data: Data) -> list[Finding]:
     return out
 
 
+def grid_gaps(data: Data) -> list[Finding]:
+    """Catalog groups (category, subtype, line; the line-less group too) whose active
+    entries are not every strain x every size of the group (catalog_grid.py, the owner's
+    rule 2026-10-12). Every catalog write ends with the sync and the daily cron re-syncs
+    all, so this should be 0; one means a write skipped the sync (an admin-page edit)."""
+    import catalog_grid
+    out = []
+    for catalog in data.catalogs.values():
+        for (category, subtype, line), (missing, extra) in sorted(catalog_grid.gaps(catalog).items()):
+            where = "/".join(x for x in (category, subtype) if x) or "?"
+            out.append(Finding(
+                f"grid-gap:{catalog['brand_slug']}:{category}:{subtype}:{line}", "grid-gap",
+                f"{catalog['brand_name']} {where} {line or '(no line)'}: {missing} cell(s) missing"
+                + (f", {extra} inferred cell(s) not wanted" if extra else ""),
+                missing + extra,
+                f"python3 scripts/catalog_grid.py --brand {catalog['brand_name']!r} --write",
+                (missing + extra,)))
+    return out
+
+
 def unsure_answers(data: Data) -> list[Finding]:
     """Active listings whose enrichment answer Jev gave under UNSURE (enrich.py,
     ENRICH_LLM=0 keeps Jev's best pick whatever its probability, and its probability per
@@ -472,7 +493,7 @@ def price_outliers(data: Data) -> list[Finding]:
     return out
 
 
-DETECTORS = (stale_stores, missing_sizes, review_clusters, near_misses, size_sync, brandless,
+DETECTORS = (stale_stores, grid_gaps, missing_sizes, review_clusters, near_misses, size_sync, brandless,
              stale_curated, unsure_answers, price_outliers)
 
 

@@ -126,14 +126,15 @@ def paused() -> bool:
     return os.environ.get(PAUSE_ENV, "").strip().lower() not in ("", "0", "false", "no")
 
 
-def _sync_line_fill() -> None:
-    """Bring every catalog's inferred sizes (line_fill.py) up to date before the import
-    matches against them. A failure is logged, never fatal: yesterday's sizes still match."""
+def _sync_grid() -> None:
+    """Make every catalog a full grid (catalog_grid.py) before the import matches
+    against them; this also heals a write that skipped the sync (an admin-page edit).
+    A failure is logged, never fatal: yesterday's grid still matches."""
     try:
-        subprocess.run([sys.executable, str(SCRIPTS / "line_fill.py"), "--all", "--write"],
+        subprocess.run([sys.executable, str(SCRIPTS / "catalog_grid.py"), "--all", "--write"],
                        cwd=ROOT, timeout=600, check=True)
     except Exception as exc:  # noqa: BLE001 — the scrape must run regardless
-        log.warning("line fill sync failed: %s", exc)
+        log.warning("catalog grid sync failed: %s", exc)
 
 
 def run_pipeline(timeout: int = DEFAULT_TIMEOUT_SEC) -> int:
@@ -148,7 +149,7 @@ def run_pipeline(timeout: int = DEFAULT_TIMEOUT_SEC) -> int:
         _alert(f"terpenomics scrape skipped: {PAUSE_ENV} is set on the cron job")
         return 0
     started = datetime.now(timezone.utc)
-    _sync_line_fill()
+    _sync_grid()
     cmd = [sys.executable, str(SCRIPTS / "scrape.py"), *shlex.split(SCRAPE_ARGS),
            "--summary", str(SUMMARY_FILE)]
     log.info("starting pipeline: %s", " ".join(cmd))

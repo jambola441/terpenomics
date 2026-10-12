@@ -182,23 +182,26 @@ first line.
   them (RAW, OCB). A colour that is the line's packaging is the line's `"finish"`
   (RAW Classic's natural and yellow), not a colour. Store counts one off a booklet's
   (33ct for a 32-leaf king size slim) are the same booklet.
-- **Inferred sizes.** `scripts/line_fill.py` gives every product of a named line the
-  sizes its line comes in (same brand, category, format and line), as entries with
-  source `inferred`.
-  - The owner's rule (2026-10-09): a brand's line sizes are the rule. Brand sites
-    and store menus both miss sizes. PAX's New York pages list White Widow's High Purity
-    AIO in 2G only, while stores sell the 1g.
-  - Two cases are left out:
-    - lines with no name;
-    - tinctures and topicals, where the size is the product's strength.
-  - Inferred entries are derived. A sync recomputes them on every push or plan for the
-    brands that have them, and `line_fill.py --brand "<Brand>"` shows what one would
-    change.
+- **Every catalog is a full grid.** `scripts/catalog_grid.py` gives every strain of a
+  group (brand, category, format and line; a product with no line is in the line-less
+  group of its category and format) every size that appears anywhere in the group, as
+  entries with source `inferred`.
+  - The owner's rule (2026-10-12), for every brand, no exceptions: no per-line or
+    per-product size lists, no skipped categories, no skipped line-less groups. Brand
+    sites and store menus both miss sizes; a listing must never fail to match only
+    because a size is missing.
+  - A product whose sizes really differ from its group's (Grön's Tart Cherry Pearls,
+    Off Hours' Low THC Unwind) still gets the group's sizes. If that is wrong, the fix
+    is the grouping (its own line or subtype), not a size exception.
+  - Inferred entries are derived. Every catalog write ends with the sync (push,
+    catalog_fix --write) and the daily cron re-syncs all; `catalog_grid.py --brand
+    "<Brand>"` shows what one would change. `data_health.py` reports groups that are
+    not full grids (`grid-gap`); it should be 0.
   - They count as the product's sizes wherever a size is compared: the attribute join,
     Jev's shortlist and the options Jev reads.
   - `show` leaves them out (its sizes are the stated ones), and `entries` lists them.
     So an uneven line in `show` is not by itself a missing size: check `entries` before
-    proposing `add-size`. Never add a size line fill already infers.
+    proposing `add-size`. Never add a size the grid already infers.
   - An inferred size that is wrong (the line does not really come in it) is fixed at
     the stated entry that carries it into the line.
 - **Edits survive.** A re-push never rewrites the name, line, category, subtype, strain or
@@ -377,7 +380,7 @@ Fix at the source when three or more entries share a cause. Hand edits are for o
 | any: products in the wrong category | admin edit of `category` (and subtype); if a recipe produced it, fix its `category` rule |
 | any: wrong size form | admin edit of `variant`; if a recipe produced it, fix the rule's size group |
 | any: a store mistyped a size (rule 10) | nothing in the catalog, which is right. A dose product matched with trust already shows on its product's page (`listings.size`, `catalog_match.catalog_size`). A weight typo, or a review-only match, keeps its own page: report the store and the size |
-| any: a size 2+ stores agree on that the catalog lacks | if another product of its line states the size, line fill already infers it (check `entries`). Otherwise it arrives by itself: a store-only size at the next storefront push, an entry at the next bootstrap rebuild. One store's bundle ("2PK 1G Pods") stays out on purpose |
+| any: a size 2+ stores agree on that the catalog lacks | if another product of its group (line, or the line-less group) states the size, the catalog grid already infers it (check `entries`). Otherwise it arrives by itself: a store-only size at the next storefront push, an entry at the next bootstrap rebuild. One store's bundle ("2PK 1G Pods") stays out on purpose |
 
 ### 6. Report
 

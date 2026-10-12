@@ -144,7 +144,7 @@ def _size_order(v: str):
 
 
 def products(entries: list[dict], listings: list[dict] | None = None) -> list[Product]:
-    """The catalog's products as stated. An inferred size (line_fill.py) is derived from
+    """The catalog's products as stated. An inferred size (catalog_grid.py) is derived from
     the line's shape, so it is left out of the shape; a listing matched to one still
     counts for its product."""
     by_key: dict[tuple, Product] = {}
