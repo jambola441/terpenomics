@@ -459,6 +459,10 @@
     {"listing": "Strawberry Sunset (I) - Chill - 10pk x 10mg - 100mg - Gummies - Camino", "entry": {"category": "edible", "line": "Sours", "strain": "Chill Strawberry Sunset", "size": "10pk 100mg"}},
     {"listing": "Pineapple Paradise | 1:1 | 10pk", "entry": {"category": "edible", "line": "Fruit Chews", "strain": "Bliss Pineapple Paradise"}}
   ],
+  "fernway": [
+    {"listing": "Fernway | Red Headed Stranger | AIO | 2g", "entry": {"category": "vaporizers", "subtype": "all-in-one", "line": "Traveler Pro", "strain": "Red Headed Stranger", "size": "2g"}},
+    {"listing": "Fernway | Traveler Pro Vape Sour Diesel (S)", "entry": {"category": "vaporizers", "subtype": "all-in-one", "line": "Traveler Pro", "strain": "Sour Diesel", "size": "1g"}}
+  ],
   "rove": [
     {"listing": "ROVE - 1.0g Full Spectrum Vaporizer Reload - Sativa - Maui Waui", "entry": {"category": "vaporizers", "subtype": "cart", "line": "Diamond Series", "strain": "Maui Waui", "size": "1g"}},
     {"listing": "ROVE - 1.0g Live Resin Diamond Full Spectrum Ready to Use Vaporizer - Hybrid - Cherry Gelato", "entry": {"category": "vaporizers", "subtype": "all-in-one", "line": "Diamond Series", "strain": "Cherry Gelato", "size": "1g"}},
