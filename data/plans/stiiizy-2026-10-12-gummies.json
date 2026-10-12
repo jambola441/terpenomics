@@ -1,0 +1,19 @@
+{
+ "brand": "STIIIZY",
+ "edits": [
+  {
+   "op": "rekey",
+   "why": "one flavour split across line and strain (line 'Lemonade' + strain 'Pink'); stores sell it as 'Pink Lemonade Gummies 10pk - 100mg'. The line is real: stiiizy.com 'STIIIZY LEMONADE EDIBLES' / 'Lemonade Gummies' (https://www.stiiizy.com/products/stiiizy-lemonade-edibles: Blue Raspberry, Pink, Watermelon; 100MG THC per bag, 10 x 10MG). Strain becomes the full flavour",
+   "entry": "c9ad3809-e1a8-4f52-962e-3f1e74364e7e",
+   "line": "Lemonade",
+   "strain": "Pink Lemonade"
+  },
+  {
+   "op": "rekey",
+   "why": "one flavour split across line and strain (line 'Sour' + strain 'Strawberry'); stores sell it as 'Sour Strawberry Gummies 10pk - 100mg'. The line is real: stiiizy.com 'STIIIZY SOUR EDIBLES' / 'STIIIZY Sour Gummies' (https://www.stiiizy.com/products/stiiizy-sour-edibles: Apple, Strawberry, Lemon Lime; 100MG THC per bag, 10 x 10MG). Strain becomes the full flavour",
+   "entry": "dc6ba97b-4734-432a-9f21-c712b969c4bb",
+   "line": "Sour",
+   "strain": "Sour Strawberry"
+  }
+ ]
+}
