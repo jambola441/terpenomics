@@ -457,3 +457,23 @@ def test_curated_lines_and_strains_apply_at_rebuild():
     names = sorted(e["name"] for e in out["catalog"]["entries"])
     assert names == ["Original Apple Fritter", "Original Skywalker OG"]
     assert out["report"]["curated_lines_set"] == 4 and out["report"]["curated_strains"] == 2
+
+
+def test_a_push_ends_with_the_catalog_a_full_grid_over_its_own_path(push, fresh_db):
+    """catalog_grid.py runs over the connection the push used (direct, or REST), and a
+    later push neither retires the inferred cells nor duplicates them."""
+    def entry(ext, name, variant):
+        return {"external_id": ext, "product_external_id": "p-" + name, "name": name,
+                "product_line": None, "category": "edible", "subtype": "gummy",
+                "strain": name.title(), "variant": variant, "attributes": None, "match_terms": [name]}
+
+    doc = {"brand_slug": "acme", "brand_name": "Acme", "source_url": "https://acme/products.json",
+           "source_method": "shopify_products_json", "fetched_at": "2026-10-04T00:00:00Z",
+           "entries": [entry("1", "island time", "10pk 100mg"), entry("2", "island time", "2pk 20mg"),
+                       entry("3", "sunny days", "10pk 100mg")]}
+    cur = fresh_db.cursor()
+    for _ in range(2):
+        push(doc)
+        cur.execute("SELECT external_id, variant, is_active FROM brand_catalog_entries "
+                    "WHERE source = 'inferred'")
+        assert cur.fetchall() == [("inferred:p-sunny days:2pk 20mg", "2pk 20mg", True)]

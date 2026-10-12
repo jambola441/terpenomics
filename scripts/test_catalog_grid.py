@@ -185,17 +185,39 @@ def test_line_fill_is_the_grid():
     assert line_fill.sync_brand is grid.sync_brand and line_fill.main is grid.main
 
 
-def test_every_push_ends_with_the_grid_sync_and_never_retires_inferred(monkeypatch):
-    import brand_catalog
-    synced = []
-    monkeypatch.setattr(brand_catalog, "_push_http", lambda *a: {
-        "inserted": 0, "refreshed": 0, "listed_again_but_inactive": 0, "deactivated": 0})
-    monkeypatch.setattr(brand_catalog, "_grid_sync", synced.append)
-    brand_catalog.push({"brand_name": "X"}, via_http=True)
-    brand_catalog.push({"brand_name": "Y"}, via_http=True, dry_run=True)
-    assert synced == ["X"]
+def test_every_push_syncs_over_its_own_db_path_and_never_retires_inferred():
     src = (ROOT / "scripts" / "brand_catalog.py").read_text()
     assert 'r.get("source") != "inferred"' in src and "IS DISTINCT FROM 'inferred'" in src
+    assert "catalog_grid.sync_cursor(cur, catalog_id)" in src      # direct connection
+    assert "catalog_grid.sync_rest(catalog_id)" in src             # REST
+
+
+class FakeCursor:
+    def __init__(self, rows):
+        self.rows, self.sql = rows, []
+        self.description = [(k,) for k in rows[0]]
+
+    def execute(self, sql, args=None):
+        self.sql.append((sql, args))
+
+    def fetchall(self):
+        return [tuple(r.values()) for r in self.rows]
+
+
+def test_sync_cursor_writes_over_the_given_connection(monkeypatch):
+    import psycopg2.extras
+    rows = [dict(r, catalog_id="c1") for r in CATALOG["entries"]] + [
+        dict(inferred("og", "Original OG", "Original", "2g"), catalog_id="c1")]
+    cur = FakeCursor(rows)
+    inserted = []
+    monkeypatch.setattr(psycopg2.extras, "execute_values", lambda c, sql, vals: inserted.extend(vals))
+    p = grid.sync_cursor(cur, "c1")
+    assert len(inserted) == 3 and p.retire == ["x-og-2g"]
+    assert any("is_active = %s" in s and a == (False, ["x-og-2g"]) for s, a in cur.sql)
+
+
+def test_sync_skips_a_database_before_migration_0003():
+    assert grid._one("c1", [{"id": 1, "catalog_id": "c1", "name": "x"}]) is None
 
 
 def test_catalog_writes_call_the_grid():

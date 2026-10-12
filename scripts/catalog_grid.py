@@ -26,7 +26,8 @@ product does not state is filled with an entry of its own, source "inferred"
               strain) no longer follow its product (a re-line moved it)
 Entries that are not inferred are never touched.
 
-Every catalog write calls `sync_brand` at its end (brand_catalog.push — so storefront.py
+Every catalog write ends with the sync: brand_catalog.push over its own DB path (sync_cursor
+in the push transaction over DATABASE_URL, sync_rest when via HTTP) — so storefront.py
 push and catalog_bootstrap --push —, catalog_fix.py --write), and the daily cron re-syncs
 every catalog before the import (run_scrape_cron.py). data_health.py's grid-gap detector
 counts groups that are not full grids; it should read 0.
@@ -195,6 +196,49 @@ def apply(p: Plan) -> None:
             db_http.update(TABLE, f"id=in.({','.join(ids[i:i + 100])})", {"is_active": active})
     for i, change in p.patch:
         db_http.update(TABLE, f"id=eq.{i}", change)
+
+
+def _one(catalog_id, entries: list[dict]) -> dict | None:
+    """A catalog of these rows, or None before migration 0003 (no source/product_key:
+    nothing can be marked inferred)."""
+    if entries and not all(k in entries[0] for k in ("source", "product_key")):
+        return None
+    return {"id": str(catalog_id), "entries": [dict(e, id=str(e["id"]), catalog_id=str(e["catalog_id"]))
+                                               for e in entries]}
+
+
+def sync_rest(catalog_id: str) -> Plan:
+    """The sync over Supabase's REST API, for a write that went over it (push via_http)."""
+    import db_http
+    catalog = _one(catalog_id, db_http.select_all(TABLE, f"select=*&catalog_id=eq.{catalog_id}&order=id"))
+    if catalog is None:
+        return Plan()
+    return sync(catalog, write=True)
+
+
+def sync_cursor(cur, catalog_id) -> Plan:
+    """The sync inside an open psycopg2 transaction, for a write over a direct
+    connection (push over DATABASE_URL); the caller commits."""
+    import psycopg2.extras
+    cur.execute(f"SELECT * FROM {TABLE} WHERE catalog_id = %s ORDER BY id", (catalog_id,))
+    cols = [d[0] for d in cur.description]
+    catalog = _one(catalog_id, [dict(zip(cols, r)) for r in cur.fetchall()])
+    if catalog is None:
+        return Plan()
+    p = plan(catalog)
+    if p.inserts:
+        keys = list(p.inserts[0])
+        psycopg2.extras.execute_values(
+            cur, f"INSERT INTO {TABLE} ({', '.join(keys)}) VALUES %s",
+            [tuple(psycopg2.extras.Json(r[k]) if isinstance(r[k], dict) else r[k] for k in keys)
+             for r in p.inserts])
+    for ids, active in ((p.revive, True), (p.retire, False)):
+        if ids:
+            cur.execute(f"UPDATE {TABLE} SET is_active = %s WHERE id::text = ANY(%s)", (active, ids))
+    for i, change in p.patch:
+        cur.execute(f"UPDATE {TABLE} SET {', '.join(f'{c} = %s' for c in change)} WHERE id::text = %s",
+                    (*change.values(), i))
+    return p
 
 
 def load(brand: str | None) -> list[dict]:

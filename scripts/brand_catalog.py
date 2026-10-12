@@ -336,22 +336,12 @@ def push(catalog: dict, dry_run: bool = False, via_http: bool = False,
         print(f"  {counts['listed_again_but_inactive']} entries the source lists are inactive "
               f"here (taken out by hand, or gone and back) — left inactive; reactivate in "
               f"the admin if wanted")
-    if not dry_run:
-        _grid_sync(catalog["brand_name"])
     return counts
 
 
-def _grid_sync(brand: str) -> None:
-    """Every catalog write ends with the catalog a full grid (catalog_grid.py). The
-    sync writes over the REST API; without its credentials the daily cron's re-sync
-    (run_scrape_cron.py) catches up, and this says so."""
-    import os
-    import catalog_grid
-    if not (os.getenv("SUPABASE_URL") and os.getenv("SUPABASE_SERVICE_ROLE_KEY")):
-        print(f"  [warn] catalog grid not synced (no SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY): "
-              f"run python scripts/catalog_grid.py --brand {brand!r} --write")
-        return
-    catalog_grid.sync_brand(brand)
+def _grid_said(p) -> None:
+    a, b, c, d = p.counts()
+    print(f"  catalog grid: +{a} inferred, {b} brought back, {c} retired, {d} re-copied")
 
 
 def set_photos(catalog: dict, dry_run: bool = False, via_http: bool = False) -> dict:
@@ -503,6 +493,11 @@ def _push_postgres(catalog: dict, dry_run: bool, replace: bool = False) -> dict:
     if dry_run:
         conn.rollback()
     else:
+        if "source" in extra and "product_key" in extra:
+            # Every catalog write ends with the catalog a full grid (catalog_grid.py),
+            # over the push's own connection and in its transaction.
+            import catalog_grid
+            _grid_said(catalog_grid.sync_cursor(cur, catalog_id))
         conn.commit()
     conn.close()
     return {"inserted": inserted, "refreshed": len(returned) - inserted,
@@ -611,6 +606,9 @@ def _push_http(catalog: dict, dry_run: bool, replace: bool = False) -> dict:
         for i in range(0, len(retire), 100):
             db_http.update("brand_catalog_entries", f"id=in.({','.join(retire[i:i + 100])})",
                            {"is_active": False})
+        if "source" in extra:
+            import catalog_grid                  # the catalog stays a full grid, over REST too
+            _grid_said(catalog_grid.sync_rest(catalog_id))
     return {"inserted": len(new_rows), "refreshed": len(refreshes),
             "listed_again_but_inactive": back_inactive, "deactivated": len(retire)}
 
