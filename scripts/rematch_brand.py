@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
 rematch_brand.py — Re-read and re-match every active listing of one brand against its
-current catalog, and write what an import would: the reading, the match columns and,
-for a trusted match, the entry's identity and size (import_listings.overlay_entry).
+current catalog, and write what an import would: the reading and the match columns. No identity column
+is written: the shop reads a trusted match's entry (services/shop_listings.py).
 
 An import only touches the listings in the CSVs it imports. After a catalog change
 (a storefront push, a curation plan), listings no recent scrape carried keep their old
@@ -37,12 +37,8 @@ from types import SimpleNamespace
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import catalog_match as cm  # noqa: E402
-import import_listings  # noqa: E402
 
-COLS = ("id,scraped_name,scraped_category,subtype,strain,product_line,variant,size,"
-        "catalog_entry_id,catalog_match_confidence,catalog_match_method,reading")
-# The columns an overlay writes, and the listing's columns they are read from.
-OVERLAID = ("scraped_category", "subtype", "strain", "product_line", "size")
+COLS = ("id,scraped_name,catalog_entry_id,catalog_match_confidence,catalog_match_method,reading")
 
 
 def patches(rows: list[dict], catalog: dict, decisions: list,
@@ -76,15 +72,8 @@ def patches(rows: list[dict], catalog: dict, decisions: list,
             want.update(catalog_entry_id=entry.get("id"),
                         catalog_match_confidence=round(d.confidence, 4) if d.entry else None,
                         catalog_match_method=d.method)
-            if d.entry and d.method in cm.OVERLAY_METHODS:
-                rec = {k: row.get(k) for k in ("scraped_name", "variant", *OVERLAID)}
-                import_listings.overlay_entry(rec, catalog, d.entry)
-                want.update({k: rec.get(k) for k in OVERLAID})
-            else:
-                want["size"] = row.get("variant")       # an untrusted listing shows the store's
-                # and only a line its catalog has (catalog_match.catalog_line)
-                want["product_line"] = cm.catalog_line(catalog, entry.get("id"), d.listing.get("reading"),
-                                                       row.get("scraped_category"))
+            # No identity columns are written (owner, 2026-10-12): the shop reads the
+            # matched entry (services/shop_listings.py); a listing keeps its scrape.
         diff = {k: v for k, v in want.items() if not _same(row.get(k), v)}
         if diff:
             out[lid] = diff
@@ -144,7 +133,7 @@ def main(argv: list[str] | None = None) -> int:
     names = {str(r["id"]): r.get("scraped_name") or "" for r in rows}
     moved = {lid: {k: v for k, v in cols.items() if k != "reading"} for lid, cols in changes.items()}
     moved = {lid: cols for lid, cols in moved.items() if cols}
-    print(f"  {len(moved)} with a new match, identity or size (the rest: the reading only)")
+    print(f"  {len(moved)} with a new match (the rest: the reading only)")
     for lid, cols in list(moved.items())[:40]:
         print(f"  {names[lid][:60]:60} {cols}")
     if not args.write:

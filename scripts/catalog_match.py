@@ -126,32 +126,6 @@ TRUSTED_METHODS = ("attributes", "exact", "substring", "token", "jev", "manual")
 # nominates candidates.
 OVERLAY_METHODS = ("attributes", "exact", "jev", "manual")
 
-def catalog_line(catalog: dict | None, entry_id: str | None, reading: dict | None,
-                 category: str | None = None) -> str | None:
-    """The product_line an untrusted listing (one whose match did not overlay the
-    entry's identity) may carry: only a line its brand's catalog has among its active
-    entries. Shop pages group on listings.product_line, so a store's or enrichment's
-    line the catalog no longer has ("Bagel Hole", "Mini") shows as a bogus line.
-
-    (a) the line of the active entry the listing points at (catalog_entry_id), else
-    (b) the reading's line when an active entry of the listing's category (any
-    category when it has none, or none match) carries it — in the catalog's spelling —
-    else None. Never a line the catalog does not have."""
-    active = [e for e in (catalog or {}).get("entries") or [] if e.get("is_active", True)]
-    if entry_id:
-        for e in active:
-            if str(e.get("id")) == str(entry_id):
-                return e.get("product_line") or None
-    want = squash((reading or {}).get("product_line"))
-    if not want:
-        return None
-    scoped = [e for e in active if category and e.get("category") == category] or active
-    for e in scoped:
-        if squash(e.get("product_line")) == want:
-            return e["product_line"]
-    return None
-
-
 # Tokens that carry no identity — they appear in most names and inflate overlap.
 STOPWORDS = {"the", "a", "an", "and", "of", "with", "pack", "pk", "mg", "g",
              "thc", "cbd", "cbn", "cbg", "each", "size", "count", "ct", "single",

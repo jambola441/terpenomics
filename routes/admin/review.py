@@ -21,9 +21,9 @@ the product or size (`missing`), or `skip`.
 
 **`entry` is a transition to trusted, by review.** The listing becomes a manual
 match to that entry (catalog_entry_id, catalog_match_method 'manual', confidence 1.0)
-and takes the entry's identity at once, through the importer's own overlay
-(import_listings.overlay_entry); every later import keeps a manual match and
-overlays it again. That takes it out of the queue for good. The listing's previous
+and nothing else: no identity column is written (owner, 2026-10-12) — the shop reads
+the entry's (services/shop_listings.py). Every later import keeps a manual match.
+That takes it out of the queue for good. The listing's previous
 match is kept on the decision (reason, prev_entry_id, prev_confidence) and undo puts
 it back.
 
@@ -106,25 +106,10 @@ def _entry_dict(e: BrandCatalogEntry) -> dict:
             "product_external_id": getattr(e, "product_external_id", None)}
 
 
-# Listing columns overlay_entry may change.
-_OVERLAID = ("scraped_category", "subtype", "strain", "product_line", "size")
-
-
 def make_manual(session: Session, listing: Listing, entry: BrandCatalogEntry) -> None:
-    """Make `listing` a manual match to `entry` and overlay the entry's identity as the
-    importer does (import_listings.overlay_entry). Does not commit."""
-    import import_listings  # noqa: E402  (scripts/, on sys.path above)
-
-    entries = session.exec(select(BrandCatalogEntry)
-                           .where(BrandCatalogEntry.catalog_id == entry.catalog_id)).all()
-    catalog = {"entries": [_entry_dict(e) for e in entries]}
-    entry_d = next(d for d in catalog["entries"] if d["id"] == str(entry.id))
-    rec = {"scraped_name": listing.scraped_name, "scraped_category": listing.scraped_category,
-           "subtype": listing.subtype, "strain": listing.strain, "product_line": listing.product_line,
-           "variant": listing.variant, "size": listing.size, "description": listing.description}
-    import_listings.overlay_entry(rec, catalog, entry_d)
-    for k in _OVERLAID:
-        setattr(listing, k, rec[k])
+    """Make `listing` a manual match to `entry`. Only the match columns are written
+    (owner, 2026-10-12): the listing keeps its scrape, and the shop reads the entry's
+    identity (services/shop_listings.py). Does not commit."""
     listing.catalog_entry_id = entry.id
     listing.catalog_match_method = "manual"
     listing.catalog_match_confidence = 1.0

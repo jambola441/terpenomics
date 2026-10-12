@@ -90,7 +90,7 @@ def world():
                                photo="https://pos.example/review.jpg", strain="Sunset Sherb"),
             "no_entry_photo": _listing(shop, "Blue Dream 3.5g", method="attributes", entry=without,
                                        photo="https://pos.example/blue.jpg", strain="Blue Dream"),
-            "unmatched": _listing(shop, "House Special", photo=None, strain="House Special"),
+            "unmatched": _listing(shop, "House Special", method="none", photo=None, strain="House Special"),
         }
         session.add_all(listings.values())
         session.commit()
@@ -135,7 +135,9 @@ def test_the_helper_prefers_the_catalog_photo_only_for_a_trusted_match(world):
 def test_a_store_shelf_shows_the_brand_photo_for_a_trusted_match(world):
     body = _client().get(f"/customer/dispensaries/{world['shop_id']}/listings").json()
     got = {row["id"]: row["image_url"] for row in body}
-    assert {k: got[str(world[k])] for k in EXPECTED} == EXPECTED
+    # the shop shows trusted listings only (services/shop_listings.py)
+    shown = ("trusted", "no_entry_photo")
+    assert got == {str(world[k]): EXPECTED[k] for k in shown}
 
 
 def test_the_listing_page_shows_it_too(world):
@@ -143,7 +145,7 @@ def test_the_listing_page_shows_it_too(world):
     trusted = client.get(f"/customer/dispensaries/{world['shop_id']}/listings/{world['trusted']}").json()
     review = client.get(f"/customer/dispensaries/{world['shop_id']}/listings/{world['review']}").json()
     assert trusted["image_url"] == BRAND_PHOTO
-    assert review["image_url"] == "https://pos.example/review.jpg"
+    assert "image_url" not in review          # untrusted: not a shop listing (404)
 
 
 def test_brand_category_and_product_pages_show_it(world):
@@ -193,5 +195,5 @@ def test_a_store_photo_copied_into_our_storage_is_served_from_there(world):
     body = _client().get(f"/customer/dispensaries/{world['shop_id']}/listings").json()
     got = {row["id"]: row["image_url"] for row in body}
     assert got[str(world["no_entry_photo"])] == copy
-    assert got[str(world["review"])] == "https://pos.example/review.jpg"
+    assert str(world["review"]) not in got    # untrusted: not on the shelf
     assert got[str(world["trusted"])] == BRAND_PHOTO

@@ -85,14 +85,15 @@ def test_only_a_trusted_match_is_sized_and_the_switch_turns_it_off(monkeypatch):
     assert not import_listings.size_choice_on()
 
 
-def test_a_trusted_match_gives_the_listing_its_category_too():
-    """Rove's reload is a vape, whatever a model filed it as; its identity is the entry's."""
+def test_the_overlay_leaves_the_scraped_category_alone():
+    """The shop reads a trusted match's category from its entry (services/shop_listings.py);
+    the persisted scraped_category stays the scrape's."""
     from collections import Counter
     rec = {"scraped_name": "Cherry Gelato - 1g Live Resin Melted Diamonds Reload", "scraped_category": "concentrate",
            "subtype": "other", "strain": "Cherry Gelato", "product_line": None}
     entry_ = {"category": "vaporizers", "subtype": "pod", "strain": "Cherry Gelato", "product_line": "Melted Diamonds"}
     import_listings._overlay(rec, entry_, Counter(), lambda s: False)
-    assert (rec["scraped_category"], rec["product_line"]) == ("vaporizers", "Melted Diamonds")
+    assert rec["scraped_category"] == "concentrate"
 
 
 def test_a_volume_sized_entry_gives_its_size(monkeypatch):

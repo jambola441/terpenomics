@@ -22,7 +22,8 @@ from sqlalchemy import and_, func
 from sqlalchemy.orm import aliased
 from sqlmodel import Session, select
 
-from models import Dispensary, Listing
+from models import Dispensary
+from services.shop_listings import shop_listing
 
 # A product's identity, as the portal keys it everywhere else -- the five-part
 # key the product page is addressed by, plus the brand. Two rows matching on
@@ -67,8 +68,8 @@ def context_for(session: Session, listing_ids: Sequence[UUID]) -> dict[str, dict
     if not listing_ids:
         return {}
 
-    mine = aliased(Listing)
-    other = aliased(Listing)
+    mine = shop_listing()
+    other = shop_listing()
 
     stmt = (
         select(
