@@ -17,6 +17,7 @@ writing a fix is scripts/catalog_fix.py's.
 from __future__ import annotations
 
 import argparse
+import difflib
 import json
 import math
 import re
@@ -44,6 +45,16 @@ CURATED_DAYS = 30   # a curated product no listing has matched this long has sto
 UNSURE = 0.5        # Jev's probability under which an enrichment answer is reviewed
 PRICE_STORES = 3    # stores whose prices make an entry's usual price
 PRICE_FAR = 2.5     # a price this many times off the usual price (either way) is an outlier
+TRUSTED = ("attributes", "manual")  # match methods the two candidate flags below check
+PEERS = 3           # trusted listings an entry needs before its price or titles say what is usual
+# price-outlier: off the other listings' median by this ratio. On 2026-10-12's 6,710 priced
+# trusted listings the tails flatten here: 0.8/1.25 flags 262, 0.7/1.4 flags 70, 0.6/1.6 flags 28.
+PRICE_LOW, PRICE_HIGH = 0.6, 1.6
+# odd-title: mean title_similarity with the entry's other titles under this. Unrelated titles
+# still score ~0.3 on the spaces-removed comparison, so the floor sits higher than a Jaccard
+# one. Of 6,680 comparable listings, 28 fall under 0.4, 59 under 0.45 and 155 under 0.55;
+# 0.45 keeps flavour mix-ups like "Livewire Sour Rope" -> "Livewire Razz Lemonade".
+TITLE_SIM = 0.45
 SECTIONS = [        # (kind, title), in the order the report prints them
     ("stale-store", "Stores the daily run missed"),
     ("grid-gap", "Catalog groups that are not full grids (should be 0)"),
@@ -54,6 +65,10 @@ SECTIONS = [        # (kind, title), in the order the report prints them
     ("brandless", "Listings with no brand that start with a catalog brand's name"),
     ("stale-curated", f"Curated products no listing has matched for {CURATED_DAYS} days"),
     ("unsure", f"Enrichment answers Jev gave under {UNSURE:.0%}, by brand and field"),
+    ("price-outlier", f"Trusted listings priced under {PRICE_LOW:g}x or over {PRICE_HIGH:g}x their entry's "
+                      "other listings (candidates: judge each)"),
+    ("odd-title", f"Trusted listings whose title scores under {TITLE_SIM:g} similarity to the "
+                  "entry's other titles (candidates: judge each)"),
     ("price", f"Listings priced {PRICE_FAR:g}x off their product's usual price (a wrong size or product?)"),
 ]
 
@@ -493,8 +508,116 @@ def price_outliers(data: Data) -> list[Finding]:
     return out
 
 
+def _trusted_by_entry(data: Data) -> dict[str, list[dict]]:
+    out: dict[str, list[dict]] = defaultdict(list)
+    for l in data.listings:
+        if l.get("catalog_entry_id") and l.get("catalog_match_method") in TRUSTED:
+            out[str(l["catalog_entry_id"])].append(l)
+    return out
+
+
+def _candidate(kind: str, l: dict, catalog: dict, entry: dict, data: Data, why: str, rank) -> Finding:
+    store = (data.dispensaries.get(l.get("dispensary_id")) or {}).get("name") or "?"
+    product = " ".join(str(x) for x in (entry.get("name") or entry.get("strain"), entry.get("variant")) if x)
+    return Finding(f"{kind}:{l['id']}", kind,
+                   f'"{l.get("scraped_name")}" at {store} -> {catalog["brand_name"]} {product}: {why} '
+                   f'{l.get("url") or ""}', 1,
+                   f'python3 scripts/db_http.py select listings "select=*&id=eq.{l["id"]}"', rank)
+
+
+def trusted_price_outliers(data: Data) -> list[Finding]:
+    """Trusted listings priced under PRICE_LOW or over PRICE_HIGH times the median of the
+    other trusted listings on their entry (PEERS or more priced listings). A candidate
+    only: sales and store markups land here too, so the agent judges each. The band is
+    far tighter than the "price" detector's 2.5x, which catches only gross size errors."""
+    entries = catalog_store.entries_by_id(data.catalogs)
+    out = []
+    for eid, rows in _trusted_by_entry(data).items():
+        rows = [l for l in rows if (l.get("price_cents") or 0) > 0]
+        if len(rows) < PEERS or eid not in entries:
+            continue
+        for l in rows:
+            usual = statistics.median(o["price_cents"] for o in rows if o is not l)
+            ratio = l["price_cents"] / usual
+            if PRICE_LOW <= ratio <= PRICE_HIGH:
+                continue
+            out.append(_candidate("price-outlier", l, *entries[eid], data,
+                                  f'${l["price_cents"] / 100:.2f} vs ${usual / 100:.2f} for the other '
+                                  f'{len(rows) - 1} ({ratio:.2f}x)', (abs(math.log(ratio)),)))
+    return out
+
+
+# Words in titles that say nothing about which product it is.
+TITLE_FILLER = set("""
+live resin rosin infused pre roll preroll prerolls joint joints blunt blunts pack pk ct count
+x mg g gram grams oz ounce eighth quarter half thc cbd cbn cbg indica sativa hybrid i s h
+cart carts cartridge vape vapes pod pods disposable aio all in one ready to use gummy gummies
+chew chews edible edibles flower whole bud buds smalls popcorn mini minis the and of with a by
+new sale special deal for each single unit units ml fl pcs piece pieces rolls serving servings
+concentrate badder budder sauce diamonds body high euphoria thread rso
+""".split())
+
+
+# Shelf tags some stores (The Spot) append to titles: "| MFNY  -tf1 front", "- refrigerator TF1",
+# "-BF SHELF 3". A trailing " -code" segment goes, and so do these words anywhere.
+SHELF_WORDS = {"refrigerator", "fridge", "front", "middle", "back", "top", "bottom", "shelf", "tac"}
+SHELF_TAG = re.compile(r"\s-\s*(?:[a-z]{0,3}\d+\w*|[\w ]*\b(?:%s)\b)[\w ]*$" % "|".join(SHELF_WORDS), re.I)
+
+
+def title_words(name: str, brand_words: set[str]) -> list[str]:
+    """A scraped title's identity words, in order: no store prefix ("X|"), shelf tag,
+    brand, sizes, numbers, pack words or filler. "X|" is one store's prefix; a longer
+    prefix is a brand or a category, which the other rules drop."""
+    name = SHELF_TAG.sub("", re.sub(r"^\s*\w{1,2}\s*\|", "", name or "").rstrip())
+    words = norm_name(name).replace("_", " ").split()
+    return list(dict.fromkeys(t for t in words if t not in TITLE_FILLER and t not in SHELF_WORDS
+                              and t not in brand_words and not re.search(r"\d", t)))
+
+
+def title_tokens(name: str, brand_words: set[str]) -> set[str]:
+    return set(title_words(name, brand_words))
+
+
+def title_similarity(a: list[str], b: list[str]) -> float:
+    """The better of word overlap (Jaccard) and the similarity of the titles with spaces
+    removed, so "hashburger" meets "hash burger" and "shiskaberry" meets "shishkaberry"."""
+    sa, sb = set(a), set(b)
+    jaccard = len(sa & sb) / len(sa | sb) if sa | sb else 1.0
+    return max(jaccard, difflib.SequenceMatcher(None, "".join(a), "".join(b)).ratio())
+
+
+def odd_titles(data: Data) -> list[Finding]:
+    """Trusted listings whose title is unlike the entry's other titles (mean
+    title_similarity under TITLE_SIM), on entries with PEERS or more trusted listings.
+    Titles name the strain or flavour, so a listing that shares almost none of it with
+    its siblings is the one to read. A candidate only: the agent judges each."""
+    entries = catalog_store.entries_by_id(data.catalogs)
+    out = []
+    for eid, rows in _trusted_by_entry(data).items():
+        if len(rows) < PEERS or eid not in entries:
+            continue
+        catalog, entry = entries[eid]
+        brand_words = set(norm_name(catalog["brand_name"]).split())
+        brand_words |= {w for alias, canon in data.aliases.items() if canon == catalog["brand_name"]
+                        for w in alias.split()}
+        words = {l["id"]: title_words(l.get("scraped_name"), brand_words) for l in rows}
+        for l in rows:
+            mine = words[l["id"]]
+            others = [words[o["id"]] for o in rows if o is not l and words[o["id"]]]
+            if not mine or len(others) < PEERS - 1:
+                continue
+            sim = sum(title_similarity(mine, o) for o in others) / len(others)
+            if sim >= TITLE_SIM:
+                continue
+            common = [t for t, _ in Counter(t for o in others for t in o).most_common(4)]
+            out.append(_candidate("odd-title", l, catalog, entry, data,
+                                  f'similarity {sim:.2f}; its words {mine}, the others say {common}',
+                                  (-sim,)))
+    return out
+
+
 DETECTORS = (stale_stores, grid_gaps, missing_sizes, review_clusters, near_misses, size_sync, brandless,
-             stale_curated, unsure_answers, price_outliers)
+             stale_curated, unsure_answers, trusted_price_outliers, odd_titles, price_outliers)
 
 
 def detect(data: Data) -> list[Finding]:

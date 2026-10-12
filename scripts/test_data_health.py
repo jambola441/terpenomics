@@ -210,3 +210,46 @@ def test_a_listing_priced_far_from_its_products_usual_price_is_flagged():
     assert keys(found) == ["price:l9"] and "usually $16.00" in found[0].text
     # Fewer than PRICE_STORES stores make no usual price.
     assert dh.price_outliers(data(rows[:1] + rows[3:4], STIIIZY)) == []
+
+
+def test_a_trusted_listing_priced_far_from_its_siblings_is_a_candidate():
+    rows = [listing(i, s, "40s Orange Sunset", entry="os1", method="attributes", price_cents=2000)
+            for i, s in enumerate("ABC")]
+    rows.append(listing(5, "D", "40s Orange Sunset 5pk", entry="os1", method="manual", price_cents=5000))
+    rows.append(listing(6, "E", "40s Orange Sunset", entry="os1", method="attributes", price_cents=1500))  # 0.75x
+    rows.append(listing(7, "E", "40s Orange Sunset", entry="os1", method="jev", price_cents=100))  # not trusted
+    found = dh.trusted_price_outliers(data(rows, STIIIZY))
+    assert keys(found) == ["price-outlier:l5"] and "$50.00 vs $20.00" in found[0].text
+    # An entry needs PEERS priced trusted listings.
+    assert dh.trusted_price_outliers(data(rows[:1] + rows[3:4], STIIIZY)) == []
+
+
+def test_title_tokens_drop_brand_sizes_filler_and_the_x_prefix():
+    assert dh.title_tokens("X| STIIIZY | Orange Sunset 40's Live Resin Infused Pre-Roll | 5pk 2.5g",
+                           {"stiiizy"}) == {"orange", "sunset"}
+
+
+def test_title_words_drop_shelf_tags():
+    assert dh.title_words("#5 Hashburger -Indica- 77.72% THC | 1g Live Resin Badder | MFNY - refrigerator TF1",
+                          {"mfny"}) == ["hashburger"]
+    assert dh.title_words("Chemdog | 0.5g Cart | MFNY     -W6 FRONT", {"mfny"}) == ["chemdog"]
+    assert dh.title_words("Ice Cream Souffle | 1g Live Rosin | Jaunty   -BF SHELF 3", {"jaunty"}) == \
+        ["ice", "cream", "souffle"]
+    assert dh.title_words("Bloomfruit 91.72% TAC | Jaunty -H8 Middle", {"jaunty"}) == ["bloomfruit"]
+
+
+def test_titles_compare_with_spaces_removed():
+    assert dh.title_similarity(["hashburger"], ["hash", "burger"]) == 1.0
+    assert dh.title_similarity(["shiskaberry"], ["shishkaberry"]) > 0.9
+    assert dh.title_similarity(["blue", "burst"], ["orange", "sunset"]) < dh.TITLE_SIM
+
+
+def test_a_trusted_listing_whose_title_shares_nothing_with_its_siblings_is_a_candidate():
+    rows = [listing(1, "A", "STIIIZY 40's Orange Sunset 1g", "os1", "attributes"),
+            listing(2, "B", "Orange Sunset 40s Infused Pre-Roll", "os1", "attributes"),
+            listing(3, "C", "X| Stiiizy | Orange Sunset | 1g", "os1", "manual"),
+            listing(4, "D", "40's Blue Burst Infused Pre-Roll 1g", "os1", "attributes"),
+            listing(5, "E", "Pre-Roll 1g", "os1", "attributes")]           # nothing left to compare
+    found = dh.odd_titles(data(rows, STIIIZY))
+    assert keys(found) == ["odd-title:l4"] and "'blue', 'burst'" in found[0].text
+    assert dh.odd_titles(data(rows[:1] + rows[3:4], STIIIZY)) == []
