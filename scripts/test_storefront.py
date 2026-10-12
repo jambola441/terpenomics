@@ -254,6 +254,31 @@ def test_repeats_collapse_and_capitals_can_be_title_cased():
     assert {"tidal waves sfv og 3g lot 1", "tidal waves sfv og 3g lot 2"} <= set(three["match_terms"])
 
 
+def test_store_lines_apply_before_the_site_comparison():
+    """MFNY's old catalog line 'Mini' lives on in the stores' consensus (listings matched to
+    the old entries echo it): a store_lines rule renames it before the store product is
+    compared with the site's, so the store size joins the site's Live Resin Infused product."""
+    site = {"external_id": "sf:preroll::liveresininfused:hashburger:3g:1", "name": "Live Resin Infused Hash Burger",
+            "product_key": "sf:preroll::liveresininfused:hashburger", "product_line": "Live Resin Infused",
+            "category": "preroll", "subtype": None, "strain": "Hash Burger", "variant": "3g",
+            "match_terms": [], "source": "storefront_html"}
+    doc = {"brand_name": "Florist Farms", "entries": [site]}
+    stores = [listing(s, "Hash Burger Mini 1g", "Hash Burger", "preroll", "1g", line="Mini") for s in ("a", "b")]
+    _, only_stores, _ = storefront.split_store_products(doc, stores)
+    assert [e["product_line"] for e in only_stores] == ["Mini"]
+    rules = [{"when": {"category": "^preroll$", "line": "^(?:Mini)?$"}, "line": "Live Resin Infused", "why": "x"}]
+    _, only_stores, _ = storefront.split_store_products(doc, stores, lines=rules)
+    [joined] = only_stores
+    assert (joined["product_key"], joined["variant"]) == (site["product_key"], "1g")
+    assert storefront.validate({**FLORIST, "store_lines": rules})["store_lines"] == rules
+    # Two store products the rule gives one identity are pushed as one entry with both names.
+    a = {"external_id": "lb:preroll::liveresininfused:x:0.75g", "product_key": "lb:preroll::liveresininfused:x",
+         "match_terms": ["a"], "name": "X"}
+    b = {**a, "match_terms": ["b"]}
+    pushed = storefront.with_store_products({"entries": []}, [a, b])
+    assert [e["match_terms"] for e in pushed["entries"]] == [["a", "b"]]
+
+
 def test_title_case_leaves_acronyms_and_codes():
     assert storefront._title_case("KEY LIME PIE") == "Key Lime Pie"
     assert storefront._title_case("SFV OG x MAC 1") == "SFV OG x MAC 1"

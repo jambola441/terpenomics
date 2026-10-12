@@ -108,11 +108,12 @@ def _label(size: str, category: str | None) -> sizes.Size:
     return s
 
 
-def _variant(s: sizes.Size, category: str | None) -> str:
+def _variant(s: sizes.Size, category: str | None, text: str | None = None) -> str:
     """The form entries keep: the package total for what is sold by weight ("2.5g"; the
     subtype says pack, as catalog_bootstrap writes it), the pack and total for doses
-    ("10pk 100mg": the count tells the per-piece dose)."""
-    return _total(s) if category in sizes.WEIGHT_CATEGORIES else s.label()
+    ("10pk 100mg": the count tells the per-piece dose). A pack label given as such
+    ("2 × 0.5g", sizes.PACK_SIGN) is kept as written."""
+    return sizes.pack_label(text) or (_total(s) if category in sizes.WEIGHT_CATEGORIES else s.label())
 
 
 def _total(s: sizes.Size) -> str:
@@ -147,9 +148,9 @@ def plan_add_size(catalogs: dict, entry_id: str, size: str, force: bool = False)
     catalog, entry = find(catalogs, entry_id)
     s = _label(size, entry.get("category"))
     siblings = _product_entries(catalog, entry)
-    has = [e for e in siblings if sizes.same_size(s, sizes.parse(e.get("variant"), category=entry.get("category")))]
+    has = [e for e in siblings if sizes.same_variant(size, e.get("variant"), entry.get("category"))]
     if has and not force:
-        raise Refused(f"the product already comes in {_variant(s, entry.get('category'))}: "
+        raise Refused(f"the product already comes in {_variant(s, entry.get('category'), size)}: "
                       f"{', '.join(_desc(e) for e in has)}")
     key = entry.get("product_key") or catalog_store._product_key(entry)
     external_id = f"{key}:{_total(s)}" if catalog.get("source_method") == BOOTSTRAP else None
@@ -158,7 +159,7 @@ def plan_add_size(catalogs: dict, entry_id: str, size: str, force: bool = False)
     row = {"catalog_id": entry["catalog_id"], "external_id": external_id, "product_key": key,
            "name": entry["name"], "product_line": entry.get("product_line"),
            "category": entry.get("category"), "subtype": entry.get("subtype"),
-           "strain": entry.get("strain"), "variant": _variant(s, entry.get("category")),
+           "strain": entry.get("strain"), "variant": _variant(s, entry.get("category"), size),
            "attributes": entry.get("attributes"),
            "match_terms": [], "source": CURATED}
     changed = copy.deepcopy(catalog)
@@ -173,11 +174,11 @@ def plan_add_size(catalogs: dict, entry_id: str, size: str, force: bool = False)
 def plan_set_size(catalogs: dict, entry_id: str, size: str, force: bool = False) -> Plan:
     catalog, entry = find(catalogs, entry_id)
     s = _label(size, entry.get("category"))
-    variant = _variant(s, entry.get("category"))
+    variant = _variant(s, entry.get("category"), size)
     if variant == entry.get("variant"):
         raise Refused(f"{_desc(entry)} already says {variant}")
     twins = [e for e in _product_entries(catalog, entry) if str(e["id"]) != str(entry_id)
-             and sizes.same_size(s, sizes.parse(e.get("variant"), category=entry.get("category")))]
+             and sizes.same_variant(variant, e.get("variant"), entry.get("category"))]
     if twins and not force:
         raise Refused(f"another entry of the product is already {variant}: "
                       f"{', '.join(_desc(e) for e in twins)}; deactivate one of the two instead")
@@ -284,8 +285,9 @@ def plan_add_product(catalogs: dict, brand: str, category: str, strain: str, siz
         raise Refused(f"the catalog has this product: {', '.join(_desc(e) for e in same) or key}; "
                       "add-size it instead")
     by_variant: dict[str, sizes.Size] = {}
-    for x in (_label(x, category) for x in sizes_wanted):
-        by_variant.setdefault(_variant(x, category), x)        # "28g" and "1 ounce" are one size
+    for text in sizes_wanted:
+        x = _label(text, category)
+        by_variant.setdefault(_variant(x, category, text), x)        # "28g" and "1 ounce" are one size
     variants = list(by_variant)
     # Store names (`terms`) are no longer recorded: names do not match listings.
     recorded: list[str] = []
@@ -433,7 +435,8 @@ def plan_rekey(catalogs: dict, entry_ids, line: str | None = None, strain: str |
         s = sizes.parse(m.get("variant"), category=category)
         if s.is_empty() or (s.grams is None and s.mg is None and s.ml is None):
             raise Refused(f"cannot tell the size of {_desc(m)}: set-size it first")
-        group = next((g for g in groups if sizes.same_size(s, g[0]) is True), None)
+        group = next((g for g in groups if sizes.same_variant(m.get("variant"), g[1][0].get("variant"),
+                                                               category)), None)
         if group:
             group[1].append(m)
         else:
@@ -441,9 +444,9 @@ def plan_rekey(catalogs: dict, entry_ids, line: str | None = None, strain: str |
     for s, members in groups:
         terms = set().union(*(set(m.get("match_terms") or []) for m in members))
         what = ", ".join(_desc(m) for m in members)
-        dest = next((e for e in pool if sizes.same_size(s, sizes.parse(e.get("variant"), category=category))
-                     is True), None)
-        external_id = f"{key}:{_total(s)}"
+        dest = next((e for e in pool if sizes.same_variant(members[0].get("variant"), e.get("variant"),
+                                                           category)), None)
+        external_id = f"{key}:{sizes.pack_label(members[0].get('variant')) or _total(s)}"
         holder = next((e for e in catalog["entries"] if e.get("external_id") == external_id), None)
         if dest is not None:
             if terms - set(by_id[str(dest["id"])].get("match_terms") or []):
@@ -506,8 +509,7 @@ def resolve_entry(catalogs: dict, brand: str, ref) -> str:
             continue
         if "line" in ref and catalog_bootstrap.squash(e.get("product_line")) != catalog_bootstrap.squash(ref["line"]):
             continue
-        if want_size and sizes.same_size(sizes.parse(want_size, category=e.get("category")),
-                                         sizes.parse(e.get("variant"), category=e.get("category"))) is not True:
+        if want_size and not sizes.same_variant(want_size, e.get("variant"), e.get("category")):
             continue
         hits.append(e)
     if len(hits) != 1:

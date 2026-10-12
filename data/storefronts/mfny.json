@@ -19,10 +19,10 @@
   "learned": "2026-10-05, by an agent pass: 179 products on 15 Webflow pages of 12 (page 16 is empty). No sitemap, no JSON; product pages add nothing but a 'More <Category>' block and, for BagelHole, a description. 2026-10-08, curation pass: pack sizes rewritten as 'N x unit' (a catalog label 'Npk total' now reads back as written, so '4pk 0.75g' had become a 0.75g total); size-less badders read at 1g; store_aliases added. 2026-10-08 (wave 3, curation of the remaining leads): no rule change; notes added on Two-Fer 1g store names, the MF-er gummy labels, the live rosin badders stores fold into resin products, and the line-less store-only Live Resin products.",
   "notes": [
     "body is the card image's URL, not a description: its file name ('MFNY%20Live%20Resin%20510%20Vape%20Cart%20Honey%20Banana%20.5g.png') is the only place the site states most sizes. About a third of the images are bare 'image.png'.",
-    "Sizes, in order: a size in the title, then one in the image name, then a format constant where every sized image and the stores agree: 510 carts 0.5g (the 1g carts say 1g in the title), non-Classics Vape Pens 0.5g, Classics AIOs 1g (UK Cheese's title; stores sell Sour Diesel at 1g only), Mini Pre-Rolls 0.75g and their Four Packs 4 x 0.75g, Two-Fers 2 x 0.5g, gummies 10 x 10mg, BagelHole 2g flower + 0.5g extract (its product page).",
-    "Skipped on purpose because the site never states the size: tinctures (images say 15ml; stores list lab totals from 391mg to 1000mg), the intimacy oil, badders/concentrates with neither a titled nor an imaged size (stores sell MFNY badder at 1g and 2g), and the older plain 'Pre-Roll' singles (not Mini; no size anywhere, and stores carry none of them).",
-    "A Four Pack is sometimes only in the image name ('... .75g Four Pack.png' under a title without it); the image decides then. A Mini Pre-Rolls title with a bare image is read as a single, as the brand titles its Four Packs; 'Blueberry 2.0 x Turbo Blueberry Resin Mini Pre-Rolls' may really be the 4-pack stores sell.",
-    "Line is the extract (Live Resin / Live Rosin), with 'Classics' in front for that line; Two-Fer packs get line 'Two-Fer' so a 2 x 0.5g pack is not the same product as a 1g cart. Pre-rolls and gummies have no line but Classics and BagelHole: every MFNY pre-roll is resin-infused, and titles say 'Resin' only sometimes.",
+    "Sizes, in order: a size in the title, then one in the image name, then a format constant where every sized image and the stores agree: 510 carts 0.5g (the 1g carts say 1g in the title), non-Classics Vape Pens 0.5g, Classics 'Vape Pen' 0.5g and Classics 'AIO Vape' 1g (two packages, 2026-10-12 note), pre-rolls by package generation (2026-10-12 note), Two-Fers 2 x 0.5g, gummies 10 x 10mg, BagelHole 2g flower + 0.5g extract (its product page).",
+    "Skipped on purpose because the site never states the size: tinctures (images say 15ml; stores list lab totals from 391mg to 1000mg), the intimacy oil, badders/concentrates with neither a titled nor an imaged size (stores sell MFNY badder at 1g and 2g).",
+    "A Four Pack is sometimes only in the image name ('... .75g Four Pack.png' under a title without it); the image decides then. A Mini Pre-Rolls title with a bare 'image.png' is the newest riverway single (0.75g; package photos, 2026-10-12).",
+    "Line is the extract (Live Resin / Live Rosin), with 'Classics' in front for that line. A Two-Fer is a size, not a line: '2 × 0.5g' of its line's cart, beside the 1g single (pack convention, 2026-10-12). Gummies have no line but Classics; pre-rolls are Live Resin Infused, Classics or BagelHole (2026-10-12 note).",
     "A leading 'MFNY' is dropped from single-strain names ('MFNY Skunk' -> 'Skunk'), as stores write them. Titles carry typos ('Gumies', 'Mii Pre-Rolls', double spaces) that the patterns absorb.",
     "Category comes from the title's format word; the all-products cards carry no category. 'Mango x Honey Banana' has no format word and gets edible from its image name.",
     "Check on 2026-10-05: 135 entries (the site lists five products twice), stores sell 91 products, 48 found. Of the 43 store-only: 12 are products skipped above for want of a size, 23 are not on the site (Sleepy MF-er, Pina Colada, Super Lemon Haze, White Fire OG pre-rolls, the Belafonte Two-Fer...), and 7 are store spellings the matcher misses: stores write the site's 'Hash Burger x Hash Burger' as 'Hash Burger' (also Candy Rain, Gelonade, Honey Banana, Sour Diesel pre-rolls) and some put Candy Rain rosin under a 'Riverway' line.",
@@ -39,16 +39,13 @@
     "2026-10-11 (r2, owner-corrected): Sour Peach x Rainbow Beltz 2.0 gummies get line Live Resin, like the brand's other gummies: the package photo says Live Resin. Several stores write it as rosin ('Live Rosin Gummies'); that is the stores' wording, not the product.",
     "2026-10-11 (owner): tinctures and the intimacy oil are in, sized by volume: tinctures '15mL' (every image says 15ml; the mg stores list, 344-1000mg, is a batch's lab total, so no mg size could match; sizes.py compares a volume only with a volume), the oil '60mL'. One product per strain and extract line, Classics in front where the title has it; '\"Belafonte\" Banana' is cultivar The Belafonte (its product page). All Night Affair is the oil's product name (line), its cultivar Candy Rain (product page: 'formulated with MFNY's top-tier Candy Rain live resin'), so stores' 'Candy Rain Intimacy Oil' is the same product. Rainbow Driver Live Resin Tincture is sold at stores but not on the site: a push brings it from the stores' consensus at 15mL (two stores write '15mL'); store_skip drops the mg-sized store tinctures. The curated entries of data/plans/mfny-2026-10-11-tinctures.json have no external id, so a push neither matches nor retires them (brand_catalog.push: NULL never matches): after the push lands the site's 15mL entries, deactivate the curated ones into them, or they stand as duplicates.",
     "2026-10-12: store_lines gives the store-only Rainbow Driver tincture line Live Resin (its consensus stayed line-less: matched listings take the entry's blank line). After the 2026-10-11 push, 21 MFNY listings still held pre-push readings (not re-imported since, e.g. 'MFNY Skunk Live Resin Tincture | 15mL', 'MFNY  The Belafonte Live Resin Tincture 15mL'); re-read now, they join their 15mL entries.",
-    "2026-10-12 (trusted audit, 503 trusted): three wrong trusted matches, none from this recipe. Two-packs of single carts fell on the 1g single for want of a Two-Fer: 'MFNY - Oishii Live Resin Cartridge 2pk - 1g' and 'MFNY | 2pk Live Resin Vape Cart The Belafonte (S)' (both store-only Two-Fers; data/plans/mfny-2026-10-12-audit.json adds them). MFNY also sells infused 3-packs (3 x 0.75g = 2.25g; Super Lemon Haze, White Fire OG, Blueberry 2.0 x Blueberry 2.0 at stores, not on the site): a '3 x .75g | 3pk' with a 3g size field sat on the Four Pack (the plan adds 2.25g to the two Mini products). 'MFNY Skunk Live Resin Vape Pen | .5g' was read as a cart (the store pasted the cart description) and trusted on the 0.5g cart: the subtype question now shows the brand's examples (catalog_reading.EXAMPLE_FIELDS)."
+    "2026-10-12 (trusted audit, 503 trusted): three wrong trusted matches, none from this recipe. Two-packs of single carts fell on the 1g single for want of a Two-Fer: 'MFNY - Oishii Live Resin Cartridge 2pk - 1g' and 'MFNY | 2pk Live Resin Vape Cart The Belafonte (S)' (both store-only Two-Fers; data/plans/mfny-2026-10-12-audit.json adds them). MFNY also sells infused 3-packs (3 x 0.75g = 2.25g; Super Lemon Haze, White Fire OG, Blueberry 2.0 x Blueberry 2.0 at stores, not on the site): a '3 x .75g | 3pk' with a 3g size field sat on the Four Pack (the plan adds 2.25g to the two Mini products). 'MFNY Skunk Live Resin Vape Pen | .5g' was read as a cart (the store pasted the cart description) and trusted on the 0.5g cart: the subtype question now shows the brand's examples (catalog_reading.EXAMPLE_FIELDS).",
+    "2026-10-12 (owner-approved pre-roll line plan): every MFNY pre-roll but Classics and BagelHole is line 'Live Resin Infused' (packages: 'This is a Live Resin infused Mini Pre-Roll' / 'Pre-Roll'); 'Mini' is marketing, not a line (the Classics single bag says Mini too). Sizes by package, read from the card image (titles say 'Mini Pre-Rolls' for all of them): '... .75g Four Pack.png' or a Four Pack title 4 x 0.75g (3g); '...Mini Preroll(s) ... .75g.png' (2025 uploads) and 'CandyRainxSuperR_ntz.png' 2 x 0.75g ('Contains 1.5g at a 0.75g serving size', two joints); a bare 'image.png' (the newest riverway bags) 0.75g ('Contains 0.75g', one joint); 'Mainline-MiniPreRolls-...' and 'Live-Resin-Infused-PreRoll-Mini' the older 2 x 0.5g (1g); a plain 'X Pre-Roll' the older 1g single ('Contains 1g at a 1g serving size'). The 2 × 0.5g Mini and the 1g single are two sizes of one product (pack convention; Hash Burger x Hash Burger, Hash Burger x MFNY Skunk, MFNY Skunk, O2 OG Kush x Lemon Cane and Rainbow Beltz 2.0 x Petro Chem are sold both ways). Line fill gives every strain of the line every size of the line (owner, 2026-10-12). Site typos 'Oishi #4' and 'Rainbow Belts 2.0' are spelled as the other products. Stores' '.75g | 1 pk' at ~$16 is the 0.75g single (store photos: one joint, 'Contains 0.75g'). store_aliases.lines maps the stores' 'Mini' and store_lines renames a store product's 'Mini' or empty pre-roll line (applied before the site comparison too), so a push neither brings 'Mini' back nor leaves a line-less 1g 2-pack in review.",
+    "Pack convention (2026-10-12): a size with no count is ONE unit ('1g' cart, '0.75g' pre-roll); a pack is written 'N × unit' with the multiplication sign ('2 × 0.5g' Two-Fer / old Mini, '2 × 0.75g' Mini bag, '3 × 0.75g' 3-pack, '4 × 0.75g' Four Pack) and stored as written, so a 2-pack and a single of one total are two sizes. Stores' totals ('3g', '2.25g') still fit by total; a count in the name ('2pk', 'Four Pack', 'Two-Fer') decides between same-total sizes. Store-only totals are written as the line's packs at push (storefront.pack_store_sizes).",
+    "2026-10-12 (package photos): MFNY's all-in-ones come in two packages. The slim 'Vape Pen' bag says 'Live Resin Vape Pen ... Contains 0.5g' (Classics Sour Diesel, https://www.mfny.co/products/classics-sour-diesel-live-resin-vape-pen); the box 'All-in-One Vape' bag says 'Live Resin All-in-One Vape ... Contains 1g' (Classics UK Cheese, https://www.mfny.co/products/classics-uk-cheese-live-resin-aio-vape-1g). One product per strain, two sizes; stores' 'Sour Diesel Live Resin AIO | 1g' joins Sour Diesel as its 1g. The Classics rule used to give every Classics pen 1g, so Sour Diesel's 0.5g pen was filed at 1g.",
+    "2026-10-12 (owner-approved): BagelHole is two lines by extract, 'BagelHole Live Resin' and 'BagelHole Live Rosin', 2.5g each (2g flower + 0.5g extract). Site: Season 4 Honey Banana Live Resin (https://www.mfny.co/products/bagelhole-season-4-live-resin), Season 4 Candy Rain Live Rosin (https://www.mfny.co/products/bagelhole-season-4-live-rosin). Stores: Chemdog x Chemdog as both 'Bagel Hole Live Resin Infused Preroll' and 'Live Rosin Infused BagelHole', Sour Diesel x Sour Diesel as Live Resin. The catalog's 'Bagel Hole' (bootstrap) and 'BagelHole' (site) were one line split by spelling."
   ],
-  "skip": [
-    {
-      "when": {
-        "title": "(?i)^(?!.*\\b(?:mini|mii|four pack|classics)\\b).*\\bpre-?rolls?\\b"
-      },
-      "why": "plain pre-roll: size not on the site"
-    }
-  ],
+  "skip": [],
   "category": [
     {
       "when": {
@@ -204,9 +201,19 @@
       "when": {
         "category": "^preroll$"
       },
-      "match": "^BagelHole(?:\\s+Season\\s+\\d+)?\\s+(?P<strain>.+?)\\s+Live\\s+R[eo]s[ie]n$",
+      "match": "^BagelHole(?:\\s+Season\\s+\\d+)?\\s+(?P<strain>.+?)\\s+Live\\s+Rosin$",
       "set": {
-        "line": "BagelHole",
+        "line": "BagelHole Live Rosin",
+        "size": "2.5g"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "^BagelHole(?:\\s+Season\\s+\\d+)?\\s+(?P<strain>.+?)\\s+Live\\s+Resin$",
+      "set": {
+        "line": "BagelHole Live Resin",
         "size": "2.5g"
       }
     },
@@ -216,8 +223,8 @@
       },
       "match": "^(?:(?P<line>Classics)\\s+)?(?P<strain>.+?)\\s+(?:(?:Live\\s+)?Resin\\s+)?(?:(?i:mini|mii)[\\s-]*)?(?i:pre-?rolls?\\s+four\\s+pack)",
       "set": {
-        "size": "4 x 0.75g",
-        "line": "Mini"
+        "size": "4 × 0.75g",
+        "line": "Live Resin Infused"
       }
     },
     {
@@ -227,8 +234,30 @@
       },
       "match": "^(?P<strain>.+?)\\s+(?:(?:Live\\s+)?Resin\\s+)?(?i:mini|mii)[\\s-]*Pre-?Rolls?$",
       "set": {
-        "size": "4 x 0.75g",
-        "line": "Mini"
+        "size": "4 × 0.75g",
+        "line": "Live Resin Infused"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$",
+        "body": "(?i)MiniPreRolls|PreRoll-Mini"
+      },
+      "match": "^(?P<strain>.+?)\\s+(?:(?:Live\\s+)?Resin\\s+)?(?i:mini|mii)[\\s-]*Pre-?Rolls?$",
+      "set": {
+        "size": "2 × 0.5g",
+        "line": "Live Resin Infused"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$",
+        "body": "_image\\.png$"
+      },
+      "match": "^(?P<strain>.+?)\\s+(?:(?:Live\\s+)?Resin\\s+)?(?i:mini|mii)[\\s-]*Pre-?Rolls?$",
+      "set": {
+        "size": "0.75g",
+        "line": "Live Resin Infused"
       }
     },
     {
@@ -237,8 +266,8 @@
       },
       "match": "^(?P<strain>.+?)\\s+(?:(?:Live\\s+)?Resin\\s+)?(?i:mini|mii)[\\s-]*Pre-?Rolls?$",
       "set": {
-        "size": "0.75g",
-        "line": "Mini"
+        "size": "2 × 0.75g",
+        "line": "Live Resin Infused"
       }
     },
     {
@@ -252,12 +281,44 @@
     },
     {
       "when": {
+        "category": "^preroll$"
+      },
+      "match": "^Oishi\\s+#4\\s+x\\s+Lemon\\s+Cane\\s+Pre-?Roll$",
+      "set": {
+        "strain": "Oishii #4 x Lemon Cane",
+        "size": "1g",
+        "line": "Live Resin Infused"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "^Rainbow\\s+Belts\\s+2\\.0\\s+x\\s+Petro\\s+Chem\\s+Pre-?Roll$",
+      "set": {
+        "strain": "Rainbow Beltz 2.0 x Petro Chem",
+        "size": "1g",
+        "line": "Live Resin Infused"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "^(?P<strain>.+?)\\s+Pre-?Roll$",
+      "set": {
+        "size": "1g",
+        "line": "Live Resin Infused"
+      }
+    },
+    {
+      "when": {
         "category": "^vaporizers$"
       },
       "match": "^Classics\\s+(?P<strain>.+?)\\s+Live\\s+Resin\\s+510\\s+(?:Vape\\s+)?Cart\\s+(?i:Two-?Fer)",
       "set": {
-        "line": "Classics Two-Fer",
-        "size": "2 x 0.5g"
+        "line": "Classics Live Resin",
+        "size": "2 × 0.5g"
       }
     },
     {
@@ -266,18 +327,28 @@
       },
       "match": "^(?:MFNY\\s+)?(?P<strain>.+?)\\s+Live\\s+Resin\\s+510\\s+(?:Vape\\s+)?Cart\\s+(?i:Two-?Fer)",
       "set": {
-        "line": "Two-Fer",
-        "size": "2 x 0.5g"
+        "line": "Live Resin",
+        "size": "2 × 0.5g"
       }
     },
     {
       "when": {
         "category": "^vaporizers$"
       },
-      "match": "^Classics\\s+(?P<strain>.+?)\\s+Live\\s+Resin\\s+(?:Vape\\s+Pen|AIO\\s+Vape)(?:\\s+(?P<size>\\d*\\.?\\d+\\s*g))?$",
+      "match": "^Classics\\s+(?P<strain>.+?)\\s+Live\\s+Resin\\s+AIO\\s+Vape(?:\\s+(?P<size>\\d*\\.?\\d+\\s*g))?$",
       "set": {
         "line": "Classics Live Resin",
         "size": "1g"
+      }
+    },
+    {
+      "when": {
+        "category": "^vaporizers$"
+      },
+      "match": "^Classics\\s+(?P<strain>.+?)\\s+Live\\s+Resin\\s+Vape\\s+Pen(?:\\s+(?P<size>\\d*\\.?\\d+\\s*g))?$",
+      "set": {
+        "line": "Classics Live Resin",
+        "size": "0.5g"
       }
     },
     {
@@ -469,7 +540,10 @@
   ],
   "store_aliases": {
     "lines": {
-      "Riverway": "Live Rosin"
+      "Riverway": "Live Rosin",
+      "Mini": "Live Resin Infused",
+      "Two-Fer": "Live Resin",
+      "Classics Two-Fer": "Classics Live Resin"
     },
     "names": {
       "White Fire OG": "White Fire"
@@ -487,11 +561,27 @@
   "store_lines": [
     {
       "when": {
+        "category": "^preroll$",
+        "line": "^Bagel\\s*Hole$"
+      },
+      "line": "BagelHole Live Resin",
+      "why": "the BagelHole lines are the extract (owner-approved, 2026-10-12): BagelHole Live Resin and BagelHole Live Rosin. The stores' consensus carries the old line 'Bagel Hole' / 'BagelHole' (echoed by matched listings) for Chemdog and Sour Diesel; both are sold as 'Bagel Hole Live Resin Infused', so the store product is the resin one. Chemdog is also sold as 'Live Rosin Infused BagelHole': that product is added by data/plans/mfny-2026-10-12-prerolls.json"
+    },
+    {
+      "when": {
         "subtype": "^tincture$",
         "name": "^Rainbow Driver$"
       },
       "line": "Live Resin",
       "why": "every store writes 'Rainbow Driver Live Resin Tincture | 15mL'; the site does not list it, and line-less it is no option once the reader reads 'Live Resin' (10 listings in review_missing after the 2026-10-11 push)"
+    },
+    {
+      "when": {
+        "category": "^preroll$",
+        "line": "^(?:Mini|Pre-?Rolls?|Infused|Live Resin)?$"
+      },
+      "line": "Live Resin Infused",
+      "why": "every MFNY pre-roll but Classics and BagelHole is one line, Live Resin Infused (owner-approved line plan, 2026-10-12); the stores' consensus says Mini (the old catalog line, echoed by matched listings) or nothing"
     }
   ]
 }
