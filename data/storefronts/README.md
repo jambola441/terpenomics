@@ -106,6 +106,12 @@ some stores give a product the site lists in another (`{"when": {"name": "^Cotto
 product's name, size and subtype: the name carries the line where a line rule gave it one,
 "Pips Sativa" rather than "Sativa"). `check` prints what it dropped and why.
 
+**`store_lines`** gives a product only stores list the line their names state when the
+stores' consensus has none (`{"when": {"subtype": "^tincture$", "name": "^Rainbow Driver$"},
+"line": "Live Resin", "why": "..."}`; `when` as in `store_skip`). Line, name and id change
+together, so the push replaces the line-less entry. A consensus can stay line-less for
+good: listings matched to a line-less entry take its blank line.
+
 **`merch_counts`** for a papers brand whose pages name widths and pack counts apart
 (RAW: "available in 1¼ and King Size", "50 and 32 leaves"): the retail counts per width,
 by format, so a page's widths take their own counts rather than every count the page

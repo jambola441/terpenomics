@@ -244,7 +244,8 @@
     {"listing": "MFNY - Sour Diesel Live Resin Tincture", "entry": {"category": "tinctures", "line": "Classics Live Resin", "strain": "Sour Diesel", "size": "15mL"}},
     {"listing": "\"Belafonte\" Banana Live Resin Tincture | 15mL", "entry": {"category": "tinctures", "strain": "The \"Belafonte\"", "size": "15mL"}},
     {"listing": "Honey Banana | Live Resin Tincture", "entry": {"category": "tinctures", "strain": "Honey Banana", "size": "15mL"}},
-    {"listing": "Rainbow Driver Live Resin Tincture | 15mL", "entry": {"category": "tinctures", "strain": "Rainbow Driver", "size": "15mL"}},
-    {"listing": "MFNY | Live Resin Intimacy Oil 60mL | Candy Rain (I)", "entry": {"category": "topical", "line": "All Night Affair", "strain": "Candy Rain", "size": "60ml"}}
+    {"listing": "Rainbow Driver Live Resin Tincture | 15mL", "entry": {"category": "tinctures", "line": "Live Resin", "strain": "Rainbow Driver", "size": "15mL"}},
+    {"listing": "MFNY | Live Resin Intimacy Oil 60mL | Candy Rain (I)", "entry": {"category": "topical", "line": "All Night Affair", "strain": "Candy Rain", "size": "60ml"}},
+    {"listing": "Oishii Live Resin Tincture | 15mL", "entry": {"category": "tinctures", "line": "Live Resin", "strain": "Oishii", "size": "15mL"}}
   ]
 }

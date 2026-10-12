@@ -541,6 +541,10 @@ def validate(recipe: dict, where: str = "recipe") -> dict:
     for table in (recipe.get("store_aliases") or {}):
         if table not in ("lines", "names"):
             bad(f"store_aliases.{table}: only lines and names are mapped")
+    for i, rule in enumerate(recipe.get("store_lines") or []):
+        when = rule.get("when") or {}
+        if not when or set(when) - {"name", "size", "subtype"} or not rule.get("line") or not rule.get("why"):
+            bad(f"store_lines[{i}] needs a line, a why and a when on name, size and/or subtype")
     for i, rule in enumerate(recipe.get("store_skip") or []):
         when = rule.get("when") or {}
         if not when or set(when) - {"name", "size", "subtype"} or not rule.get("why"):
@@ -1066,15 +1070,42 @@ def _as_site_size(p: dict, names: dict, site: list[tuple], synonyms: bool = True
             "joins": e["name"]}
 
 
+def _store_match(e: dict, when: dict) -> bool:
+    return all(re.search(pat, e.get({"name": "name", "size": "variant"}.get(f, f)) or "", re.I)
+               for f, pat in when.items())
+
+
+def line_store_products(only_stores: list[dict], rules: list[dict] | None) -> list[dict]:
+    """The recipe's `store_lines`: a line for a store product the site does not list and
+    whose stores' consensus has none (MFNY's Rainbow Driver tincture: every store writes
+    'Live Resin Tincture', but listings matched to a line-less entry carry no line, so
+    the consensus never gains one). Line, name and identity change together, as a
+    bootstrap would have keyed the product with that line."""
+    out = []
+    for e in only_stores:
+        rule = next((r for r in rules or [] if _store_match(e, r["when"])), None)
+        if not rule or (e.get("product_line") or "") == rule["line"]:
+            out.append(e)
+            continue
+        old = e["product_key"]
+        parts = old.split(":")
+        if len(parts) >= 5:
+            parts[3] = squash(rule["line"])
+        key = ":".join(parts)
+        ext = e.get("external_id") or ""
+        out.append({**e, "product_line": rule["line"], "product_key": key,
+                    "name": " ".join(x for x in (rule["line"], e.get("strain") or e.get("name")) if x),
+                    "external_id": key + ext[len(old):] if ext.startswith(old) else ext})
+    return out
+
+
 def skip_store_products(only_stores: list[dict], rules: list[dict] | None) -> tuple[list[dict], list[tuple]]:
     """The recipe's `store_skip`: store products the site does not list that are not
     products either, such as a 1:1 gummy some stores size by its THC and CBD together.
     Returns those kept and (product, why) for those dropped."""
     kept, dropped = [], []
     for e in only_stores:
-        rule = next((r for r in rules or []
-                     if all(re.search(pat, e.get({"name": "name", "size": "variant"}.get(f, f)) or "", re.I)
-                            for f, pat in r["when"].items())), None)
+        rule = next((r for r in rules or [] if _store_match(e, r["when"])), None)
         if rule:
             dropped.append((e, rule["why"]))
         else:
@@ -1210,6 +1241,7 @@ def main() -> None:
                 doc, store_listings(recipe["brand"], args.via_http), recipe.get("store_aliases"),
                 recipe.get("merch_counts"))
             only_stores, dropped = skip_store_products(only_stores, recipe.get("store_skip"))
+            only_stores = line_store_products(only_stores, recipe.get("store_lines"))
         if args.command == "check":
             print_check(report, found, only_stores, dropped)
         elif args.command == "fetch":
