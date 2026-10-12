@@ -42,7 +42,8 @@
     "2026-10-12 (trusted audit, 503 trusted): three wrong trusted matches, none from this recipe. Two-packs of single carts fell on the 1g single for want of a Two-Fer: 'MFNY - Oishii Live Resin Cartridge 2pk - 1g' and 'MFNY | 2pk Live Resin Vape Cart The Belafonte (S)' (both store-only Two-Fers; data/plans/mfny-2026-10-12-audit.json adds them). MFNY also sells infused 3-packs (3 x 0.75g = 2.25g; Super Lemon Haze, White Fire OG, Blueberry 2.0 x Blueberry 2.0 at stores, not on the site): a '3 x .75g | 3pk' with a 3g size field sat on the Four Pack (the plan adds 2.25g to the two Mini products). 'MFNY Skunk Live Resin Vape Pen | .5g' was read as a cart (the store pasted the cart description) and trusted on the 0.5g cart: the subtype question now shows the brand's examples (catalog_reading.EXAMPLE_FIELDS).",
     "2026-10-12 (owner-approved pre-roll line plan): every MFNY pre-roll but Classics and BagelHole is line 'Live Resin Infused' (packages: 'This is a Live Resin infused Mini Pre-Roll' / 'Pre-Roll'); 'Mini' is marketing, not a line (the Classics single bag says Mini too). Sizes by package, read from the card image (titles say 'Mini Pre-Rolls' for all of them): '... .75g Four Pack.png' or a Four Pack title 4 x 0.75g (3g); '...Mini Preroll(s) ... .75g.png' (2025 uploads) and 'CandyRainxSuperR_ntz.png' 2 x 0.75g ('Contains 1.5g at a 0.75g serving size', two joints); a bare 'image.png' (the newest riverway bags) 0.75g ('Contains 0.75g', one joint); 'Mainline-MiniPreRolls-...' and 'Live-Resin-Infused-PreRoll-Mini' the older 2 x 0.5g (1g); a plain 'X Pre-Roll' the older 1g single ('Contains 1g at a 1g serving size'). The 2 × 0.5g Mini and the 1g single are two sizes of one product (pack convention; Hash Burger x Hash Burger, Hash Burger x MFNY Skunk, MFNY Skunk, O2 OG Kush x Lemon Cane and Rainbow Beltz 2.0 x Petro Chem are sold both ways). Line fill gives every strain of the line every size of the line (owner, 2026-10-12). Site typos 'Oishi #4' and 'Rainbow Belts 2.0' are spelled as the other products. Stores' '.75g | 1 pk' at ~$16 is the 0.75g single (store photos: one joint, 'Contains 0.75g'). store_aliases.lines maps the stores' 'Mini' and store_lines renames a store product's 'Mini' or empty pre-roll line (applied before the site comparison too), so a push neither brings 'Mini' back nor leaves a line-less 1g 2-pack in review.",
     "Pack convention (2026-10-12): a size with no count is ONE unit ('1g' cart, '0.75g' pre-roll); a pack is written 'N × unit' with the multiplication sign ('2 × 0.5g' Two-Fer / old Mini, '2 × 0.75g' Mini bag, '3 × 0.75g' 3-pack, '4 × 0.75g' Four Pack) and stored as written, so a 2-pack and a single of one total are two sizes. Stores' totals ('3g', '2.25g') still fit by total; a count in the name ('2pk', 'Four Pack', 'Two-Fer') decides between same-total sizes. Store-only totals are written as the line's packs at push (storefront.pack_store_sizes).",
-    "2026-10-12 (package photos): MFNY's all-in-ones come in two packages. The slim 'Vape Pen' bag says 'Live Resin Vape Pen ... Contains 0.5g' (Classics Sour Diesel, https://www.mfny.co/products/classics-sour-diesel-live-resin-vape-pen); the box 'All-in-One Vape' bag says 'Live Resin All-in-One Vape ... Contains 1g' (Classics UK Cheese, https://www.mfny.co/products/classics-uk-cheese-live-resin-aio-vape-1g). One product per strain, two sizes; stores' 'Sour Diesel Live Resin AIO | 1g' joins Sour Diesel as its 1g. The Classics rule used to give every Classics pen 1g, so Sour Diesel's 0.5g pen was filed at 1g."
+    "2026-10-12 (package photos): MFNY's all-in-ones come in two packages. The slim 'Vape Pen' bag says 'Live Resin Vape Pen ... Contains 0.5g' (Classics Sour Diesel, https://www.mfny.co/products/classics-sour-diesel-live-resin-vape-pen); the box 'All-in-One Vape' bag says 'Live Resin All-in-One Vape ... Contains 1g' (Classics UK Cheese, https://www.mfny.co/products/classics-uk-cheese-live-resin-aio-vape-1g). One product per strain, two sizes; stores' 'Sour Diesel Live Resin AIO | 1g' joins Sour Diesel as its 1g. The Classics rule used to give every Classics pen 1g, so Sour Diesel's 0.5g pen was filed at 1g.",
+    "2026-10-12 (owner-approved): BagelHole is two lines by extract, 'BagelHole Live Resin' and 'BagelHole Live Rosin', 2.5g each (2g flower + 0.5g extract). Site: Season 4 Honey Banana Live Resin (https://www.mfny.co/products/bagelhole-season-4-live-resin), Season 4 Candy Rain Live Rosin (https://www.mfny.co/products/bagelhole-season-4-live-rosin). Stores: Chemdog x Chemdog as both 'Bagel Hole Live Resin Infused Preroll' and 'Live Rosin Infused BagelHole', Sour Diesel x Sour Diesel as Live Resin. The catalog's 'Bagel Hole' (bootstrap) and 'BagelHole' (site) were one line split by spelling."
   ],
   "skip": [],
   "category": [
@@ -200,9 +201,19 @@
       "when": {
         "category": "^preroll$"
       },
-      "match": "^BagelHole(?:\\s+Season\\s+\\d+)?\\s+(?P<strain>.+?)\\s+Live\\s+R[eo]s[ie]n$",
+      "match": "^BagelHole(?:\\s+Season\\s+\\d+)?\\s+(?P<strain>.+?)\\s+Live\\s+Rosin$",
       "set": {
-        "line": "BagelHole",
+        "line": "BagelHole Live Rosin",
+        "size": "2.5g"
+      }
+    },
+    {
+      "when": {
+        "category": "^preroll$"
+      },
+      "match": "^BagelHole(?:\\s+Season\\s+\\d+)?\\s+(?P<strain>.+?)\\s+Live\\s+Resin$",
+      "set": {
+        "line": "BagelHole Live Resin",
         "size": "2.5g"
       }
     },
@@ -548,6 +559,14 @@
     }
   ],
   "store_lines": [
+    {
+      "when": {
+        "category": "^preroll$",
+        "line": "^Bagel\\s*Hole$"
+      },
+      "line": "BagelHole Live Resin",
+      "why": "the BagelHole lines are the extract (owner-approved, 2026-10-12): BagelHole Live Resin and BagelHole Live Rosin. The stores' consensus carries the old line 'Bagel Hole' / 'BagelHole' (echoed by matched listings) for Chemdog and Sour Diesel; both are sold as 'Bagel Hole Live Resin Infused', so the store product is the resin one. Chemdog is also sold as 'Live Rosin Infused BagelHole': that product is added by data/plans/mfny-2026-10-12-prerolls.json"
+    },
     {
       "when": {
         "subtype": "^tincture$",
