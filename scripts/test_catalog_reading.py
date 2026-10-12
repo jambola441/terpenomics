@@ -92,6 +92,13 @@ def test_a_line_option_names_its_strains_when_it_has_few(monkeypatch):
     assert cr.line_strains("Gummies", CAMINO["entries"]) == ""           # too many to list
 
 
+def test_the_none_line_option_names_the_products_filed_under_no_line():
+    pool = [{"product_line": "Mood", "strain": "Bliss"}, {"product_line": None, "strain": "Pink Rozay"},
+            {"product_line": "", "strain": "Blue Widow"}]
+    assert cr.line_strains(None, pool) == " (its products: Blue Widow, Pink Rozay)"
+    assert cr.line_strains(None, pool[:1]) == ""
+
+
 def test_no_strain_ends_the_reading(monkeypatch):
     ask, asked = fake({"category": ("edible", 0.99), "subtype": ("gummy", 0.97),
                        "line": ("Gummies", 0.95), "strain": ("none", 0.9)})

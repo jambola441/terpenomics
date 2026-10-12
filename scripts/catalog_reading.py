@@ -227,8 +227,10 @@ def line_strains(line: str, pool: list[dict]) -> str:
     still offered. The line is asked before the strain, and a brand's lines are often told
     apart only by which strains they carry (2026-10-12: MFNY's 'Classics Live Resin' is
     Chemdog, Sour Diesel, UK Cheese and Shishkaberry, sold as '... Live Resin Badder' like
-    the 'Live Resin' line; STIIIZY's Liquid Diamonds pods beside its Original ones)."""
-    strains = sorted({e["strain"] for e in pool if e.get("product_line") == line and e.get("strain")})
+    the 'Live Resin' line; STIIIZY's Liquid Diamonds pods beside its Original ones).
+    `line` None: the products filed under no line, for the "none" option (Ayrloom's
+    strain AIOs beside its Mood ones)."""
+    strains = sorted({e["strain"] for e in pool if (e.get("product_line") or None) == line and e.get("strain")})
     if not strains or len(strains) > LINE_STRAINS_SHOWN:
         return ""
     return f" (its products: {', '.join(strains)})"
@@ -273,7 +275,7 @@ class _Walk:
         else:
             extra = {k: self.reading[k] for k in ("category", "subtype", "product_line")
                      if self.reading.get(k)}
-        options = {NONE: "None of these"}
+        options = {NONE: "None of these" + (line_strains(None, self.pool) if key == "line" else "")}
         single = key == "size" and any(sizes.pack_label(v) for v in values)
         for i, v in enumerate(values):
             options[f"o{i}"] = option_label(key, v, self.reading.get("category"), single)
