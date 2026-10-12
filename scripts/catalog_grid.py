@@ -62,6 +62,9 @@ def size_of(variant: str | None, category: str | None) -> tuple[str | None, size
     s = sizes.parse(variant, category=category)
     if s.is_empty() or not s.label():
         return None, None
+    pack = getattr(sizes, "pack_label", None)      # "2 × 0.5g" stays a pack, where sizes knows packs
+    if pack and pack(variant):
+        return pack(variant), s
     if category in sizes.WEIGHT_CATEGORIES:
         return (f"{s.grams:g}g" if s.grams is not None else s.label()), s
     return s.label(), s
@@ -77,8 +80,19 @@ def key_of(entry: dict) -> str:
     return entry.get("product_key") or catalog_store._product_key(entry)
 
 
-def _has(own: dict[str, sizes.Size], label: str, s: sizes.Size) -> bool:
-    return label in own or any(sizes.same_size(s, o) is True for o in own.values())
+def _same(a: str, sa: sizes.Size, b: str, sb: sizes.Size, category: str | None) -> bool:
+    """Whether two sizes are one cell: sizes.same_variant where sizes has it (a pack is
+    not its total weight), else sizes.same_size."""
+    if a == b:
+        return True
+    same_variant = getattr(sizes, "same_variant", None)
+    if same_variant:
+        return bool(same_variant(a, b, category))
+    return sizes.same_size(sa, sb) is True
+
+
+def _has(own: dict[str, sizes.Size], label: str, s: sizes.Size, category: str | None) -> bool:
+    return any(_same(label, s, o, so, category) for o, so in own.items())
 
 
 def wanted(catalog: dict) -> dict[str, dict]:
@@ -97,8 +111,7 @@ def wanted(catalog: dict) -> dict[str, dict]:
         carriers: dict[str, list[str]] = defaultdict(list)
         for k, es in products.items():
             for label, s in own[k].items():
-                hit = next((g for g, gs in group_sizes.items()
-                            if g == label or sizes.same_size(s, gs) is True), None)
+                hit = next((g for g, gs in group_sizes.items() if _same(label, s, g, gs, cat)), None)
                 if hit is None:
                     group_sizes[label] = s
                     hit = label
@@ -106,7 +119,7 @@ def wanted(catalog: dict) -> dict[str, dict]:
         for k, es in products.items():
             base = es[0]
             for label, s in group_sizes.items():
-                if _has(own[k], label, s):
+                if _has(own[k], label, s, cat):
                     continue
                 external_id = f"{INFERRED}:{k}:{label}"
                 if external_id in out:      # a product split across groups: one cell
