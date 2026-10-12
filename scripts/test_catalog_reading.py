@@ -224,9 +224,40 @@ def test_a_couple_of_examples_from_entries_like_the_product_nearest_first(monkey
     assert "'Camino Pineapple Hab chews' is '10pk 100mg'" in q["size"]
     assert "size field" not in strain[0]
     assert "'Camino WC Excite 10ct' is 'Gummies'" in q["line"]
-    for gone in ("Social Pear", "Pineapple again", "anything", "nowhere"):
+    for gone in ("Pineapple again", "anything", "nowhere"):
         assert all(gone not in i for _, i in seen)
-    assert all("Examples" not in i for k, i in seen if k in ("category", "subtype"))
+    # Subtype is asked with examples too (another subtype's entry could be one); category not.
+    assert all("Social Pear" not in i for k, i in seen if k != "subtype")
+    assert "'Camino Wild Cherry 20 count' is 'gummy'" in q["subtype"]
+    assert all("Examples" not in i for k, i in seen if k == "category")
+
+
+def test_a_subtype_example_tells_a_pen_from_a_cart(monkeypatch):
+    vapes = {"brand_name": "MFNY", "brand_slug": "mfny", "entries": [
+        {"id": f"v{i}", "product_key": f"{sub}-{strain}", "is_active": True, "name": strain,
+         "category": "vaporizers", "subtype": sub, "product_line": "Live Resin", "strain": strain,
+         "variant": "0.5g"}
+        for i, (sub, strain) in enumerate([("cart", "Skunk"), ("all-in-one", "Skunk"),
+                                           ("cart", "Hash Burger"), ("all-in-one", "Hash Burger")])]}
+    monkeypatch.setattr(cr, "_examples", lambda: {"mfny": [
+        {"listing": "Hash Burger Live Resin 510 Cart | .5g",
+         "entry": {"subtype": "cart", "strain": "Hash Burger"}},
+        {"listing": "Hash Burger Live Resin Vape Pen | .5g",
+         "entry": {"subtype": "all-in-one", "strain": "Hash Burger"}}]})
+    ask, _ = fake({"category": ("vaporizers", 0.99), "subtype": ("all-in-one", 0.97),
+                   "line": ("Live Resin", 0.95), "strain": ("Skunk", 0.98), "size": ("0.5g", 0.93)})
+    seen = []
+
+    def ask_many(jobs, **kw):
+        seen.extend((k, q.instructions) for _, qs in jobs for k, q in qs.items())
+        return ask(jobs, **kw)
+    monkeypatch.setattr(jev, "ask_many", ask_many)
+    pen = {"id": "p", "name": "MFNY Skunk Live Resin Vape Pen | .5g", "variant": "0.5g",
+           "description": "The MFNY live resin vape cart has a terpene-rich profile"}
+    cr.read(vapes, [pen], cache=NoCache())
+    sub = next(i for k, i in seen if k == "subtype")
+    assert sub.endswith("Examples from this brand's listings: 'Hash Burger Live Resin Vape Pen | .5g' is "
+                        "'all-in-one'; 'Hash Burger Live Resin 510 Cart | .5g' is 'cart'.")
 
 
 def test_examples_are_capped_and_brand_scoped(monkeypatch):

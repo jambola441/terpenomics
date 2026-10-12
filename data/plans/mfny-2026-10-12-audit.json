@@ -1,0 +1,36 @@
+{
+ "brand": "MFNY",
+ "_comment": "2026-10-12 audit of MFNY's trusted matches (503 of 563). Wrong trusted matches whose cause was a missing product: a 2-pack fell on the 1g single cart, a 3-pack on the 4-pack. Reading examples in data/reading_examples.json 'mfny' name the entries this plan creates; until it is written the import leaves those out with a warning. Not written: apply with --write after approval.",
+ "edits": [
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "subtype": "cart",
+   "line": "Two-Fer",
+   "strain": "Oishii",
+   "sizes": ["1g"],
+   "why": "'MFNY - Oishii Live Resin Cartridge 2pk - 1g' (description: 'Oishii Live Resin Cartridge 2pk (1g total)') was trusted on the inferred 1g single cart, a different product (recipe notes: Two-Fers get line Two-Fer so a 2 x 0.5g pack is not a 1g cart). No Oishii Two-Fer in the catalog."
+  },
+  {
+   "op": "add-product",
+   "category": "vaporizers",
+   "subtype": "cart",
+   "line": "Two-Fer",
+   "strain": "The \"Belafonte\"",
+   "sizes": ["1g"],
+   "why": "'MFNY | 2pk Live Resin Vape Cart The Belafonte (S)' (description: 'Live Resin Cartridges (2-pack, .5 g each)') was trusted on the 1g single cart. Recipe notes list the Belafonte Two-Fer among store-only products the site lacks; the 1g singles ('MFNY's one-gram vape carts ... ACTIVE') stay on the Live Resin 1g cart."
+  },
+  {
+   "op": "add-size",
+   "entry": {"category": "preroll", "line": "Mini", "strain": "Super Lemon Haze x Super Lemon Haze", "size": "3g"},
+   "size": "2.25g",
+   "why": "MFNY sells infused 3-packs (3 x 0.75g = 2.25g): 'MFNY - Super Lemon Haze x Super Lemon Haze Infused Pre-roll 3pk - 2.25g', 'MFNY | 3pk Live Resin Infused Prerolls Super Lemon Haze x Super Lemon Haze (S)', also White Fire OG and Blueberry 2.0 x Blueberry 2.0 3pk 2.25g. Without it 'Super Lemon Haze x Super Lemon Haze | Infused Pre-Rolls | | 3 x .75g | 3pk' (description: 'three packs') was trusted on the 4-pack 3g."
+  },
+  {
+   "op": "add-size",
+   "entry": {"category": "preroll", "line": "Mini", "strain": "White Fire OG x White Fire OG", "size": "3g"},
+   "size": "2.25g",
+   "why": "'MFNY - White Fire OG Infused Preroll 3pk - 2.25g' (review_missing): the same 3-pack format as above."
+  }
+ ]
+}
