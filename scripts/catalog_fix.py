@@ -825,7 +825,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"{len(todo)} listing(s)" + (" written" if args.write else " (dry run; --write writes)"))
         return 0
     with_inactive(catalogs)
-    # Inferred sizes (line_fill.py) are derived from the stated entries, not edited:
+    # Inferred sizes (catalog_grid.py) are derived from the stated entries, not edited:
     # left in, a re-key would copy them to new rows as if stated. The sync after a
     # write recomputes them.
     for c in catalogs.values():
@@ -861,8 +861,8 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if args.write:
             apply(plan)
-            import line_fill                     # inferred sizes follow the edited lines
-            line_fill.sync_brand(plan.catalog.get("brand_name") or "")
+            import catalog_grid                  # the catalog stays a full grid
+            catalog_grid.sync_brand(plan.catalog.get("brand_name") or "")
         else:
             preflight(plan)
             print("(dry run; --write writes it)")

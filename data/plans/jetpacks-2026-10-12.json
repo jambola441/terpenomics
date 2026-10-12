@@ -1,0 +1,225 @@
+{
+ "brand": "Jetpacks",
+ "_comment": "DRAFT 2026-10-12 (wave 4), from Jetpacks' untrusted listings. Most untrusted listings pointed at the right product and only the size (one-size FJ, Big Bang, badder and diamond products) was read below 0.9; those are handled by reading examples (data/reading_examples.json 'jetpacks'). This plan adds what stores sell and the catalog lacked: strains of the strain-less site formats (Powdered Donuts, Jetfuel, badder, diamonds) and the Big Bang Mini Cosmic Starburst, each from store listings naming it. Curated entries survive storefront re-pushes. Not written: apply with --write after approval.",
+ "edits": [
+  {
+   "op": "add-product",
+   "category": "preroll",
+   "line": "Big Bang Mini",
+   "strain": "Cosmic Starburst",
+   "sizes": [
+    "0.5g"
+   ],
+   "why": "'Jetpacks - Big Bang Mini Cosmic Starburst Infused Preroll - .5g' and 'Jetpacks | Infused Preroll | Big Bang Mini | Cosmic Starburst | .5g | Sativa' at two stores; the catalog has Cosmic Starburst only as the Big Bang 5pk (store-only like it: the site's BB list omits it)."
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "infused",
+   "line": "Powdered Donuts",
+   "strain": "Fruity Pebbles",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "'Jetpacks | Fruity Pebbles Powdered Donuts' and 'Jetpacks | Powdered Donuts | Fruity Pebbles (I) | Infused Flower | 3.5g' at two stores. The site lists Powdered Donuts (3.5G) without strains (recipe notes)."
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "infused",
+   "line": "Powdered Donuts",
+   "strain": "Big Apple Jacks",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "'Jetpacks | Big Apple Jacks Powdered Donuts' (3.5g); Powdered Donuts strains come from stores (recipe notes)."
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "infused",
+   "line": "Powdered Donuts",
+   "strain": "Long Island Skunk",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "'Jetpacks | Infused Flower | Powdered Donuts | Long Island Skunk | 3.5g | Hybrid'."
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "infused",
+   "line": "Powdered Donuts",
+   "strain": "Dumbo Diesel",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "'Dumbo Diesel - 3.5G Powdered Donuts Diamond Infused Flower' (same store writes 'Green Crack - 3.5G Powdered Donuts Diamond Infused Flower' for a catalog product)."
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "preground",
+   "line": "Jetfuel",
+   "strain": "Ice Cream Cake",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "'Jetpacks | Ice Cream Cake Diamond Infused Ground Flower' and 'Jetpacks | Infused Ground Flower | Diamonds | Ice Cream Cake | 3.5g | Indica' at two stores. The site lists Jetfuel (3.5G) without strains."
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "preground",
+   "line": "Jetfuel",
+   "strain": "Maui Wowie",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "'Jetpacks | Infused Ground Flower | Diamonds | Maui Wowie | 3.5g | Sativa' (the store writes catalog Jetfuel Banana Punch and Mimosa the same way)."
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "preground",
+   "line": "Jetfuel",
+   "strain": "Super Lemon Haze",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "'Jetpacks | Infused Ground Flower | Diamonds | Super Lemon Haze | 3.5g | Sativa'."
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "preground",
+   "line": "Jetfuel",
+   "strain": "Alaskan Thunder Fuck",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "'Jetpacks - Alaskan Thunder Fuck Jetfuel Diamond Infused Ground Flower - 3.5g'."
+  },
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "preground",
+   "line": "Jetfuel",
+   "strain": "Blue Dream",
+   "sizes": [
+    "3.5g"
+   ],
+   "why": "'Jetpacks - Blue Dream Jetfuel Diamond Infused Ground Flower - 3.5g'."
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "subtype": "diamonds",
+   "strain": "Blue Dream",
+   "sizes": [
+    "1g"
+   ],
+   "why": "'Jetpacks - Blue Dream Diamonds - 1g'. The site lists Diamonds 1G without strains; the catalog's diamonds come from stores."
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "subtype": "diamonds",
+   "strain": "Yellow Skittlez",
+   "sizes": [
+    "1g"
+   ],
+   "why": "'Jetpacks - Yellow Skittlez | 1G Sativa Diamonds'."
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "subtype": "diamonds",
+   "strain": "Ice Cream Cake",
+   "sizes": [
+    "1g"
+   ],
+   "why": "'Jetpacks | Ice Cream Cake Diamonds' (1g)."
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "subtype": "diamonds",
+   "strain": "Panama Punch",
+   "sizes": [
+    "1g"
+   ],
+   "why": "'Jetpacks | Panama Punch Diamonds' (1g)."
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "subtype": "other",
+   "strain": "Lemon Jack",
+   "sizes": [
+    "1g"
+   ],
+   "why": "'Jetpacks - Lemon Jack | 1G Sativa Badder'. Badders sit under subtype other in this catalog, as the existing 12 do."
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "subtype": "other",
+   "strain": "Tangieberto",
+   "sizes": [
+    "1g"
+   ],
+   "why": "'Jetpacks - Tangieberto Badder - 1g'."
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "subtype": "other",
+   "strain": "Garlic Cookies",
+   "sizes": [
+    "1g"
+   ],
+   "why": "'Jetpacks | Badder | Resin | Garlic Cookies | 1g | Indica | 81.03% THC' (same store writes catalog Maui Wowie badder the same way)."
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "subtype": "other",
+   "strain": "Citrus Rush",
+   "sizes": [
+    "1g"
+   ],
+   "why": "'Jetpacks | Citrus Rush Badder' (1g)."
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "subtype": "other",
+   "strain": "Guava Punch",
+   "sizes": [
+    "1g"
+   ],
+   "why": "'Jetpacks | Guava Punch (I) | Badder | 1g'."
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "subtype": "other",
+   "strain": "Pink Certz",
+   "sizes": [
+    "1g"
+   ],
+   "why": "'Pink Certz -Hybrid- 81.37% THC | 1g Badder (Concentrate) | Jetpacks'."
+  },
+  {
+   "op": "add-product",
+   "category": "concentrate",
+   "subtype": "other",
+   "strain": "Blue Cookies",
+   "sizes": [
+    "1g"
+   ],
+   "why": "'Jetpacks - 1g Badder- Blue Cookies - Indica': without its own entry it was read as Girl Scout Cookies badder (p 0.86), a different strain."
+  }
+ ]
+}

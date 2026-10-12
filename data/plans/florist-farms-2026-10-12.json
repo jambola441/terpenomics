@@ -1,0 +1,36 @@
+{
+ "brand": "florist-farms",
+ "_comment": "DRAFT 2026-10-12 (wave 4), from Florist Farms' untrusted listings. Most untrusted listings pointed at the right product with the pack size (10pk 100mg gummies, 7pk 3.5g vs 5pk 2.5g pre-rolls, 1g AIOs and carts) or the line (Non-Infused vs Live Resin Infused singles) read below 0.9; those are handled by reading examples (data/reading_examples.json 'florist-farms'). This plan holds only what the catalog lacked: the 2-piece gummy packs stores sell beside the site's 10-packs. Curated entries survive storefront re-pushes. Not written: apply with --write after approval.",
+ "edits": [
+  {
+   "op": "add-size",
+   "entry": {"category": "edible", "line": "Sleep", "strain": "Blueberry", "size": "10pk 100mg"},
+   "size": "2pk 20mg",
+   "why": "'Florist Farms Blueberry THC:CBN Gummy, 10mg, 2ct. pkg' (two stores) and 'Florist Farms | Blueberry Sleep 2pk 20mg | Edibles'; 2 x 10mg THC (the CBN is not counted). Allbud/Leafly list the same 2pk for Calm, Happy, Energize and Bliss."
+  },
+  {
+   "op": "add-size",
+   "entry": {"category": "edible", "line": "Calm", "strain": "Peach", "size": "10pk 100mg"},
+   "size": "2pk 20mg",
+   "why": "'Florist Farms Peach THC:CBD Gummy, 10mg, 2ct. pkg' (two stores); allbud.com 'Calm | Peach | 1:1 | 2pk' (Midnight Moon), 10mg THC + 10mg CBD a piece."
+  },
+  {
+   "op": "add-size",
+   "entry": {"category": "edible", "line": "Bliss", "strain": "Sour Green Apple", "size": "10pk 100mg"},
+   "size": "2pk 20mg",
+   "why": "'Florist Farms Sour Green Apple THC Gummy, 10mg, 2ct. pkg' (two stores); allbud.com 'Bliss | Sour Green Apple | 2pk' (Midnight Moon)."
+  },
+  {
+   "op": "add-size",
+   "entry": {"category": "edible", "line": "Happy", "strain": "Strawberry Lemonade", "size": "10pk 100mg"},
+   "size": "2pk 20mg",
+   "why": "allbud.com 'Happy | Strawberry Lemonade | 1:1 | 2pk' and a Weedmaps brand listing: 10mg THC + 10mg CBC a gummy, two a pack. No listing of ours yet; added with its siblings so the next one lands."
+  },
+  {
+   "op": "add-size",
+   "entry": {"category": "edible", "line": "Energize", "strain": "Sour Watermelon", "size": "10pk 100mg"},
+   "size": "2pk 20mg",
+   "why": "leafly.com 'Energize | Sour Watermelon Gummies | 2pk' and allbud.com 'Energize | Sour Watermelon | 1:1 | 2pk': 10mg THC + 10mg THCV a gummy."
+  }
+ ]
+}

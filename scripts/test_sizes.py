@@ -7,7 +7,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import catalog_match  # noqa: E402
-import line_fill  # noqa: E402
+import catalog_grid  # noqa: E402
 import sizes  # noqa: E402
 import storefront  # noqa: E402
 
@@ -68,7 +68,7 @@ def test_line_fill_keeps_pack_labels_beside_the_single_of_their_total():
                 "variant": variant, "source": "storefront_html"}
     cat = {"id": "c", "brand_name": "Some Brand", "entries": [
         e("hb", "Hash Burger", "1g"), e("hb", "Hash Burger", "2 × 0.5g"), e("cr", "Candy Rain", "4 × 0.75g")]}
-    got = sorted((r["strain"], r["variant"]) for r in line_fill.wanted(cat).values())
+    got = sorted((r["strain"], r["variant"]) for r in catalog_grid.wanted(cat).values())
     assert got == [("Candy Rain", "1g"), ("Candy Rain", "2 × 0.5g"), ("Hash Burger", "4 × 0.75g")]
 
 

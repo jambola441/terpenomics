@@ -1,0 +1,14 @@
+{
+ "brand": "ruby-farms",
+ "_comment": "DRAFT 2026-10-12 (wave 4), from Ruby Farms' untrusted listings. Most untrusted listings already pointed at the right product with the pack size (Classics 7pk 5g, Doobies 2pk 1g / 7pk 3.5g, Hash Infused 2pk 1g / 10pk 5g) or the line read below 0.9; those are handled by reading examples (data/reading_examples.json 'ruby-farms'), not here. Not written: apply with --write after approval.",
+ "edits": [
+  {
+   "op": "add-product",
+   "category": "flower",
+   "subtype": "flower",
+   "strain": "Moroccan Cherry",
+   "sizes": ["3.5g"],
+   "why": "'Ruby Farms - Moroccan Cherry - 3.5g' in stores; Weedmaps brand page lists 'Ruby Farms - Moroccan Cherry | Big Buds | 3.5g' (hybrid flower) at several NY stores. The catalog has Moroccan Cherry only as a Caviar Nectar vape."
+  }
+ ]
+}

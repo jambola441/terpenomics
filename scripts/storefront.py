@@ -1097,10 +1097,9 @@ def pack_store_sizes(only_stores: list[dict], doc: dict) -> list[dict]:
     Under the pack convention a bare size is one unit, but the stores' consensus gives
     package totals: MFNY's store-only 3-packs arrive as "2.25g", which would read as one
     2.25g pre-roll. Where the site writes a pack of that total in the product's
-    category and line ("3 × 0.75g" here from the line's fill_sizes, "4 × 0.75g" from the
-    site), and the site has no single of that total there, the store size is that
-    pack. Brands whose recipes write no pack label are untouched."""
-    import line_fill
+    category and line ("4 × 0.75g"), or a whole count of the unit those packs use
+    ("3 × 0.75g" for "2.25g"), and the site has no single of that total there, the store
+    size is that pack. Brands whose recipes write no pack label are untouched."""
     packs: dict[tuple, list[str]] = defaultdict(list)
     singles: dict[tuple, list[sizes.Size]] = defaultdict(list)
     for e in doc["entries"]:
@@ -1110,8 +1109,7 @@ def pack_store_sizes(only_stores: list[dict], doc: dict) -> list[dict]:
     out = []
     for p in only_stores:
         where = (p["category"], squash(p.get("product_line")))
-        filled = line_fill.fill_sizes(doc.get("brand_name"), p["category"], p.get("product_line") or "") or ()
-        labels = set(packs.get(where, [])) | {s for s in filled if sizes.pack_label(s)}
+        labels = set(packs.get(where, []))
         mine = sizes.parse(p.get("variant"), category=p["category"])
         fit = [lab for lab in labels if mine.grams is not None
                and sizes.same_size(mine, sizes.parse(lab, category=p["category"])) is True]
@@ -1327,10 +1325,7 @@ def main() -> None:
             print(f"{recipe['brand']}: {report['entries']} site entries + {len(only_stores or [])} "
                   f"products only stores sell")
             brand_catalog.push(with_store_products(doc, only_stores or [], terms),
-                               dry_run=args.dry_run, via_http=args.via_http)
-            if not args.dry_run and args.via_http:
-                import line_fill                 # the push retired the inferred sizes; restore them
-                line_fill.sync_brand(recipe["brand"])
+                               dry_run=args.dry_run, via_http=args.via_http)  # ends with the grid sync
     sys.exit(1 if failed else 0)
 
 

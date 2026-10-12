@@ -184,8 +184,8 @@ class Product:
                 product_line=first.get("product_line"), strain=first.get("strain"))
         for e in entries:
             s = sizes.parse(e.get("variant"), category=p.category)
-            # An inferred size (line_fill.py) counts like a stated one: it is a size the
-            # product's line comes in (the owner's rule, 2026-10-09), and a shortlist that
+            # An inferred size (catalog_grid.py) counts like a stated one: every strain of a
+            # group has every size of the group (the owner's rule, 2026-10-12), and a shortlist that
             # ignored it dropped the right product (a Live Rosin 0.5g pod read only off the
             # line) for whichever products state 0.5g.
             if not s.is_empty():
@@ -299,8 +299,8 @@ class CatalogIndex:
         audit shows what is left. On the labelled set this tier decided 168 of 295
         listings, 14 of them against the label, most of those labels stale.
 
-        Inferred sizes (line_fill.py) count: they are the sizes the product's line
-        comes in. Format is compared wherever both sides state one; a pre-roll keeps
+        Inferred sizes (catalog_grid.py) count: every strain of a group has every
+        size of the group. Format is compared wherever both sides state one; a pre-roll keeps
         none.
 
         `name` is the listing's own name, read for one thing only: the other reading

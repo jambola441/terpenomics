@@ -32,7 +32,7 @@
     "Gummies: New York's Live Rosin Gummies are '10mg THC edible, 10 Edibles per Bag' (10 x 10mg = 100mg, at New York's cap). Live Rosin there is the extract, not a family, so no line. The 10mg 'High Purity THC Gummies' on /consumables and /edibles are hemp-derived, ship to 18 non-cannabis states and are in no state tab, so they are skipped by the New York rule.",
     "Hardware (ERA, PAX Flow, Four, Mini, Plus, batteries, bundles, accessories), the limited pages and the Puck Press are outside the sitemap match; the catalog is cannabis products only.",
     "A page that lists several New York sizes ('0.5G, 1G, and 2G Pax Era Pods') is one item per size, by source.split on the variant.",
-    "The site lists each strain's New York sizes page by page, and misses sizes stores sell (1g High Purity AIOs of Lemon Cherry Gelato, Super Lemon Haze, White Widow; the site's New York pages show 2G only). line_fill.py gives every product of a line the line's sizes (High Purity 0.5/1/2g in both formats, Live Rosin pods 0.5/1g); the owner's call, 2026-10-09: the site is incomplete, the line's sizes are the rule."
+    "The site lists each strain's New York sizes page by page, and misses sizes stores sell (1g High Purity AIOs of Lemon Cherry Gelato, Super Lemon Haze, White Widow; the site's New York pages show 2G only). catalog_grid.py gives every product of a line the line's sizes (High Purity 0.5/1/2g in both formats, Live Rosin pods 0.5/1g); the owner's call, 2026-10-09: the site is incomplete, the line's sizes are the rule."
   ],
   "skip": [
     {

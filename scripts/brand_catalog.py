@@ -339,6 +339,11 @@ def push(catalog: dict, dry_run: bool = False, via_http: bool = False,
     return counts
 
 
+def _grid_said(p) -> None:
+    a, b, c, d = p.counts()
+    print(f"  catalog grid: +{a} inferred, {b} brought back, {c} retired, {d} re-copied")
+
+
 def set_photos(catalog: dict, dry_run: bool = False, via_http: bool = False) -> dict:
     """Write the catalog's photos onto the entries already stored, and nothing else:
     no entry added, retired or edited. A push does this too; this is for refreshing
@@ -471,7 +476,7 @@ def _push_postgres(catalog: dict, dry_run: bool, replace: bool = False) -> dict:
             """
             UPDATE brand_catalog_entries SET is_active = FALSE
             WHERE catalog_id = %s AND is_active AND external_id <> ALL(%s)
-            """,
+            """ + (" AND source IS DISTINCT FROM 'inferred'" if "source" in extra else ""),
             (catalog_id, seen),
         )
         deactivated = cur.rowcount
@@ -488,6 +493,11 @@ def _push_postgres(catalog: dict, dry_run: bool, replace: bool = False) -> dict:
     if dry_run:
         conn.rollback()
     else:
+        if "source" in extra and "product_key" in extra:
+            # Every catalog write ends with the catalog a full grid (catalog_grid.py),
+            # over the push's own connection and in its transaction.
+            import catalog_grid
+            _grid_said(catalog_grid.sync_cursor(cur, catalog_id))
         conn.commit()
     conn.close()
     return {"inserted": inserted, "refreshed": len(returned) - inserted,
@@ -580,7 +590,8 @@ def _push_http(catalog: dict, dry_run: bool, replace: bool = False) -> dict:
     retire = []
     seen = {e["external_id"] for e in catalog["entries"]}
     if catalog.get("source_method") != "listings_bootstrap":
-        retire = [str(r["id"]) for ext, r in existing.items() if r["is_active"] and ext not in seen]
+        retire = [str(r["id"]) for ext, r in existing.items()
+                  if r["is_active"] and ext not in seen and r.get("source") != "inferred"]
     elif replace and "source" in extra:
         retire = [str(r["id"]) for ext, r in existing.items()
                   if r["is_active"] and ext not in seen and r.get("source") == "listings_bootstrap"
@@ -595,6 +606,9 @@ def _push_http(catalog: dict, dry_run: bool, replace: bool = False) -> dict:
         for i in range(0, len(retire), 100):
             db_http.update("brand_catalog_entries", f"id=in.({','.join(retire[i:i + 100])})",
                            {"is_active": False})
+        if "source" in extra:
+            import catalog_grid                  # the catalog stays a full grid, over REST too
+            _grid_said(catalog_grid.sync_rest(catalog_id))
     return {"inserted": len(new_rows), "refreshed": len(refreshes),
             "listed_again_but_inactive": back_inactive, "deactivated": len(retire)}
 
