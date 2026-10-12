@@ -1,0 +1,15 @@
+{
+  "brand": "MFNY",
+  "_comment": "2026-10-12, round 3 (vapes + pre-rolls). The one product the 27 untrusted MFNY vape/pre-roll listings show missing. Skunk and White Fire OG Live Resin carts are not missing: the catalog has them as Live Resin cart 'Skunk' and 'White Fire' (strain_aliases.json maps White Fire OG to White Fire). Not written: apply with --write after approval; the full grid adds its 1g cell.",
+  "edits": [
+    {
+      "op": "add-product",
+      "category": "vaporizers",
+      "subtype": "all-in-one",
+      "line": "Live Resin",
+      "strain": "The \"Belafonte\"",
+      "sizes": ["0.5g"],
+      "why": "store listing 'Vape AIO | MFNY | The Belafonte - Live Resin' (size field 0.5g); The \"Belafonte\" is already a Live Resin cart, badder and tincture strain, and the Live Resin all-in-one line is sold at 0.5g (Hash Burger, Skunk, Candy Rain ...)"
+    }
+  ]
+}
