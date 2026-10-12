@@ -78,6 +78,8 @@ TRUST_AT = float(os.environ.get("CATALOG_READING_TRUST_AT", "0.9"))
 ONE_SIZE_AT = float(os.environ.get("CATALOG_READING_ONE_SIZE_AT", str(TRUST_AT)))
 
 DESCRIPTION_CHARS = 1000
+# A line option lists its strains when it has this many or fewer (line_strains).
+LINE_STRAINS_SHOWN = int(os.environ.get("CATALOG_READING_LINE_STRAINS", "60"))
 
 CATEGORY_Q = "Which category of cannabis product is this listing? Choose none if it is none of these."
 SUBTYPE_Q = ("Which type of product is this listing within its category (a gummy, a gummy rope, a "
@@ -220,6 +222,20 @@ def option_label(key: str, value: str, category: str | None, single: bool = Fals
     return value
 
 
+def line_strains(line: str, pool: list[dict]) -> str:
+    """A line option's strains, where it has at most LINE_STRAINS_SHOWN among the products
+    still offered. The line is asked before the strain, and a brand's lines are often told
+    apart only by which strains they carry (2026-10-12: MFNY's 'Classics Live Resin' is
+    Chemdog, Sour Diesel, UK Cheese and Shishkaberry, sold as '... Live Resin Badder' like
+    the 'Live Resin' line; STIIIZY's Liquid Diamonds pods beside its Original ones).
+    `line` None: the products filed under no line, for the "none" option (Ayrloom's
+    strain AIOs beside its Mood ones)."""
+    strains = sorted({e["strain"] for e in pool if (e.get("product_line") or None) == line and e.get("strain")})
+    if not strains or len(strains) > LINE_STRAINS_SHOWN:
+        return ""
+    return f" (its products: {', '.join(strains)})"
+
+
 def base_state(brand: str, listing: dict) -> dict:
     state = {"brand": brand, "name": listing.get("name") or "",
              "store_size_field": listing.get("variant") or ""}
@@ -259,10 +275,12 @@ class _Walk:
         else:
             extra = {k: self.reading[k] for k in ("category", "subtype", "product_line")
                      if self.reading.get(k)}
-        options = {NONE: "None of these"}
+        options = {NONE: "None of these" + (line_strains(None, self.pool) if key == "line" else "")}
         single = key == "size" and any(sizes.pack_label(v) for v in values)
         for i, v in enumerate(values):
             options[f"o{i}"] = option_label(key, v, self.reading.get("category"), single)
+            if key == "line":
+                options[f"o{i}"] += line_strains(v, self.pool)
         return dict(base_state(brand, self.listing), **extra), \
             {key: jev.Choice(instructions_for(key, instructions, examples, self.reading, values,
                                               self.listing.get("name") or ""), options)}, values

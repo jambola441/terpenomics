@@ -80,6 +80,25 @@ def test_an_unsure_line_is_left_blank_and_narrows_nothing(monkeypatch):
     assert cm.CatalogIndex(CAMINO).join(got)[0] == "wc"                 # the join still settles it
 
 
+def test_a_line_option_names_its_strains_when_it_has_few(monkeypatch):
+    ask, asked = fake({"category": ("edible", 0.99), "subtype": ("gummy", 0.97),
+                       "line": ("Gummies", 0.95), "strain": ("Wild Cherry Excite", 0.98),
+                       "size": ("10pk 100mg", 0.93)})
+    monkeypatch.setattr(jev, "ask_many", ask)
+    cr.read(CAMINO, [LISTING], cache=NoCache())
+    line_opts = [v for o, v in next(c for k, _, c in asked if k == "line").items() if o != cr.NONE]
+    assert line_opts == ["Gummies (its products: Pineapple Habanero, Wild Cherry Excite)"]
+    monkeypatch.setattr(cr, "LINE_STRAINS_SHOWN", 1)
+    assert cr.line_strains("Gummies", CAMINO["entries"]) == ""           # too many to list
+
+
+def test_the_none_line_option_names_the_products_filed_under_no_line():
+    pool = [{"product_line": "Mood", "strain": "Bliss"}, {"product_line": None, "strain": "Pink Rozay"},
+            {"product_line": "", "strain": "Blue Widow"}]
+    assert cr.line_strains(None, pool) == " (its products: Blue Widow, Pink Rozay)"
+    assert cr.line_strains(None, pool[:1]) == ""
+
+
 def test_no_strain_ends_the_reading(monkeypatch):
     ask, asked = fake({"category": ("edible", 0.99), "subtype": ("gummy", 0.97),
                        "line": ("Gummies", 0.95), "strain": ("none", 0.9)})
