@@ -457,13 +457,13 @@
       "subtype": "battery"
     }
   ],
-  "_comment_1906": "1906 sells its tablets as Drops in effects (Bliss, Boost, Chill, Genius, Go, Love, Sleep): the family is the line, the effect is the product. Stores write \"1906 - Bliss Drops 2pk\". The Drops' tin and pouch counts follow each effect's dose (Genius and Love 30pk 75mg and 4pk 10mg, the rest 20pk 100mg and 2pk 10mg, Boost also 3pk 90mg), so line fill gives no effect another's sizes (sizes_by_product).",
+  "_comment_1906": "1906 sells its tablets as Drops in effects (Bliss, Boost, Chill, Genius, Go, Love, Sleep): the family is the line, the effect is the product. Stores write \"1906 - Bliss Drops 2pk\". The Drops' tin and pouch counts follow each effect's dose (Genius and Love 30pk 75mg and 4pk 10mg, the rest 20pk 100mg and 2pk 10mg, Boost also 3pk 90mg); the catalog grid (catalog_grid.py) still gives every effect every Drops size, by the owner's rule (2026-10-12): within a line every strain has every size.",
   "1906": [
-    {"line": "Drops", "sizes_by_product": true}
+    {"line": "Drops"}
   ],
-  "_comment_heady_tree": "Heady Tree's Infused line holds two families: the kief-infused 1G Infused Pre Rolls and the hash-infused Infused Shorty's (7 x 0.5g). Stores call both 'Infused', so they share the line, and line fill keeps each product to its own sizes: otherwise each family got the other's size (Infused Blue Zushi 1g, Infused Uptown Funk 3.5g) beside the real line-less products (2026-10-10).",
+  "_comment_heady_tree": "Heady Tree's Infused line holds two families: the kief-infused 1G Infused Pre Rolls and the hash-infused Infused Shorty's (7 x 0.5g). Stores call both 'Infused', so they share the line. The catalog grid gives every Infused product both sizes (owner's rule, 2026-10-12: within a line every strain has every size).",
   "Heady Tree": [
-    {"line": "Infused", "sizes_by_product": true}
+    {"line": "Infused"}
   ],
   "_comment_herb": "Herb (1off Manufacturing, OCM-PROC-000062) prints HASH INFUSED on its infused Ready to Roll 7g bag ('5.6 flower / 1.4 dry sift hash'; ingredients 'cannabis flower, dry sifted hash') and on its infused pre-roll tube ('1 GRAM HASH INFUSED'). Stores write 'Infused Ground Flower', 'Pre Ground Infused Flower', 'Hash Infused Pre roll'. Plain flower, pre-ground and pre-rolls carry no line. 'Ready to Roll' is printed on both plain and infused pre-ground, so it is the format (subtype preground), not a line. Keep this rule without a category: the stock pre-roll blurb stores paste ('can be rolled with flower, shake ... infused with concentrates') would otherwise file plain pre-rolls as Hash Infused.",
   "Herb": [
@@ -646,7 +646,7 @@
     {"line": "Snowballz", "also": ["Snowballs"]},
     "Lites"
   ],
-  "_comment_off_hours": "Off Hours' Effect-Based gummies are 10 x 10mg tins (10pk 100mg), except the Low THC Unwind, 20 gummies with 20mg THC in all (20pk 20mg; its CBD/CBG/CBN is not counted). So line fill keeps each to its own sizes (sizes_by_product): filling gave every effect gummy Unwind's 20pk 20mg and Unwind the others' 10pk 100mg, and the two-way size question read the 10pk 100mg listings below 0.9 (2026-10-12). The ropes and AIOs of the line share one size each, so nothing is lost there.",
+  "_comment_off_hours": "Off Hours' Effect-Based gummies are 10 x 10mg tins (10pk 100mg), except the Low THC Unwind, 20 gummies with 20mg THC in all (20pk 20mg; its CBD/CBG/CBN is not counted). The catalog grid gives every effect both sizes (owner's rule, 2026-10-12: within a line every strain has every size; per-product size exceptions were removed).",
   "Off Hours": [
     {
       "line": "Effect-Based",
@@ -654,8 +654,7 @@
         "Effect Based",
         "Effect-Based Rope",
         "Effect Based Rope"
-      ],
-      "sizes_by_product": true
+      ]
     },
     {
       "line": "Live Rosin",
@@ -698,7 +697,7 @@
       "category": "preroll"
     }
   ],
-  "_comment_gron": "Grön's Pearls are 10 x 10mg (10pk 100mg) in every flavour but the 10:1 CBN:THC Tart Cherry, whose package prints 25MG THC PER PACKAGE (10pk 25mg); a few flavours also come as a 2 x 10mg 2-pack. So line fill keeps each Pearl to its own sizes (sizes_by_product): filling gave every flavour Tart Cherry's 10pk 25mg and Tart Cherry the others' 10pk 100mg, and the two-way size question read 10pk 100mg listings below 0.9 (2026-10-12).",
+  "_comment_gron": "Grön's Pearls are 10 x 10mg (10pk 100mg) in every flavour but the 10:1 CBN:THC Tart Cherry, whose package prints 25MG THC PER PACKAGE (10pk 25mg); a few flavours also come as a 2 x 10mg 2-pack. The catalog grid gives every Pearl every Pearls size (owner's rule, 2026-10-12: within a line every strain has every size; per-product size exceptions were removed).",
   "Grön": [
     {
       "line": "Mega",
@@ -715,8 +714,7 @@
       "also": [
         "Pearl"
       ],
-      "category": "edible",
-      "sizes_by_product": true
+      "category": "edible"
     },
     {
       "line": "Pips",
@@ -856,8 +854,7 @@
   "Dank By Definition": [
     "Infused"
   ],
-  "_comment_cannabals": "From the Cannabals curation (2026-10-08), checked against Cirona's NYS Wholesale Catalog (Winter-Spring 2025) and the CANNABALS Fall 2026 sheet. Puffs are the diamond infused 7 x 0.5g pre-rolls (catalog p9, 'PUFFS by Cannabals'); one store writes 'Puff'. Chubby Puff is the 6g all-in-one (package 'CHUBBY PUFF 1200'); one store writes 'Chubby Puffy'. Brick is the 100mg scored gummy bar (catalog p4, 'BRICK by Cannabals'). Mood State is the brand's family across vapes and gummies (catalog p6, p7), so it takes no category. A category keeps 'Puff' and 'Brick' from firing on vape descriptions ('1200+ puffs').",
-  "_comment_cannabals": "Cannabals' Mood State gummies come in their own counts: Blueberry Dreams (1:1 THC:CBN sleep) as a 20pk 100mg, the other moods as 10pk 100mg, so line fill keeps each to its own sizes (sizes_by_product): filling gave each the other count, and Blueberry Dreams listings had three packages to choose from (2026-10-12).",
+  "_comment_cannabals": "From the Cannabals curation (2026-10-08), checked against Cirona's NYS Wholesale Catalog (Winter-Spring 2025) and the CANNABALS Fall 2026 sheet. Puffs are the diamond infused 7 x 0.5g pre-rolls (catalog p9, 'PUFFS by Cannabals'); one store writes 'Puff'. Chubby Puff is the 6g all-in-one (package 'CHUBBY PUFF 1200'); one store writes 'Chubby Puffy'. Brick is the 100mg scored gummy bar (catalog p4, 'BRICK by Cannabals'). Mood State is the brand's family across vapes and gummies (catalog p6, p7), so it takes no category. A category keeps 'Puff' and 'Brick' from firing on vape descriptions ('1200+ puffs'). Mood State gummies: Blueberry Dreams is a 20pk 100mg, the other moods 10pk 100mg; the catalog grid gives every mood both (owner's rule, 2026-10-12).",
   "Cannabals": [
     {
       "line": "Puffs",
@@ -881,8 +878,7 @@
       "category": "edible"
     },
     {
-      "line": "Mood State",
-      "sizes_by_product": true
+      "line": "Mood State"
     }
   ],
   "Bonanza": [

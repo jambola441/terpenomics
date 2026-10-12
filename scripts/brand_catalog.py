@@ -336,7 +336,22 @@ def push(catalog: dict, dry_run: bool = False, via_http: bool = False,
         print(f"  {counts['listed_again_but_inactive']} entries the source lists are inactive "
               f"here (taken out by hand, or gone and back) — left inactive; reactivate in "
               f"the admin if wanted")
+    if not dry_run:
+        _grid_sync(catalog["brand_name"])
     return counts
+
+
+def _grid_sync(brand: str) -> None:
+    """Every catalog write ends with the catalog a full grid (catalog_grid.py). The
+    sync writes over the REST API; without its credentials the daily cron's re-sync
+    (run_scrape_cron.py) catches up, and this says so."""
+    import os
+    import catalog_grid
+    if not (os.getenv("SUPABASE_URL") and os.getenv("SUPABASE_SERVICE_ROLE_KEY")):
+        print(f"  [warn] catalog grid not synced (no SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY): "
+              f"run python scripts/catalog_grid.py --brand {brand!r} --write")
+        return
+    catalog_grid.sync_brand(brand)
 
 
 def set_photos(catalog: dict, dry_run: bool = False, via_http: bool = False) -> dict:
@@ -471,7 +486,7 @@ def _push_postgres(catalog: dict, dry_run: bool, replace: bool = False) -> dict:
             """
             UPDATE brand_catalog_entries SET is_active = FALSE
             WHERE catalog_id = %s AND is_active AND external_id <> ALL(%s)
-            """,
+            """ + (" AND source IS DISTINCT FROM 'inferred'" if "source" in extra else ""),
             (catalog_id, seen),
         )
         deactivated = cur.rowcount
@@ -580,7 +595,8 @@ def _push_http(catalog: dict, dry_run: bool, replace: bool = False) -> dict:
     retire = []
     seen = {e["external_id"] for e in catalog["entries"]}
     if catalog.get("source_method") != "listings_bootstrap":
-        retire = [str(r["id"]) for ext, r in existing.items() if r["is_active"] and ext not in seen]
+        retire = [str(r["id"]) for ext, r in existing.items()
+                  if r["is_active"] and ext not in seen and r.get("source") != "inferred"]
     elif replace and "source" in extra:
         retire = [str(r["id"]) for ext, r in existing.items()
                   if r["is_active"] and ext not in seen and r.get("source") == "listings_bootstrap"
