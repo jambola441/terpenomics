@@ -628,3 +628,64 @@ class TestVolumeSizes:
         r = {"category": "tinctures", "subtype": "tincture", "strain": "Hash Burger", "size": "15mL",
              "product_line": "Live Rosin"}
         assert idx.join(r)[0] == "lro-hb"
+
+
+# -- no elimination: a blank or unsure field is no wildcard (owner, 2026-10-12) --------
+NOELIM = {"brand_name": "MFNY", "brand_slug": "mfny", "entries": [
+    {"id": "a", "product_key": "lr-bel", "is_active": True, "name": "Belafonte Live Resin AIO",
+     "category": "vaporizers", "subtype": "all-in-one", "product_line": "Live Resin",
+     "strain": "The Belafonte", "variant": "1g"},
+    {"id": "b", "product_key": "cl-gel", "is_active": True, "name": "Gelato Classics AIO",
+     "category": "vaporizers", "subtype": "all-in-one", "product_line": "Classics",
+     "strain": "Gelato", "variant": "1g"},
+    {"id": "c", "product_key": "bud", "is_active": True, "name": "Gelato Flower",
+     "category": "flower", "strain": "Gelato", "variant": "3.5g"},
+]}
+
+
+def _read(line=None, line_p=0.97, subtype="all-in-one", sub_p=0.97):
+    p = {"category": 0.99, "subtype": sub_p, "strain": 0.98, "size": 0.97}
+    if line_p is not None:
+        p["line"] = line_p
+    return {"by": "catalog", "category": "vaporizers", "subtype": subtype, "product_line": line,
+            "strain": "The Belafonte", "size": "1g", "p": p}
+
+
+def _one(reading, cat=NOELIM):
+    [d] = cm.resolve(cat, [{"id": "1", "name": "Vape AIO | MFNY | The Belafonte - Live Resin",
+                            "category": "vaporizers", "reading": reading}], use_jev=False)
+    return d
+
+
+class TestNoElimination:
+    def test_multi_line_group_blank_unsure_line_goes_to_review(self):
+        d = _one(_read(line=None, line_p=0.84))
+        assert d.method == "review_unsure" and d.product_key == "lr-bel"
+        assert cm.CatalogIndex(NOELIM).blocking_steps(_read(line=None, line_p=0.84), "lr-bel") == ["line"]
+
+    def test_confident_line_is_trusted(self):
+        assert _one(_read(line="Live Resin")).method == "attributes"
+
+    def test_confident_none_is_the_blank_line(self):
+        assert _one(_read(line=None, line_p=0.95)).method == "review_unsure"
+
+    def test_unsure_subtype_blocks_where_the_category_has_several(self):
+        cat = {**NOELIM, "entries": NOELIM["entries"] + [
+            {"id": "d", "product_key": "cart", "is_active": True, "name": "Gelato cart",
+             "category": "vaporizers", "subtype": "cartridge", "product_line": "Classics",
+             "strain": "Gelato", "variant": "1g"}]}
+        assert _one(_read(line="Live Resin", subtype=None, sub_p=0.6), cat).method == "review_unsure"
+
+    def test_single_value_group_is_unaffected(self):
+        one = {**NOELIM, "entries": [e for e in NOELIM["entries"] if e["id"] != "b"]}
+        assert _one(_read(line=None, line_p=0.5, subtype=None, sub_p=0.5), one).method == "attributes"
+
+    def test_enrichment_reading_not_held(self):
+        r = _read(line=None, line_p=None)
+        r["by"] = "enrichment"
+        r.pop("p")
+        assert _one(r).method == "attributes"
+
+    def test_jev_pick_needs_the_trust_bar(self):
+        assert cm.gate("o1", 0.89) == "jev_review"
+        assert cm.gate("o1", 0.90) == "jev"

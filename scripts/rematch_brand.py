@@ -19,6 +19,8 @@ Usage
 -----
   DB_VIA_HTTP=1 python scripts/rematch_brand.py --brand MFNY            # dry run: what would change
   DB_VIA_HTTP=1 python scripts/rematch_brand.py --brand MFNY --write    # write it
+  DB_VIA_HTTP=1 python scripts/rematch_brand.py --brand MFNY --stored-readings [--write]
+      # matching only, on the stored readings: no Jev calls (a matching-rule change)
 """
 
 from __future__ import annotations
@@ -30,6 +32,7 @@ import urllib.parse
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -42,12 +45,18 @@ COLS = ("id,scraped_name,scraped_category,subtype,strain,product_line,variant,si
 OVERLAID = ("scraped_category", "subtype", "strain", "product_line", "size")
 
 
-def patches(rows: list[dict], catalog: dict, decisions: list) -> dict[str, dict]:
+def patches(rows: list[dict], catalog: dict, decisions: list,
+            keep_jev: bool = False) -> dict[str, dict]:
     """{listing id: the columns to write} for the listings whose stored values differ
     from what this run decides. `rows` are the listings as stored (COLS), `decisions`
     catalog_match.resolve's over the re-read listings (each listing carrying its new
-    reading)."""
+    reading).
+
+    `keep_jev` (--stored-readings): a listing the join leaves, matched by Jev before,
+    keeps Jev's pick, re-gated at today's bar (catalog_match.gate on its stored
+    confidence): this run asks Jev nothing, so it has no answer of its own there."""
     by_id = {str(r["id"]): r for r in rows}
+    entries = {e.get("id"): e for e in catalog.get("entries") or []}
     out: dict[str, dict] = {}
     for d in decisions:
         lid = str(d.listing["id"])
@@ -55,6 +64,13 @@ def patches(rows: list[dict], catalog: dict, decisions: list) -> dict[str, dict]
         if row is None or d.method == "error":
             continue
         want: dict = {"reading": d.listing.get("reading")}
+        if keep_jev and d.entry is None and row.get("catalog_match_method") in ("jev", "jev_review") \
+                and row.get("catalog_entry_id") in entries:
+            conf = float(row.get("catalog_match_confidence") or 0.0)
+            method = cm.gate("pick", conf, cm.auto_threshold(catalog))
+            if method in ("jev", "jev_review"):
+                d = SimpleNamespace(**{**vars(d), "entry": entries[row["catalog_entry_id"]],
+                                       "confidence": conf, "method": method})
         if row.get("catalog_match_method") != "manual":
             entry = d.entry or {}
             want.update(catalog_entry_id=entry.get("id"),
@@ -99,6 +115,9 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--brand", required=True, help="the brand as written in listings")
     ap.add_argument("--write", action="store_true", help="write the changes (else print them)")
+    ap.add_argument("--stored-readings", action="store_true",
+                    help="match only: keep each listing's stored reading (no Jev calls) and "
+                         "keep stored Jev picks re-gated at today's bar")
     args = ap.parse_args(argv)
 
     import catalog_fix
@@ -108,14 +127,14 @@ def main(argv: list[str] | None = None) -> int:
     catalog = catalog_store.for_brand(catalog_store.load_all("db"), args.brand)
     if not catalog:
         sys.exit(f"No catalog for {args.brand!r}")
-    if not jev.available():
+    if not args.stored_readings and not jev.available():
         sys.exit("No OPENROUTER_API_KEY: the reading needs Jev")
     listings = catalog_fix.brand_listings(args.brand)
     rows = db_http.select_all("listings", f"select={COLS}&is_active=is.true"
                                           f"&scraped_brand=ilike.{urllib.parse.quote(args.brand)}")
-    read = catalog_fix.read_against(catalog, listings, use_jev=True)
+    read = catalog_fix.read_against(catalog, listings, use_jev=not args.stored_readings)
     decisions = cm.resolve(catalog, read, use_jev=False)
-    changes = patches(rows, catalog, decisions)
+    changes = patches(rows, catalog, decisions, keep_jev=args.stored_readings)
     trusted = Counter(d.method in cm.OVERLAY_METHODS for d in decisions)
     print(f"{args.brand}: {len(decisions)} active listings, {trusted[True]} trusted after re-reading; "
           f"{len(changes)} to update")

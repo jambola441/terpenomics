@@ -101,7 +101,9 @@ QUESTION_VERSION = 4   # 3: options are entries (one product in one size), 2026-
 # p>=0.85 for 2.3%, p>=0.90 for 0% — every one a near miss ("Half + Half" lemonade-
 # and-tea read as "Lemonade"). Coverage on the same brand: 94.5% / 92.8% / 87.2%.
 # 0.85 is the trade; the 0.50-0.85 band goes to review rather than being dropped.
-AUTO = float(os.environ.get("CATALOG_MATCH_AUTO", "0.85"))
+# Jev's pick is trusted at the reading's trust bar (owner, 2026-10-12): picking the one
+# candidate over "none of these" is a read, not elimination, but it must clear 0.9 too.
+AUTO = float(os.environ.get("CATALOG_MATCH_AUTO", str(catalog_reading.TRUST_AT)))
 REVIEW = float(os.environ.get("CATALOG_MATCH_REVIEW", "0.50"))
 # A catalog built from our own listings (catalog_bootstrap.py) omits products only
 # one store carries, and a missing product is exactly when Jev's near-miss picks
@@ -260,6 +262,14 @@ class CatalogIndex:
             if e.get("is_active", True):
                 groups[e.get("product_key") or catalog_store._product_key(e)].append(e)
         self.products = {k: Product.build(k, v) for k, v in groups.items()}
+        # The values each attribute takes in its group among the active entries, a blank
+        # counting as one (blocking_steps).
+        self.group_values: dict[str, dict[tuple, set]] = \
+            {k: defaultdict(set) for k in ("category", "subtype", "line")}
+        for p in self.products.values():
+            self.group_values["category"][()].add(p.category or "")
+            self.group_values["subtype"][(p.category,)].add(p.subtype or "")
+            self.group_values["line"][(p.category, p.subtype)].add(squash(p.product_line) or "")
         # Pod and cart are one format here unless the brand sells both (taxonomy).
         self.synonyms = format_synonyms(catalog)
 
@@ -336,6 +346,43 @@ class CatalogIndex:
             if entry is not False:
                 hits.append((key, entry))
         return hits[0] if len(hits) == 1 and hits[0][1] is not None else None
+
+    def blocking_steps(self, reading: dict | None, key: str) -> list[str]:
+        """The reading's steps that keep its join from being trusted: no elimination
+        (owner, 2026-10-12). A blank or unsure field is no wildcard trusted because one
+        entry is left ("The Belafonte - Live Resin", line unsure at 0.84, joined to the
+        Live Resin AIO by elimination).
+
+        Each attribute that can tell entries apart in the product's catalog group
+        (category: the brand's catalog; subtype: the category; line: category and
+        subtype) must be answered at TRUST_AT or above and equal the product's value, a
+        blank counting as a value and a confident "none of these" as the blank. An
+        attribute with one value in its group cannot change the answer and never blocks.
+        Strain and size are held by catalog_reading.trusted (the size's group is the
+        product: one size offered is ONE_SIZE_AT's case). A reading not made against
+        the catalog has no probabilities and is not held to this."""
+        if not reading or reading.get("by") != "catalog":
+            return []
+        p = self.products[key]
+        probs = reading.get("p") or {}
+        out = []
+
+        def clears(step, values, read, mine, same=lambda a, b: a == b) -> None:
+            if len(values) <= 1:
+                return
+            q = probs.get(step)
+            if q is None or q < catalog_reading.TRUST_AT or not same(read, mine):
+                out.append(step)
+
+        clears("category", self.group_values["category"].get((), set()),
+               reading.get("category"), p.category)
+        if taxonomy.keeps_subtype(p.category):
+            clears("subtype", self.group_values["subtype"].get((p.category,), set()),
+                   reading.get("subtype") or None, p.subtype or None,
+                   lambda a, b: taxonomy.same_format(a, b, self.synonyms))
+        clears("line", self.group_values["line"].get((p.category, p.subtype), set()),
+               squash(reading.get("product_line")) or "", squash(p.product_line) or "")
+        return out
 
     def shortlist(self, name: str, category: str | None, variant: str | None,
                   k: int = SHORTLIST, exclude: str | None = None,
@@ -836,7 +883,7 @@ def resolve(catalog: dict, listings: list[dict], *, use_jev: bool,
         joined = index.join(reading, name)
         if joined and joined[0] != held_out \
                 and not infused_veto(index.products[joined[0]], name, cat, l.get("description")):
-            if catalog_reading.trusted(reading):
+            if catalog_reading.trusted(reading) and not index.blocking_steps(reading, joined[0]):
                 decisions[i] = Decision(l, joined[0], joined[1], 1.0, "attributes")
             else:
                 # Read against the catalog, but unsurely: a product the catalog lacks
