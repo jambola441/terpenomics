@@ -1231,3 +1231,119 @@ class ReceiptSubmission(SQLModel, table=True):
     read_attempts: int                = Field(default=0, nullable=False)
 
     created_at: datetime = Field(default_factory=utcnow_tz, sa_column=_tz_column("created_at", nullable=False, index=True))
+
+
+# ---------------------------
+# Admin audits (routes/admin/audits.py, scripts/audits.py; db/migrations/0020)
+# ---------------------------
+#
+# A run flags listings (data_health detectors) and samples trusted ones; each item is
+# judged right / wrong / unsure (by a person, or by the Claude model picked for the
+# run); a wrong one gets a listing fix or a catalog proposal, which is measured,
+# approved by an admin, and applied by the worker (scripts/audit_worker.py). The API
+# writes rows and queues jobs; the worker does the work. New tables: create_all makes
+# them at startup; 0020 has them on record.
+
+AUDIT_VERDICTS = ("right", "wrong", "unsure")
+AUDIT_JOB_KINDS = ("build_run", "judge_run", "measure_proposal", "apply_proposal")
+PROPOSAL_KINDS = ("add-product", "add-size", "rekey", "set-subtype", "deactivate",
+                  "manual-match", "add-example", "remove-example")
+# measuring -> measured (or failed) -> approved -> applying -> applied (or failed); rejected.
+PROPOSAL_STATUSES = ("measuring", "measured", "approved", "applying", "applied", "rejected", "failed")
+
+
+class AuditRun(SQLModel, table=True):
+    __tablename__ = "audit_runs"
+
+    id:            UUID           = Field(default_factory=uuid4, primary_key=True)
+    brands:        list           = Field(default_factory=list, sa_column=Column("brands", JSONB_, nullable=False))
+    sample_size:   int            = Field(default=20, nullable=False)
+    # A Claude model id (scripts/audit_judge.py MODELS), or None: judged by hand.
+    judge_model:   Optional[str]  = Field(default=None, sa_type=Text)
+    # queued -> building -> judging -> ready; failed.
+    status:        str            = Field(default="queued", max_length=16, nullable=False)
+    created_by:    str            = Field(sa_type=Text, nullable=False)
+    created_at:    datetime       = Field(default_factory=utcnow, nullable=False, index=True)
+    finished_at:   Optional[datetime] = Field(default=None)
+    total_items:   int            = Field(default=0, nullable=False)
+    judged_items:  int            = Field(default=0, nullable=False)
+    input_tokens:  int            = Field(default=0, nullable=False)
+    output_tokens: int            = Field(default=0, nullable=False)
+    cost_usd:      float          = Field(default=0.0, nullable=False)
+    error:         Optional[str]  = Field(default=None, sa_type=Text)
+
+
+class AuditItem(SQLModel, table=True):
+    __tablename__ = "audit_items"
+
+    id:           UUID           = Field(default_factory=uuid4, primary_key=True)
+    run_id:       UUID           = Field(foreign_key="audit_runs.id", index=True, nullable=False)
+    listing_id:   UUID           = Field(index=True, nullable=False)
+    brand:        str            = Field(sa_type=Text, nullable=False)
+    # 'flag' (a detector found it) or 'sample' (drawn from the trusted listings).
+    source:       str            = Field(max_length=16, nullable=False)
+    flags:        Optional[list] = Field(default=None, sa_column=Column("flags", JSONB_, nullable=True))
+    evidence:     Optional[dict] = Field(default=None, sa_column=Column("evidence", JSONB_, nullable=True))
+    verdict:      Optional[str]  = Field(default=None, max_length=16)
+    cause:        Optional[str]  = Field(default=None, sa_type=Text)
+    explanation:  Optional[str]  = Field(default=None, sa_type=Text)
+    proposed_fix: Optional[dict] = Field(default=None, sa_column=Column("proposed_fix", JSONB_, nullable=True))
+    # 'llm:<model>' or 'manual:<reviewer>'.
+    judged_by:    Optional[str]  = Field(default=None, sa_type=Text)
+    judged_at:    Optional[datetime] = Field(default=None)
+    # The listing fix made from this item: {"action": "manual-match"|"store-error", ...}.
+    fix:          Optional[dict] = Field(default=None, sa_column=Column("fix", JSONB_, nullable=True))
+    created_at:   datetime       = Field(default_factory=utcnow, nullable=False)
+
+
+class AuditProposal(SQLModel, table=True):
+    __tablename__ = "audit_proposals"
+
+    id:          UUID           = Field(default_factory=uuid4, primary_key=True)
+    run_id:      Optional[UUID] = Field(default=None, foreign_key="audit_runs.id")
+    item_id:     Optional[UUID] = Field(default=None, foreign_key="audit_items.id")
+    brand:       str            = Field(sa_type=Text, nullable=False)
+    kind:        str            = Field(max_length=32, nullable=False)
+    params:      dict           = Field(default_factory=dict, sa_column=Column("params", JSONB_, nullable=False))
+    why:         Optional[str]  = Field(default=None, sa_type=Text)
+    status:      str            = Field(default="measuring", max_length=16, nullable=False, index=True)
+    # scripts/audits.py measure_proposal: trusted before/after, losses, changed listings.
+    measure:     Optional[dict] = Field(default=None, sa_column=Column("measure", JSONB_, nullable=True))
+    measured_at: Optional[datetime] = Field(default=None)
+    created_by:  str            = Field(sa_type=Text, nullable=False)
+    decided_by:  Optional[str]  = Field(default=None, sa_type=Text)
+    decided_at:  Optional[datetime] = Field(default=None)
+    applied_at:  Optional[datetime] = Field(default=None)
+    result:      Optional[dict] = Field(default=None, sa_column=Column("result", JSONB_, nullable=True))
+    error:       Optional[str]  = Field(default=None, sa_type=Text)
+    created_at:  datetime       = Field(default_factory=utcnow, nullable=False)
+
+
+class AuditJob(SQLModel, table=True):
+    __tablename__ = "audit_jobs"
+
+    id:          UUID           = Field(default_factory=uuid4, primary_key=True)
+    kind:        str            = Field(max_length=32, nullable=False)
+    payload:     dict           = Field(default_factory=dict, sa_column=Column("payload", JSONB_, nullable=False))
+    # queued -> running -> done | failed.
+    status:      str            = Field(default="queued", max_length=16, nullable=False, index=True)
+    attempts:    int            = Field(default=0, nullable=False)
+    error:       Optional[str]  = Field(default=None, sa_type=Text)
+    created_at:  datetime       = Field(default_factory=utcnow, nullable=False)
+    started_at:  Optional[datetime] = Field(default=None)
+    finished_at: Optional[datetime] = Field(default=None)
+
+
+class AuditLog(SQLModel, table=True):
+    """Every apply and listing fix the audits make, with what it replaced."""
+    __tablename__ = "audit_log"
+
+    id:          UUID           = Field(default_factory=uuid4, primary_key=True)
+    actor:       str            = Field(sa_type=Text, nullable=False)
+    action:      str            = Field(max_length=32, nullable=False)
+    brand:       Optional[str]  = Field(default=None, sa_type=Text)
+    target_kind: str            = Field(max_length=32, nullable=False)
+    target_id:   str            = Field(sa_type=Text, nullable=False)
+    before:      Optional[dict] = Field(default=None, sa_column=Column("before", JSONB_, nullable=True))
+    after:       Optional[dict] = Field(default=None, sa_column=Column("after", JSONB_, nullable=True))
+    created_at:  datetime       = Field(default_factory=utcnow, nullable=False, index=True)

@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from .audits import router as audits_router
 from .brand_catalogs import router as brand_catalogs_router
 from .brand_logos import router as brand_logos_router
 from .customers import router as customers_router
@@ -13,6 +14,7 @@ from .receipts import router as receipts_router
 from .review import router as review_router
 
 router = APIRouter(prefix="/admin", tags=["admin"])
+router.include_router(audits_router)
 router.include_router(brand_catalogs_router)
 router.include_router(brand_logos_router)
 router.include_router(customers_router)
