@@ -112,35 +112,55 @@ def main(argv: list[str] | None = None) -> int:
                          "keep stored Jev picks re-gated at today's bar")
     args = ap.parse_args(argv)
 
+    import jev
+    if not args.stored_readings and not jev.available():
+        sys.exit("No OPENROUTER_API_KEY: the reading needs Jev")
+    try:
+        r = rematch(args.brand, write_changes=False, stored_readings=args.stored_readings)
+    except LookupError as exc:
+        sys.exit(str(exc))
+    print(f"{args.brand}: {r['listings']} active listings, {r['trusted_after']} trusted after re-reading; "
+          f"{len(r['changes'])} to update")
+    moved = {lid: {k: v for k, v in cols.items() if k != "reading"} for lid, cols in r["changes"].items()}
+    moved = {lid: cols for lid, cols in moved.items() if cols}
+    print(f"  {len(moved)} with a new match (the rest: the reading only)")
+    for lid, cols in list(moved.items())[:40]:
+        print(f"  {r['names'][lid][:60]:60} {cols}")
+    if not args.write:
+        print("(dry run; --write writes them)")
+        return 0
+    print(f"wrote {write(r['changes'])} listing(s)")
+    return 0
+
+
+def rematch(brand: str, *, write_changes: bool = False, stored_readings: bool | None = None) -> dict:
+    """Re-read and re-match one brand's active listings (what main does), and write the
+    changes when `write_changes`. stored_readings None: re-read with Jev where it is
+    available, else match on the stored readings. Returns the counts, the changes
+    ({listing id: columns}) and the listings' names; LookupError for no catalog."""
     import catalog_fix
     import catalog_store
     import db_http
     import jev
-    catalog = catalog_store.for_brand(catalog_store.load_all("db"), args.brand)
+    catalog = catalog_store.for_brand(catalog_store.load_all("db"), brand)
     if not catalog:
-        sys.exit(f"No catalog for {args.brand!r}")
-    if not args.stored_readings and not jev.available():
-        sys.exit("No OPENROUTER_API_KEY: the reading needs Jev")
-    listings = catalog_fix.brand_listings(args.brand)
+        raise LookupError(f"No catalog for {brand!r}")
+    if stored_readings is None:
+        stored_readings = not jev.available()
+    listings = catalog_fix.brand_listings(brand)
     rows = db_http.select_all("listings", f"select={COLS}&is_active=is.true"
-                                          f"&scraped_brand=ilike.{urllib.parse.quote(args.brand)}")
-    read = catalog_fix.read_against(catalog, listings, use_jev=not args.stored_readings)
+                                          f"&scraped_brand=ilike.{urllib.parse.quote(brand)}")
+    read = catalog_fix.read_against(catalog, listings, use_jev=not stored_readings)
     decisions = cm.resolve(catalog, read, use_jev=False)
-    changes = patches(rows, catalog, decisions, keep_jev=args.stored_readings)
+    changes = patches(rows, catalog, decisions, keep_jev=stored_readings)
     trusted = Counter(d.method in cm.OVERLAY_METHODS for d in decisions)
-    print(f"{args.brand}: {len(decisions)} active listings, {trusted[True]} trusted after re-reading; "
-          f"{len(changes)} to update")
-    names = {str(r["id"]): r.get("scraped_name") or "" for r in rows}
-    moved = {lid: {k: v for k, v in cols.items() if k != "reading"} for lid, cols in changes.items()}
-    moved = {lid: cols for lid, cols in moved.items() if cols}
-    print(f"  {len(moved)} with a new match (the rest: the reading only)")
-    for lid, cols in list(moved.items())[:40]:
-        print(f"  {names[lid][:60]:60} {cols}")
-    if not args.write:
-        print("(dry run; --write writes them)")
-        return 0
-    print(f"wrote {write(changes)} listing(s)")
-    return 0
+    out = {"listings": len(decisions), "trusted_after": trusted[True],
+           "trusted_before": sum(1 for r in rows if r.get("catalog_match_method") in cm.OVERLAY_METHODS),
+           "changes": changes, "names": {str(r["id"]): r.get("scraped_name") or "" for r in rows},
+           "stored_readings": stored_readings, "written": 0}
+    if write_changes and changes:
+        out["written"] = write(changes)
+    return out
 
 
 if __name__ == "__main__":

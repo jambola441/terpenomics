@@ -725,49 +725,76 @@ def summarize(stable: dict) -> Counter:
     return c
 
 
-def measure(plan: Plan, runs: int = 2) -> None:
+def measure_data(plan: Plan, runs: int = 2, examples_after: dict | None = None,
+                 listings: list[dict] | None = None) -> dict:
+    """The matcher before and after the plan over the brand's active listings, as data
+    (what --measure prints; the admin audits keep it on a proposal). `examples_after`:
+    the brand reading examples the after side reads with (catalog_reading.examples_override),
+    for an example proposal, whose catalog does not change."""
+    import catalog_reading
     import jev
     brand = plan.catalog.get("brand_name") or ""
-    listings = brand_listings(brand, plan.category)
+    if listings is None:
+        listings = brand_listings(brand, plan.category)
     use_jev = jev.available()
-    if not use_jev:
-        print("  (Jev is not available here: measuring with the stored readings only)")
     by_id = {l["id"]: l for l in listings}
 
-    def run(catalog):
+    def run(catalog, examples=None):
         # As the import does (import_listings.apply_catalog): Jev reads, the join decides.
-        read = read_against(catalog, listings, use_jev=use_jev)
+        with catalog_reading.examples_override(examples):
+            read = read_against(catalog, listings, use_jev=use_jev)
         return {d.listing["id"]: outcome(catalog, d.listing, d)
                 for d in cm.resolve(catalog, read, use_jev=False)}
     raw = [run(plan.catalog) for _ in range(runs)]
     old = [carried(plan, r) for r in raw]
-    new = [run(plan.changed) for _ in range(runs)]
-    stable, noise = compare(old, new)
-    tally = summarize(stable)
-    trusted = [sum(1 for v in r.values() if v[0] == "trusted") for r in (old[0], new[0])]
-    print(f"measure: {len(listings)} active {brand} {plan.category or ''} listings, {runs} runs per side"
-          f"{' (Jev on, no cache)' if use_jev else ''}; trusted {trusted[0]} -> {trusted[1]}")
-    print("  " + (", ".join(f"{k} {v}" for k, v in tally.items()) or "no listing changes")
-          + f"; {noise} listing(s) differed between runs of one side (Jev's noise, not counted)")
-    follow = sum(1 for i, v in raw[0].items() if str(v[2]) in plan.moved and new[0].get(i) == old[0][i])
-    if plan.moved:
-        print(f"  {follow} listing(s) follow their re-keyed entries to the new rows (not counted as moves)")
+    new = [run(plan.changed, examples_after) for _ in range(runs)]
+    stable, noise = compare(old, new) if old and old[0] else ({}, 0)
 
-    def line(i, before, after):
-        return (f'  - "{by_id[i]["name"][:64]}" [{by_id[i].get("variant")}]: '
-                f"{before[0]} {before[3]} -> {after[0]} {after[3]}"
-                + (" (other product)" if before[1] != after[1] else " (other size)" if before[2] != after[2] else ""))
+    def change(i, before, after):
+        return {"listing_id": str(i), "name": by_id[i]["name"], "variant": by_id[i].get("variant"),
+                "before": {"trust": before[0], "page": before[3], "entry": _names(plan, before[2])},
+                "after": {"trust": after[0], "page": after[3], "entry": _names(plan, after[2])},
+                "move": "other product" if before[1] != after[1] else "other size" if before[2] != after[2]
+                        else None}
     # Whatever could be a loss is listed in full; gains are sampled.
     risky = {i: v for i, v in stable.items() if v[0][0] == "trusted" and (v[1][0] != "trusted" or v[0][1] != v[1][1])}
-    if risky:
-        print("  check each (a trusted match lost or moved to another product):")
-        for i, (before, after) in risky.items():
-            print(line(i, before, after) + f"\n      {_names(plan, before[2])} -> {_names(plan, after[2])}")
     rest = [(i, v) for i, v in stable.items() if i not in risky]
-    for i, (before, after) in rest[:15]:
-        print(line(i, before, after))
-    if len(rest) > 15:
-        print(f"  ... and {len(rest) - 15} more")
+    return {
+        "brand": brand, "category": plan.category, "listings": len(listings), "runs": runs, "jev": use_jev,
+        "trusted_before": sum(1 for v in old[0].values() if v[0] == "trusted") if old else 0,
+        "trusted_after": sum(1 for v in new[0].values() if v[0] == "trusted") if new else 0,
+        "tally": dict(summarize(stable)), "noise": noise,
+        "follow": sum(1 for i, v in raw[0].items() if str(v[2]) in plan.moved and new[0].get(i) == old[0][i])
+                  if raw else 0,
+        "risky": [change(i, *v) for i, v in risky.items()],
+        "changes": [change(i, *v) for i, v in rest[:50]], "more": max(0, len(rest) - 50),
+        "notes": list(plan.notes),
+    }
+
+
+def measure(plan: Plan, runs: int = 2) -> None:
+    m = measure_data(plan, runs)
+    if not m["jev"]:
+        print("  (Jev is not available here: measuring with the stored readings only)")
+    print(f"measure: {m['listings']} active {m['brand']} {m['category'] or ''} listings, {runs} runs per side"
+          f"{' (Jev on, no cache)' if m['jev'] else ''}; trusted {m['trusted_before']} -> {m['trusted_after']}")
+    print("  " + (", ".join(f"{k} {v}" for k, v in m["tally"].items()) or "no listing changes")
+          + f"; {m['noise']} listing(s) differed between runs of one side (Jev's noise, not counted)")
+    if plan.moved:
+        print(f"  {m['follow']} listing(s) follow their re-keyed entries to the new rows (not counted as moves)")
+
+    def line(c):
+        return (f'  - "{c["name"][:64]}" [{c["variant"]}]: {c["before"]["trust"]} {c["before"]["page"]} -> '
+                f'{c["after"]["trust"]} {c["after"]["page"]}' + (f" ({c['move']})" if c["move"] else ""))
+    if m["risky"]:
+        print("  check each (a trusted match lost or moved to another product):")
+        for c in m["risky"]:
+            print(line(c) + f"\n      {c['before']['entry']} -> {c['after']['entry']}")
+    for c in m["changes"][:15]:
+        print(line(c))
+    more = len(m["changes"]) - 15 + m["more"]
+    if more > 0:
+        print(f"  ... and {more} more")
 
 
 def _names(plan: Plan, entry_id) -> str:
@@ -817,6 +844,24 @@ def apply(plan: Plan) -> None:
         else:
             db_http.update(table, query, row)
             print(f"  updated {query}")
+
+
+def for_edit(catalogs: dict) -> dict:
+    """The catalogs as every edit here plans against them: inactive entries in (their
+    external ids are taken), inferred sizes out. Inferred sizes (catalog_grid.py) are
+    derived from the stated entries, not edited: left in, a re-key would copy them to
+    new rows as if stated. The sync after a write recomputes them."""
+    with_inactive(catalogs)
+    for c in catalogs.values():
+        c["entries"] = [e for e in c.get("entries") or [] if e.get("source") != "inferred"]
+    return catalogs
+
+
+def write(plan: Plan) -> None:
+    """Write an approved plan, then keep the catalog a full grid (catalog_grid.sync_brand)."""
+    apply(plan)
+    import catalog_grid
+    catalog_grid.sync_brand(plan.catalog.get("brand_name") or "")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -869,12 +914,7 @@ def main(argv: list[str] | None = None) -> int:
                 db_http.update("listings", f"id=eq.{r['id']}", {"size": size})
         print(f"{len(todo)} listing(s)" + (" written" if args.write else " (dry run; --write writes)"))
         return 0
-    with_inactive(catalogs)
-    # Inferred sizes (catalog_grid.py) are derived from the stated entries, not edited:
-    # left in, a re-key would copy them to new rows as if stated. The sync after a
-    # write recomputes them.
-    for c in catalogs.values():
-        c["entries"] = [e for e in c.get("entries") or [] if e.get("source") != "inferred"]
+    catalogs = for_edit(catalogs)
     try:
         if args.command == "plan":
             import json
@@ -907,9 +947,7 @@ def main(argv: list[str] | None = None) -> int:
         measure(plan)
     try:
         if args.write:
-            apply(plan)
-            import catalog_grid                  # the catalog stays a full grid
-            catalog_grid.sync_brand(plan.catalog.get("brand_name") or "")
+            write(plan)
         else:
             preflight(plan)
             print("(dry run; --write writes it)")
