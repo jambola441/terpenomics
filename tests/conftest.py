@@ -17,6 +17,9 @@ os.environ["DATABASE_URL"] = f"sqlite:///{_TEST_DB}"
 os.environ["SUPABASE_URL"] = "https://test.supabase.co"
 os.environ["SUPABASE_ANON_KEY"] = "test-anon-key"
 os.environ["SUPABASE_SERVICE_ROLE_KEY"] = "test-service-key"
+# With the keys above, catalog_reading would read its brand examples over the network
+# (READING_EXAMPLES=auto); tests read the checked-in file unless they say otherwise.
+os.environ["READING_EXAMPLES"] = "file"
 
 
 def pytest_configure(config):
