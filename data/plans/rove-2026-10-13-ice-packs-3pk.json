@@ -1,0 +1,12 @@
+{
+ "brand": "Rove",
+ "_comment": "2026-10-13: Ice Packs 3-pack (3 x 0.5g = 1.5g). Size labeled '1.5g' to match the line's total-weight convention ('2.5g' = 5 x 0.5g, '3g' = 5 x 0.6g); the line grid fills the other strains. Sour Lime Haze already exists in 1g/2.5g/3g, so this is an add-size. Not written: apply with --write after approval.",
+ "edits": [
+  {
+   "op": "add-size",
+   "why": "Leafly menu for The Mint (Paradise Rd) lists 'Rove - Infused Preroll 3pk - Ice Packs: Sour Lime Haze (S) (1.5g)' alongside 3pk 1.5g Watermelon Burst, Maui Waui, Strawberry Cough, Sherbet, Frosted Melon; a Grow Together photo of Purple Trainwreck reads '3 PACK, NET WT 1.5g'",
+   "entry": {"category": "preroll", "line": "Ice Packs", "strain": "Sour Lime Haze", "size": "1g"},
+   "size": "1.5g"
+  }
+ ]
+}
