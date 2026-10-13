@@ -1,5 +1,7 @@
 import supabase from '../utils/supabase'
 import type {
+  AuditBrandHealth, AuditCandidate, AuditItem, AuditJudgeModel, AuditProposal, AuditRun, AuditRunDetail,
+  AuditVerdict, ProposalKind,
   BrandLogoRow,
   LogoCandidate,
   Customer,
@@ -716,6 +718,48 @@ export const api = {
    * they never change a listing's match or the catalog. `tz_offset` is the
    * browser's getTimezoneOffset(), so "today" is the reviewer's day.
    */
+  /**
+   * Admin audits (routes/admin/audits.py). The API queues work; the audit worker
+   * builds runs, judges, measures and applies, so pages poll while a job is pending.
+   */
+  audits: {
+    brands: () => authenticatedFetch<{ brands: AuditBrandHealth[] }>(`/admin/audits/brands`),
+    models: (sampleSize = 20) =>
+      authenticatedFetch<{ models: AuditJudgeModel[]; default: string }>(
+        `/admin/audits/models${buildQueryString({ sample_size: sampleSize })}`),
+    createRun: (data: { brands: string[]; sample_size: number; judge_model: string | null }) =>
+      authenticatedFetch<AuditRun>(`/admin/audits/runs`, { method: 'POST', body: JSON.stringify(data) }),
+    runs: (brand?: string) =>
+      authenticatedFetch<{ runs: AuditRun[] }>(`/admin/audits/runs${buildQueryString({ brand })}`),
+    run: (id: string) => authenticatedFetch<AuditRunDetail>(`/admin/audits/runs/${id}`),
+    judge: (id: string, judgeModel: string) =>
+      authenticatedFetch<AuditRun>(`/admin/audits/runs/${id}/judge`, {
+        method: 'POST', body: JSON.stringify({ judge_model: judgeModel }),
+      }),
+    verdict: (itemId: string, data: { verdict: AuditVerdict; cause?: string | null; note?: string }) =>
+      authenticatedFetch<AuditItem>(`/admin/audits/items/${itemId}/verdict`, { method: 'POST', body: JSON.stringify(data) }),
+    candidates: (itemId: string) =>
+      authenticatedFetch<{ candidates: AuditCandidate[] }>(`/admin/audits/items/${itemId}/candidates`),
+    manualMatch: (itemId: string, entryId: string) =>
+      authenticatedFetch<AuditItem>(`/admin/audits/items/${itemId}/manual-match`, {
+        method: 'POST', body: JSON.stringify({ entry_id: entryId }),
+      }),
+    storeError: (itemId: string, what: 'price' | 'photo' | 'title', note?: string) =>
+      authenticatedFetch<AuditItem>(`/admin/audits/items/${itemId}/store-error`, {
+        method: 'POST', body: JSON.stringify({ what, note }),
+      }),
+    createProposal: (data: { kind: ProposalKind; params: Record<string, unknown>; brand?: string; why?: string; item_id?: string }) =>
+      authenticatedFetch<AuditProposal>(`/admin/audits/proposals`, { method: 'POST', body: JSON.stringify(data) }),
+    proposals: (status: 'open' | 'decided' | 'all' = 'open', brand?: string) =>
+      authenticatedFetch<{ proposals: AuditProposal[] }>(`/admin/audits/proposals${buildQueryString({ status, brand })}`),
+    editProposal: (id: string, data: { params?: Record<string, unknown>; why?: string }) =>
+      authenticatedFetch<AuditProposal>(`/admin/audits/proposals/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    approve: (id: string) =>
+      authenticatedFetch<AuditProposal>(`/admin/audits/proposals/${id}/approve`, { method: 'POST' }),
+    reject: (id: string, note?: string) =>
+      authenticatedFetch<AuditProposal>(`/admin/audits/proposals/${id}/reject`, { method: 'POST', body: JSON.stringify({ note }) }),
+  },
+
   review: {
     /** The next undecided card, or null when the queue is done. `exclude` passes
      *  over cards already on screen (prefetching the one after). */
