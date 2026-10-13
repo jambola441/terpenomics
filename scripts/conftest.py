@@ -11,6 +11,9 @@ import pytest
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 TEST_DB = os.environ.get("TEST_DATABASE_URL")
+# catalog_reading reads its brand examples from the checked-in file in tests, never
+# over the network (READING_EXAMPLES=auto would, with Supabase keys in the environment).
+os.environ["READING_EXAMPLES"] = "file"
 
 
 class RestOverPostgres:

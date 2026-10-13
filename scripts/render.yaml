@@ -119,3 +119,32 @@ services:
         value: "3000"          # photos per run, at most; a day brings tens
       - key: PYTHONUNBUFFERED
         value: "1"
+
+  # The admin audits' jobs (scripts/audit_worker.py; routes/admin/audits.py queues
+  # them): build an audit run, judge it with Claude, measure a proposal, apply an
+  # approved one. --drain runs what is queued and exits; Render never overlaps two
+  # runs of one cron job. For quicker turnaround make it a background worker running
+  # `python scripts/audit_worker.py` (the loop) instead.
+  - type: cron
+    name: terpenomics-audit-worker
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerCommand: python scripts/audit_worker.py --drain --max-minutes 14
+    schedule: "*/15 * * * *"
+    plan: starter
+    region: oregon
+    autoDeploy: true
+    envVars:
+      - key: SUPABASE_URL
+        sync: false            # same values as the terpenomics web service
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false            # the LLM judge; without it runs are judged by hand
+      - key: OPENROUTER_API_KEY
+        sync: false            # Jev: measuring and re-matching re-read listings
+      - key: READING_EXAMPLES
+        value: db              # after scripts/import_reading_examples.py --write
+      - key: PYTHONUNBUFFERED
+        value: "1"

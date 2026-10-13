@@ -1136,3 +1136,146 @@ export type ReviewCard = {
   category_choice: ReviewCategoryChoice | null
   progress?: ReviewProgress
 }
+
+// ---------------------------------------------------------------------------
+// Admin audits (routes/admin/audits.py)
+// ---------------------------------------------------------------------------
+
+export type AuditVerdict = 'right' | 'wrong' | 'unsure'
+export type AuditRunStatus = 'queued' | 'building' | 'judging' | 'ready' | 'failed'
+
+export type AuditRate = {
+  items: number; judged: number; right: number; wrong: number; unsure: number
+  /** wrong / (right + wrong); null when nothing is decided. */
+  error_rate: number | null
+}
+
+export type AuditRun = {
+  id: string
+  brands: string[]
+  sample_size: number
+  judge_model: string | null
+  judge_label: string | null
+  status: AuditRunStatus
+  created_by: string
+  created_at: string
+  finished_at: string | null
+  total_items: number
+  judged_items: number
+  input_tokens: number
+  output_tokens: number
+  cost_usd: number
+  error: string | null
+}
+
+export type AuditBrandHealth = {
+  brand: string
+  catalog_id: string
+  listings: number
+  trusted: number
+  trusted_pct: number | null
+  review_backlog: number
+  last_audit: (AuditRun & { sample: AuditRate; all: AuditRate }) | null
+  open_flags: number
+  open_proposals: number
+}
+
+export type AuditJudgeModel = {
+  id: string; label: string; price_per_mtok: [number, number]; est_per_item_usd: number; est_run_usd: number
+}
+
+export type AuditEntryView = {
+  id: string; name: string | null; product_line: string | null; strain: string | null; category: string | null
+  subtype: string | null; variant: string | null; image_url: string | null; is_active?: boolean; source?: string | null
+}
+
+export type AuditEvidence = {
+  brand?: string
+  flags?: { kind: string; text: string }[]
+  listing?: {
+    id: string; name: string | null; store: string | null; category: string | null; size_field: string | null
+    page_size: string | null; price_cents: number | null; url: string | null; image_url: string | null
+    description: string | null; match_method: string | null; reading?: Record<string, string | null>
+  }
+  entry?: AuditEntryView | null
+  product_other_sizes?: AuditEntryView[]
+  siblings?: { name: string | null; store: string | null; price_cents: number | null; size_field: string | null; url: string | null; match_method: string | null }[]
+  siblings_total?: number
+  candidates?: AuditEntryView[]
+}
+
+export type AuditFix = {
+  kind: string; entry_id?: string; category?: string; subtype?: string; line?: string; strain?: string
+  size?: string; details?: string
+}
+
+export type AuditItem = {
+  id: string
+  listing_id: string
+  brand: string
+  source: 'flag' | 'sample'
+  flags: { kind: string; text: string }[]
+  evidence: AuditEvidence
+  verdict: AuditVerdict | null
+  cause: string | null
+  explanation: string | null
+  proposed_fix: AuditFix | null
+  judged_by: string | null
+  judged_at: string | null
+  fix: { action: 'manual-match' | 'store-error'; [k: string]: unknown } | null
+  proposals: { id: string; kind: string; status: string }[]
+}
+
+export type AuditRunSummary = {
+  all: AuditRate; sample: AuditRate; flagged: AuditRate
+  flags: Record<string, AuditRate & { precision: number | null }>
+  causes: Record<string, number>
+}
+
+export type AuditRunDetail = {
+  run: AuditRun
+  summary: AuditRunSummary
+  items: AuditItem[]
+  pending_jobs: { kind: string; status: string }[]
+}
+
+export type AuditCandidate = ReviewCandidate & { judge_pick?: boolean }
+
+export type ProposalKind =
+  | 'add-product' | 'add-size' | 'rekey' | 'set-subtype' | 'deactivate' | 'manual-match' | 'add-example' | 'remove-example'
+export type ProposalStatus = 'measuring' | 'measured' | 'approved' | 'applying' | 'applied' | 'rejected' | 'failed'
+
+export type MeasureChange = {
+  listing_id: string; name: string; variant?: string | null
+  before: { trust: string | null; page?: string | null; entry: string | null }
+  after: { trust: string | null; page?: string | null; entry: string | null }
+  move: string | null
+}
+
+export type ProposalMeasure = {
+  brand: string; category?: string | null; listings: number; runs?: number; jev?: boolean
+  trusted_before: number; trusted_after: number
+  tally: Record<string, number>; noise: number; follow?: number
+  risky: MeasureChange[]; changes: MeasureChange[]; more: number; notes: string[]
+}
+
+export type AuditProposal = {
+  id: string
+  run_id: string | null
+  item_id: string | null
+  brand: string
+  kind: ProposalKind
+  params: Record<string, unknown>
+  why: string | null
+  status: ProposalStatus
+  measure: ProposalMeasure | null
+  measured_at: string | null
+  created_by: string
+  created_at: string
+  decided_by: string | null
+  decided_at: string | null
+  applied_at: string | null
+  result: Record<string, unknown> | null
+  error: string | null
+  item?: AuditItem | null
+}

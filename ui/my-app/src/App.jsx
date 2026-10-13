@@ -33,6 +33,9 @@ const PosOAuthForward = lazy(() => import('./PosOAuthForward'))
 const PartnerPortal = lazy(() => import('./PartnerPortal'))
 const Receipts = lazy(() => import('./Receipts'))
 const ReviewQueue = lazy(() => import('./ReviewQueue'))
+const AuditBrands = lazy(() => import('./AuditBrands'))
+const AuditRunPage = lazy(() => import('./AuditRunPage'))
+const AuditProposals = lazy(() => import('./AuditProposals'))
 const TermsPage = lazy(() => import('./Legal').then(m => ({ default: m.TermsPage })))
 const PrivacyPage = lazy(() => import('./Legal').then(m => ({ default: m.PrivacyPage })))
 
@@ -70,6 +73,9 @@ function App() {
           <Route path="/admin/partners/:partnerId" element={<PartnerDetail />} />
           <Route path="/admin/receipts" element={<Receipts />} />
           <Route path="/admin/review" element={<ReviewQueue />} />
+          <Route path="/admin/audits" element={<AuditBrands />} />
+          <Route path="/admin/audits/runs/:runId" element={<AuditRunPage />} />
+          <Route path="/admin/audits/proposals" element={<AuditProposals />} />
         </Route>
         <Route path="/pos/oauth/:provider/callback" element={<PosOAuthForward />} />
         <Route path="/partner" element={<PartnerPortal />} />

@@ -50,6 +50,7 @@ import json
 import os
 import re
 import sys
+from contextlib import contextmanager
 from functools import lru_cache
 from pathlib import Path
 
@@ -128,13 +129,79 @@ _SELECTOR = {"category": "category", "subtype": "subtype", "line": "product_line
              "strain": "strain", "size": "variant"}
 
 
-@lru_cache(maxsize=1)
+_OVERRIDE: list[dict] = []     # examples_override's stack: the innermost is read
+
+
 def _examples() -> dict:
+    return _OVERRIDE[-1] if _OVERRIDE else _stored_examples()
+
+
+@contextmanager
+def examples_override(examples: dict | None):
+    """Read with these examples ({brand_slug: [example, ...]}) inside the block; None
+    changes nothing. catalog_fix.measure_data measures an example proposal with it."""
+    if examples is None:
+        yield
+        return
+    _OVERRIDE.append(examples)
+    try:
+        yield
+    finally:
+        _OVERRIDE.pop()
+
+
+def _examples_source() -> str:
+    """READING_EXAMPLES: "db" (the reading_examples table, db/migrations/0021), "file"
+    (data/reading_examples.json), or "auto" (the default): the table where the Supabase
+    service key is set, else the file."""
+    want = (os.environ.get("READING_EXAMPLES") or "auto").strip().lower()
+    if want in ("db", "file"):
+        return want
+    return "db" if os.environ.get("SUPABASE_URL") and os.environ.get("SUPABASE_SERVICE_ROLE_KEY") else "file"
+
+
+def examples_from_rows(rows: list[dict]) -> dict:
+    """reading_examples rows -> the file's shape, {brand_slug: [example, ...]}, in order."""
+    out: dict[str, list[dict]] = {}
+    for r in sorted(rows, key=lambda r: (r.get("brand_slug") or "", r.get("position") or 0)):
+        if r.get("is_active") is False:
+            continue
+        ex = {"listing": r["listing"], "entry": r.get("entry") or {}}
+        if r.get("size_field"):
+            ex["size_field"] = r["size_field"]
+        out.setdefault(r["brand_slug"], []).append(ex)
+    return out
+
+
+def examples_from_file() -> dict:
     try:
         data = json.loads(EXAMPLES_PATH.read_text())
     except FileNotFoundError:
         return {}
     return {k: v for k, v in data.items() if not k.startswith("_")}
+
+
+@lru_cache(maxsize=1)
+def _stored_examples() -> dict:
+    """The brand examples, from the table when that is the source (an empty or
+    unreadable table falls back to the file). Cached per process: a long-running
+    reader calls reload_examples() to see new ones."""
+    if _examples_source() == "db":
+        try:
+            import db_http
+            got = examples_from_rows(db_http.select_all(
+                "reading_examples", "select=brand_slug,position,listing,size_field,entry,is_active"
+                                    "&is_active=is.true&order=brand_slug,position"))
+            if got:
+                return got
+        except Exception as exc:          # the file is the fallback, whatever went wrong
+            print(f"  [warn] reading examples from the database failed ({exc}); using the file",
+                  file=sys.stderr)
+    return examples_from_file()
+
+
+def reload_examples() -> None:
+    _stored_examples.cache_clear()
 
 
 def brand_examples(slug: str | None, entries: list[dict]) -> list[tuple[dict, dict]]:
