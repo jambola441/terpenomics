@@ -227,7 +227,7 @@ def judge_run(run_id: str, client=None) -> dict:
     try:
         client = client or audit_judge.make_client()
     except audit_judge.JudgeUnavailable as exc:
-        db_http.update("audit_runs", f"id=eq.{run_id}", {"status": "failed", "error": str(exc), "finished_at": now()})
+        db_http.update("audit_runs", f"id=eq.{run_id}", {"status": "ready", "error": str(exc), "finished_at": now()})
         return {"judged": 0, "error": str(exc)}
     items = db_http.select_all("audit_items", f"select=id,evidence,verdict&run_id=eq.{run_id}&order=created_at")
     spent = {k: run.get(k) or 0 for k in ("input_tokens", "output_tokens", "cost_usd")}
