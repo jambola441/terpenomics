@@ -135,10 +135,27 @@ def _photo_blocks(evidence: dict) -> list[dict]:
     return out
 
 
+# How a match was made (trusted or not) stays off the judge's evidence: told a match is
+# trusted, a judge leans toward agreeing, and the trusted sample would measure it too kindly.
+HIDDEN_KEYS = ("match_method",)
+
+
+def blind(evidence: dict) -> dict:
+    """The evidence without how the listing and its siblings were matched."""
+    def strip(d):
+        return {k: v for k, v in d.items() if k not in HIDDEN_KEYS} if isinstance(d, dict) else d
+    out = dict(evidence)
+    if isinstance(out.get("listing"), dict):
+        out["listing"] = strip(out["listing"])
+    if isinstance(out.get("siblings"), list):
+        out["siblings"] = [strip(s) for s in out["siblings"]]
+    return out
+
+
 def prompt(evidence: dict, with_photos: bool = True) -> list[dict]:
-    """The user turn: the evidence as JSON, then the photos (by URL)."""
+    """The user turn: the evidence (blinded) as JSON, then the photos (by URL)."""
     text = ("Audit this match. Evidence (JSON):\n"
-            + json.dumps(evidence, ensure_ascii=False, indent=1, default=str))
+            + json.dumps(blind(evidence), ensure_ascii=False, indent=1, default=str))
     return [{"type": "text", "text": text}] + (_photo_blocks(evidence) if with_photos else [])
 
 
