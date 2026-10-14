@@ -131,7 +131,7 @@ services:
     dockerfilePath: ./Dockerfile
     dockerContext: .
     dockerCommand: python scripts/audit_worker.py --drain --max-minutes 14
-    schedule: "*/15 * * * *"
+    schedule: "*/5 * * * *"
     plan: starter
     region: oregon
     autoDeploy: true
