@@ -191,3 +191,12 @@ def test_proposal_lifecycle(world):
         assert kinds.count("measure_proposal") == 2 and kinds.count("apply_proposal") == 1
     assert c.post(f"/admin/audits/proposals/{p['id']}/reject", json={}).status_code == 409
     assert c.get("/admin/audits/proposals?status=decided").json()["proposals"] == []
+
+
+def test_judge_prompt_hides_match_method():
+    import audit_judge
+    evidence = {"listing": {"name": "x", "match_method": "attributes"},
+                "siblings": [{"name": "y", "match_method": "manual"}]}
+    text = audit_judge.prompt(evidence, with_photos=False)[0]["text"]
+    assert "match_method" not in text
+    assert evidence["listing"]["match_method"] == "attributes"   # the stored evidence is untouched

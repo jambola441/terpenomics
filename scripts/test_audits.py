@@ -186,6 +186,18 @@ def test_judge_run_without_a_key_leaves_the_run_for_manual_judging(rest, monkeyp
     assert "ANTHROPIC_API_KEY" in out["error"] and fake.tables["audit_runs"][0]["status"] == "ready"
 
 
+def test_judge_run_whose_calls_all_fail_is_failed(rest, monkeypatch):
+    fake = rest({"audit_runs": [{"id": "r1", "judge_model": "claude-haiku-5-5"}],
+                 "audit_items": [{"id": "i1", "run_id": "r1", "evidence": {}, "verdict": None}]})
+
+    def boom(*a, **k):
+        raise RuntimeError("401 invalid x-api-key")
+    import audit_judge
+    monkeypatch.setattr(audit_judge, "judge", boom)
+    out = audits.judge_run("r1", client=object())
+    assert out["errors"] and fake.tables["audit_runs"][0]["status"] == "failed"
+
+
 # ---------------------------------------------------------------------------
 # Proposals
 # ---------------------------------------------------------------------------

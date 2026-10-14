@@ -11,7 +11,7 @@ a time, oldest first.
   python scripts/audit_worker.py --drain      # run what is queued, then exit (a cron job)
   python scripts/audit_worker.py --drain --max-minutes 14
 
-On Render: a cron job every 15 minutes with --drain --max-minutes 14 (scripts/render.yaml,
+On Render: a cron job every 5 minutes with --drain --max-minutes 14 (scripts/render.yaml,
 terpenomics-audit-worker), or a background worker running the loop. Needs SUPABASE_URL
 and SUPABASE_SERVICE_ROLE_KEY (all reads and writes are over Supabase's REST API),
 ANTHROPIC_API_KEY for the LLM judge, OPENROUTER_API_KEY for Jev (measuring and
