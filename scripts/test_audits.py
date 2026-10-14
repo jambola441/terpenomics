@@ -128,6 +128,8 @@ def test_items_flag_the_odd_price_and_sample_the_rest(monkeypatch):
     rows = [listing(f"l{i}", f"Camino Yuzu Lemon 20pk {i}", "e20", store=f"s{i}") for i in range(5)]
     rows.append(listing("cheap", "Camino Yuzu Lemon 20pk", "e20", price=900, store="s9"))
     rows.append(listing("review", "Camino ???", None, method="review_unsure"))
+    # Matched but not trusted, at an odd price: the review queue's, not the audit's.
+    rows.append(listing("unsure", "Camino Yuzu Lemon 20pk", "e20", method="review_unsure", price=500, store="s8"))
     stores = {f"s{i}": {"id": f"s{i}", "name": f"Store {i}"} for i in range(10)}
     cats = {"camino": catalog()}
     monkeypatch.setattr(audits, "load_brand", lambda brand, catalogs: (cats["camino"], rows, stores))
@@ -139,7 +141,7 @@ def test_items_flag_the_odd_price_and_sample_the_rest(monkeypatch):
     assert len(sampled) == 3 and all(i["listing_id"].startswith("l") for i in sampled)
     ev = flagged[0]["evidence"]
     assert ev["entry"]["id"] == "e20" and [e["id"] for e in ev["product_other_sizes"]] == ["e10"]
-    assert ev["siblings_total"] == 5 and ev["listing"]["store"] == "Store 9"
+    assert ev["siblings_total"] == 6 and ev["listing"]["store"] == "Store 9"
     # Settled listings (judged right, or a store error, before) are not flagged again.
     again = audits.items_for_brand("Camino", cats, 0, {}, {"cheap"}, random.Random(1))
     assert again == []
