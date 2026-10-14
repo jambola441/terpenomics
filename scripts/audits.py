@@ -158,8 +158,9 @@ def evidence(listing: dict, catalog: dict, by_entry: dict[str, list[dict]], stor
 def items_for_brand(brand: str, catalogs: dict, n: int, dismissals: dict, settled: set[str],
                     rng: random.Random | None = None) -> list[dict]:
     """The audit items (rows for audit_items, without run_id) for one brand: its flagged
-    listings, worst first, up to MAX_FLAGS, then `n` sampled trusted listings. `settled`:
-    listings an earlier audit found right or a store error; their flags are left out."""
+    trusted listings, worst first, up to MAX_FLAGS, then `n` sampled trusted listings. Only
+    trusted listings are audited: the shop shows them, and the rest wait in the review queue.
+    `settled`: listings an earlier audit found right or a store error; their flags are left out."""
     catalog, listings, stores = load_brand(brand, catalogs)
     by_entry: dict[str, list[dict]] = defaultdict(list)
     for l in listings:
@@ -167,7 +168,7 @@ def items_for_brand(brand: str, catalogs: dict, n: int, dismissals: dict, settle
             by_entry[str(l["catalog_entry_id"])].append(l)
     flags = {lid: f for lid, f in flags_for(catalogs, listings, stores, dismissals).items() if lid not in settled}
     by_id = {str(l["id"]): l for l in listings}
-    flagged = sorted((lid for lid in flags if lid in by_id),
+    flagged = sorted((lid for lid in flags if lid in by_id and trusted(by_id[lid])),
                      key=lambda lid: max(f["rank"] for f in flags[lid]), reverse=True)[:MAX_FLAGS]
     picked = [(by_id[lid], "flag", flags[lid]) for lid in flagged]
     picked += [(l, "sample", []) for l in sample(listings, n, set(flagged), rng)]
