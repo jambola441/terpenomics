@@ -227,7 +227,7 @@ def judge_run(run_id: str, client=None) -> dict:
     try:
         client = client or audit_judge.make_client()
     except audit_judge.JudgeUnavailable as exc:
-        db_http.update("audit_runs", f"id=eq.{run_id}", {"status": "ready", "error": str(exc), "finished_at": now()})
+        db_http.update("audit_runs", f"id=eq.{run_id}", {"status": "failed", "error": str(exc), "finished_at": now()})
         return {"judged": 0, "error": str(exc)}
     items = db_http.select_all("audit_items", f"select=id,evidence,verdict&run_id=eq.{run_id}&order=created_at")
     spent = {k: run.get(k) or 0 for k in ("input_tokens", "output_tokens", "cost_usd")}
@@ -249,8 +249,11 @@ def judge_run(run_id: str, client=None) -> dict:
         spent["output_tokens"] += v.output_tokens
         spent["cost_usd"] = round(spent["cost_usd"] + v.cost_usd, 6)
         db_http.update("audit_runs", f"id=eq.{run_id}", {**spent, "judged_items": judged})
+    # Every item still unjudged because its call failed (a bad key, an outage): the run
+    # failed, so the page says so instead of showing a ready run with no verdicts.
+    failed = bool(errors) and judged == 0
     db_http.update("audit_runs", f"id=eq.{run_id}", {
-        "status": "ready", "finished_at": now(), "judged_items": judged,
+        "status": "failed" if failed else "ready", "finished_at": now(), "judged_items": judged,
         "error": (f"{len(errors)} item(s) failed: " + "; ".join(errors[:3])) if errors else None})
     return {"judged": judged, "errors": errors, **spent}
 

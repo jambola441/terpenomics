@@ -47,13 +47,15 @@ SYSTEM = """You audit how a cannabis marketplace matches dispensary listings to 
 Each listing a dispensary sells has been matched to one entry of its brand's catalog: one product (category, subtype, product line, strain or flavour) in one size. You are shown the listing as the store wrote it, the catalog entry it is matched to, that product's other sizes, the other listings matched to the same entry, some other entries of the brand it could be instead, and the automatic flags (if any) that brought it to your attention.
 
 Decide whether the match is right:
-- "right": the listing is that product in that size.
-- "wrong": it is a different product, strain, flavour, line, format or size, or the store's own data is wrong (a price far off what the same product costs elsewhere, a photo of another product, a title naming something else).
+- "right": the listing is that product in that size. This includes a listing whose store data has a mistake (a price far off what the product costs elsewhere, a photo of another product) when the listing is still that product: the verdict is right, the cause names the store error and the fix is store-error.
+- "wrong": the listing is a different product, strain, flavour, line, format or size than the entry.
 - "unsure": the evidence does not settle it. Prefer unsure to a guess.
+
+The store's title outweighs its photo: stores reuse photos across sizes and lines, so a photo that disagrees with what the title, size field, price and siblings agree on is a store photo error, not evidence of another product.
 
 Stores abbreviate, reorder words, add shelf codes and leave out the line or the size; a size field can disagree with the title (trust what the title, price and siblings agree on). Prices vary by store and sales happen: a price somewhat off is not by itself wrong, but a price that matches a different size of the product is strong evidence. An edible's mg is its total THC only.
 
-Give a cause (none when right), a short explanation naming the evidence, and the fix you would propose:
+Write the explanation first, weighing the evidence, then give the verdict that explanation reaches; a verdict must agree with its explanation. Give a cause (none when right with no store error), a short explanation naming the evidence, and the fix you would propose:
 - manual-match: the listing is another existing entry; give its entry_id from the candidates.
 - store-error: the store's price, photo or title is wrong and the match is fine; say which in details.
 - add-product / add-size: the catalog lacks the product or this size of it; give category, subtype, line, strain, size as the catalog would write them.
@@ -64,10 +66,11 @@ Leave fields that do not apply empty."""
 
 SCHEMA = {
     "type": "object",
+    # Explanation first: the model reasons before it commits to a verdict.
     "properties": {
+        "explanation": {"type": "string"},
         "verdict": {"type": "string", "enum": list(VERDICTS)},
         "cause": {"type": "string", "enum": list(CAUSES)},
-        "explanation": {"type": "string"},
         "fix": {
             "type": "object",
             "properties": {
@@ -84,7 +87,7 @@ SCHEMA = {
             "additionalProperties": False,
         },
     },
-    "required": ["verdict", "cause", "explanation", "fix"],
+    "required": ["explanation", "verdict", "cause", "fix"],
     "additionalProperties": False,
 }
 
