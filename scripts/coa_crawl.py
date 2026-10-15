@@ -158,7 +158,8 @@ def discover(recipe: dict) -> list[dict]:
         if url in seen:
             continue
         seen.add(url)
-        item = {"url": url, "text": text, "strain": None, "lot": None, "product": None}
+        item = {"url": url, "text": text, "strain": None, "lot": None, "product": None,
+                "_only": src.get("only")}
         for rule in recipe.get("name", []):
             field = urllib.parse.unquote(url.rsplit("/", 1)[-1].split("?")[0]) if rule["from"] == "file" else text
             m = re.search(rule["match"], field)
@@ -190,7 +191,7 @@ def cached_pdf(url: str) -> str | None:
 
 
 def read_report(item: dict) -> dict:
-    out = dict(item)
+    out = {k: v for k, v in item.items() if not k.startswith("_")}
     try:
         path = cached_pdf(item["url"])
     except Exception as e:  # one bad link costs that report, not the run
@@ -198,9 +199,13 @@ def read_report(item: dict) -> dict:
     if not path:
         return {**out, "error": "not a PDF"}
     try:
-        reading = coa_read.read(coa_read.pdf_text(path))
+        text = coa_read.pdf_text(path)
+        reading = coa_read.read(text)
     except subprocess.CalledProcessError as e:
         return {**out, "error": f"pdftotext: {e}"}
+    only = (item.get("_only") or "")
+    if only and not re.search(only, text):
+        return {**out, "error": "skipped: not this market (recipe `only`)"}
     out.update(reading)
     # The link's lot is the brand's word; the report's is the lab's. Keep both, and
     # use the report's where the link has none.
@@ -244,10 +249,13 @@ def _summary(r: dict) -> str:
     if r.get("error"):
         return f"  ERROR {r['error']}  {r['url']}"
     ids, t = r["ids"], r["totals"]
+    total, rows = t["total_terpenes"], sum(r["terpenes"].values())
+    # A stated total its own rows do not add up to is a misread column, not chemistry.
+    flag = " TOTAL?" if total and rows and abs(total - rows) > max(0.15 * total, 0.05) else ""
     top = ", ".join(f"{k} {v:g}" for k, v in sorted(r["terpenes"].items(), key=lambda x: -x[1])[:3] if v)
     return (f"  {r.get('strain') or '?':22.22} lot {r['lot'] or '-':18.18} {ids['lab'] or 'UNKNOWN LAB':14.14} "
             f"tag {ids['metrc_tag'] or '-':24} THC {t['total_thc'] if t['total_thc'] is not None else '-'}  "
-            f"terps {len(r['terpenes'])} ({t['total_terpenes'] if t['total_terpenes'] is not None else '-'}%) {top}")
+            f"terps {len(r['terpenes'])} ({t['total_terpenes'] if t['total_terpenes'] is not None else '-'}%){flag} {top}")
 
 
 def cmd_list(recipe: dict, limit: int | None) -> None:
@@ -264,15 +272,17 @@ def cmd_check(recipe: dict, limit: int | None, catalog: bool) -> dict:
     reports = [read_report(it) for it in sample]
     for r in reports:
         print(_summary(r))
+    skipped = [r for r in reports if (r.get("error") or "").startswith("skipped")]
+    reports = [r for r in reports if r not in skipped]
     bad = [r for r in reports if r.get("error")]
     unnamed = [r for r in items if not r["strain"]]
     unknown_lab = [r for r in reports if not r.get("error") and not r["ids"]["lab"]]
     no_numbers = [r for r in reports if not r.get("error") and not r["terpenes"] and not r["cannabinoids"]]
-    print(f"  {len(unnamed)} links with no strain read, {len(bad)} errors, "
+    print(f"  {len(unnamed)} links with no strain read, {len(skipped)} other markets, {len(bad)} errors, "
           f"{len(unknown_lab)} unknown labs, {len(no_numbers)} with no numbers")
     if catalog:
         strains = catalog_strains(recipe["brand"])
-        matched = {m for m in (match(i, strains) for i in items) if m}
+        matched = {m for m in (match(i, strains) for i in items + [r for r in reports if not r.get("error")]) if m}
         print(f"  catalog: {len(matched)} of {len(strains)} strains have a report; "
               f"no report: {', '.join(sorted(set(strains) - matched)[:12])}")
     return {"reports": reports}

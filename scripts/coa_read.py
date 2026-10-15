@@ -123,6 +123,8 @@ LABS: dict[str, dict] = {
     "Keystone State Testing": {"sign": r"Keystone State Testing", "cannabinoids": None, "terpenes": 1},
     # Cannabinoids: LOQ (ug/mL), %, mg/g, mg/unit. Terpenes: LOQ, %, status.
     "ACT Laboratories": {"sign": r"ACT Laboratories", "cannabinoids": 1, "terpenes": 1},
+    # Hemp Hunter Labs dba Cirona Labs. Cannabinoids: % w/w, mg/serving, MRL. Terpenes: %, MRL.
+    "Cirona Labs": {"sign": r"Cirona Labs|Hemp Hunter Labs", "cannabinoids": 0, "terpenes": 0},
 }
 
 # ---------------------------------------------------------------------------- ids
@@ -133,29 +135,33 @@ ID_PATTERNS: dict[str, list[str]] = {
     "source_package": [r"Regulator Source Package ID\s*:?\s*(1A4[0-9A-F]{21})",
                        r"Metrc Source Package\s*:?\s*(1A4[0-9A-F]{21})"],
     "lot":            [r"Lot\s*(?:#|Number|No\.?)\s*:?\s*([A-Z0-9][A-Z0-9._/-]{2,})",
-                       r"Harvest/Lot ID\s*:?\s*([A-Z0-9][A-Z0-9._/-]{2,})",
+                       r"Harvest/Lot (?:ID|#)\s*:?\s*([A-Z0-9][A-Z0-9._/-]{2,})",
+                       r"Batch Lot ID\s*:?\s*([A-Z0-9][A-Z0-9._/-]{2,})",
                        r"Batch\s*#\s*:?\s*([A-Z0-9][A-Z0-9._/-]{2,}?)(?=,|\s)",
                        r"Regulator Batch ID\s*:?\s*([A-Z0-9][A-Z0-9._/-]{2,})"],
     "license":        [r"License\s*(?:#|Number)\s*:?\s*((?:OCM-)?[A-Z]{3,5}-\d{2,4}-\d{5,6}(?:-[A-Z0-9]+)?)"],
     "product":        [r"Sample Description\s*:\s*(.+?)\s{2,}", r"Sample Description\s*:\s*(.+)$",
-                       r"Strain\s*:\s*([^,\n]+?)\s*,"],
+                       r"Strain\s*:\s*([^,\n]+?)\s*,",
+                       # Smithers: the product's name stands alone above "Metrc Package ID".
+                       r"^[ \t]*(\S[^\n]*?)[ \t]*\n(?:[ \t]*\n)*[ \t]*Metrc Package ID"],
     "test_date":      [r"(?:Published|Date Released|Analyzed Date|Date analyzed)\s*:?\s*(\d{1,2}/\d{1,2}/\d{2,4})"],
 }
 
 TOTAL_PATTERNS: dict[str, list[str]] = {
-    "total_thc":           [r"^\s*Total (?:Tetrahydrocannabinol \(THC\)|THC)[ \t]+-?[ \t]*([\d.]+)\s",
+    "total_thc":           [r"^\s*Total THC\s*\[.*?\][ \t]+([\d.]+)",r"^\s*Total (?:Tetrahydrocannabinol \(THC\)|THC)[ \t]+-?[ \t]*([\d.]+)\s",
                             r"Total THC\s*\n\s*([\d.]+)\s*%",
                             r"([\d.]+)\s*%?\s*\n?\s*Total THC\b(?!/)"],
-    "total_cbd":           [r"^\s*Total (?:Cannabidiol \(CBD\)|CBD)[ \t]+-?[ \t]*([\d.]+)\s"],
+    "total_cbd":           [r"^\s*Total CBD\s*\[.*?\][ \t]+([\d.]+)",r"^\s*Total (?:Cannabidiol \(CBD\)|CBD)[ \t]+-?[ \t]*([\d.]+)\s"],
     "total_cannabinoids":  [r"^\s*Total Cannabinoids[ \t]+([\d.]+)\s"],
-    "total_terpenes":      [r"^\s*Total Terpenes\s+(?:[\d,]+\s+)?([\d.]+)\s+(?:Passed|Tested)",
+    "total_terpenes":      [r"^\s*TOTAL TERPENES[ \t]+[\d.]+[ \t]+[\d.]+[ \t]+([\d.]+)[ \t]+[\d.]+",  # Kaycha: limit, LOQ, %, mg
+                            r"^\s*Total Terpenes \(% w/w\)[ \t]+([\d.]+)",r"^\s*Total Terpenes\s+(?:[\d,]+\s+)?([\d.]+)\s+(?:Passed|Tested)",
                             r"^\s*Total Terpenes\s+([\d.]+)\s*$", r"^\s*Total Terpenes\s+([\d.]+)\s", r"Terpene Total.*?\(([\d.]+)%\)",
                             r"^\s*Total \(%\)\s+([\d.]+)"],
 }
 
 # --------------------------------------------------------------------------- read
 
-_VALUE = re.compile(r"<\s*LOQ\b|\bN\.?D\.?\b|<\s*\d*\.?\d+|(?<![\w.])-?\d+(?:\.\d+)?(?![\w.])", re.I)
+_VALUE = re.compile(r"<\s*(?:LOQ|MRL|LOD)\b|\bN\.?D\.?\b|<\s*\d*\.?\d+|(?<![\w.])-?\d+(?:\.\d+)?(?![\w.])", re.I)
 _CAS = re.compile(r"\b\d{2,7}-\d{2}-\d\b")
 _PAREN = re.compile(r"\([^)]*\)")
 _THOUSANDS = re.compile(r"(?<=\d),(?=\d{3}(?!\d))")

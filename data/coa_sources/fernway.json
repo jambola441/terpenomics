@@ -1,0 +1,11 @@
+{
+  "brand": "Fernway",
+  "site": "https://fernway.com",
+  "source": {"kind": "wp_media", "site": "https://fernway.com", "link": "/COA-FNY-.+\\.pdf$"},
+  "learned": "2026-10-15: no lab-results page (the FAQ says 'available upon request'), but the WordPress media library holds ~770 reports, COA-FNY-<STRAIN6>-<FORMAT>-<YYMMDD>.pdf. Lab: Smithers CTS.",
+  "notes": [
+    "The filename's strain is a 6-letter code (ALPINE, ELDERF), not a name; the strain comes from the report's product line ('Alpine Strawberry - 1.0g (T PRO)').",
+    "Format codes: 1G, T1GP / T2GP (Traveler Pro), LT1GP, L1G."
+  ],
+  "name": [{"from": "file", "match": "^COA-(?P<lot>FNY-[A-Z0-9]+-[A-Z0-9]+-\\d{6})"}]
+}

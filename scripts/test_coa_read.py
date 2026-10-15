@@ -74,3 +74,21 @@ def test_an_unknown_lab_gives_ids_but_no_guessed_numbers():
     r = coa_read.read("Some Lab LLC\nMetrc Tag: 1A4120300000285000006943\nLimonene 0.1 1.5\n")
     assert r["ids"]["lab"] is None and r["ids"]["metrc_tag"] == "1A4120300000285000006943"
     assert r["terpenes"] == {} and r["cannabinoids"] == {}
+
+
+def test_kaycha_newer_layout_total_is_the_percent_column():
+    # "TOTAL TERPENES  11.5  0.1000  1.6200  56.7000": limit, LOQ, %, mg/unit.
+    r = _read("kaycha2_electraleaf.txt")
+    assert r["ids"]["lab"] == "Kaycha Labs" and r["ids"]["license"] == "OCM-PROC-24-000076"
+    assert r["totals"]["total_terpenes"] == 1.62
+    assert abs(sum(r["terpenes"].values()) - 1.62) < 0.001
+    assert r["cannabinoids"]["THCa"] == 28.3947 and r["totals"]["total_thc"] == 26.7346
+
+
+def test_cirona_reads_below_reporting_limit_as_zero():
+    r = _read("cirona_cannabals.txt")
+    assert r["ids"]["lab"] == "Cirona Labs" and r["ids"]["lot"] == "HE-CA-WPB-01-0924"
+    # "< MRL" is one token, so CBD's percent is not shifted onto its mg column.
+    assert r["cannabinoids"]["CBD"] == 0.3 and r["cannabinoids"]["THCa"] == 0.0
+    assert r["totals"]["total_thc"] == 0.3 and r["totals"]["total_cannabinoids"] == 0.614
+    assert r["terpenes"]["Limonene"] == 0.0

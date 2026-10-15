@@ -1,0 +1,12 @@
+{
+  "brand": "ElectraLeaf",
+  "site": "https://electraleaf.com",
+  "source": {"kind": "wp_media", "site": "https://electraleaf.com", "link": "\\.pdf$", "only": "OCM-|1A412"},
+  "learned": "2026-10-15: WordPress media library, ~460 reports. Names vary over time: COA_<Strain>-<size>_<lot>_Compliance_<lab sample>.pdf, '<Strain> <size> <lot>', COA_1G_<Strain>.pdf.",
+  "name": [
+    {"from": "file", "match": "^COA_(?P<strain>[A-Za-z][A-Za-z-]+?)-(?:3\\.5|1G|7G|14G|28G)_(?P<lot>NY-\\d{6}-[A-Z0-9]+)"},
+    {"from": "text", "match": "^(?P<strain>[A-Za-z][A-Za-z ']+?)\\s+(?:3\\.5|1G|7G|5 Packs)?\\s*(?P<lot>NY-\\d{6}-[A-Z0-9]+)"},
+    {"from": "file", "match": "^COA_(?:1G|3\\.5G?)_(?P<strain>[A-Za-z]+)\\.pdf$"},
+    {"from": "text", "match": "^(?P<strain>[A-Za-z][A-Za-z ]+?)\\s+(?P<lot>AL\\d{8}-\\d{3})"}
+  ]
+}

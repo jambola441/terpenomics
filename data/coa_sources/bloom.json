@@ -1,0 +1,10 @@
+{
+  "brand": "BLOOM",
+  "site": "https://thebloombrands.com",
+  "source": {"kind": "wp_media", "site": "https://thebloombrands.com", "link": "\\.pdf$", "skip": "(?i)TestingCertification"},
+  "learned": "2026-10-15: WordPress media library, ~50 vape reports titled 'VABL00018 – Bloom Maui Wowie – 86.97_'; VABL##### is the batch.",
+  "name": [
+    {"from": "text", "match": "^(?P<lot>VABL\\d+(?:-05[Gg])?)\\s*[–-]?\\s*(?i:bloom)\\s*(?P<strain>.+?)(?:\\s*(?:Vape|POD|[\\d.]+g)\\b.*|\\s*[–-]\\s*[\\d.]+.*)?$"},
+    {"from": "text", "match": "^(?P<strain>[A-Za-z][A-Za-z ]+?)(?:\\s+\\.?\\d.*)?$"}
+  ]
+}

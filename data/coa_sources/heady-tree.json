@@ -1,0 +1,10 @@
+{
+  "brand": "Heady Tree",
+  "site": "https://headytree.com",
+  "source": {"kind": "wp_media", "site": "https://headytree.com", "link": "\\.pdf$"},
+  "learned": "2026-10-15: WordPress media library, ~210 reports titled '#C018 Gas Leak Vape 2nd Run' or '3.5G Glitterbomb Jar'; the # number is the brand's batch.",
+  "name": [
+    {"from": "text", "match": "^#(?P<lot>[A-Z]?\\d{3,4})\\s+(?:[\\d.]+G\\s+)?(?P<strain>.+?)(?:\\s+(?:Vape|[\\d.]+G|Pre Roll|Jar|Mylar))*(?:\\s+\\d(?:st|nd|rd|th) Run)?$"},
+    {"from": "text", "match": "^(?:[\\d.]+G\\s+)(?P<strain>.+?)(?:\\s+(?:Vape|Pre Roll|Jar|Mylar))*(?:\\s+\\d(?:st|nd|rd|th) Run)?$"}
+  ]
+}

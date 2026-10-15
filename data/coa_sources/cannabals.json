@@ -1,0 +1,10 @@
+{
+  "brand": "Cannabals",
+  "site": "https://cannabalsny.com",
+  "source": {"kind": "wp_media", "site": "https://cannabalsny.com", "link": "\\.pdf$"},
+  "learned": "2026-10-15: WordPress media library, ~260 reports: Cannabals_<Format>_<Strain>_<LOT>.pdf, newer ones lot only (HE-CA-WP-01-0924).",
+  "name": [
+    {"from": "file", "match": "(?i)^Cannabals_[a-z]+_(?P<strain>[^_]+)_-?(?P<lot>[A-Z]{1,4}-[A-Z0-9-]+?)(?:-\\d)?\\.pdf$"},
+    {"from": "file", "match": "^(?P<lot>H?[A-Z]{1,2}-CA-[A-Z0-9]+-\\d+-\\d{4})"}
+  ]
+}
