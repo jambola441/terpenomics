@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { KeyboardAvoidingView, Platform, Text, TextInput, View, StyleSheet } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { Text, TextInput, View, StyleSheet } from 'react-native'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useKeyboardHeight } from '@/lib/useKeyboardHeight'
 import { api, ApiError } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import { formatE164ForDisplay, formatPhoneInput, toE164 } from '@/lib/phone'
@@ -14,6 +15,8 @@ const DEFAULT_CODE_LENGTH = 6
 /** Phone number, then the code. Mirrors the SMS half of the web Login page. */
 export default function SignIn() {
   const { signInWithSms } = useAuth()
+  const insets = useSafeAreaInsets()
+  const keyboard = useKeyboardHeight()
   const [phone, setPhone] = useState('')
   const [sentTo, setSentTo] = useState<string | null>(null)
   const [challengeId, setChallengeId] = useState<string | null>(null)
@@ -100,7 +103,10 @@ export default function SignIn() {
 
   return (
     <SafeAreaView style={s.screen}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={s.body}>
+      {/* Centred in whatever the keyboard leaves, so the button stays above
+          the number pad (which has no return key to dismiss it). The safe
+          area's bottom inset sits under the keyboard, so it isn't counted twice. */}
+      <View style={[s.body, { paddingBottom: space[6] + Math.max(0, keyboard - insets.bottom) }]}>
         <Logo size={32} style={s.logo} />
 
         {sentTo === null ? (
@@ -162,7 +168,7 @@ export default function SignIn() {
             <Text style={[type.body, { color: t.danger, flex: 1 }]}>{error}</Text>
           </View>
         ) : null}
-      </KeyboardAvoidingView>
+      </View>
     </SafeAreaView>
   )
 }
