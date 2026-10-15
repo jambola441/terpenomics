@@ -22,6 +22,7 @@ Usage
   python scripts/coa_crawl.py check --brand Jaunty --limit 5  # read 5, report fields + catalog match
   python scripts/coa_crawl.py fetch --brand Jaunty            # all -> data/coas/<slug>.json
   python scripts/coa_crawl.py check --all --limit 3
+  python scripts/coa_crawl.py push  --brand Jaunty [--dry-run] # PDFs -> `coas` bucket, rows -> coa_reports
   python scripts/coa_crawl.py coverage                        # listings the fetched reports reach
 """
 
@@ -231,6 +232,47 @@ def read_report(item: dict) -> dict:
     return out
 
 
+# ----------------------------------------------------------------------- category
+
+# Our categories, by words a report, its link or its filename uses. Tried in order:
+# "Vape Cartridge - Live Rosin" is a vape, "Infused Pre-Roll" a pre-roll, before the
+# rosin and flower words they contain.
+CATEGORY_WORDS: list[tuple[str, str]] = [
+    ("tinctures",  r"tincture|\bdrops?\b"),
+    ("topical",    r"topical|balm|lotion|intimacy|massage"),
+    ("preroll",    r"pre-?\s?rolls?|\bjoints?\b|\bblunts?\b|\bpuffs\b|\bdogwalkers?\b"),
+    ("vaporizers", r"\bvapes?\b|cart(?:ridge)?s?\b|\bpods?\b|disposable|all[- ]in[- ]one|\baio\b|\b510\b|traveler"),
+    ("edible",     r"gumm|edible|chocolate|\bchews?\b|\bmints?\b|beverage|\bdrinks?\b|cookie|lozenge|"
+                   r"\bpearls\b|\bpips\b|pixlz|\bmega\b|\bbar\b|caramel|taffy|seltzer"),
+    ("concentrate", r"rosin|resin|badder|batter|\bsugar\b|\bhash\b|diamonds?|concentrate|\bwax\b|"
+                    r"shatter|crumble|derivative|(?<!un-)(?<!un)extract"),
+    ("flower",     r"flower|\bplant\b|un-?extracted|\bbuds?\b|eighth|\b3\.5g?\b|\b7g\b|\b14g\b|cured"),
+]
+
+
+def category(report: dict, recipe: dict, brand_categories: set[str]) -> str | None:
+    """Our category for the product a report tested, or None if nothing says.
+
+    A brand that makes one category needs no evidence. Otherwise the recipe's own
+    rules (a lot prefix that names a line) come first, then the words of the link,
+    the filename, the report's product line, and last the lab's sample type."""
+    cats = brand_categories - {"merch"}
+    if len(cats) == 1:
+        return next(iter(cats))
+    ids = report.get("ids") or {}
+    fields = {"lot": report.get("lot") or "", "text": report.get("text") or "",
+              "file": urllib.parse.unquote(report["url"].rsplit("/", 1)[-1].split("?")[0])}
+    for rule in recipe.get("category", []):
+        if all(re.search(rx, fields.get(f, "")) for f, rx in rule["when"].items()):
+            return rule["set"]
+    for hint in (fields["text"], fields["file"].replace("-", " ").replace("_", " "),
+                 ids.get("product"), ids.get("sample_type")):
+        for cat, rx in CATEGORY_WORDS:
+            if hint and re.search(rx, hint, re.I) and (not cats or cat in cats):
+                return cat
+    return None
+
+
 # -------------------------------------------------------------------------- match
 
 def catalog_strains(brand: str) -> dict[str, list[str]]:
@@ -324,6 +366,117 @@ def cmd_fetch(recipe: dict, catalog: bool) -> None:
     print(f"{recipe['brand']}: {len(ok)} of {len(reports)} reports read -> {os.path.relpath(path, ROOT)}")
 
 
+def catalog_entries(brand: str) -> tuple[str, list[dict]]:
+    """The brand's catalog id and active entries (id, strain, category)."""
+    from db_http import run_sql
+    q = brand.replace("'", "''")
+    cat = run_sql(f"select id from brand_catalogs where brand_name = '{q}'")
+    if not cat:
+        raise SystemExit(f"no brand_catalogs row for {brand!r}")
+    rows = run_sql("select e.id, e.strain, e.category from brand_catalog_entries e "
+                   f"where e.catalog_id = '{cat[0]['id']}' and e.is_active") or []
+    return cat[0]["id"], rows
+
+
+def cmd_push(recipe: dict, limit: int | None, dry_run: bool) -> None:
+    """Every report the recipe finds: the PDF copied to the `coas` bucket (named by its
+    hash, so a copy is uploaded once), a coa_reports row upserted by source URL, then the
+    brand's coa_report_entries rebuilt. Rows already read by this reader version and
+    already copied are left alone."""
+    import db_http
+    sys.path.insert(0, ROOT)
+    from services import photo_store
+
+    brand = recipe["brand"]
+    catalog_id, entries = catalog_entries(brand)
+    strains: dict[str, list[str]] = {}
+    for e in entries:
+        if e["strain"]:
+            strains.setdefault(_norm(e["strain"]), []).append(e["name"] if "name" in e else e["id"])
+    brand_cats = {e["category"] for e in entries if e["category"]}
+    try:
+        have = {r["source_url"]: r for r in db_http.select_all(
+            "coa_reports", f"select=id,source_url,sha256,file_url,reader_version&catalog_id=eq.{catalog_id}")}
+    except db_http.DbHttpError:
+        if not dry_run:
+            raise  # migration 0022 not applied
+        have = {}
+
+    items = discover(recipe)[: limit or None]
+    rows, copied, skipped = [], 0, 0
+    for it in items:
+        old = have.get(it["url"])
+        if old and old["file_url"] and old["reader_version"] == coa_read.VERSION and not dry_run:
+            skipped += 1
+            continue
+        r = read_report(it)
+        if (r.get("error") or "").startswith("skipped"):
+            continue
+        row = {"catalog_id": catalog_id, "source_url": it["url"], "link_text": it["text"] or None,
+               "strain": it["strain"], "lot": r.get("lot"), "reader_version": coa_read.VERSION,
+               "error": r.get("error"), "updated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
+        if not r.get("error"):
+            ids, t = r["ids"], r["totals"]
+            path = cached_pdf(it["url"])
+            data = open(path, "rb").read()
+            sha = hashlib.sha256(data).hexdigest()
+            storage_path = f"{slug(brand)}/{sha}.pdf"
+            if not dry_run and not (old and old["sha256"] == sha and old["file_url"]):
+                photo_store.upload(storage_path, data, "application/pdf", bucket="coas")
+                copied += 1
+            row.update({
+                "sha256": sha, "storage_path": storage_path, "bytes": len(data),
+                "file_url": photo_store.public_url(storage_path, "coas") if photo_store.configured() else None,
+                "lab": ids["lab"], "producer_license": ids["license"], "report_lot": ids["lot"],
+                "metrc_tag": ids["metrc_tag"], "source_package": ids["source_package"],
+                "product_name": ids["product"], "sample_type": ids["sample_type"],
+                "category": category(r, recipe, brand_cats), "catalog_strain": match(r, strains),
+                "test_date": ids["test_date"], "total_thc": t["total_thc"], "total_cbd": t["total_cbd"],
+                "total_cannabinoids": t["total_cannabinoids"], "total_terpenes": t["total_terpenes"],
+                "cannabinoids": r["cannabinoids"] or None, "terpenes": r["terpenes"] or None})
+        rows.append(row)
+
+    print(f"{brand}: {len(items)} reports, {skipped} unchanged, {len(rows)} to write, {copied} PDFs copied")
+    if dry_run:
+        for row in rows[:10]:
+            print(f"  {row.get('catalog_strain') or '-':24.24} {row.get('category') or '-':11} "
+                  f"lot {row['lot'] or '-':18.18} {row.get('lab') or row.get('error') or ''}")
+        return
+    # Every row the same keys, so PostgREST's bulk upsert takes the batch.
+    keys = sorted({k for row in rows for k in row})
+    for i in range(0, len(rows), 200):
+        db_http.upsert("coa_reports", [{k: row.get(k) for k in keys} for row in rows[i:i + 200]],
+                       on_conflict="source_url")
+    link_entries(brand, catalog_id, entries, brand_cats)
+
+
+def link_entries(brand: str, catalog_id: str, entries: list[dict], brand_cats: set[str]) -> None:
+    """Rebuild the brand's report -> catalog entry links from coa_reports."""
+    import db_http
+    reports = db_http.select_all(
+        "coa_reports", f"select=id,catalog_strain,category&catalog_id=eq.{catalog_id}&error=is.null")
+    single = len(brand_cats - {"merch"}) == 1
+    by_key: dict[tuple, list[str]] = {}
+    for e in entries:
+        if e["strain"]:
+            by_key.setdefault((_norm(e["strain"]), e["category"]), []).append(e["id"])
+    links = []
+    for r in reports:
+        if not r["catalog_strain"] or not r["category"]:
+            continue
+        for eid in by_key.get((r["catalog_strain"], r["category"]), []):
+            links.append({"report_id": r["id"], "entry_id": eid,
+                          "method": "strain" if single else "strain_category"})
+    ids = [r["id"] for r in reports]
+    for i in range(0, len(ids), 100):
+        db_http.delete("coa_report_entries", f"report_id=in.({','.join(ids[i:i + 100])})")
+    for i in range(0, len(links), 500):
+        db_http.insert("coa_report_entries", links[i:i + 500])
+    linked = {l["report_id"] for l in links}
+    print(f"  {len(linked)} of {len(reports)} reports linked to {len({l['entry_id'] for l in links})} "
+          f"catalog entries ({len(entries)} active)")
+
+
 def cmd_coverage() -> None:
     """How many active listings the fetched reports reach: exactly (the listing's batch id
     is a report's lot or Metrc tag) or by product (a report for its catalog entry's strain)."""
@@ -359,12 +512,13 @@ def cmd_coverage() -> None:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["list", "check", "fetch", "coverage"])
+    ap.add_argument("command", choices=["list", "check", "fetch", "push", "coverage"])
     who = ap.add_mutually_exclusive_group(required=False)
     who.add_argument("--brand")
     who.add_argument("--all", action="store_true")
     ap.add_argument("--limit", type=int, help="reports to read (check) or links to show (list)")
     ap.add_argument("--no-catalog", action="store_true", help="skip the catalog comparison (no database)")
+    ap.add_argument("--dry-run", action="store_true", help="push: read and show, write nothing")
     args = ap.parse_args()
     if args.command == "coverage":
         cmd_coverage()
@@ -377,6 +531,8 @@ def main() -> int:
             cmd_list(recipe, args.limit)
         elif args.command == "check":
             cmd_check(recipe, args.limit, not args.no_catalog)
+        elif args.command == "push":
+            cmd_push(recipe, args.limit, args.dry_run)
         else:
             cmd_fetch(recipe, not args.no_catalog)
     return 0

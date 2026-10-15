@@ -50,6 +50,12 @@ Both take `link` (regex a report's URL must match), `skip` (regex for PDFs that 
 reports: catalogs, menus) and `rewrite` (`[[find, replace]]` on the URL, e.g. Dropbox's
 `dl=0` -> `dl=1`).
 
+**category** (optional): `[{"when": {"lot": "^JIPR"}, "set": "preroll", "why": "..."}]`,
+regexes over `lot`, `file` and `text`, for a brand whose lot or filename names its line.
+Without one, a report's category comes from the words of its link, filename, product
+line and the lab's sample type; a brand whose catalog has one category needs neither.
+A report with no category is kept but linked to no catalog entry.
+
 **name**: rules tried in order; each fills what earlier ones left empty (a filename's
 strain, then a title's lot). `from` is `file` (the URL's file name,
 decoded) or `text` (the link's text, or a media item's title). Named groups: `strain`,

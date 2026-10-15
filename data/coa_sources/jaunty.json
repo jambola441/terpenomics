@@ -11,7 +11,8 @@
   "notes": [
     "Filenames are STRAIN-LOT, the lot being J + a 3-letter line code (JYVC vape cart, JIPR, JLQD, JBVC, JYBD, JROC, JCCR, JYHG) then a product code and YYMM: SOUR-DIESEL-JYBD-SDSL-2609.",
     "Some recent filenames carry only the lot (JYVC-AMHZ-2607); the strain then comes from the catalog match on the report itself.",
-    "Media titles read 'Strain [Product] LOT' (Rainbow Belts JYVC-RNBT-2608, Orange Swirl Hash Gummies JYHG-OGSW-2607) and carry the strain where the filename has only the lot, so they are tried first."
+    "Media titles read 'Strain [Product] LOT' (Rainbow Belts JYVC-RNBT-2608, Orange Swirl Hash Gummies JYHG-OGSW-2607) and carry the strain where the filename has only the lot, so they are tried first.",
+    "Lot prefixes name the line (category rules): JIPR infused pre-roll, JYHG/JYDG gummies, JDRP drops, JYVC/JBVC/JLQD/JROC carts. Others (JYBD, JCCR, JYPM) fall back to the report's own words."
   ],
   "name": [
     {
@@ -25,6 +26,36 @@
     {
       "from": "file",
       "match": "^(?P<strain>[A-Za-z][A-Za-z-]+?)-\\d{4,6}(?:-\\d)?\\.pdf$"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "lot": "^JIPR"
+      },
+      "set": "preroll",
+      "why": "infused pre-rolls"
+    },
+    {
+      "when": {
+        "lot": "^J(?:YHG|YDG)"
+      },
+      "set": "edible",
+      "why": "hash gummies, gummies"
+    },
+    {
+      "when": {
+        "lot": "^JDRP"
+      },
+      "set": "tinctures",
+      "why": "rosin drops"
+    },
+    {
+      "when": {
+        "lot": "^J(?:YVC|BVC|LQD|ROC)"
+      },
+      "set": "vaporizers",
+      "why": "carts: vape, live rosin, liquid diamonds"
     }
   ]
 }

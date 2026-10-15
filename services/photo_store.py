@@ -35,21 +35,22 @@ def _base() -> str:
     return os.environ["SUPABASE_URL"].rstrip("/")
 
 
-def public_url(path: str) -> str:
-    return f"{_base()}/storage/v1/object/public/{BUCKET}/{urllib.parse.quote(path)}"
+def public_url(path: str, bucket: str = BUCKET) -> str:
+    return f"{_base()}/storage/v1/object/public/{bucket}/{urllib.parse.quote(path)}"
 
 
-def upload(path: str, data: bytes, content_type: str) -> str:
-    """Write one file (replacing any there) and return its public URL."""
+def upload(path: str, data: bytes, content_type: str, bucket: str = BUCKET) -> str:
+    """Write one file (replacing any there) and return its public URL. `bucket` is
+    `photos` unless named: lab reports go to `coas` (scripts/coa_crawl.py)."""
     key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
     req = urllib.request.Request(
-        f"{_base()}/storage/v1/object/{BUCKET}/{urllib.parse.quote(path)}",
+        f"{_base()}/storage/v1/object/{bucket}/{urllib.parse.quote(path)}",
         data=data, method="POST",
         headers={"Authorization": f"Bearer {key}", "apikey": key, "Content-Type": content_type,
                  "x-upsert": "true", "cache-control": f"max-age={CACHE_SECONDS}"})
     with urllib.request.urlopen(req, timeout=TIMEOUT_SECONDS):
         pass
-    return public_url(path)
+    return public_url(path, bucket)
 
 
 def webp_sizes(data: bytes, widths: Iterable[int], quality: int = 80) -> dict[int, bytes]:

@@ -33,6 +33,10 @@ import re
 import subprocess
 import sys
 
+# Bump when a change would read a stored report differently; coa_crawl.py push re-reads
+# rows an older version read.
+VERSION = 1
+
 # ----------------------------------------------------------------------- analytes
 
 # canonical name -> aliases, as regexes matched case-insensitively at word starts.
@@ -148,6 +152,12 @@ ID_PATTERNS: dict[str, list[str]] = {
                        r"Strain\s*:\s*([^,\n]+?)\s*,",
                        # Smithers: the product's name stands alone above "Metrc Package ID".
                        r"^[ \t]*(\S[^\n]*?)[ \t]*\n(?:[ \t]*\n)*[ \t]*Metrc Package ID"],
+    # What the lab says the sample is; coa_crawl.category() turns it into ours.
+    "sample_type":    [r"^\s*(Concentrates & Extracts[^\n]*?|Flower[^\n,]*?|Edibles?[^\n,]*?)\s*$",
+                       r"(?<![\w/])Type\s*:\s*(\S.{1,40}?)(?:\s{2,}|$)",
+                       r"Sample Type\s*:\s*(\S.{1,40}?)(?:\s{2,}|$)",
+                       r"Category/Type\s*:\s*(\S.{1,40}?)(?:\s{2,}|$)",
+                       r"(?:Sample )?Matrix\s*:\s*(\S.{1,40}?)(?:\s{2,}|$)"],
     "test_date":      [r"(?:Published|Date Released|Analyzed Date|Date analyzed)\s*:?\s*(\d{1,2}/\d{1,2}/\d{2,4})"],
 }
 
