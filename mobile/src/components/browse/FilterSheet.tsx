@@ -13,6 +13,7 @@ import {
 } from '@web/utils/browseLogic'
 import { Button, Label } from '@/components/ui'
 import { FacetChip } from './controls'
+import { Icon } from '@/components/Icon'
 import { t, font, fonts } from '@/lib/theme'
 
 /** One toggleable facet section in the sheet. */
@@ -65,11 +66,23 @@ export default function FilterSheet({
 
         <View style={s.head}>
           <Text style={s.title} accessibilityRole="header">Filter &amp; sort</Text>
-          {activeCount > 0 ? (
-            <Pressable onPress={onClear} accessibilityRole="button" hitSlop={8}>
-              <Text style={s.clearAll}>Clear all</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+            {activeCount > 0 ? (
+              <Pressable onPress={onClear} accessibilityRole="button" hitSlop={8}>
+                <Text style={s.clearAll}>Clear all</Text>
+              </Pressable>
+            ) : null}
+            {/* A way out besides "Show N products" (swipe-down also works). */}
+            <Pressable
+              onPress={onClose}
+              accessibilityRole="button"
+              accessibilityLabel="Close filters"
+              hitSlop={10}
+              style={s.close}
+            >
+              <Icon name="close" size={18} color={t.text2} />
             </Pressable>
-          ) : null}
+          </View>
         </View>
 
         <ScrollView
@@ -270,6 +283,10 @@ const s = StyleSheet.create({
   },
   title: {
     fontFamily: fonts.display, fontSize: font.size.heading, letterSpacing: -0.3, color: t.text1,
+  },
+  close: {
+    width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: t.surface2, borderWidth: 1, borderColor: t.border,
   },
   clearAll: {
     fontFamily: fonts.sans, fontSize: font.size.small + 1, color: t.text2, textDecorationLine: 'underline',

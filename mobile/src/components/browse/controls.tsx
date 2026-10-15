@@ -140,6 +140,14 @@ export function SearchField({ value, onChange, placeholder, autoFocus }: {
 
 /* ── Chips ────────────────────────────────────────────────────────────────── */
 
+/** Upper-case each word's first letter and leave the rest alone, as CSS
+ *  `text-transform: capitalize` does on the web. RN's `textTransform` on iOS
+ *  also lower-cases the rest ("MFNY" → "Mfny"), and it is visual only, so
+ *  VoiceOver read the raw lower-case value; changing the string fixes both. */
+export function capitalizeWords(label: string): string {
+  return label.replace(/(^|[\s/(-])(\p{Ll})/gu, (_, sep: string, ch: string) => sep + ch.toUpperCase())
+}
+
 export function FacetChip({ label, icon, count, active, color, onPress, disabled = false, capitalize = true }: {
   label: string
   icon?: ReactNode
@@ -151,13 +159,14 @@ export function FacetChip({ label, icon, count, active, color, onPress, disabled
   /** Off for labels that carry their own casing — units, sizes, sort phrases. */
   capitalize?: boolean
 }) {
+  const shown = capitalize ? capitalizeWords(label) : label
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled}
       accessibilityRole="button"
       accessibilityState={{ selected: active, disabled }}
-      accessibilityLabel={count != null ? `${label}, ${count}` : label}
+      accessibilityLabel={count != null ? `${shown}, ${count}` : shown}
       style={[
         s.chip,
         active
@@ -173,10 +182,9 @@ export function FacetChip({ label, icon, count, active, color, onPress, disabled
           fontFamily: active ? fonts.sansSemibold : fonts.sansMedium,
           fontSize: font.size.small + 1,
           color: disabled ? t.text4 : active ? color : t.text2,
-          textTransform: capitalize ? 'capitalize' : 'none',
         }}
       >
-        {label}
+        {shown}
       </Text>
       {count != null ? (
         <Text style={[s.count, { color: active ? color : t.text3 }]}>{count}</Text>
@@ -190,18 +198,16 @@ export function ActiveChip({ label, onRemove, capitalize = true }: {
   onRemove: () => void
   capitalize?: boolean
 }) {
+  const shown = capitalize ? capitalizeWords(label) : label
   return (
     <Pressable
       onPress={onRemove}
       accessibilityRole="button"
-      accessibilityLabel={`Remove ${label}`}
+      accessibilityLabel={`Remove ${shown}`}
       style={s.activeChip}
     >
-      <Text
-        numberOfLines={1}
-        style={[s.activeText, { textTransform: capitalize ? 'capitalize' : 'none' }]}
-      >
-        {label}
+      <Text numberOfLines={1} style={s.activeText}>
+        {shown}
       </Text>
       <Icon name="close" size={13} color={t.accent} strokeWidth={2.25} />
     </Pressable>

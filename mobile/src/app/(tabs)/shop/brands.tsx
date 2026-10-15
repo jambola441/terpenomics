@@ -5,6 +5,7 @@ import {
 import { router } from 'expo-router'
 import type { PortalBrand } from '@web/types'
 import { api } from '@/lib/api'
+import { useKeyboardHeight } from '@/lib/useKeyboardHeight'
 import ShopHeader from '@/components/ShopHeader'
 import BrandMark from '@/components/BrandMark'
 import { Icon } from '@/components/Icon'
@@ -18,6 +19,9 @@ type Sort = 'listings' | 'name'
  *  searchable, sorted by how widely stocked it is or A–Z, paged as you scroll. */
 export default function Brands() {
   const { width } = useWindowDimensions()
+  // The filter box keeps the keyboard up; pad by it so the last results and
+  // the count can scroll clear of the keys.
+  const keyboard = useKeyboardHeight()
   const columns = Math.max(3, Math.floor((width - space[4] * 2 + 12) / (104 + 12)))
   const tile = (width - space[4] * 2 - 12 * (columns - 1)) / columns
 
@@ -100,7 +104,7 @@ export default function Brands() {
       numColumns={columns}
       keyExtractor={b => b.name}
       ListHeaderComponent={header}
-      contentContainerStyle={{ gap: 12, paddingBottom: space[7] }}
+      contentContainerStyle={{ gap: 12, paddingBottom: space[7] + keyboard }}
       columnWrapperStyle={{ gap: 12, paddingHorizontal: space[4] }}
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"

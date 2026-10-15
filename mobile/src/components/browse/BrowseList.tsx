@@ -8,6 +8,7 @@ import { FlatList, RefreshControl, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { styles } from '@/components/ui'
 import { GRID_GAP, GRID_GUTTER, HeroBackdrop, StatusStrip, useGridCardWidth } from './controls'
+import { useKeyboardHeight } from '@/lib/useKeyboardHeight'
 import { t, space } from '@/lib/theme'
 
 type Row<T> =
@@ -47,6 +48,8 @@ export default function BrowseList<T>({
 }: BrowseListProps<T>) {
   const insets = useSafeAreaInsets()
   const cardWidth = useGridCardWidth()
+  // Search fields keep the keyboard up; pad by it so results scroll clear.
+  const keyboard = useKeyboardHeight()
 
   const rows: Row<T>[] = [{ kind: 'hero' }, { kind: 'toolbar' }, { kind: 'status' }]
   if (body != null) rows.push({ kind: 'body' })
@@ -69,7 +72,7 @@ export default function BrowseList<T>({
         keyboardDismissMode="on-drag"
         initialNumToRender={8}
         windowSize={7}
-        contentContainerStyle={{ paddingBottom: space[8] }}
+        contentContainerStyle={{ paddingBottom: space[8] + keyboard }}
         keyExtractor={row => (row.kind === 'pair' ? row.key : row.kind)}
         refreshControl={onRefresh
           ? <RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} tintColor={t.text3} />
