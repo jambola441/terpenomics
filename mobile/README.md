@@ -45,6 +45,11 @@ echo "export NODE_BINARY=$(command -v node)" > ios/.xcode.env.local   # nvm user
 open ios/*.xcworkspace
 ```
 
+`EXPO_PUBLIC_*` values are inlined when the JavaScript is bundled, and Metro
+caches the compiled files. After creating or changing `.env.local`, clear the
+cache (`rm -rf "$TMPDIR"/metro-*`, or `npx expo start --clear`) before
+rebuilding. Otherwise the app still crashes with "Missing EXPO_PUBLIC_...".
+
 Set your Team under Signing & Capabilities (or `ios.appleTeamId` in
 `app.json` so prebuild keeps it), and use the Release configuration for a
 build that runs without the Mac. Run `npm install` and `prebuild --clean` again
