@@ -45,6 +45,7 @@ import urllib.request
 from html.parser import HTMLParser
 
 sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import coa_read  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -115,6 +116,28 @@ class _Links(HTMLParser):
             self.links.append((href, " ".join("".join(text).split())))
 
 
+# File hosts whose share links open a viewer page: rewritten to the file itself, for
+# every recipe (Grön links half its reports to Dropbox with dl=0).
+DIRECT = [[r"(dropbox\.com/.*[?&])dl=0", r"\1dl=1"]]
+
+
+def _upload(path: str, data: bytes) -> None:
+    """Copy a PDF to the `coas` bucket, retrying Storage's transient 5xx (a 520 from its
+    proxy now and then)."""
+    from services import photo_store
+    for attempt in range(RETRIES + 1):
+        try:
+            photo_store.upload(path, data, "application/pdf", bucket="coas")
+            return
+        except urllib.error.HTTPError as e:
+            if e.code < 500 or attempt == RETRIES:
+                raise
+        except (urllib.error.URLError, ConnectionError, TimeoutError):
+            if attempt == RETRIES:
+                raise
+        time.sleep(2 ** attempt)
+
+
 def _candidates(src: dict) -> list[tuple[str, str]]:
     """(url, text) for every file a source lists, before the recipe's filters.
 
@@ -172,7 +195,7 @@ def discover(recipe: dict) -> list[dict]:
     for url, text in _candidates(src):
         if not link_re.search(url) or (skip_re and skip_re.search(url)):
             continue
-        for find, repl in src.get("rewrite", []):
+        for find, repl in src.get("rewrite", []) + DIRECT:
             url = re.sub(find, repl, url)
         if url in seen:
             continue
@@ -384,7 +407,6 @@ def cmd_push(recipe: dict, limit: int | None, dry_run: bool) -> None:
     brand's coa_report_entries rebuilt. Rows already read by this reader version and
     already copied are left alone."""
     import db_http
-    sys.path.insert(0, ROOT)
     from services import photo_store
 
     brand = recipe["brand"]
@@ -403,7 +425,7 @@ def cmd_push(recipe: dict, limit: int | None, dry_run: bool) -> None:
         have = {}
 
     items = discover(recipe)[: limit or None]
-    rows, copied, skipped = [], 0, 0
+    rows, copied, skipped, written = [], 0, 0, 0
     for it in items:
         old = have.get(it["url"])
         if old and old["file_url"] and old["reader_version"] == coa_read.VERSION and not dry_run:
@@ -422,8 +444,13 @@ def cmd_push(recipe: dict, limit: int | None, dry_run: bool) -> None:
             sha = hashlib.sha256(data).hexdigest()
             storage_path = f"{slug(brand)}/{sha}.pdf"
             if not dry_run and not (old and old["sha256"] == sha and old["file_url"]):
-                photo_store.upload(storage_path, data, "application/pdf", bucket="coas")
-                copied += 1
+                try:
+                    _upload(storage_path, data)
+                    copied += 1
+                except Exception as e:  # kept as an error row, retried next push
+                    row["error"] = f"upload: {e}"
+                    rows.append(row)
+                    continue
             row.update({
                 "sha256": sha, "storage_path": storage_path, "bytes": len(data),
                 "file_url": photo_store.public_url(storage_path, "coas") if photo_store.configured() else None,
@@ -435,19 +462,35 @@ def cmd_push(recipe: dict, limit: int | None, dry_run: bool) -> None:
                 "total_cannabinoids": t["total_cannabinoids"], "total_terpenes": t["total_terpenes"],
                 "cannabinoids": r["cannabinoids"] or None, "terpenes": r["terpenes"] or None})
         rows.append(row)
+        if not dry_run and len(rows) >= 100:  # write as we go: a crash loses one batch
+            _write(rows)
+            written += len(rows)
+            rows = []
 
-    print(f"{brand}: {len(items)} reports, {skipped} unchanged, {len(rows)} to write, {copied} PDFs copied")
+    print(f"{brand}: {len(items)} reports, {skipped} unchanged, {written + len(rows)} written, {copied} PDFs copied")
     if dry_run:
         for row in rows[:10]:
             print(f"  {row.get('catalog_strain') or '-':24.24} {row.get('category') or '-':11} "
                   f"lot {row['lot'] or '-':18.18} {row.get('lab') or row.get('error') or ''}")
         return
-    # Every row the same keys, so PostgREST's bulk upsert takes the batch.
-    keys = sorted({k for row in rows for k in row})
-    for i in range(0, len(rows), 200):
-        db_http.upsert("coa_reports", [{k: row.get(k) for k in keys} for row in rows[i:i + 200]],
-                       on_conflict="source_url")
+    _write(rows)
     link_entries(brand, catalog_id, entries, brand_cats)
+
+
+ROW_KEYS = ["catalog_id", "source_url", "link_text", "strain", "lot", "reader_version", "error",
+            "updated_at", "sha256", "storage_path", "bytes", "file_url", "lab", "producer_license",
+            "report_lot", "metrc_tag", "source_package", "product_name", "sample_type", "category",
+            "catalog_strain", "test_date", "total_thc", "total_cbd", "total_cannabinoids",
+            "total_terpenes", "cannabinoids", "terpenes"]
+
+
+def _write(rows: list[dict]) -> None:
+    """Upsert rows by source URL. Every row carries every key (null where unread), as
+    PostgREST's bulk upsert needs, and so a re-read clears what a misread had set."""
+    import db_http
+    for i in range(0, len(rows), 200):
+        db_http.upsert("coa_reports", [{k: row.get(k) for k in ROW_KEYS} for row in rows[i:i + 200]],
+                       on_conflict="source_url")
 
 
 def link_entries(brand: str, catalog_id: str, entries: list[dict], brand_cats: set[str]) -> None:
