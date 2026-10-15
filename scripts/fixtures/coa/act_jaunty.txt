@@ -1,0 +1,515 @@
+                                                                                                                             OCM-CPL-00001
+
+                                                             Certificate of Analysis                                         ACT Laboratories (NY)
+                                                                                                                             16 Corporate Drive, Halfmoon, New York
+                                                                                                                             5172272612
+                                                           Compliance                                       Adult Use        kimberlyk@actlab.com
+
+
+   Jaunty                                                                                                           Sample: SNYJTY0828-CVAP-0030299
+   Order No.: ONYJTY0828-0016556                                                                                             Strain: Fruit Sangria , Unit Weight: .5000g
+   4883 State Route 67                                                                                        Batch#: JROC-FRSA-2609, Batch Size: 1300 Units, LOT ID:
+   New York, 12090                                                                                                                     1A4120300000291000004498
+   dennis.t@naturae.com                                                                                                              Date Sampled: 08/28/2026 15:34
+   5189377247                                                                                                                     Sample Received: 08/28/2026 16:45
+   OCM-PROC-24-000091-P1                                                                                                           Report Created: 09/01/2026 17:09
+                                                                                                                                                     Sampling SOP 204*
+
+   Vape Cartridge - Live Rosin - Fruit Sangria - 0.5g
+   Concentrates & Extracts, Vape
+   Metrc Batch: 1A4120300000291000004497, Metrc Sample: 1A4120300000291000004498, Metrc Manifest: 0000377465
+
+
+
+
+                                                                                         Results
+
+                                                                                                378.03 mg/unit                               24.42 mg/unit
+                                                                                                           D9-THC                                       CBG
+
+
+
+                                                                                                            ND                              378.03 mg/unit
+                                                                                                         Total CBD                                   Total THC
+
+
+
+                                                                                                408.74 mg/unit                                     7.573%
+                                                                                                    Total Cannabinoids                            Total Terpenes
+
+
+
+
+   Tests Summary                                                                           Dominant Terpenes
+
+        Cannabinoids                    Moisture                    Microbials
+             Tested                     Not Tested                      Pass
+                                                                                                                                                    b-Caryophyllene
+                                                                                                                                                    2.5560%
+                                                                                                                                                    Others
+        Water Activity              Foreign Matter                Homogeneity
+                                                                                                                                                    2.428%
+           Not Tested                   Not Tested                      Pass
+                                                                                                                                                    Limonene
+                                                                                                                                                    1.1472%
+                                                                                                                                                    a-Humulene
+           Terpenes               Residual Solvents                Mycotoxins                                                                       0.8154%
+               Pass                         Pass                        Pass                                                                        a-Bisabolol
+                                                                                                                                                    0.6261%
+
+
+
+        Heavy Metals                   Pesticides
+               Pass                         Pass
+
+
+
+
+                                                                                                                                           Kimberly Krisolofsky
+                                                                                     1 of 7                                               Lead Technical Director
+♦ indicates a subcontracted result. † indicates a result not regulated by OCM. * indicates ISO/IEC 17025:2017 accreditation is pending. This sample has been tested by ACT
+Laboratories using valid, ISO/IEC 17025:2017 accredited testing methodologies and a quality system as required by state law. Values reported relate only to the sample tested.
+Results are deemed acceptable if they fall within the speciﬁed acceptance criteria as deﬁned by the applicable regulatory limit or client speciﬁcation, with no measurement
+uncertainty applied. ACT Laboratories makes no claims as to the eﬃcacy, safety or other risks associated with any detected or non-detected levels of any compounds reported
+herein. This Certiﬁcate shall not be reproduced except in full, without the written approval of ACT Laboratories. The authenticity of this document is only guaranteed if issued
+from an @actlab.com email address.
+                                                                                                                             OCM-CPL-00001
+
+                                                             Certificate of Analysis                                         ACT Laboratories (NY)
+                                                                                                                             16 Corporate Drive, Halfmoon, New York
+                                                                                                                             5172272612
+                                                           Compliance                                       Adult Use        kimberlyk@actlab.com
+
+
+   Jaunty                                                                                                           Sample: SNYJTY0828-CVAP-0030299
+   Order No.: ONYJTY0828-0016556                                                                                             Strain: Fruit Sangria , Unit Weight: .5000g
+   4883 State Route 67                                                                                        Batch#: JROC-FRSA-2609, Batch Size: 1300 Units, LOT ID:
+   New York, 12090                                                                                                                     1A4120300000291000004498
+   dennis.t@naturae.com                                                                                                              Date Sampled: 08/28/2026 15:34
+   5189377247                                                                                                                     Sample Received: 08/28/2026 16:45
+   OCM-PROC-24-000091-P1                                                                                                           Report Created: 09/01/2026 17:09
+                                                                                                                                                     Sampling SOP 204*
+
+   Vape Cartridge - Live Rosin - Fruit Sangria - 0.5g
+   Concentrates & Extracts, Vape
+   Metrc Batch: 1A4120300000291000004497, Metrc Sample: 1A4120300000291000004498, Metrc Manifest: 0000377465
+
+
+
+
+  Cannabinoids                                                       Tested                 Microbials                                                             Pass
+  SOP: SOP 801-NY                                                                           SOP: SOP 401-NY SOP 418-NY
+  Instrument: Agilent HPLC 3608 -                                                           Instrument: 35C Incubator - 1032
+  3608                                                                                      / 28C Incubator - 1034
+  Date/Time Tested: 08/30/2026                                                              Date/Time Tested: 08/29/2026
+  15:02                                                                                     14:59
+  Analyte                        LOQ (ug/mL)               %      mg/g      mg/unit         Analyte                     LOQ (CFU/g) Limit (CFU/g) CFU/g Status
+  CBDV                                 4,585.38         ND          ND            ND        Aerobic Bacteria                         10             10,000        ND    Passed
+  CBDa                                 4,585.38         ND          ND            ND        E. Coli                                                      0        ND    Passed
+  CBGa                                 4,585.38      < LOQ       < LOQ         < LOQ        Yeast & Mold                             10              1,000        ND    Passed
+  CBG                                  4,585.38      4.883       48.83         24.42        Salmonella                                                   0        ND    Passed
+  CBD                                  4,585.38         ND          ND            ND        Aspergillus Flavus                                           0        ND    Passed
+  THCV                                 4,585.38      0.511        5.11          2.55        Aspergillus Fumigatus                                        0        ND    Passed
+  CBN                                  4,585.38         ND          ND            ND        Aspergillus Niger                                            0        ND    Passed
+  D8-THC                               4,585.38         ND          ND            ND        Aspergillus Terreus                                          0        ND    Passed
+  D9-THC                               4,585.38     75.607      756.07        378.03
+                                                                                            Report notes:
+  CBC                                  4,585.38      0.747        7.47          3.74        Unless otherwise stated all quality control tests performed within
+  THCa                                 4,585.38         ND          ND            ND        specifications established by the Laboratory. ND = Not Detected; NT = Not
+  Total D10-THC                                         ND          ND            ND        Tested; NR = Not Reported
+  Total CBD                                             ND          ND            ND
+  Total THC
+  Total Cannabinoids
+                                                    75.607
+                                                    81.748
+                                                                756.07
+                                                                817.48
+                                                                              378.03
+                                                                              408.74
+                                                                                            Homogeneity                                                            Pass
+                                                                                            Instrument: Agilent HPLC 3608 -
+  Report notes:                                                                             3608
+  Total THC = THCa * 0.877 + Δ8-THC + Δ9-THC + Δ10-THC Total Δ10-THC =                      Date/Time Tested: 08/30/2026
+  (6aR,9S)-d10-THC + (6aR,9R)-d10-THC Total CBD = CBDa * 0.877 + CBD Total
+  Cannabinoids = Sum of all cannabinoids LOQ = Limit of Quantitation; The                   15:02
+  reported result is based on a sample weight with the applicable moisture                  Analyte                                                                     Result
+  content for that sample; Unless otherwise stated all quality control samples
+  performed within specifications established by the Laboratory. OCMPPCL-                   Homogeneity                                                                    Pass
+  2022-00001. Cannabinoid potency values for flower type products are
+  reported by percentage of dry weight determined via loss on drying; Unless
+  otherwise stated all quality control samples performed within specifications
+  established by the Laboratory. All results were generated by ISO certified
+  methods to full state testing requirements. ND = Not Detected; NT = Not
+  Tested; NR = Not Reported
+
+
+
+
+                                                                                                                                           Kimberly Krisolofsky
+                                                                                     2 of 7                                               Lead Technical Director
+♦ indicates a subcontracted result. † indicates a result not regulated by OCM. * indicates ISO/IEC 17025:2017 accreditation is pending. This sample has been tested by ACT
+Laboratories using valid, ISO/IEC 17025:2017 accredited testing methodologies and a quality system as required by state law. Values reported relate only to the sample tested.
+Results are deemed acceptable if they fall within the speciﬁed acceptance criteria as deﬁned by the applicable regulatory limit or client speciﬁcation, with no measurement
+uncertainty applied. ACT Laboratories makes no claims as to the eﬃcacy, safety or other risks associated with any detected or non-detected levels of any compounds reported
+herein. This Certiﬁcate shall not be reproduced except in full, without the written approval of ACT Laboratories. The authenticity of this document is only guaranteed if issued
+from an @actlab.com email address.
+                                                                                                                             OCM-CPL-00001
+
+                                                             Certificate of Analysis                                         ACT Laboratories (NY)
+                                                                                                                             16 Corporate Drive, Halfmoon, New York
+                                                                                                                             5172272612
+                                                           Compliance                                       Adult Use        kimberlyk@actlab.com
+
+
+   Jaunty                                                                                                           Sample: SNYJTY0828-CVAP-0030299
+   Order No.: ONYJTY0828-0016556                                                                                             Strain: Fruit Sangria , Unit Weight: .5000g
+   4883 State Route 67                                                                                        Batch#: JROC-FRSA-2609, Batch Size: 1300 Units, LOT ID:
+   New York, 12090                                                                                                                     1A4120300000291000004498
+   dennis.t@naturae.com                                                                                                              Date Sampled: 08/28/2026 15:34
+   5189377247                                                                                                                     Sample Received: 08/28/2026 16:45
+   OCM-PROC-24-000091-P1                                                                                                           Report Created: 09/01/2026 17:09
+                                                                                                                                                     Sampling SOP 204*
+
+   Vape Cartridge - Live Rosin - Fruit Sangria - 0.5g
+   Concentrates & Extracts, Vape
+   Metrc Batch: 1A4120300000291000004497, Metrc Sample: 1A4120300000291000004498, Metrc Manifest: 0000377465
+
+
+
+
+ Terpenes                                                                                                                                                            Pass
+ SOP: SOP 620-NY
+ Instrument: Agilent GC-FID 3540 - 3540
+ Date/Time Tested: 08/29/2026 14:09
+  Analyte                     LOQ (ug/mL)        Limit (ug/mL)             % Status         Analyte                   LOQ (ug/mL)          Limit (ug/mL)            %    Status
+  Total Terpenes                                         115,000 7.5732         Passed      a-Phellandrene                        157                              ND     Tested
+  b-Caryophyllene                         157                        2.5560      Tested     d-3-Carene                            157                              ND     Tested
+  Limonene                                157                        1.1472      Tested     a-Terpinene                           157                              ND     Tested
+  a-Humulene                              157                        0.8154      Tested     p-Cymene                              157                              ND     Tested
+  a-Bisabolol                             157                        0.6261      Tested     Eucalyptol                            157                              ND     Tested
+  trans-b-Farnesene                       242                        0.4437      Tested     g-Terpinene                           157                              ND     Tested
+  Guaiol                                  157                        0.4116      Tested     Terpinolene                           157                          < LOQ      Tested
+  b-Myrcene                               157                        0.3575      Tested     Sabinene Hydrate                      157                              ND     Tested
+  Linalool                                157                        0.3507      Tested     Fenchone                              157                              ND     Tested
+  a-Pinene                                157                        0.2295      Tested     Isopulegol                            157                              ND     Tested
+  b-Pinene                                157                        0.1573      Tested     Camphor                               157                              ND     Tested
+  Fenchol                                 157                        0.1187      Tested     Isoborneol                            157                              ND     Tested
+  Terpineol                               157                        0.1130      Tested     DL-Menthol                            157                              ND     Tested
+  trans-Nerolidol                         157                        0.0736      Tested     Nerol                                 157                              ND     Tested
+  trans-b-Ocimene                         157                        0.0516      Tested     Pulegone                              157                              ND     Tested
+  Caryophyllene Oxide                     157                        0.0412      Tested     Geraniol                              157                              ND     Tested
+  Camphene                                157                        0.0297      Tested     Geranyl Acetate                       157                              ND     Tested
+  Borneol                                 157                        0.0293      Tested     a-Cedrene                             157                              ND     Tested
+  Valencene                               157                        0.0210      Tested     cis-Nerolidol                         157                              ND     Tested
+  Sabinene                                157                             ND     Tested     Cedrol                                157                              ND     Tested
+
+ Report notes:
+ LOQ = Limit of Quantitation. Unless otherwise stated all quality control tests performed within specifications established by the Laboratory. ND = Not Detected; NT
+ = Not Tested; NR = Not Reported
+
+
+
+
+                                                                                                                                           Kimberly Krisolofsky
+                                                                                     3 of 7                                               Lead Technical Director
+♦ indicates a subcontracted result. † indicates a result not regulated by OCM. * indicates ISO/IEC 17025:2017 accreditation is pending. This sample has been tested by ACT
+Laboratories using valid, ISO/IEC 17025:2017 accredited testing methodologies and a quality system as required by state law. Values reported relate only to the sample tested.
+Results are deemed acceptable if they fall within the speciﬁed acceptance criteria as deﬁned by the applicable regulatory limit or client speciﬁcation, with no measurement
+uncertainty applied. ACT Laboratories makes no claims as to the eﬃcacy, safety or other risks associated with any detected or non-detected levels of any compounds reported
+herein. This Certiﬁcate shall not be reproduced except in full, without the written approval of ACT Laboratories. The authenticity of this document is only guaranteed if issued
+from an @actlab.com email address.
+                                                                                                                             OCM-CPL-00001
+
+                                                             Certificate of Analysis                                         ACT Laboratories (NY)
+                                                                                                                             16 Corporate Drive, Halfmoon, New York
+                                                                                                                             5172272612
+                                                           Compliance                                       Adult Use        kimberlyk@actlab.com
+
+
+   Jaunty                                                                                                           Sample: SNYJTY0828-CVAP-0030299
+   Order No.: ONYJTY0828-0016556                                                                                             Strain: Fruit Sangria , Unit Weight: .5000g
+   4883 State Route 67                                                                                        Batch#: JROC-FRSA-2609, Batch Size: 1300 Units, LOT ID:
+   New York, 12090                                                                                                                     1A4120300000291000004498
+   dennis.t@naturae.com                                                                                                              Date Sampled: 08/28/2026 15:34
+   5189377247                                                                                                                     Sample Received: 08/28/2026 16:45
+   OCM-PROC-24-000091-P1                                                                                                           Report Created: 09/01/2026 17:09
+                                                                                                                                                     Sampling SOP 204*
+
+   Vape Cartridge - Live Rosin - Fruit Sangria - 0.5g
+   Concentrates & Extracts, Vape
+   Metrc Batch: 1A4120300000291000004497, Metrc Sample: 1A4120300000291000004498, Metrc Manifest: 0000377465
+
+
+
+
+ Residual Solvents                                                                                                                                                   Pass
+ SOP: SOP 612-NY
+ Instrument: Agilent HS-GC-MS 1333 - 1333
+ Date/Time Tested: 08/29/2026 12:55
+ Analyte                                                                                  LOQ (ug/g)                        Limit (ug/g)                ug/g              Status
+ 1,2-Dichloroethane                                                                                   3                                  5               ND               Passed
+ Acetone                                                                                          2,500                              5,000            < LOQ               Passed
+ Acetonitrile                                                                                       205                                410               ND               Passed
+ Benzene                                                                                              1                                  2               ND               Passed
+ Butane                                                                                           2,500                              5,000               ND               Passed
+ Chloroform                                                                                          30                                 60               ND               Passed
+ Ethanol                                                                                          2,500                              5,000            < LOQ               Passed
+ Ethyl Acetate                                                                                    2,500                              5,000            < LOQ               Passed
+ Ethyl Ether                                                                                      2,500                              5,000               ND               Passed
+ DMSO                                                                                             2,500                              5,000               ND               Passed
+ Heptane                                                                                          2,500                              5,000               ND               Passed
+ Hexanes                                                                                            145                                290            < LOQ               Passed
+ Isopropyl Alcohol                                                                                2,500                              5,000            < LOQ               Passed
+ Methanol                                                                                         1,500                              3,000               ND               Passed
+ Methylene Chloride                                                                                 300                                600               ND               Passed
+ Pentanes                                                                                         2,500                              5,000               ND               Passed
+ Propane                                                                                          2,500                              5,000               ND               Passed
+ Toluene                                                                                            445                                890               ND               Passed
+ Trichloroethane                                                                                    750                              1,500               ND               Passed
+ Xylenes                                                                                          1,085                              2,170               ND               Passed
+ 1,1,1,2-Tetrafluoroethane (HFC-134a)                                                               500                              1,000               ND               Passed
+
+ Report notes:
+ LOQ = Limit of Quantitation; The reported result is based on a sample weight with the applicable moisture content for that sample; Unless otherwise stated all
+ quality control samples performed within specifications established by the Laboratory. All results were generated by ISO certified methods to full state testing
+ requirements. If DMSO and 1,1,1-Trichloroethane are reported, they are tentatively identified, but not quantitatively confirmed. ND = Not Detected; NT = Not
+ Tested; NR = Not Reported.
+
+
+
+
+                                                                                                                                           Kimberly Krisolofsky
+                                                                                     4 of 7                                               Lead Technical Director
+♦ indicates a subcontracted result. † indicates a result not regulated by OCM. * indicates ISO/IEC 17025:2017 accreditation is pending. This sample has been tested by ACT
+Laboratories using valid, ISO/IEC 17025:2017 accredited testing methodologies and a quality system as required by state law. Values reported relate only to the sample tested.
+Results are deemed acceptable if they fall within the speciﬁed acceptance criteria as deﬁned by the applicable regulatory limit or client speciﬁcation, with no measurement
+uncertainty applied. ACT Laboratories makes no claims as to the eﬃcacy, safety or other risks associated with any detected or non-detected levels of any compounds reported
+herein. This Certiﬁcate shall not be reproduced except in full, without the written approval of ACT Laboratories. The authenticity of this document is only guaranteed if issued
+from an @actlab.com email address.
+                                                                                                                             OCM-CPL-00001
+
+                                                             Certificate of Analysis                                         ACT Laboratories (NY)
+                                                                                                                             16 Corporate Drive, Halfmoon, New York
+                                                                                                                             5172272612
+                                                           Compliance                                       Adult Use        kimberlyk@actlab.com
+
+
+   Jaunty                                                                                                           Sample: SNYJTY0828-CVAP-0030299
+   Order No.: ONYJTY0828-0016556                                                                                             Strain: Fruit Sangria , Unit Weight: .5000g
+   4883 State Route 67                                                                                        Batch#: JROC-FRSA-2609, Batch Size: 1300 Units, LOT ID:
+   New York, 12090                                                                                                                     1A4120300000291000004498
+   dennis.t@naturae.com                                                                                                              Date Sampled: 08/28/2026 15:34
+   5189377247                                                                                                                     Sample Received: 08/28/2026 16:45
+   OCM-PROC-24-000091-P1                                                                                                           Report Created: 09/01/2026 17:09
+                                                                                                                                                     Sampling SOP 204*
+
+   Vape Cartridge - Live Rosin - Fruit Sangria - 0.5g
+   Concentrates & Extracts, Vape
+   Metrc Batch: 1A4120300000291000004497, Metrc Sample: 1A4120300000291000004498, Metrc Manifest: 0000377465
+
+
+
+
+ Mycotoxins                                                                                                                                                          Pass
+ SOP: SOP 808-NY
+ Instrument: Agilent LCMS 2546 - 2546
+ Date/Time Tested: 08/29/2026 12:51
+ Analyte                                                                      LOQ (ng/g)                               Limit (ng/g)                ng/g                   Status
+ B1                                                                                      4.7                                                          ND                  Tested
+ B2                                                                                      4.7                                                          ND                  Tested
+ G1                                                                                      4.7                                                          ND                  Tested
+ G2                                                                                      4.7                                                          ND                  Tested
+ Ochratoxin A                                                                            4.7                                      20.0                ND                  Passed
+ Total Aflatoxins                                                                                                                 20.0                ND                  Passed
+ Total Mycotoxins                                                                                                                                     ND                  Tested
+
+ Report notes:
+ LOQ = Limit of Quantitation. Unless otherwise stated all quality control tests performed within specifications established by the Laboratory. ND = Not Detected; NT
+ = Not Tested; NR = Not Reported
+
+
+
+ Heavy Metals                                                                                                                                                        Pass
+ SOP: SOP 914
+ Instrument: Agilent 7800 ICP-MS - 2594
+ Date/Time Tested: 08/30/2026 10:02
+ Analyte                                                          LOQ (ug/g)                                   Limit (ug/g)                      ug/g                     Status
+ Antimony                                                                1.000                                        2.000                       ND                      Passed
+ Arsenic                                                                 0.100                                        0.200                       ND                      Passed
+ Cadmium                                                                 0.100                                        0.200                       ND                      Passed
+ Chromium                                                               55.000                                      110.000                    < LOQ                      Passed
+ Copper                                                                 15.000                                       30.000                    < LOQ                      Passed
+ Mercury                                                                 0.050                                        0.100                       ND                      Passed
+ Nickel                                                                  1.000                                        2.000                    < LOQ                      Passed
+ Lead                                                                    0.250                                        0.500                    < LOQ                      Passed
+
+ Report notes:
+ LOQ = Limit of Quantitation. Unless otherwise stated all quality control tests performed within specifications established by the Laboratory. ND = Not Detected; NT
+ = Not Tested; NR = Not Reported
+
+
+
+
+                                                                                                                                           Kimberly Krisolofsky
+                                                                                     5 of 7                                               Lead Technical Director
+♦ indicates a subcontracted result. † indicates a result not regulated by OCM. * indicates ISO/IEC 17025:2017 accreditation is pending. This sample has been tested by ACT
+Laboratories using valid, ISO/IEC 17025:2017 accredited testing methodologies and a quality system as required by state law. Values reported relate only to the sample tested.
+Results are deemed acceptable if they fall within the speciﬁed acceptance criteria as deﬁned by the applicable regulatory limit or client speciﬁcation, with no measurement
+uncertainty applied. ACT Laboratories makes no claims as to the eﬃcacy, safety or other risks associated with any detected or non-detected levels of any compounds reported
+herein. This Certiﬁcate shall not be reproduced except in full, without the written approval of ACT Laboratories. The authenticity of this document is only guaranteed if issued
+from an @actlab.com email address.
+                                                                                                                             OCM-CPL-00001
+
+                                                             Certificate of Analysis                                         ACT Laboratories (NY)
+                                                                                                                             16 Corporate Drive, Halfmoon, New York
+                                                                                                                             5172272612
+                                                           Compliance                                       Adult Use        kimberlyk@actlab.com
+
+
+   Jaunty                                                                                                           Sample: SNYJTY0828-CVAP-0030299
+   Order No.: ONYJTY0828-0016556                                                                                             Strain: Fruit Sangria , Unit Weight: .5000g
+   4883 State Route 67                                                                                        Batch#: JROC-FRSA-2609, Batch Size: 1300 Units, LOT ID:
+   New York, 12090                                                                                                                     1A4120300000291000004498
+   dennis.t@naturae.com                                                                                                              Date Sampled: 08/28/2026 15:34
+   5189377247                                                                                                                     Sample Received: 08/28/2026 16:45
+   OCM-PROC-24-000091-P1                                                                                                           Report Created: 09/01/2026 17:09
+                                                                                                                                                     Sampling SOP 204*
+
+   Vape Cartridge - Live Rosin - Fruit Sangria - 0.5g
+   Concentrates & Extracts, Vape
+   Metrc Batch: 1A4120300000291000004497, Metrc Sample: 1A4120300000291000004498, Metrc Manifest: 0000377465
+
+
+
+
+ Pesticides                                                                                                                                                          Pass
+ SOP: SOP 814-NY
+ Instrument: Agilent GC-MS-MS 2757 - 2757 / Agilent LC-MS-MS 2755 -
+ 2755
+ Date/Time Tested: 08/29/2026 10:16
+ Analyte                                                                             LOQ (ug/g)                            Limit (ug/g)              ug/g                 Status
+ Abamectin                                                                                    0.36                                   0.50              ND                 Passed
+ Acephate                                                                                     0.09                                   0.40              ND                 Passed
+ Acequinocyl                                                                                  0.09                                   2.00              ND                 Passed
+ Acetamiprid                                                                                  0.09                                   0.20              ND                 Passed
+ Aldicarb                                                                                     0.09                                   0.40              ND                 Passed
+ Azoxystrobin                                                                                 0.09                                   0.20              ND                 Passed
+ Bifenazate                                                                                   0.09                                   0.20              ND                 Passed
+ Bifenthrin                                                                                   0.09                                   0.20              ND                 Passed
+ Boscalid                                                                                     0.09                                   0.40              ND                 Passed
+ Carbaryl                                                                                     0.09                                   0.20              ND                 Passed
+ Carbofuran                                                                                   0.09                                   0.20              ND                 Passed
+ Chlorantraniliprole                                                                          0.09                                   0.20              ND                 Passed
+ Chlorpyrifos                                                                                 0.09                                   0.20              ND                 Passed
+ Clofentezine                                                                                 0.09                                   0.20              ND                 Passed
+ Coumaphos                                                                                    0.09                                   1.00              ND                 Passed
+ Cyfluthrin                                                                                   0.47                                   1.00              ND                 Passed
+ Cypermethrin                                                                                 0.09                                   1.00              ND                 Passed
+ Daminozide                                                                                   0.09                                   1.00              ND                 Passed
+ Diazinon                                                                                     0.09                                   0.20              ND                 Passed
+ Dichlorvos                                                                                   0.09                                   1.00              ND                 Passed
+ Dimethoate                                                                                   0.09                                   0.20              ND                 Passed
+ Dimethomorph                                                                                 0.09                                   1.00              ND                 Passed
+ Ethoprophos                                                                                  0.09                                   0.20              ND                 Passed
+ Etofenprox                                                                                   0.09                                   0.40              ND                 Passed
+ Etoxazole                                                                                    0.09                                   0.20              ND                 Passed
+ Fenhexamid                                                                                   0.09                                   1.00              ND                 Passed
+ Fenoxycarb                                                                                   0.09                                   0.20              ND                 Passed
+ Fenpyroximate                                                                                0.09                                   0.40              ND                 Passed
+ Fipronil                                                                                     0.09                                   0.40              ND                 Passed
+ Flonicamid                                                                                   0.09                                   1.00              ND                 Passed
+ Fludioxonil                                                                                  0.09                                   0.40              ND                 Passed
+ Hexythiazox                                                                                  0.09                                   1.00              ND                 Passed
+ Imazalil                                                                                     0.09                                   0.20              ND                 Passed
+ Imidacloprid                                                                                 0.09                                   0.40              ND                 Passed
+ Indole-3 Butyric Acid                                                                        0.12                                   1.00              ND                 Passed
+ Kresoxim Methyl                                                                              0.09                                   0.40              ND                 Passed
+ Malathion                                                                                    0.09                                   0.20              ND                 Passed
+ Mevinphos                                                                                    0.09                                   1.00              ND                 Passed
+ Metalaxyl                                                                                    0.09                                   0.20              ND                 Passed
+
+
+
+
+                                                                                                                                             Kimberly Krisolofsky
+                                                                                     6 of 7                                                 Lead Technical Director
+♦ indicates a subcontracted result. † indicates a result not regulated by OCM. * indicates ISO/IEC 17025:2017 accreditation is pending. This sample has been tested by ACT
+Laboratories using valid, ISO/IEC 17025:2017 accredited testing methodologies and a quality system as required by state law. Values reported relate only to the sample tested.
+Results are deemed acceptable if they fall within the speciﬁed acceptance criteria as deﬁned by the applicable regulatory limit or client speciﬁcation, with no measurement
+uncertainty applied. ACT Laboratories makes no claims as to the eﬃcacy, safety or other risks associated with any detected or non-detected levels of any compounds reported
+herein. This Certiﬁcate shall not be reproduced except in full, without the written approval of ACT Laboratories. The authenticity of this document is only guaranteed if issued
+from an @actlab.com email address.
+                                                                                                                             OCM-CPL-00001
+
+                                                             Certificate of Analysis                                         ACT Laboratories (NY)
+                                                                                                                             16 Corporate Drive, Halfmoon, New York
+                                                                                                                             5172272612
+                                                           Compliance                                       Adult Use        kimberlyk@actlab.com
+
+
+   Jaunty                                                                                                           Sample: SNYJTY0828-CVAP-0030299
+   Order No.: ONYJTY0828-0016556                                                                                             Strain: Fruit Sangria , Unit Weight: .5000g
+   4883 State Route 67                                                                                        Batch#: JROC-FRSA-2609, Batch Size: 1300 Units, LOT ID:
+   New York, 12090                                                                                                                     1A4120300000291000004498
+   dennis.t@naturae.com                                                                                                              Date Sampled: 08/28/2026 15:34
+   5189377247                                                                                                                     Sample Received: 08/28/2026 16:45
+   OCM-PROC-24-000091-P1                                                                                                           Report Created: 09/01/2026 17:09
+                                                                                                                                                     Sampling SOP 204*
+
+   Vape Cartridge - Live Rosin - Fruit Sangria - 0.5g
+   Concentrates & Extracts, Vape
+   Metrc Batch: 1A4120300000291000004497, Metrc Sample: 1A4120300000291000004498, Metrc Manifest: 0000377465
+
+
+
+
+ Analyte                                                                             LOQ (ug/g)                            Limit (ug/g)              ug/g                 Status
+ Methiocarb                                                                                   0.09                                   0.20              ND                 Passed
+ Methomyl                                                                                     0.09                                   0.40              ND                 Passed
+ MGK-264                                                                                      0.09                                   0.20              ND                 Passed
+ Myclobutanil                                                                                 0.09                                   0.20              ND                 Passed
+ Naled                                                                                        0.09                                   0.50              ND                 Passed
+ Oxamyl                                                                                       0.09                                   1.00              ND                 Passed
+ Paclobutrazol                                                                                0.09                                   0.40              ND                 Passed
+ Permethrin                                                                                   0.09                                   0.20              ND                 Passed
+ Phosmet                                                                                      0.09                                   0.20              ND                 Passed
+ Piperonyl Butoxide                                                                           0.09                                   2.00              ND                 Passed
+ Prallethrin                                                                                  0.09                                   0.20              ND                 Passed
+ Propiconazole                                                                                0.09                                   0.40              ND                 Passed
+ Propoxur                                                                                     0.09                                   0.20              ND                 Passed
+ Pyrethrins                                                                                   0.07                                   1.00              ND                 Passed
+ Pyridaben                                                                                    0.09                                   0.20              ND                 Passed
+ Spinetoram                                                                                   0.09                                   1.00              ND                 Passed
+ Spinosyn AD                                                                                  0.09                                   0.20              ND                 Passed
+ Spiromesifen                                                                                 0.09                                   0.20              ND                 Passed
+ Spirotetramat                                                                                0.09                                   0.20              ND                 Passed
+ Spiroxamine                                                                                  0.09                                   0.20              ND                 Passed
+ Tebuconazole                                                                                 0.09                                   0.40              ND                 Passed
+ Thiacloprid                                                                                  0.09                                   0.20              ND                 Passed
+ Thiamethoxam                                                                                 0.09                                   0.20              ND                 Passed
+ Trifloxystrobin                                                                              0.09                                   0.20              ND                 Passed
+ Captan                                                                                                                              1.00              TIC                Passed
+ Methyl Parathion                                                                             0.09                                   0.20              ND                 Passed
+ Chlordane                                                                                    0.09                                   1.00              ND                 Passed
+ Chlorfenapyr                                                                                 0.09                                   1.00              ND                 Passed
+ PCNB                                                                                         0.09                                   1.00              ND                 Passed
+ Azadirachtin                                                                                 0.12                                   1.00              ND                 Passed
+ Chlormequat Chloride                                                                         0.02                                   1.00              ND                 Passed
+
+ Report notes:
+ LOQ = Limit of Quantitation. Unless otherwise stated all quality control tests performed within specifications established by the Laboratory. If captan, chlormequat
+ chloride, or MGK-264 are reported, they are tentatively identified, but not quantitatively confirmed. ND = Not Detected; NT = Not Tested; NR = Not Reported. “TIC”
+ means tentatively identified, but not quantitatively confirmed.
+
+
+
+
+                                                                                                                                             Kimberly Krisolofsky
+                                                                                     7 of 7                                                 Lead Technical Director
+♦ indicates a subcontracted result. † indicates a result not regulated by OCM. * indicates ISO/IEC 17025:2017 accreditation is pending. This sample has been tested by ACT
+Laboratories using valid, ISO/IEC 17025:2017 accredited testing methodologies and a quality system as required by state law. Values reported relate only to the sample tested.
+Results are deemed acceptable if they fall within the speciﬁed acceptance criteria as deﬁned by the applicable regulatory limit or client speciﬁcation, with no measurement
+uncertainty applied. ACT Laboratories makes no claims as to the eﬃcacy, safety or other risks associated with any detected or non-detected levels of any compounds reported
+herein. This Certiﬁcate shall not be reproduced except in full, without the written approval of ACT Laboratories. The authenticity of this document is only guaranteed if issued
+from an @actlab.com email address.
+

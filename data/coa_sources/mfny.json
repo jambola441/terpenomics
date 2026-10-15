@@ -1,0 +1,18 @@
+{
+  "brand": "MFNY",
+  "site": "https://mycoa.info",
+  "source": {
+    "kind": "links",
+    "pages": ["https://mycoa.info"],
+    "link": "dropbox\\.com/.+\\.pdf",
+    "rewrite": [["([?&])dl=0", "\\1dl=1"]]
+  },
+  "learned": "2026-10-15: mfny.co links to mycoa.info, one static page of ~875 Dropbox links, one per lot. Lab: Phyto-farma (Smithers CTS's older template).",
+  "notes": [
+    "Link text is 'Strain (size) - (LOT)' or 'Product - (LOT)'. dl=0 opens Dropbox's viewer; dl=1 returns the PDF.",
+    "Lots are short codes (GZZLE3, QTRAF1); the report's Lot Number agrees."
+  ],
+  "name": [
+    {"from": "text", "match": "^(?P<strain>[^(]+?)\\s*(?:\\([^)]*\\)\\s*)?-?\\s*\\((?P<lot>[A-Z0-9-]+)"}
+  ]
+}

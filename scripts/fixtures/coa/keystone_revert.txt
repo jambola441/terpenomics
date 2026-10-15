@@ -1,0 +1,484 @@
+    Capital Region Co Inc
+    License #: OCM-PROC-24-000095
+                                                                                                                                                          Certificate of Analysis
+                                                                                                                                                                                                                   Final
+
+
+
+
+ Date Released: 1/29/2026 10:37:16AM
+
+ Report #: 105638
+
+ Sour Tangie
+                                                                                                    2.172 %               PASS                PASS                 PASS
+ Sample #: 22081, Weight: , Unit Count:
+ Order #: X260115-0001
+ Category/Type: Plant, Flower - Cured
+ Date Collected: 1/15/2026 9:59:16AM
+ Date Received: 1/15/2026 11:20:26PM
+ Date Sampled: 1/15/2026 11:20:26PM
+ Regulator Sample ID: 1A41203000009CE000000207
+ Regulator Source Package ID:
+ 1A41203000009CE000000109
+ Regulator Batch ID: CR-PP-10-ST-1
+
+ Size: Not Provided, Unit Count:
+
+
+  Terpenes by HS-GC-MS                                                                                                                                         Date Completed: 01/16/2026 10:03AM
+
+
+
+
+     Compound                                        CAS#           LOQ              %                         Relative Concentration
+                                                                    (%)
+
+ 1 Beta-caryophyllene                               87-44-5        0.1000          1.118
+
+ 2 Limonene                                        5989-27-5       0.1000         0.3761
+
+ 3 Alpha-humulene                                  6753-98-6       0.1000         0.3038
+
+ 4 Alpha-bisabolol                                 515-69-5        0.1000         0.2032
+
+ 5 Valencene                                       4630-07-3       0.1000         0.1714
+
+ 6 Beta-myrcene                                    123-35-3        0.1000           ND
+
+ 7 Alpha-pinene                                     80-56-8        0.1000           ND
+
+ 8 Linalool                                         78-70-6        0.1000           ND
+
+ 9 Beta-pinene                                     127-91-3        0.1000           ND
+
+
+
+
+LOQ= Level of Quantitation. ND= Not Detected. Date Sampled= Date and time sample was collected from client. Date Collected= Date and time sample was received at the laboratory. Date Received= Date and time sample entered
+the laboratory workflow.
+Results based on simple acceptance, not taking into consideration measuremental uncertainty.
+If sampled by Keystone State Testing, sampling followed SOP-P-NY500 at the client facility listed above.
+Samples contains subcontracted data see attached MCR COA.
+
+
+
+
+                                      Keystone State Testing of New York
+                                      1809 Vestal Pkwy E
+
+                                                                                                                                                         Dr. Kelly Greenland, Lab Director
+                                      Vestal, NY 13850
+                                      (607)301-0884
+                                      InfoNY@KeystoneStateTesting.com
+                                      www.KeystoneStateTesting.com
+                                      Permit #: OCM-CPL-00007
+
+
+
+
+                                                                                                       Page 1 of 6                                                             Report Date: 01/29/2026 10:41:35AM
+      Capital Region Co Inc
+      License #: OCM-PROC-24-000095
+                                                                                                                                                          Certificate of Analysis
+                                                                                                                                                                                                                   Final
+
+
+
+
+Sample #: 22081                                                                                                                                                                                      Sour Tangie
+
+      Compound                                       CAS#           LOQ              %                         Relative Concentration
+                                                                     (%)
+
+10 Terpinolene                                      586-62-9       0.1000            ND
+
+11 Ocimene                                        13877-91-3       0.1000            ND
+
+12 Caryophyllene-oxide                             1139-30-6       0.1000            ND
+
+13 Geraniol                                         106-24-1       0.1000            ND
+
+14 Camphene                                         79-92-5        0.1000            ND
+
+15 Guaiol                                           489-86-1       0.1000            ND
+
+16 Alpha-terpinene                                  99-86-5        0.1000            ND
+
+17 Terpineol                                       8006-39-1       0.1000            ND
+
+18 Fenchol                                        14575-74-7       0.1000            ND
+
+19 Alpha-phellandrene                               99-83-2        0.1000            ND
+
+20 Farnesene                                        502-61-4       0.1000            ND
+
+      Test Comment: Terpenes tested by GCMS using P-NY210. Unless otherwise stated, all QC passed.
+
+
+
+
+  Pesticides by LCMSMS                                                                      Pass                                                                    Analysis Date: 01/19/2026 3:39 pm
+
+        Compound                                                                LOQ (µg/g)                   Limits (µg/g)                                 Result (µg/g)                           Status
+  1
+        Abamectin                                                                  0.0100                         0.500                                           ND                                 Pass
+  2
+        Acephate                                                                   0.0100                         0.400                                           ND                                 Pass
+  3
+        Acequinocyl                                                                0.0100                          2.00                                           ND                                 Pass
+  4
+        Acetamiprid                                                                0.0100                         0.200                                           ND                                 Pass
+  5
+        Aldicarb                                                                   0.0100                         0.400                                           ND                                 Pass
+  6
+        Azadirachtin                                                               0.0100                          1.00                                           ND                                 Pass
+  7
+        Azoxystrobin                                                               0.0100                         0.200                                           ND                                 Pass
+  8
+        Bifenazate                                                                 0.0100                         0.200                                           ND                                 Pass
+  9
+        Bifenthrin                                                                 0.0100                         0.200                                           ND                                 Pass
+ 10
+        Boscalid                                                                   0.0100                         0.400                                           ND                                 Pass
+ 11
+        Captan                                                                     0.0100                          1.00                                           ND                                 Pass
+ 12
+        Carbaryl                                                                   0.0100                         0.200                                           ND                                 Pass
+
+LOQ= Level of Quantitation. ND= Not Detected. Date Sampled= Date and time sample was collected from client. Date Collected= Date and time sample was received at the laboratory. Date Received= Date and time sample entered
+the laboratory workflow.
+Results based on simple acceptance, not taking into consideration measuremental uncertainty.
+If sampled by Keystone State Testing, sampling followed SOP-P-NY500 at the client facility listed above.
+Samples contains subcontracted data see attached MCR COA.
+
+
+
+
+                                      Keystone State Testing of New York
+                                      1809 Vestal Pkwy E
+
+                                                                                                                                                         Dr. Kelly Greenland, Lab Director
+                                      Vestal, NY 13850
+                                      (607)301-0884
+                                      InfoNY@KeystoneStateTesting.com
+                                      www.KeystoneStateTesting.com
+                                      Permit #: OCM-CPL-00007
+
+
+
+
+                                                                                                       Page 2 of 6                                                             Report Date: 01/29/2026 10:41:35AM
+      Capital Region Co Inc
+      License #: OCM-PROC-24-000095
+                                                                                                                                                          Certificate of Analysis
+                                                                                                                                                                                                                   Final
+
+
+
+
+Sample #: 22081                                                                                                                                                                                      Sour Tangie
+
+  Pesticides by LCMSMS                                                                     Pass                                                                     Analysis Date: 01/19/2026 3:39 pm
+
+        Compound                                                               LOQ (µg/g)                    Limits (µg/g)                                 Result (µg/g)                           Status
+ 13
+        Carbofuran                                                                0.0100                          0.200                                           ND                                 Pass
+ 14
+        Chlorantraniliprole                                                       0.0100                          0.200                                           ND                                 Pass
+ 15
+        Chlordane-alpha                                                           0.0100                           1.00                                           ND                                 Pass
+ 16
+        Chlorfenapyr                                                              0.0100                           1.00                                           ND                                 Pass
+ 17
+        Chlormequat Chloride                                                      0.0100                           1.00                                           ND                                 Pass
+ 18
+        Chlorpyrifos                                                              0.0100                          0.200                                           ND                                 Pass
+ 19
+        Clofentezine                                                              0.0100                          0.200                                           ND                                 Pass
+ 20
+        Coumaphos                                                                 0.0100                           1.00                                           ND                                 Pass
+ 21
+        Cyfluthrin                                                                0.0100                           1.00                                           ND                                 Pass
+ 22
+        Cypermethrin                                                              0.0100                           1.00                                           ND                                 Pass
+ 23
+        Daminozide                                                                0.0100                           1.00                                           ND                                 Pass
+ 24
+        Diazinon                                                                  0.0100                          0.200                                           ND                                 Pass
+ 25
+        Dichlorvos                                                                0.0100                           1.00                                           ND                                 Pass
+ 26
+        Dimethoate                                                                0.0100                          0.200                                           ND                                 Pass
+ 27
+        Dimethomorph                                                              0.0100                           1.00                                           ND                                 Pass
+ 28
+        Ethoprophos                                                               0.0100                          0.200                                           ND                                 Pass
+ 29
+        Etofenprox                                                                0.0100                          0.400                                           ND                                 Pass
+ 30
+        Etoxazole                                                                 0.0100                          0.200                                           ND                                 Pass
+ 31
+        Fenhexamid                                                                0.0100                           1.00                                           ND                                 Pass
+ 32
+        Fenoxycarb                                                                0.0100                          0.200                                           ND                                 Pass
+ 33
+        Fenpyroximate                                                             0.0100                          0.400                                           ND                                 Pass
+ 34
+        Fipronil                                                                  0.0100                          0.400                                           ND                                 Pass
+ 35
+        Flonicamid                                                                0.0100                           1.00                                           ND                                 Pass
+ 36
+        Fludioxonil                                                               0.0100                          0.400                                           ND                                 Pass
+ 37
+        Hexythiazox                                                               0.0100                           1.00                                           ND                                 Pass
+ 38
+        Imazalil                                                                  0.0100                          0.200                                           ND                                 Pass
+
+LOQ= Level of Quantitation. ND= Not Detected. Date Sampled= Date and time sample was collected from client. Date Collected= Date and time sample was received at the laboratory. Date Received= Date and time sample entered
+the laboratory workflow.
+Results based on simple acceptance, not taking into consideration measuremental uncertainty.
+If sampled by Keystone State Testing, sampling followed SOP-P-NY500 at the client facility listed above.
+Samples contains subcontracted data see attached MCR COA.
+
+
+
+
+                                      Keystone State Testing of New York
+                                      1809 Vestal Pkwy E
+
+                                                                                                                                                         Dr. Kelly Greenland, Lab Director
+                                      Vestal, NY 13850
+                                      (607)301-0884
+                                      InfoNY@KeystoneStateTesting.com
+                                      www.KeystoneStateTesting.com
+                                      Permit #: OCM-CPL-00007
+
+
+
+
+                                                                                                       Page 3 of 6                                                             Report Date: 01/29/2026 10:41:35AM
+      Capital Region Co Inc
+      License #: OCM-PROC-24-000095
+                                                                                                                                                          Certificate of Analysis
+                                                                                                                                                                                                                   Final
+
+
+
+
+Sample #: 22081                                                                                                                                                                                      Sour Tangie
+
+  Pesticides by LCMSMS                                                                     Pass                                                                     Analysis Date: 01/19/2026 3:39 pm
+
+        Compound                                                               LOQ (µg/g)                    Limits (µg/g)                                 Result (µg/g)                           Status
+ 39
+        Imidacloprid                                                              0.0100                          0.400                                           ND                                 Pass
+ 40
+        Indolebutyric Acid                                                        0.0100                           1.00                                           ND                                 Pass
+ 41
+        Kresoxim-methyl                                                           0.0100                          0.400                                           ND                                 Pass
+ 42
+        Malathion                                                                 0.0100                          0.200                                           ND                                 Pass
+ 43
+        Metalaxyl                                                                 0.0100                          0.200                                           ND                                 Pass
+ 44
+        Methiocarb                                                                0.0100                          0.200                                           ND                                 Pass
+ 45
+        Methomyl                                                                  0.0100                          0.400                                           ND                                 Pass
+ 46
+        Methyl Parathion                                                          0.0100                          0.200                                           ND                                 Pass
+ 47
+        Mevinphos                                                                 0.0100                           1.00                                           ND                                 Pass
+ 48
+        MGK-264                                                                   0.0100                          0.200                                           ND                                 Pass
+ 49
+        Myclobutanil                                                              0.0100                          0.200                                           ND                                 Pass
+ 50
+        Naled                                                                     0.0100                          0.500                                           ND                                 Pass
+ 51
+        Oxamyl                                                                    0.0100                           1.00                                           ND                                 Pass
+ 52
+        Paclobutrazol                                                             0.0100                          0.400                                           ND                                 Pass
+ 53
+        Pentachloronitrobenzene                                                   0.0100                           1.00                                           ND                                 Pass
+ 54
+        Permethrins, Total                                                        0.0100                          0.200                                           ND                                 Pass
+ 55
+        Phosmet                                                                   0.0100                          0.200                                           ND                                 Pass
+ 56
+        Piperonyl Butoxide                                                        0.0100                           2.00                                           ND                                 Pass
+ 57
+        Prallethrin                                                               0.0100                          0.200                                           ND                                 Pass
+ 58
+        Propiconazole                                                             0.0100                          0.400                                           ND                                 Pass
+ 59
+        Propoxur                                                                  0.0100                          0.200                                           ND                                 Pass
+ 60
+        Pyrethrins Total                                                          0.0100                           1.00                                           ND                                 Pass
+ 61
+        Pyridaben                                                                 0.0100                          0.200                                           ND                                 Pass
+ 62
+        Spinetoram Total                                                          0.0100                           1.00                                           ND                                 Pass
+ 63
+        Spinosad Total                                                            0.0100                          0.200                                           ND                                 Pass
+ 64
+        Spiromesifen                                                              0.0100                          0.200                                           ND                                 Pass
+
+LOQ= Level of Quantitation. ND= Not Detected. Date Sampled= Date and time sample was collected from client. Date Collected= Date and time sample was received at the laboratory. Date Received= Date and time sample entered
+the laboratory workflow.
+Results based on simple acceptance, not taking into consideration measuremental uncertainty.
+If sampled by Keystone State Testing, sampling followed SOP-P-NY500 at the client facility listed above.
+Samples contains subcontracted data see attached MCR COA.
+
+
+
+
+                                      Keystone State Testing of New York
+                                      1809 Vestal Pkwy E
+
+                                                                                                                                                         Dr. Kelly Greenland, Lab Director
+                                      Vestal, NY 13850
+                                      (607)301-0884
+                                      InfoNY@KeystoneStateTesting.com
+                                      www.KeystoneStateTesting.com
+                                      Permit #: OCM-CPL-00007
+
+
+
+
+                                                                                                       Page 4 of 6                                                             Report Date: 01/29/2026 10:41:35AM
+      Capital Region Co Inc
+      License #: OCM-PROC-24-000095
+                                                                                                                                                          Certificate of Analysis
+                                                                                                                                                                                                                   Final
+
+
+
+
+Sample #: 22081                                                                                                                                                                                      Sour Tangie
+
+  Pesticides by LCMSMS                                                                       Pass                                                                   Analysis Date: 01/19/2026 3:39 pm
+
+         Compound                                                                LOQ (µg/g)                     Limits (µg/g)                              Result (µg/g)                           Status
+ 65
+         Spirotetramat                                                              0.0100                           0.200                                        ND                                 Pass
+ 66
+         Spiroxamine                                                                0.0100                           0.200                                        ND                                 Pass
+ 67
+         Tebuconazole                                                               0.0100                           0.400                                        ND                                 Pass
+ 68
+         Thiacloprid                                                                0.0100                           0.200                                        ND                                 Pass
+ 69
+         Thiamethoxam                                                               0.0100                           0.200                                        ND                                 Pass
+ 70
+         Trifloxystrobin                                                            0.0100                           0.200                                        ND                                 Pass
+      Comment:     Pesticides tested by LCMSMS by using P-NY150. Unless otherwise stated, all QC passed.
+
+
+
+
+  Mycotoxins by LCMSMS                                                                       Pass                                                                   Analysis Date: 01/19/2026 3:39 pm
+
+         Compound                                                                LOQ (µg/g)                     Limits (µg/g)                              Result (µg/g)                           Status
+  1
+         Aflatoxin B1                                                               0.0050                           0.020                                        ND                                 Pass
+  2
+         Aflatoxin B2                                                               0.0050                           0.020                                        ND                                 Pass
+  3
+         Aflatoxin G1                                                               0.0050                           0.020                                        ND                                 Pass
+  4
+         Aflatoxin G2                                                               0.0050                           0.020                                        ND                                 Pass
+  5
+         Ochratoxin A                                                               0.0050                           0.020                                        ND                                 Pass
+  6
+         Total Aflatoxin                                                            0.0050                           0.020                                        ND                                 Pass
+      Comment:     Mycotoxin contamination tested by LCMSMS using P-NY125. Unless otherwise stated, all QC passed.
+
+
+
+
+  Heavy Metals by ICPMS                                                                      Pass                                                                   Analysis Date: 01/20/2026 3:16 pm
+
+         Compound                                                                LOQ (µg/g)                     Limits (µg/g)                              Result (µg/g)                           Status
+  1
+         Antimony                                                                   0.0100                           2.00                                         ND                                 Pass
+  2
+         Arsenic                                                                   0.00100                           0.200                                     0.0191                                Pass
+  3
+         Cadmium                                                                   0.00150                           0.200                                        ND                                 Pass
+  4
+         Chromium                                                                    0.280                           110                                          ND                                 Pass
+  5
+         Copper                                                                     0.0750                           30.0                                        5.38                                Pass
+  6
+         Lead                                                                      0.00250                           0.500                                     0.0321                                Pass
+
+LOQ= Level of Quantitation. ND= Not Detected. Date Sampled= Date and time sample was collected from client. Date Collected= Date and time sample was received at the laboratory. Date Received= Date and time sample entered
+the laboratory workflow.
+Results based on simple acceptance, not taking into consideration measuremental uncertainty.
+If sampled by Keystone State Testing, sampling followed SOP-P-NY500 at the client facility listed above.
+Samples contains subcontracted data see attached MCR COA.
+
+
+
+
+                                      Keystone State Testing of New York
+                                      1809 Vestal Pkwy E
+
+                                                                                                                                                         Dr. Kelly Greenland, Lab Director
+                                      Vestal, NY 13850
+                                      (607)301-0884
+                                      InfoNY@KeystoneStateTesting.com
+                                      www.KeystoneStateTesting.com
+                                      Permit #: OCM-CPL-00007
+
+
+
+
+                                                                                                           Page 5 of 6                                                         Report Date: 01/29/2026 10:41:35AM
+      Capital Region Co Inc
+      License #: OCM-PROC-24-000095
+                                                                                                                                                          Certificate of Analysis
+                                                                                                                                                                                                                   Final
+
+
+
+
+Sample #: 22081                                                                                                                                                                                      Sour Tangie
+
+  Heavy Metals by ICPMS                                                                      Pass                                                                   Analysis Date: 01/20/2026 3:16 pm
+
+         Compound                                                                LOQ (µg/g)                     Limits (µg/g)                              Result (µg/g)                           Status
+  7
+         Mercury                                                                   0.000500                           0.100                                   0.000705                               Pass
+  8
+         Nickel                                                                     0.0100                            5.00                                      0.103                                Pass
+      Comment:     Heavy Metal contamination tested by ICPMS using P-NY140. Unless otherwise stated, all QC passed.
+
+
+
+
+LOQ= Level of Quantitation. ND= Not Detected. Date Sampled= Date and time sample was collected from client. Date Collected= Date and time sample was received at the laboratory. Date Received= Date and time sample entered
+the laboratory workflow.
+Results based on simple acceptance, not taking into consideration measuremental uncertainty.
+If sampled by Keystone State Testing, sampling followed SOP-P-NY500 at the client facility listed above.
+Samples contains subcontracted data see attached MCR COA.
+
+
+
+
+                                      Keystone State Testing of New York
+                                      1809 Vestal Pkwy E
+
+                                                                                                                                                         Dr. Kelly Greenland, Lab Director
+                                      Vestal, NY 13850
+                                      (607)301-0884
+                                      InfoNY@KeystoneStateTesting.com
+                                      www.KeystoneStateTesting.com
+                                      Permit #: OCM-CPL-00007
+
+
+
+
+                                                                                                         Page 6 of 6                                                           Report Date: 01/29/2026 10:41:35AM
+

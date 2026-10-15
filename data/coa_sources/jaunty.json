@@ -1,0 +1,30 @@
+{
+  "brand": "Jaunty",
+  "site": "https://jaunty.com",
+  "source": {
+    "kind": "wp_media",
+    "site": "https://jaunty.com",
+    "link": "\\.pdf$",
+    "skip": "(?i)catalog|budtender|training|menu|sell-?sheet"
+  },
+  "learned": "2026-10-15: jaunty.com/labresults shows one product's reports at a time through a picker; the WordPress media library lists all ~1,000 report PDFs. Lab: Kaycha Labs.",
+  "notes": [
+    "Filenames are STRAIN-LOT, the lot being J + a 3-letter line code (JYVC vape cart, JIPR, JLQD, JBVC, JYBD, JROC, JCCR, JYHG) then a product code and YYMM: SOUR-DIESEL-JYBD-SDSL-2609.",
+    "Some recent filenames carry only the lot (JYVC-AMHZ-2607); the strain then comes from the catalog match on the report itself.",
+    "Media titles read 'Strain [Product] LOT' (Rainbow Belts JYVC-RNBT-2608, Orange Swirl Hash Gummies JYHG-OGSW-2607) and carry the strain where the filename has only the lot, so they are tried first."
+  ],
+  "name": [
+    {
+      "from": "text",
+      "match": "^(?P<strain>.+?)\\s+(?P<lot>J[A-Z]{3}-[A-Z0-9]+(?:-[A-Z0-9]+)*?)-?$"
+    },
+    {
+      "from": "file",
+      "match": "^(?:Jaunty-)?(?P<strain>.*?[A-Za-z].*?)-?(?P<lot>J[A-Z]{3}(?:-?[A-Z0-9]+)*?)-?(?:-\\d)?\\.pdf$"
+    },
+    {
+      "from": "file",
+      "match": "^(?P<strain>[A-Za-z][A-Za-z-]+?)-\\d{4,6}(?:-\\d)?\\.pdf$"
+    }
+  ]
+}

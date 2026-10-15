@@ -1,0 +1,17 @@
+{
+  "brand": "Revert",
+  "site": "https://www.revertnyc.com",
+  "source": {
+    "kind": "links",
+    "pages": ["https://www.revertnyc.com/flowercoas"],
+    "link": "website-files\\.com/.+\\.pdf$"
+  },
+  "learned": "2026-10-15: a Webflow page of flower COAs, PDFs on Webflow's CDN. Lab: Keystone State Testing (terpenes); cannabinoids are a subcontracted lab's COA attached as pages the reader does not parse.",
+  "notes": [
+    "Filenames are <webflow id>_<lab order>_<Strain_Name>_<lab sample #>.pdf, or <id>_<Strain_Name>_Certificate_of_Analysis.pdf.",
+    "The lot is the report's Regulator Batch ID (CR-PP-10-ST-1); the Metrc tag is its Regulator Sample ID."
+  ],
+  "name": [
+    {"from": "file", "match": "^[0-9a-f]{24}_(?:X\\d+_\\d+_)?(?P<strain>.+?)(?:_\\d{4,6}|_Certificate_of_Analysis)\\.pdf$"}
+  ]
+}

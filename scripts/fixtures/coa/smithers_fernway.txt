@@ -1,0 +1,568 @@
+                                        Fernway
+                                        Address: 399 Smith St
+                                        Farmingdale, NY 11735
+                                        Contact Name:
+                                        Contact Phone:
+                                        License #: OCM-PROC-24-000119                                                                                                             CERTIFICATE OF ANALYSIS
+                                        Sample ID: 2610SMNY1024.4013                                                                                                                       Permit #: OCM-CPL-00004
+                                        Metrc Tag: 1A4120300000285000006943
+Certificate: 18002.1
+
+
+
+
+Alpine Strawberry - 1.0g (T PRO)
+Metrc Package ID: 1A4120300000285000006943                                                    Sample Type: Concentrate
+Metrc Sample ID 1A4120300000285000006908                                                      Sample Collected: 10/06/2026 11:31 AM
+Lot #: FNY-ALPINE-T1GP-260924                                                                 Lot Size: 1050
+Sample ID: 2610SMNY1024.4013                                                                  Amount Received: 11
+Regulatory Category: Adult Use                                                                Received: 10/06/2026
+Sampling Location: 399 Smith St Farmingdale, NY                                               Published: 10/12/2026
+11735
+
+
+
+COMPLIANCE FOR RETAIL
+
+          Cannabinoid Profile                                           Terpenes Total                                        Residual Solvents                                                                             Pass
+                     Pass                                                     Pass                                                     Pass                                                                          Sample Status
+
+
+
+                  Pesticides                                              Mycotoxins                                             Water Activity                                                                         90.63%
+                     Pass                                                     Pass                                             Not Tested                                                                                Total THC
+
+
+
+                Trace Metals                                    Microbial Contaminants                                        Moisture Analysis                                                                        0.2169%
+                     Pass                                                     Pass                                             Not Tested                                                                                Total CBD
+
+
+
+                                                                       Filth & Foreign                                                                                                                                 94.86 %
+                                                                      Not Tested                                                                                                                                 Total Cannabinoids
+
+
+
+ Report Notes: N/A
+
+
+
+
+ Weston Owen                            10/12/2026                                                                 Smithers CTS New York LLC
+                                                                                                                   49 John Hicks Drive
+ Laboratory Manager                                                                                                Warwick, NY 10990
+                                                                                                                   (845) 202-9737
+                                                                                                                                                                                                                         Accreditation #: 121747
+
+
+This is a Smithers CTS New York LLC certification that relates only to the material tested and shall not be reproduced, unless in its entirety, without written approval from Smithers CTS New York LLC. Test results are confidential, unless explicitly
+waived. Pass/Fail results do not use uncertainty, but is available upon request. The product represented has been tested by Smithers CTS New York LLC using validated scientific methodologies. Note action levels are state determined thresholds
+for human safety and consumption. Acronym Definitions: ND - Not Detected, LOQ - Limit of Quantification, ULOQ - Upper Limit of Quantification; are terms used to describe the reliably measured smallest and largest concentrations. <LOQ*
+denotes the result is above detection limit, but below quantifiable limit. CFU - Colony Forming Units. Cannabis Product Sampling SOP# SOP.T.20.010.
+
+
+                                                                                                                    Page 1 of 9
+                                        Fernway
+                                        Address: 399 Smith St
+                                        Farmingdale, NY 11735
+                                        Contact Name:
+                                        Contact Phone:
+                                        License #: OCM-PROC-24-000119                                                                                                             CERTIFICATE OF ANALYSIS
+                                        Sample ID: 2610SMNY1024.4013                                                                                                                       Permit #: OCM-CPL-00004
+                                        Metrc Tag: 1A4120300000285000006943
+Certificate: 18002.1
+
+
+                                                                                                              Sample Analysis
+   Average Cannabinoid Profile
+                                                                                                                Date: 10/12/2026 04:57 PM                                                  SOP: SOP.T.40.260
+
+   Pass                                                                                                         Analyzed By: HPLC                                                          Sample Weight: N/A
+
+
+
+                                     Analyte                                                         LOQ (%)                         Average (%) (w/w)                          Average (mg/g)                      Average (mg/serving)
+
+Total Tetrahydrocannabinol (THC)                                                                          -                                   90.63                                    906.3                                    906.3
+   Tetrahydrocannabinolic acid (THCA)                                                               0.1203                                    <LOQ                                     <LOQ                                      <LOQ
+   Δ8-THC                                                                                           0.1203                                    <LOQ                                     <LOQ                                      <LOQ
+   Δ9-THC                                                                                           0.1203                                    90.63                                    906.3                                    906.3
+   Δ10-THC-RS                                                                                       0.1203                                    <LOQ                                     <LOQ                                      <LOQ
+   Δ10-THC-RR                                                                                       0.1203                                    <LOQ                                     <LOQ                                      <LOQ
+Total Cannabidiol (CBD)                                                                                   -                                  0.2169                                    2.169                                    2.169
+   Cannabidiolic acid (CBDA)                                                                        0.1203                                    <LOQ                                     <LOQ                                      <LOQ
+   Cannabidiol (CBD)                                                                                0.1203                                   0.2169                                    2.169                                    2.169
+Total Active Tetrahydrocannabivarin (THCV)                                                                -                                  0.3639                                    3.639                                    3.639
+   Tetrahydrocannabivarinic acid (THCVA)                                                            0.1203                                    <LOQ                                     <LOQ                                      <LOQ
+   Δ9-THCV                                                                                          0.1203                                   0.3639                                    3.639                                    3.639
+Total Active Cannabigerol (CBG)                                                                           -                                   2.657                                    26.57                                    26.57
+   Cannabigerolic acid (CBGA)                                                                       0.1203                                    <LOQ                                     <LOQ                                      <LOQ
+   Cannabigerol (CBG)                                                                               0.1203                                    2.657                                    26.57                                    26.57
+   Cannabidivarin (CBDV)                                                                            0.1203                                    <LOQ                                     <LOQ                                      <LOQ
+   Cannabinol (CBN)                                                                                 0.1203                                   0.7247                                    7.247                                    7.247
+   Cannabichromene (CBC)                                                                            0.1203                                    0.264                                     2.64                                      2.64
+
+                           Cannabinoid Totals                                                      Average (%) (w/w)                                        Average (mg/g)                                   Average (mg/serving)
+
+Total Cannabinoids                                                                                            94.86                                               948.6                                                  948.6
+
+Total THC = THCa*0.877 + ∆9-THC
+Total CBD = CBDa*0.877 + CBD
+Total Cannabinoids = Sum of all analytes
+Total Active CBD = CBD + (0.877 x CBDA); Total Active CBG = CBG + (0.878 x CBGA);
+Total Active THC = (Δ9THC + Δ8THC + Δ10THC-RS + Δ10THC-RR) + (0.877 x THCA);
+Total Active THCV = THCV + (0.867 x THCVA);
+
+Serving Weight: 1 g; Servings/Package: 1
+
+
+
+
+ Weston Owen                            10/12/2026                                                                 Smithers CTS New York LLC
+                                                                                                                   49 John Hicks Drive
+ Laboratory Manager                                                                                                Warwick, NY 10990
+                                                                                                                   (845) 202-9737
+                                                                                                                                                                                                                         Accreditation #: 121747
+
+This is a Smithers CTS New York LLC certification that relates only to the material tested and shall not be reproduced, unless in its entirety, without written approval from Smithers CTS New York LLC. Test results are confidential, unless explicitly
+waived. Pass/Fail results do not use uncertainty, but is available upon request. The product represented has been tested by Smithers CTS New York LLC using validated scientific methodologies. Note action levels are state determined thresholds
+for human safety and consumption. Acronym Definitions: ND - Not Detected, LOQ - Limit of Quantification, ULOQ - Upper Limit of Quantification; are terms used to describe the reliably measured smallest and largest concentrations. <LOQ*
+denotes the result is above detection limit, but below quantifiable limit. CFU - Colony Forming Units. Cannabis Product Sampling SOP# SOP.T.20.010.
+
+
+                                                                                                                    Page 2 of 9
+                                        Fernway
+                                        Address: 399 Smith St
+                                        Farmingdale, NY 11735
+                                        Contact Name:
+                                        Contact Phone:
+                                        License #: OCM-PROC-24-000119                                                                                                             CERTIFICATE OF ANALYSIS
+                                        Sample ID: 2610SMNY1024.4013                                                                                                                       Permit #: OCM-CPL-00004
+                                        Metrc Tag: 1A4120300000285000006943
+Certificate: 18002.1
+
+
+                                                                                                              Sample Analysis
+   Terpene Total
+                                                                                                                  Date: 10/09/2026 04:34 PM                                                 SOP: SOP.T.40.090
+
+   Pass (2.545%)                                                                                                  Sample Weight: 0.2119 g                                                   Analyzed By: GC-MS
+
+
+
+           Analyte                                LOQ (%)                                   Results (%)                                    Analyte                                LOQ (%)                                   Results (%)
+3-Carene                                        0.0004200                                       <LOQ                            Fenchol                                         0.0004000                                       <LOQ
+alpha-Bisabolol                                 0.0005000                                       <LOQ                            gamma-Terpinene                                 0.0004400                                       <LOQ
+alpha-Humulene                                  0.0005600                                       <LOQ                            gamma-Terpineol                                 0.0003000                                       <LOQ
+alpha-Phellandrene                              0.0006600                                       <LOQ                            Geraniol                                        0.0004800                                       <LOQ
+alpha-Pinene                                    0.0004800                                     0.02890                           Geranyl acetate                                 0.0006200                                       <LOQ
+alpha-Terpinene                                 0.0002600                                       <LOQ                            Guaiol                                          0.0006000                                       <LOQ
+alpha-Terpineol                                 0.0003400                                       <LOQ                            Isoborneol                                      0.0003400                                       <LOQ
+beta-Myrcene                                    0.0006400                                     0.07900                           Isopulegol                                      0.0006600                                       <LOQ
+beta-Pinene                                     0.0006600                                       <LOQ                            Limonene                                        0.0007400                                       2.311
+Borneol                                         0.0004600                                       <LOQ                            Linalool                                        0.0004600                                      0.1258
+Camphene                                        0.0004400                                       <LOQ                            Menthol                                         0.0004600                                       <LOQ
+Camphor                                         0.0004000                                       <LOQ                            Nerol                                           0.0005000                                       <LOQ
+Caryophyllene oxide                             0.0005800                                       <LOQ                            Pulegone (+)                                    0.0005600                                       <LOQ
+Cedrene                                         0.0004400                                       <LOQ                            Sabinene                                        0.0003400                                       <LOQ
+Cedrol                                          0.0005600                                       <LOQ                            Sabinene Hydrate                                0.0004200                                       <LOQ
+cis-Nerolidol                                   0.0006800                                       <LOQ                            Terpinolene                                     0.0005000                                       <LOQ
+cis-Ocimene                                     0.0005200                                       <LOQ                            trans-b-Ocimene                                 0.0004200                                       <LOQ
+Eucalyptol                                      0.0007200                                       <LOQ                            trans-Caryophyllene                             0.0006600                                       <LOQ
+Farnesene                                       0.0008400                                       <LOQ                            trans-Nerolidol                                 0.0007200                                       <LOQ
+Fenchone                                        0.0005000                                       <LOQ                            Valencene                                       0.0005600                                       <LOQ
+
+
+
+                              Terpene Totals                                                                               %                                                                             Pass/Fail
+
+Total Terpenes                                                                                                         2.545                                                                               PASS
+
+
+                                  Limonene
+
+                                      Linalool
+
+                            beta-Myrcene
+
+                             alpha-Pinene
+
+                                  Valencene
+
+                                   Weight %: 0.00%                       0.26%               0.51%               0.77%               1.03%               1.28%               1.54%               1.80%               2.05%                  2.31%
+
+
+
+
+ Weston Owen                            10/12/2026                                                                 Smithers CTS New York LLC
+                                                                                                                   49 John Hicks Drive
+ Laboratory Manager                                                                                                Warwick, NY 10990
+                                                                                                                   (845) 202-9737
+                                                                                                                                                                                                                         Accreditation #: 121747
+
+This is a Smithers CTS New York LLC certification that relates only to the material tested and shall not be reproduced, unless in its entirety, without written approval from Smithers CTS New York LLC. Test results are confidential, unless explicitly
+waived. Pass/Fail results do not use uncertainty, but is available upon request. The product represented has been tested by Smithers CTS New York LLC using validated scientific methodologies. Note action levels are state determined thresholds
+for human safety and consumption. Acronym Definitions: ND - Not Detected, LOQ - Limit of Quantification, ULOQ - Upper Limit of Quantification; are terms used to describe the reliably measured smallest and largest concentrations. <LOQ*
+denotes the result is above detection limit, but below quantifiable limit. CFU - Colony Forming Units. Cannabis Product Sampling SOP# SOP.T.20.010.
+
+
+                                                                                                                    Page 3 of 9
+                                        Fernway
+                                        Address: 399 Smith St
+                                        Farmingdale, NY 11735
+                                        Contact Name:
+                                        Contact Phone:
+                                        License #: OCM-PROC-24-000119                                                                                                             CERTIFICATE OF ANALYSIS
+                                        Sample ID: 2610SMNY1024.4013                                                                                                                       Permit #: OCM-CPL-00004
+                                        Metrc Tag: 1A4120300000285000006943
+Certificate: 18002.1
+
+
+                                                                                                        Sample Analysis
+   Residual Solvents
+                                                                                                            Date: 10/09/2026 04:38 PM                                                    SOP: SOP.T.040.272
+
+   Pass                                                                                                     Analyzed By: GC-MS                                                           Sample Weight: 0.0946 g
+
+
+
+                                       Analyte                                                         LOQ (ppm)                        Action Limit (ppm)                         Results (ppm)                               Pass/Fail
+
+1,2-Dichloroethane (Ethylene dichloride,
+                                                                                                          0.100                                    5.00                                  <LOQ                                     PASS
+Ethylene chloride)
+2-Propanol (Isopropanol, Isopropyl alcohol)                                                                 125                                   5000                                   <LOQ                                     PASS
+Acetone (2-Propanone)                                                                                       125                                   5000                                   <LOQ                                     PASS
+Acetonitrile                                                                                               23.6                                    410                                   <LOQ                                     PASS
+Benzene                                                                                                   0.100                                    2.00                                  <LOQ                                     PASS
+Butanes, Total                                                                                             62.5                                   5000                                   <LOQ                                     PASS
+Chloroform                                                                                                 1.50                                    60.0                                  <LOQ                                     PASS
+Dichloromethane (Methylene chloride)                                                                       15.0                                    600                                   <LOQ                                     PASS
+Dimethyl sulfoxide (DMSO)                                                                                   125                                   5000                                   <LOQ                                     PASS
+Ethanol (Ethyl alcohol)                                                                                     125                                   5000                                   <LOQ                                     PASS
+Ethyl acetate (Acetic acid ethyl ester)                                                                     125                                   5000                                   <LOQ                                     PASS
+Ethyl ether (Diethyl ether, 1,1’-Oxybisethane)                                                              125                                   5000                                   <LOQ                                     PASS
+Heptane (n-Heptane)                                                                                         125                                   5000                                   <LOQ                                     PASS
+Hexanes, Total                                                                                             14.5                                    290                                   <LOQ                                     PASS
+Methanol (Methyl alcohol)                                                                                  75.1                                   3000                                   <LOQ                                     PASS
+Pentanes, Total                                                                                             195                                   5000                                   <LOQ                                     PASS
+Propane                                                                                                    63.0                                   5000                                   <LOQ                                     PASS
+Toluene (Methylbenzene)                                                                                    22.3                                    890                                   <LOQ                                     PASS
+Trichloroethane (1,1,1-)                                                                                   37.6                                   1500                                   <LOQ                                     PASS
+Tetrafluoroethane (1,1,1,2-) (HFC134a)*                                                                    10.0                                   1000                                   <LOQ                                     PASS
+Xylenes, Total (ortho-, meta-, para-)                                                                       109                                   2170                                   <LOQ                                     PASS
+
+
+
+
+ Weston Owen                            10/12/2026                                                                 Smithers CTS New York LLC
+                                                                                                                   49 John Hicks Drive
+ Laboratory Manager                                                                                                Warwick, NY 10990
+                                                                                                                   (845) 202-9737
+                                                                                                                                                                                                                         Accreditation #: 121747
+
+This is a Smithers CTS New York LLC certification that relates only to the material tested and shall not be reproduced, unless in its entirety, without written approval from Smithers CTS New York LLC. Test results are confidential, unless explicitly
+waived. Pass/Fail results do not use uncertainty, but is available upon request. The product represented has been tested by Smithers CTS New York LLC using validated scientific methodologies. Note action levels are state determined thresholds
+for human safety and consumption. Acronym Definitions: ND - Not Detected, LOQ - Limit of Quantification, ULOQ - Upper Limit of Quantification; are terms used to describe the reliably measured smallest and largest concentrations. <LOQ*
+denotes the result is above detection limit, but below quantifiable limit. CFU - Colony Forming Units. Cannabis Product Sampling SOP# SOP.T.20.010.
+
+
+                                                                                                                    Page 4 of 9
+                                        Fernway
+                                        Address: 399 Smith St
+                                        Farmingdale, NY 11735
+                                        Contact Name:
+                                        Contact Phone:
+                                        License #: OCM-PROC-24-000119                                                                                                             CERTIFICATE OF ANALYSIS
+                                        Sample ID: 2610SMNY1024.4013                                                                                                                       Permit #: OCM-CPL-00004
+                                        Metrc Tag: 1A4120300000285000006943
+Certificate: 18002.1
+
+
+                                                                                                         Sample Analysis
+   Trace Metals
+                                                                                                             Date: 10/08/2026 01:43 PM                                                   SOP: SOP.T.40.050
+
+   Pass                                                                                                      Analyzed By: ICP-MS                                                         Sample Weight: 0.131 g
+
+
+
+                                       Analyte                                                         LOQ (µg/g)                       Action Limit (µg/g)                         Results (µg/g)                             Pass/Fail
+
+Antimony (Sb)                                                                                             0.200                                    2.00                                  <LOQ                                     PASS
+Arsenic (As)                                                                                              0.200                                  0.200                                   <LOQ                                     PASS
+Cadmium (Cd)                                                                                              0.200                                  0.200                                   <LOQ                                     PASS
+Chromium (Cr)                                                                                             0.200                                    110                                   <LOQ                                     PASS
+Copper (Cu)                                                                                               0.200                                    30.0                                  <LOQ                                     PASS
+Lead (Pb)                                                                                                 0.200                                  0.500                                   <LOQ                                     PASS
+Mercury (Hg)                                                                                             0.0400                                  0.100                                   <LOQ                                     PASS
+Nickel (Ni)                                                                                               0.200                                    2.00                                  <LOQ                                     PASS
+
+
+
+
+                                                                                                        Sample Analysis
+   Mycotoxin Analysis
+                                                                                                            Date: 10/12/2026 04:35 PM                                                    SOP: SOP.T.40.180
+
+   Pass                                                                                                     Analyzed By: LC-MS/MS                                                        Sample Weight: 0.1031 g
+
+
+
+                                       Analyte                                                         LOQ (µg/g)                       Action Limit (µg/g)                         Results (µg/g)                             Pass/Fail
+
+Sum of Aflatoxins                                                                                              -                                 0.020                                   <LOQ                                     PASS
+   Aflatoxin B1                                                                                          0.0050                                  0.020                                   <LOQ                                     PASS
+   Aflatoxin B2                                                                                          0.0050                                  0.020                                   <LOQ                                     PASS
+   Aflatoxin G1                                                                                          0.0050                                  0.020                                   <LOQ                                     PASS
+   Aflatoxin G2                                                                                          0.0050                                  0.020                                   <LOQ                                     PASS
+Ochratoxin A                                                                                             0.0050                                  0.020                                   <LOQ                                     PASS
+
+
+
+
+ Weston Owen                            10/12/2026                                                                 Smithers CTS New York LLC
+                                                                                                                   49 John Hicks Drive
+ Laboratory Manager                                                                                                Warwick, NY 10990
+                                                                                                                   (845) 202-9737
+                                                                                                                                                                                                                         Accreditation #: 121747
+
+This is a Smithers CTS New York LLC certification that relates only to the material tested and shall not be reproduced, unless in its entirety, without written approval from Smithers CTS New York LLC. Test results are confidential, unless explicitly
+waived. Pass/Fail results do not use uncertainty, but is available upon request. The product represented has been tested by Smithers CTS New York LLC using validated scientific methodologies. Note action levels are state determined thresholds
+for human safety and consumption. Acronym Definitions: ND - Not Detected, LOQ - Limit of Quantification, ULOQ - Upper Limit of Quantification; are terms used to describe the reliably measured smallest and largest concentrations. <LOQ*
+denotes the result is above detection limit, but below quantifiable limit. CFU - Colony Forming Units. Cannabis Product Sampling SOP# SOP.T.20.010.
+
+
+                                                                                                                    Page 5 of 9
+                                        Fernway
+                                        Address: 399 Smith St
+                                        Farmingdale, NY 11735
+                                        Contact Name:
+                                        Contact Phone:
+                                        License #: OCM-PROC-24-000119                                                                                                             CERTIFICATE OF ANALYSIS
+                                        Sample ID: 2610SMNY1024.4013                                                                                                                       Permit #: OCM-CPL-00004
+                                        Metrc Tag: 1A4120300000285000006943
+Certificate: 18002.1
+
+
+                                                                                                        Sample Analysis
+   Pesticides LC
+                                                                                                            Date: 10/12/2026 04:43 PM                                                    SOP: SOP.T.040.270
+
+   Pass                                                                                                     Analyzed By: LC-MS/MS                                                        Sample Weight: 1.0174 g
+
+
+
+                                                           Action Limit                                                                                                                   Action Limit
+            Analyte                   LOQ (µg/g)                               Results (µg/g)            Pass/Fail                         Analyte                  LOQ (µg/g)                                 Results (µg/g)              Pass/Fail
+                                                              (µg/g)                                                                                                                         (µg/g)
+Abamectin                                0.0970                0.500                 <LOQ                  PASS                 Imidacloprid                            0.100                 0.400                 <LOQ                      PASS
+Acephate                                  0.100                0.400                 <LOQ                  PASS                 Indole-3-butyric acid                   0.100                  1.00                 <LOQ                      PASS
+Acequinocyl                               0.100                 2.00                 <LOQ                  PASS                 Kresoxim methyl                         0.100                 0.400                 <LOQ                      PASS
+Acetamiprid                               0.100                0.200                 <LOQ                  PASS                 Malathion                               0.100                 0.200                 <LOQ                      PASS
+Aldicarb                                  0.100                0.400                 <LOQ                  PASS                 Metalaxyl                               0.100                 0.200                 <LOQ                      PASS
+Azadirachtin                              0.100                 1.00                 <LOQ                  PASS                 Methiocarb                              0.100                 0.200                 <LOQ                      PASS
+Azoxystrobin                              0.100                0.200                 <LOQ                  PASS                 Methomyl                                0.100                 0.400                 <LOQ                      PASS
+Bifenazate                                0.100                0.200                 <LOQ                  PASS                 Mevinphos                              0.0840                  1.00                 <LOQ                      PASS
+Bifenthrin                                0.100                0.200                 <LOQ                  PASS                 MGK-264                                0.0800                 0.200                 <LOQ                      PASS
+Boscalid                                  0.100                0.400                 <LOQ                  PASS                 Myclobutanil                            0.100                 0.200                 <LOQ                      PASS
+Carbaryl                                  0.100                0.200                 <LOQ                  PASS                 Naled                                   0.100                 0.500                 <LOQ                      PASS
+Carbofuran                                0.100                0.200                 <LOQ                  PASS                 Oxamyl                                  0.100                  1.00                 <LOQ                      PASS
+Chlorantraniliprole                       0.100                0.200                 <LOQ                  PASS                 Paclobutrazol                           0.100                 0.400                 <LOQ                      PASS
+Chlormequat chloride                      0.100                 1.00                 <LOQ                  PASS                 Permethrins, Total                      0.100                 0.200                 <LOQ                      PASS
+Chlorpyrifos                              0.100                0.200                 <LOQ                  PASS                 Phosmet                                 0.100                 0.200                 <LOQ                      PASS
+Clofentezine                              0.100                0.200                 <LOQ                  PASS                 Piperonyl Butoxide                      0.100                  2.00                 <LOQ                      PASS
+Daminozide                                0.100                 1.00                 <LOQ                  PASS                 Prallethrin                             0.100                 0.200                 <LOQ                      PASS
+Diazinon                                  0.100                0.200                 <LOQ                  PASS                 Propiconazole                           0.100                 0.400                 <LOQ                      PASS
+Dichlorvos                                0.100                 1.00                 <LOQ                  PASS                 Propoxur                                0.100                 0.200                 <LOQ                      PASS
+Dimethoate                                0.100                0.200                 <LOQ                  PASS                 Pyrethrins                             0.0500                  1.00                 <LOQ                      PASS
+Dimethomorph                             0.0620                 1.00                 <LOQ                  PASS                 Pyridaben                               0.100                 0.200                 <LOQ                      PASS
+Ethoprophos                               0.100                0.200                 <LOQ                  PASS                 Spinetoram, Total                      0.0750                  1.00                 <LOQ                      PASS
+Etofenprox                                0.100                0.400                 <LOQ                  PASS                 Spinosad, Total                        0.0750                 0.200                 <LOQ                      PASS
+Etoxazole                                 0.100                0.200                 <LOQ                  PASS                 Spiromesifen                            0.100                 0.200                 <LOQ                      PASS
+Fenhexamid                                0.100                 1.00                 <LOQ                  PASS                 Spirotetramat                           0.100                 0.200                 <LOQ                      PASS
+Fenoxycarb                                0.100                0.200                 <LOQ                  PASS                 Spiroxamine                             0.100                 0.200                 <LOQ                      PASS
+Fenpyroximate                             0.100                0.400                 <LOQ                  PASS                 Tebuconazole                            0.100                 0.400                 <LOQ                      PASS
+Flonicamid                                0.100                 1.00                 <LOQ                  PASS                 Thiacloprid                             0.100                 0.200                 <LOQ                      PASS
+Fludioxonil                               0.100                0.400                 <LOQ                  PASS                 Thiamethoxam                            0.100                 0.200                 <LOQ                      PASS
+Hexythiazox                               0.100                 1.00                 <LOQ                  PASS
+
+
+
+
+ Weston Owen                            10/12/2026                                                                 Smithers CTS New York LLC
+                                                                                                                   49 John Hicks Drive
+ Laboratory Manager                                                                                                Warwick, NY 10990
+                                                                                                                   (845) 202-9737
+                                                                                                                                                                                                                         Accreditation #: 121747
+
+This is a Smithers CTS New York LLC certification that relates only to the material tested and shall not be reproduced, unless in its entirety, without written approval from Smithers CTS New York LLC. Test results are confidential, unless explicitly
+waived. Pass/Fail results do not use uncertainty, but is available upon request. The product represented has been tested by Smithers CTS New York LLC using validated scientific methodologies. Note action levels are state determined thresholds
+for human safety and consumption. Acronym Definitions: ND - Not Detected, LOQ - Limit of Quantification, ULOQ - Upper Limit of Quantification; are terms used to describe the reliably measured smallest and largest concentrations. <LOQ*
+denotes the result is above detection limit, but below quantifiable limit. CFU - Colony Forming Units. Cannabis Product Sampling SOP# SOP.T.20.010.
+
+
+                                                                                                                    Page 6 of 9
+                                        Fernway
+                                        Address: 399 Smith St
+                                        Farmingdale, NY 11735
+                                        Contact Name:
+                                        Contact Phone:
+                                        License #: OCM-PROC-24-000119                                                                                                             CERTIFICATE OF ANALYSIS
+                                        Sample ID: 2610SMNY1024.4013                                                                                                                       Permit #: OCM-CPL-00004
+                                        Metrc Tag: 1A4120300000285000006943
+Certificate: 18002.1
+
+
+                                                                                                            Sample Analysis
+   Pesticides GC
+                                                                                                                Date: 10/12/2026 05:11 PM                                                  SOP: SOP.T.040.271
+
+   Pass                                                                                                         Analyzed By: GC-MS/MS                                                      Sample Weight: N/A
+
+
+
+                                       Analyte                                                         LOQ (µg/g)                       Action Limit (µg/g)                         Results (µg/g)                             Pass/Fail
+
+Captan                                                                                                    0.625                                    1.00                                  <LOQ                                     PASS
+Chlordane                                                                                                 0.625                                    1.00                                  <LOQ                                     PASS
+Chlorfenapyr                                                                                              0.625                                    1.00                                  <LOQ                                     PASS
+Coumaphos                                                                                                 0.625                                    1.00                                  <LOQ                                     PASS
+Cyfluthrin                                                                                                0.625                                    1.00                                  <LOQ                                     PASS
+Cypermethrin                                                                                              0.625                                    1.00                                  <LOQ                                     PASS
+Fipronil                                                                                                  0.156                                  0.400                                   <LOQ                                     PASS
+Imazalil                                                                                                  0.156                                  0.200                                   <LOQ                                     PASS
+Methyl parathion                                                                                          0.156                                  0.200                                   <LOQ                                     PASS
+Pentachloronitrobenzene                                                                                   0.625                                    1.00                                  <LOQ                                     PASS
+Trifloxystrobin                                                                                           0.156                                  0.200                                   <LOQ                                     PASS
+
+
+
+
+ Weston Owen                            10/12/2026                                                                 Smithers CTS New York LLC
+                                                                                                                   49 John Hicks Drive
+ Laboratory Manager                                                                                                Warwick, NY 10990
+                                                                                                                   (845) 202-9737
+                                                                                                                                                                                                                         Accreditation #: 121747
+
+This is a Smithers CTS New York LLC certification that relates only to the material tested and shall not be reproduced, unless in its entirety, without written approval from Smithers CTS New York LLC. Test results are confidential, unless explicitly
+waived. Pass/Fail results do not use uncertainty, but is available upon request. The product represented has been tested by Smithers CTS New York LLC using validated scientific methodologies. Note action levels are state determined thresholds
+for human safety and consumption. Acronym Definitions: ND - Not Detected, LOQ - Limit of Quantification, ULOQ - Upper Limit of Quantification; are terms used to describe the reliably measured smallest and largest concentrations. <LOQ*
+denotes the result is above detection limit, but below quantifiable limit. CFU - Colony Forming Units. Cannabis Product Sampling SOP# SOP.T.20.010.
+
+
+                                                                                                                    Page 7 of 9
+                                        Fernway
+                                        Address: 399 Smith St
+                                        Farmingdale, NY 11735
+                                        Contact Name:
+                                        Contact Phone:
+                                        License #: OCM-PROC-24-000119                                                                                                             CERTIFICATE OF ANALYSIS
+                                        Sample ID: 2610SMNY1024.4013                                                                                                                       Permit #: OCM-CPL-00004
+                                        Metrc Tag: 1A4120300000285000006943
+Certificate: 18002.1
+
+
+                                                                                                                   Sample Analysis
+   Microbial Impurities -
+                                                                                                                       Date: 10/12/2026 04:06 PM                                              SOP: SOP.T.40.274
+   STEC/Salmonella
+   Pass                                                                                                                Analyzed By: PCR
+
+
+
+                                       Analyte                                                  Microbial Type                    LOQ (CFU/g)                 Allowable Limit                       Results                         Pass/Fail
+
+Shiga toxin-producing Escherichia coli                                                             Bacterial                              1                   Not Detected                   Not Detected                              PASS
+Salmonella species                                                                                 Bacterial                              1                   Not Detected                   Not Detected                              PASS
+
+
+
+
+                                                                                                                   Sample Analysis
+   Microbial Impurities -
+                                                                                                                       Date: 10/12/2026 09:52 AM                                              SOP: SOP.T.40.274
+   Aspergillus spp.
+   Pass                                                                                                                Analyzed By: PCR
+
+
+
+                                       Analyte                                                  Microbial Type                    LOQ (CFU/g)                 Allowable Limit                       Results                         Pass/Fail
+
+Aspergillus flavus                                                                                   Fungal                               1                   Not Detected                   Not Detected                              PASS
+Aspergillus niger                                                                                    Fungal                               1                   Not Detected                   Not Detected                              PASS
+Aspergillus terreus                                                                                  Fungal                               1                   Not Detected                   Not Detected                              PASS
+Aspergillus fumigatus                                                                                Fungal                               1                   Not Detected                   Not Detected                              PASS
+
+
+
+
+ Weston Owen                            10/12/2026                                                                 Smithers CTS New York LLC
+                                                                                                                   49 John Hicks Drive
+ Laboratory Manager                                                                                                Warwick, NY 10990
+                                                                                                                   (845) 202-9737
+                                                                                                                                                                                                                         Accreditation #: 121747
+
+This is a Smithers CTS New York LLC certification that relates only to the material tested and shall not be reproduced, unless in its entirety, without written approval from Smithers CTS New York LLC. Test results are confidential, unless explicitly
+waived. Pass/Fail results do not use uncertainty, but is available upon request. The product represented has been tested by Smithers CTS New York LLC using validated scientific methodologies. Note action levels are state determined thresholds
+for human safety and consumption. Acronym Definitions: ND - Not Detected, LOQ - Limit of Quantification, ULOQ - Upper Limit of Quantification; are terms used to describe the reliably measured smallest and largest concentrations. <LOQ*
+denotes the result is above detection limit, but below quantifiable limit. CFU - Colony Forming Units. Cannabis Product Sampling SOP# SOP.T.20.010.
+
+
+                                                                                                                    Page 8 of 9
+                                        Fernway
+                                        Address: 399 Smith St
+                                        Farmingdale, NY 11735
+                                        Contact Name:
+                                        Contact Phone:
+                                        License #: OCM-PROC-24-000119                                                                                                             CERTIFICATE OF ANALYSIS
+                                        Sample ID: 2610SMNY1024.4013                                                                                                                       Permit #: OCM-CPL-00004
+                                        Metrc Tag: 1A4120300000285000006943
+Certificate: 18002.1
+
+
+                                                                                                                   Sample Analysis
+   Microbial Impurities - TAPC
+                                                                                                                       Date: 10/09/2026 04:31 PM                                              SOP: SOP.T.040.200
+
+   Pass                                                                                                                Analyzed By: Plating
+
+
+
+                                       Analyte                                                        LOQ (CFU/g)                      Action Limit (CFU/g)                       Results (CFU/g)                              Pass/Fail
+
+Total Aerobic Bacteria                                                                                      100                                  10000                                   <LOQ                                     PASS
+
+
+
+
+                                                                                                                   Sample Analysis
+   Microbial Impurities - TYMC
+                                                                                                                       Date: 10/12/2026 01:27 PM                                              SOP: SOP.T.040.200
+
+   Pass                                                                                                                Analyzed By: Plating
+
+
+
+                                       Analyte                                                        LOQ (CFU/g)                      Action Limit (CFU/g)                       Results (CFU/g)                              Pass/Fail
+
+Total Yeast and Mold                                                                                        100                                   1000                                   <LOQ                                     PASS
+
+
+
+
+ Weston Owen                            10/12/2026                                                                 Smithers CTS New York LLC
+                                                                                                                   49 John Hicks Drive
+ Laboratory Manager                                                                                                Warwick, NY 10990
+                                                                                                                   (845) 202-9737
+                                                                                                                                                                                                                         Accreditation #: 121747
+
+This is a Smithers CTS New York LLC certification that relates only to the material tested and shall not be reproduced, unless in its entirety, without written approval from Smithers CTS New York LLC. Test results are confidential, unless explicitly
+waived. Pass/Fail results do not use uncertainty, but is available upon request. The product represented has been tested by Smithers CTS New York LLC using validated scientific methodologies. Note action levels are state determined thresholds
+for human safety and consumption. Acronym Definitions: ND - Not Detected, LOQ - Limit of Quantification, ULOQ - Upper Limit of Quantification; are terms used to describe the reliably measured smallest and largest concentrations. <LOQ*
+denotes the result is above detection limit, but below quantifiable limit. CFU - Colony Forming Units. Cannabis Product Sampling SOP# SOP.T.20.010.
+
+
+                                                                                                                    Page 9 of 9
+

@@ -41,3 +41,7 @@ data/catalogs/*.json
 !.claude/commands/
 !.claude/skills/
 .claude/settings.local.json
+
+# Lab report PDFs (coa_crawl.py) and what was read from them — re-fetchable
+.cache/
+data/coas/

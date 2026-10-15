@@ -1,0 +1,308 @@
+                                                                               Phyto-farma Labs                                                                                                                                Compliance
+                                                                               49 John Hicks Drive
+                                                                               Warwick, NY 10990
+                                                                               Permit#: OCMPPL-2022-00004
+                                                                                                                                                       Certificate Of Analysis
+                                                                               Phone: 845-988-0937
+
+
+
+
+ Client Name: MFNY Processor LLC
+ Address: 320 Mount Airy Rd
+ New Windsor, NY 12553
+ Phone: 8334206369
+ License Number: AUCP-22-000026
+
+
+
+
+ Sample Description: Gazzurple Flower
+ Lot Number: GZZLE3
+ Regulatory Category: Adult Use
+ Sample Matrix: Un-Extracted
+ Delivery Method: Inhalation
+
+
+
+
+                                     Results Summary
+   Average Cannabinoid
+          Proﬁle
+Filth and Foreign Material                                                              PASS
+Microbial Impurities (CDP-
+                                                                                        PASS
+            TC)
+Microbial Impurities (CDP-
+                                                                                        PASS
+           YMR)
+ Microbial Impurities (PdX
+for STEC, Salmonella, Asp                                                               PASS
+            sp.)
+     Moisture Content                                                                   PASS
+        Mycotoxins                                                                      PASS
+        Pesticides                                                                      PASS
+
+
+This is a Phyto-farma certification that relates only to the material tested and shall not be reproduced, unless in its entirety, without written approval from Phyto-farma. Test results are confidential, unless explicitly waived. The product
+represented has been tested by Phyto-farma Labs using validated scientiﬁc methodologies. Note action levels are state determined thresholds for human safety and consumption. Acronym Definitions: ND - Not Detected, LOQ, - Limit of
+Quantification are terms used to describe the reliably measured smallest concentrations. LOQ* denotes the result is above detection limit, but below quantifiable limit. CFU - Colony Forming Units.
+                                                                                                                     v28.1
+                                                                                                              Page 1 of 6
+                                                                               Phyto-farma Labs                                                                                                                                Compliance
+                                                                               49 John Hicks Drive
+                                                                               Warwick, NY 10990
+                                                                               Permit#: OCMPPL-2022-00004
+                                                                                                                                                       Certificate Of Analysis
+                                                                               Phone: 845-988-0937
+                  Trace Metals                                                          PASS
+                  Water Activity                                                        PASS
+
+
+
+
+   Average Cannabinoid Proﬁle
+Date analyzed: 03/24/2023                                                       Method: NY.SOP.T.40.260                                                          Analyst: Stephanie Knapp
+
+                                                                        Average (%w/                         mg/                    Standard Deviation (mg/                                      Homogeneity Pass/
+                           Analyte                                           w)                            serving                         serving)                                                   Fail*
+                          Δ8-THC†                                                <LOQ                       <LOQ                                             -                                                        -
+                          Δ9-THC†                                                <LOQ                       <LOQ                                             -                                                        -
+                     Δ10-THC-RS†                                                 <LOQ                       <LOQ                                             -                                                        -
+                     Δ10-THC-RR†                                                 <LOQ                       <LOQ                                             -                                                        -
+        Tetrahydrocannabinolic acid                                              21.74                      217.36                                        9.46                                                        -
+                 (THCA)†
+    Tetrahydrocannabivarin (THCV)                                                <LOQ                       <LOQ                                             -                                                        -
+                 Cannabidiol (CBD)                                               <LOQ                       <LOQ                                             -                                                        -
+       Cannabinadiolic acid (CBDA)                                               <LOQ                       <LOQ                                             -                                                        -
+            Cannabidivarin (CBDV)                                                <LOQ                       <LOQ                                             -                                                        -
+                 Cannabinol (CBN)                                                <LOQ                       <LOQ                                             -                                                        -
+               Cannabigerol (CBG)                                                <LOQ                       <LOQ                                             -                                                        -
+       Cannabigerolic acid (CBGA)                                                <LOQ                       <LOQ                                             -                                                        -
+          Cannabichromene (CBC)                                                  <LOQ                       <LOQ                                             -                                                        -
+ †Total Tetrahydrocannabinol (THC)                                               19.06                      190.63                                        8.29                                                        -
+
+
+*Not required for ﬂower products
+
+                                                                                                                                                                                                                                     V158.11
+
+
+
+
+This is a Phyto-farma certification that relates only to the material tested and shall not be reproduced, unless in its entirety, without written approval from Phyto-farma. Test results are confidential, unless explicitly waived. The product
+represented has been tested by Phyto-farma Labs using validated scientiﬁc methodologies. Note action levels are state determined thresholds for human safety and consumption. Acronym Definitions: ND - Not Detected, LOQ, - Limit of
+Quantification are terms used to describe the reliably measured smallest concentrations. LOQ* denotes the result is above detection limit, but below quantifiable limit. CFU - Colony Forming Units.
+                                                                                                                     v28.1
+                                                                                                              Page 2 of 6
+                                                                               Phyto-farma Labs                                                                                                                                Compliance
+                                                                               49 John Hicks Drive
+                                                                               Warwick, NY 10990
+                                                                               Permit#: OCMPPL-2022-00004
+                                                                                                                                                       Certificate Of Analysis
+                                                                               Phone: 845-988-0937
+
+
+   Filth and Foreign Material                                                                                                                                                                                           PASS
+Date analyzed: 03/20/2023                                                       Method: NYS.SOP.T.040.250                                                      Analyst: Destiny Ribadeneyra
+
+                             Analyte                                                Result                         LOQ                         Allowable Limit                                    Pass/Fail
+           Mammalian excreta (mg/lb)                                                      0                            0                                      1                                      PASS
+        Stems >3mm in diameter (%)                                                        0                            0                                      5                                      PASS
+           Other Foreign Material (%)                                                     0                            0                                      2                                      PASS
+                                                                                                                                                            Overall Status                           PASS
+                      Analysis Instrument                                   123 Balance - Radwag
+
+
+
+
+   Microbial Impurities (CDP-TC)                                                                                                                                                                                        PASS
+Date analyzed: 03/24/2023                                                       Method: NYS.SOP.T.040.200                                                      Analyst: Destiny Ribadeneyra
+
+                  Result (CFU/g)                                                     LOQ                                           Allowable Limit                                                       Pass/Fail
+                           <LOQ                                                          5                                                      N/A                                                          PASS
+
+
+                  Analysis Instrument                               87 Colony Counter
+
+                                                                                                                                                                                                                                       V149.5
+
+
+
+
+   Microbial Impurities (CDP-YMR)                                                                                                                                                                                       PASS
+Date analyzed: 03/20/2023                                                       Method: NYS.SOP.T.040.200                                                      Analyst: Destiny Ribadeneyra
+
+            Microbial Species                                            Result (cfu/g)                                    LOQ                            Allowable Limit                                        Pass/Fail
+                    Mold Count                                                   <LOQ                                         5                                        N/A                                          PASS
+                   Yeast Count                                                   <LOQ                                         5                                        N/A                                          PASS
+          Total Yeast and Mold                                                   <LOQ                                                                                  N/A                                          PASS
+                                                                                                                                                                          Overall Status                            PASS
+                Analysis Isntrument                            87 Colony Counter
+
+                                                                                                                                                                                                                                       V150.6
+
+
+
+
+This is a Phyto-farma certification that relates only to the material tested and shall not be reproduced, unless in its entirety, without written approval from Phyto-farma. Test results are confidential, unless explicitly waived. The product
+represented has been tested by Phyto-farma Labs using validated scientiﬁc methodologies. Note action levels are state determined thresholds for human safety and consumption. Acronym Definitions: ND - Not Detected, LOQ, - Limit of
+Quantification are terms used to describe the reliably measured smallest concentrations. LOQ* denotes the result is above detection limit, but below quantifiable limit. CFU - Colony Forming Units.
+                                                                                                                     v28.1
+                                                                                                              Page 3 of 6
+                                                                               Phyto-farma Labs                                                                                                                                Compliance
+                                                                               49 John Hicks Drive
+                                                                               Warwick, NY 10990
+                                                                               Permit#: OCMPPL-2022-00004
+                                                                                                                                                       Certificate Of Analysis
+                                                                               Phone: 845-988-0937
+
+
+   Microbial Impurities (PdX for STEC, Salmonella, Asp sp.)                                                                                                                                                             PASS
+Date analyzed: 03/31/2023                                                       Method: NY.SOP.T.040.170                                                       Analyst: Kristy Lee
+
+                        Microbial Species                                                         Microbial Type                                       Detection Status                                         Pass/Fail
+              Escherichia coli speciﬁc gene                                                              Bacteria                                          Not Detected                                             PASS
+           Escherichia coli/Shigella species                                                             Bacteria                                          Not Detected                                             PASS
+                        Salmonella species                                                               Bacteria                                          Not Detected                                             PASS
+            stx1 gene (Shiga Toxin Gene 1)                                                               Bacteria                                          Not Detected                                             PASS
+            stx2 gene (Shiga Toxin Gene 2)                                                               Bacteria                                          Not Detected                                             PASS
+                          Aspergillus ﬂavus                                                                Fungal                                          Not Detected                                             PASS
+                           Aspergillus niger                                                               Fungal                                          Not Detected                                             PASS
+                         Aspergillus terreus                                                               Fungal                                          Not Detected                                             PASS
+                      Aspergillus fumigatus                                                                Fungal                                          Not Detected                                             PASS
+                                                                                                                                                                         Overall Status                             PASS
+                            Analysis Instrument                                        PathogenDX-Sensovation AG 33
+
+                                                                                                                                                                                                                                     V133.11
+
+
+
+
+   Moisture Content                                                                                                                                                                                                     PASS
+Date analyzed: 03/24/2023                                                       Method: NY.SOP.T.040.220                                                       Analyst: Destiny Ribadeneyra
+
+                      Result (%)                                                     LOQ                                           Allowable Limit                                                       Pass/Fail
+                             11.4                                                      0.0                                                 5.0 - 15.0                                                        PASS
+
+
+                  Analysis Instrument                              4 Moisture Balance
+
+                                                                                                                                                                                                                                     V140.28
+
+
+
+
+This is a Phyto-farma certification that relates only to the material tested and shall not be reproduced, unless in its entirety, without written approval from Phyto-farma. Test results are confidential, unless explicitly waived. The product
+represented has been tested by Phyto-farma Labs using validated scientiﬁc methodologies. Note action levels are state determined thresholds for human safety and consumption. Acronym Definitions: ND - Not Detected, LOQ, - Limit of
+Quantification are terms used to describe the reliably measured smallest concentrations. LOQ* denotes the result is above detection limit, but below quantifiable limit. CFU - Colony Forming Units.
+                                                                                                                     v28.1
+                                                                                                              Page 4 of 6
+                                                                               Phyto-farma Labs                                                                                                                                Compliance
+                                                                               49 John Hicks Drive
+                                                                               Warwick, NY 10990
+                                                                               Permit#: OCMPPL-2022-00004
+                                                                                                                                                       Certificate Of Analysis
+                                                                               Phone: 845-988-0937
+
+
+   Mycotoxins                                                                                                                                                                                                           PASS
+Date analyzed: 03/24/2023                                                       Method: NY.SOP.T.40.180                                                        Analyst: Alicia Caruso-Thomas
+
+                   Analyte                                       Result (µg/g)                                  LOQ (µg/g)                                  Allowable Limit                                      Pass/Fail
+
+               Aﬂatoxin B1                                               <LOQ                                          0.001                                            0.02                                         PASS
+               Aﬂatoxin B2                                               <LOQ                                          0.002                                            0.02                                         PASS
+               Aﬂatoxin G1                                               <LOQ                                          0.001                                            0.02                                         PASS
+               Aﬂatoxin G2                                               <LOQ                                          0.002                                            0.02                                         PASS
+          Sum of Aﬂatoxins                                                    0                                            -                                            0.02                                         PASS
+              Ochratoxin A                                               <LOQ                                          0.002                                            0.02                                         PASS
+                                                                                                                                                              Overall Status                                         PASS
+
+
+            Analysis Instrument                        30 LC-MS TQ
+
+                                                                                                                                                                                                                                       V141.3
+
+
+
+
+   Pesticides                                                                                                                                                                                                           PASS
+Date analyzed: 03/28/2023                                                       Method: NY.SOP.T.040.230                                                       Analyst: Alicia Caruso-Thomas
+
+                       Analyte                                           Result (µg/g)                                    LOQ                            Allowable Limit                                        Pass/Fail
+
+                   Azadirachtin                                                   <LOQ                                     0.37                                          1                                          PASS
+                     Cinerin I†                                                   <LOQ                                     0.02                                          1                                          PASS
+          Indole-3-butyric Acid                                                   <LOQ                                     1.26                                          1                                          PASS
+                   Jasmolin I†                                                    <LOQ                                     0.02                                          1                                          PASS
+                   Myclobutanil                                                   <LOQ                                     0.30                                        0.2                                          PASS
+             Piperonyl butoxide                                                   <LOQ                                     0.21                                          2                                          PASS
+                   Pyrethrin I†                                                   <LOQ                                     0.43                                          1                                          PASS
+              Total Pyrethrins†                                                      0                                                                                   1                                          PASS
+                                                                                                                                                                         Overall Status                             PASS
+               Analysis Instrument                            30 LC-MS TQ
+
+                                                                                                                                                                                                                                       V144.5
+
+
+
+
+This is a Phyto-farma certification that relates only to the material tested and shall not be reproduced, unless in its entirety, without written approval from Phyto-farma. Test results are confidential, unless explicitly waived. The product
+represented has been tested by Phyto-farma Labs using validated scientiﬁc methodologies. Note action levels are state determined thresholds for human safety and consumption. Acronym Definitions: ND - Not Detected, LOQ, - Limit of
+Quantification are terms used to describe the reliably measured smallest concentrations. LOQ* denotes the result is above detection limit, but below quantifiable limit. CFU - Colony Forming Units.
+                                                                                                                     v28.1
+                                                                                                              Page 5 of 6
+                                                                               Phyto-farma Labs                                                                                                                                Compliance
+                                                                               49 John Hicks Drive
+                                                                               Warwick, NY 10990
+                                                                               Permit#: OCMPPL-2022-00004
+                                                                                                                                                       Certificate Of Analysis
+                                                                               Phone: 845-988-0937
+
+
+   Trace Metals                                                                                                                                                                                                         PASS
+Date analyzed: 03/31/2023                                                       Method: NY.SOP.T.40.050                                                        Analyst: Kyle Rappaport
+
+                   Analyte                                        Result (µg/g)                                      LOQ                              Allowable Limit                                          Pass/Fail
+             Antimony (Sb)                                                <LOQ                                        0.13                                            2                                            PASS
+              Arsenic (As)                                                <LOQ                                        0.07                                          0.2                                            PASS
+            Cadmium (Cd)                                                  <LOQ                                        0.06                                          0.3                                            PASS
+            Chromium (Cr)                                                 <LOQ                                        0.36                                         110                                             PASS
+               Copper (Cu)                                                10.82                                       0.39                                           30                                            PASS
+                 Lead (Pb)                                                <LOQ                                        0.08                                          0.5                                            PASS
+              Mercury (Hg)                                                <LOQ                                        0.01                                          0.1                                            PASS
+                Nickel (Ni)                                               <LOQ                                        0.11                                            2                                            PASS
+                                                                                                                                                                       Overall Status                              PASS
+           Analysis Instrument                         Equipment ID: 1 ICP-MS
+
+
+
+
+   Water Activity                                                                                                                                                                                                       PASS
+Date analyzed: 03/20/2023                                                       Method: NY.SOP.T.040.210                                                       Analyst: Destiny Ribadeneyra
+
+                     Result (Aw)                                                     LOQ                                           Allowable Limit                                                       Pass/Fail
+                             0.31                                                     0.25                                                      0.65                                                         PASS
+
+
+                  Analysis Instrument                              103 Aqualab TDL 2
+
+                                                                                                                                                                                                                                     V131.60
+
+
+
+
+ Alicia Caruso-Thomas
+ Laboratory Director
+ 03/31/2023
+
+
+
+
+This is a Phyto-farma certification that relates only to the material tested and shall not be reproduced, unless in its entirety, without written approval from Phyto-farma. Test results are confidential, unless explicitly waived. The product
+represented has been tested by Phyto-farma Labs using validated scientiﬁc methodologies. Note action levels are state determined thresholds for human safety and consumption. Acronym Definitions: ND - Not Detected, LOQ, - Limit of
+Quantification are terms used to describe the reliably measured smallest concentrations. LOQ* denotes the result is above detection limit, but below quantifiable limit. CFU - Colony Forming Units.
+                                                                                                                     v28.1
+                                                                                                              Page 6 of 6
+
