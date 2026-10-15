@@ -304,3 +304,9 @@ def test_one_size_offered_and_picked_needs_only_to_beat_none(monkeypatch):
 def test_a_volume_size_is_spelled_as_a_bottle_that_any_mg_fits():
     label = cr.spell_size("15mL", "tinctures")
     assert label.startswith("15mL: a 15mL bottle") and "any mg figure" in label
+
+
+def test_size_question_names_the_store_size_field():
+    # 2026-10-15: told the store's size field is its own statement of the package, Jev clears
+    # the bar on listings whose field states a catalog size (8 brands: +210 trusted, 0 judged wrong).
+    assert "store_size_field" in cr.SIZE_Q
