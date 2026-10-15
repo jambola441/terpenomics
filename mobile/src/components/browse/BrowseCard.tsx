@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { formatDist, formatDollars } from '@web/utils/format'
 import { availabilityOf, showsSubtype, type BrowseCardItem } from '@web/utils/browseLogic'
@@ -10,17 +11,22 @@ import { t, font, fonts, radius } from '@/lib/theme'
  *  distance top-right and "Out of stock" bottom-left; then "from $X", name,
  *  brand, subtype; then, pinned to the bottom so a row's cards line up, where
  *  it is sold. */
-export default function BrowseCard({ item, color, suppressSubtype, width, onPress }: {
+export default function BrowseCard({ item, color, suppressSubtype, width, onPress, action, footer }: {
   item: BrowseCardItem
   color: string
   /** Hide the subtype tag when it just restates the page ("flower" on Flower). */
   suppressSubtype?: string | null
   width: number
   onPress: () => void
+  /** Drawn over the photo's bottom-right corner, beside the card's button
+   *  rather than inside it (add to cart on a store's aisle). */
+  action?: ReactNode
+  /** Replaces the availability footer (a store's aisle shows the market note). */
+  footer?: ReactNode
 }) {
   const availability = availabilityOf(item)
   const price = item.priceCents != null ? formatDollars(item.priceCents) : null
-  return (
+  const card = (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
@@ -30,7 +36,7 @@ export default function BrowseCard({ item, color, suppressSubtype, width, onPres
         item.outOfStock ? 'out of stock' : null,
         item.distanceMi != null ? formatDist(item.distanceMi) : null,
       ].filter(Boolean).join(', ')}
-      style={({ pressed }) => [s.card, { width }, pressed && { backgroundColor: t.surface2 }]}
+      style={({ pressed }) => [s.card, { width }, action ? { flexGrow: 1 } : null, pressed && { backgroundColor: t.surface2 }]}
     >
       <View>
         <ProductImage uri={item.imageUrl} size={width - 2} category={item.category} radius={0} />
@@ -61,7 +67,9 @@ export default function BrowseCard({ item, color, suppressSubtype, width, onPres
           <Pill color={color} style={{ marginTop: 8 }}>{item.subtype}</Pill>
         ) : null}
 
-        {availability ? (
+        {footer ? (
+          <View style={s.footer}>{footer}</View>
+        ) : availability ? (
           <View style={s.footer}>
             {item.dispensaryCount > 1 ? <Icon name="pin" size={12} color={t.text3} /> : null}
             <Text numberOfLines={1} style={s.availability}>{availability}</Text>
@@ -70,9 +78,17 @@ export default function BrowseCard({ item, color, suppressSubtype, width, onPres
       </View>
     </Pressable>
   )
+  if (!action) return card
+  return (
+    <View style={{ width }}>
+      {card}
+      <View style={[s.corner, { top: width - 2 - 44 }]}>{action}</View>
+    </View>
+  )
 }
 
 const s = StyleSheet.create({
+  corner: { position: 'absolute', right: 8 },
   card: {
     backgroundColor: t.surface1, borderWidth: 1, borderColor: t.border,
     borderRadius: radius.lg, overflow: 'hidden',

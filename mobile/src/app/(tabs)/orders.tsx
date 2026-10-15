@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react'
-import { Alert, FlatList, RefreshControl } from 'react-native'
+import { FlatList, RefreshControl } from 'react-native'
 import { useFocusEffect } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { api } from '@/lib/api'
@@ -14,7 +14,9 @@ import { t, space } from '@/lib/theme'
 export default function Orders() {
   const insets = useSafeAreaInsets()
   const { orders, error, refreshing, openCount, refresh, upsert } = useOrders()
-  const [cancelling, setCancelling] = useState<string | null>(null)
+  const [cancelling, setCancelling] = useState<Set<string>>(new Set())
+  // A failed cancel shows on that order's card, not as an alert.
+  const [cancelErrors, setCancelErrors] = useState<Record<string, string>>({})
 
   // Coming back to the tab refreshes, beside the foreground and 30s polls.
   const focused = useRef(false)
@@ -25,24 +27,21 @@ export default function Orders() {
     }, [refresh]),
   )
 
-  function confirmCancel(orderId: string) {
-    Alert.alert('Cancel this order?', 'The store will be told not to hold it for you.', [
-      { text: 'Keep it', style: 'cancel' },
-      {
-        text: 'Cancel order',
-        style: 'destructive',
-        onPress: async () => {
-          setCancelling(orderId)
-          try {
-            upsert(await api.orders.cancel(orderId))
-          } catch (e: any) {
-            Alert.alert('Could not cancel that order', e?.message ?? String(e))
-          } finally {
-            setCancelling(null)
-          }
-        },
-      },
-    ])
+  // The card asks "Cancel this order?" itself; by here the shopper said yes.
+  async function cancel(orderId: string) {
+    setCancelling(prev => new Set(prev).add(orderId))
+    setCancelErrors(({ [orderId]: _, ...rest }) => rest)
+    try {
+      upsert(await api.orders.cancel(orderId))
+    } catch (e: unknown) {
+      setCancelErrors(prev => ({ ...prev, [orderId]: (e instanceof Error && e.message) || 'Could not cancel that order.' }))
+    } finally {
+      setCancelling(prev => {
+        const next = new Set(prev)
+        next.delete(orderId)
+        return next
+      })
+    }
   }
 
   const header = (
@@ -81,7 +80,12 @@ export default function Orders() {
         />
       }
       renderItem={({ item }) => (
-        <OrderCard order={item} cancelling={cancelling === item.id} onCancel={() => confirmCancel(item.id)} />
+        <OrderCard
+          order={item}
+          cancelling={cancelling.has(item.id)}
+          cancelError={cancelErrors[item.id] ?? null}
+          onCancel={() => cancel(item.id)}
+        />
       )}
     />
   )

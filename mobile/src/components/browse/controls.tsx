@@ -377,7 +377,8 @@ const s = StyleSheet.create({
     backgroundColor: t.accentTint, borderWidth: 1, borderColor: t.accentDim,
   },
   activeText: { flexShrink: 1, fontFamily: fonts.sansSemibold, fontSize: font.size.small, color: t.accent },
-  toolbar: { backgroundColor: alpha(t.bg, 0.96), borderBottomWidth: 1, borderBottomColor: t.border },
+  // Opaque: cards scrolling under it showed through at 96%.
+  toolbar: { backgroundColor: t.bg, borderBottomWidth: 1, borderBottomColor: t.border },
   toolButton: {
     flexDirection: 'row', alignItems: 'center', gap: 7,
     paddingVertical: 8, paddingHorizontal: 14, borderRadius: radius.pill, borderWidth: 1,

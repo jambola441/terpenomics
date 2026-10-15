@@ -72,7 +72,8 @@ export default function BrowseList<T>({
         keyboardDismissMode="on-drag"
         initialNumToRender={8}
         windowSize={7}
-        contentContainerStyle={{ paddingBottom: space[8] + keyboard }}
+        // Room for the cart bar where a screen covers the tabs (a store's aisle).
+        contentContainerStyle={{ paddingBottom: space[8] + 56 + keyboard }}
         keyExtractor={row => (row.kind === 'pair' ? row.key : row.kind)}
         refreshControl={onRefresh
           ? <RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} tintColor={t.text3} />

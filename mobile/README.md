@@ -72,14 +72,17 @@ Before declaring a change done: `npm run typecheck` and `npx expo lint`.
 | 21+ age gate (once per device) | `src/app/age-gate.tsx` | none; stored in the Keychain |
 | SMS sign-in | `src/app/sign-in.tsx` | `/auth/sms/start`, `/auth/sms/verify`, then `/me/link-customer` on first login |
 | Sign-up | `src/app/sign-up.tsx` | `GET /me` (onboarding), `POST /me/onboarding` |
-| Home feed (combined) | `src/app/(tabs)/index.tsx` | `/me/feed?view=combined` |
-| Shop → category | `src/app/(tabs)/shop/` | `/customer/categories`, `/customer/categories/{name}`, `/customer/products/detail` |
+| Home (by store or combined) | `src/app/(tabs)/index.tsx` | `/me/feed` |
+| Shop: categories, brands, search | `src/app/(tabs)/shop/` | `/customer/categories`, `/customer/brands`, `/customer/products` |
+| Map | `src/app/(tabs)/map.tsx` | `/customer/dispensaries`, `/customer/partners` |
+| Product (every store's price) | `src/app/product.tsx` | `/customer/products/detail`, `/customer/brands/{brand}/lines/{line}` |
 | Listing detail | `src/app/listing/[dispensaryId]/[listingId].tsx` | `/customer/dispensaries/{id}/listings/{id}` |
-| Cart → reserve for pickup | `src/app/cart.tsx` | location check (`src/lib/region.ts`), then `POST /me/orders` |
+| Store menu and aisles | `src/app/store/[dispensaryId].tsx` | `/customer/dispensaries/{id}/filter-options`, `/customer/dispensaries/{id}/listings` |
+| Cart → checkout → pickup code | `src/app/cart.tsx` | location check (`src/lib/region.ts`), then `POST /me/orders` |
 | Orders (with cancel) | `src/app/(tabs)/orders.tsx` | `/me/orders`, `/me/orders/{id}/cancel` |
-| Terpee points, receipts | `src/app/(tabs)/points.tsx` | `/me/points`, `/me/receipts` |
+| You: points, feedback, profile | `src/app/(tabs)/profile.tsx` | `/me`, `/me/points`, `/me/receipts`, `/customer/{id}/purchases` |
 | Upload a receipt (modal) | `src/app/receipt.tsx` | `/me/partners`, `POST /me/receipts` |
-| You | `src/app/(tabs)/profile.tsx` | `/me`, `/me/preferred-dispensaries` |
+| Partner stores | `src/app/partners/` | `/customer/partners` |
 
 The cart holds one store's items at a time, because an order goes to one
 store. Adding from a second store asks before replacing the cart. It enforces
@@ -96,16 +99,13 @@ because a Supabase session can exceed what SecureStore advises per value.
 
 ## Not ported yet
 
-Roughly in order of value:
+- The map draws every pin; the web groups close ones into a numbered bubble
+  until you zoom in.
+- Admin screens stay web-only.
 
-1. **Cross-store product page** (`ProductView`); category taps currently jump
-   to the cheapest store's listing instead.
-2. **Brands** and **Search** tabs.
-3. **Map** and following/unfollowing stores (`react-native-maps` replaces
-   Leaflet). Until then, stores are followed on the web.
-4. Per-store feed view, price/terpene filters, purchase feedback.
-
-Admin screens stay web-only.
+The Map uses `react-native-maps` (Apple Maps on iOS, no API key), a native
+module: after pulling it, run `npm install` and `npx expo prebuild --platform
+ios --clean` before building in Xcode.
 
 ## Before the App Store
 
