@@ -1,0 +1,388 @@
+                                                                                                     Certificate of Analysis
+                                                                                                               Full Compliance Test
+Green Analytics NY, LLC
+401 North Middletown Road, Building 60B
+Pearl River, NY 10965
+www.greenanalyticsllc.com
+License #s: OCM-CPL-00013
+ISO 17025 Certificate No.: 4356.09
+                                                   Sample Result: PASS
+Date Reported:              6/11/2026                                             Sample ID:                   20260605-OHNY-001
+Client Name:                Gnome Nugs, LLC                                                                    PIXLZ-Berry Blast PIXLZ-THC-THC-Indica-
+                                                                                  Sample Name:
+Sampling Location:          Hauppauge, New York                                                                BBX-100mg
+Contact Name:               Zachary Deeter                                        Sample Matrix:               Edible
+Contact Email:              zdeeter@eatgron.com                                   Sample Sub Type:             Gummy
+License Number:             OCM-PROC-25-000273                                    Batch Lot ID:                NYBBX2C0326
+Medical/Adult Use:          Adult Use                                             Batch Size:                  1789
+Sampling Date:              06/05/2026 10:00:00 AM                                Serving Size (g):            3.44
+METRC Test Tag ID:          1A4120300000196000002821                              Package Servings:            20
+                                                                                  METRC Source ID:             1A4120300000196000002822
+
+
+         Potency                T                Pesticides               P               Heavy Metals              P               Mycotoxins            P
+
+
+     Water Activity             P             Microbiological             P           Residual Solvents             P                 Terpenes            P
+
+
+                                                  Moisture               NT       Filth & Foreign Material NT
+
+
+                                         "NT" = Not Tested; "T" = Tested; "P" = Pass; "F" = Fail
+
+
+
+  Cannabinoids: PIXLZ-Berry Blast PIXLZ-THC-THC-Indica-BBX-100mg (20260605-
+  OHNY-001)
+  Potency analysis utilizing HPLC (SOP-025-NY, SOP-073-NY)
+   Analyte                          % w/w               mg/serving                 mg/package                   MRL (% w/w)
+   CBDV                             < MRL                 < MRL                      < MRL                        0.002
+   CBDA                             < MRL                 < MRL                      < MRL                        0.002
+   CBGA                             < MRL                 < MRL                      < MRL                        0.002
+   CBG                              0.007                 0.252                       5.045                       0.002
+   CBD                              0.004                 0.138                       2.752                       0.002
+   THCV                             < MRL                 < MRL                      < MRL                        0.002
+   CBN                              0.005                 0.161                       3.211                       0.002
+   D9-THC                           0.178                 6.123                     122.464                       0.002
+   D8-THC                           < MRL                 < MRL                      < MRL                        0.002
+   D10-THC-S                        < MRL                 < MRL                      < MRL                        0.002
+   D10-THC-R                        < MRL                 < MRL                      < MRL                        0.002
+   CBC                              0.002                 0.069                       1.376                       0.002
+   THCA                             < MRL                 < MRL                      < MRL                        0.002
+
+  MRL = Minimum reporting limit/limit of quantification
+  mg/serving = % w/w x10 x serving size weight (g)
+  mg/package (g) = mg/g * ("Package Servings" * "Serving Size (g)")                           Test ID: #262620 | Date Tested: 06/09/2026 12:27 PM
+
+  Potency Summary                                             % w/w mg/serving mg/package
+  Total THC [ Δ8-THC + Δ9-THC + Δ10-THC + (THCA * 0.877)) ]     0.178             6.123                 122.464
+  Total CBD [ CBD + (CBDA * 0.877) ]                            0.004             0.138                  2.752
+  Total Cannabinoids                                            0.196             6.742                 134.848
+
+
+
+
+                       Results pertain to the sample received according to sampling procedures SOP-050-NY & SOP-065-NY and relate only
+                          to items tested. Serving size (g) has been provided by the client during the sampling process, unless otherwise
+                       specified. Serving size affects reported data where noted. Action limits are set according to the New York State Office
+                                                              of Cannabis Management Testing Limits.
+                                  A sample is deemed acceptable when all analyte values are within those state determined limits.                              32580
+                                              Laboratory determined measurement uncertainty is available by request.
+                                                                                                                                                 Page 1 of 6
+                                                                                                   Certificate of Analysis
+                                                                                                             Full Compliance Test
+Green Analytics NY, LLC
+401 North Middletown Road, Building 60B
+Pearl River, NY 10965
+www.greenanalyticsllc.com
+License #s: OCM-CPL-00013
+ISO 17025 Certificate No.: 4356.09
+
+  Terpenes: PIXLZ-Berry Blast PIXLZ-THC-THC-Indica-BBX-100mg (20260605-
+                                                                                                                                               PASS
+  OHNY-001)
+  Terpenes analysis utilizing GC-MS (SOP-063-NY, SOP-069-NY)
+   Analyte                                   Result (% w/w)                    MRL (% w/w)
+   alpha-Pinene                                 < MRL                             0.03
+   Camphene                                     < MRL                             0.03
+   Sabinene                                     < MRL                             0.03
+   beta-Pinene                                  < MRL                             0.03
+   beta-Myrcene                                 < MRL                             0.03
+   Alpha-phellandrene                           < MRL                             0.03
+   Carene                                       < MRL                             0.03
+   alpha-terpinene                              < MRL                             0.03
+   p-Cymene                                     < MRL                             0.03
+   Limonene                                     < MRL                             0.03
+   Eucalyptol                                   < MRL                             0.03
+   Ocimene                                      < MRL                             0.02
+   gamma-Terpinene                              < MRL                             0.03
+   Sabinene Hydrate                             < MRL                             0.03
+   Terpinolene                                  < MRL                             0.03
+   Linalool                                     < MRL                             0.03
+   Fenchol                                      < MRL                             0.03
+   Menthol                                      < MRL                             0.03
+   Terpineol                                    < MRL                             0.03
+   Citronellol                                  < MRL                             0.03
+   Isopulegol                                   < MRL                             0.03
+   Geraniol                                     < MRL                             0.03
+   Alpha-cedrene                                < MRL                             0.03
+   Beta-Caryophyllene                           < MRL                             0.03
+   Farnesene                                    < MRL                             0.03
+   alpha-Humulene                               < MRL                             0.03
+   Valencene                                    < MRL                             0.03
+   cis-Nerolidol                                < MRL                             0.01
+   trans-Nerolidol                              < MRL                             0.02
+   Caryophyllene oxide                          < MRL                             0.03
+   Guaiol                                       < MRL                             0.03
+   alpha-Bisabolol                              < MRL                             0.03
+
+  MRL = Minimum reporting limit/limit of quantification                                     Test ID: #262622 | Date Tested: 06/10/2026 10:16 AM
+
+  Terpenes Summary                                  Result                 Limit                Pass/Fail
+  Total Terpenes (% w/w)                             < MRL                    10                      PASS
+
+
+
+
+                     Results pertain to the sample received according to sampling procedures SOP-050-NY & SOP-065-NY and relate only
+                        to items tested. Serving size (g) has been provided by the client during the sampling process, unless otherwise
+                     specified. Serving size affects reported data where noted. Action limits are set according to the New York State Office
+                                                            of Cannabis Management Testing Limits.
+                                A sample is deemed acceptable when all analyte values are within those state determined limits.                              32580
+                                            Laboratory determined measurement uncertainty is available by request.
+                                                                                                                                               Page 2 of 6
+                                                                                                   Certificate of Analysis
+                                                                                                             Full Compliance Test
+Green Analytics NY, LLC
+401 North Middletown Road, Building 60B
+Pearl River, NY 10965
+www.greenanalyticsllc.com
+License #s: OCM-CPL-00013
+ISO 17025 Certificate No.: 4356.09
+
+  Residual Solvents: PIXLZ-Berry Blast PIXLZ-THC-THC-Indica-BBX-100mg
+                                                                                                                                               PASS
+  (20260605-OHNY-001)
+  Residual solvents and processing chemicals analysis utilizing Headspace Gas Chromatography – Mass Spectrometry (SOP-067-NY,
+  SOP-010-NY)
+   Analyte                                                  Pass/Fail             Result (μg/g)               Limit (μg/g)              MRL (μg/g)
+   1,2-Dichloroethane                                         PASS                   < MRL                       5.00                     3.500
+   2-Propanol                                                 PASS                   < MRL                       5000                    500.000
+   Acetone                                                    PASS                   < MRL                       5000                    2000.000
+   Acetonitrile                                               PASS                   < MRL                        410                     40.000
+   Butanes, total                                             PASS                   < MRL                       5000                    2500.000
+   Benzene                                                    PASS                   < MRL                       2.00                     0.650
+   Chloroform                                                 PASS                   < MRL                       60.0                     6.000
+   Dichloromethane                                            PASS                   < MRL                        600                     60.000
+   Dimethyl Sulfoxide                                         PASS                   < MRL                       5000                    1000.000
+   Ethanol                                                    PASS                   < MRL                       5000                    500.000
+   Ethyl acetate                                              PASS                   < MRL                       5000                    500.000
+   Ethyl ether                                                PASS                   < MRL                       5000                    500.000
+   n-Heptane                                                  PASS                   < MRL                       5000                    500.000
+   Hexanes, total                                             PASS                   < MRL                        290                     30.000
+   Methanol                                                   PASS                   < MRL                       3000                    300.000
+   Pentanes, total                                            PASS                   < MRL                       5000                    500.000
+   Propane                                                    PASS                   < MRL                       5000                    500.000
+   Tetrafluoroethane (1,1,1,2-) (HFC-134a)                    PASS                   < MRL                       1000                    400.000
+   Toluene                                                    PASS                   < MRL                        890                    100.000
+   Trichloroethane                                            PASS                   < MRL                       1500                    1000.000
+   Xylenes, total                                             PASS                   < MRL                       2170                    250.000
+
+  MRL = Minimum reporting limit/limit of quantification                                     Test ID: #262621 | Date Tested: 06/11/2026 11:18 AM
+
+
+
+
+                     Results pertain to the sample received according to sampling procedures SOP-050-NY & SOP-065-NY and relate only
+                        to items tested. Serving size (g) has been provided by the client during the sampling process, unless otherwise
+                     specified. Serving size affects reported data where noted. Action limits are set according to the New York State Office
+                                                            of Cannabis Management Testing Limits.
+                                A sample is deemed acceptable when all analyte values are within those state determined limits.                              32580
+                                            Laboratory determined measurement uncertainty is available by request.
+                                                                                                                                               Page 3 of 6
+                                                                                                   Certificate of Analysis
+                                                                                                             Full Compliance Test
+Green Analytics NY, LLC
+401 North Middletown Road, Building 60B
+Pearl River, NY 10965
+www.greenanalyticsllc.com
+License #s: OCM-CPL-00013
+ISO 17025 Certificate No.: 4356.09
+
+  Pesticides: PIXLZ-Berry Blast PIXLZ-THC-THC-Indica-BBX-100mg (20260605-
+                                                                                                                                               PASS
+  OHNY-001)
+  Residual pesticide analysis utilizing Liquid Chromatography - Mass Spectrometry (SOP-062-NY, SOP-070-NY)
+   Analyte                                   Pass/Fail              Result (μg/g)                 Limit (μg/g)               MRL (μg/g)
+   Abamectin                                   PASS                    < MRL                         0.500                     0.100
+   Acephate                                    PASS                    < MRL                         0.400                     0.100
+   Acequinocyl                                 PASS                    < MRL                          2.00                     0.100
+   Acetamiprid                                 PASS                    < MRL                         0.200                     0.100
+   Aldicarb                                    PASS                    < MRL                         0.400                     0.100
+   Azadirachtin                                PASS                    < MRL                          1.00                     0.250
+   Azoxystrobin                                PASS                    < MRL                         0.200                     0.100
+   Bifenazate                                  PASS                    < MRL                         0.200                     0.100
+   Bifenthrin                                  PASS                    < MRL                         0.200                     0.100
+   Boscalid                                    PASS                    < MRL                         0.400                     0.100
+   Captan                                      PASS                    < MRL                          1.00                     0.500
+   Carbaryl                                    PASS                    < MRL                         0.200                     0.100
+   Carbofuran                                  PASS                    < MRL                         0.200                     0.100
+   Chlorantranilprole                          PASS                    < MRL                         0.200                     0.100
+   Chlordane                                   PASS                    < MRL                          1.00                     0.100
+   Chlorfenapyr                                PASS                    < MRL                          1.00                     0.100
+   Chlormequat chloride                        PASS                    < MRL                          1.00                     0.100
+   Chlorpyrifos                                PASS                    < MRL                         0.200                     0.100
+   Clofentezine                                PASS                    < MRL                         0.200                     0.100
+   Coumaphos                                   PASS                    < MRL                          1.00                     0.100
+   Cyfluthrin                                  PASS                    < MRL                          1.00                     0.100
+   Cypermethrin                                PASS                    < MRL                          1.00                     0.100
+   Daminozide                                  PASS                    < MRL                          1.00                     0.100
+   Diazinon                                    PASS                    < MRL                         0.200                     0.100
+   Dichlorvos                                  PASS                    < MRL                          1.00                     0.100
+   Dimethoate                                  PASS                    < MRL                         0.200                     0.100
+   Dimethomorph                                PASS                    < MRL                          1.00                     0.100
+   Ethoprophos                                 PASS                    < MRL                         0.200                     0.100
+   Etofenprox                                  PASS                    < MRL                         0.400                     0.100
+   Etoxazole                                   PASS                    < MRL                         0.200                     0.100
+   Fenhexamid                                  PASS                    < MRL                          1.00                     0.100
+   Fenoxycarb                                  PASS                    < MRL                         0.200                     0.100
+   Fenpyroximate                               PASS                    < MRL                         0.400                     0.100
+   Fipronil                                    PASS                    < MRL                         0.400                     0.100
+   Flonicamid                                  PASS                    < MRL                          1.00                     0.100
+   Fludioxonil                                 PASS                    < MRL                         0.400                     0.100
+   Hexythiazox                                 PASS                    < MRL                          1.00                     0.100
+   Imazalil                                    PASS                    < MRL                         0.200                     0.100
+   Imidacloprid                                PASS                    < MRL                         0.400                     0.100
+   Indole-3-butyric acid                       PASS                    < MRL                          1.00                     0.250
+   Kresoxim-methyl                             PASS                    < MRL                         0.400                     0.100
+   Malathion                                   PASS                    < MRL                         0.200                     0.100
+   Metalaxyl                                   PASS                    < MRL                         0.200                     0.100
+   Methiocarb                                  PASS                    < MRL                         0.200                     0.100
+   Methomyl                                    PASS                    < MRL                         0.400                     0.100
+   Methyl Parathion                            PASS                    < MRL                         0.200                     0.100
+   Mevinphos                                   PASS                    < MRL                          1.00                     0.100
+   MGK-264 I/II                                PASS                    < MRL                         0.200                     0.100
+   Myclobutanil                                PASS                    < MRL                         0.200                     0.100
+   Naled                                       PASS                    < MRL                         0.500                     0.100
+   Oxamyl                                      PASS                    < MRL                          1.00                     0.100
+   Paclobutrazol                               PASS                    < MRL                         0.400                     0.100
+   Pentachloronitrobenzene                     PASS                    < MRL                          1.00                     0.100
+   Permethrins, total                          PASS                    < MRL                         0.200                     0.100
+   Phosmet                                     PASS                    < MRL                         0.200                     0.100
+   Piperonyl butoxide                          PASS                    < MRL                          2.00                     0.100
+   Prallethrin                                 PASS                    < MRL                         0.200                     0.100
+   Propiconazole                               PASS                    < MRL                         0.400                     0.100
+   Propoxur                                    PASS                    < MRL                         0.200                     0.100
+   Pyrethrins                                  PASS                    < MRL                          1.00                     0.100
+   Pyridaben                                   PASS                    < MRL                         0.200                     0.100
+   Spinetoram, Total                           PASS                    < MRL                          1.00                     0.100
+   Spinosad, Total                             PASS                    < MRL                         0.200                     0.100
+   Spiromesifen                                PASS                    < MRL                         0.200                     0.100
+   Spirotetramat                               PASS                    < MRL                         0.200                     0.100
+   Spiroxamine                                 PASS                    < MRL                         0.200                     0.100
+   Tebuconazole                                PASS                    < MRL                         0.400                     0.100
+   Thiacloprid                                 PASS                    < MRL                         0.200                     0.100
+   Thiamethoxam                                PASS                    < MRL                         0.200                     0.100
+   Trifloxystrobin                             PASS                    < MRL                         0.200                     0.100
+
+  MRL = Minimum reporting limit/limit of quantification                                     Test ID: #262618 | Date Tested: 06/09/2026 09:55 AM
+
+
+
+
+                     Results pertain to the sample received according to sampling procedures SOP-050-NY & SOP-065-NY and relate only
+                        to items tested. Serving size (g) has been provided by the client during the sampling process, unless otherwise
+                     specified. Serving size affects reported data where noted. Action limits are set according to the New York State Office
+                                                            of Cannabis Management Testing Limits.
+                                A sample is deemed acceptable when all analyte values are within those state determined limits.                              32580
+                                            Laboratory determined measurement uncertainty is available by request.
+                                                                                                                                               Page 4 of 6
+                                                                                                    Certificate of Analysis
+                                                                                                              Full Compliance Test
+Green Analytics NY, LLC
+401 North Middletown Road, Building 60B
+Pearl River, NY 10965
+www.greenanalyticsllc.com
+License #s: OCM-CPL-00013
+ISO 17025 Certificate No.: 4356.09
+
+  Mycotoxins: PIXLZ-Berry Blast PIXLZ-THC-THC-Indica-BBX-100mg (20260605-
+                                                                                                                                                PASS
+  OHNY-001)
+  Mycotoxin analysis utilizing Liquid Chromatography - Mass Spectrometry (SOP-062-NY, SOP-070-NY)
+   Analyte                           Pass/Fail               Result (μg/g)                  Limit (μg/g)                 MRL (μg/g)
+   Ochratoxin                          PASS                     < MRL                          0.020                       0.010
+   Total Aflatoxins                    PASS                     < MRL                          0.020                       0.010
+
+  MRL = Minimum reporting limit/limit of quantification                                      Test ID: #262619 | Date Tested: 06/09/2026 09:59 AM
+
+
+
+
+  Heavy Metals: PIXLZ-Berry Blast PIXLZ-THC-THC-Indica-BBX-100mg (20260605-
+                                                                                                                                                PASS
+  OHNY-001)
+  Heavy Metals analysis utilizing Inductively Coupled Plasma Mass Spectrometry (SOP-061-NY, SOP-072-NY)
+   Analyte                       Pass/Fail                 Result (μg/g)                   Limit (μg/g)                  MRL (μg/g)
+   Chromium                        PASS                       < MRL                           1100                         8.00
+   Nickel                          PASS                       < MRL                            20.0                        1.00
+   Copper                          PASS                       < MRL                            300                         8.00
+   Arsenic                         PASS                       < MRL                            1.50                        0.10
+   Cadmium                         PASS                       < MRL                           0.500                        0.10
+   Antimony                        PASS                       < MRL                            120                         1.00
+   Mercury                         PASS                       < MRL                            3.00                        0.05
+   Lead                            PASS                       < MRL                           0.500                        0.20
+
+  MRL = Minimum reporting limit/limit of quantification                                      Test ID: #262617 | Date Tested: 06/09/2026 08:04 AM
+
+
+
+  Microbiology - Plating: PIXLZ-Berry Blast PIXLZ-THC-THC-Indica-BBX-100mg
+                                                                                                                                                PASS
+  (20260605-OHNY-001)
+  Microbial analysis utilizing microbial enumeration (SOP-700-NY)
+   Analyte                                 Pass/Fail               Results (CFU/g)                   Limit (CFU/g)                 MRL (CFU/g)
+   Total Aerobic Bacteria                    PASS                         < MRL                           10000                           10
+   Total Yeast & Mold                        PASS                         < MRL                           1000                            10
+  Microbiology - qPCR:
+  Microbial analysis utilizing quantitative Polymerase Chain Reaction (SOP-701-NY)
+   Analyte                                  Pass/Fail           Results (CFU/g)            Limit (CFU/g)            MRL (CFU/g)
+   Salmonella spp                             PASS                    Absent                    Absent                     1
+   Shiga toxin-producing E. coli              PASS                    Absent                    Absent                     1
+   Aspergillus (fumigatus, flavus,
+                                              PASS                    Absent                    Absent                     1
+   niger, terreus)
+                                                                                             Test IDs: #262624, #262623, #262626, #262625 | Date
+                                                                                             Tested: 06/10/2026 12:03 PM, 06/10/2026 09:46 AM,
+  MRL = Minimum reporting limit/limit of quantification                                      06/10/2026 08:49 AM
+
+
+
+
+  Water Activity: PIXLZ-Berry Blast PIXLZ-THC-THC-Indica-BBX-100mg (20260605-
+                                                                                                                                                PASS
+  OHNY-001)
+  Water activity analysis utilizing a chilled mirror dew point sensor (SOP-059-GA)
+   Analyte                             Pass/Fail                   Result (aw)                     Limit (aw)
+   Water Activity                        PASS                           0.67                          0.85
+
+  MRL = Minimum reporting limit/limit of quantification                                      Test ID: #262616 | Date Tested: 06/08/2026 08:58 AM
+
+
+
+
+                      Results pertain to the sample received according to sampling procedures SOP-050-NY & SOP-065-NY and relate only
+                         to items tested. Serving size (g) has been provided by the client during the sampling process, unless otherwise
+                      specified. Serving size affects reported data where noted. Action limits are set according to the New York State Office
+                                                             of Cannabis Management Testing Limits.
+                                 A sample is deemed acceptable when all analyte values are within those state determined limits.                              32580
+                                             Laboratory determined measurement uncertainty is available by request.
+                                                                                                                                                Page 5 of 6
+                                                                                                  Certificate of Analysis
+                                                                                                            Full Compliance Test
+Green Analytics NY, LLC
+401 North Middletown Road, Building 60B
+Pearl River, NY 10965
+www.greenanalyticsllc.com
+License #s: OCM-CPL-00013
+ISO 17025 Certificate No.: 4356.09
+
+
+
+
+Matthew Elmes
+Lab Director
+6/11/2026
+
+
+
+
+                    Results pertain to the sample received according to sampling procedures SOP-050-NY & SOP-065-NY and relate only
+                       to items tested. Serving size (g) has been provided by the client during the sampling process, unless otherwise
+                    specified. Serving size affects reported data where noted. Action limits are set according to the New York State Office
+                                                           of Cannabis Management Testing Limits.
+                               A sample is deemed acceptable when all analyte values are within those state determined limits.                              32580
+                                           Laboratory determined measurement uncertainty is available by request.
+                                                                                                                                              Page 6 of 6
+

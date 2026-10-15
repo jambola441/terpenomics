@@ -50,7 +50,8 @@ Both take `link` (regex a report's URL must match), `skip` (regex for PDFs that 
 reports: catalogs, menus) and `rewrite` (`[[find, replace]]` on the URL, e.g. Dropbox's
 `dl=0` -> `dl=1`).
 
-**name**: rules tried in order, first match wins. `from` is `file` (the URL's file name,
+**name**: rules tried in order; each fills what earlier ones left empty (a filename's
+strain, then a title's lot). `from` is `file` (the URL's file name,
 decoded) or `text` (the link's text, or a media item's title). Named groups: `strain`,
 `lot`, `product`. A lot read from the link is the brand's; the report's own lot fills in
 when the link has none.

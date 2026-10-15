@@ -125,15 +125,19 @@ LABS: dict[str, dict] = {
     "ACT Laboratories": {"sign": r"ACT Laboratories", "cannabinoids": 1, "terpenes": 1},
     # Hemp Hunter Labs dba Cirona Labs. Cannabinoids: % w/w, mg/serving, MRL. Terpenes: %, MRL.
     "Cirona Labs": {"sign": r"Cirona Labs|Hemp Hunter Labs", "cannabinoids": 0, "terpenes": 0},
+    # Same report template as Cirona: % w/w first, "< MRL" below the limit.
+    "Green Analytics": {"sign": r"Green Analytics", "cannabinoids": 0, "terpenes": 0},
 }
 
 # ---------------------------------------------------------------------------- ids
 
 ID_PATTERNS: dict[str, list[str]] = {
     "metrc_tag":      [r"Metrc (?:Tag|Package ID|Batch)\s*:?\s*(1A4[0-9A-F]{21})",
-                       r"Regulator Sample ID\s*:?\s*(1A4[0-9A-F]{21})"],
+                       r"Regulator Sample ID\s*:?\s*(1A4[0-9A-F]{21})",
+                       r"METRC Test Tag ID\s*:?\s*(1A4[0-9A-F]{21})"],
     "source_package": [r"Regulator Source Package ID\s*:?\s*(1A4[0-9A-F]{21})",
-                       r"Metrc Source Package\s*:?\s*(1A4[0-9A-F]{21})"],
+                       r"Metrc Source Package\s*:?\s*(1A4[0-9A-F]{21})",
+                       r"METRC Source ID\s*:?\s*(1A4[0-9A-F]{21})"],
     "lot":            [r"Lot\s*(?:#|Number|No\.?)\s*:?\s*([A-Z0-9][A-Z0-9._/-]{2,})",
                        r"Harvest/Lot (?:ID|#)\s*:?\s*([A-Z0-9][A-Z0-9._/-]{2,})",
                        r"Batch Lot ID\s*:?\s*([A-Z0-9][A-Z0-9._/-]{2,})",

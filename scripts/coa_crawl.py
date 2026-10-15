@@ -118,7 +118,9 @@ def _candidates(src: dict) -> list[tuple[str, str]]:
 
     links     `pages`: pages whose <a> tags link to the reports
     wp_media  `site`: a WordPress site's media library (/wp-json/wp/v2/media), which
-              lists every uploaded PDF, including ones no page links to any more"""
+              lists every uploaded PDF, including ones no page links to any more
+    wp_posts  `url`: a WordPress post type of documents, filters in the URL; `file`
+              names the field holding each report's URL (default download_url)"""
     kind = src.get("kind", "links")
     out: list[tuple[str, str]] = []
     if kind == "links":
@@ -138,6 +140,21 @@ def _candidates(src: dict) -> list[tuple[str, str]]:
             if not rows:
                 break
             out += [(r["source_url"], html.unescape((r.get("title") or {}).get("rendered") or "")) for r in rows]
+    elif kind == "wp_posts":
+        # A post type whose items each carry a report (`file`: the field holding its URL),
+        # filtered in the URL itself: ".../wp/v2/dlp_document?doc_categories=95".
+        sep = "&" if "?" in src["url"] else "?"
+        for page in range(1, src.get("max_pages", 100) + 1):
+            try:
+                rows = json.loads(_get(f"{src['url']}{sep}per_page=100&page={page}"))
+            except urllib.error.HTTPError as e:
+                if e.code == 400:
+                    break
+                raise
+            if not rows:
+                break
+            out += [(r.get(src.get("file", "download_url")) or "",
+                     html.unescape((r.get("title") or {}).get("rendered") or "")) for r in rows]
     else:
         raise SystemExit(f"unknown source kind {kind!r}")
     return out
@@ -160,17 +177,17 @@ def discover(recipe: dict) -> list[dict]:
         seen.add(url)
         item = {"url": url, "text": text, "strain": None, "lot": None, "product": None,
                 "_only": src.get("only")}
-        for rule in recipe.get("name", []):
+        for rule in recipe.get("name", []):  # each rule fills what earlier ones left empty
             field = urllib.parse.unquote(url.rsplit("/", 1)[-1].split("?")[0]) if rule["from"] == "file" else text
             m = re.search(rule["match"], field)
-            if m:
-                g = {k: v for k, v in m.groupdict().items() if v}
-                strain = re.sub(r"[_-]+", " ", g.get("strain") or "").strip()
-                strain = strain.strip(" –—-")
-                item["strain"] = strain.title() if strain.isupper() else strain or None
-                item["lot"] = g.get("lot")
-                item["product"] = g.get("product")
-                break
+            if not m:
+                continue
+            g = {k: v for k, v in m.groupdict().items() if v}
+            strain = re.sub(r"[_-]+", " ", g.get("strain") or "").strip().strip(" –—-")
+            if strain and not item["strain"]:
+                item["strain"] = strain.title() if strain.isupper() else strain
+            item["lot"] = item["lot"] or g.get("lot")
+            item["product"] = item["product"] or g.get("product")
         out.append(item)
     return out
 

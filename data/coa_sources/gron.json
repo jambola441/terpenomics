@@ -1,0 +1,19 @@
+{
+  "brand": "Grön",
+  "site": "https://eatgron.com",
+  "source": {
+    "kind": "wp_posts",
+    "url": "https://eatgron.com/wp-json/wp/v2/dlp_document?doc_categories=95",
+    "file": "download_url",
+    "link": "\\.pdf"
+  },
+  "learned": "2026-10-15: eatgron.com/test-results is a 'COA Library' (a dlp_document post type) filtered by state; doc_categories 95 is 'new-york-coa', ~1,070 reports. The media library mixes eight states (4,500+ PDFs), so it is not used.",
+  "notes": [
+    "Titles are the lot: NY + a 3-letter product code + batch (NYBBX2C0326). Filenames name the product: 20260605-OHNY-001-PIXLZ-Berry-Blast-PIXLZ-THC-THC-Indica-BBX-100mg.pdf.",
+    "If the NY term's id changes, find it at /wp-json/wp/v2/doc_categories?slug=new-york-coa."
+  ],
+  "name": [
+    {"from": "file", "match": "^\\d{8}-[A-Z]+-\\d+-(?:PIXLZ|Pips|Pearls|Mega|Big-Bar|Mini-Bar|Chocolate)?-?(?P<strain>.+?)-(?:PIXLZ|Pips|Pearls|Mega|Mini-Bar|Big-Bar|Chocolate|Gummies)-"},
+    {"from": "text", "match": "^(?P<lot>NY[A-Z0-9]+)$"}
+  ]
+}

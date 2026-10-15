@@ -92,3 +92,12 @@ def test_cirona_reads_below_reporting_limit_as_zero():
     assert r["cannabinoids"]["CBD"] == 0.3 and r["cannabinoids"]["THCa"] == 0.0
     assert r["totals"]["total_thc"] == 0.3 and r["totals"]["total_cannabinoids"] == 0.614
     assert r["terpenes"]["Limonene"] == 0.0
+
+
+def test_green_analytics_metrc_fields_and_edible_percents():
+    r = _read("greenanalytics_gron.txt")
+    assert r["ids"]["lab"] == "Green Analytics" and r["ids"]["lot"] == "NYBBX2C0326"
+    assert r["ids"]["metrc_tag"] == "1A4120300000196000002821"
+    assert r["ids"]["source_package"] == "1A4120300000196000002822"
+    assert r["cannabinoids"]["D9-THC"] == 0.178 and r["cannabinoids"]["CBN"] == 0.005
+    assert r["totals"]["total_thc"] == 0.178
