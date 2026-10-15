@@ -37,6 +37,23 @@ npx eas-cli@latest build --profile development --platform ios   # simulator buil
 npx expo run:ios
 ```
 
+Building from Xcode directly, on a Mac:
+
+```sh
+npx expo prebuild --platform ios --clean   # regenerates ios/ (not committed)
+echo "export NODE_BINARY=$(command -v node)" > ios/.xcode.env.local   # nvm users
+open ios/*.xcworkspace
+```
+
+Set your Team under Signing & Capabilities (or `ios.appleTeamId` in
+`app.json` so prebuild keeps it), and use the Release configuration for a
+build that runs without the Mac. Run `npm install` and `prebuild --clean` again
+after pulling a change to `package.json` or `app.json`.
+
+`plugins/withSceneLifecycle.js` adopts the UIKit scene life cycle, without
+which an app built with the iOS 27 SDK refuses to launch. Expo's SDK 57
+template doesn't do it yet. Remove the plugin once it does.
+
 TestFlight: `npx eas-cli@latest build --profile production --platform ios`
 then `npx eas-cli@latest submit --platform ios`. Needs an Apple Developer
 account; the bundle id is `com.terpenomics.app` in `app.json`.
