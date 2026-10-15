@@ -100,8 +100,11 @@ SIZE_Q = ("This listing is the product named in 'product'. Which of that product
           "count ('10pk'). A listing that states only the total or only the count is the package "
           "with that total or count. A package's mg is its total THC (or THCA) only, never CBD, "
           "CBN, CBG or other cannabinoids: a can of '5mg THC : 5mg CBD' is 5mg, even where the "
-          "store's size field adds them up to 10mg. Choose none only if the listing states a total "
-          "or count that none of these packages has.")
+          "store's size field adds them up to 10mg. The store's size field ('store_size_field') is "
+          "the store's own statement of the package: when it, or the listing's name, states a size "
+          "that one of these packages has, in any spelling ('1G', '1 gram', '.5g', '10 mg / 10 pc'), "
+          "the listing is that package. Choose none only if the listing states a total or count "
+          "that none of these packages has.")
 
 # (question key, catalog entry field, reading field, instructions)
 STEPS = (("category", "category", "category", CATEGORY_Q),
