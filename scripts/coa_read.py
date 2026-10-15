@@ -35,7 +35,7 @@ import sys
 
 # Bump when a change would read a stored report differently; coa_crawl.py push re-reads
 # rows an older version read.
-VERSION = 1
+VERSION = 2
 
 # ----------------------------------------------------------------------- analytes
 
@@ -150,6 +150,8 @@ ID_PATTERNS: dict[str, list[str]] = {
     "license":        [r"License\s*(?:#|Number)\s*:?\s*((?:OCM-)?[A-Z]{3,5}-\d{2,4}-\d{5,6}(?:-[A-Z0-9]+)?)"],
     "product":        [r"Sample Description\s*:\s*(.+?)\s{2,}", r"Sample Description\s*:\s*(.+)$",
                        r"Strain\s*:\s*([^,\n]+?)\s*,",
+                       # Cirona / Green Analytics: each section is headed with the sample's name.
+                       r"^\s*Cannabinoids:\s*(.+?)\s*\(",
                        # Smithers: the product's name stands alone above "Metrc Package ID".
                        r"^[ \t]*(\S[^\n]*?)[ \t]*\n(?:[ \t]*\n)*[ \t]*Metrc Package ID"],
     # What the lab says the sample is; coa_crawl.category() turns it into ours.

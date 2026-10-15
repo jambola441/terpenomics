@@ -56,6 +56,16 @@ Without one, a report's category comes from the words of its link, filename, pro
 line and the lab's sample type; a brand whose catalog has one category needs neither.
 A report with no category is kept but linked to no catalog entry.
 
+**lines** (optional): `[{"when": "\\(T PRO\\)", "line": "Traveler Pro"}]`, a regex over the
+report's link text, filename, product line and lot, for a brand whose reports name a line
+in their own shorthand. `"line": ""` means the line-less product. Without a rule, a report
+takes the longest of the brand's lines written in it. A report that names no line, for a
+strain the catalog has in two lines, is linked to neither.
+
+**strain_code** (optional): a regex with a `code` group over the lot and filename, for a
+brand whose lots abbreviate the strain (Fernway's `FNY-MANDAR-T2G-...`). The code is
+resolved to the one catalog strain whose letters begin with it, or to nothing.
+
 **name**: rules tried in order; each fills what earlier ones left empty (a filename's
 strain, then a title's lot). `from` is `file` (the URL's file name,
 decoded) or `text` (the link's text, or a media item's title). Named groups: `strain`,

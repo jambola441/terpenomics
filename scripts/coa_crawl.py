@@ -23,6 +23,7 @@ Usage
   python scripts/coa_crawl.py fetch --brand Jaunty            # all -> data/coas/<slug>.json
   python scripts/coa_crawl.py check --all --limit 3
   python scripts/coa_crawl.py push  --brand Jaunty [--dry-run] # PDFs -> `coas` bucket, rows -> coa_reports
+  python scripts/coa_crawl.py link  --all                      # relink stored reports to the catalog
   python scripts/coa_crawl.py coverage                        # listings the fetched reports reach
 """
 
@@ -264,7 +265,7 @@ CATEGORY_WORDS: list[tuple[str, str]] = [
     ("tinctures",  r"tincture|\bdrops?\b"),
     ("topical",    r"topical|balm|lotion|intimacy|massage"),
     ("preroll",    r"pre-?\s?rolls?|\bjoints?\b|\bblunts?\b|\bpuffs\b|\bdogwalkers?\b"),
-    ("vaporizers", r"\bvapes?\b|cart(?:ridge)?s?\b|\bpods?\b|disposable|all[- ]in[- ]one|\baio\b|\b510\b|traveler"),
+    ("vaporizers", r"\bvapes?\b|cart(?:ridge)?s?\b|\bpods?\b|disposable|all[- ]in[- ]one|\baio\b|\b510|traveler"),
     ("edible",     r"gumm|edible|chocolate|\bchews?\b|\bmints?\b|beverage|\bdrinks?\b|cookie|lozenge|"
                    r"\bpearls\b|\bpips\b|pixlz|\bmega\b|\bbar\b|caramel|taffy|seltzer"),
     ("concentrate", r"rosin|resin|badder|batter|\bsugar\b|\bhash\b|diamonds?|concentrate|\bwax\b|"
@@ -315,15 +316,32 @@ def _norm(s: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", s.lower()).strip()
 
 
-def match(report: dict, strains: dict[str, list[str]]) -> str | None:
-    """The catalog strain this report is for: its link's strain, else the longest
-    catalog strain named in its link text or the lab's product description."""
+def match(report: dict, strains: dict[str, list[str]], code_rx: str | None = None) -> str | None:
+    """The catalog strain this report is for: its link's strain; else the longest catalog
+    strain named in its link text, filename or the lab's product line, with spaces or
+    without ("BloomSuperLemonHazeVape1gPOD"); else, where the recipe gives `strain_code`,
+    the one catalog strain whose letters begin with the code in the lot (Fernway's
+    FNY-MANDAR-... is Mandarin...)."""
     if report.get("strain") and _norm(report["strain"]) in strains:
         return _norm(report["strain"])
-    hay = " " + _norm(" ".join(filter(None, [report.get("strain"), report.get("text"),
-                                              (report.get("ids") or {}).get("product")]))) + " "
+    file = urllib.parse.unquote((report.get("url") or report.get("source_url") or "").rsplit("/", 1)[-1].split("?")[0])
+    parts = [report.get("strain"), report.get("text") or report.get("link_text"), re.sub(r"[_-]+", " ", file),
+             (report.get("ids") or {}).get("product") or report.get("product_name")]
+    hay = " " + _norm(" ".join(filter(None, parts))) + " "
     hits = [s for s in strains if s and f" {s} " in hay]
-    return max(hits, key=len) if hits else None
+    if not hits:
+        squashed = hay.replace(" ", "")
+        hits = [s for s in strains if len(s.replace(" ", "")) >= 6 and s.replace(" ", "") in squashed]
+    if hits:
+        return max(hits, key=len)
+    if code_rx:
+        m = re.search(code_rx, " ".join(filter(None, [report.get("lot"), file])))
+        if m:
+            code = m.group("code").lower()
+            fits = [s for s in strains if s.replace(" ", "").startswith(code)]
+            if len(fits) == 1:
+                return fits[0]
+    return None
 
 
 # ---------------------------------------------------------------------------- cli
@@ -390,13 +408,13 @@ def cmd_fetch(recipe: dict, catalog: bool) -> None:
 
 
 def catalog_entries(brand: str) -> tuple[str, list[dict]]:
-    """The brand's catalog id and active entries (id, strain, category)."""
+    """The brand's catalog id and active entries (id, strain, category, line, subtype)."""
     from db_http import run_sql
     q = brand.replace("'", "''")
     cat = run_sql(f"select id from brand_catalogs where brand_name = '{q}'")
     if not cat:
         raise SystemExit(f"no brand_catalogs row for {brand!r}")
-    rows = run_sql("select e.id, e.strain, e.category from brand_catalog_entries e "
+    rows = run_sql("select e.id, e.strain, e.category, e.product_line, e.subtype from brand_catalog_entries e "
                    f"where e.catalog_id = '{cat[0]['id']}' and e.is_active") or []
     return cat[0]["id"], rows
 
@@ -457,7 +475,8 @@ def cmd_push(recipe: dict, limit: int | None, dry_run: bool) -> None:
                 "lab": ids["lab"], "producer_license": ids["license"], "report_lot": ids["lot"],
                 "metrc_tag": ids["metrc_tag"], "source_package": ids["source_package"],
                 "product_name": ids["product"], "sample_type": ids["sample_type"],
-                "category": category(r, recipe, brand_cats), "catalog_strain": match(r, strains),
+                "category": category(r, recipe, brand_cats),
+                "catalog_strain": match(r, strains, recipe.get("strain_code")),
                 "test_date": ids["test_date"], "total_thc": t["total_thc"], "total_cbd": t["total_cbd"],
                 "total_cannabinoids": t["total_cannabinoids"], "total_terpenes": t["total_terpenes"],
                 "cannabinoids": r["cannabinoids"] or None, "terpenes": r["terpenes"] or None})
@@ -474,7 +493,7 @@ def cmd_push(recipe: dict, limit: int | None, dry_run: bool) -> None:
                   f"lot {row['lot'] or '-':18.18} {row.get('lab') or row.get('error') or ''}")
         return
     _write(rows)
-    link_entries(brand, catalog_id, entries, brand_cats)
+    link_entries(brand, {**recipe, "_catalog_id": catalog_id}, entries)
 
 
 ROW_KEYS = ["catalog_id", "source_url", "link_text", "strain", "lot", "reader_version", "error",
@@ -493,23 +512,77 @@ def _write(rows: list[dict]) -> None:
                        on_conflict="source_url")
 
 
-def link_entries(brand: str, catalog_id: str, entries: list[dict], brand_cats: set[str]) -> None:
+SUBTYPE_WORDS = [("all-in-one", r"all[- ]in[- ]one|\baio\b|disposable|traveler|\bpod\b|\(T(?: PRO)?\)"),
+                 ("cart", r"\bcart(?:ridge)?s?\b|\b510")]
+
+
+def _evidence(r: dict) -> str:
+    """Everything a report says about which product it is, as one string."""
+    file = urllib.parse.unquote(r["source_url"].rsplit("/", 1)[-1].split("?")[0])
+    return " ".join(filter(None, [r.get("link_text"), re.sub(r"[_-]+", " ", file), r.get("product_name"),
+                                  r.get("sample_type"), r.get("lot")]))
+
+
+def report_line(r: dict, recipe: dict, lines: list[str]) -> str | None:
+    """The product line a report names: the recipe's rule, else the longest of the
+    brand's lines (for this category) written in its link, filename or product line.
+    "" is "no line" (a rule can say so); None is "the report does not say"."""
+    ev = _evidence(r)
+    for rule in recipe.get("lines", []):
+        if re.search(rule["when"], ev, re.I):
+            return rule["line"]
+    for line in sorted(lines, key=len, reverse=True):
+        if re.search(r"(?<![a-z0-9])" + re.escape(line) + r"(?![a-z0-9])", ev, re.I):
+            return line
+    return None
+
+
+def entries_for(r: dict, recipe: dict, by_strain: dict[tuple, list[dict]]) -> tuple[list[dict], str]:
+    """The catalog entries a report tested, and how they were chosen.
+
+    Strain and category must agree. Then the line: the one the report names, else the
+    one line every candidate shares. Two lines and no word of which (Fernway's 510 cart
+    and Traveler Pro of one strain) is no link, not both. Then cart against
+    all-in-one where the report says. Sizes are not told apart: one oil, one gummy
+    batch, tests the same in any pack."""
+    cands = by_strain.get((r["catalog_strain"], r["category"]), [])
+    if not cands:
+        return [], "none"
+    lines = {(e["product_line"] or "") for e in cands}
+    line = report_line(r, recipe, [l for l in lines if l])
+    if line is not None:
+        cands = [e for e in cands if (e["product_line"] or "") == line]
+        method = "line"
+    elif len(lines) == 1:
+        method = "only_line"
+    else:
+        return [], "ambiguous_line"
+    ev = _evidence(r)
+    for sub, rx in SUBTYPE_WORDS:
+        if re.search(rx, ev, re.I):
+            narrowed = [e for e in cands if e["subtype"] in (sub, None)]
+            if narrowed:
+                cands = narrowed
+            break
+    return cands, method
+
+
+def link_entries(brand: str, recipe: dict, entries: list[dict]) -> None:
     """Rebuild the brand's report -> catalog entry links from coa_reports."""
     import db_http
+    catalog_id = recipe["_catalog_id"]
     reports = db_http.select_all(
-        "coa_reports", f"select=id,catalog_strain,category&catalog_id=eq.{catalog_id}&error=is.null")
-    single = len(brand_cats - {"merch"}) == 1
-    by_key: dict[tuple, list[str]] = {}
+        "coa_reports", "select=id,source_url,link_text,product_name,sample_type,lot,catalog_strain,category"
+        f"&catalog_id=eq.{catalog_id}&error=is.null")
+    by_strain: dict[tuple, list[dict]] = {}
     for e in entries:
         if e["strain"]:
-            by_key.setdefault((_norm(e["strain"]), e["category"]), []).append(e["id"])
-    links = []
+            by_strain.setdefault((_norm(e["strain"]), e["category"]), []).append(e)
+    links, why = [], {}
     for r in reports:
-        if not r["catalog_strain"] or not r["category"]:
-            continue
-        for eid in by_key.get((r["catalog_strain"], r["category"]), []):
-            links.append({"report_id": r["id"], "entry_id": eid,
-                          "method": "strain" if single else "strain_category"})
+        found, method = entries_for(r, recipe, by_strain) if r["catalog_strain"] and r["category"] else ([], "no_strain_or_category")
+        why[method] = why.get(method, 0) + 1
+        links += [{"report_id": r["id"], "entry_id": e["id"], "method": method} for e in found]
     ids = [r["id"] for r in reports]
     for i in range(0, len(ids), 100):
         db_http.delete("coa_report_entries", f"report_id=in.({','.join(ids[i:i + 100])})")
@@ -517,7 +590,7 @@ def link_entries(brand: str, catalog_id: str, entries: list[dict], brand_cats: s
         db_http.insert("coa_report_entries", links[i:i + 500])
     linked = {l["report_id"] for l in links}
     print(f"  {len(linked)} of {len(reports)} reports linked to {len({l['entry_id'] for l in links})} "
-          f"catalog entries ({len(entries)} active)")
+          f"catalog entries ({len(entries)} active); " + ", ".join(f"{k} {v}" for k, v in sorted(why.items())))
 
 
 def cmd_coverage() -> None:
@@ -555,7 +628,7 @@ def cmd_coverage() -> None:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["list", "check", "fetch", "push", "coverage"])
+    ap.add_argument("command", choices=["list", "check", "fetch", "push", "link", "coverage"])
     who = ap.add_mutually_exclusive_group(required=False)
     who.add_argument("--brand")
     who.add_argument("--all", action="store_true")
@@ -576,6 +649,10 @@ def main() -> int:
             cmd_check(recipe, args.limit, not args.no_catalog)
         elif args.command == "push":
             cmd_push(recipe, args.limit, args.dry_run)
+        elif args.command == "link":
+            catalog_id, entries = catalog_entries(recipe["brand"])
+            print(recipe["brand"])
+            link_entries(recipe["brand"], {**recipe, "_catalog_id": catalog_id}, entries)
         else:
             cmd_fetch(recipe, not args.no_catalog)
     return 0
