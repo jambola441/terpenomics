@@ -14,7 +14,7 @@ import { useFetch } from '@/lib/useFetch'
 import { useKnownPosition } from '@/components/partners'
 import { FeedState, MarketNote, Pill, ProductImage, StoreBullet, categoryName, styles } from '@/components/ui'
 import { CategoryIcon, Icon } from '@/components/Icon'
-import { BackButton } from '@/components/browse/controls'
+import { BackButton, StatusStrip } from '@/components/browse/controls'
 import CartCorner from './CartCorner'
 import { t, font, fonts, radius, type } from '@/lib/theme'
 
@@ -87,19 +87,29 @@ export default function StoreMenu({ store }: { store: PortalDispensary }) {
   // The store wears its borough's line colour, as its bullet does on the map.
   const line = boroughColor(store.address)
 
+  // Where the search bar sticks, and whether it has.
+  const [stickAt, setStickAt] = useState<number | null>(null)
+  const [stuck, setStuck] = useState(false)
+
   const submit = () => setSearch(input.trim())
   const clear = () => { setInput(''); setSearch('') }
 
   return (
+    <View style={styles.screen}>
+    {/* The status bar's strip: the scroll starts under it, so the sticky
+        search never slides beneath the clock (BrowseList does the same). */}
+    <StatusStrip height={insets.top} color={line} strength={0.28} />
     <ScrollView
       style={styles.screen}
       stickyHeaderIndices={[2]}
+      scrollEventThrottle={32}
+      onScroll={e => setStuck(stickAt != null && e.nativeEvent.contentOffset.y >= stickAt - 1)}
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
       contentContainerStyle={{ paddingBottom: 80 + keyboard }}
     >
       {/* Banner */}
-      <View style={{ height: 160 + insets.top, backgroundColor: t.surface1 }}>
+      <View style={{ height: 160, backgroundColor: t.surface1 }}>
         {store.banner_url ? (
           <Image source={{ uri: store.banner_url }} style={StyleSheet.absoluteFill} contentFit="cover" />
         ) : (
@@ -123,7 +133,7 @@ export default function StoreMenu({ store }: { store: PortalDispensary }) {
           </Defs>
           <Rect width="100%" height="100%" fill="url(#fade)" />
         </Svg>
-        <View style={{ position: 'absolute', top: insets.top + 8, left: 14 }}>
+        <View style={{ position: 'absolute', top: 8, left: 14 }}>
           <BackButton />
         </View>
       </View>
@@ -160,8 +170,10 @@ export default function StoreMenu({ store }: { store: PortalDispensary }) {
           : <Pill size="md" style={{ alignSelf: 'center' }}>In store only</Pill>}
       </View>
 
-      {/* Sticky search */}
-      <View style={s.searchBar}>
+      {/* Sticky search. Once it is stuck, the banner's Back has scrolled
+          away, so the bar carries one of its own. */}
+      <View style={s.searchBar} onLayout={e => setStickAt(e.nativeEvent.layout.y)}>
+        {stuck ? <BackButton /> : null}
         <View style={{ flex: 1, justifyContent: 'center' }}>
           <Icon name="search" size={16} color={t.text3} style={{ position: 'absolute', left: 12, zIndex: 1 }} />
           <TextInput
@@ -245,6 +257,7 @@ export default function StoreMenu({ store }: { store: PortalDispensary }) {
         ))
       )}
     </ScrollView>
+    </View>
   )
 }
 

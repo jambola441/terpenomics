@@ -64,9 +64,7 @@ export default function ListingScreen() {
     <ScrollView style={styles.screen} contentContainerStyle={{ paddingBottom: space[8] }}>
       <Stack.Screen options={{ title: l.dispensary_name }} />
       {hero ? (
-        <View style={{ width, height: width, backgroundColor: t.tile, padding: 24 }}>
-          <Image source={{ uri: hero }} style={{ flex: 1 }} contentFit="contain" accessibilityLabel={l.display_name} />
-        </View>
+        <HeroPhoto uri={hero} original={l.image_url!} size={width} label={l.display_name} />
       ) : (
         <ProductImage uri={null} size={width} category={cat} radius={0} />
       )}
@@ -204,6 +202,25 @@ export default function ListingScreen() {
         </View>
       ) : null}
     </ScrollView>
+  )
+}
+
+/** The listing's photo across the screen, on the light plate. Sized outright
+ *  (a flex child drew blank until the first scroll), and the original file
+ *  when the resized one fails. */
+function HeroPhoto({ uri, original, size, label }: { uri: string; original: string; size: number; label: string }) {
+  const [failed, setFailed] = useState(false)
+  return (
+    <View style={{ width: size, height: size, backgroundColor: t.tile, padding: 24 }}>
+      <Image
+        source={{ uri: failed ? original : uri }}
+        style={{ width: size - 48, height: size - 48 }}
+        contentFit="contain"
+        transition={150}
+        accessibilityLabel={label}
+        onError={() => setFailed(true)}
+      />
+    </View>
   )
 }
 

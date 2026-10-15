@@ -3,7 +3,7 @@ import {
   Alert, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View,
 } from 'react-native'
 import { Stack, router } from 'expo-router'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import type { CartItem, Order } from '@web/types'
 import { formatDollars } from '@web/utils/format'
 import { api } from '@/lib/api'
@@ -32,6 +32,11 @@ export default function Cart() {
         title,
         // Closing mid-request would lose the pickup code.
         gestureEnabled: !placing,
+        headerLeft: () => (placing ? null : (
+          <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Close" hitSlop={8} style={s.close}>
+            <Icon name="close" size={16} color={t.text2} />
+          </Pressable>
+        )),
         headerRight: () => (!placed && step === 'cart' && cart.items.length > 0 ? (
           <Pressable
             onPress={() => Alert.alert('Clear your cart?', 'Everything in it will be removed.', [
@@ -74,6 +79,9 @@ export default function Cart() {
 
 function CartStep({ onCheckout }: { onCheckout: () => void }) {
   const cart = useCart()
+  // From the hook rather than SafeAreaView, which lost the inset when this
+  // step came back from checkout and the button jumped.
+  const insets = useSafeAreaInsets()
   return (
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={{ padding: 20, paddingTop: space[2], gap: 10 }}>
@@ -95,7 +103,7 @@ function CartStep({ onCheckout }: { onCheckout: () => void }) {
           </View>
         ))}
       </ScrollView>
-      <SafeAreaView edges={['bottom']} style={s.footer}>
+      <View style={[s.footer, { paddingBottom: 20 + insets.bottom }]}>
         {cart.totalCents > 0 ? (
           <View style={s.totalRow}>
             <Text style={[type.body, { color: t.text2 }]}>Estimated total</Text>
@@ -103,7 +111,7 @@ function CartStep({ onCheckout }: { onCheckout: () => void }) {
           </View>
         ) : null}
         <Button title="Checkout · pay at the store" onPress={onCheckout} />
-      </SafeAreaView>
+      </View>
     </View>
   )
 }
@@ -162,6 +170,7 @@ function CheckoutStep({ onBack, onPlaced, onPlacing }: {
   onPlacing: (placing: boolean) => void
 }) {
   const cart = useCart()
+  const insets = useSafeAreaInsets()
   const { upsert } = useOrders()
   const [note, setNote] = useState('')
   const [submitting, setSubmittingState] = useState(false)
@@ -253,7 +262,7 @@ function CheckoutStep({ onBack, onPlaced, onPlacing }: {
         ) : null}
       </ScrollView>
 
-      <SafeAreaView edges={['bottom']} style={s.footer}>
+      <View style={[s.footer, { paddingBottom: 20 + insets.bottom }]}>
         <View>
           <View style={[s.totalRow, { marginBottom: 4 }]}>
             <Text style={[type.body, { color: t.text2 }]}>Due at pickup</Text>
@@ -267,7 +276,7 @@ function CheckoutStep({ onBack, onPlaced, onPlacing }: {
         </View>
         <Button title={submitting ? 'Placing order…' : 'Place pickup order'} onPress={submit} loading={submitting} />
         <Button title="Back to cart" variant="secondary" onPress={onBack} disabled={submitting} />
-      </SafeAreaView>
+      </View>
     </KeyboardAvoidingView>
   )
 }
@@ -275,8 +284,9 @@ function CheckoutStep({ onBack, onPlaced, onPlacing }: {
 /* ── Step three: the pickup code ──────────────────────────────────────────── */
 
 function Placed({ order }: { order: Order }) {
+  const insets = useSafeAreaInsets()
   return (
-    <SafeAreaView edges={['bottom']} style={[styles.screen, { paddingHorizontal: 20 }]}>
+    <View style={[styles.screen, { paddingHorizontal: 20, paddingBottom: insets.bottom }]}>
       <ScrollView contentContainerStyle={{ paddingTop: 8, paddingBottom: 20, alignItems: 'stretch' }}>
         <View style={s.placedDisc} accessibilityElementsHidden>
           <Icon name="check" size={28} color={t.success} strokeWidth={2} />
@@ -309,7 +319,7 @@ function Placed({ order }: { order: Order }) {
         />
         <Button title="Keep browsing" variant="secondary" style={{ marginTop: 10 }} onPress={() => router.back()} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   )
 }
 
@@ -318,7 +328,11 @@ const s = StyleSheet.create({
     paddingHorizontal: 11, paddingVertical: 6, borderRadius: radius.md,
     borderWidth: 1, borderColor: t.borderStrong,
   },
-  clearText: { fontFamily: fonts.sans, fontSize: font.size.small + 1, color: t.text2 },
+  clearText: { fontFamily: fonts.sansMedium, fontSize: font.size.small + 1, color: t.text1 },
+  close: {
+    width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: t.surface2, borderWidth: 1, borderColor: t.border,
+  },
   line: {
     flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12,
     backgroundColor: t.surface2, borderRadius: radius.lg, borderWidth: 1, borderColor: t.border,

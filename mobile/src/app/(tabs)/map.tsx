@@ -77,12 +77,25 @@ export default function MapTab() {
   useEffect(() => {
     if (fitted.current || !placed.length) return
     fitted.current = true
+    // Opened on one partner store: that pin, not the whole city.
+    if (params.spot) return
     const coords = placed.map(d => ({ latitude: d.lat!, longitude: d.lng! }))
     requestAnimationFrame(() => map.current?.fitToCoordinates(coords, {
-      edgePadding: { top: insets.top + 90, right: 56, bottom: 120, left: 56 },
+      // Clear of the legend at the top and the sheet and nav at the bottom.
+      edgePadding: { top: insets.top + 90, right: 56, bottom: 200, left: 56 },
       animated: false,
     }))
-  }, [placed, insets.top])
+  }, [placed, insets.top, params.spot])
+
+  // A partner store opened by link may be far from the stores (outside the
+  // city): go to it, close enough to see the street.
+  useEffect(() => {
+    if (!spot || !params.spot || spot.location.id !== params.spot) return
+    map.current?.animateToRegion({
+      latitude: spot.location.lat! - 0.004, longitude: spot.location.lng!,
+      latitudeDelta: 0.03, longitudeDelta: 0.03,
+    }, 350)
+  }, [spot, params.spot])
 
   // Centre the tapped pin above where its sheet will sit.
   function focus(lat: number, lng: number) {

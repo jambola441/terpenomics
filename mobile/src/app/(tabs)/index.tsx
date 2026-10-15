@@ -113,6 +113,9 @@ export default function Home() {
 
       <Segmented options={VIEWS} value={view} onChange={setView} style={{ marginTop: 14, marginHorizontal: space[4] }} />
 
+      {/* The chips' height is held while they load, so the feed below doesn't
+          jump under a thumb when they arrive. */}
+      {categories.loading ? <View style={{ height: CHIP_ROW }} /> : null}
       {categories.data?.length ? (
         <ScrollView
           horizontal
@@ -310,6 +313,9 @@ function CategoryChip({ label, active, category, onPress }: {
     </Pressable>
   )
 }
+
+/** The category chip row's height, measured in the simulator. */
+const CHIP_ROW = 47
 
 const s = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingHorizontal: space[4], paddingBottom: 6 },
