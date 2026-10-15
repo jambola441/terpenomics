@@ -91,6 +91,13 @@ function LocationRow({ location: loc }: { location: PortalPartnerLocation }) {
       ) : null}
       <View style={{ flexDirection: 'row', gap: space[2], marginTop: space[3], flexWrap: 'wrap' }}>
         {directions ? <Action icon="navigate" label="Directions" onPress={() => Linking.openURL(directions)} /> : null}
+        {loc.lat != null && loc.lng != null ? (
+          <Action
+            icon="map"
+            label="Show on map"
+            onPress={() => router.navigate({ pathname: '/map', params: { show: 'partners', spot: loc.id } })}
+          />
+        ) : null}
         {loc.phone ? <Action icon="phone" label={loc.phone} onPress={() => Linking.openURL(telHref(loc.phone!))} /> : null}
         {loc.hours?.length ? <Action icon="clock" label={showHours ? 'Hide hours' : 'Hours'} onPress={() => setShowHours(v => !v)} /> : null}
       </View>
