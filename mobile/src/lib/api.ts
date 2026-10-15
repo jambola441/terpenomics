@@ -10,6 +10,9 @@ import type {
   ListingDetail,
   MyReceipt,
   Order,
+  Feedback,
+  FeedbackResponse,
+  PortalPurchase,
   PartnerOption,
   PointsSummary,
   PortalCategory,
@@ -84,8 +87,10 @@ const pub = <T,>(path: string, init?: RequestInit) => request<T>(path, init, fal
 const authed = <T,>(path: string, init?: RequestInit) => request<T>(path, init, true)
 const post = (body?: unknown): RequestInit => ({ method: 'POST', body: body === undefined ? undefined : JSON.stringify(body) })
 
-/** What Home asks the feed for; also what sign-in starts early. */
-export const HOME_FEED: { view: FeedView } = { view: 'combined' }
+/** What Home asks the feed for first; also what sign-in starts early. Same as
+ *  the web portal's default (HomeFeed's homeFeedParams): by store, eight per
+ *  rail, which fills two 2-row screens of a rail. */
+export const HOME_FEED: { view: FeedView; per_rail: number } = { view: 'store', per_rail: 8 }
 
 /** A feed request started early by api.me.startFeed, until Home claims it. */
 let feedHeadStart: { url: string; at: number; promise: Promise<Feed> } | null = null
@@ -196,6 +201,14 @@ export const api = {
   },
 
   portal: {
+    /** Past in-store purchases, for the You → Feedback pane. Keyed by the
+     *  customer's id, like the rest of /customer (routes/customer/portal.py). */
+    getPurchases: (customerId: string, params?: { limit?: number; offset?: number }) =>
+      pub<PortalPurchase[]>(`/customer/${customerId}/purchases${query(params)}`),
+
+    setFeedback: (customerId: string, itemId: string, feedback: Feedback | null) =>
+      pub<FeedbackResponse>(`/customer/${customerId}/purchase-items/${itemId}/feedback`, post({ feedback })),
+
     getDispensaries: () => pub<PortalDispensary[]>(`/customer/dispensaries`),
 
     getListing: (dispensaryId: string, listingId: string) =>

@@ -6,6 +6,7 @@ import type { Order } from '@web/types'
 import { formatDollars } from '@web/utils/format'
 import { api } from '@/lib/api'
 import { MAX_QTY_PER_LINE, useCart } from '@/lib/cart'
+import { useOrders } from '@/lib/orders'
 import { checkLegalRegion } from '@/lib/region'
 import { Button, FeedState, Label, Price, ProductImage, StoreBullet, styles } from '@/components/ui'
 import { Icon } from '@/components/Icon'
@@ -72,6 +73,7 @@ function Placed({ order }: { order: Order }) {
 
 export default function Cart() {
   const cart = useCart()
+  const { upsert } = useOrders()
   const [note, setNote] = useState('')
   const [placing, setPlacing] = useState(false)
   const [placed, setPlaced] = useState<Order | null>(null)
@@ -111,6 +113,8 @@ export default function Cart() {
         note: note.trim() || undefined,
       })
       cart.clear()
+      // Into the Orders tab (and its badge) straight away, without a refetch.
+      upsert(order)
       setPlaced(order)
     } catch (e: any) {
       // The backend explains itself: sold out, too many open orders, store

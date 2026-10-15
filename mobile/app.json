@@ -8,7 +8,8 @@
     "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.terpenomics.app"
+      "bundleIdentifier": "com.terpenomics.app",
+      "appleTeamId": "7S2BV56K6W"
     },
     "android": {
       "adaptiveIcon": {
@@ -41,7 +42,8 @@
           "cameraPermission": "Terpee uses the camera so you can photograph a receipt from a partner store and get your Terpee points.",
           "microphonePermission": false
         }
-      ]
+      ],
+      "./plugins/withSceneLifecycle"
     ],
     "scheme": "terpenomics",
     "experiments": {

@@ -13,6 +13,7 @@ import { IBMPlexMono_400Regular } from '@expo-google-fonts/ibm-plex-mono/400Regu
 import { IBMPlexMono_500Medium } from '@expo-google-fonts/ibm-plex-mono/500Medium'
 import { AuthProvider, useAuth } from '@/lib/auth'
 import { CartProvider } from '@/lib/cart'
+import { OrdersProvider } from '@/lib/orders'
 import CartButton from '@/components/CartButton'
 import { View } from 'react-native'
 import { Button, FeedState } from '@/components/ui'
@@ -49,6 +50,7 @@ function RootNavigator() {
   // Keyed by user so signing out (or in as someone else) starts an empty cart.
   return (
     <CartProvider key={session?.user.id ?? 'signed-out'} userId={session?.user.id}>
+    <OrdersProvider key={session?.user.id ?? 'signed-out'} enabled={signedIn && signedUp}>
     <Stack
       screenOptions={{
         headerStyle: { backgroundColor: t.bg },
@@ -81,6 +83,7 @@ function RootNavigator() {
         <Stack.Screen name="how-points-work" options={{ title: 'How points work', headerBackButtonDisplayMode: 'minimal' }} />
       </Stack.Protected>
     </Stack>
+    </OrdersProvider>
     </CartProvider>
   )
 }

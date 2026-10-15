@@ -14,6 +14,7 @@ import { useRenderWindow } from '../utils/browseState'
 import { Pressable, Skeleton, Label, ProductImage, Pill } from './ui'
 import { Icon } from './Icon'
 import { formatDist, formatDollars, formatDollarsShort, haversineMi } from '../utils/format'
+import { marketNote } from '../utils/marketNote'
 
 // Re-exported so the browse surfaces can keep pulling their whole toolkit from
 // one place; `utils/format` is where these are defined.
@@ -258,15 +259,8 @@ export function MarketNote({ market, priceCents, style }: {
   priceCents: number | null
   style?: CSSProperties
 }) {
-  const m = market ?? NO_COMPARISON
-  const others = `${m.other_store_count} other ${m.other_store_count === 1 ? 'store' : 'stores'}`
-  const min = m.min_cents
-
-  const [text, color] =
-    m.other_store_count === 0 ? ['Only at this store', t.text3]
-    : min != null && priceCents != null && min < priceCents ? [`${formatDollars(min)} at ${others}`, t.warning]
-    : m.is_cheapest ? [`Best price of ${m.other_store_count + 1}`, t.success]
-    : [`Also at ${others}`, t.text3]
+  const { text, tone } = marketNote(market, priceCents)
+  const color = tone === 'warning' ? t.warning : tone === 'success' ? t.success : t.text3
 
   return (
     <div style={{
@@ -277,13 +271,6 @@ export function MarketNote({ market, priceCents, style }: {
       {text}
     </div>
   )
-}
-
-/** What a row looks like when nothing came back to compare it against. A
- *  response without the comparison degrades to "nobody else has it" rather
- *  than blanking the card. */
-const NO_COMPARISON: ListingPriceContext = {
-  other_store_count: 0, min_cents: null, avg_cents: null, max_cents: null, is_cheapest: false,
 }
 
 export function BrowseCard({ item, color, suppressSubtype, action, footer, onOpen }: {
