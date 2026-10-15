@@ -169,8 +169,12 @@ def _market_comparison(
     avg_other = func.avg(other.price_cents)
     store_count = func.count(func.distinct(other.dispensary_id))
 
-    stmt = (
-        select(mine, avg_other.label("avg_other"), store_count.label("store_count"))
+    # The aggregate selects only what it groups by. Postgres lets a query group
+    # by a primary key and still select the row's other columns, but only for a
+    # real table; `shop_listing()` is a subquery, so the full rows are joined
+    # back afterwards, and the price filter and ordering are applied there.
+    compared = (
+        select(mine.id.label("id"), avg_other.label("avg_other"), store_count.label("store_count"))
         .join(other, and_(other.dispensary_id != mine.dispensary_id, *same_product(mine, other)))
         .where(mine.dispensary_id.in_(list(dispensary_ids)))
         .where(mine.is_active == True)  # noqa: E712
@@ -180,14 +184,23 @@ def _market_comparison(
         .where(other.in_stock == True)  # noqa: E712
         .where(other.price_cents.isnot(None))
         .group_by(mine.id)
+        .subquery("compared")
+    )
+
+    listing = shop_listing()
+    stmt = (
+        select(listing, compared.c.avg_other, compared.c.store_count)
+        .join(compared, compared.c.id == listing.id)
     )
 
     if cheaper_only:
         # Strictly cheaper than the average elsewhere -- "the same as everywhere"
         # is not a deal.
-        stmt = stmt.having(mine.price_cents < avg_other).order_by((avg_other - mine.price_cents).desc())
+        stmt = stmt.where(listing.price_cents < compared.c.avg_other).order_by(
+            (compared.c.avg_other - listing.price_cents).desc()
+        )
     else:
-        stmt = stmt.order_by(store_count.desc(), mine.price_cents)
+        stmt = stmt.order_by(compared.c.store_count.desc(), listing.price_cents)
 
     return session.exec(stmt.limit(limit)).all()
 
