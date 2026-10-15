@@ -40,7 +40,7 @@ const LOCATION_GRACE_MS = 1500
 export default function BrowseScreen({
   items, loading, error, onRetry, refreshing, onRefresh, color, facets, hero, decoration, wash,
   searchPlaceholder, totalCount, truncated, suppressSubtype,
-  emptyMessage, emptyHint, emptyIcon, onOpen, groupable = false,
+  emptyMessage, emptyHint, emptyIcon, onOpen, groupable = false, initialFacets,
 }: {
   items: BrowseItem[]
   loading: boolean
@@ -68,6 +68,9 @@ export default function BrowseScreen({
   onOpen: (item: BrowseItem) => void
   /** Offer shelves by product line (flag `lines_grouped`). Needs the line facet. */
   groupable?: boolean
+  /** Facets already chosen on arrival (a breadcrumb to a brand's category or
+   *  line), as the web reads them from the URL. Read once. */
+  initialFacets?: Partial<Record<FacetKey, string>>
 }) {
   // Only a position the shopper already shared; this screen never asks.
   const userPos = useKnownPosition()
@@ -79,7 +82,13 @@ export default function BrowseScreen({
   const hasLocation = userPos != null
 
   const [search, setSearch] = useState('')
-  const [selected, setSelected] = useState<FacetSelection>(emptySelection)
+  const [selected, setSelected] = useState<FacetSelection>(() => {
+    const start = emptySelection()
+    for (const [k, v] of Object.entries(initialFacets ?? {}) as [FacetKey, string | undefined][]) {
+      if (v && facets.includes(k)) start[k] = new Set([v])
+    }
+    return start
+  })
   const [radiusChoice, setRadiusMi] = useState<number | null>(null)
   const [price, setPrice] = useState<[number, number] | null>(null)
   const [sortChoice, setSort] = useState<SortKey>('featured')

@@ -1,5 +1,5 @@
 import { createContext, use, useEffect, useState, type PropsWithChildren } from 'react'
-import { Platform } from 'react-native'
+import { Alert, Platform } from 'react-native'
 import type { CartItem, ListingDetail } from '@web/types'
 import { keychainStorage } from './supabase'
 
@@ -8,6 +8,13 @@ import { keychainStorage } from './supabase'
 export const MAX_QTY_PER_LINE = 12
 export const MAX_LINES = 40
 
+/** What the cart needs to hold a listing: a listing's detail, or a row of a
+ *  store's menu together with the store it is on. */
+export type CartSource = Pick<
+  ListingDetail,
+  'id' | 'dispensary_id' | 'dispensary_slug' | 'dispensary_name' | 'display_name' | 'scraped_brand' | 'variant' | 'price_cents' | 'url' | 'image_url'
+>
+
 /** One cart, one store: an order is placed with a single dispensary, so the
  *  cart can only ever hold one store's items. */
 type CartState = {
@@ -15,8 +22,8 @@ type CartState = {
   count: number
   totalCents: number
   /** 'other-store' means nothing was added; the caller asks before replacing. */
-  add: (listing: ListingDetail) => 'added' | 'other-store' | 'full'
-  replaceWith: (listing: ListingDetail) => void
+  add: (listing: CartSource) => 'added' | 'other-store' | 'full'
+  replaceWith: (listing: CartSource) => void
   setQuantity: (listingId: string, quantity: number) => void
   remove: (listingId: string) => void
   clear: () => void
@@ -30,7 +37,7 @@ export function useCart(): CartState {
   return value
 }
 
-function toItem(l: ListingDetail): CartItem {
+function toItem(l: CartSource): CartItem {
   return {
     listingId: l.id,
     dispensaryId: l.dispensary_id,
@@ -101,7 +108,7 @@ export function CartProvider({ userId, children }: PropsWithChildren<{ userId?: 
     if (userId && loaded) writeCart(userId, items)
   }, [userId, loaded, items])
 
-  function add(l: ListingDetail): 'added' | 'other-store' | 'full' {
+  function add(l: CartSource): 'added' | 'other-store' | 'full' {
     if (items.length && items[0].dispensaryId !== l.dispensary_id) return 'other-store'
     const existing = items.find(i => i.listingId === l.id)
     if (existing ? existing.quantity >= MAX_QTY_PER_LINE : items.length >= MAX_LINES) return 'full'
@@ -129,4 +136,26 @@ export function CartProvider({ userId, children }: PropsWithChildren<{ userId?: 
     clear: () => setItems([]),
   }
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>
+}
+
+/**
+ * Add one to the cart, asking first when the cart holds another store's items
+ * (an order is picked up from one store) and saying so when the line is full.
+ * `onAdded` runs once it is in. Every add-to-cart button goes through here.
+ */
+export function addToCart(cart: CartState, listing: CartSource, onAdded?: () => void) {
+  const result = cart.add(listing)
+  if (result === 'added') onAdded?.()
+  else if (result === 'full') {
+    Alert.alert("That's the most you can reserve", 'Stores cap how much of one item a single order can hold.')
+  } else {
+    Alert.alert(
+      'Start a new cart?',
+      `Your cart has items from ${cart.items[0].dispensaryName}. An order can only be picked up from one store.`,
+      [
+        { text: 'Keep my cart', style: 'cancel' },
+        { text: 'Start new cart', style: 'destructive', onPress: () => { cart.replaceWith(listing); onAdded?.() } },
+      ],
+    )
+  }
 }

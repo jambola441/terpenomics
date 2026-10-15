@@ -15,7 +15,7 @@ import { t } from '@/lib/theme'
  *  same engine as a category, with category leading the facets in place of
  *  brand, and the brand's product lines where the flags and the data allow. */
 export default function Brand() {
-  const { name } = useLocalSearchParams<{ name: string }>()
+  const { name, category, line } = useLocalSearchParams<{ name: string; category?: string; line?: string }>()
   const { data, error, loading, refreshing, refresh } = useFetch(`brand:${name}`, () => api.portal.getBrand(name))
   const items = useMemo(() => (data ? brandItems(data) : []), [data])
 
@@ -33,7 +33,7 @@ export default function Brand() {
     <>
       <Stack.Screen options={{ headerShown: false }} />
       <BrowseScreen
-        key={name}
+        key={`${name}|${category ?? ''}|${line ?? ''}|${showLines}`}
         items={items}
         loading={loading && !data}
         error={data ? null : error}
@@ -44,6 +44,7 @@ export default function Brand() {
         wash={0.16}
         facets={facets}
         groupable={groupable}
+        initialFacets={{ category, line }}
         searchPlaceholder={`Search ${name}…`}
         totalCount={data?.product_count ?? 0}
         emptyMessage={`Nothing from ${name} in stock`}

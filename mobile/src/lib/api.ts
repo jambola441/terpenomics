@@ -3,6 +3,7 @@
 // web-only. Response types come from the web app so the two can't drift.
 import type {
   CustomerProfile,
+  DispensaryListing,
   OnboardingPayload,
   ProfileUpdate,
   Feed,
@@ -214,6 +215,16 @@ export const api = {
       pub<FeedbackResponse>(`/customer/${customerId}/purchase-items/${itemId}/feedback`, post({ feedback })),
 
     getDispensaries: () => pub<PortalDispensary[]>(`/customer/dispensaries`),
+
+    /** What a store carries: its brands, sizes, and in-stock count per category. */
+    getDispensaryFilterOptions: (dispensaryId: string) =>
+      pub<{ brands: string[]; variants: string[]; categories?: { name: string; count: number }[] }>(
+        `/customer/dispensaries/${dispensaryId}/filter-options`,
+      ),
+
+    /** A page of one store's menu, optionally one aisle of it or a search. */
+    getDispensaryListings: (dispensaryId: string, params?: { category?: string; q?: string; limit?: number; offset?: number }) =>
+      pub<DispensaryListing[]>(`/customer/dispensaries/${dispensaryId}/listings${query(params)}`),
 
     getListing: (dispensaryId: string, listingId: string) =>
       pub<ListingDetail>(`/customer/dispensaries/${dispensaryId}/listings/${listingId}`),

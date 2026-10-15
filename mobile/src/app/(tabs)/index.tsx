@@ -10,6 +10,7 @@ import {
 } from '@web/types'
 import { alpha, categoryStyle } from '@web/design/tokens'
 import { api, HOME_FEED } from '@/lib/api'
+import { openListing as openListingAt, openStore } from '@/lib/products'
 import { useFetch } from '@/lib/useFetch'
 import FeedCard from '@/components/FeedCard'
 import { PartnerStrip } from '@/components/partners'
@@ -82,7 +83,7 @@ export default function Home() {
   const stores = new Map((data?.dispensaries ?? []).map(d => [d.id, d]))
   const followed = data?.dispensaries.length ?? 0
   const openListing = (dispensaryId: string | undefined, id: string) => {
-    if (dispensaryId) router.push(`/listing/${dispensaryId}/${id}`)
+    if (dispensaryId) openListingAt(dispensaryId, id)
   }
 
   return (
@@ -155,7 +156,12 @@ function StoreSection({ section, category, onOpen }: {
   const empty = FEED_RAILS.every(rail => rails[rail].length === 0)
   return (
     <View style={{ marginBottom: 14 }}>
-      <View style={s.storeHead}>
+      <Pressable
+        onPress={() => openStore(dispensary.id)}
+        accessibilityRole="button"
+        accessibilityHint="Opens this store's menu"
+        style={({ pressed }) => [s.storeHead, pressed && { opacity: 0.7 }]}
+      >
         <StoreAvatar dispensary={dispensary} size={38} />
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text numberOfLines={1} style={s.storeName} accessibilityRole="header">{dispensary.name}</Text>
@@ -163,7 +169,11 @@ function StoreSection({ section, category, onOpen }: {
             {total.toLocaleString()} in stock{dispensary.accepts_pickup ? ' · pickup' : ''}
           </Text>
         </View>
-      </View>
+        <View style={s.seeAll}>
+          <Text style={s.seeAllText}>See all</Text>
+          <Icon name="chevron-right" size={15} color={t.text2} />
+        </View>
+      </Pressable>
       {empty ? (
         <Text style={s.storeEmpty}>
           {category ? `No ${categoryName(category).toLowerCase()} in stock here right now.` : 'Nothing in stock here right now.'}
@@ -314,6 +324,8 @@ const s = StyleSheet.create({
   },
   storeHead: { flexDirection: 'row', alignItems: 'center', gap: 11, paddingTop: 20, paddingHorizontal: space[4], paddingBottom: 6 },
   storeName: { fontFamily: fonts.display, fontSize: font.size.heading, lineHeight: 24, letterSpacing: -0.3, color: t.text1 },
+  seeAll: { flexDirection: 'row', alignItems: 'center', gap: 2, flexShrink: 0 },
+  seeAllText: { fontFamily: fonts.sansSemibold, fontSize: font.size.small + 1, color: t.text2 },
   storeMeta: { fontFamily: fonts.sans, fontSize: font.size.caption, color: t.text3, marginTop: 2, fontVariant: ['tabular-nums'] },
   storeEmpty: {
     marginTop: 8, marginHorizontal: space[4], paddingVertical: 18, paddingHorizontal: 16, textAlign: 'center', overflow: 'hidden',

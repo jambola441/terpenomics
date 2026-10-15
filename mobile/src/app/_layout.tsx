@@ -75,7 +75,15 @@ function RootNavigator() {
           name="listing/[dispensaryId]/[listingId]"
           options={{ title: '', headerBackButtonDisplayMode: 'minimal', headerRight: () => <CartButton /> }}
         />
-        <Stack.Screen name="cart" options={{ presentation: 'modal', title: 'Your cart' }} />
+        <Stack.Screen
+          name="product"
+          options={{ title: '', headerBackButtonDisplayMode: 'minimal', headerRight: () => <CartButton /> }}
+        />
+        <Stack.Screen
+          name="store/[dispensaryId]"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen name="cart"options={{ presentation: 'modal', title: 'Your cart' }} />
         <Stack.Screen name="receipt" options={{ presentation: 'modal', title: 'Upload a receipt' }} />
         <Stack.Screen name="stores" options={{ presentation: 'modal', title: 'Your stores' }} />
         <Stack.Screen name="partners/index" options={{ title: 'Partner stores', headerBackButtonDisplayMode: 'minimal' }} />

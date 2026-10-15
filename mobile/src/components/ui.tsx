@@ -270,6 +270,68 @@ export function Label({ children, style }: { children: ReactNode; style?: StyleP
   return <Text style={[type.label, style]}>{children}</Text>
 }
 
+/* ── DetailBlock / CollapsibleBlock / SpecRow — the web's detail sections ──── */
+
+export function DetailBlock({ title, children, style }: { title: string; children: ReactNode; style?: StyleProp<ViewStyle> }) {
+  return (
+    <View style={style}>
+      <Label style={{ marginBottom: 10 }}>{title}</Label>
+      {children}
+    </View>
+  )
+}
+
+/** A titled section, collapsed until tapped (the product description). */
+export function CollapsibleBlock({ title, children, style }: { title: string; children: ReactNode; style?: StyleProp<ViewStyle> }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <View style={style}>
+      <Pressable
+        onPress={() => setOpen(o => !o)}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: open }}
+        style={[s.collapsible, open && { marginBottom: 10 }]}
+      >
+        <Text style={type.label}>{title}</Text>
+        <Icon name="chevron-down" size={16} color={t.text3} style={open ? { transform: [{ rotate: '180deg' }] } : undefined} />
+      </Pressable>
+      {open ? children : null}
+    </View>
+  )
+}
+
+/** A label and its value over a hairline, as in the web's Details block. */
+export function SpecRow({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={s.specRow}>
+      <Text style={[type.meta, { fontSize: font.size.small }]}>{label}</Text>
+      <Text style={[type.bodyStrong, { fontSize: font.size.small, textTransform: 'capitalize', flexShrink: 1, textAlign: 'right' }]}>{value}</Text>
+    </View>
+  )
+}
+
+/** Cannabinoid tiles: the figure, then the name (and its family when that says
+ *  something new). Used by the listing and product pages alike. */
+export function CannabinoidTiles({ items }: { items: { name: string; percent?: number | null; family?: string }[] }) {
+  return (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+      {items.map((c, i) => (
+        <View key={`${c.name}-${i}`} style={s.cannabinoid}>
+          <Text style={[type.price, { fontSize: font.size.title, lineHeight: 22 }]}>
+            {c.percent != null ? formatPercent(c.percent) : '—'}
+          </Text>
+          <Text style={[type.mono, { fontSize: font.size.caption, color: t.text3 }]} numberOfLines={1}>
+            {c.name}
+            {c.family && c.family.toUpperCase() !== c.name.toUpperCase() ? (
+              <Text style={{ color: c.family === 'thc' ? t.accentDim : t.info }}> · {c.family.toUpperCase()}</Text>
+            ) : null}
+          </Text>
+        </View>
+      ))}
+    </View>
+  )
+}
+
 /* ── Pill — mono caps tag: tinted fill at 10%, edge at 36% ──────────────────── */
 
 export type Tone = 'neutral' | 'accent' | 'success' | 'danger' | 'warning' | 'info'
@@ -522,4 +584,13 @@ const s = StyleSheet.create({
     paddingVertical: 6, paddingLeft: 10, paddingRight: 12,
   },
   track: { marginTop: 6, height: 4, borderRadius: 4, backgroundColor: t.surface2, overflow: 'hidden' },
+  collapsible: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 4 },
+  specRow: {
+    flexDirection: 'row', justifyContent: 'space-between', gap: 12, paddingVertical: 8,
+    borderBottomWidth: 1, borderBottomColor: t.border,
+  },
+  cannabinoid: {
+    minWidth: 84, flexGrow: 1, gap: 4, paddingVertical: 10, paddingHorizontal: 12,
+    backgroundColor: t.surface1, borderWidth: 1, borderColor: t.border, borderRadius: radius.md,
+  },
 })
