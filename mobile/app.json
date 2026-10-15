@@ -8,7 +8,8 @@
     "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.terpenomics.app"
+      "bundleIdentifier": "com.terpenomics.app",
+      "appleTeamId": "7S2BV56K6W"
     },
     "android": {
       "adaptiveIcon": {
