@@ -28,119 +28,23 @@ import { FeedState } from './ui'
 import { Icon, type IconName } from './Icon'
 import {
   ActiveChip, BrowseCard, BrowseGrid, BrowseToolbar, FacetChip, FilterSheet, GridSkeleton,
-  SORTS, SORTS_NO_LOCATION, SORT_KEYS, SearchField, formatDollarsShort,
-  haversineMi, variantWeight,
-  type SheetGroup, type SortKey,
+  SearchField, type SheetGroup,
 } from './browse'
 import { NO_LINE, nameWithinLine } from '../utils/lines'
-import LineShelves, { GROUP_MIN_RESULTS, groupByLine, hasShelves } from './LineShelves'
+import {
+  FACET_TITLES, GROUP_MIN_RESULTS, KEEPS_CASE, SORTS, SORTS_NO_LOCATION, SORT_KEYS,
+  activeFilterCount, bestPicks, browseCardOf, emptySelection, enrichItems, facetOptionsFor,
+  flattenNote, flattenReason, groupByLine, hasShelves, matchesFilters, priceBoundsOf, priceRangeLabel,
+  sortEnriched, sortLabelOf,
+  type BrowseFilters, type BrowseItem, type Enriched, type FacetKey, type SortKey,
+} from '../utils/browseLogic'
+import LineShelves from './LineShelves'
 
-/* ── What a page hands over ───────────────────────────────────────────────── */
+/* ── What a page hands over ───────────────────────────────────────────────
+   The item shape, the facets and the filter rules live in utils/browseLogic
+   (framework-free, shared with the app); re-exported for the pages. */
 
-/** One store's copy of a product, flattened from whatever shape the endpoint
- *  used. The category endpoint indexes into a store table and the brand
- *  endpoint inlines the store; neither difference matters up here. */
-export type BrowseOffering = {
-  storeName: string
-  lat: number | null
-  lng: number | null
-  priceCents: number | null
-}
-
-export type BrowseItem = {
-  /** The product key, as the product page is addressed by. */
-  key: string
-  name: string
-  brand: string | null
-  category: string | null
-  subtype: string | null
-  strain: string | null
-  variant: string | null
-  /** The brand's product line, null when the product is in none. */
-  line: string | null
-  imageUrl: string | null
-  minPriceCents: number | null
-  maxPriceCents: number | null
-  dispensaryCount: number
-  offerings: BrowseOffering[]
-}
-
-export type FacetKey = 'category' | 'subtype' | 'brand' | 'variant' | 'line'
-
-const FACET_TITLES: Record<FacetKey, string> = {
-  category: 'Category',
-  subtype: 'Subtype',
-  brand: 'Brand',
-  variant: 'Weight / Size',
-  line: 'Product line',
-}
-
-/** Brand casing ("UP", "Liquid Diamonds") is the name; sizes carry units. */
-const KEEPS_CASE: ReadonlySet<FacetKey> = new Set(['variant', 'line'])
-
-/** The value an item files under for a facet. Only the line facet has a bucket
- *  for "none"; elsewhere an item without the field simply has no value. */
-function facetValue(item: BrowseItem, key: FacetKey): string | null {
-  if (key === 'line') return item.line ?? NO_LINE
-  return item[key]
-}
-
-/** Sizes read naturally in size order; everything else reads best by how much
- *  of the set it covers. */
-const FACET_SORTS: Record<FacetKey, (a: Facet, b: Facet) => number> = {
-  category: (a, b) => b.count - a.count,
-  subtype: (a, b) => b.count - a.count,
-  brand: (a, b) => b.count - a.count,
-  variant: (a, b) => variantWeight(a.value) - variantWeight(b.value),
-  line: (a, b) => Number(a.value === NO_LINE) - Number(b.value === NO_LINE) || b.count - a.count,
-}
-
-type Facet = { value: string; count: number }
-
-/** An item plus the facts derived from where the shopper is standing. */
-type Enriched = {
-  item: BrowseItem
-  closestDist: number | null
-  closestStore: string | null
-  cheapestStore: string | null
-  /** Lowercased haystack for the search box. */
-  haystack: string
-}
-
-type Filters = {
-  search: string
-  /** The facets this screen offers. A selection on any other (one the URL
-   *  carried in, say) filters nothing, since there is no chip to undo it. */
-  keys: readonly FacetKey[]
-  facets: Record<FacetKey, Set<string>>
-  radiusMi: number | null
-  price: [number, number] | null
-}
-
-function matches(e: Enriched, f: Filters, except?: FacetKey | 'price' | 'radius'): boolean {
-  if (f.search && !e.haystack.includes(f.search)) return false
-
-  for (const key of f.keys) {
-    if (except === key) continue
-    const selected = f.facets[key]
-    if (!selected.size) continue
-    const value = facetValue(e.item, key)
-    if (!value || !selected.has(value)) return false
-  }
-
-  if (except !== 'radius' && f.radiusMi != null) {
-    // Only meaningful with a fix on the shopper's position; closestDist is null
-    // without one.
-    if (e.closestDist == null || e.closestDist > f.radiusMi) return false
-  }
-  if (except !== 'price' && f.price) {
-    const p = e.item.minPriceCents
-    // Unpriced products can't satisfy a narrowed range — drop them rather
-    // than guess.
-    if (p == null || p < f.price[0] || p > f.price[1]) return false
-  }
-  return true
-}
+export type { BrowseItem, BrowseOffering, FacetKey } from '../utils/browseLogic'
 
 interface Props {
   items: BrowseItem[]
@@ -239,7 +143,7 @@ export default function BrowseScreen({
     if (previousKey.current === resetKey) return
     previousKey.current = resetKey
     setSearch('')
-    setSelected({ category: new Set(), subtype: new Set(), brand: new Set(), variant: new Set(), line: new Set() })
+    setSelected(emptySelection())
     setRadiusMi(null); setPrice(null); setSort('featured'); setView('shelves')
     scrollRef.current?.scrollTo({ top: 0 })
   }, [resetKey])
@@ -255,45 +159,12 @@ export default function BrowseScreen({
   const hasLocation = userPos != null
 
   // Resolve each item's closest and cheapest store once per position change.
-  const enriched = useMemo<Enriched[]>(() => items.map(item => {
-    let closestDist = Infinity
-    let closestStore: string | null = null
-    let cheapestStore: string | null = null
-    let cheapestPrice = Infinity
-
-    for (const offering of item.offerings) {
-      if (offering.priceCents != null && offering.priceCents < cheapestPrice) {
-        cheapestPrice = offering.priceCents
-        cheapestStore = offering.storeName
-      }
-      if (userPos && offering.lat != null && offering.lng != null) {
-        const d = haversineMi(userPos.lat, userPos.lng, offering.lat, offering.lng)
-        if (d < closestDist) { closestDist = d; closestStore = offering.storeName }
-      }
-    }
-
-    return {
-      item,
-      closestDist: closestStore ? closestDist : null,
-      closestStore,
-      cheapestStore,
-      haystack: [item.name, item.brand, item.category, item.subtype, item.strain, item.variant, item.line]
-        .filter(Boolean).join(' ').toLowerCase(),
-    }
-  }), [items, userPos])
+  const enriched = useMemo<Enriched[]>(() => enrichItems(items, userPos), [items, userPos])
 
   // Full price span across the page — the bounds of the range slider.
-  const priceBounds = useMemo<[number, number] | null>(() => {
-    const prices = enriched
-      .map(e => e.item.minPriceCents)
-      .filter((p): p is number => p != null)
-    if (prices.length < 2) return null
-    const lo = Math.min(...prices)
-    const hi = Math.max(...prices)
-    return hi > lo ? [lo, hi] : null
-  }, [enriched])
+  const priceBounds = useMemo(() => priceBoundsOf(enriched.map(e => e.item.minPriceCents)), [enriched])
 
-  const filters: Filters = {
+  const filters: BrowseFilters = {
     search: search.trim().toLowerCase(),
     keys: facets,
     facets: selected,
@@ -312,56 +183,19 @@ export default function BrowseScreen({
   ])
 
   /** Facet options with counts that respect every *other* active filter. */
-  const facetOptions = useMemo(() => {
-    const out = {} as Record<FacetKey, Facet[]>
-    for (const key of facets) {
-      const counts = new Map<string, number>()
-      for (const e of enriched) {
-        if (!matches(e, filters, key)) continue
-        const value = facetValue(e.item, key)
-        if (!value) continue
-        counts.set(value, (counts.get(value) ?? 0) + 1)
-      }
-      out[key] = [...counts.entries()]
-        .map(([value, count]) => ({ value, count }))
-        .sort(FACET_SORTS[key])
-    }
-    return out
+  const facetOptions = useMemo(
+    () => facetOptionsFor(enriched, filters),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enriched, facets, filterSignature])
+    [enriched, facets, filterSignature],
+  )
 
   const filtered = useMemo(
-    () => enriched.filter(e => matches(e, filters)),
+    () => enriched.filter(e => matchesFilters(e, filters)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [enriched, filterSignature],
   )
 
-  const sorted = useMemo(() => {
-    const arr = [...filtered]
-    if (sort === 'price-asc' || sort === 'price-desc') {
-      const dir = sort === 'price-asc' ? 1 : -1
-      arr.sort((a, b) => {
-        const pa = a.item.minPriceCents
-        const pb = b.item.minPriceCents
-        if (pa == null) return 1
-        if (pb == null) return -1
-        return (pa - pb) * dir
-      })
-    } else if (sort === 'nearest') {
-      arr.sort((a, b) => (a.closestDist ?? Infinity) - (b.closestDist ?? Infinity))
-    } else if (sort === 'name') {
-      arr.sort((a, b) => a.item.name.localeCompare(b.item.name))
-    } else {
-      // Featured: things that make a good card first — a photo, then breadth of
-      // availability, then the server's ordering as the tiebreak.
-      arr.sort((a, b) => {
-        const img = Number(!!b.item.imageUrl) - Number(!!a.item.imageUrl)
-        if (img) return img
-        return b.item.dispensaryCount - a.item.dispensaryCount
-      })
-    }
-    return arr
-  }, [filtered, sort])
+  const sorted = useMemo(() => sortEnriched(filtered, sort), [filtered, sort])
 
   // Drop a nearest sort / radius filter that location permission can't support.
   useEffect(() => {
@@ -384,26 +218,17 @@ export default function BrowseScreen({
     () => canGroup ? groupByLine(sorted, e => e.item) : [],
     [canGroup, sorted],
   )
-  const flattenedBy = !canGroup || view === 'grid' ? null
-    : filters.search ? 'search'
-    : sort !== 'featured' ? 'sort'
-    : selected.line.size || selected.subtype.size || selected.variant.size ? 'filter'
-    : null
+  const flattenedBy = flattenReason({
+    canGroup, grid: view === 'grid', search: filters.search, sort, facets: selected,
+  })
   const showShelves = canGroup && view === 'shelves' && !flattenedBy
     && sorted.length >= GROUP_MIN_RESULTS && hasShelves(sections)
 
   // The page's best few, whatever line they are in, pinned above the shelves.
-  const best = useMemo(() => {
-    if (!showShelves) return { entries: [] as Enriched[], label: '' }
-    const priced = (e: Enriched) => e.item.minPriceCents ?? Infinity
-    const ranked = hasLocation
-      ? [...filtered].sort((a, b) => (a.closestDist ?? Infinity) - (b.closestDist ?? Infinity) || priced(a) - priced(b))
-      : [...filtered].sort((a, b) => priced(a) - priced(b))
-    return {
-      entries: ranked.slice(0, 4),
-      label: hasLocation ? 'Nearest to you · any line' : 'Lowest price · any line',
-    }
-  }, [showShelves, filtered, hasLocation])
+  const best = useMemo(
+    () => showShelves ? bestPicks(filtered, hasLocation) : { entries: [] as Enriched[], label: '' },
+    [showShelves, filtered, hasLocation],
+  )
 
   /** Narrow to what a shelf's "See all" names; the grid takes over from there. */
   function seeOnly(category: string | null, lines: string[]) {
@@ -425,18 +250,15 @@ export default function BrowseScreen({
   }
 
   function clearAll() {
-    setSelected({ category: new Set(), subtype: new Set(), brand: new Set(), variant: new Set(), line: new Set() })
+    setSelected(emptySelection())
     setRadiusMi(null)
     setPrice(null)
   }
 
-  const activeCount =
-    facets.reduce((n, key) => n + selected[key].size, 0)
-    + (radiusMi != null ? 1 : 0)
-    + (price ? 1 : 0)
+  const activeCount = activeFilterCount(filters)
 
   const sorts = hasLocation ? SORTS : SORTS_NO_LOCATION
-  const sortLabel = (SORTS.find(s => s.key === sort) ?? SORTS[0]).label
+  const sortLabel = sortLabelOf(sort)
 
   const [quickKey] = facets
   const quickFacet = facetOptions[quickKey] ?? []
@@ -453,21 +275,7 @@ export default function BrowseScreen({
     return (
       <BrowseCard
         key={e.item.key}
-        item={{
-          name: inLine ? nameWithinLine(e.item.name, e.item.line) : nameInLine(e.item),
-          brand: e.item.brand,
-          category: e.item.category,
-          subtype: e.item.subtype,
-          variant: e.item.variant,
-          imageUrl: e.item.imageUrl,
-          priceCents: e.item.minPriceCents,
-          multiPriced: e.item.minPriceCents != null
-            && e.item.maxPriceCents != null
-            && e.item.maxPriceCents > e.item.minPriceCents,
-          dispensaryCount: e.item.dispensaryCount,
-          distanceMi: e.closestDist,
-          storeName: e.closestStore ?? e.cheapestStore,
-        }}
+        item={browseCardOf(e, inLine ? nameWithinLine(e.item.name, e.item.line) : nameInLine(e.item))}
         color={color}
         suppressSubtype={suppressSubtype}
         onOpen={() => onOpen(e.item)}
@@ -540,7 +348,7 @@ export default function BrowseScreen({
           )}
           {price && (
             <ActiveChip
-              label={`${formatDollarsShort(price[0])}–${formatDollarsShort(price[1])}`}
+              label={priceRangeLabel(price)}
               capitalize={false}
               onRemove={() => setPrice(null)}
             />
@@ -580,9 +388,7 @@ export default function BrowseScreen({
           </div>
           {flattenedBy && (
             <div style={{ color: t.text3, fontSize: font.size.caption, padding: '2px 16px 0' }}>
-              {flattenedBy === 'search' ? 'One list while you search'
-                : flattenedBy === 'sort' ? `One list while sorted by ${sortLabel.toLowerCase()}`
-                : 'One list while filtered'}
+              {flattenNote(flattenedBy, sortLabel)}
             </div>
           )}
 

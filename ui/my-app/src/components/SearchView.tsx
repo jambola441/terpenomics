@@ -10,63 +10,17 @@ import {
 } from '../utils/browseState'
 import {
   ActiveChip, BrowseCard, BrowseGrid, BrowseToolbar, Dot, FacetChip, FilterSheet, GridSkeleton,
-  SORTS_NO_LOCATION, SORT_KEYS, SearchField, Stat, formatDollarsShort, productKey, variantWeight,
-  type BrowseCardItem, type SheetGroup, type SortKey,
+  SearchField, Stat, type SheetGroup,
 } from './browse'
+import {
+  SEARCH_MAX_ROWS, SEARCH_PAGE, SORTS_NO_LOCATION, SORT_KEYS, priceBoundsOf, priceRangeLabel, productKey, searchCard,
+  searchFacet, searchMatches, searchRowKey, searchSort, sortLabelOf, toggled,
+  type SearchFacetKey, type SearchFilters, type SortKey,
+} from '../utils/browseLogic'
 
 /** How many rows to pull before we stop and tell the shopper to narrow down. */
-const PAGE = 200
-const MAX_ROWS = 1000
-
-/** Named server-side like every other listing surface, so search results and
- *  the pages they open agree on what a product is called. */
-function displayName(p: PortalProduct): string {
-  return p.display_name
-}
-
-type Filters = {
-  category: Set<string>
-  subtype: Set<string>
-  brand: Set<string>
-  variant: Set<string>
-  price: [number, number] | null
-}
-
-type FacetKey = 'category' | 'subtype' | 'brand' | 'variant'
-
-/** Does a row survive the filter set? `except` skips one facet, for counting. */
-function matches(p: PortalProduct, f: Filters, except?: FacetKey | 'price'): boolean {
-  if (except !== 'category' && f.category.size && !(p.category && f.category.has(p.category))) return false
-  if (except !== 'subtype' && f.subtype.size && !(p.subtype && f.subtype.has(p.subtype))) return false
-  if (except !== 'brand' && f.brand.size && !(p.brand && f.brand.has(p.brand))) return false
-  if (except !== 'variant' && f.variant.size && !(p.variant && f.variant.has(p.variant))) return false
-  if (except !== 'price' && f.price) {
-    const v = p.min_price_cents
-    // Unpriced products can't satisfy a narrowed range — drop them rather than guess.
-    if (v == null || v < f.price[0] || v > f.price[1]) return false
-  }
-  return true
-}
-
-function toCard(p: PortalProduct): BrowseCardItem {
-  return {
-    name: displayName(p),
-    brand: p.brand,
-    category: p.category,
-    subtype: p.subtype,
-    variant: p.variant,
-    // The `products` view aggregates listings and carries no image; the card
-    // falls back to the category plate, same as every other browse surface.
-    imageUrl: null,
-    priceCents: p.min_price_cents,
-    multiPriced: p.min_price_cents != null && p.max_price_cents != null && p.max_price_cents > p.min_price_cents,
-    dispensaryCount: p.dispensary_count,
-    // The aggregate rows carry no coordinates, so search can't show distance.
-    distanceMi: null,
-    storeName: null,
-    outOfStock: !p.any_in_stock,
-  }
-}
+const PAGE = SEARCH_PAGE
+const MAX_ROWS = SEARCH_MAX_ROWS
 
 interface Props {
   /** Pre-filter to one category, from `/portal/search?category=…`. */
@@ -172,87 +126,47 @@ export default function SearchView({ initialCategory, onOpenProduct }: Props) {
     return () => { cancelled = true }
   }, [query, attempt])
 
-  const filters: Filters = { category, subtype, brand, variant, price }
+  const filters: SearchFilters = { category, subtype, brand, variant, price }
 
-  const priceBounds = useMemo<[number, number] | null>(() => {
-    const prices = rows.map(p => p.min_price_cents).filter((v): v is number => v != null)
-    if (prices.length < 2) return null
-    const lo = Math.min(...prices)
-    const hi = Math.max(...prices)
-    return hi > lo ? [lo, hi] : null
-  }, [rows])
+  const priceBounds = useMemo(() => priceBoundsOf(rows.map(p => p.min_price_cents)), [rows])
 
   /** Facet options with counts that respect every *other* active filter. */
-  function facetFor(key: FacetKey) {
-    const counts = new Map<string, number>()
-    for (const p of rows) {
-      if (!matches(p, filters, key)) continue
-      const v = p[key]
-      if (!v) continue
-      counts.set(v, (counts.get(v) ?? 0) + 1)
-    }
-    return [...counts.entries()].map(([value, count]) => ({ value, count }))
+  function facetFor(key: SearchFacetKey) {
+    return searchFacet(rows, filters, key)
   }
 
   const categoryFacet = useMemo(
-    () => facetFor('category').sort((a, b) => b.count - a.count),
+    () => facetFor('category'),
     [rows, category, subtype, brand, variant, price],
   )
   const subtypeFacet = useMemo(
-    () => facetFor('subtype').sort((a, b) => b.count - a.count),
+    () => facetFor('subtype'),
     [rows, category, subtype, brand, variant, price],
   )
   const brandFacet = useMemo(
-    () => facetFor('brand').sort((a, b) => b.count - a.count),
+    () => facetFor('brand'),
     [rows, category, subtype, brand, variant, price],
   )
   const variantFacet = useMemo(
-    () => facetFor('variant').sort((a, b) => variantWeight(a.value) - variantWeight(b.value)),
+    () => facetFor('variant'),
     [rows, category, subtype, brand, variant, price],
   )
 
   const filtered = useMemo(
-    () => rows.filter(p => matches(p, filters)),
+    () => rows.filter(p => searchMatches(p, filters)),
     [rows, category, subtype, brand, variant, price],
   )
 
-  const sorted = useMemo(() => {
-    const arr = [...filtered]
-    if (sort === 'price-asc' || sort === 'price-desc') {
-      const dir = sort === 'price-asc' ? 1 : -1
-      arr.sort((a, b) => {
-        const pa = a.min_price_cents
-        const pb = b.min_price_cents
-        if (pa == null) return 1
-        if (pb == null) return -1
-        return (pa - pb) * dir
-      })
-    } else if (sort === 'name') {
-      arr.sort((a, b) => displayName(a).localeCompare(displayName(b)))
-    } else {
-      // Featured: in stock first, then the products carried in the most places.
-      arr.sort((a, b) => {
-        const stock = Number(b.any_in_stock) - Number(a.any_in_stock)
-        if (stock) return stock
-        return b.dispensary_count - a.dispensary_count
-      })
-    }
-    return arr
-  }, [filtered, sort])
+  const sorted = useMemo(() => searchSort(filtered, sort), [filtered, sort])
 
   const activeCount = category.size + subtype.size + brand.size + variant.size + (price ? 1 : 0)
-  const sortLabel = SORTS_NO_LOCATION.find(s => s.key === sort)!.label
+  const sortLabel = sortLabelOf(sort)
 
   // Colour the page by the category being browsed, once it's the only one.
   const c = category.size === 1 ? categoryColor([...category][0]) : 'var(--accent)'
 
   function toggle(setter: React.Dispatch<React.SetStateAction<Set<string>>>, value: string) {
-    setter(prev => {
-      const next = new Set(prev)
-      if (next.has(value)) next.delete(value)
-      else next.add(value)
-      return next
-    })
+    setter(prev => toggled(prev, value))
   }
 
   function clearAll() {
@@ -352,7 +266,7 @@ export default function SearchView({ initialCategory, onOpenProduct }: Props) {
         activeChips={<>
           {price && (
             <ActiveChip
-              label={`${formatDollarsShort(price[0])}–${formatDollarsShort(price[1])}`}
+              label={priceRangeLabel(price)}
               capitalize={false}
               onRemove={() => setPrice(null)}
             />
@@ -406,8 +320,8 @@ export default function SearchView({ initialCategory, onOpenProduct }: Props) {
             <BrowseGrid items={sorted} resetKey={query}>
               {p => (
                 <BrowseCard
-                  key={productKey(p) + '|' + (p.brand ?? '')}
-                  item={toCard(p)}
+                  key={searchRowKey(p)}
+                  item={searchCard(p)}
                   color={categoryColor(p.category)}
                   suppressSubtype={p.category}
                   onOpen={() => openProduct(p)}
