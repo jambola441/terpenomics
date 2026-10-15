@@ -22,6 +22,7 @@ Usage
   python scripts/coa_crawl.py check --brand Jaunty --limit 5  # read 5, report fields + catalog match
   python scripts/coa_crawl.py fetch --brand Jaunty            # all -> data/coas/<slug>.json
   python scripts/coa_crawl.py check --all --limit 3
+  python scripts/coa_crawl.py coverage                        # listings the fetched reports reach
 """
 
 from __future__ import annotations
@@ -323,15 +324,53 @@ def cmd_fetch(recipe: dict, catalog: bool) -> None:
     print(f"{recipe['brand']}: {len(ok)} of {len(reports)} reports read -> {os.path.relpath(path, ROOT)}")
 
 
+def cmd_coverage() -> None:
+    """How many active listings the fetched reports reach: exactly (the listing's batch id
+    is a report's lot or Metrc tag) or by product (a report for its catalog entry's strain)."""
+    from db_http import run_sql
+    rows = []
+    for f in sorted(os.listdir(OUT)) if os.path.isdir(OUT) else []:
+        doc = json.load(open(os.path.join(OUT, f)))
+        brand = doc["brand"]
+        ok = [r for r in doc["reports"] if not r.get("error")]
+        strains = catalog_strains(brand)
+        for r in ok:
+            r["catalog_strain"] = r.get("catalog_strain") or match(r, strains)
+        ids = sorted({x for r in ok for x in (r.get("lot"), (r.get("ids") or {}).get("lot"),
+                                              (r.get("ids") or {}).get("metrc_tag"),
+                                              (r.get("ids") or {}).get("source_package")) if x})
+        q = brand.replace("'", "''")
+        listings = run_sql(
+            "select l.id, l.batch_id, e.strain from listings l "
+            "join brand_catalog_entries e on e.id = l.catalog_entry_id "
+            "join brand_catalogs b on b.id = e.catalog_id "
+            f"where b.brand_name = '{q}' and l.is_active") or []
+        covered = {r["catalog_strain"] for r in ok if r["catalog_strain"]}
+        exact = sum(1 for l in listings if l["batch_id"] and l["batch_id"] in ids)
+        by_product = sum(1 for l in listings if _norm(l["strain"]) in covered)
+        rows.append((brand, len(ok), len(doc["reports"]) - len(ok), len(covered), len(strains),
+                     len(listings), by_product, exact))
+    print(f"{'brand':14} {'read':>5} {'failed':>6} {'strains':>9} {'listings':>8} {'by product':>10} {'exact':>5}")
+    for b, ok, bad, cov, nstr, nl, bp, ex in rows:
+        print(f"{b:14} {ok:5} {bad:6} {cov:4}/{nstr:<4} {nl:8} {bp:10} {ex:5}")
+    t = [sum(r[i] for r in rows) for i in (1, 2, 5, 6, 7)]
+    print(f"{'total':14} {t[0]:5} {t[1]:6} {'':9} {t[2]:8} {t[3]:10} {t[4]:5}")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["list", "check", "fetch"])
-    who = ap.add_mutually_exclusive_group(required=True)
+    ap.add_argument("command", choices=["list", "check", "fetch", "coverage"])
+    who = ap.add_mutually_exclusive_group(required=False)
     who.add_argument("--brand")
     who.add_argument("--all", action="store_true")
     ap.add_argument("--limit", type=int, help="reports to read (check) or links to show (list)")
     ap.add_argument("--no-catalog", action="store_true", help="skip the catalog comparison (no database)")
     args = ap.parse_args()
+    if args.command == "coverage":
+        cmd_coverage()
+        return 0
+    if not (args.all or args.brand):
+        ap.error("--brand or --all")
     recipes = all_recipes() if args.all else [load_recipe(args.brand)]
     for recipe in recipes:
         if args.command == "list":
