@@ -13,10 +13,12 @@ if os.path.exists(_TEST_DB):
 # environment already has. A real DATABASE_URL in the environment (Render, a
 # shell that sourced .env, CI) would otherwise silently point the whole suite
 # at production, and the Supabase keys at a live project.
-# TEST_DATABASE_URL (never DATABASE_URL) runs the suite on a throwaway Postgres
-# instead, for queries SQLite accepts and Postgres rejects, such as grouping a
-# subquery by its id.
-os.environ["DATABASE_URL"] = os.environ.get("TEST_DATABASE_URL") or f"sqlite:///{_TEST_DB}"
+# APP_TEST_POSTGRES_URL (never DATABASE_URL) runs these tests on a throwaway
+# Postgres instead, for queries SQLite accepts and Postgres rejects, such as
+# grouping a subquery by its id. Not TEST_DATABASE_URL: CI sets that for the
+# pipeline tests in scripts/, and much of this suite's cleanup still assumes
+# SQLite's unenforced foreign keys.
+os.environ["DATABASE_URL"] = os.environ.get("APP_TEST_POSTGRES_URL") or f"sqlite:///{_TEST_DB}"
 os.environ["SUPABASE_URL"] = "https://test.supabase.co"
 os.environ["SUPABASE_ANON_KEY"] = "test-anon-key"
 os.environ["SUPABASE_SERVICE_ROLE_KEY"] = "test-service-key"
