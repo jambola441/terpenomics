@@ -594,36 +594,36 @@ def link_entries(brand: str, recipe: dict, entries: list[dict]) -> None:
 
 
 def cmd_coverage() -> None:
-    """How many active listings the fetched reports reach: exactly (the listing's batch id
-    is a report's lot or Metrc tag) or by product (a report for its catalog entry's strain)."""
+    """Per brand with stored reports: catalog entries with a report, and active listings
+    reached by product (their catalog entry has a report) or exactly (their batch id is
+    a report's lot or Metrc tag)."""
     from db_http import run_sql
-    rows = []
-    for f in sorted(os.listdir(OUT)) if os.path.isdir(OUT) else []:
-        doc = json.load(open(os.path.join(OUT, f)))
-        brand = doc["brand"]
-        ok = [r for r in doc["reports"] if not r.get("error")]
-        strains = catalog_strains(brand)
-        for r in ok:
-            r["catalog_strain"] = r.get("catalog_strain") or match(r, strains)
-        ids = sorted({x for r in ok for x in (r.get("lot"), (r.get("ids") or {}).get("lot"),
-                                              (r.get("ids") or {}).get("metrc_tag"),
-                                              (r.get("ids") or {}).get("source_package")) if x})
-        q = brand.replace("'", "''")
-        listings = run_sql(
-            "select l.id, l.batch_id, e.strain from listings l "
-            "join brand_catalog_entries e on e.id = l.catalog_entry_id "
-            "join brand_catalogs b on b.id = e.catalog_id "
-            f"where b.brand_name = '{q}' and l.is_active") or []
-        covered = {r["catalog_strain"] for r in ok if r["catalog_strain"]}
-        exact = sum(1 for l in listings if l["batch_id"] and l["batch_id"] in ids)
-        by_product = sum(1 for l in listings if _norm(l["strain"]) in covered)
-        rows.append((brand, len(ok), len(doc["reports"]) - len(ok), len(covered), len(strains),
-                     len(listings), by_product, exact))
-    print(f"{'brand':14} {'read':>5} {'failed':>6} {'strains':>9} {'listings':>8} {'by product':>10} {'exact':>5}")
-    for b, ok, bad, cov, nstr, nl, bp, ex in rows:
-        print(f"{b:14} {ok:5} {bad:6} {cov:4}/{nstr:<4} {nl:8} {bp:10} {ex:5}")
-    t = [sum(r[i] for r in rows) for i in (1, 2, 5, 6, 7)]
-    print(f"{'total':14} {t[0]:5} {t[1]:6} {'':9} {t[2]:8} {t[3]:10} {t[4]:5}")
+    rows = run_sql("""
+        with b as (select distinct catalog_id from coa_reports),
+        ent as (select e.catalog_id, count(*) n,
+                       count(*) filter (where exists (select 1 from coa_report_entries x where x.entry_id = e.id)) covered
+                from brand_catalog_entries e join b using (catalog_id) where e.is_active group by 1),
+        lst as (select e.catalog_id, count(*) n,
+                       count(*) filter (where exists (select 1 from coa_report_entries x where x.entry_id = e.id)) by_product,
+                       count(*) filter (where l.batch_id is not null and exists (
+                           select 1 from coa_reports r where r.catalog_id = e.catalog_id
+                           and l.batch_id in (r.lot, r.report_lot, r.metrc_tag, r.source_package))) exact
+                from listings l join brand_catalog_entries e on e.id = l.catalog_entry_id
+                join b using (catalog_id) where l.is_active group by 1),
+        rep as (select catalog_id, count(*) n, count(*) filter (where error is null) ok,
+                       count(*) filter (where exists (select 1 from coa_report_entries x where x.report_id = r.id)) linked
+                from coa_reports r group by 1)
+        select c.brand_name, rep.n, rep.ok, rep.linked, ent.covered, ent.n entries,
+               coalesce(lst.n, 0) listings, coalesce(lst.by_product, 0) by_product, coalesce(lst.exact, 0) exact
+        from rep join brand_catalogs c on c.id = rep.catalog_id
+        join ent using (catalog_id) left join lst using (catalog_id) order by listings desc""") or []
+    print(f"{'brand':12} {'reports':>7} {'read':>5} {'linked':>6} {'entries':>11} {'listings':>8} {'by product':>10} {'exact':>5}")
+    for r in rows:
+        print(f"{r['brand_name']:12} {r['n']:7} {r['ok']:5} {r['linked']:6} {r['covered']:5}/{r['entries']:<5} "
+              f"{r['listings']:8} {r['by_product']:10} {r['exact']:5}")
+    t = {k: sum(r[k] for r in rows) for k in ("n", "ok", "linked", "covered", "entries", "listings", "by_product", "exact")}
+    print(f"{'total':12} {t['n']:7} {t['ok']:5} {t['linked']:6} {t['covered']:5}/{t['entries']:<5} "
+          f"{t['listings']:8} {t['by_product']:10} {t['exact']:5}")
 
 
 def main() -> int:

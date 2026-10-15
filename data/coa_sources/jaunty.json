@@ -12,7 +12,7 @@
     "Filenames are STRAIN-LOT, the lot being J + a 3-letter line code (JYVC vape cart, JIPR, JLQD, JBVC, JYBD, JROC, JCCR, JYHG) then a product code and YYMM: SOUR-DIESEL-JYBD-SDSL-2609.",
     "Some recent filenames carry only the lot (JYVC-AMHZ-2607); the strain then comes from the catalog match on the report itself.",
     "Media titles read 'Strain [Product] LOT' (Rainbow Belts JYVC-RNBT-2608, Orange Swirl Hash Gummies JYHG-OGSW-2607) and carry the strain where the filename has only the lot, so they are tried first.",
-    "Lot prefixes name the line (category rules): JIPR infused pre-roll, JYHG/JYDG gummies, JDRP drops, JYVC/JBVC/JLQD/JROC carts. Others (JYBD, JCCR, JYPM) fall back to the report's own words."
+    "Lot prefixes name the line (category + lines rules), measured 2026-10-15 by which catalog line each prefix's strains fall in: JYVC Classic cart, JYPM Palms, JROC Live Rosin cart, JBVC Live Resin cart, JLQD Liquid Diamonds, JYBD All-Stars, JYDG Fast-Acting gummies, JYHG Hash gummies, JYRG Live Rosin gummies, JCCR Cold Cure rosin, JIPR Live Rosin Hash Hole, JDRP drops (no line)."
   ],
   "name": [
     {
@@ -31,31 +31,125 @@
   "category": [
     {
       "when": {
-        "lot": "^JIPR"
+        "lot": "^JYVC"
       },
-      "set": "preroll",
-      "why": "infused pre-rolls"
+      "set": "vaporizers"
     },
     {
       "when": {
-        "lot": "^J(?:YHG|YDG)"
+        "lot": "^JYPM"
       },
-      "set": "edible",
-      "why": "hash gummies, gummies"
+      "set": "vaporizers"
+    },
+    {
+      "when": {
+        "lot": "^JROC"
+      },
+      "set": "vaporizers"
+    },
+    {
+      "when": {
+        "lot": "^JBVC"
+      },
+      "set": "vaporizers"
+    },
+    {
+      "when": {
+        "lot": "^JLQD"
+      },
+      "set": "vaporizers"
+    },
+    {
+      "when": {
+        "lot": "^JYBD"
+      },
+      "set": "vaporizers"
+    },
+    {
+      "when": {
+        "lot": "^JYDG"
+      },
+      "set": "edible"
+    },
+    {
+      "when": {
+        "lot": "^JYHG"
+      },
+      "set": "edible"
+    },
+    {
+      "when": {
+        "lot": "^JYRG"
+      },
+      "set": "edible"
+    },
+    {
+      "when": {
+        "lot": "^JCCR"
+      },
+      "set": "concentrate"
+    },
+    {
+      "when": {
+        "lot": "^JIPR"
+      },
+      "set": "preroll"
     },
     {
       "when": {
         "lot": "^JDRP"
       },
-      "set": "tinctures",
-      "why": "rosin drops"
+      "set": "tinctures"
+    }
+  ],
+  "lines": [
+    {
+      "when": "(?<![A-Z])JYVC",
+      "line": "Classic"
     },
     {
-      "when": {
-        "lot": "^J(?:YVC|BVC|LQD|ROC)"
-      },
-      "set": "vaporizers",
-      "why": "carts: vape, live rosin, liquid diamonds"
+      "when": "(?<![A-Z])JYPM",
+      "line": "Palms"
+    },
+    {
+      "when": "(?<![A-Z])JROC",
+      "line": "Live Rosin"
+    },
+    {
+      "when": "(?<![A-Z])JBVC",
+      "line": "Live Resin"
+    },
+    {
+      "when": "(?<![A-Z])JLQD",
+      "line": "Liquid Diamonds"
+    },
+    {
+      "when": "(?<![A-Z])JYBD",
+      "line": "All-Stars"
+    },
+    {
+      "when": "(?<![A-Z])JYDG",
+      "line": "Fast-Acting"
+    },
+    {
+      "when": "(?<![A-Z])JYHG",
+      "line": "Hash"
+    },
+    {
+      "when": "(?<![A-Z])JYRG",
+      "line": "Live Rosin"
+    },
+    {
+      "when": "(?<![A-Z])JCCR",
+      "line": "Cold Cure"
+    },
+    {
+      "when": "(?<![A-Z])JIPR",
+      "line": "Live Rosin Hash Hole"
+    },
+    {
+      "when": "(?<![A-Z])JDRP",
+      "line": ""
     }
   ]
 }
