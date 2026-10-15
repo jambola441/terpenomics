@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ActivityIndicator, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import MapView, { Marker, type Region } from 'react-native-maps'
-import { router, useLocalSearchParams } from 'expo-router'
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import type { PointsProgram, PortalDispensary, PortalPartner, PortalPartnerLocation } from '@web/types'
 import { alpha } from '@web/design/tokens'
@@ -72,41 +72,78 @@ export default function MapTab() {
     }
   }
 
-  // Fit every pin once they are in, as the web does after its first load.
+  // Clear of the legend at the top and the sheet and nav at the bottom.
+  const edgePadding = { top: insets.top + 90, right: 56, bottom: 200, left: 56 }
+
+  /** Frame these pins: one is centred above where its sheet sits, close enough
+   *  to see the street; several are fitted inside the padding. */
+  function frame(coords: { latitude: number; longitude: number }[], animated: boolean) {
+    const m = map.current
+    if (!m || !coords.length) return
+    if (coords.length === 1) {
+      const [c] = coords
+      // Altitude (Apple Maps) and zoom (Google) both, so either provider lands
+      // at street level rather than keeping the city-wide zoom.
+      m.animateCamera(
+        { center: { latitude: c.latitude - 0.004, longitude: c.longitude }, altitude: 3500, zoom: 14 },
+        { duration: animated ? 350 : 0 },
+      )
+    } else {
+      m.fitToCoordinates(coords, { edgePadding, animated })
+    }
+  }
+
+  const storeCoords = useMemo(() => placed.map(d => ({ latitude: d.lat!, longitude: d.lng! })), [placed])
+  const spotCoords = useMemo(
+    () => spots.map(sp => ({ latitude: sp.location.lat!, longitude: sp.location.lng! })),
+    [spots],
+  )
+
+  // Fit every store once they are in, as the web does after its first load,
+  // unless the tab was opened on one partner store.
   const fitted = useRef(false)
   useEffect(() => {
-    if (fitted.current || !placed.length) return
+    if (fitted.current || !storeCoords.length || params.spot) return
     fitted.current = true
-    // Opened on one partner store: that pin, not the whole city.
-    if (params.spot) return
-    const coords = placed.map(d => ({ latitude: d.lat!, longitude: d.lng! }))
-    requestAnimationFrame(() => map.current?.fitToCoordinates(coords, {
-      // Clear of the legend at the top and the sheet and nav at the bottom.
-      edgePadding: { top: insets.top + 90, right: 56, bottom: 200, left: 56 },
-      animated: false,
-    }))
-  }, [placed, insets.top, params.spot])
+    requestAnimationFrame(() => frame(storeCoords, false))
+    // frame reads the map ref and the insets; the stores are what this waits on.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storeCoords, params.spot])
 
   // A partner store opened by link may be far from the stores (outside the
-  // city): go to it, close enough to see the street.
+  // city). The move waits until the tab is on screen and the map is ready: a
+  // camera call made while the tab was still switching in was dropped, and the
+  // map stayed on the city.
+  const [mapReady, setMapReady] = useState(false)
+  const [isFocused, setFocused] = useState(false)
+  useFocusEffect(useCallback(() => {
+    setFocused(true)
+    return () => setFocused(false)
+  }, []))
+  const flown = useRef<string | null>(null)
   useEffect(() => {
-    if (!spot || !params.spot || spot.location.id !== params.spot) return
-    map.current?.animateToRegion({
-      latitude: spot.location.lat! - 0.004, longitude: spot.location.lng!,
-      latitudeDelta: 0.03, longitudeDelta: 0.03,
-    }, 350)
-  }, [spot, params.spot])
+    if (!mapReady || !isFocused || !spot || !params.spot || spot.location.id !== params.spot) return
+    if (flown.current === params.spot) return
+    flown.current = params.spot
+    fitted.current = true
+    const target = { latitude: spot.location.lat!, longitude: spot.location.lng! }
+    const id = setTimeout(() => frame([target], true), 250)
+    return () => clearTimeout(id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapReady, isFocused, spot, params.spot])
 
   // Centre the tapped pin above where its sheet will sit.
   function focus(lat: number, lng: number) {
     map.current?.animateCamera({ center: { latitude: lat - 0.006, longitude: lng } }, { duration: 350 })
   }
 
+  /** Earn points on frames the partner stores; off, every store again. */
   function toggleEarn() {
     const on = !earnOnly
     setEarnOnly(on)
     if (on) setSelected(null)
     else setSpot(null)
+    frame(on ? spotCoords : storeCoords, true)
   }
 
   if (stores.error && !stores.data) {
@@ -126,6 +163,7 @@ export default function MapTab() {
         showsPointsOfInterests={false}
         showsCompass={false}
         toolbarEnabled={false}
+        onMapReady={() => setMapReady(true)}
         onPress={e => {
           // A tap on the map itself, not a pin, closes the sheet.
           if (e.nativeEvent.action !== 'marker-press') { setSelected(null); setSpot(null) }
