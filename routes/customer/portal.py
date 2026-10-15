@@ -481,8 +481,20 @@ def _build_portal_category(session: Session, category_name: str, in_stock: bool)
                 subtype=listing.subtype,
                 category=listing.scraped_category or category_name,
             )
+            # Grouped by brand (two brands' takes on a product are two
+            # products), but addressed as /products/detail reads a key:
+            # category first, with the brand passed beside it, not inside.
+            # Serializing the grouping tuple put the brand where the category
+            # goes, and every branded product here 404'd when opened.
+            product_key = (
+                listing.scraped_category,
+                listing.subtype,
+                listing.product_line,
+                listing.strain,
+                listing.variant,
+            )
             product = {
-                "key": "|".join("" if k is None else str(k) for k in key),
+                "key": "|".join("" if k is None else str(k) for k in product_key),
                 "name": name,
                 "brand": listing.scraped_brand,
                 "category": listing.scraped_category,

@@ -15,69 +15,25 @@ import { Pressable, Skeleton, Label, ProductImage, Pill } from './ui'
 import { Icon } from './Icon'
 import { formatDist, formatDollars, formatDollarsShort, haversineMi } from '../utils/format'
 import { marketNote } from '../utils/marketNote'
+import {
+  RADII, SORTS, SORTS_NO_LOCATION, SORT_KEYS, availabilityOf, clampPrice, priceStep, productKey,
+  showsSubtype, variantWeight,
+  type BrowseCardItem, type Facet, type SortKey, type SortOption,
+} from '../utils/browseLogic'
 
 // Re-exported so the browse surfaces can keep pulling their whole toolkit from
 // one place; `utils/format` is where these are defined.
 export { formatDist, formatDollars, formatDollarsShort, haversineMi }
 
-/* ── Constants ────────────────────────────────────────────────────────────── */
+/* ── Constants and helpers ────────────────────────────────────────────────
+   The rules (sorts, radii, sizes, product keys, the card's shape) live in
+   utils/browseLogic, framework-free, so the app filters and sorts the same
+   way. Re-exported so the browse surfaces keep one import. */
 
-export const SORT_KEYS = ['featured', 'nearest', 'price-asc', 'price-desc', 'name'] as const
-export type SortKey = typeof SORT_KEYS[number]
-
-export type SortOption = { key: SortKey; label: string; needsLocation?: boolean }
-
-export const SORTS: SortOption[] = [
-  { key: 'featured', label: 'Featured' },
-  { key: 'nearest', label: 'Nearest', needsLocation: true },
-  { key: 'price-asc', label: 'Price: Low → High' },
-  { key: 'price-desc', label: 'Price: High → Low' },
-  { key: 'name', label: 'Name A–Z' },
-]
-
-/** Sorts for screens with no per-offering coordinates (search). */
-export const SORTS_NO_LOCATION: SortOption[] = SORTS.filter(s => !s.needsLocation)
-
-/** Radius options in miles. `null` = no distance limit. */
-export const RADII: { value: number | null; label: string }[] = [
-  { value: null, label: 'Any' },
-  { value: 2, label: '2 mi' },
-  { value: 5, label: '5 mi' },
-  { value: 10, label: '10 mi' },
-  { value: 25, label: '25 mi' },
-]
-
-export type Facet = { value: string; count: number }
-
-/* ── Helpers ──────────────────────────────────────────────────────────────── */
-
-/** Parse a variant like "3.5g" / "100mg" / "1 oz" into grams for natural ordering. */
-export function variantWeight(v: string): number {
-  const m = v.match(/([\d.]+)\s*(g|mg|oz)?/i)
-  if (!m) return Number.MAX_SAFE_INTEGER
-  let n = parseFloat(m[1])
-  const unit = (m[2] || 'g').toLowerCase()
-  if (unit === 'mg') n /= 1000
-  if (unit === 'oz') n *= 28.3495
-  return n
+export {
+  SORT_KEYS, SORTS, SORTS_NO_LOCATION, RADII, variantWeight, productKey,
 }
-
-/**
- * The identity a listing groups under, matching the `products` view's GROUP BY
- * and the key built by `GET /customer/brands/{name}`. Keeping this in one place
- * is what lets a search result open the brand-product view.
- */
-export function productKey(parts: {
-  category?: string | null
-  subtype?: string | null
-  product_line?: string | null
-  strain?: string | null
-  variant?: string | null
-}): string {
-  return [parts.category, parts.subtype, parts.product_line, parts.strain, parts.variant]
-    .map(p => (p == null ? '' : String(p)))
-    .join('|')
-}
+export type { SortKey, SortOption, Facet, BrowseCardItem }
 
 /* ── Hero stats ───────────────────────────────────────────────────────────── */
 
@@ -222,28 +178,6 @@ export function BrowseToolbar({ quickRail, activeCount, sortLabel, onOpenSheet, 
 
 /* ── Product card ─────────────────────────────────────────────────────────── */
 
-/** The normalized shape every browse surface maps its rows into. */
-export type BrowseCardItem = {
-  name: string
-  brand: string | null
-  category: string | null
-  subtype: string | null
-  variant: string | null
-  imageUrl: string | null
-  /** Lowest known price, or null when nothing is priced. */
-  priceCents: number | null
-  /** True when offerings span a range, so the price reads "from $X". */
-  multiPriced: boolean
-  /** How many dispensaries carry it. 1 on single-store surfaces (an aisle). */
-  dispensaryCount: number
-  /** Miles to the nearest offering; null without a location fix. */
-  distanceMi: number | null
-  /** Shown when the product sits at exactly one dispensary. */
-  storeName: string | null
-  /** No store has it in stock right now. Search lists these too, so it says so. */
-  outOfStock?: boolean
-}
-
 /**
  * How this store's price stands against the others carrying the same product.
  *
@@ -285,13 +219,10 @@ export function BrowseCard({ item, color, suppressSubtype, action, footer, onOpe
   footer?: ReactNode
   onOpen: () => void
 }) {
-  const showSubtype = !!item.subtype
-    && item.subtype.toLowerCase() !== (suppressSubtype ?? '').toLowerCase()
+  const showSubtype = showsSubtype(item, suppressSubtype)
   // Single-store surfaces have nothing useful to say here; stay quiet instead
   // of printing a placeholder.
-  const availability = item.dispensaryCount > 1
-    ? `At ${item.dispensaryCount} dispensaries`
-    : item.storeName
+  const availability = availabilityOf(item)
 
   return (
     <div style={{ position: 'relative', minWidth: 0, display: 'flex' }}>
@@ -574,14 +505,12 @@ export function PriceRange({ bounds, value, onChange, color }: {
 }) {
   const [min, max] = bounds
   // Step in whole dollars, scaled so the slider stays usable over a wide span.
-  const step = Math.max(100, Math.round((max - min) / 100 / 100) * 100)
+  const step = priceStep(bounds)
   const [lo, hi] = value ?? bounds
   const pct = (v: number) => ((v - min) / (max - min)) * 100
 
   function set(next: [number, number]) {
-    const clamped: [number, number] = [Math.max(min, next[0]), Math.min(max, next[1])]
-    if (clamped[0] <= min && clamped[1] >= max) onChange(null)
-    else onChange(clamped)
+    onChange(clampPrice(next, bounds))
   }
 
   return (

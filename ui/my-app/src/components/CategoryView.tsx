@@ -13,36 +13,8 @@ import { t, categoryColor, categoryLabel, alpha } from '../theme'
 import { Dot, Stat } from './browse'
 import { BackButton, PageTitle } from './ui'
 import { CategoryIcon } from './Icon'
-import BrowseScreen, { type BrowseItem } from './BrowseScreen'
-
-/** The category endpoint sends its stores once and has offerings index into
- *  that table; BrowseScreen wants each offering to carry its own store. */
-function toItems(data: PortalCategoryDetail): BrowseItem[] {
-  return data.products.map(product => ({
-    key: product.key,
-    name: product.name,
-    brand: product.brand,
-    category: product.category,
-    subtype: product.subtype,
-    strain: product.strain,
-    variant: product.variant,
-    line: product.product_line,
-    imageUrl: product.image_url,
-    minPriceCents: product.min_price_cents,
-    maxPriceCents: product.max_price_cents,
-    dispensaryCount: product.dispensary_count,
-    offerings: product.offerings.flatMap(offering => {
-      const store = data.dispensaries[offering.dispensary_index]
-      if (!store) return []
-      return [{
-        storeName: store.name,
-        lat: store.lat,
-        lng: store.lng,
-        priceCents: offering.price_cents,
-      }]
-    }),
-  }))
-}
+import BrowseScreen from './BrowseScreen'
+import { CATEGORY_FACETS, categoryItems } from '../utils/browseLogic'
 
 interface Props {
   categoryName: string
@@ -76,13 +48,13 @@ export default function CategoryView({ categoryName, onBack, onOpenProduct }: Pr
 
   return (
     <BrowseScreen
-      items={data ? toItems(data) : []}
+      items={data ? categoryItems(data) : []}
       loading={loading}
       error={error}
       onRetry={() => setAttempt(n => n + 1)}
       color={c}
       // No category facet: every product here is already this category.
-      facets={['subtype', 'brand', 'variant']}
+      facets={CATEGORY_FACETS}
       resetKey={categoryName}
       searchPlaceholder={`Search ${categoryLabel(categoryName).toLowerCase()}…`}
       totalCount={data?.product_count ?? 0}

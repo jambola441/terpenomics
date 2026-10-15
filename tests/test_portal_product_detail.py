@@ -128,3 +128,17 @@ def test_the_key_round_trips_from_the_brand_page(catalogue):
         detail = _get(_client(), key=product["key"], brand="Aeris").json()
         assert detail["name"] == product["name"]
         assert detail["dispensary_count"] == product["dispensary_count"]
+
+
+def test_the_key_round_trips_from_the_category_page(catalogue):
+    """Every product a category page lists has to open from its key. The
+    category endpoint groups by brand, and once serialized that brand into the
+    key's first slot, where the detail endpoint reads the category: every
+    branded product on every category page 404'd."""
+    client = _client()
+    page = client.get("/customer/categories/flower").json()
+    assert page["products"], "the fixture's flower should be listed"
+    for product in page["products"]:
+        response = _get(client, key=product["key"], **({"brand": product["brand"]} if product["brand"] else {}))
+        assert response.status_code == 200, (product["key"], product["brand"], response.text)
+        assert response.json()["brand"] == product["brand"]

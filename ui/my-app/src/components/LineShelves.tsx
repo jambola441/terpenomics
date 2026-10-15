@@ -17,86 +17,15 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { t, font, categoryColor, categoryLabel } from '../theme'
 import { Icon, CategoryIcon } from './Icon'
-import { formatDollarsShort } from './browse'
-import type { BrowseItem } from './BrowseScreen'
-import { LINE_MIN_PRODUCTS } from '../utils/lines'
+import {
+  GROUP_MIN_RESULTS, SECTION_CAP, SHELF_CAP, countLabel, groupByLine, hasShelves, shelfMeta,
+  type BrowseItem, type CategorySection, type Shelf,
+} from '../utils/browseLogic'
 
-/* ── The rule ─────────────────────────────────────────────────────────────── */
-
-/** A category is laid out by line only when all of these hold. The shelves have
- *  to carry a fair share of it, not every product: whatever no shelf holds goes
- *  on the "More" shelf, which is never hidden. On 2026-10-10 this gave 37
- *  brands shelves (24 under the first, stricter rule, which also capped the
- *  products in no line or in tiny lines); requiring two real lines is what
- *  keeps it from going further, and is what keeps shelves meaningful. */
-const GROUP_MIN_PRODUCTS = 6      // enough products for shelves to mean anything
-const GROUP_MIN_SHELVES = 2       // at least two real lines
-const GROUP_MIN_ON_SHELVES = 0.4  // the shelves hold at least 40% of the category
-
-/** Fewer products than this after the shopper's filters, and shelves of one or
- *  two cards read worse than the grid. */
-export const GROUP_MIN_RESULTS = 8
-
-export type Shelf<E> = { line: string; entries: E[] }
-
-export type CategorySection<E> = {
-  category: string | null
-  entries: E[]
-  /** Shelves, biggest first, when the category passes the rule; else empty. */
-  shelves: Shelf<E>[]
-  /** What no shelf holds: products in no line, or in a line too small for one. */
-  rest: E[]
-  /** The lines too small for a shelf, so "See all" on `rest` can select them. */
-  thinLines: string[]
-}
-
-/** The page's entries by category (biggest first), each split into shelves when
- *  it passes the rule. Order within a shelf is the order `entries` came in. */
-export function groupByLine<E>(entries: E[], itemOf: (e: E) => BrowseItem): CategorySection<E>[] {
-  const byCategory = new Map<string | null, E[]>()
-  for (const e of entries) {
-    const key = itemOf(e).category
-    byCategory.set(key, [...(byCategory.get(key) ?? []), e])
-  }
-
-  const sections: CategorySection<E>[] = []
-  for (const [category, inCategory] of byCategory) {
-    const byLine = new Map<string, E[]>()
-    for (const e of inCategory) {
-      const line = itemOf(e).line
-      if (line) byLine.set(line, [...(byLine.get(line) ?? []), e])
-    }
-    const real = [...byLine].filter(([, es]) => es.length >= LINE_MIN_PRODUCTS)
-    const thin = [...byLine].filter(([, es]) => es.length < LINE_MIN_PRODUCTS)
-    const onShelves = real.reduce((n, [, es]) => n + es.length, 0)
-    const n = inCategory.length
-
-    const passes = n >= GROUP_MIN_PRODUCTS
-      && real.length >= GROUP_MIN_SHELVES
-      && onShelves / n >= GROUP_MIN_ON_SHELVES
-
-    if (!passes) {
-      sections.push({ category, entries: inCategory, shelves: [], rest: inCategory, thinLines: [] })
-      continue
-    }
-    const shelfLines = new Set(real.map(([line]) => line))
-    sections.push({
-      category,
-      entries: inCategory,
-      shelves: real
-        .sort(([a, ea], [b, eb]) => eb.length - ea.length || a.localeCompare(b))
-        .map(([line, es]) => ({ line, entries: es })),
-      rest: inCategory.filter(e => !shelfLines.has(itemOf(e).line ?? '')),
-      thinLines: thin.map(([line]) => line),
-    })
-  }
-  return sections.sort((a, b) => b.entries.length - a.entries.length)
-}
-
-/** Whether any category on the page passes: the page is groupable at all. */
-export function hasShelves<E>(sections: CategorySection<E>[]): boolean {
-  return sections.some(s => s.shelves.length > 0)
-}
+// The rule (which categories get shelves, and how they split) lives in
+// utils/browseLogic so the app shelves the same way; re-exported for callers.
+export { GROUP_MIN_RESULTS, groupByLine, hasShelves }
+export type { CategorySection, Shelf }
 
 /* ── The mark ─────────────────────────────────────────────────────────────── */
 
@@ -123,11 +52,6 @@ export function LineMark({ color, size = 12, hollow = false }: { color: string; 
 
 /* ── The layout ───────────────────────────────────────────────────────────── */
 
-/** Cards on one shelf before "See all" takes over; keeps a long line from
- *  becoming a wall of cards nobody scrolls sideways through. */
-const SHELF_CAP = 10
-/** Cards shown for a category that is not laid out by line. */
-const SECTION_CAP = 6
 const CARD_WIDTH = 156
 
 interface Props<E> {
@@ -290,22 +214,4 @@ function Eyebrow({ children, style, className }: { children: ReactNode; style?: 
       {children}
     </div>
   )
-}
-
-function countLabel(n: number): string {
-  return `${n} ${n === 1 ? 'product' : 'products'}`
-}
-
-/** "$35–48 · 16 stores": the span of starting prices and the stores carrying any of it. */
-function shelfMeta(items: BrowseItem[]): string {
-  const prices = items.map(i => i.minPriceCents).filter((p): p is number => p != null)
-  const stores = new Set(items.flatMap(i => i.offerings.map(o => o.storeName)))
-  const parts: string[] = []
-  if (prices.length) {
-    const lo = Math.min(...prices)
-    const hi = Math.max(...prices)
-    parts.push(lo === hi ? formatDollarsShort(lo) : `${formatDollarsShort(lo)}–${formatDollarsShort(hi)}`)
-  }
-  if (stores.size) parts.push(`${stores.size} ${stores.size === 1 ? 'store' : 'stores'}`)
-  return parts.join(' · ')
 }

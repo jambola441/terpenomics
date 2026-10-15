@@ -16,47 +16,8 @@ import type { PortalBrandDetail } from '../types'
 import { t, alpha, raw } from '../theme'
 import { Dot, Stat } from './browse'
 import { BackButton, BrandMark, PageTitle } from './ui'
-import BrowseScreen, { type BrowseItem, type FacetKey } from './BrowseScreen'
-import { LINE_MIN_PRODUCTS } from '../utils/lines'
-
-/** Whether any of the brand's lines is big enough to filter by. */
-function hasRealLine(data: PortalBrandDetail): boolean {
-  const counts = new Map<string, number>()
-  for (const product of data.products) {
-    if (!product.product_line) continue
-    const n = (counts.get(product.product_line) ?? 0) + 1
-    if (n >= LINE_MIN_PRODUCTS) return true
-    counts.set(product.product_line, n)
-  }
-  return false
-}
-
-/** The brand endpoint inlines each offering's store, and every product is this
- *  brand's — the page's own subject rather than a field on the row. */
-function toItems(data: PortalBrandDetail): BrowseItem[] {
-  return data.products.map(product => ({
-    key: product.key,
-    name: product.name,
-    brand: data.name,
-    category: product.category,
-    subtype: product.subtype,
-    strain: product.strain,
-    variant: product.variant,
-    line: product.product_line,
-    imageUrl: product.image_url,
-    minPriceCents: product.min_price_cents,
-    // The brand endpoint aggregates to a single price, so a card here never
-    // shows a "from" range the way a category card can.
-    maxPriceCents: null,
-    dispensaryCount: product.dispensary_count,
-    offerings: product.offerings.map(offering => ({
-      storeName: offering.dispensary_name,
-      lat: offering.lat,
-      lng: offering.lng,
-      priceCents: offering.price_cents,
-    })),
-  }))
-}
+import BrowseScreen from './BrowseScreen'
+import { brandFacetKeys, brandItems, hasRealLine } from '../utils/browseLogic'
 
 interface Props {
   brandName: string
@@ -92,14 +53,11 @@ export default function BrandView({ brandName, onBack, onOpenProduct }: Props) {
   const showLines = useFlag('lines') && data != null && hasRealLine(data)
   // Shelves by line ride on the line filter: their See all links select a line.
   const groupable = useFlag('lines_grouped') && showLines
-  const facets = useMemo<FacetKey[]>(
-    () => showLines ? ['category', 'line', 'subtype', 'variant'] : ['category', 'subtype', 'variant'],
-    [showLines],
-  )
+  const facets = useMemo(() => brandFacetKeys(showLines), [showLines])
 
   return (
     <BrowseScreen
-      items={data ? toItems(data) : []}
+      items={data ? brandItems(data) : []}
       loading={loading}
       error={error}
       onRetry={() => setAttempt(n => n + 1)}

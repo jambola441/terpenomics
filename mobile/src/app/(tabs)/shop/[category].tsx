@@ -1,84 +1,76 @@
-import { Alert, FlatList, Pressable, Text, View } from 'react-native'
-import { router, Stack, useLocalSearchParams } from 'expo-router'
-import type { PortalCategoryProduct } from '@web/types'
-import { formatDollars } from '@web/utils/format'
+import { useMemo } from 'react'
+import { View } from 'react-native'
+import { Stack, useLocalSearchParams } from 'expo-router'
+import { categoryStyle } from '@web/design/tokens'
+import { icons } from '@web/design/icons'
+import { CATEGORY_FACETS, categoryItems } from '@web/utils/browseLogic'
 import { api } from '@/lib/api'
 import { useFetch } from '@/lib/useFetch'
-import { FeedState, Label, ProductImage, categoryName, styles } from '@/components/ui'
-import { Icon } from '@/components/Icon'
-import { t, space, type } from '@/lib/theme'
+import { openProduct } from '@/lib/products'
+import { CategoryIcon, type IconName } from '@/components/Icon'
+import { categoryName } from '@/components/ui'
+import BrowseScreen from '@/components/browse/BrowseScreen'
+import { BackButton, HeroTitle, Stats } from '@/components/browse/controls'
 
-function priceRange(p: PortalCategoryProduct) {
-  if (p.min_price_cents == null) return '—'
-  if (p.max_price_cents == null || p.max_price_cents === p.min_price_cents) return formatDollars(p.min_price_cents)
-  return `${formatDollars(p.min_price_cents)} – ${formatDollars(p.max_price_cents)}`
-}
-
-/** Every product in a category. The cross-store product page isn't ported
- *  yet, so a tap opens the cheapest store's listing. */
+/** One category across every store, as on the web (components/CategoryView.tsx):
+ *  the browse engine over the category's products, with search-within, the
+ *  subtype / brand / size facets and distance from the shopper. */
 export default function Category() {
   const { category } = useLocalSearchParams<{ category: string }>()
-  const { data, error, loading, refresh } = useFetch(category, () => api.portal.getCategory(category))
+  const { data, error, loading, refreshing, refresh } = useFetch(`category:${category}`, () => api.portal.getCategory(category))
+  const items = useMemo(() => (data ? categoryItems(data) : []), [data])
 
-  const header = <Stack.Screen options={{ title: categoryName(category) }} />
-  if (loading || error) return <>{header}<FeedState loading={loading} error={error} onRetry={refresh} /></>
-
-  async function open(p: PortalCategoryProduct) {
-    if (!data) return
-    const byPrice = (a: { price_cents: number | null }, b: { price_cents: number | null }) =>
-      (a.price_cents ?? Infinity) - (b.price_cents ?? Infinity)
-
-    // Unbranded products carry a listing id on their offerings. Branded ones
-    // are addressed by key, so ask for the product's offerings and open the
-    // cheapest in stock. A cross-store product page will replace this.
-    const cheapest = [...p.offerings].sort(byPrice)[0]
-    if (cheapest?.listing_id) {
-      router.push(`/listing/${data.dispensaries[cheapest.dispensary_index].id}/${cheapest.listing_id}`)
-      return
-    }
-    try {
-      const detail = await api.portal.getProductDetail(p.key, p.brand)
-      const best = detail.offerings.filter(o => o.in_stock).sort(byPrice)[0] ?? detail.offerings[0]
-      if (best) router.push(`/listing/${best.dispensary_id}/${best.listing_id}`)
-    } catch (e: any) {
-      Alert.alert('Could not open product', e?.message ?? String(e))
-    }
-  }
+  const c = categoryStyle(category).color
+  const label = categoryName(category)
+  const glyph = categoryStyle(category).icon
 
   return (
     <>
-      {header}
-      <FlatList
-        style={styles.screen}
-        data={data?.products ?? []}
-        keyExtractor={p => p.key}
-        contentContainerStyle={{ padding: space[4], gap: space[3] }}
-        ListHeaderComponent={
-          data ? (
-            <Label>
-              {data.product_count.toLocaleString()} products · {data.brand_count} brands · {data.dispensary_count} stores
-            </Label>
-          ) : null
+      {/* The hero carries the title and the way back, as on the web. */}
+      <Stack.Screen options={{ headerShown: false }} />
+      <BrowseScreen
+        key={category}
+        items={items}
+        loading={loading && !data}
+        error={data ? null : error}
+        onRetry={refresh}
+        refreshing={refreshing}
+        onRefresh={refresh}
+        color={c}
+        facets={CATEGORY_FACETS}
+        searchPlaceholder={`Search ${label.toLowerCase()}…`}
+        totalCount={data?.product_count ?? 0}
+        truncated={data?.truncated}
+        suppressSubtype={category}
+        emptyMessage={`No ${label.toLowerCase()} in stock`}
+        emptyHint="Check back soon — menus update regularly."
+        emptyIcon={glyph in icons ? (glyph as IconName) : 'package'}
+        onOpen={item => openProduct(item.key, item.brand ?? null)}
+        decoration={
+          // The category glyph as a specimen drawing, bled off the right edge.
+          <View pointerEvents="none" style={{ position: 'absolute', right: -26, top: -18, opacity: 0.2 }}>
+            <CategoryIcon category={category} size={168} strokeWidth={0.75} />
+          </View>
         }
-        ListEmptyComponent={<FeedState empty="Nothing in this category right now." />}
-        renderItem={({ item }) => (
-          <Pressable
-            onPress={() => open(item)}
-            style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'center', gap: space[3] }, pressed && { opacity: 0.7 }]}
-            accessibilityRole="button"
-          >
-            <ProductImage uri={item.image_url} size={72} category={item.category ?? category} />
-            <View style={{ flex: 1, justifyContent: 'center' }}>
-              <Text numberOfLines={2} style={styles.name}>{item.name}</Text>
-              {item.brand ? <Text numberOfLines={1} style={[type.meta, { color: t.text2 }]}>{item.brand}</Text> : null}
-              <Text style={[styles.meta, { marginTop: 2 }]}>
-                <Text style={[type.price, { fontSize: type.meta.fontSize, lineHeight: type.meta.lineHeight }]}>{priceRange(item)}</Text>
-                {' · '}{item.dispensary_count} store{item.dispensary_count === 1 ? '' : 's'}
-              </Text>
+        hero={
+          <>
+            <BackButton />
+            <View style={{ marginTop: 18 }}>
+              <HeroTitle size={34}>{label}</HeroTitle>
+              {data ? (
+                <Stats
+                  color={c}
+                  style={{ marginTop: 9 }}
+                  stats={[
+                    { value: data.product_count, one: 'product', many: 'products' },
+                    { value: data.brand_count, one: 'brand', many: 'brands' },
+                    { value: data.dispensary_count, one: 'dispensary', many: 'dispensaries' },
+                  ]}
+                />
+              ) : null}
             </View>
-            <Icon name="chevron-right" size={16} color={t.text4} />
-          </Pressable>
-        )}
+          </>
+        }
       />
     </>
   )

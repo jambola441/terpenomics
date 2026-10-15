@@ -18,6 +18,10 @@ import type {
   PortalCategory,
   PortalCategoryDetail,
   PortalDispensary,
+  PortalBrand,
+  PortalBrandDetail,
+  PortalBrandLine,
+  PortalProduct,
   PortalPartnerPage,
   PortalPartners,
   PortalProductDetail,
@@ -217,6 +221,19 @@ export const api = {
     /** One product with every store's offering. Omit brand for unbranded products. */
     getProductDetail: (key: string, brand?: string | null) =>
       pub<PortalProductDetail>(`/customer/products/detail${query({ key, brand: brand ?? undefined })}`),
+
+    /** Brands, searchable and paged: by listings ("Most stocked") or name. */
+    getBrands: (params?: { q?: string; limit?: number; offset?: number; sort?: 'listings' | 'name' }) =>
+      pub<PortalBrand[]>(`/customer/brands${query(params)}`),
+
+    getBrand: (name: string) => pub<PortalBrandDetail>(`/customer/brands/${encodeURIComponent(name)}`),
+
+    getBrandLine: (brand: string, line: string) =>
+      pub<PortalBrandLine>(`/customer/brands/${encodeURIComponent(brand)}/lines/${encodeURIComponent(line)}`),
+
+    /** Product search across every store (the web's SearchView). */
+    getProducts: (params?: { q?: string; category?: string; brand?: string; limit?: number; offset?: number }) =>
+      pub<PortalProduct[]>(`/customer/products${query(params)}`),
 
     getCategories: () => pub<PortalCategory[]>(`/customer/categories`),
 
