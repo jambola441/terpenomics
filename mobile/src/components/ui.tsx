@@ -14,6 +14,8 @@ import { formatDollars } from '@web/utils/format'
 import { alpha, categories, categoryStyle, strains, terpeneStyle } from '@web/design/tokens'
 import { boroughColor, NYC_COLOR } from '@web/utils/boroughs'
 import { photoAt } from '@web/utils/photoUrl'
+import { marketNote } from '@web/utils/marketNote'
+import type { ListingPriceContext } from '@web/types'
 import { CategoryIcon, Icon, type IconName } from './Icon'
 import { t, radius, space, font, fonts, type } from '@/lib/theme'
 
@@ -189,6 +191,76 @@ export function SectionTitle({ children, action, onAction, style }: {
         </Pressable>
       ) : null}
     </View>
+  )
+}
+
+/* ── PageTitle — a tab's own title, set in the page as on the web ────────────── */
+
+/** Fraunces 30 at −0.02em with a quiet subtitle: the web's PageTitle. Tabs
+ *  draw their title in the page rather than in a native header bar, so a tab
+ *  looks the same on both platforms. */
+export function PageTitle({ children, sub, style }: {
+  children: ReactNode
+  sub?: ReactNode
+  style?: StyleProp<ViewStyle>
+}) {
+  return (
+    <View style={style}>
+      <Text style={s.pageTitle} accessibilityRole="header">{children}</Text>
+      {sub ? <Text style={s.pageSub}>{sub}</Text> : null}
+    </View>
+  )
+}
+
+/* ── Segmented — the web's two- and three-way switch ───────────────────────── */
+
+export function Segmented<K extends string>({ options, value, onChange, style }: {
+  options: { key: K; label: string }[]
+  value: K
+  onChange: (key: K) => void
+  style?: StyleProp<ViewStyle>
+}) {
+  return (
+    <View style={[s.segmented, style]} accessibilityRole="tablist">
+      {options.map(o => {
+        const active = o.key === value
+        return (
+          <Pressable
+            key={o.key}
+            onPress={() => onChange(o.key)}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: active }}
+            style={[s.segment, active && s.segmentActive]}
+          >
+            <Text
+              style={{
+                fontFamily: active ? fonts.sansSemibold : fonts.sansMedium,
+                fontSize: font.size.small + 1,
+                color: active ? t.text1 : t.text3,
+              }}
+            >
+              {o.label}
+            </Text>
+          </Pressable>
+        )
+      })}
+    </View>
+  )
+}
+
+/* ── MarketNote — the price against every other store carrying it ──────────── */
+
+export function MarketNote({ market, priceCents, style }: {
+  market?: ListingPriceContext | null
+  priceCents: number | null
+  style?: StyleProp<TextStyle>
+}) {
+  const { text, tone } = marketNote(market, priceCents)
+  const color = tone === 'warning' ? t.warning : tone === 'success' ? t.success : t.text3
+  return (
+    <Text numberOfLines={1} style={[{ fontFamily: fonts.sansMedium, fontSize: font.size.caption, color }, style]}>
+      {text}
+    </Text>
   )
 }
 
@@ -425,6 +497,20 @@ const s = StyleSheet.create({
     paddingHorizontal: space[4], marginTop: space[6], marginBottom: space[3],
   },
   sectionAction: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  pageTitle: {
+    fontFamily: fonts.display, fontSize: font.size.hero, lineHeight: 33,
+    letterSpacing: Math.round(font.size.hero * -0.02 * 100) / 100, color: t.text1,
+  },
+  pageSub: { fontFamily: fonts.sans, fontSize: font.size.small + 1, lineHeight: 18, color: t.text3, marginTop: 6 },
+  segmented: {
+    flexDirection: 'row', gap: 2, padding: 3,
+    backgroundColor: t.surface1, borderWidth: 1, borderColor: t.border, borderRadius: radius.md,
+  },
+  segment: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 8, borderRadius: radius.sm },
+  segmentActive: {
+    backgroundColor: t.surface3,
+    shadowColor: '#000', shadowOpacity: 0.4, shadowRadius: 2, shadowOffset: { width: 0, height: 1 },
+  },
   pill: {
     flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: 5,
     borderWidth: 1, borderRadius: radius.pill,

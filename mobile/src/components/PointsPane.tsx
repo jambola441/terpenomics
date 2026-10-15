@@ -1,58 +1,20 @@
-import { useCallback, useRef } from 'react'
-import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
-import { router, useFocusEffect } from 'expo-router'
-import type { MyReceipt, PointsEntry } from '@web/types'
+import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { router } from 'expo-router'
+import type { MyReceipt, PointsEntry, PointsSummary } from '@web/types'
 import { formatDate, formatDollars } from '@web/utils/format'
-import { api } from '@/lib/api'
-import { useFetch } from '@/lib/useFetch'
-import { FeedState, Label, SectionTitle, styles } from '@/components/ui'
-import { Icon, type IconName } from '@/components/Icon'
+import { Label, SectionTitle, styles } from './ui'
+import { Icon, type IconName } from './Icon'
 import { t, space, font, fonts, radius, type } from '@/lib/theme'
 
 const KIND: Record<string, string> = { earn: 'Earned', receipt: 'Receipt', refund: 'Refunded', adjust: 'Adjusted' }
 
 /** Terpee points from shopping at partner stores, the receipts sent in for
- *  review, and the way to send one. Same content as the web portal's
- *  You → Points pane (ui/my-app/src/components/ProfileView.tsx). */
-export default function Points() {
-  const points = useFetch('points', () => api.me.getPoints())
-  const receipts = useFetch('receipts', () => api.me.getReceipts())
-
-  // Coming back from the upload screen, or after a reviewer approves, should
-  // show the change without a pull. The first focus is the initial load.
-  const focused = useRef(false)
-  const refreshPoints = points.refresh
-  const refreshReceipts = receipts.refresh
-  useFocusEffect(
-    useCallback(() => {
-      if (focused.current) {
-        refreshPoints()
-        refreshReceipts()
-      }
-      focused.current = true
-    }, [refreshPoints, refreshReceipts]),
-  )
-
-  if (points.loading || points.error) {
-    return <FeedState loading={points.loading} error={points.error} onRetry={points.refresh} />
-  }
-  const data = points.data!
-
+ *  review, and the way to send one: You → Points, as on the web portal
+ *  (components/ProfileView.tsx). The You screen loads the data, since its
+ *  header shows the balance too. */
+export default function PointsPane({ data, receipts }: { data: PointsSummary; receipts: MyReceipt[] | null }) {
   return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={{ paddingBottom: space[8] }}
-      refreshControl={
-        <RefreshControl
-          refreshing={points.refreshing}
-          onRefresh={() => {
-            points.refresh()
-            receipts.refresh()
-          }}
-          tintColor={t.text3}
-        />
-      }
-    >
+    <View>
       <View style={[styles.card, { margin: space[4], padding: space[5], flexDirection: 'row', alignItems: 'flex-end', gap: space[6] }]}>
         <View>
           <Label>Available</Label>
@@ -94,11 +56,11 @@ export default function Points() {
         <Icon name="chevron-right" size={18} color={t.text3} />
       </Pressable>
 
-      {receipts.data?.length ? (
+      {receipts?.length ? (
         <>
           <SectionTitle>Your receipts</SectionTitle>
           <View style={{ paddingHorizontal: space[4] }}>
-            {receipts.data.map(r => <ReceiptRow key={r.id} receipt={r} />)}
+            {receipts.map(r => <ReceiptRow key={r.id} receipt={r} />)}
           </View>
         </>
       ) : null}
@@ -113,7 +75,7 @@ export default function Points() {
           {data.entries.map(e => <EntryRow key={e.id} entry={e} />)}
         </View>
       )}
-    </ScrollView>
+    </View>
   )
 }
 
