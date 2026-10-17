@@ -11,6 +11,8 @@ import type { Position } from '@web/utils/partnerPlaces'
  */
 
 let current: Position | null = null
+/** Whether an attempt has finished, so null can be told apart from "not yet". */
+let settled = false
 let pending: Promise<Position | null> | null = null
 const listeners = new Set<(p: Position | null) => void>()
 
@@ -37,6 +39,7 @@ export function usePosition(): Position | null {
     if (!current && !pending) {
       pending = locate().then(p => {
         current = p
+        settled = true
         // A null answer may be a slow GPS or a "not now"; the next screen
         // that mounts tries again, without asking twice (canAskAgain).
         pending = null
@@ -47,4 +50,12 @@ export function usePosition(): Position | null {
     return () => { listeners.delete(setPos) }
   }, [])
   return pos
+}
+
+/** "off" once asking came back empty (denied, or no fix), so a screen can say
+ *  "Turn on location"; "pending" until then. Starts the ask like usePosition. */
+export function useLocationStatus(): 'pending' | 'on' | 'off' {
+  const pos = usePosition()
+  if (pos) return 'on'
+  return settled ? 'off' : 'pending'
 }
