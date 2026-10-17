@@ -101,3 +101,29 @@ def test_green_analytics_metrc_fields_and_edible_percents():
     assert r["ids"]["source_package"] == "1A4120300000196000002822"
     assert r["cannabinoids"]["D9-THC"] == 0.178 and r["cannabinoids"]["CBN"] == 0.005
     assert r["totals"]["total_thc"] == 0.178
+
+
+def test_drs_flower_reads_percent_column_and_total_above_its_label():
+    r = _read("drs_flower_5boro.txt")
+    assert r["ids"]["lab"] == "DRS Testing" and r["ids"]["lot"] == "AG071514PR"
+    assert r["cannabinoids"]["THCa"] == 33.92 and r["cannabinoids"]["D9-THC"] == 2.08
+    # "31.82%  ND  9.3%" over "Total THC  Total CBD  Moisture": not the moisture.
+    assert r["totals"]["total_thc"] == 31.82
+    assert r["terpenes"]["Myrcene"] == 0.82 and r["totals"]["total_terpenes"] == 2.17
+
+
+def test_drs_gummy_mg_columns_become_percent_and_mg_totals_are_dropped():
+    r = _read("drs_gummy_offhours.txt")
+    assert r["ids"]["lot"] == "OH-LROG-018"  # "Batch#: OH-LROG-018; Batch Size..."
+    # LOQ mg/g, Result mg/unit, Result mg/g: 1.62 mg/g is 0.162%.
+    assert r["cannabinoids"]["D9-THC"] == 0.162
+    assert r["totals"]["total_cannabinoids"] is None  # "9.75" is mg/unit
+    assert r["totals"]["total_thc"] == 0.162
+
+
+def test_mcr_result_first_with_percent_sign_and_formula_totals():
+    r = _read("mcr_5boro.txt")
+    assert r["ids"]["lab"] == "MCR Labs"
+    assert r["cannabinoids"]["THCa"] == 25.2 and r["cannabinoids"]["D9-THC"] == 1.37
+    assert r["totals"]["total_thc"] == 23.5 and r["totals"]["total_cannabinoids"] == 27.9
+    assert r["terpenes"]["β-Caryophyllene"] == 0.6414

@@ -1,0 +1,465 @@
+                                                      Analytical Test Report
+
+
+Client:                             Final Report              MCR-S26-00890 Rev.01.00                                                                   Laboratory:
+Nanticoke Hemp Inc                  Report Date                             4/15/2026                                                                     MCR Labs
+OCM-PROC-24-000002                                                                                                                                   Julian England
+                                    Lab Permit                    OCM-CPL-2022-00008
+                                                                                                                                                      315-541-4202
+                                                                                                                                                   800 Broad Street
+                                Sample Collection                                                                                                   Utica, NY 13501
+                                                                          Endicott, NY
+                                      Site
+
+                                Sample Collection
+                                                                        4/9/2026 15:05
+                                 Date and Time
+
+
+
+   Sample ID #                  Sample Name                            Matrix                         Sample Type                             Date Received
+
+                          Nanticoke - All Gas .5 Gram
+    S26-00890                                                          Flower                            Adult Use                                 4/9/2026
+                                 Single Preroll
+
+
+                                             Number of Units
+       Lot #           Lot Size (units)                                                 METRC ID
+                                               Received
+
+                                                                              1A41203000003210000
+   PF120507PR                7000                       26
+                                                                                     01332
+
+The test results presented in this report are accurate, complete, and compliant with the MCR Labs quality control criteria.
+
+Authorization
+
+
+
+
+Julian England
+Lead Technical Director
+
+
+Case Narrative
+These results apply only to the items tested, as sampled according to CORP-SOP-NY-20, by MCR Labs New York.
+
+
+
+
+This report and all information herein shall not be reproduced, except in its entirety, without the expressed consent of MCR
+Labs. Results apply only to the sample supplied to MCR Labs.
+
+
+
+Requested Testing
+          Test               Code         Procedure                                            Analytes Tested                                                   Disposition
+
+                                                                    CBC, CBD, CBDA, CBDV, CBG, CBGA, CBN, Δ8-THC,
+  Cannabinoid Profile         CN          TM-NY-7                                                                                                                   N/A
+                                                                  Δ9-THC, (6aR,9S)-10-THC, (6aS,9S)-10-THC, THCV, THCA
+
+
+   Moisture Content           MC          TM-NY-1                                              Moisture Content                                                    Pass
+
+
+     Water Activity           WA          TM-NY-10                                                Water Activity                                                   Pass
+
+                                                                Arsenic (As), Cadmium (Cd), Mercury (Hg), Lead (Pb),
+ Heavy Metals Screen          HM          TM-NY-5                                                                                                                  Pass
+                                                                Chromium (Cr), Copper (Cu), Nickel (Ni), Antimony (Sb)
+
+                                                                   Aflatoxin B1, Aflatoxin B2, Aflatoxin G1, Aflatoxin G2,
+  Mycotoxins Screen           MY          TM-NY-6                                                                                                                  Pass
+                                                                               Total Aflatoxins, Ochratoxin A
+
+                                          TM-NY-3                  Total Viable Aerobic Bacteria, Total Yeast and Mold,
+ Microbiological Screen       MB                                                                                                                                   Pass
+                                          TM-NY-8                             STEC, Salmonella, Aspergillus
+                                                             α-Pinene, Camphene, β-Myrcene, β-Pinene, Δ-3-Carene, α-Terpinene, cis-β-Ocimene, D-Limonene,
+                                                              p-Cymene, trans-β-Ocimene, Eucalyptol, γ-Terpinene, Terpinolene, Linalool, Isopulegol, Geraniol,
+    Terpene Profile           TP          TM-NY-12               β-Caryophyllene, α-Humulene, cis-Nerolidol, trans-Nerolidol, Guaiol, Caryophyllene Oxide,         Pass
+                                                                     α-Bisabolol, α-Terpineol, Fenchol, Valencene, α-Phellandrene, trans-β-Farnesene
+
+
+   Pesticides Screen          PS          TM-NY-6                                   Pesticides as required by OCM                                                  Pass
+
+
+
+
+                                                             800 Broad Street
+                                                             Utica, NY 13501
+                                                              mcrlabs.com                                                                                                      1/7
+Nanticoke Hemp Inc                                       MCR-S26-00890 Rev.01.00                      Nanticoke - All Gas .5 Gram Single Preroll
+
+
+
+
+        Cannabinoid Profile [TM-NY-7]                          Analyst: TC                                 Test Date: 4/10/2026 13:45
+
+
+
+
+                       Table 1 - S26-00890 Nanticoke - All Gas .5 Gram Single Preroll Flower Cannabinoid Testing
+                                                                           Conc.                        LOD              LOQ
+           Analyte               Cannabinoid
+                                                                      (dry weight %)                 (weight %)       (weight %)
+
+         CBC            Cannabichromene                                      <LOQ                     0.0044%          0.0500%
+         CBD            Cannabidiol                                           ND                      0.0067%          0.0500%
+         CBDA           Cannabidiolic Acid                                   <LOQ                     0.0051%          0.0500%
+         CBDV           Cannabidivarin                                        ND                      0.0065%          0.0500%
+         CBG            Cannabigerol                                       0.103%                     0.0057%          0.0500%
+         CBGA           Cannabigerolic Acid                                  1.20%                    0.0062%          0.0500%
+         CBN            Cannabinol                                            ND                      0.0052%          0.0500%
+         Δ8-THC         Δ8-Tetrahydrocannabinol                               ND                      0.0188%          0.0500%
+         Δ9-THC         Δ9-Tetrahydrocannabinol                              1.37%                    0.0141%          0.0500%
+         Δ10R-THC       Δ10R-Tetrahydrocannabinol                             ND                      0.0055%          0.0500%
+         Δ10S-THC       Δ10S-Tetrahydrocannabinol                            <LOQ                     0.0044%          0.0500%
+         THCV           Tetrahydrocannabivarin                                ND                      0.0084%          0.0500%
+         THCA           Tetryhydrocannabinolic Acid                          25.2%                    0.0057%          0.0500%
+
+
+
+
+        Total Active Cannabinoids (sum of above table)                       27.9%                      N/A               N/A
+        Total THC = THC + (THCA * 0.877)                                     23.5%                      N/A               N/A
+        Total CBD = CBD + (CBDA * 0.877)                                      ND                        N/A               N/A
+
+
+        Note: There are no limits established by the New York Office of Cannabis Management for cannabinoid concentrations.
+        ND = Not Detected; LOQ = Limit of Quantitation; LOD = Limit of Detection.
+        Δ10R-THC = (6aR,9S)-10-THC; Δ10S-THC = (6aS,9S)-10-THC
+
+
+
+
+        Moisture Content [TM-NY-1]                             Analyst: WP                                 Test Date: 4/10/2026 15:05
+
+
+
+
+                     Table 2 - S26-00890 Nanticoke - All Gas .5 Gram Single Preroll Flower Moisture Content Testing
+                          Test Analysis                      Conc. (weight %)          Regulatory Limits           Disposition
+                        Moisture Content                           11.8%                    15.0%                      Pass
+
+
+        Note: Testing limits are based on the limits set forth by the New York Office of Cannabis Management pursuant to 9 New York
+        Codes, Rules and Regulations (NYCRR) Part 130 and Cannabis Law. Measurement uncertainty is not factored in the
+        disposition.
+        ND = Not Detected.
+
+
+
+
+        Water Activity [TM-NY-10]                              Analyst: WP                                 Test Date: 4/10/2026 15:55
+
+
+
+
+                      Table 3 - S26-00890 Nanticoke - All Gas .5 Gram Single Preroll Flower Water Activity Testing
+                          Test Analysis                           Result                    Limits                 Disposition
+                          Water Activity                            0.44                    ≤ 0.65                     Pass
+
+
+        Note: Testing limits are based on the limits set forth by the New York Office of Cannabis Management pursuant to 9 New York
+        Codes, Rules and Regulations (NYCRR) Part 130 and Cannabis Law. Measurement uncertainty is not factored in the
+        disposition.
+        ND = Not Detected.
+
+
+
+
+                                                               800 Broad Street
+                                                               Utica, NY 13501
+                                                                mcrlabs.com                                                                 2/7
+Nanticoke Hemp Inc                                      MCR-S26-00890 Rev.01.00                         Nanticoke - All Gas .5 Gram Single Preroll
+
+
+
+
+        Heavy Metals Screen [TM-NY-5]                            Analyst: BS                                    Test Date: 4/10/2026 13:35
+
+
+
+
+                      Table 4 - S26-00890 Nanticoke - All Gas .5 Gram Single Preroll Flower Heavy Metals Testing
+                                       Result               LOD                      LOQ               Limits
+             Test Analysis                                                                                                Disposition
+                                       (µg/g)              (µg/g)                   (µg/g)             (µg/g)
+                Arsenic                <LOQ                0.007                     0.04               0.2                   Pass
+               Cadmium                 <LOQ                0.017                     0.05               0.2                   Pass
+                Mercury                  ND                0.020                     0.04               0.1                   Pass
+                 Lead                  <LOQ                0.007                     0.09               0.5                   Pass
+              Chromium                   ND                0.645                    20.00               110                   Pass
+                Copper                  8.08               0.208                     5.45                30                   Pass
+                 Nickel                  ND                0.163                     0.36                5                    Pass
+               Antimony                  ND                0.019                     0.36                2                    Pass
+
+
+        Note: Testing limits are based on the limits set forth by the New York Office of Cannabis Management pursuant to 9 New York
+        Codes, Rules and Regulations (NYCRR) Part 130 and Cannabis Law.
+        ND = Not Detected; LOD = Limit of Detection; LOQ = Limit of Quantitation.
+
+
+
+
+        Mycotoxins Screen [TM-NY-6]                              Analyst: NM/JMG                          Test Date: 4/11/2026 8:40 AM
+
+
+
+
+                        Table 5 - S26-00890 Nanticoke - All Gas .5 Gram Single Preroll Flower Mycotoxins Testing
+                                         Result                    LOD                   LOQ                   Limits
+                Analyte                                                                                                      Disposition
+                                         (µg/g)                   (µg/g)                (µg/g)                 (µg/g)
+              Aflatoxin B1                 ND                     0.0025                    0.005               N/A              N/A
+              Aflatoxin B2                 ND                     0.0010                    0.005               N/A              N/A
+              Aflatoxin G1                 ND                     0.0015                    0.005               N/A              N/A
+              Aflatoxin G2                 ND                     0.0042                    0.005               N/A              N/A
+            Total Aflatoxins               ND                       N/A                      N/A                0.02            Pass
+             Ochratoxin A                  ND                     0.0030                    0.010               0.02            Pass
+
+
+        Note: Testing limits are based on the limits set forth by the New York Office of Cannabis Management pursuant to 9 New York
+        Codes, Rules and Regulations (NYCRR) Part 130 and Cannabis Law.
+        ND = Not Detected; LOD = Limit of Detection; LOQ = Limit of Quantitation.
+
+
+
+
+        Microbiological Screen [TM-NY-3]                         Analyst: TC                                     Test Date: 4/10/2026 9:38
+
+
+
+
+                     Table 6 - S26-00890 Nanticoke - All Gas .5 Gram Single Preroll Flower Microbiological Testing
+               Test Analysis             Result           Unit                 LOQ                  Limits                Disposition
+                Total Viable
+                                          <100          CFU/g              100 CFU/g                No Limit                Reported
+              Aerobic Bacteria
+
+            Total Yeast and Mold          <100          CFU/g              100 CFU/g                No Limit                Reported
+
+
+
+        Note: Testing limits are based on the limits set forth by the New York Office of Cannabis Management pursuant to 9 New York
+        Codes, Rules and Regulations (NYCRR) Part 130 and Cannabis Law.
+        CFU = Colony Forming Unit; LOQ = Limit of Quantitation.
+
+
+
+
+                                                                 800 Broad Street
+                                                                 Utica, NY 13501
+                                                                  mcrlabs.com                                                                 3/7
+Nanticoke Hemp Inc                                      MCR-S26-00890 Rev.01.00                     Nanticoke - All Gas .5 Gram Single Preroll
+
+
+
+
+        Microbiological Screen [TM-NY-8]                         Analyst: TC                              Test Date: 4/10/2026 9:38
+
+
+
+
+                     Table 7 - S26-00890 Nanticoke - All Gas .5 Gram Single Preroll Flower Microbiological Testing
+               Test Analysis             Result           Unit                 LOQ              Limits              Disposition
+                     STEC               Negative          N/A               1 CFU/g        Not detected in 1g           Pass
+                 Salmonella             Negative          N/A               1 CFU/g        Not detected in 1g           Pass
+                 Aspergillus            Negative          N/A               1 CFU/g        Not detected in 1g           Pass
+
+
+        Note: Testing limits are based on the limits set forth by the New York Office of Cannabis Management pursuant to 9 New York
+        Codes, Rules and Regulations (NYCRR) Part 130 and Cannabis Law.
+        STEC = Shiga Toxin producing E. coli; CFU = Colony Forming Unit; LOQ = Limit of Quantitation.
+
+
+
+
+                                                                 800 Broad Street
+                                                                 Utica, NY 13501
+                                                                  mcrlabs.com                                                             4/7
+Nanticoke Hemp Inc                                        MCR-S26-00890 Rev.01.00                           Nanticoke - All Gas .5 Gram Single Preroll
+
+
+
+
+        Terpene Profile [TM-NY-12]                                Analyst: NM/JMG                           Test Date: 4/10/2026 12:40 PM
+
+
+
+
+                           Table 8 - S26-00890 Nanticoke - All Gas .5 Gram Single Preroll Flower Terpene Testing
+                                               Result            Result           LOD                LOD          LOQ              LOQ
+                       Analyte
+                                             (weight %)          (ppm)         (weight %)           (ppm)      (weight %)         (ppm)
+                      α-Pinene                 0.0272             272            0.0026              26           0.0125           125
+                     Camphene                   <LOQ             <LOQ            0.0022              22           0.0125           125
+                     β-Myrcene                 0.1376            1376            0.0021              21           0.0125           125
+                      β-Pinene                 0.0402             402            0.0020              20           0.0125           125
+                     Δ-3-Carene                  ND               ND             0.0021              21           0.0125           125
+                     α-Terpinene                 ND               ND             0.0022              22           0.0125           125
+                 cis-β-Ocimene                   ND               ND             0.0006               6           0.0031             31
+                     D-Limonene                0.2639            2639            0.0022              22           0.0125           125
+                      p-Cymene                   ND               ND             0.0025              25           0.0125           125
+                trans-β-Ocimene                 <LOQ             <LOQ            0.0019              19           0.0094             94
+                      Eucalyptol                 ND               ND             0.0022              22           0.0125           125
+                     γ-Terpinene                 ND               ND             0.0022              22           0.0125           125
+                     Terpinolene                <LOQ             <LOQ            0.0022              22           0.0125           125
+                       Linalool                0.1517            1517            0.0022              22           0.0125           125
+                      Isopulegol                 ND               ND             0.0025              25           0.0125           125
+                       Geraniol                 <LOQ             <LOQ            0.0028              28           0.0125           125
+                 β-Caryophyllene               0.6414            6414            0.0026              26           0.0125           125
+                     α-Humulene                0.2753            2753            0.0024              24           0.0125           125
+                     cis-Nerolidol               ND               ND             0.0012              12           0.0054             54
+                 trans-Nerolidol                 ND               ND             0.0032              32           0.0125           125
+                        Guaiol                   ND               ND             0.0021              21           0.0125           125
+              Caryophyllene Oxide              0.0255             255            0.0027              27           0.0125           125
+                     α-Bisabolol               0.0627             627            0.0026              26           0.0125           125
+                     α-Terpineol               0.0350             350            0.0013              13           0.0125           125
+                       Fenchol                 0.0399             399            0.0006               6           0.0125           125
+                     Valencene                 0.1647            1647            0.0021              21           0.0125           125
+                 α-Phellandrene                  ND               ND             0.0046              46           0.0125           125
+               trans-β-Farnesene               0.0729             729            0.0061              61           0.0125           125
+
+
+                                                 Result (weight %)                   Limit (weight %)                  Disposition
+                 Total Terpenes                         1.9380                            11.5000                          Pass
+
+
+        Note: Testing limits are based on the limits set forth by the New York Office of Cannabis Management pursuant to 9 New York
+        Codes, Rules and Regulations (NYCRR) Part 130 and Cannabis Law.
+        ND = Not Detected; LOD = Limit of Detection; LOQ = Limit of Quantitation.
+
+
+
+
+                                                                  800 Broad Street
+                                                                  Utica, NY 13501
+                                                                   mcrlabs.com                                                                    5/7
+Nanticoke Hemp Inc                                       MCR-S26-00890 Rev.01.00                    Nanticoke - All Gas .5 Gram Single Preroll
+
+
+
+
+        Pesticides Screen [TM-NY-6]                            Analyst: NM/JMG                        Test Date: 4/11/2026 8:40 AM
+
+
+
+
+                          Table 9 - S26-00890 Nanticoke - All Gas .5 Gram Single Preroll Flower Pesticides Testing
+                                             Result              LOD                 LOQ                Limits
+                     Analyte                                                                                           Disposition
+                                             (ppm)              (ppm)               (ppm)               (ppm)
+                 Abamectin                     ND                0.023              0.200                 0.5             Pass
+                 Acephate                      ND                0.042              0.200                 0.4             Pass
+                Acequinocyl                    ND                0.034              0.200                 2.0             Pass
+                Acetamiprid                    ND                0.036              0.160                 0.2             Pass
+                     Aldicarb                  ND                0.022              0.200                 0.4             Pass
+                Azadirachtin                   ND                0.055              0.200                 1.0             Pass
+                Azoxystrobin                   ND                0.109              0.100                 0.2             Pass
+                 Bifenazate                    ND                0.008              0.160                 0.2             Pass
+                 Bifenthrin                    ND                0.041              0.100                 0.2             Pass
+                  Boscalid                     ND                0.032              0.200                 0.4             Pass
+                     Captan                    ND                0.037              0.200                 1.0             Pass
+                  Carbaryl                     ND                0.063              0.160                 0.2             Pass
+                 Carbofuran                    ND                0.033              0.160                 0.2             Pass
+             Chlorantraniliprole               ND                0.008              0.190                 0.2             Pass
+                 Chlordane                     ND                0.083              0.200                 1.0             Pass
+                Chlorfenapyr                   ND                0.134              0.500                 1.0             Pass
+            Chlormequat chloride               ND                0.068              0.200                 1.0             Pass
+                Chlorpyrifos                   ND                0.005              0.160                 0.2             Pass
+                Clofentezine                   ND                0.016              0.100                 0.2             Pass
+                Coumaphos                      ND                0.019              0.200                 1.0             Pass
+                 Cyfluthrin                    ND                0.132              0.500                 1.0             Pass
+               Cypermethrin                    ND                0.254              0.500                 1.0             Pass
+                Daminozide                     ND                0.049              0.200                 1.0             Pass
+                  Diazinon                     ND                0.022              0.100                 0.2             Pass
+                 Dichlorvos                    ND                0.032              0.200                 1.0             Pass
+                Dimethoate                     ND                0.108              0.160                 0.2             Pass
+               Dimethomorph                    ND                0.007              0.200                 1.0             Pass
+               Ethoprop(hos)                   ND                0.014              0.160                 0.2             Pass
+                 Etofenprox                    ND                0.020              0.200                 0.4             Pass
+                 Etoxazole                     ND                0.011              0.100                 0.2             Pass
+                Fenhexamid                     ND                0.022              0.200                 1.0             Pass
+                Fenoxycarb                     ND                0.032              0.160                 0.2             Pass
+               Fenpyroximate                   ND                0.019              0.200                 0.4             Pass
+                     Fipronil                  ND                0.045              0.200                 0.4             Pass
+                 Flonicamid                    ND                0.058              0.200                 1.0             Pass
+
+
+        Note: Testing limits are based on the limits set forth by the New York Office of Cannabis Management pursuant to 9 New York
+        Codes, Rules and Regulations (NYCRR) Part 130 and Cannabis Law.
+        ND = Not Detected; LOD = Limit of Detection; LOQ = Limit of Quantitation; ppm = Parts Per Million.
+
+
+
+
+                                                               800 Broad Street
+                                                               Utica, NY 13501
+                                                                mcrlabs.com                                                               6/7
+Nanticoke Hemp Inc                                      MCR-S26-00890 Rev.01.00                     Nanticoke - All Gas .5 Gram Single Preroll
+
+
+
+
+        Pesticides Screen [TM-NY-6]                            Analyst: NM/JMG                        Test Date: 4/11/2026 8:40 AM
+
+
+
+
+                         Table 10 - S26-00890 Nanticoke - All Gas .5 Gram Single Preroll Flower Pesticides Testing
+                                             Result              LOD                 LOQ                Limits
+                     Analyte                                                                                           Disposition
+                                             (ppm)              (ppm)               (ppm)               (ppm)
+                 Fludioxonil                  ND                0.113               0.200                 0.4             Pass
+                Hexythiazox                   ND                0.042               0.200                 1.0             Pass
+                     Imazalil                 ND                0.011               0.100                 0.2             Pass
+                Imidacloprid                  ND                0.020               0.200                 0.4             Pass
+            Indole-3-butyric Acid             ND                0.015               0.200                 1.0             Pass
+              Kresoxim-methyl                 ND                0.038               0.200                 0.4             Pass
+                 Malathion                    ND                0.027               0.100                 0.2             Pass
+                 Metalaxyl                    ND                0.006               0.190                 0.2             Pass
+                 Methiocarb                   ND                0.035               0.100                 0.2             Pass
+                 Methomyl                     ND                0.056               0.200                 0.4             Pass
+              Methyl parathion                ND                0.046               0.100                 0.2             Pass
+                 Mevinphos                    ND                0.048               0.200                 1.0             Pass
+                 MGK-264                      ND                0.014               0.100                 0.2             Pass
+                Myclobutanil                  ND                0.031               0.100                 0.2             Pass
+                     Naled                    ND                0.016               0.200                 0.5             Pass
+                     Oxamyl                   ND                0.046               0.200                 1.0             Pass
+               Paclobutrazol                  ND                0.033               0.200                 0.4             Pass
+          Pentachloronitrobenzene             ND                0.037               0.200                 1.0             Pass
+             Permethrins, Total               ND                0.038               0.100                 0.2             Pass
+                  Phosmet                     ND                0.020               0.100                 0.2             Pass
+             Piperonyl butoxide               ND                0.010               0.200                 2.0             Pass
+                 Prallethrin                  ND                0.017               0.100                 0.2             Pass
+               Propiconazole                  ND                0.011               0.200                 0.4             Pass
+                  Propoxur                    ND                0.041               0.190                 0.2             Pass
+                 Pyrethrins                   ND                0.019               0.200                 1.0             Pass
+                 Pyridaben                    ND                0.025               0.160                 0.2             Pass
+             Spinetoram, Total                ND                0.034               0.200                 1.0             Pass
+              Spinosad, Total                 ND                0.033               0.100                 0.2             Pass
+                Spiromesifen                  ND                0.019               0.100                 0.2             Pass
+               Spirotetramat                  ND                0.010               0.100                 0.2             Pass
+                Spiroxamine                   ND                0.018               0.100                 0.2             Pass
+               Tebuconazole                   ND                0.015               0.200                 0.4             Pass
+                 Thiacloprid                  ND                0.005               0.100                 0.2             Pass
+               Thiamethoxam                   ND                0.014               0.100                 0.2             Pass
+               Trifloxystrobin                ND                0.045               0.100                 0.2             Pass
+
+
+        Note: Testing limits are based on the limits set forth by the New York Office of Cannabis Management pursuant to 9 New York
+        Codes, Rules and Regulations (NYCRR) Part 130 and Cannabis Law.
+        ND = Not Detected; LOD = Limit of Detection; LOQ = Limit of Quantitation; ppm = Parts Per Million.
+
+
+
+
+                                                               800 Broad Street
+                                                               Utica, NY 13501
+                                                                mcrlabs.com                                                               7/7
+

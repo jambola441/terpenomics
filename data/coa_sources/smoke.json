@@ -1,0 +1,17 @@
+{
+  "brand": "Smoke",
+  "site": "https://www.smokewrld.com",
+  "source": {
+    "kind": "links",
+    "pages": ["https://www.smokewrld.com/coa-reports"],
+    "link": "drive\\.google\\.com/file/d/",
+    "rewrite": [["https://drive\\.google\\.com/file/d/([^/]+)/view.*", "https://drive.google.com/uc?export=download&id=\\1"]]
+  },
+  "learned": "2026-10-17: smokewrld.com/coa-reports links ~51 reports, each a Google Drive file (/file/d/<id>/view), rewritten to the direct-download URL.",
+  "notes": [
+    "Link text is the lot only: FB.NY.SO.<code>.<YYMMDD> or <lab sample>-<YYYYMMDD>-MXD####; the strain comes from the report's product line."
+  ],
+  "name": [
+    {"from": "text", "match": "^\\s*(?P<lot>\\S+)\\s*$"}
+  ]
+}

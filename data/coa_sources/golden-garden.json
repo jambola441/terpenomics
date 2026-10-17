@@ -1,0 +1,68 @@
+{
+  "brand": "Golden Garden",
+  "site": "https://goldengardenny.com",
+  "source": {
+    "kind": "links",
+    "pages": [
+      "https://goldengardenny.com/coas"
+    ],
+    "link": "website-files\\.com/.+\\.pdf$"
+  },
+  "learned": "2026-10-17: Webflow page /coas, ~60 report PDFs on Webflow's CDN grouped by product (flower 3.5g, pre-roll 1g, infused pre-roll 3pk, Zero Gravity moonrock 4g); link text is the test date.",
+  "notes": [
+    "Every filename starts with Webflow's 24-hex asset id and an underscore.",
+    "Filenames come in four shapes: '<YYYYMMDD>-CAPI-###-Golden Garden <Flower|Pre Roll|Infused Pre Roll|Zero Gravity Moonrock 4g> <Strain> <size>.pdf' (2026), 'X<YYMMDD>_<order>_<Strain>_<sample#>.pdf' (late 2025, lab order files), 'Golden Garden Pre Roll <Strain> 1gs.pdf', and older '<Strain> 3.5g.pdf' / '<Strain> Preroll[ <#>].pdf'.",
+    "Spellings differ from the catalog: Superboof/Super Boof, London Pound Cake/London Poundcake, Melted Strawberrys/Melted Strawberry_s; 'Buckin Rusty Preroll' and 'GG Bucking Pre COA' are Buckin Runtz.",
+    "Infused pre-rolls are the 'Live Resin Infused' line, moonrocks the 'Zero Gravity' line."
+  ],
+  "name": [
+    {
+      "from": "file",
+      "match": "^[0-9a-f]{24}_\\d{8}-(?P<lot>CAPI-\\d+)-Golden Garden (?:Flower |(?:Infused )?Pre Roll |Zero Gravity Moonrock 4g )?(?P<strain>.+?)(?: \\d[\\d.]*gs?(?: 3pk)?)?\\.pdf$"
+    },
+    {
+      "from": "file",
+      "match": "^[0-9a-f]{24}_X\\d{6}_\\d{4}_(?P<strain>.+?)_(?P<lot>\\d{5})\\.pdf$"
+    },
+    {
+      "from": "file",
+      "match": "^[0-9a-f]{24}_Golden Garden Pre Roll (?P<strain>.+?) 1gs\\.pdf$"
+    },
+    {
+      "from": "file",
+      "match": "^[0-9a-f]{24}_(?:GG )?(?P<strain>.+?)(?: 3\\.5g| Preroll| Pre COA| Recipe)"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "file": "(?i)pre ?roll|Pre COA"
+      },
+      "set": "preroll",
+      "why": "filename says pre-roll"
+    },
+    {
+      "when": {
+        "file": "Moonrock"
+      },
+      "set": "flower",
+      "why": "Zero Gravity moonrock"
+    },
+    {
+      "when": {
+        "file": "3\\.5g"
+      },
+      "set": "flower"
+    }
+  ],
+  "lines": [
+    {
+      "when": "Infused Pre Roll",
+      "line": "Live Resin Infused"
+    },
+    {
+      "when": "Zero Gravity",
+      "line": "Zero Gravity"
+    }
+  ]
+}

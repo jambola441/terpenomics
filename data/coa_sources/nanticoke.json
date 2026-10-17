@@ -1,0 +1,47 @@
+{
+  "brand": "Nanticoke",
+  "site": "https://nanticoke.co",
+  "source": {
+    "kind": "links",
+    "pages": [
+      "https://nanticoke.co/lab-results",
+      "https://nanticoke.co/lab-results-archive"
+    ],
+    "link": "(?i)\\.pdf$",
+    "skip": "(?i)report%20\\(|report \\(",
+    "rewrite": [
+      [
+        " ",
+        "%20"
+      ],
+      [
+        "\\\\",
+        "/"
+      ]
+    ]
+  },
+  "learned": "2026-10-17: nanticoke.co (OpenCart) has /lab-results (~480 PDF links) and /lab-results-archive (~290), PDFs under /image/catalog/lab-results/. Labs: Keystone State Testing (older), DRS Testing and MCR Labs (MCR-S26-..., 2026) have no reader profile yet.",
+  "notes": [
+    "Filenames are Strain_Size_Product_LOT.pdf with spaces, underscores or hyphens (Blue_Dream_3_5g_Jar_BL110610.pdf, Jack Herer .5g Preroll ML121907JHPR.pdf); the lot is the last token. Lot suffixes: PR preroll, 5B 5-pack, BB blunt, DB dime bag.",
+    "Vape lots look like 002_NNC_BR1 / 006_148; only the last token is taken. A few files are bare lab numbers (0523-014 Fortune Cookie.pdf).",
+    "~120 links name no strain: edibles (Sleep-Tablets, mini coins), lab-numbered files (9859.1.pdf, AL50528001-005 (Original).pdf) and variety packs; their reports carry the product name."
+  ],
+  "name": [
+    {
+      "from": "file",
+      "match": "^(?:X\\d{6}_\\d{4}_)?(?P<strain>[A-Za-z][^/]*?)[ _-]+(?:\\d+x\\.?\\d+g|\\d+[-_ ]?(?:Pack|Pk)|1_4[_ ]*(?:Ounce|oz)|1_2_Oz|14 oz|\\d+\\.\\d+ Jar|[._]?\\d+[._ ]?\\d*\\s*(?:g|G|Gram|Oz)|Lot_Multi|Multi).*[ _-](?P<lot>(?=[A-Za-z0-9_-]*[A-Z])(?=[A-Za-z0-9_-]*\\d)[A-Z0-9][A-Za-z0-9_-]{3,}[A-Z0-9])(?:\\s*(?:drs|KST-?cmbn?d|\\d{6})\\s*)?\\s*\\.pdf$"
+    },
+    {
+      "from": "file",
+      "match": "^(?:X\\d{6}_\\d{4}_|Nanticoke_-_)?(?P<strain>[A-Za-z][^/]*?)[ _-]+(?:\\d+x\\.?\\d+g|\\d+[-_ ]?(?:Pack|Pk)|1_4[_ ]*(?:Ounce|oz)|1_2_Oz|14 oz|\\d+\\.\\d+ Jar|[._]?\\d+[._ ]?\\d*\\s*(?:g|G|Gram|Oz)|Lot_Multi|Multi)"
+    },
+    {
+      "from": "file",
+      "match": "^[A-Z0-9]+-\\d+ - Nanticoke - (?:Nanticoke|5 Boro) - (?:GS KINGPIN )?(?P<strain>.+?)[ _-]+(?:CURED|\\d+x\\.?\\d+g|\\d+[-_ ]?(?:Pack|Pk)|1_4[_ ]*(?:Ounce|oz)|1_2_Oz|14 oz|\\d+\\.\\d+ Jar|[._]?\\d+[._ ]?\\d*\\s*(?:g|G|Gram|Oz)|Lot_Multi|Multi)"
+    },
+    {
+      "from": "file",
+      "match": "^\\d{4}-\\d{3}[ _](?P<strain>.+?)\\.pdf$"
+    }
+  ]
+}

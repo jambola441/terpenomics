@@ -35,7 +35,7 @@ import sys
 
 # Bump when a change would read a stored report differently; coa_crawl.py push re-reads
 # rows an older version read.
-VERSION = 2
+VERSION = 3
 
 # ----------------------------------------------------------------------- analytes
 
@@ -131,6 +131,14 @@ LABS: dict[str, dict] = {
     "Cirona Labs": {"sign": r"Cirona Labs|Hemp Hunter Labs", "cannabinoids": 0, "terpenes": 0},
     # Same report template as Cirona: % w/w first, "< MRL" below the limit.
     "Green Analytics": {"sign": r"Green Analytics", "cannabinoids": 0, "terpenes": 0},
+    # Result first, with a % sign; each analyte named twice ("CBC  Cannabichromene").
+    "MCR Labs": {"sign": r"MCR Labs", "cannabinoids": 0, "terpenes": 0},
+    # Confident LIMS template. Cannabinoids: LOQ (mg/g), %, mg/g; on a unit product
+    # (gummy) the columns are LOQ, mg/unit, mg/g, so the percent is mg/g / 10.
+    # Terpenes: LOQ, %, mg/g. Placed last: other labs' reports can name DRS as sampler.
+    "DRS Testing": {"sign": r"DRS Testing", "cannabinoids": 1, "terpenes": 1,
+                    "unit_columns": {"when": r"Result\s+Result\s*\n\s*mg/g\s+mg/unit\s+mg/g",
+                                     "cannabinoids": 2, "scale": 0.1}},
 }
 
 # ---------------------------------------------------------------------------- ids
@@ -142,11 +150,11 @@ ID_PATTERNS: dict[str, list[str]] = {
     "source_package": [r"Regulator Source Package ID\s*:?\s*(1A4[0-9A-F]{21})",
                        r"Metrc Source Package\s*:?\s*(1A4[0-9A-F]{21})",
                        r"METRC Source ID\s*:?\s*(1A4[0-9A-F]{21})"],
-    "lot":            [r"Lot\s*(?:#|Number|No\.?)\s*:?\s*([A-Z0-9][A-Z0-9._/-]{2,})",
-                       r"Harvest/Lot (?:ID|#)\s*:?\s*([A-Z0-9][A-Z0-9._/-]{2,})",
-                       r"Batch Lot ID\s*:?\s*([A-Z0-9][A-Z0-9._/-]{2,})",
-                       r"Batch\s*#\s*:?\s*([A-Z0-9][A-Z0-9._/-]{2,}?)(?=,|\s)",
-                       r"Regulator Batch ID\s*:?\s*([A-Z0-9][A-Z0-9._/-]{2,})"],
+    "lot":            [r"Lot\s*(?:#|Number|No\.?)\s*:?\s*((?-i:[A-Z0-9][A-Z0-9._/-]{2,}))",
+                       r"Harvest/Lot (?:ID|#)\s*:?\s*((?-i:[A-Z0-9][A-Z0-9._/-]{2,}))",
+                       r"Batch Lot ID\s*:?\s*((?-i:[A-Z0-9][A-Z0-9._/-]{2,}))",
+                       r"Batch\s*#\s*:?\s*((?-i:[A-Z0-9][A-Z0-9._/-]{2,}?))(?=[,;]|\s)",
+                       r"Regulator Batch ID\s*:?\s*((?-i:[A-Z0-9][A-Z0-9._/-]{2,}))"],
     "license":        [r"License\s*(?:#|Number)\s*:?\s*((?:OCM-)?[A-Z]{3,5}-\d{2,4}-\d{5,6}(?:-[A-Z0-9]+)?)"],
     "product":        [r"Sample Description\s*:\s*(.+?)\s{2,}", r"Sample Description\s*:\s*(.+)$",
                        r"Strain\s*:\s*([^,\n]+?)\s*,",
@@ -166,9 +174,10 @@ ID_PATTERNS: dict[str, list[str]] = {
 TOTAL_PATTERNS: dict[str, list[str]] = {
     "total_thc":           [r"^\s*Total THC\s*\[.*?\][ \t]+([\d.]+)",r"^\s*Total (?:Tetrahydrocannabinol \(THC\)|THC)[ \t]+-?[ \t]*([\d.]+)\s",
                             r"Total THC\s*\n\s*([\d.]+)\s*%",
-                            r"([\d.]+)\s*%?\s*\n?\s*Total THC\b(?!/)"],
-    "total_cbd":           [r"^\s*Total CBD\s*\[.*?\][ \t]+([\d.]+)",r"^\s*Total (?:Cannabidiol \(CBD\)|CBD)[ \t]+-?[ \t]*([\d.]+)\s"],
-    "total_cannabinoids":  [r"^\s*Total Cannabinoids[ \t]+([\d.]+)\s"],
+                            r"^[ \t]*([\d.]+)\s*%[^\n]*\n\s*Total THC\b(?!/)",
+                            r"^\s*Total THC = .*?\)\s+([\d.]+)%"],
+    "total_cbd":           [r"^\s*Total CBD = .*?\)\s+([\d.]+)%",r"^\s*Total CBD\s*\[.*?\][ \t]+([\d.]+)",r"^\s*Total (?:Cannabidiol \(CBD\)|CBD)[ \t]+-?[ \t]*([\d.]+)\s"],
+    "total_cannabinoids":  [r"^\s*Total Active Cannabinoids \(sum of above table\)\s+([\d.]+)%",r"^\s*Total Cannabinoids[ \t]+([\d.]+)\s"],
     "total_terpenes":      [r"^\s*TOTAL TERPENES[ \t]+[\d.]+[ \t]+[\d.]+[ \t]+([\d.]+)[ \t]+[\d.]+",  # Kaycha: limit, LOQ, %, mg
                             r"^\s*Total Terpenes \(% w/w\)[ \t]+([\d.]+)",r"^\s*Total Terpenes\s+(?:[\d,]+\s+)?([\d.]+)\s+(?:Passed|Tested)",
                             r"^\s*Total Terpenes\s+([\d.]+)\s*$", r"^\s*Total Terpenes\s+([\d.]+)\s", r"Terpene Total.*?\(([\d.]+)%\)",
@@ -268,7 +277,14 @@ def read(text: str) -> dict:
     if ids["metrc_tag"] and ids["metrc_tag"] == ids["source_package"]:
         ids["source_package"] = None
 
-    found = _rows(lines, {k: profile.get(k) for k in ("cannabinoids", "terpenes")})
+    kinds = {k: profile.get(k) for k in ("cannabinoids", "terpenes")}
+    scale = 1.0
+    alt = profile.get("unit_columns")
+    if alt and re.search(alt["when"], text):  # a per-unit product: mg columns, not %
+        kinds["cannabinoids"], scale = alt["cannabinoids"], alt["scale"]
+    found = _rows(lines, kinds)
+    if scale != 1.0:
+        found["cannabinoids"] = {k: round(v * scale, 4) for k, v in found["cannabinoids"].items()}
     for kind in ("cannabinoids", "terpenes"):
         if profile.get(kind) == "grid":
             found[kind] = _grid(lines, kind)
@@ -277,6 +293,8 @@ def read(text: str) -> dict:
     for k, pats in TOTAL_PATTERNS.items():
         v = _first(pats, text)
         totals[k] = float(v) if v and _value(v) is not None and float(v) <= 100 else None
+    if scale != 1.0:  # a per-unit product's stated totals are mg, not percent
+        totals.update(total_thc=None, total_cbd=None, total_cannabinoids=None)
     # Kaycha: "Total THC   Total CBD   Total Cannabinoids" over a row of percents.
     m = re.search(r"Total THC\s+Total CBD\s+Total Cannabinoids\s*\n(?:\s*\n)*\s*([\d.]+)%\s+([\d.]+)%\s+([\d.]+)%", text)
     if m:

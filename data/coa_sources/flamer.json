@@ -1,0 +1,20 @@
+{
+  "brand": "Flamer",
+  "site": "https://www.heyflamer.com",
+  "source": {
+    "kind": "links",
+    "pages": ["https://www.heyflamer.com/coas"],
+    "link": "^https://www\\.heyflamer\\.com/s/.+\\.pdf$",
+    "skip": "(?i)soy-ink"
+  },
+  "learned": "2026-10-17: a Squarespace page /coas of ~65 PDF links (/s/<file>.pdf), grouped under strain headings, link text 'lot #<lot>'. One link is a Keystone labware portal (HTML, not a PDF) and one is a packaging-ink COA (skipped).",
+  "notes": [
+    "Filenames abbreviate the strain: SG Silly Goofy, PNC, LB, SCK, REV Revelation, PP Pillow Princess, HH. Only some filenames spell it out (Silly-Goofy-..., Pillow-Princess-Lot-...); otherwise the strain comes from the report itself.",
+    "Lot forms: 010010001 (single) / 020010002 (5-pack), FPR25003 (pre-roll), FMPR25003 (mini pre-roll 5-pack), SCK-PR26004, FFA26005, CR-HF-FL-RV-1 (flower)."
+  ],
+  "name": [
+    {"from": "file", "match": "^(?P<strain>[A-Z][a-z]+(?:-[A-Z][a-z]+)+)-(?:Lot-)?(?P<lot>[A-Z0-9-]*\\d)(?:-COA)?\\.pdf$"},
+    {"from": "file", "match": "(?i)(?P<lot>f?m?pr\\d{5}|ffa\\d{5}|0[12]0\\d{6}|sck-?pr\\d{5})"},
+    {"from": "text", "match": "lot #\\s*(?P<lot>\\S+)"}
+  ]
+}

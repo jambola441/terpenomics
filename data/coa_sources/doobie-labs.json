@@ -1,0 +1,18 @@
+{
+  "brand": "Doobie Labs",
+  "site": "https://doobielabs.com",
+  "source": {
+    "kind": "links",
+    "pages": ["https://doobielabs.com/pages/coas"],
+    "link": "cdn\\.shopify\\.com/.+\\.pdf"
+  },
+  "learned": "2026-10-17: Shopify page /pages/coas links ~37 report PDFs on cdn.shopify.com (flower, prerolls, carts/AIOs), 2024-2025.",
+  "notes": [
+    "Filenames vary: Doobie_Labs_-_<Strain>_-_<MMDDYY>.pdf, Doobie_Labs_<Strain>_1G_Live_Resin.pdf, 20241125-1OFFDOOBIELABS-00N-<Strain>.pdf; the catalog match on the filename/product line names the strain when the rules miss."
+  ],
+  "name": [
+    {"from": "file", "match": "^Doobie_Labs_-_(?P<strain>.+?)_-_?(?:(?:Hybrid|Sativa|Indica)_-_)?(?:\\d{4,6}|3\\.5g)"},
+    {"from": "file", "match": "^Doobie_Labs_(?:Tin_)?(?P<strain>.+?)(?:_Sativa_COA.*|_1G_.*|_\\d+(?:\\.\\d+)?G_.*)?\\.pdf"},
+    {"from": "file", "match": "^\\d{8}-1OFF(?:DOOBIELABS)?-\\d{3}-(?P<strain>.+?)(?:_\\d+_pack.*)?\\.pdf"}
+  ]
+}

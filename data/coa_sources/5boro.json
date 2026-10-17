@@ -1,14 +1,29 @@
 {
   "brand": "5Boro",
   "site": "https://nanticoke.co",
-  "source": {"kind": "links", "pages": ["https://nanticoke.co/lab-results"], "link": "/lab-results/.+\\.pdf$",
-             "skip": "(?i)alibi|ohho|nitro|ready ?2 ?roll|milkweed|gentlemen|back home|infused|vape|aio|cart|gumm|edible|chocolate"},
-  "learned": "2026-10-17: Nanticoke (the 5Boro maker) has one /lab-results page of ~490 self-hosted PDFs for all its brands (5Boro, Alibi, oHHo, Ready 2 Roll, Back Home Farm, Milkweed, Gentlemen Smugglers, Nanti Nitro), grouped in sections; only some section headers say '(5Boro brand)'.",
+  "source": {
+    "kind": "links",
+    "pages": [
+      "https://nanticoke.co/lab-results"
+    ],
+    "link": "/lab-results/.+\\.pdf$",
+    "skip": "(?i)alibi|ohho|nitro|ready ?2 ?roll|milkweed|gentlemen|back home|infused|vape|aio|cart|gumm|edible|chocolate",
+    "rewrite": [
+      [
+        " ",
+        "%20"
+      ]
+    ]
+  },
+  "learned": "2026-10-17: Nanticoke (the 5Boro maker) has one /lab-results page of ~490 self-hosted PDFs for all its brands (5Boro, Alibi, oHHo, Ready 2 Roll, Back Home Farm, Milkweed, Gentlemen Smugglers, Nanti Nitro), grouped in sections; only some section headers say '(5Boro brand)'. Labs: Keystone State Testing, DRS Testing (sample ids like 2511RLI1102-4233, Confident LIMS) and MCR Labs NY; DRS and MCR not in coa_read.LABS yet. URLs contain spaces, rewritten to %20.",
   "notes": [
     "The links source cannot filter by page section, so other brands' reports are kept out by `skip` on brand names and on vape/edible words (5Boro's catalog is flower, prerolls, blunts). Some house-brand flower may still slip through; matching is by strain against the 5Boro catalog.",
     "Link text is 'Strain Lot #: LOT' (sometimes 'Strain #: LOT'); filenames are Strain_Size_Format_LOT.pdf."
   ],
   "name": [
-    {"from": "text", "match": "^\\s*(?P<strain>.+?)\\s+(?:Lot\\s*)?#:\\s*(?P<lot>[A-Z0-9-]+)"}
+    {
+      "from": "text",
+      "match": "^\\s*(?P<strain>.+?)\\s+(?:Lot\\s*)?#:\\s*(?P<lot>[A-Z0-9-]+)"
+    }
   ]
 }

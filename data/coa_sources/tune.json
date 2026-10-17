@@ -1,14 +1,27 @@
 {
   "brand": "Tune",
   "site": "https://www.tuneseltzer.com",
-  "source": {"kind": "links", "pages": ["https://www.tuneseltzer.com/pages/lab-results"], "link": "cdn\\.shopify\\.com/.+\\.pdf", "skip": "(?i)CBG_-_"},
-  "learned": "2026-10-17: Shopify page /pages/lab-results lists ~21 seltzer COAs on cdn.shopify.com (ACT Labs, some Gen V). /pages/lab-reports is an older page with one PDF.",
+  "source": {
+    "kind": "links",
+    "pages": [
+      "https://www.tuneseltzer.com/pages/lab-results"
+    ],
+    "link": "cdn\\.shopify\\.com/.+\\.pdf",
+    "skip": "(?i)CBG_-_"
+  },
+  "learned": "2026-10-17: Shopify page /pages/lab-results lists ~21 seltzer COAs on cdn.shopify.com (ACT Labs, some Gen V). /pages/lab-reports is an older page with one PDF. ACT reports read with THC ~0.03% and few/zero terpenes (seltzer).",
   "notes": [
     "Filenames are BEV####_[-_]Tune_<Flavor>_-_<Lab>..., lot = BEV####. One newer file is COA-<labid>-TuneBlackberryCardamom-...BEV0202-002.pdf.",
     "Catalog is one category (beverage); flavors are the 'strains'."
   ],
   "name": [
-    {"from": "file", "match": "^(?P<lot>BEV\\d+A?)(?:_A)?_(?:-_)?Tune_(?P<strain>.+?)_-_"},
-    {"from": "file", "match": "^COA-[A-Z0-9]+-Tune(?P<strain>[A-Za-z]+?)-\\d+(?P<lot>BEV\\d+)"}
+    {
+      "from": "file",
+      "match": "^(?P<lot>BEV\\d+A?)(?:_A)?_(?:-_)?Tune_(?P<strain>.+?)_-_"
+    },
+    {
+      "from": "file",
+      "match": "^COA-[A-Z0-9]+-Tune(?P<strain>[A-Za-z]+?)-\\d+(?P<lot>BEV\\d+)"
+    }
   ]
 }

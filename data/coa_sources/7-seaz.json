@@ -1,0 +1,25 @@
+{
+  "brand": "7 SEAZ",
+  "site": "https://www.7seazco.com",
+  "source": {
+    "kind": "links",
+    "pages": ["https://www.7seazco.com/coas"],
+    "link": "drive\\.google\\.com/file/d/",
+    "rewrite": [["drive\\.google\\.com/file/d/([^/?]+).*", "drive.google.com/uc?export=download&id=\\1"]]
+  },
+  "learned": "2026-10-17: 7seazco.com/coas is one page of ~200 Google Drive file links grouped by year and category (flower, infused pre-rolls, vapes, tinctures). NY-only brand. Lab: MCR Labs (no reader profile yet).",
+  "notes": [
+    "Link text is 'STRAIN - [LINE -] PRODUCT - SIZE - LOT #: 7SXX-MMDDYY-NNN'; flower strains are often crosses ('WHITE WIDOW x CHOCOLOPE').",
+    "Lot prefixes: 7SIF flower, 7STS Tsunami / 7SMT Mini Tsunami / 7STW Tidal Waves pre-rolls, 7SWR Wave Rider vape, 7SLT Low Tide / 7S-NT Night Tide tinctures.",
+    "Drive's /file/d/<id>/view is rewritten to uc?export=download&id=<id>."
+  ],
+  "name": [
+    {"from": "text", "match": "(?i)^(?P<strain>.+?)\\s+-\\s+.*?(?:LOT\\s*#?\\s*:?\\s*|-\\s+)(?P<lot>7S-?[A-Z]{2}-\\d{6}-\\d+)\\s*$"}
+  ],
+  "category": [
+    {"when": {"lot": "^7SIF"}, "set": "flower"},
+    {"when": {"lot": "^7S(TS|MT|TW)"}, "set": "preroll"},
+    {"when": {"lot": "^7SWR"}, "set": "vaporizers"},
+    {"when": {"lot": "^7S-?(LT|NT)"}, "set": "tinctures"}
+  ]
+}

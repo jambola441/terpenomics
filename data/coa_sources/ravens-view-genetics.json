@@ -1,0 +1,23 @@
+{
+  "brand": "Ravens View Genetics",
+  "site": "https://ravensviewgenetics.com",
+  "source": {
+    "kind": "wp_media",
+    "site": "https://ravensviewgenetics.com",
+    "link": "\\.pdf$"
+  },
+  "learned": "2026-10-17: the WordPress media library holds only 12 PDFs (Jan-Feb 2025), the reports linked from /butter-lab-results/ (Butter line flower and 10pk .5g pre-rolls, infused pre-rolls, one live resin). Nothing newer is published.",
+  "notes": [
+    "Filenames are Strain_Butter.pdf, Strain_10pk__5g_PR_Butter.pdf, Infused-Pre-Rolls-Strain.pdf, Strain-Live-Resin.pdf; no lot in the name."
+  ],
+  "name": [
+    {
+      "from": "file",
+      "match": "^Infused-Pre-Rolls-(?P<strain>.+?)(?:-\\d)*\\.pdf$"
+    },
+    {
+      "from": "file",
+      "match": "^(?P<strain>.+?)(?:_10pk__5g_PR)?(?:_Butter|-Live-Resin)\\.pdf$"
+    }
+  ]
+}

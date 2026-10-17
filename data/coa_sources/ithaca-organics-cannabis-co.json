@@ -1,0 +1,47 @@
+{
+  "brand": "Ithaca Organics Cannabis Co.",
+  "site": "https://www.ithacaorganics.com",
+  "source": {
+    "kind": "links",
+    "pages": [
+      "https://www.ithacaorganics.com/coa"
+    ],
+    "link": "squarespace\\.com/s/.+\\.pdf$"
+  },
+  "learned": "2026-10-17: ithacaorganics.com/coa (Squarespace) lists ~60 report PDFs by lot (1/8-GG-001, PR-PF-002, RV-BM-001, DV-KL-010424), hosted at ithacaorganicscanna.squarespace.com/s/. Lab: Phyto-farma (reads, numbers ok).",
+  "notes": [
+    "Link text is the lot: a product prefix (1/8 eighth, PR pre-roll, PR-.5g half-gram pre-roll, RV/RR/DV vapes) + a strain initialism (GG, PF, CChem) + a run number. The strain is not spelled out, so it comes from the report itself.",
+    "Gummies are linked by name ('Take Five [10mg THC]').",
+    "2026-10-17 check: the report names the product on a line of its own above 'Lot #:' ('Lilac Diesel GMO 3.5g'), which coa_read's product patterns miss, so reports read with strain '?' and link to no catalog strain until the reader learns that layout. Codes seen: LD Lilac Diesel GMO, GG Gorilla Glue, GS Grapefruit Sour, PM Peach Maraschino."
+  ],
+  "name": [
+    {
+      "from": "text",
+      "match": "^(?P<lot>(?:1/8|PR|RV|RR|DV)-[A-Za-z0-9.]+-\\d{3,6})\\s*$"
+    },
+    {
+      "from": "text",
+      "match": "^(?P<product>[A-Z][^\\[]+?)\\s*\\["
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "lot": "^1/8"
+      },
+      "set": "flower"
+    },
+    {
+      "when": {
+        "lot": "^PR"
+      },
+      "set": "preroll"
+    },
+    {
+      "when": {
+        "lot": "^(RV|RR|DV)"
+      },
+      "set": "vaporizers"
+    }
+  ]
+}

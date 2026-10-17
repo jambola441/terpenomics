@@ -1,0 +1,551 @@
+                                                           Certi cate of Analysis                                                                                           Type of Use: Adult Use
+                                                                                                                                                                  Powered by Con dent LIMS
+                                                                                                                                                                                     1 of 8
+
+
+   Nanticoke                                                                                                                       Sample: 2511RLI1102-4233
+   Contact Person: Pete Shafer                                                                                                                             Strain: All Gas
+   Endicott, NY 13760                                                                                                       Batch#: AG071514PR; Batch Size: 10000 units
+   pete@nanticokegardens.com                                                                                   Sample Received: 11/11/2025; Report Created: 11/19/2025;
+   (607) 754-5008
+   Lic. #OCM-PROC-24-000002                                                                                      Sampling
+                                                                                                                 Sample Collection Date/Time: 11/11/25 13:12
+   All Gas .5g Pre-roll                                                                                          Sample Collection Site: Nanticoke
+                                                                                                                 Sampling Firm: DRS Testing
+   Plant, Preroll, Greenhouse                                                                                    Sampling Method: MTHD-014
+   Parent Lot: AG071514PR                                                                                        Sampling Notes/Deviations:
+
+
+
+                                                                                                      Safety
+                                                                                                             Pass                    Pass                    Pass                     Pass
+                                                                                                           Pesticides              Microbials             Mycotoxins             Water Activity
+
+
+                                                                                                        Not Tested                   Pass              Not Tested                     Pass
+                                                                                                            Solvents                 Metals            Foreign Matter               Moisture
+
+
+   Cannabinoids
+                             31.82%                                                              ND                                                             9.3%
+                            Total THC                                                       Total CBD                                                         Moisture
+   Analyte                                                                                                             LOQ                               Result                              Result
+                                                                                                                       mg/g                                  %                                 mg/g
+   CBDVa                                                                                                                0.2                                ND                                   ND
+   CBDV                                                                                                                 0.2                                ND                                   ND
+   CBDa                                                                                                                 0.2                                ND                                   ND
+   CBGa                                                                                                                 0.2                               4.16                                 41.6
+   CBG                                                                                                                  0.2                                ND                                   ND
+   CBD                                                                                                                  0.2                                ND                                   ND
+   THCV                                                                                                                 0.2                                ND                                   ND
+   THCVa                                                                                                                0.2                               0.06                                  0.6
+   CBN                                                                                                                  0.2                                ND                                   ND
+   Δ9-THC                                                                                                               0.2                               2.08                                 20.8
+   Δ8-THC                                                                                                               0.2                                ND                                   ND
+   (6aR,9R)-d10-THC                                                                                                     0.2                                ND                                   ND
+   (6aR,9S)-d10-THC                                                                                                     0.2                                ND                                   ND
+   CBC                                                                                                                  0.2                                ND                                   ND
+   THCa                                                                                                                 0.2                              33.92                                339.2
+   CBCa                                                                                                                 0.2                               0.11                                  1.1
+   Total Cannabinoids                                                                                                                                    40.32                               403.21
+
+   Entered By: VJ, Instrument ID: AL2-004
+   Method: MTHD-001, Date Tested: 11/18/2025 01:23
+   Total theoretical THC % = (delta-9- THC%) + (THCA% x 0.877) + (delta-8- THC%) + (delta-10- THC%)
+
+
+
+DRS Testing                                                                                                                                                     Con dent LIMS
+28 Best Street
+                                                                                                                                                            All Rights Reserved
+Buffalo, NY
+(716) 503-8147                                                                                                                                   coa.support@con dentlims.com
+                                                     Amanda Thorning                                   Violet Josik
+http://www.drstesting.com                                                                                                                                       (866) 506-5866
+                                                      Laboratory Director                     Quality Assurance Of cer
+Lic# OCM-CPL-00011                                                                                                                                      www.con dentlims.com
+ND=Not Detected, NR=Not Reported, LOD=Limit of Detection, LOQ=Limit of Quantitation. This product has been tested by DRS Testing, using valid testing methodologies and a quality system as
+required by New York state law. Values reported relate only to the product tested and batched under the batch number identi ed above. DRS Testing makes no claims as to the ef cacy, safety, or other
+risks associated with any detected or non-detected level of any compounds reported herein. This Certi cate must not be altered, and shall not be reproduced except in full, without the written approval
+of DRS Testing. Measurements of uncertainty available on request. Statement of conformity pursuant to NYS Part 130 Title 9. Results relate only to the items sampled and tested upon receipt.
+                                                           Certi cate of Analysis                                                                                           Type of Use: Adult Use
+                                                                                                                                                                  Powered by Con dent LIMS
+                                                                                                                                                                                     2 of 8
+
+
+   Nanticoke                                                                                                                       Sample: 2511RLI1102-4233
+   Contact Person: Pete Shafer                                                                                                                             Strain: All Gas
+   Endicott, NY 13760                                                                                                       Batch#: AG071514PR; Batch Size: 10000 units
+   pete@nanticokegardens.com                                                                                   Sample Received: 11/11/2025; Report Created: 11/19/2025;
+   (607) 754-5008
+   Lic. #OCM-PROC-24-000002                                                                                      Sampling
+                                                                                                                 Sample Collection Date/Time: 11/11/25 13:12
+   All Gas .5g Pre-roll                                                                                          Sample Collection Site: Nanticoke
+                                                                                                                 Sampling Firm: DRS Testing
+   Plant, Preroll, Greenhouse                                                                                    Sampling Method: MTHD-014
+   Parent Lot: AG071514PR                                                                                        Sampling Notes/Deviations:
+
+
+
+   Residual Solvents                                                      Not Tested                  Microbials                                                                            Pass
+   Analyte                         LOQ               Limit            Result             Status       Analyte                                       LOQ            Limit        Result        Status
+                                                                                                                                                   CFU/g          CFU/g          CFU/g
+                                                                                                      Aspergillus avus                                 1         Absent        Absence          Pass
+                                                                                                      Aspergillus fumigatus                            1         Absent        Absence          Pass
+                                                                                                      Aspergillus niger                                1         Absent        Absence          Pass
+                                                                                                      Aspergillus terreus                              1         Absent        Absence          Pass
+                                                                                                      Salmonella                                       1         Absent        Absence          Pass
+                                                                                                      Shiga Toxin E. Coli                              1         Absent        Absence          Pass
+                                                                                                      Aerobic Bacteria                                10            N/A           1700        Tested
+                                                                                                      Yeast & Mold                                    10            N/A         18000         Tested
+                                                                                                      Entered By: MS, Aria Instrument ID: M-001; 3M Instrument ID: M-012
+                                                                                                      Aerobic Date Tested: 11/13/2025 15:50
+                                                                                                      YM Date Tested: 11/14/2025 15:54 Sal/STEC/Asp Date Tested: 11/13/2025 16:56
+                                                                                                      Methods: Aspergillus (MTHD-010), Salmonella/STEC (MTHD-011), Total Yeast & Mold
+                                                                                                      (MTHD-012), Total Aerobic (MTHD-013)
+
+
+                                                                                                      Heavy Metals                                                                          Pass
+                                                                                                      Analyte                                       LOQ           Limit        Result         Status
+                                                                                                                                                    PPM           PPM            PPM
+                                                                                                      Chromium                                    1.0000      110.0000          <LOQ            Pass
+                                                                                                      Nickel                                      0.5000        5.0000          <LOQ            Pass
+                                                                                                      Copper                                      1.0000       30.0000         5.9534           Pass
+                                                                                                      Arsenic                                     0.1000        0.2000            ND            Pass
+                                                                                                      Cadmium                                     0.1000        0.2000          <LOQ            Pass
+                                                                                                      Antimony                                    0.5000        2.0000            ND            Pass
+                                                                                                      Mercury                                     0.0500        0.1000            ND            Pass
+                                                                                                      Lead                                        0.2500        0.5000          <LOQ            Pass
+
+                                                                                                      Entered By: BW, Instrument ID: AL2-001
+                                                                                                      Method: MTHD-006 Date Tested: 11/18/2025 16:11:22
+                                                                                                      LOQ = Limit of Quantitation. Unless otherwise stated all quality control tests performed
+                                                                                                      within speci cations established by the Laboratory.
+                                                                                                      ND = Not Detected; NT = Not Tested; NR = Not Reported
+
+
+                                                                                                      Mycotoxins                                                                            Pass
+                                                                                                      Analyte                                             LOQ          Limit        Result Status
+                                                                                                                                                          µg/g          µg/g          µg/g
+                                                                                                      A atoxin B1                                        0.005         0.020           ND    Pass
+                                                                                                      A atoxin B2                                        0.005         0.020           ND    Pass
+                                                                                                      A atoxin G1                                        0.005         0.020           ND    Pass
+                                                                                                      A atoxin G2                                        0.005         0.020           ND    Pass
+                                                                                                      Ochratoxin A                                       0.005         0.020           ND    Pass
+   Entered By: , Instrument ID:                                                                       Total A atoxins                                                  0.020           ND    Pass
+   Method: , Date Tested:                                                                             Entered By: AT, Instrument ID: AL1-003
+                                                                                                      Method: MTHD-009 Date Tested: 11/19/2025 06:12
+
+
+DRS Testing                                                                                                                                                     Con dent LIMS
+28 Best Street
+                                                                                                                                                            All Rights Reserved
+Buffalo, NY
+(716) 503-8147                                                                                                                                   coa.support@con dentlims.com
+                                                     Amanda Thorning                                   Violet Josik
+http://www.drstesting.com                                                                                                                                       (866) 506-5866
+                                                      Laboratory Director                     Quality Assurance Of cer
+Lic# OCM-CPL-00011                                                                                                                                      www.con dentlims.com
+ND=Not Detected, NR=Not Reported, LOD=Limit of Detection, LOQ=Limit of Quantitation. This product has been tested by DRS Testing, using valid testing methodologies and a quality system as
+required by New York state law. Values reported relate only to the product tested and batched under the batch number identi ed above. DRS Testing makes no claims as to the ef cacy, safety, or other
+risks associated with any detected or non-detected level of any compounds reported herein. This Certi cate must not be altered, and shall not be reproduced except in full, without the written approval
+of DRS Testing. Measurements of uncertainty available on request. Statement of conformity pursuant to NYS Part 130 Title 9. Results relate only to the items sampled and tested upon receipt.
+                                                           Certi cate of Analysis                                                                                           Type of Use: Adult Use
+                                                                                                                                                                  Powered by Con dent LIMS
+                                                                                                                                                                                     3 of 8
+
+
+   Nanticoke                                                                                                                       Sample: 2511RLI1102-4233
+   Contact Person: Pete Shafer                                                                                                                             Strain: All Gas
+   Endicott, NY 13760                                                                                                       Batch#: AG071514PR; Batch Size: 10000 units
+   pete@nanticokegardens.com                                                                                   Sample Received: 11/11/2025; Report Created: 11/19/2025;
+   (607) 754-5008
+   Lic. #OCM-PROC-24-000002                                                                                      Sampling
+                                                                                                                 Sample Collection Date/Time: 11/11/25 13:12
+   All Gas .5g Pre-roll                                                                                          Sample Collection Site: Nanticoke
+                                                                                                                 Sampling Firm: DRS Testing
+   Plant, Preroll, Greenhouse                                                                                    Sampling Method: MTHD-014
+   Parent Lot: AG071514PR                                                                                        Sampling Notes/Deviations:
+
+
+
+   Terpenes                                                                                                                   Complete                        Primary Aromas
+
+   Analyte                                                   LOQ                  Result               Result
+                                                                %                     %                 mg/g
+   β-Myrcene                                               0.0125                  0.82                 8.15
+   β-Caryophyllene                                         0.0125                  0.55                 5.46
+   Limonene                                                0.0125                  0.19                 1.94                                                                  Hops
+   α-Pinene                                                0.0125                  0.17                 1.69
+   α-Humulene                                              0.0125                  0.15                 1.54
+   α-Bisabolol                                             0.0125                  0.12                 1.24
+   β-Pinene                                                0.0125                  0.11                 1.05
+   Linalool                                                0.0125                  0.06                 0.55                                                              Cinnamon
+   α-Phellandrene                                          0.0125                   ND                   ND
+   α-Terpinene                                             0.0125                   ND                   ND
+   Camphene                                                0.0125                   ND                   ND
+   Caryophyllene Oxide                                     0.0125                   ND                   ND
+   Farnesene                                               0.0125                   ND                   ND                                                                 Orange
+   Fenchol                                                 0.0125                   ND                   ND
+   Geraniol                                                0.0125                   ND                   ND
+   Guaiol                                                  0.0125                   ND                   ND
+   Ocimene                                                 0.0125                   ND                   ND
+   Terpineol                                               0.0125                   ND                   ND                                                                   Pine
+   Terpinolene                                             0.0125                   ND                   ND
+   Valencene                                               0.0125                   ND                   ND
+
+
+
+                                                                                                                                                                         Chamomile
+
+                                                                                                                                                                          2.1623%
+                                                                                                                                                                       Total Terpenes
+
+
+   Entered By: VJ, Instrument ID: AL1-001
+   Method: MTHD-005, Date Tested: 11/19/2025 11:19
+
+
+DRS Testing                                                                                                                                                     Con dent LIMS
+28 Best Street
+                                                                                                                                                            All Rights Reserved
+Buffalo, NY
+(716) 503-8147                                                                                                                                   coa.support@con dentlims.com
+                                                     Amanda Thorning                                   Violet Josik
+http://www.drstesting.com                                                                                                                                       (866) 506-5866
+                                                      Laboratory Director                     Quality Assurance Of cer
+Lic# OCM-CPL-00011                                                                                                                                      www.con dentlims.com
+ND=Not Detected, NR=Not Reported, LOD=Limit of Detection, LOQ=Limit of Quantitation. This product has been tested by DRS Testing, using valid testing methodologies and a quality system as
+required by New York state law. Values reported relate only to the product tested and batched under the batch number identi ed above. DRS Testing makes no claims as to the ef cacy, safety, or other
+risks associated with any detected or non-detected level of any compounds reported herein. This Certi cate must not be altered, and shall not be reproduced except in full, without the written approval
+of DRS Testing. Measurements of uncertainty available on request. Statement of conformity pursuant to NYS Part 130 Title 9. Results relate only to the items sampled and tested upon receipt.
+                                                           Certi cate of Analysis                                                                                           Type of Use: Adult Use
+                                                                                                                                                                  Powered by Con dent LIMS
+                                                                                                                                                                                     4 of 8
+
+
+   Nanticoke                                                                                                                       Sample: 2511RLI1102-4233
+   Contact Person: Pete Shafer                                                                                                                             Strain: All Gas
+   Endicott, NY 13760                                                                                                       Batch#: AG071514PR; Batch Size: 10000 units
+   pete@nanticokegardens.com                                                                                   Sample Received: 11/11/2025; Report Created: 11/19/2025;
+   (607) 754-5008
+   Lic. #OCM-PROC-24-000002                                                                                      Sampling
+                                                                                                                 Sample Collection Date/Time: 11/11/25 13:12
+   All Gas .5g Pre-roll                                                                                          Sample Collection Site: Nanticoke
+                                                                                                                 Sampling Firm: DRS Testing
+   Plant, Preroll, Greenhouse                                                                                    Sampling Method: MTHD-014
+   Parent Lot: AG071514PR                                                                                        Sampling Notes/Deviations:
+
+
+
+   Pesticides                                                                                                                                                                              Pass
+
+                                Analyte                                                              LOQ                 Limit             Result              Status
+                                                                                                     PPM                 PPM                PPM
+                                Abamectin                                                            0.05                 0.50               ND                  Pass
+                                Acephate                                                             0.05                 0.40               ND                  Pass
+                                Acequinocyl                                                          0.05                 2.00               ND                  Pass
+                                Acetamiprid                                                          0.05                 0.20               ND                  Pass
+                                Aldicarb                                                             0.05                 0.40               ND                  Pass
+                                Avermectin-B1a                                                                                               ND                Tested
+                                Avermectin-B1b                                                                                               ND                Tested
+                                Azadirachtin                                                          0.25                1.00               ND                  Pass
+                                Azoxystrobin                                                          0.05                0.20               ND                  Pass
+                                Bifenazate                                                            0.05                0.20               ND                  Pass
+                                Bifenthrin                                                            0.05                0.20               ND                  Pass
+                                Boscalid                                                              0.05                0.40               ND                  Pass
+                                Captan                                                                0.50                1.00               ND                  Pass
+                                Carbaryl                                                              0.05                0.20               ND                  Pass
+                                Carbofuran                                                            0.05                0.20               ND                  Pass
+                                Chlorantraniliprole                                                   0.05                0.20               ND                  Pass
+                                Chlordane                                                             0.50                1.00               ND                  Pass
+                                Chlorfenapyr                                                          0.50                1.00               ND                  Pass
+                                Chlormequat chloride                                                  0.05                1.00               ND                  Pass
+                                Chlorpyrifos                                                          0.05                0.20               ND                  Pass
+                                Cinerin 1                                                                                                    ND                Tested
+                                Clofentezine                                                          0.05                0.20               ND                  Pass
+                                Coumaphos                                                             0.05                1.00               ND                  Pass
+                                Cy uthrin                                                             0.05                1.00               ND                  Pass
+                                Cypermethrin                                                          0.05                1.00               ND                  Pass
+
+
+
+
+   Entered By: AT, GC Instrument ID: AL1-002; LC Instrument ID: AL1-003
+   GC Method: MTHD-008 GC Date Tested: 11/17/2025 10:41
+   LC Method: MTHD-009 LC Date Tested: 11/19/2025 06:12
+   LOQ = Limit of Quantitation. Unless otherwise stated all quality control tests performed within speci cations established by the Laboratory.
+   ND = Not Detected; NT = Not Tested; NR = Not Reported
+
+
+DRS Testing                                                                                                                                                     Con dent LIMS
+28 Best Street
+                                                                                                                                                            All Rights Reserved
+Buffalo, NY
+(716) 503-8147                                                                                                                                   coa.support@con dentlims.com
+                                                     Amanda Thorning                                   Violet Josik
+http://www.drstesting.com                                                                                                                                       (866) 506-5866
+                                                      Laboratory Director                     Quality Assurance Of cer
+Lic# OCM-CPL-00011                                                                                                                                      www.con dentlims.com
+ND=Not Detected, NR=Not Reported, LOD=Limit of Detection, LOQ=Limit of Quantitation. This product has been tested by DRS Testing, using valid testing methodologies and a quality system as
+required by New York state law. Values reported relate only to the product tested and batched under the batch number identi ed above. DRS Testing makes no claims as to the ef cacy, safety, or other
+risks associated with any detected or non-detected level of any compounds reported herein. This Certi cate must not be altered, and shall not be reproduced except in full, without the written approval
+of DRS Testing. Measurements of uncertainty available on request. Statement of conformity pursuant to NYS Part 130 Title 9. Results relate only to the items sampled and tested upon receipt.
+                                                           Certi cate of Analysis                                                                                           Type of Use: Adult Use
+                                                                                                                                                                  Powered by Con dent LIMS
+                                                                                                                                                                                     5 of 8
+
+
+   Nanticoke                                                                                                                       Sample: 2511RLI1102-4233
+   Contact Person: Pete Shafer                                                                                                                             Strain: All Gas
+   Endicott, NY 13760                                                                                                       Batch#: AG071514PR; Batch Size: 10000 units
+   pete@nanticokegardens.com                                                                                   Sample Received: 11/11/2025; Report Created: 11/19/2025;
+   (607) 754-5008
+   Lic. #OCM-PROC-24-000002                                                                                      Sampling
+                                                                                                                 Sample Collection Date/Time: 11/11/25 13:12
+   All Gas .5g Pre-roll                                                                                          Sample Collection Site: Nanticoke
+                                                                                                                 Sampling Firm: DRS Testing
+   Plant, Preroll, Greenhouse                                                                                    Sampling Method: MTHD-014
+   Parent Lot: AG071514PR                                                                                        Sampling Notes/Deviations:
+
+
+
+   Pesticides                                                                                                                                                                              Pass
+
+                                Analyte                                                              LOQ                 Limit             Result              Status
+                                                                                                     PPM                 PPM                PPM
+                                Daminozide                                                           0.05                 1.00               ND                  Pass
+                                Diazinon                                                             0.05                 0.20               ND                  Pass
+                                Dichlorvos                                                           0.05                 1.00               ND                  Pass
+                                Dimethoate                                                           0.05                 0.20               ND                  Pass
+                                Dimethomorph                                                         0.05                 1.00               ND                  Pass
+                                Ethoprophos                                                          0.05                 0.20               ND                  Pass
+                                Etofenprox                                                           0.05                 0.40               ND                  Pass
+                                Etoxazole                                                            0.05                 0.20               ND                  Pass
+                                Fenhexamid                                                           0.05                 1.00               ND                  Pass
+                                Fenoxycarb                                                           0.05                 0.20               ND                  Pass
+                                Fenpyroximate                                                        0.05                 0.40               ND                  Pass
+                                Fipronil                                                             0.05                 0.40               ND                  Pass
+                                Flonicamid                                                           0.05                 1.00               ND                  Pass
+                                Fludioxonil                                                          0.05                 0.40               ND                  Pass
+                                Hexythiazox                                                          0.05                 1.00               ND                  Pass
+                                Imazalil                                                             0.05                 0.20               ND                  Pass
+                                Imidacloprid                                                         0.05                 0.40               ND                  Pass
+                                Indolebutyric Acid                                                   0.05                 1.00               ND                  Pass
+                                Jasmolin 1                                                                                                   ND                Tested
+                                Kresoxim Methyl                                                       0.05                0.40               ND                  Pass
+                                Malathion                                                             0.05                0.20               ND                  Pass
+                                Metalaxyl                                                             0.05                0.20               ND                  Pass
+                                Methiocarb                                                            0.05                0.20               ND                  Pass
+                                Methomyl                                                              0.05                0.40               ND                  Pass
+                                Methyl Parathion                                                      0.10                0.20               ND                  Pass
+
+
+
+
+   Entered By: AT, GC Instrument ID: AL1-002; LC Instrument ID: AL1-003
+   GC Method: MTHD-008 GC Date Tested: 11/17/2025 10:41
+   LC Method: MTHD-009 LC Date Tested: 11/19/2025 06:12
+   LOQ = Limit of Quantitation. Unless otherwise stated all quality control tests performed within speci cations established by the Laboratory.
+   ND = Not Detected; NT = Not Tested; NR = Not Reported
+
+
+DRS Testing                                                                                                                                                     Con dent LIMS
+28 Best Street
+                                                                                                                                                            All Rights Reserved
+Buffalo, NY
+(716) 503-8147                                                                                                                                   coa.support@con dentlims.com
+                                                     Amanda Thorning                                   Violet Josik
+http://www.drstesting.com                                                                                                                                       (866) 506-5866
+                                                      Laboratory Director                     Quality Assurance Of cer
+Lic# OCM-CPL-00011                                                                                                                                      www.con dentlims.com
+ND=Not Detected, NR=Not Reported, LOD=Limit of Detection, LOQ=Limit of Quantitation. This product has been tested by DRS Testing, using valid testing methodologies and a quality system as
+required by New York state law. Values reported relate only to the product tested and batched under the batch number identi ed above. DRS Testing makes no claims as to the ef cacy, safety, or other
+risks associated with any detected or non-detected level of any compounds reported herein. This Certi cate must not be altered, and shall not be reproduced except in full, without the written approval
+of DRS Testing. Measurements of uncertainty available on request. Statement of conformity pursuant to NYS Part 130 Title 9. Results relate only to the items sampled and tested upon receipt.
+                                                           Certi cate of Analysis                                                                                           Type of Use: Adult Use
+                                                                                                                                                                  Powered by Con dent LIMS
+                                                                                                                                                                                     6 of 8
+
+
+   Nanticoke                                                                                                                       Sample: 2511RLI1102-4233
+   Contact Person: Pete Shafer                                                                                                                             Strain: All Gas
+   Endicott, NY 13760                                                                                                       Batch#: AG071514PR; Batch Size: 10000 units
+   pete@nanticokegardens.com                                                                                   Sample Received: 11/11/2025; Report Created: 11/19/2025;
+   (607) 754-5008
+   Lic. #OCM-PROC-24-000002                                                                                      Sampling
+                                                                                                                 Sample Collection Date/Time: 11/11/25 13:12
+   All Gas .5g Pre-roll                                                                                          Sample Collection Site: Nanticoke
+                                                                                                                 Sampling Firm: DRS Testing
+   Plant, Preroll, Greenhouse                                                                                    Sampling Method: MTHD-014
+   Parent Lot: AG071514PR                                                                                        Sampling Notes/Deviations:
+
+
+
+   Pesticides                                                                                                                                                                              Pass
+
+                                Analyte                                                              LOQ                 Limit             Result              Status
+                                                                                                     PPM                 PPM                PPM
+                                Mevinphos                                                            0.05                 1.00               ND                  Pass
+                                MGK-264                                                              0.05                 0.20               ND                  Pass
+                                Myclobutanil                                                         0.05                 0.20               ND                  Pass
+                                Naled                                                                0.05                 0.50               ND                  Pass
+                                Oxamyl                                                               0.05                 1.00               ND                  Pass
+                                Paclobutrazol                                                        0.05                 0.40               ND                  Pass
+                                Pentachloronitrobenzene                                              0.50                 1.00               ND                  Pass
+                                Permethrins                                                          0.05                 0.20               ND                  Pass
+                                Phosmet                                                              0.05                 0.20               ND                  Pass
+                                Piperonyl Butoxide                                                   0.05                 2.00               ND                  Pass
+                                Prallethrin                                                          0.05                 0.20               ND                  Pass
+                                Propiconazole                                                        0.05                 0.40               ND                  Pass
+                                Propoxur                                                             0.05                 0.20               ND                  Pass
+                                Pyrethrin 1                                                                                                  ND                Tested
+                                Pyrethrin 2                                                                                                  ND                Tested
+                                Pyrethrins                                                            0.05                1.00               ND                  Pass
+                                Pyridaben                                                             0.05                0.20               ND                  Pass
+                                Spinetoram                                                            0.05                1.00               ND                  Pass
+                                Spinetoram J                                                                                                 ND                Tested
+                                Spinetoram L                                                                                                 ND                Tested
+                                Spinosad                                                              0.05                0.20               ND                  Pass
+                                Spinosyn A                                                                                                   ND                Tested
+                                Spinosyn D                                                                                                   ND                Tested
+                                Spiromesifen                                                          0.05                0.20               ND                  Pass
+                                Spirotetramat                                                         0.05                0.20               ND                  Pass
+
+
+
+
+   Entered By: AT, GC Instrument ID: AL1-002; LC Instrument ID: AL1-003
+   GC Method: MTHD-008 GC Date Tested: 11/17/2025 10:41
+   LC Method: MTHD-009 LC Date Tested: 11/19/2025 06:12
+   LOQ = Limit of Quantitation. Unless otherwise stated all quality control tests performed within speci cations established by the Laboratory.
+   ND = Not Detected; NT = Not Tested; NR = Not Reported
+
+
+DRS Testing                                                                                                                                                     Con dent LIMS
+28 Best Street
+                                                                                                                                                            All Rights Reserved
+Buffalo, NY
+(716) 503-8147                                                                                                                                   coa.support@con dentlims.com
+                                                     Amanda Thorning                                   Violet Josik
+http://www.drstesting.com                                                                                                                                       (866) 506-5866
+                                                      Laboratory Director                     Quality Assurance Of cer
+Lic# OCM-CPL-00011                                                                                                                                      www.con dentlims.com
+ND=Not Detected, NR=Not Reported, LOD=Limit of Detection, LOQ=Limit of Quantitation. This product has been tested by DRS Testing, using valid testing methodologies and a quality system as
+required by New York state law. Values reported relate only to the product tested and batched under the batch number identi ed above. DRS Testing makes no claims as to the ef cacy, safety, or other
+risks associated with any detected or non-detected level of any compounds reported herein. This Certi cate must not be altered, and shall not be reproduced except in full, without the written approval
+of DRS Testing. Measurements of uncertainty available on request. Statement of conformity pursuant to NYS Part 130 Title 9. Results relate only to the items sampled and tested upon receipt.
+                                                           Certi cate of Analysis                                                                                           Type of Use: Adult Use
+                                                                                                                                                                  Powered by Con dent LIMS
+                                                                                                                                                                                     7 of 8
+
+
+   Nanticoke                                                                                                                       Sample: 2511RLI1102-4233
+   Contact Person: Pete Shafer                                                                                                                             Strain: All Gas
+   Endicott, NY 13760                                                                                                       Batch#: AG071514PR; Batch Size: 10000 units
+   pete@nanticokegardens.com                                                                                   Sample Received: 11/11/2025; Report Created: 11/19/2025;
+   (607) 754-5008
+   Lic. #OCM-PROC-24-000002                                                                                      Sampling
+                                                                                                                 Sample Collection Date/Time: 11/11/25 13:12
+   All Gas .5g Pre-roll                                                                                          Sample Collection Site: Nanticoke
+                                                                                                                 Sampling Firm: DRS Testing
+   Plant, Preroll, Greenhouse                                                                                    Sampling Method: MTHD-014
+   Parent Lot: AG071514PR                                                                                        Sampling Notes/Deviations:
+
+
+
+   Pesticides                                                                                                                                                                              Pass
+
+                                Analyte                                                              LOQ                 Limit             Result              Status
+                                                                                                     PPM                 PPM                PPM
+                                Spiroxamine                                                          0.05                 0.20               ND                   Pass
+                                Tebuconazole                                                         0.05                 0.40               ND                   Pass
+                                Thiacloprid                                                          0.05                 0.20               ND                   Pass
+                                Thiamethoxam                                                         0.05                 0.20               ND                   Pass
+                                Tri oxystrobin                                                       0.05                 0.20               ND                   Pass
+
+
+
+
+   Entered By: AT, GC Instrument ID: AL1-002; LC Instrument ID: AL1-003
+   GC Method: MTHD-008 GC Date Tested: 11/17/2025 10:41
+   LC Method: MTHD-009 LC Date Tested: 11/19/2025 06:12
+   LOQ = Limit of Quantitation. Unless otherwise stated all quality control tests performed within speci cations established by the Laboratory.
+   ND = Not Detected; NT = Not Tested; NR = Not Reported
+
+
+DRS Testing                                                                                                                                                     Con dent LIMS
+28 Best Street
+                                                                                                                                                            All Rights Reserved
+Buffalo, NY
+(716) 503-8147                                                                                                                                   coa.support@con dentlims.com
+                                                     Amanda Thorning                                   Violet Josik
+http://www.drstesting.com                                                                                                                                       (866) 506-5866
+                                                      Laboratory Director                     Quality Assurance Of cer
+Lic# OCM-CPL-00011                                                                                                                                      www.con dentlims.com
+ND=Not Detected, NR=Not Reported, LOD=Limit of Detection, LOQ=Limit of Quantitation. This product has been tested by DRS Testing, using valid testing methodologies and a quality system as
+required by New York state law. Values reported relate only to the product tested and batched under the batch number identi ed above. DRS Testing makes no claims as to the ef cacy, safety, or other
+risks associated with any detected or non-detected level of any compounds reported herein. This Certi cate must not be altered, and shall not be reproduced except in full, without the written approval
+of DRS Testing. Measurements of uncertainty available on request. Statement of conformity pursuant to NYS Part 130 Title 9. Results relate only to the items sampled and tested upon receipt.
+                                                           Certi cate of Analysis                                                                                           Type of Use: Adult Use
+                                                                                                                                                                  Powered by Con dent LIMS
+                                                                                                                                                                                     8 of 8
+
+
+   Nanticoke                                                                                                                       Sample: 2511RLI1102-4233
+   Contact Person: Pete Shafer                                                                                                                             Strain: All Gas
+   Endicott, NY 13760                                                                                                       Batch#: AG071514PR; Batch Size: 10000 units
+   pete@nanticokegardens.com                                                                                   Sample Received: 11/11/2025; Report Created: 11/19/2025;
+   (607) 754-5008
+   Lic. #OCM-PROC-24-000002                                                                                      Sampling
+                                                                                                                 Sample Collection Date/Time: 11/11/25 13:12
+   All Gas .5g Pre-roll                                                                                          Sample Collection Site: Nanticoke
+                                                                                                                 Sampling Firm: DRS Testing
+   Plant, Preroll, Greenhouse                                                                                    Sampling Method: MTHD-014
+   Parent Lot: AG071514PR                                                                                        Sampling Notes/Deviations:
+
+
+
+   Moisture Date/Time Tested: 11/15/2025; 15:48                                                     Water Activity Date/Time Tested: 11/12/2025; 15:22
+   Moisture Method: MTHD-003                                                                        Water Activity Method: MTHD-002
+
+
+
+
+                                                                                        0.29 aw
+                                                                                       Limit: 0.65 aw
+                                                                                                Pass
+                                                                         Water Activity
+
+
+                                                                                             9.3%
+                                                                                        Limit: 15.0 %
+                                                                                                Pass
+                                                                                   Moisture
+
+   Foreign Matter
+   Foreign Matter Method:                                                                                                                                                        Not Tested
+   Foreign Matter Date/Time Tested: ;
+   Analyte                                                                                                                                      Limit                     Result              Status
+
+                                                                                                                                                    %
+                                                                                                                                                    %
+                                                                                                                                                    %
+
+
+
+
+DRS Testing                                                                                                                                                     Con dent LIMS
+28 Best Street
+                                                                                                                                                            All Rights Reserved
+Buffalo, NY
+(716) 503-8147                                                                                                                                   coa.support@con dentlims.com
+                                                     Amanda Thorning                                   Violet Josik
+http://www.drstesting.com                                                                                                                                       (866) 506-5866
+                                                      Laboratory Director                     Quality Assurance Of cer
+Lic# OCM-CPL-00011                                                                                                                                      www.con dentlims.com
+ND=Not Detected, NR=Not Reported, LOD=Limit of Detection, LOQ=Limit of Quantitation. This product has been tested by DRS Testing, using valid testing methodologies and a quality system as
+required by New York state law. Values reported relate only to the product tested and batched under the batch number identi ed above. DRS Testing makes no claims as to the ef cacy, safety, or other
+risks associated with any detected or non-detected level of any compounds reported herein. This Certi cate must not be altered, and shall not be reproduced except in full, without the written approval
+of DRS Testing. Measurements of uncertainty available on request. Statement of conformity pursuant to NYS Part 130 Title 9. Results relate only to the items sampled and tested upon receipt.
+

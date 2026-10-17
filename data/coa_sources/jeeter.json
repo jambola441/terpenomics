@@ -1,0 +1,43 @@
+{
+  "brand": "Jeeter",
+  "site": "https://www.jeeter.com",
+  "source": {
+    "kind": "links",
+    "pages": [
+      "https://www.jeeter.com/ny-lab-results"
+    ],
+    "link": "website-files\\.com/.+DFNY.+\\.pdf$"
+  },
+  "learned": "2026-10-17: jeeter.com/ny-lab-results is a Webflow page of ~250 NY report PDFs on Webflow's CDN (separate /az-lab-results for Arizona).",
+  "notes": [
+    "Filenames are <webflow id>_<FORMAT> DFNY-<STRAIN6>-<MMDDYY>.pdf, sometimes prefixed 'Amended'. FORMAT: Baby (Baby Jeeter), XL, 1G, HG.",
+    "The strain is a ~6-letter code (PINCOL, BLUZKZ, APPBAN); strain_code resolves it, else the report's product line names it.",
+    "lines: Baby -> Baby Jeeter, XL -> Jeeter XL; 1G and HG reports take their category from the report's sample type."
+  ],
+  "name": [
+    {
+      "from": "file",
+      "match": "(?P<lot>DFNY-[A-Z0-9]+-\\d{6})"
+    }
+  ],
+  "strain_code": "DFNY-(?P<code>[A-Z]{3,6})-",
+  "lines": [
+    {
+      "when": "(?i)baby[ _%20]",
+      "line": "Baby Jeeter"
+    },
+    {
+      "when": "(?i)(?:^|[_ /])XL[ _]|XL%20",
+      "line": "Jeeter XL"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "file": "(?i)(baby|xl)[ _]"
+      },
+      "set": "preroll",
+      "why": "Baby Jeeter / XL are prerolls"
+    }
+  ]
+}

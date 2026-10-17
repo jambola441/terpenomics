@@ -1,0 +1,38 @@
+{
+  "brand": "Level",
+  "site": "https://levelexperience.com",
+  "source": {
+    "kind": "links",
+    "pages": [
+      "https://levelexperience.com/test-results-states/new-york/"
+    ],
+    "link": "/uploads/.+/NYPT[^/]+\\.pdf$"
+  },
+  "learned": "2026-10-17: levelexperience.com/test-results-states/new-york/ lists ~37 NY report PDFs (accordion of links; /page/2/ repeats page 1). The media library reports 1,190 PDFs but the REST endpoint returns an empty list, so wp_media does not work. CA and PA have their own pages.",
+  "notes": [
+    "Filenames are NYPT<YYMMDD><code>.pdf: d9H Hybrid, d9S Sativa, d9I Indica, LO Lights Out, bst Boost, RCVR Recover (Protab); ENERGY / SLUMBER (Level 5); d9IMAX / d9SMAX (Protab Max).",
+    "The lot is the filename stem; the strain comes from the report's product line or the code (strain_code).",
+    "strain_code resolves d9H/d9I/d9S (Hybrid/Indica/Sativa; S is ambiguous with Slumber unless the report's product line 'LEVEL Sativa Protab' decides). LO, bst and RCVR codes do not begin their strain's name (Lights Out, Boost, Recover); those rely on the report's product line ('LEVEL Lights Out Protab +')."
+  ],
+  "name": [
+    {
+      "from": "file",
+      "match": "^(?P<lot>NYPT\\d{6}[A-Za-z0-9]+?)(?:-\\d)?\\.pdf$"
+    }
+  ],
+  "strain_code": "NYPT\\d{6}[dD]9(?P<code>[HIS])(?:MAX)?(?![A-Za-z])",
+  "lines": [
+    {
+      "when": "MAX",
+      "line": "Protab Max"
+    },
+    {
+      "when": "ENERGY|SLUMBER",
+      "line": "Level 5"
+    },
+    {
+      "when": "NYPT",
+      "line": "Protab"
+    }
+  ]
+}

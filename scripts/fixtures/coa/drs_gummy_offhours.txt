@@ -1,0 +1,560 @@
+                                                           Certi cate of Analysis                                                                                           Type of Use: Adult Use
+                                                                                                                                                                  Powered by Con dent LIMS
+                                                                                                                                                                                     1 of 8
+
+
+   Nowave LLC - NYS                                                                                                                Sample: 2508RLI0724-2728
+   Contact Person: Jacob Rapp                                                                                                                      Strain: Blueberry Swirl
+   Rochester, NY 14624                                                                                                     Batch#: OH-LROG-018; Batch Size: 10500 units
+   jacob@nowave.com                                                                                            Sample Received: 08/15/2025; Report Created: 08/22/2025;
+   (844) 466-9283
+   Lic. #OCM-PROC-24-0000070                                                                                     Sampling
+                                                                                                                 Sample Collection Date/Time: 08/15/25 10:16
+   Off Hours: Blueberry Swirl "Sky Blue" Live Rosin Gummies Batch #018
+                                                                Sample Collection Site: Nowave
+                                                                Sampling Firm: DRS Testing
+   Ingestible, Soft Chew                                                                                         Sampling Method: MTHD-014
+   Parent Lot:                                                                                                   Sampling Notes/Deviations:
+
+
+
+                                                                                                      Safety
+                                                                                                             Pass                    Pass                    Pass                     Pass
+                                                                                                           Pesticides              Microbials             Mycotoxins             Water Activity
+
+
+                                                                                                             Pass                    Pass              Not Tested               Not Tested
+                                                                                                            Solvents                 Metals            Foreign Matter               Moisture
+
+
+   Cannabinoids
+                        9.75 mg/unit                                                             ND                                                               NT
+                            Total THC                                                       Total CBD                                                         Moisture
+   Analyte                                                                                                             LOQ                               Result                               Result
+                                                                                                                       mg/g                             mg/unit                                mg/g
+   CBDVa                                                                                                               0.20                                ND                                   ND
+   CBDV                                                                                                                0.20                                ND                                   ND
+   CBDa                                                                                                                0.20                                ND                                   ND
+   CBGa                                                                                                                0.20                                ND                                   ND
+   CBG                                                                                                                 0.20                              <LOQ                                 <LOQ
+   CBD                                                                                                                 0.20                                ND                                   ND
+   THCV                                                                                                                0.20                                ND                                   ND
+   THCVa                                                                                                               0.20                                ND                                   ND
+   CBN                                                                                                                 0.20                                ND                                   ND
+   Δ9-THC                                                                                                              0.20                               9.75                                 1.62
+   Δ8-THC                                                                                                              0.20                                ND                                   ND
+   (6aR,9R)-d10-THC                                                                                                    0.20                                ND                                   ND
+   (6aR,9S)-d10-THC                                                                                                    0.20                                ND                                   ND
+   CBC                                                                                                                 0.20                              <LOQ                                 <LOQ
+   THCa                                                                                                                0.20                                ND                                   ND
+   CBCa                                                                                                                0.20                                ND                                   ND
+   Total Cannabinoids                                                                                                                                     9.75                                 1.62
+
+   Entered By: VJ, Instrument ID: AL2-004
+   Method: MTHD-001, Date Tested: 08/20/2025 13:56
+   Total theoretical THC % = (delta-9- THC%) + (THCA% x 0.877) + (delta-8- THC%) + (delta-10- THC%)
+
+
+
+DRS Testing                                                                                                                                                     Con dent LIMS
+28 Best Street
+                                                                                                                                                            All Rights Reserved
+Buffalo, NY
+(716) 503-8147                                                                                                                                   coa.support@con dentlims.com
+                                                     Amanda Thorning                                   Violet Josik
+http://www.drstesting.com                                                                                                                                       (866) 506-5866
+                                                      Laboratory Director                     Quality Assurance Of cer
+Lic# OCM-CPL-00011                                                                                                                                      www.con dentlims.com
+ND=Not Detected, NR=Not Reported, LOD=Limit of Detection, LOQ=Limit of Quantitation. This product has been tested by DRS Testing, using valid testing methodologies and a quality system as
+required by New York state law. Values reported relate only to the product tested and batched under the batch number identi ed above. DRS Testing makes no claims as to the ef cacy, safety, or other
+risks associated with any detected or non-detected level of any compounds reported herein. This Certi cate must not be altered, and shall not be reproduced except in full, without the written approval
+of DRS Testing. Measurements of uncertainty available on request. Statement of conformity pursuant to NYS Part 130 Title 9. Results relate only to the items sampled and tested upon receipt.
+                                                           Certi cate of Analysis                                                                                           Type of Use: Adult Use
+                                                                                                                                                                  Powered by Con dent LIMS
+                                                                                                                                                                                     2 of 8
+
+
+   Nowave LLC - NYS                                                                                                                Sample: 2508RLI0724-2728
+   Contact Person: Jacob Rapp                                                                                                                      Strain: Blueberry Swirl
+   Rochester, NY 14624                                                                                                     Batch#: OH-LROG-018; Batch Size: 10500 units
+   jacob@nowave.com                                                                                            Sample Received: 08/15/2025; Report Created: 08/22/2025;
+   (844) 466-9283
+   Lic. #OCM-PROC-24-0000070                                                                                     Sampling
+                                                                                                                 Sample Collection Date/Time: 08/15/25 10:16
+   Off Hours: Blueberry Swirl "Sky Blue" Live Rosin Gummies Batch #018
+                                                                Sample Collection Site: Nowave
+                                                                Sampling Firm: DRS Testing
+   Ingestible, Soft Chew                                                                                         Sampling Method: MTHD-014
+   Parent Lot:                                                                                                   Sampling Notes/Deviations:
+
+
+
+   Residual Solvents                                                                   Pass           Microbials                                                                            Pass
+   Analyte                                           LOQ           Limit        Result Status         Analyte                                       LOQ            Limit        Result        Status
+                                                     PPM           PPM           PPM                                                               CFU/g          CFU/g          CFU/g
+   1,2-Dichloro-Ethane                                3.9            5.0          ND     Pass         Aspergillus avus                                 1         Absent        Absence          Pass
+   2,2-Dimethyl-Butane                               31.3                         ND Tested           Aspergillus fumigatus                            1         Absent        Absence          Pass
+   2,3-Dimethyl-Butane                               31.3                         ND Tested           Aspergillus niger                                1         Absent        Absence          Pass
+   2-Methyl-Pentane                                  31.3                         ND Tested           Aspergillus terreus                              1         Absent        Absence          Pass
+   3-Methyl-Pentane                                  31.3                         ND Tested           Salmonella                                       1         Absent        Absence          Pass
+   Acetone                                          156.3        5000.0           ND     Pass         Shiga Toxin E. Coli                              1         Absent        Absence          Pass
+   Acetonitrile                                     156.3         410.0           ND     Pass         Aerobic Bacteria                                10         10000             ND           Pass
+   Benzene                                            1.6           2.0           ND     Pass         Yeast & Mold                                    10           1000            ND           Pass
+   Chloroform                                         1.6          60.0           ND     Pass         Entered By: MS, Aria Instrument ID: M-001; 3M Instrument ID: M-012
+                                                                                                      Aerobic Date Tested: 08/19/2025 9:24
+   Dichloromethane                                  156.3         600.0           ND     Pass         YM Date Tested: 08/20/2025 9:45 Sal/STEC/Asp Date Tested: 08/18/2025 14:45
+   Dimethyl Sulfoxide                               156.3        5000.0           ND     Pass         Methods: Aspergillus (MTHD-010), Salmonella/STEC (MTHD-011), Total Yeast & Mold
+                                                                                                      (MTHD-012), Total Aerobic (MTHD-013)
+   Ethanol                                          156.3        5000.0           ND     Pass
+   Ethyl-Acetate                                    156.3        5000.0           ND     Pass
+   Ethyl-Ether                                      156.3        5000.0           ND     Pass         Heavy Metals                                                                          Pass
+   Heptane                                          156.3        5000.0           ND     Pass
+   Isobutane                                         78.1                         ND Tested           Analyte                                       LOQ       Limit             Result        Status
+   2-Methyl-Butane                                   52.1                         ND Tested                                                         PPM       PPM                PPM
+   Isopropanol                                      156.3        5000.0           ND     Pass         Chromium                                    1.0000 1100.0000                ND            Pass
+   m+p Xylene                                        78.1        2170.0           ND     Pass         Nickel                                      0.5000   20.0000              <LOQ            Pass
+   Methanol                                         156.3        3000.0           ND     Pass         Copper                                      1.0000 300.0000               <LOQ            Pass
+   n-Butane                                          78.1                         ND Tested           Arsenic                                     0.1000    1.5000                ND            Pass
+   Neopentane                                        52.1                         ND Tested           Cadmium                                     0.1000    0.5000              <LOQ            Pass
+   n-Hexane                                          31.3                         ND Tested           Antimony                                    0.5000 120.0000               <LOQ            Pass
+   n-Pentane                                         52.1                         ND Tested           Mercury                                     0.0500    3.0000              <LOQ            Pass
+   o-Xylene                                          39.1                         ND Tested           Lead                                        0.2500    0.5000              <LOQ            Pass
+   Propane                                          156.3        5000.0           ND     Pass
+   Toluene                                          156.3         890.0           ND     Pass         Entered By: VJ, Instrument ID: AL2-001
+   Trichloroethane                                   78.1        1500.0           ND     Pass         Method: MTHD-006 Date Tested: 08/18/2025 13:47:41
+                                                                                                      LOQ = Limit of Quantitation. Unless otherwise stated all quality control tests performed
+   1,1,1,2-Tetra uoro-Ethane                        156.3        1000.0           ND     Pass         within speci cations established by the Laboratory.
+   Butanes                                                       5000.0           ND     Pass         ND = Not Detected; NT = Not Tested; NR = Not Reported
+   Hexanes                                                        290.0           ND     Pass
+   Pentanes                                                      5000.0           ND     Pass
+   Xylenes                                                       2170.0           ND     Pass         Mycotoxins                                                                            Pass
+                                                                                                      Analyte                                             LOQ          Limit        Result Status
+                                                                                                                                                          µg/g          µg/g          µg/g
+   Entered By: CB, Instrument ID: AL1-001                                                             A atoxin B1                                        0.005         0.020           ND    Pass
+   Method: MTHD-007, Date Tested: 08/20/2025 21:24                                                    A atoxin B2                                        0.005         0.020           ND    Pass
+   LOQ = Limit of Quantitation; The reported result is based on a sample weight with the              A atoxin G1                                        0.005         0.020           ND    Pass
+   applicable moisture content for that sample; Unless otherwise stated all quality control           A atoxin G2                                        0.005         0.020           ND    Pass
+   samples performed within speci cations established by the Laboratory.
+   ND = Not Detected; NT = Not Tested; NR = Not Reported                                              Ochratoxin A                                       0.005         0.020           ND    Pass
+   Limits for Butanes, Hexanes, Pentanes and Xylenes are to be calculated as a total,                 Total A atoxins                                                  0.020           ND    Pass
+   individual limits not listed.                                                                      Entered By: CB, Instrument ID: AL1-003
+                                                                                                      Method: MTHD-009 Date Tested: 08/19/2025 18:19
+
+
+DRS Testing                                                                                                                                                     Con dent LIMS
+28 Best Street
+                                                                                                                                                            All Rights Reserved
+Buffalo, NY
+(716) 503-8147                                                                                                                                   coa.support@con dentlims.com
+                                                     Amanda Thorning                                   Violet Josik
+http://www.drstesting.com                                                                                                                                       (866) 506-5866
+                                                      Laboratory Director                     Quality Assurance Of cer
+Lic# OCM-CPL-00011                                                                                                                                      www.con dentlims.com
+ND=Not Detected, NR=Not Reported, LOD=Limit of Detection, LOQ=Limit of Quantitation. This product has been tested by DRS Testing, using valid testing methodologies and a quality system as
+required by New York state law. Values reported relate only to the product tested and batched under the batch number identi ed above. DRS Testing makes no claims as to the ef cacy, safety, or other
+risks associated with any detected or non-detected level of any compounds reported herein. This Certi cate must not be altered, and shall not be reproduced except in full, without the written approval
+of DRS Testing. Measurements of uncertainty available on request. Statement of conformity pursuant to NYS Part 130 Title 9. Results relate only to the items sampled and tested upon receipt.
+                                                           Certi cate of Analysis                                                                                           Type of Use: Adult Use
+                                                                                                                                                                  Powered by Con dent LIMS
+                                                                                                                                                                                     3 of 8
+
+
+   Nowave LLC - NYS                                                                                                                Sample: 2508RLI0724-2728
+   Contact Person: Jacob Rapp                                                                                                                      Strain: Blueberry Swirl
+   Rochester, NY 14624                                                                                                     Batch#: OH-LROG-018; Batch Size: 10500 units
+   jacob@nowave.com                                                                                            Sample Received: 08/15/2025; Report Created: 08/22/2025;
+   (844) 466-9283
+   Lic. #OCM-PROC-24-0000070                                                                                     Sampling
+                                                                                                                 Sample Collection Date/Time: 08/15/25 10:16
+   Off Hours: Blueberry Swirl "Sky Blue" Live Rosin Gummies Batch #018
+                                                                Sample Collection Site: Nowave
+                                                                Sampling Firm: DRS Testing
+   Ingestible, Soft Chew                                                                                         Sampling Method: MTHD-014
+   Parent Lot:                                                                                                   Sampling Notes/Deviations:
+
+
+
+   Terpenes                                                                                                                   Complete                        Primary Aromas
+
+   Analyte                                                                                       LOQ                  Result                Result
+                                                                                                    %                     %                  mg/g
+   α-Bisabolol                                                                                 0.0065                   ND                    ND
+   α-Humulene                                                                                  0.0065                   ND                    ND
+   α-Phellandrene                                                                              0.0052                   ND                    ND
+   α-Pinene                                                                                    0.0065                   ND                    ND
+   α-Terpinene                                                                                 0.0065                   ND                    ND
+   β-Caryophyllene                                                                             0.0065                   ND                    ND
+   β-Myrcene                                                                                   0.0065                   ND                    ND
+   β-Pinene                                                                                    0.0065                   ND                    ND
+   Camphene                                                                                    0.0065                   ND                    ND
+   Caryophyllene Oxide                                                                         0.0065                   ND                    ND
+   Farnesene                                                                                   0.0021                   ND                    ND
+   Fenchol                                                                                     0.0104                   ND                    ND
+   Geraniol                                                                                    0.0065                   ND                    ND
+   Guaiol                                                                                      0.0065                   ND                    ND
+   Limonene                                                                                    0.0065                   ND                    ND
+   Linalool                                                                                    0.0065                   ND                    ND
+   Ocimene                                                                                     0.0065                   ND                    ND
+   Terpineol                                                                                   0.0052                   ND                    ND
+   Terpinolene                                                                                 0.0065                   ND                    ND
+   Valencene                                                                                   0.0021                   ND                    ND
+
+
+
+
+                                                                                                                                                                          0.0000%
+                                                                                                                                                                       Total Terpenes
+
+
+   Entered By: CB, Instrument ID: AL1-001
+   Method: MTHD-005, Date Tested: 08/20/2025 10:18
+
+
+DRS Testing                                                                                                                                                     Con dent LIMS
+28 Best Street
+                                                                                                                                                            All Rights Reserved
+Buffalo, NY
+(716) 503-8147                                                                                                                                   coa.support@con dentlims.com
+                                                     Amanda Thorning                                   Violet Josik
+http://www.drstesting.com                                                                                                                                       (866) 506-5866
+                                                      Laboratory Director                     Quality Assurance Of cer
+Lic# OCM-CPL-00011                                                                                                                                      www.con dentlims.com
+ND=Not Detected, NR=Not Reported, LOD=Limit of Detection, LOQ=Limit of Quantitation. This product has been tested by DRS Testing, using valid testing methodologies and a quality system as
+required by New York state law. Values reported relate only to the product tested and batched under the batch number identi ed above. DRS Testing makes no claims as to the ef cacy, safety, or other
+risks associated with any detected or non-detected level of any compounds reported herein. This Certi cate must not be altered, and shall not be reproduced except in full, without the written approval
+of DRS Testing. Measurements of uncertainty available on request. Statement of conformity pursuant to NYS Part 130 Title 9. Results relate only to the items sampled and tested upon receipt.
+                                                           Certi cate of Analysis                                                                                           Type of Use: Adult Use
+                                                                                                                                                                  Powered by Con dent LIMS
+                                                                                                                                                                                     4 of 8
+
+
+   Nowave LLC - NYS                                                                                                                Sample: 2508RLI0724-2728
+   Contact Person: Jacob Rapp                                                                                                                      Strain: Blueberry Swirl
+   Rochester, NY 14624                                                                                                     Batch#: OH-LROG-018; Batch Size: 10500 units
+   jacob@nowave.com                                                                                            Sample Received: 08/15/2025; Report Created: 08/22/2025;
+   (844) 466-9283
+   Lic. #OCM-PROC-24-0000070                                                                                     Sampling
+                                                                                                                 Sample Collection Date/Time: 08/15/25 10:16
+   Off Hours: Blueberry Swirl "Sky Blue" Live Rosin Gummies Batch #018
+                                                                Sample Collection Site: Nowave
+                                                                Sampling Firm: DRS Testing
+   Ingestible, Soft Chew                                                                                         Sampling Method: MTHD-014
+   Parent Lot:                                                                                                   Sampling Notes/Deviations:
+
+
+
+   Pesticides                                                                                                                                                                              Pass
+
+                                Analyte                                                              LOQ                 Limit             Result              Status
+                                                                                                     PPM                 PPM                PPM
+                                Abamectin                                                            0.05                 0.50               ND                  Pass
+                                Acephate                                                             0.05                 0.40               ND                  Pass
+                                Acequinocyl                                                          0.05                 2.00               ND                  Pass
+                                Acetamiprid                                                          0.05                 0.20               ND                  Pass
+                                Aldicarb                                                             0.05                 0.40               ND                  Pass
+                                Avermectin-B1a                                                                                               ND                Tested
+                                Avermectin-B1b                                                                                               ND                Tested
+                                Azadirachtin                                                          0.25                1.00               ND                  Pass
+                                Azoxystrobin                                                          0.05                0.20               ND                  Pass
+                                Bifenazate                                                            0.05                0.20               ND                  Pass
+                                Bifenthrin                                                            0.05                0.20               ND                  Pass
+                                Boscalid                                                              0.05                0.40               ND                  Pass
+                                Captan                                                                0.50                1.00               ND                  Pass
+                                Carbaryl                                                              0.05                0.20               ND                  Pass
+                                Carbofuran                                                            0.05                0.20               ND                  Pass
+                                Chlorantraniliprole                                                   0.05                0.20               ND                  Pass
+                                Chlordane                                                             0.50                1.00               ND                  Pass
+                                Chlorfenapyr                                                          0.50                1.00               ND                  Pass
+                                Chlormequat chloride                                                  0.05                1.00               ND                  Pass
+                                Chlorpyrifos                                                          0.05                0.20               ND                  Pass
+                                Cinerin 1                                                                                                    ND                Tested
+                                Clofentezine                                                          0.05                0.20               ND                  Pass
+                                Coumaphos                                                             0.05                1.00               ND                  Pass
+                                Cy uthrin                                                             0.05                1.00               ND                  Pass
+                                Cypermethrin                                                          0.05                1.00               ND                  Pass
+
+
+
+
+   Entered By: CB, GC Instrument ID: AL1-002; LC Instrument ID: AL1-003
+   GC Method: MTHD-008 GC Date Tested: 08/19/2025 00:46
+   LC Method: MTHD-009 LC Date Tested: 08/19/2025 18:19
+   LOQ = Limit of Quantitation. Unless otherwise stated all quality control tests performed within speci cations established by the Laboratory.
+   ND = Not Detected; NT = Not Tested; NR = Not Reported
+
+
+DRS Testing                                                                                                                                                     Con dent LIMS
+28 Best Street
+                                                                                                                                                            All Rights Reserved
+Buffalo, NY
+(716) 503-8147                                                                                                                                   coa.support@con dentlims.com
+                                                     Amanda Thorning                                   Violet Josik
+http://www.drstesting.com                                                                                                                                       (866) 506-5866
+                                                      Laboratory Director                     Quality Assurance Of cer
+Lic# OCM-CPL-00011                                                                                                                                      www.con dentlims.com
+ND=Not Detected, NR=Not Reported, LOD=Limit of Detection, LOQ=Limit of Quantitation. This product has been tested by DRS Testing, using valid testing methodologies and a quality system as
+required by New York state law. Values reported relate only to the product tested and batched under the batch number identi ed above. DRS Testing makes no claims as to the ef cacy, safety, or other
+risks associated with any detected or non-detected level of any compounds reported herein. This Certi cate must not be altered, and shall not be reproduced except in full, without the written approval
+of DRS Testing. Measurements of uncertainty available on request. Statement of conformity pursuant to NYS Part 130 Title 9. Results relate only to the items sampled and tested upon receipt.
+                                                           Certi cate of Analysis                                                                                           Type of Use: Adult Use
+                                                                                                                                                                  Powered by Con dent LIMS
+                                                                                                                                                                                     5 of 8
+
+
+   Nowave LLC - NYS                                                                                                                Sample: 2508RLI0724-2728
+   Contact Person: Jacob Rapp                                                                                                                      Strain: Blueberry Swirl
+   Rochester, NY 14624                                                                                                     Batch#: OH-LROG-018; Batch Size: 10500 units
+   jacob@nowave.com                                                                                            Sample Received: 08/15/2025; Report Created: 08/22/2025;
+   (844) 466-9283
+   Lic. #OCM-PROC-24-0000070                                                                                     Sampling
+                                                                                                                 Sample Collection Date/Time: 08/15/25 10:16
+   Off Hours: Blueberry Swirl "Sky Blue" Live Rosin Gummies Batch #018
+                                                                Sample Collection Site: Nowave
+                                                                Sampling Firm: DRS Testing
+   Ingestible, Soft Chew                                                                                         Sampling Method: MTHD-014
+   Parent Lot:                                                                                                   Sampling Notes/Deviations:
+
+
+
+   Pesticides                                                                                                                                                                              Pass
+
+                                Analyte                                                              LOQ                 Limit             Result              Status
+                                                                                                     PPM                 PPM                PPM
+                                Daminozide                                                           0.05                 1.00               ND                  Pass
+                                Diazinon                                                             0.05                 0.20               ND                  Pass
+                                Dichlorvos                                                           0.05                 1.00               ND                  Pass
+                                Dimethoate                                                           0.05                 0.20               ND                  Pass
+                                Dimethomorph                                                         0.05                 1.00               ND                  Pass
+                                Ethoprophos                                                          0.05                 0.20               ND                  Pass
+                                Etofenprox                                                           0.05                 0.40               ND                  Pass
+                                Etoxazole                                                            0.05                 0.20               ND                  Pass
+                                Fenhexamid                                                           0.05                 1.00               ND                  Pass
+                                Fenoxycarb                                                           0.05                 0.20               ND                  Pass
+                                Fenpyroximate                                                        0.05                 0.40               ND                  Pass
+                                Fipronil                                                             0.05                 0.40               ND                  Pass
+                                Flonicamid                                                           0.05                 1.00               ND                  Pass
+                                Fludioxonil                                                          0.05                 0.40               ND                  Pass
+                                Hexythiazox                                                          0.05                 1.00               ND                  Pass
+                                Imazalil                                                             0.05                 0.20               ND                  Pass
+                                Imidacloprid                                                         0.05                 0.40               ND                  Pass
+                                Indolebutyric Acid                                                   0.05                 1.00               ND                  Pass
+                                Jasmolin 1                                                                                                   ND                Tested
+                                Kresoxim Methyl                                                       0.05                0.40               ND                  Pass
+                                Malathion                                                             0.05                0.20               ND                  Pass
+                                Metalaxyl                                                             0.05                0.20               ND                  Pass
+                                Methiocarb                                                            0.05                0.20               ND                  Pass
+                                Methomyl                                                              0.05                0.40               ND                  Pass
+                                Methyl Parathion                                                      0.10                0.20               ND                  Pass
+
+
+
+
+   Entered By: CB, GC Instrument ID: AL1-002; LC Instrument ID: AL1-003
+   GC Method: MTHD-008 GC Date Tested: 08/19/2025 00:46
+   LC Method: MTHD-009 LC Date Tested: 08/19/2025 18:19
+   LOQ = Limit of Quantitation. Unless otherwise stated all quality control tests performed within speci cations established by the Laboratory.
+   ND = Not Detected; NT = Not Tested; NR = Not Reported
+
+
+DRS Testing                                                                                                                                                     Con dent LIMS
+28 Best Street
+                                                                                                                                                            All Rights Reserved
+Buffalo, NY
+(716) 503-8147                                                                                                                                   coa.support@con dentlims.com
+                                                     Amanda Thorning                                   Violet Josik
+http://www.drstesting.com                                                                                                                                       (866) 506-5866
+                                                      Laboratory Director                     Quality Assurance Of cer
+Lic# OCM-CPL-00011                                                                                                                                      www.con dentlims.com
+ND=Not Detected, NR=Not Reported, LOD=Limit of Detection, LOQ=Limit of Quantitation. This product has been tested by DRS Testing, using valid testing methodologies and a quality system as
+required by New York state law. Values reported relate only to the product tested and batched under the batch number identi ed above. DRS Testing makes no claims as to the ef cacy, safety, or other
+risks associated with any detected or non-detected level of any compounds reported herein. This Certi cate must not be altered, and shall not be reproduced except in full, without the written approval
+of DRS Testing. Measurements of uncertainty available on request. Statement of conformity pursuant to NYS Part 130 Title 9. Results relate only to the items sampled and tested upon receipt.
+                                                           Certi cate of Analysis                                                                                           Type of Use: Adult Use
+                                                                                                                                                                  Powered by Con dent LIMS
+                                                                                                                                                                                     6 of 8
+
+
+   Nowave LLC - NYS                                                                                                                Sample: 2508RLI0724-2728
+   Contact Person: Jacob Rapp                                                                                                                      Strain: Blueberry Swirl
+   Rochester, NY 14624                                                                                                     Batch#: OH-LROG-018; Batch Size: 10500 units
+   jacob@nowave.com                                                                                            Sample Received: 08/15/2025; Report Created: 08/22/2025;
+   (844) 466-9283
+   Lic. #OCM-PROC-24-0000070                                                                                     Sampling
+                                                                                                                 Sample Collection Date/Time: 08/15/25 10:16
+   Off Hours: Blueberry Swirl "Sky Blue" Live Rosin Gummies Batch #018
+                                                                Sample Collection Site: Nowave
+                                                                Sampling Firm: DRS Testing
+   Ingestible, Soft Chew                                                                                         Sampling Method: MTHD-014
+   Parent Lot:                                                                                                   Sampling Notes/Deviations:
+
+
+
+   Pesticides                                                                                                                                                                              Pass
+
+                                Analyte                                                              LOQ                 Limit             Result              Status
+                                                                                                     PPM                 PPM                PPM
+                                Mevinphos                                                            0.05                 1.00               ND                  Pass
+                                MGK-264                                                              0.05                 0.20               ND                  Pass
+                                Myclobutanil                                                         0.05                 0.20               ND                  Pass
+                                Naled                                                                0.05                 0.50               ND                  Pass
+                                Oxamyl                                                               0.05                 1.00               ND                  Pass
+                                Paclobutrazol                                                        0.05                 0.40               ND                  Pass
+                                Pentachloronitrobenzene                                              0.50                 1.00               ND                  Pass
+                                Permethrins                                                          0.05                 0.20               ND                  Pass
+                                Phosmet                                                              0.05                 0.20               ND                  Pass
+                                Piperonyl Butoxide                                                   0.05                 2.00               ND                  Pass
+                                Prallethrin                                                          0.05                 0.20               ND                  Pass
+                                Propiconazole                                                        0.05                 0.40               ND                  Pass
+                                Propoxur                                                             0.05                 0.20               ND                  Pass
+                                Pyrethrin 1                                                                                                  ND                Tested
+                                Pyrethrin 2                                                                                                  ND                Tested
+                                Pyrethrins                                                            0.05                1.00               ND                  Pass
+                                Pyridaben                                                             0.05                0.20               ND                  Pass
+                                Spinetoram                                                            0.05                1.00               ND                  Pass
+                                Spinetoram J                                                                                                 ND                Tested
+                                Spinetoram L                                                                                                 ND                Tested
+                                Spinosad                                                              0.05                0.20               ND                  Pass
+                                Spinosyn A                                                                                                   ND                Tested
+                                Spinosyn D                                                                                                   ND                Tested
+                                Spiromesifen                                                          0.05                0.20               ND                  Pass
+                                Spirotetramat                                                         0.05                0.20               ND                  Pass
+
+
+
+
+   Entered By: CB, GC Instrument ID: AL1-002; LC Instrument ID: AL1-003
+   GC Method: MTHD-008 GC Date Tested: 08/19/2025 00:46
+   LC Method: MTHD-009 LC Date Tested: 08/19/2025 18:19
+   LOQ = Limit of Quantitation. Unless otherwise stated all quality control tests performed within speci cations established by the Laboratory.
+   ND = Not Detected; NT = Not Tested; NR = Not Reported
+
+
+DRS Testing                                                                                                                                                     Con dent LIMS
+28 Best Street
+                                                                                                                                                            All Rights Reserved
+Buffalo, NY
+(716) 503-8147                                                                                                                                   coa.support@con dentlims.com
+                                                     Amanda Thorning                                   Violet Josik
+http://www.drstesting.com                                                                                                                                       (866) 506-5866
+                                                      Laboratory Director                     Quality Assurance Of cer
+Lic# OCM-CPL-00011                                                                                                                                      www.con dentlims.com
+ND=Not Detected, NR=Not Reported, LOD=Limit of Detection, LOQ=Limit of Quantitation. This product has been tested by DRS Testing, using valid testing methodologies and a quality system as
+required by New York state law. Values reported relate only to the product tested and batched under the batch number identi ed above. DRS Testing makes no claims as to the ef cacy, safety, or other
+risks associated with any detected or non-detected level of any compounds reported herein. This Certi cate must not be altered, and shall not be reproduced except in full, without the written approval
+of DRS Testing. Measurements of uncertainty available on request. Statement of conformity pursuant to NYS Part 130 Title 9. Results relate only to the items sampled and tested upon receipt.
+                                                           Certi cate of Analysis                                                                                           Type of Use: Adult Use
+                                                                                                                                                                  Powered by Con dent LIMS
+                                                                                                                                                                                     7 of 8
+
+
+   Nowave LLC - NYS                                                                                                                Sample: 2508RLI0724-2728
+   Contact Person: Jacob Rapp                                                                                                                      Strain: Blueberry Swirl
+   Rochester, NY 14624                                                                                                     Batch#: OH-LROG-018; Batch Size: 10500 units
+   jacob@nowave.com                                                                                            Sample Received: 08/15/2025; Report Created: 08/22/2025;
+   (844) 466-9283
+   Lic. #OCM-PROC-24-0000070                                                                                     Sampling
+                                                                                                                 Sample Collection Date/Time: 08/15/25 10:16
+   Off Hours: Blueberry Swirl "Sky Blue" Live Rosin Gummies Batch #018
+                                                                Sample Collection Site: Nowave
+                                                                Sampling Firm: DRS Testing
+   Ingestible, Soft Chew                                                                                         Sampling Method: MTHD-014
+   Parent Lot:                                                                                                   Sampling Notes/Deviations:
+
+
+
+   Pesticides                                                                                                                                                                              Pass
+
+                                Analyte                                                              LOQ                 Limit             Result              Status
+                                                                                                     PPM                 PPM                PPM
+                                Spiroxamine                                                          0.05                 0.20               ND                   Pass
+                                Tebuconazole                                                         0.05                 0.40               ND                   Pass
+                                Thiacloprid                                                          0.05                 0.20               ND                   Pass
+                                Thiamethoxam                                                         0.05                 0.20               ND                   Pass
+                                Tri oxystrobin                                                       0.05                 0.20               ND                   Pass
+
+
+
+
+   Entered By: CB, GC Instrument ID: AL1-002; LC Instrument ID: AL1-003
+   GC Method: MTHD-008 GC Date Tested: 08/19/2025 00:46
+   LC Method: MTHD-009 LC Date Tested: 08/19/2025 18:19
+   LOQ = Limit of Quantitation. Unless otherwise stated all quality control tests performed within speci cations established by the Laboratory.
+   ND = Not Detected; NT = Not Tested; NR = Not Reported
+
+
+DRS Testing                                                                                                                                                     Con dent LIMS
+28 Best Street
+                                                                                                                                                            All Rights Reserved
+Buffalo, NY
+(716) 503-8147                                                                                                                                   coa.support@con dentlims.com
+                                                     Amanda Thorning                                   Violet Josik
+http://www.drstesting.com                                                                                                                                       (866) 506-5866
+                                                      Laboratory Director                     Quality Assurance Of cer
+Lic# OCM-CPL-00011                                                                                                                                      www.con dentlims.com
+ND=Not Detected, NR=Not Reported, LOD=Limit of Detection, LOQ=Limit of Quantitation. This product has been tested by DRS Testing, using valid testing methodologies and a quality system as
+required by New York state law. Values reported relate only to the product tested and batched under the batch number identi ed above. DRS Testing makes no claims as to the ef cacy, safety, or other
+risks associated with any detected or non-detected level of any compounds reported herein. This Certi cate must not be altered, and shall not be reproduced except in full, without the written approval
+of DRS Testing. Measurements of uncertainty available on request. Statement of conformity pursuant to NYS Part 130 Title 9. Results relate only to the items sampled and tested upon receipt.
+                                                           Certi cate of Analysis                                                                                           Type of Use: Adult Use
+                                                                                                                                                                  Powered by Con dent LIMS
+                                                                                                                                                                                     8 of 8
+
+
+   Nowave LLC - NYS                                                                                                                Sample: 2508RLI0724-2728
+   Contact Person: Jacob Rapp                                                                                                                      Strain: Blueberry Swirl
+   Rochester, NY 14624                                                                                                     Batch#: OH-LROG-018; Batch Size: 10500 units
+   jacob@nowave.com                                                                                            Sample Received: 08/15/2025; Report Created: 08/22/2025;
+   (844) 466-9283
+   Lic. #OCM-PROC-24-0000070                                                                                     Sampling
+                                                                                                                 Sample Collection Date/Time: 08/15/25 10:16
+   Off Hours: Blueberry Swirl "Sky Blue" Live Rosin Gummies Batch #018
+                                                                Sample Collection Site: Nowave
+                                                                Sampling Firm: DRS Testing
+   Ingestible, Soft Chew                                                                                         Sampling Method: MTHD-014
+   Parent Lot:                                                                                                   Sampling Notes/Deviations:
+
+
+
+   Moisture Date/Time Tested: ;                                                                     Water Activity Date/Time Tested: 08/18/2025; 14:14
+   Moisture Method:                                                                                 Water Activity Method: MTHD-002
+
+
+
+
+                                                                                        0.52 aw
+                                                                                       Limit: 0.85 aw
+                                                                                                Pass
+                                                                         Water Activity
+
+
+                                                                                                NT
+                                                                                             Limit: %
+                                                                                         Not Tested
+                                                                                   Moisture
+
+   Foreign Matter
+   Foreign Matter Method:                                                                                                                                                        Not Tested
+   Foreign Matter Date/Time Tested: ;
+   Analyte                                                                                                                                      Limit                     Result              Status
+
+                                                                                                                                                    %
+                                                                                                                                                    %
+                                                                                                                                                    %
+
+
+
+
+DRS Testing                                                                                                                                                     Con dent LIMS
+28 Best Street
+                                                                                                                                                            All Rights Reserved
+Buffalo, NY
+(716) 503-8147                                                                                                                                   coa.support@con dentlims.com
+                                                     Amanda Thorning                                   Violet Josik
+http://www.drstesting.com                                                                                                                                       (866) 506-5866
+                                                      Laboratory Director                     Quality Assurance Of cer
+Lic# OCM-CPL-00011                                                                                                                                      www.con dentlims.com
+ND=Not Detected, NR=Not Reported, LOD=Limit of Detection, LOQ=Limit of Quantitation. This product has been tested by DRS Testing, using valid testing methodologies and a quality system as
+required by New York state law. Values reported relate only to the product tested and batched under the batch number identi ed above. DRS Testing makes no claims as to the ef cacy, safety, or other
+risks associated with any detected or non-detected level of any compounds reported herein. This Certi cate must not be altered, and shall not be reproduced except in full, without the written approval
+of DRS Testing. Measurements of uncertainty available on request. Statement of conformity pursuant to NYS Part 130 Title 9. Results relate only to the items sampled and tested upon receipt.
+
