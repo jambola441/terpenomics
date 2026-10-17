@@ -1,0 +1,26 @@
+{
+  "brand": "Supernaturals",
+  "site": "https://www.supernaturalsny.com",
+  "source": {
+    "kind": "links",
+    "pages": [
+      "https://drive.google.com/embeddedfolderview?id=1oYvseT_Hw9S68GV-n0oRvmwAMNq9XHPR",
+      "https://drive.google.com/embeddedfolderview?id=1RpTf_O79Hw63fbZjVQuZDUYYbNMYD9wx"
+    ],
+    "link": "drive\\.google\\.com/file/d/",
+    "rewrite": [["https://drive\\.google\\.com/file/d/([^/]+)/view.*", "https://drive.google.com/uc?export=download&id=\\1"]]
+  },
+  "learned": "2026-10-17: supernaturalsny.com/coa links a public Google Drive folder (1IiMkVV6KBkb1VVF8G94mEOhq-eChoLv8) with subfolders Pre-Rolls (~63 PDFs) and Gummies (~15) plus a 'Seed COA.pdf'. Drive's embeddedfolderview?id=<folder> page is plain HTML with one <a> per file, so each subfolder is a links page; files are rewritten to the direct-download URL.",
+  "notes": [
+    "Pre-roll titles are '<Strain> <lot code> COA.pdf' (Apple Fritter COA M03.pdf, Blue Dream C05 COA.pdf); gummies '<Flavor> <Effect> COA SNY-G-XXX-00N.pdf'.",
+    "If new subfolders appear in the top folder, add their embeddedfolderview pages."
+  ],
+  "name": [
+    {"from": "text", "match": "^\\s*(?P<strain>.+?)\\s+C[O0]A\\s+(?P<lot>SNY-[A-Z]-[A-Z]+-\\d+)\\.pdf"},
+    {"from": "text", "match": "^\\s*(?P<strain>.+?)\\s+(?:COA\\s+)?(?P<lot>[A-Z]{1,3}\\d{2})(?:\\s+COA)?\\.pdf"},
+    {"from": "text", "match": "^\\s*(?P<strain>.+?)\\s+COA.*\\.pdf"}
+  ],
+  "category": [
+    {"when": {"lot": "^SNY-G-"}, "set": "edible"}
+  ]
+}
