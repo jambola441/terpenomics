@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native'
 import { router } from 'expo-router'
 import { Image } from 'expo-image'
-import * as Location from 'expo-location'
 import type { PointsProgram } from '@web/types'
 import { formatDist } from '@web/utils/format'
-import { nearestStore, sortPartners, type Position } from '@web/utils/partnerPlaces'
+import { nearestStore, sortPartners } from '@web/utils/partnerPlaces'
+import { usePosition } from '@/lib/position'
 import { steps } from '@web/utils/pointsProgram'
 import { api } from '@/lib/api'
 import { useFetch } from '@/lib/useFetch'
@@ -54,31 +54,8 @@ export function PointsSteps({ program, compact = false }: { program: PointsProgr
   )
 }
 
-/**
- * Where the shopper is, for "nearest first": only if they already let Terpee use
- * their location (it asks when an order is placed). Never asks from here; null
- * otherwise, and the list stays A–Z.
- */
-export function useKnownPosition(): Position | null {
-  const [pos, setPos] = useState<Position | null>(null)
-  useEffect(() => {
-    let live = true
-    ;(async () => {
-      try {
-        const { status } = await Location.getForegroundPermissionsAsync()
-        if (status !== 'granted') return
-        const last = await Location.getLastKnownPositionAsync({ maxAge: 30 * 60 * 1000 })
-        if (live && last) setPos({ lat: last.coords.latitude, lng: last.coords.longitude })
-      } catch {
-        // No position: A–Z it is.
-      }
-    })()
-    return () => {
-      live = false
-    }
-  }, [])
-  return pos
-}
+/** Where the shopper is; shared app-wide in lib/position. */
+export const useKnownPosition = usePosition
 
 /** Home's row of partner stores: where purchases earn points, nearest first when
  *  the phone already shares where it is. Nothing shows until there is one. */
