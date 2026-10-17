@@ -19,6 +19,32 @@ import { t, font, fonts, radius, type } from '@/lib/theme'
 
 type Spot = { partner: PortalPartner; location: PortalPartnerLocation }
 
+/** Pins closer than this on screen are drawn as one count bubble: a pin's
+ *  target is 44pt, so two any closer steal each other's taps (as on the web). */
+const CLUSTER_PT = 44
+/** About the web's zoom 16: stores a block or more apart, every pin its own. */
+const CLUSTER_UNTIL_DELTA = 0.012
+
+/** The stores whose pins would overlap in this region, grouped, the way the
+ *  web's clusterStores does: greedy and in list order, so the same view gives
+ *  the same groups, and the selected store always keeps a pin of its own.
+ *  Screen position is linear in the region, which holds at city scale. */
+function clusterStores(stores: PortalDispensary[], region: Region, width: number, height: number, apart: string | null) {
+  if (region.longitudeDelta <= CLUSTER_UNTIL_DELTA) return stores.map(d => [d])
+  const left = region.longitude - region.longitudeDelta / 2
+  const top = region.latitude + region.latitudeDelta / 2
+  const groups: { x: number; y: number; members: PortalDispensary[] }[] = []
+  for (const d of stores) {
+    const x = ((d.lng! - left) / region.longitudeDelta) * width
+    const y = ((top - d.lat!) / region.latitudeDelta) * height
+    const near = d.id === apart ? undefined : groups.find(g =>
+      g.members[0].id !== apart && Math.hypot(g.x - x, g.y - y) < CLUSTER_PT)
+    if (near) near.members.push(d)
+    else groups.push({ x, y, members: [d] })
+  }
+  return groups.map(g => g.members)
+}
+
 /** Lower Manhattan at about the web's zoom 12, before the stores load. */
 const NYC: Region = { latitude: 40.7128, longitude: -74.006, latitudeDelta: 0.16, longitudeDelta: 0.16 }
 
@@ -43,8 +69,15 @@ export default function MapTab() {
   const [earnOnly, setEarnOnly] = useState(params.show === 'partners')
   const [selected, setSelected] = useState<PortalDispensary | null>(null)
   const [spot, setSpot] = useState<Spot | null>(null)
+  // What the map shows, for grouping pins that would overlap.
+  const [region, setRegion] = useState<Region>(NYC)
+  const [size, setSize] = useState({ width: 0, height: 0 })
 
   const placed = useMemo(() => (stores.data ?? []).filter(d => d.lat != null && d.lng != null), [stores.data])
+  const groups = useMemo(
+    () => (size.width ? clusterStores(placed, region, size.width, size.height, selected?.id ?? null) : placed.map(d => [d])),
+    [placed, region, size, selected],
+  )
   const unplaced = useMemo(() => (stores.data ?? []).filter(d => d.lat == null || d.lng == null), [stores.data])
   const spots = useMemo<Spot[]>(() => (partners.data?.partners ?? []).flatMap(partner => partner.locations
     .filter(location => location.lat != null && location.lng != null)
@@ -164,12 +197,42 @@ export default function MapTab() {
         showsCompass={false}
         toolbarEnabled={false}
         onMapReady={() => setMapReady(true)}
+        onLayout={e => setSize({ width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height })}
+        onRegionChangeComplete={setRegion}
         onPress={e => {
           // A tap on the map itself, not a pin, closes the sheet.
           if (e.nativeEvent.action !== 'marker-press') { setSelected(null); setSpot(null) }
         }}
       >
-        {!earnOnly && placed.map(d => {
+        {!earnOnly && groups.map(members => {
+          if (members.length > 1) {
+            // A bubble for overlapping stores: their count, in their borough's
+            // colour when they share one. A tap zooms in until they part.
+            const boroughs = new Set(members.map(d => boroughOf(d.address)))
+            const color = colorForBorough(boroughs.size === 1 ? [...boroughs][0] : null)
+            const named = members.slice(0, 2).map(d => d.name).join(', ')
+            return (
+              <Marker
+                key={`c:${members.map(d => d.id).join(',')}`}
+                coordinate={{
+                  latitude: members.reduce((n, d) => n + d.lat!, 0) / members.length,
+                  longitude: members.reduce((n, d) => n + d.lng!, 0) / members.length,
+                }}
+                tracksViewChanges={false}
+                zIndex={5}
+                onPress={() => map.current?.fitToCoordinates(
+                  members.map(d => ({ latitude: d.lat!, longitude: d.lng! })),
+                  { edgePadding: { top: insets.top + 120, right: 90, bottom: 240, left: 90 }, animated: true },
+                )}
+                accessibilityLabel={`${members.length} stores: ${named}${members.length > 2 ? ` and ${members.length - 2} more` : ''}`}
+              >
+                <View style={[s.cluster, { borderColor: color, width: members.length >= 10 ? 40 : 36, height: members.length >= 10 ? 40 : 36 }]}>
+                  <Text style={s.clusterText}>{members.length}</Text>
+                </View>
+              </Marker>
+            )
+          }
+          const [d] = members
           const active = selected?.id === d.id
           return (
             <Marker
@@ -405,6 +468,12 @@ const GLASS = 'rgba(12, 15, 13, 0.82)'
 const s = StyleSheet.create({
   pinRing: { borderRadius: 20, borderWidth: 2, borderColor: t.bg },
   pinRingActive: { borderColor: t.text1 },
+  cluster: {
+    borderRadius: 20, borderWidth: 3, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: t.surface1,
+    shadowColor: '#000', shadowOpacity: 0.4, shadowRadius: 4, shadowOffset: { width: 0, height: 2 },
+  },
+  clusterText: { fontFamily: fonts.monoMedium, fontSize: font.size.small + 1, color: t.text1 },
   drop: {
     width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center',
     backgroundColor: t.accent, borderWidth: 2, borderColor: t.bg,
