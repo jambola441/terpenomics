@@ -7,12 +7,14 @@ import type { PointsProgram, PortalDispensary, PortalPartner, PortalPartnerLocat
 import { alpha } from '@web/design/tokens'
 import { boroughColor, boroughLabel, boroughOf, colorForBorough, type Borough } from '@web/utils/boroughs'
 import { openStatus } from '@web/utils/hours'
+import { formatDist, haversineMi } from '@web/utils/format'
 import { directionsUrl } from '@web/utils/partnerPlaces'
 import { earnLine } from '@web/utils/pointsProgram'
 import { api } from '@/lib/api'
 import { useFetch } from '@/lib/useFetch'
 import { openStore } from '@/lib/products'
 import { useKnownPosition } from '@/components/partners'
+import { useLocationStatus } from '@/lib/position'
 import { FeedState, Label, StoreBullet } from '@/components/ui'
 import { Icon } from '@/components/Icon'
 import { t, font, fonts, radius, type } from '@/lib/theme'
@@ -59,6 +61,7 @@ export default function MapTab() {
   const insets = useSafeAreaInsets()
   const params = useLocalSearchParams<{ show?: string; spot?: string }>()
   const pos = useKnownPosition()
+  const locationOff = useLocationStatus() === 'off'
   const map = useRef<MapView>(null)
 
   const stores = useFetch('dispensaries', () => api.portal.getDispensaries())
@@ -132,22 +135,26 @@ export default function MapTab() {
     [spots],
   )
 
-  // Fit every store once they are in, as the web does after its first load,
-  // unless the tab was opened on one partner store.
-  const fitted = useRef(false)
-  useEffect(() => {
-    if (fitted.current || !storeCoords.length || params.spot) return
-    fitted.current = true
-    requestAnimationFrame(() => frame(storeCoords, false))
-    // frame reads the map ref and the insets; the stores are what this waits on.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storeCoords, params.spot])
-
   // A partner store opened by link may be far from the stores (outside the
   // city). The move waits until the tab is on screen and the map is ready: a
   // camera call made while the tab was still switching in was dropped, and the
   // map stayed on the city.
   const [mapReady, setMapReady] = useState(false)
+
+  // Fit every store once they are in, as the web does after its first load,
+  // unless the tab was opened on one partner store. It waits for the map to be
+  // ready and laid out: a fit made before then used the wrong frame, and
+  // pins landed under the tab bar and off the right edge.
+  const fitted = useRef(false)
+  useEffect(() => {
+    if (fitted.current || !mapReady || !size.width || !storeCoords.length || params.spot) return
+    fitted.current = true
+    const id = setTimeout(() => frame(storeCoords, false), 50)
+    return () => clearTimeout(id)
+    // frame reads the map ref and the insets; these are what it waits on.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapReady, size.width, storeCoords, params.spot])
+
   const [isFocused, setFocused] = useState(false)
   useFocusEffect(useCallback(() => {
     setFocused(true)
@@ -306,6 +313,12 @@ export default function MapTab() {
         </ScrollView>
       ) : null}
 
+      {locationOff && !selected && !spot && !showList ? (
+        <View style={[s.loading, { top: undefined, bottom: 16 }]} pointerEvents="none">
+          <Icon name="locate" size={13} color={t.text3} />
+          <Text style={[type.meta, { color: t.text2 }]}>Turn on location to see where you are</Text>
+        </View>
+      ) : null}
       {stores.loading ? (
         <View style={[s.loading, { top: insets.top + 14 }]}>
           <ActivityIndicator size="small" color={t.text3} />
@@ -313,7 +326,13 @@ export default function MapTab() {
         </View>
       ) : null}
 
-      {selected ? <StoreSheet store={selected} onClose={() => setSelected(null)} /> : null}
+      {selected ? (
+        <StoreSheet
+          store={selected}
+          distanceMi={pos && selected.lat != null && selected.lng != null ? haversineMi(pos.lat, pos.lng, selected.lat, selected.lng) : null}
+          onClose={() => setSelected(null)}
+        />
+      ) : null}
       {spot && !selected ? <PartnerSheet spot={spot} program={program} onClose={() => setSpot(null)} /> : null}
 
       {showList ? (
@@ -365,7 +384,7 @@ function BoroughChip({ borough }: { borough: Borough | null }) {
   )
 }
 
-function StoreSheet({ store, onClose }: { store: PortalDispensary; onClose: () => void }) {
+function StoreSheet({ store, distanceMi, onClose }: { store: PortalDispensary; distanceMi: number | null; onClose: () => void }) {
   return (
     <View style={[s.sheet, { borderTopWidth: 2, borderTopColor: boroughColor(store.address) }]}>
       <Handle />
@@ -376,7 +395,9 @@ function StoreSheet({ store, onClose }: { store: PortalDispensary; onClose: () =
           {store.address ? (
             <View style={s.address}>
               <Icon name="pin" size={14} color={t.text3} />
-              <Text style={[type.meta, { color: t.text2, fontSize: font.size.small + 1, flexShrink: 1 }]}>{store.address}</Text>
+              <Text style={[type.meta, { color: t.text2, fontSize: font.size.small + 1, flexShrink: 1 }]}>
+                {store.address}{distanceMi != null ? ` · ${formatDist(distanceMi)}` : ''}
+              </Text>
             </View>
           ) : null}
           <View style={s.actions}>
