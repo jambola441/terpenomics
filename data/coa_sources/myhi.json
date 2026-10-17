@@ -1,0 +1,10 @@
+{
+  "brand": "MyHi",
+  "site": "https://www.getmyhi.com",
+  "source": {"kind": "wp_media", "site": "https://www.getmyhi.com", "link": "\\.pdf$"},
+  "learned": "2026-10-17: the WordPress media library holds 6 PDFs, all COAs (hemp THC drink mixes / Stiks), lab sample ids like 2603RLI0365-1877.",
+  "notes": ["Filenames are [COA-]<lab sample id>-The-Hi-Collective-MyHi-<Product>.pdf; the sample id is used as the lot."],
+  "name": [
+    {"from": "file", "match": "^(?:COA-)?(?P<lot>\\d{4}RLI\\d+-\\d+)-The-Hi-Collective-MyHi-(?P<strain>.+?)(?:-\\d)?\\.pdf$"}
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "brand": "Off Hours",
+  "site": "https://offhoursbrand.com",
+  "source": {
+    "kind": "links",
+    "pages": ["https://offhoursbrand.com/pages/lab-testing"],
+    "link": "cdn\\.shopify\\.com/.+\\.pdf"
+  },
+  "learned": "2026-10-17: Shopify page /pages/lab-testing lists ~188 report PDFs on cdn.shopify.com. Only the Live Rosin (OH-LROG-###) reports are real <a href> links; the rest (OH-A-* All-In-One vapes, OH-C-* carts, OH-G-* gummies, OH-EA-* effect AIOs, OH-S-* syrups) sit in data-pdf-url attributes on <a href=\"#\" class=\"lab-test-link\">, which the links source does not read.",
+  "notes": [
+    "Live Rosin link text reads '#018 Blueberry Swirl “Sky Blue”': the catalog names the product by the quoted name (Sky Blue), so the quoted part is the strain.",
+    "Filenames are the lot: OH-LROG-018_PASS.pdf. Prefixes: LROG live rosin, A all-in-one, C cart, G gummies (AW Awaken, EU, IL Illuminate, LL Limelight, ME Mellow, OL Offline, SE Serenity, DD Daydream), EA effect AIO, S syrup.",
+    "To cover the other ~170 reports the links source needs to also take data-pdf-url attributes (text = the preceding product name / lot)."
+  ],
+  "name": [
+    {"from": "text", "match": "^#?\\d*\\s*.*?[“\"](?P<strain>[^”\"]+)[”\"]"},
+    {"from": "file", "match": "^(?P<lot>OH(?:-[A-Za-z]+)+-\\d+)"}
+  ]
+}

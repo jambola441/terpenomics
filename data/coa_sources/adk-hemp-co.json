@@ -1,0 +1,18 @@
+{
+  "brand": "ADK Hemp Co.",
+  "site": "https://adkhempco.com",
+  "source": {"kind": "links", "pages": ["https://adkhempco.com/coas/"], "link": "/coas/.+\\.pdf$"},
+  "learned": "2026-10-17: adkhempco.com/coas/ is one static page of ~63 self-hosted PDFs, one per strain/format/month.",
+  "notes": [
+    "Filenames are strain[-format]-YYYY-MM.pdf; format is preroll, infused-preroll, multipack, live-rosin, rosin-cart, or none (flower).",
+    "No lot in the filename; the report's own lot fills in."
+  ],
+  "name": [
+    {"from": "file", "match": "^(?P<strain>.+?)(?:-(?P<product>infused-preroll|preroll|multipack|live-rosin|rosin-cart))?-\\d{4}-\\d{2}\\.pdf$"}
+  ],
+  "category": [
+    {"when": {"file": "infused-preroll|-preroll-|multipack"}, "set": "preroll"},
+    {"when": {"file": "rosin-cart"}, "set": "vaporizers"},
+    {"when": {"file": "live-rosin"}, "set": "concentrate"}
+  ]
+}

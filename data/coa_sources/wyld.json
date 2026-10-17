@@ -1,0 +1,17 @@
+{
+  "brand": "Wyld",
+  "site": "https://wyldcanna.com",
+  "source": {
+    "kind": "wp_media",
+    "site": "https://wyldcanna.com",
+    "link": "/NY-[A-Z0-9-]+\\.pdf$"
+  },
+  "learned": "2026-10-17: the WordPress media library holds ~1,236 report PDFs for AZ (742), NY (393) and NJ (22); filenames start with the state.",
+  "notes": [
+    "Only NY-<FLAVOR>-B<batch>.pdf files are kept (link regex). The flavor is a code (POM, BSN, RB, MB, GF, KW, SB, HB, APL, BO, EB, CHRY, TAN, PR, PCH), not a name; the strain comes from the report's product line.",
+    "Lot is the batch code (NY-POM-B30)."
+  ],
+  "name": [
+    {"from": "file", "match": "^(?P<lot>NY-[A-Z0-9]+(?:-[A-Z0-9]+)*?-B\\d+)(?:-\\d)?\\.pdf$"}
+  ]
+}
