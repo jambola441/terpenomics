@@ -1,0 +1,26 @@
+{
+  "brand": "Florist Farms",
+  "site": "https://www.floristfarms.com",
+  "source": {
+    "kind": "json",
+    "url": "https://app.filedirectory.app/api/frontfiles?shop_id=floristfarms.myshopify.com",
+    "items": "data.directory.*.files",
+    "file": "url",
+    "text": "filename",
+    "link": "cdn\\.shopify\\.com/.+\\.pdf"
+  },
+  "learned": "2026-10-17: floristfarms.com/pages/lab-results is a Shopify 'File Directory' app (mpx-loader.js) whose batch lookup reads app.filedirectory.app/api/frontfiles; one call lists all ~1,680 report PDFs. Lab: mostly ACT.",
+  "notes": [
+    "Filenames: WF00354_-_Florist_Farms_Black_Scottie_Whole_Flower_-_27.4_-_COA.pdf, or WF01057_<Metrc tag>_Florist-Farms-Sour-Glue-12-Gram-Joints-7pk_THC22.651_ACT_06-29-2026.pdf: lot, then the product after 'Florist Farms'."
+  ],
+  "name": [
+    {
+      "from": "file",
+      "match": "^(?P<lot>WF\\d+)[_-]+(?:1A4[0-9A-F]{21}_)?(?:-_)?Florist[_-]Farms[_-](?P<strain>.+?)[_-]+(?:Whole[_-]Flower|Pre[_-]?Rolls?|Prerolls?|\\d+(?:\\.\\d+)?[_-]?(?:Gram|G)\\b|Joints?|Infused|Ground|Smalls|Shake|Vape|Cart|_-_|THC)"
+    },
+    {
+      "from": "text",
+      "match": "^(?P<lot>WF\\d+)$"
+    }
+  ]
+}

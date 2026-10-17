@@ -20,7 +20,7 @@
       ]
     ]
   },
-  "learned": "2026-10-17: nanticoke.co (OpenCart) has /lab-results (~480 PDF links) and /lab-results-archive (~290), PDFs under /image/catalog/lab-results/. Labs: Keystone State Testing (older), DRS Testing and MCR Labs (MCR-S26-..., 2026) have no reader profile yet.",
+  "learned": "2026-10-17: nanticoke.co (OpenCart) has /lab-results (~480 PDF links) and /lab-results-archive (~290), PDFs under /image/catalog/lab-results/. Labs: Keystone State Testing (older), DRS Testing, MCR Labs (2026).",
   "notes": [
     "Filenames are Strain_Size_Product_LOT.pdf with spaces, underscores or hyphens (Blue_Dream_3_5g_Jar_BL110610.pdf, Jack Herer .5g Preroll ML121907JHPR.pdf); the lot is the last token. Lot suffixes: PR preroll, 5B 5-pack, BB blunt, DB dime bag.",
     "Vape lots look like 002_NNC_BR1 / 006_148; only the last token is taken. A few files are bare lab numbers (0523-014 Fortune Cookie.pdf).",

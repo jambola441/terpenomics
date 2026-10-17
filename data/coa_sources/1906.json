@@ -1,0 +1,23 @@
+{
+  "brand": "1906",
+  "site": "https://1906.shop",
+  "source": {
+    "kind": "json",
+    "url": "https://script.google.com/macros/s/AKfycbyChkWtwWb-6Xo8lUyrz9-bpl_iwN90eXi4p7y1Og270yN3BYrM_ZoA9HzlkXyYOH9WDg/exec",
+    "items": "",
+    "file": "googleDriveLink",
+    "text": "filename",
+    "link": "drive\\.google\\.com",
+    "only": "OCM-|1A412|New York"
+  },
+  "learned": "2026-10-17: 1906.shop/pages/coa reads a Google Apps Script that returns every report: [{filename, googleDriveLink}], ~220 across states; filenames carry ' -- NY -- ' for New York.",
+  "notes": [
+    "Filenames: '2024-07-16 -- 1906 COA -- Chill Drops -- NY -- CHL5NY24165.pdf'. The `name` rule only matches NY ones; `only` drops the rest by the report itself."
+  ],
+  "name": [
+    {
+      "from": "text",
+      "match": "--\\s*(?P<strain>[^-]+?)\\s*--\\s*NY\\s*--\\s*(?P<lot>[A-Z0-9-]+)\\.pdf$"
+    }
+  ]
+}

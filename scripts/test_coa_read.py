@@ -127,3 +127,12 @@ def test_mcr_result_first_with_percent_sign_and_formula_totals():
     assert r["cannabinoids"]["THCa"] == 25.2 and r["cannabinoids"]["D9-THC"] == 1.37
     assert r["totals"]["total_thc"] == 23.5 and r["totals"]["total_cannabinoids"] == 27.9
     assert r["terpenes"]["β-Caryophyllene"] == 0.6414
+
+
+def test_biotrax_percent_is_the_third_column():
+    # "Δ9-THC  0.001 mg/g  1.832  0.18  11.340": LOQ, mg/g, %, mg/serving.
+    r = _read("biotrax_offhours.txt")
+    assert r["ids"]["lab"] == "Biotrax" and r["ids"]["lot"] == "OH-G-AW-004"
+    assert r["ids"]["product"] == "Off Hours: Awaken"
+    assert r["cannabinoids"]["D9-THC"] == 0.18 and r["cannabinoids"]["THCV"] == 0.03
+    assert r["totals"]["total_thc"] == 0.18  # the stated row is mg/g

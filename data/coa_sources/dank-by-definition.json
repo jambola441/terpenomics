@@ -1,0 +1,44 @@
+{
+  "brand": "Dank By Definition",
+  "site": "https://www.dankbydefinition.com",
+  "source": {
+    "kind": "js_rows",
+    "page": "https://www.dankbydefinition.com/coa",
+    "script": "dank-coa-master\\.js",
+    "var": "window.DANK_COA_ROWS",
+    "url": "https://ny.yourcoa.com/coa/coa-download/{8}?wl_id=0&mrk=0&is_view=1",
+    "text": "{2} | {3} | {0} {1}",
+    "link": "yourcoa\\.com/coa/coa-download/\\w"
+  },
+  "learned": "2026-10-17: dankbydefinition.com/coa (Squarespace) renders a table from a script, /s/<timestamp>_dank-coa-master.js, defining window.DANK_COA_ROWS = [[category, subcategory, product, batch, coa_url, tested, thc, is_new, lab_sample_id]], ~1,730 rows (FLOWER, PRE-ROLLS, INFUSED PRE-ROLLS). Lab: Kaycha (ny.yourcoa.com).",
+  "notes": [
+    "coa_url is Kaycha's viewer page; the PDF is coa-download/<lab sample id> and needs the query string, or the server returns HTML.",
+    "Text is 'PRODUCT | BATCH | CATEGORY SUBCATEGORY': the product is the strain, the batch the lot."
+  ],
+  "name": [
+    {
+      "from": "text",
+      "match": "^(?P<strain>[^|]+?)\\s*\\|\\s*(?P<lot>[^|\\s]+)\\s*\\|"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "text": "\\|\\s*INFUSED PRE-ROLLS"
+      },
+      "set": "preroll"
+    },
+    {
+      "when": {
+        "text": "\\|\\s*PRE-ROLLS"
+      },
+      "set": "preroll"
+    },
+    {
+      "when": {
+        "text": "\\|\\s*FLOWER"
+      },
+      "set": "flower"
+    }
+  ]
+}

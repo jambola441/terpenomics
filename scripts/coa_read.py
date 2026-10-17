@@ -35,7 +35,7 @@ import sys
 
 # Bump when a change would read a stored report differently; coa_crawl.py push re-reads
 # rows an older version read.
-VERSION = 3
+VERSION = 5
 
 # ----------------------------------------------------------------------- analytes
 
@@ -131,6 +131,8 @@ LABS: dict[str, dict] = {
     "Cirona Labs": {"sign": r"Cirona Labs|Hemp Hunter Labs", "cannabinoids": 0, "terpenes": 0},
     # Same report template as Cirona: % w/w first, "< MRL" below the limit.
     "Green Analytics": {"sign": r"Green Analytics", "cannabinoids": 0, "terpenes": 0},
+    # Cannabinoids: LOQ ("0.001 mg/g"), mg/g, %, mg/serving. Terpenes are a separate report.
+    "Biotrax": {"sign": r"Biotrax Testing", "cannabinoids": 2, "terpenes": 1, "formula_totals": True},
     # Result first, with a % sign; each analyte named twice ("CBC  Cannabichromene").
     "MCR Labs": {"sign": r"MCR Labs", "cannabinoids": 0, "terpenes": 0},
     # Confident LIMS template. Cannabinoids: LOQ (mg/g), %, mg/g; on a unit product
@@ -160,6 +162,10 @@ ID_PATTERNS: dict[str, list[str]] = {
                        r"Strain\s*:\s*([^,\n]+?)\s*,",
                        # Cirona / Green Analytics: each section is headed with the sample's name.
                        r"^\s*Cannabinoids:\s*(.+?)\s*\(",
+                       # DRS: the product line sits between the sample-collection fields.
+                       r"Sample Collection Date/Time:[^\n]*\n\s*([^\n]+?)\s*\n\s*Sample Collection Site",
+                       # Biotrax: the product stands alone above "Sample ID:".
+                       r"^[ \t]*(\S[^\n]{2,80}?)[ \t]*\n[ \t]*Sample ID:\s*\S+BTL",
                        # Smithers: the product's name stands alone above "Metrc Package ID".
                        r"^[ \t]*(\S[^\n]*?)[ \t]*\n(?:[ \t]*\n)*[ \t]*Metrc Package ID"],
     # What the lab says the sample is; coa_crawl.category() turns it into ours.
@@ -293,7 +299,7 @@ def read(text: str) -> dict:
     for k, pats in TOTAL_PATTERNS.items():
         v = _first(pats, text)
         totals[k] = float(v) if v and _value(v) is not None and float(v) <= 100 else None
-    if scale != 1.0:  # a per-unit product's stated totals are mg, not percent
+    if scale != 1.0 or profile.get("formula_totals"):  # stated totals in mg, not percent
         totals.update(total_thc=None, total_cbd=None, total_cannabinoids=None)
     # Kaycha: "Total THC   Total CBD   Total Cannabinoids" over a row of percents.
     m = re.search(r"Total THC\s+Total CBD\s+Total Cannabinoids\s*\n(?:\s*\n)*\s*([\d.]+)%\s+([\d.]+)%\s+([\d.]+)%", text)

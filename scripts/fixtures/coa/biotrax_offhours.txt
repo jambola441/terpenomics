@@ -1,0 +1,142 @@
+                          Biotrax Testing Laboratory Inc. (716) 651-0146
+                          3580 Harlem Road                https://mybiotrax.com
+                                                                                                                                                   Regulatory Compliance Testing
+                          Cheektowaga, NY 14215           Lic# OCM-CPL # 00005                                                                                        Adult Use
+                                                          PJLA/ISO/IEC 17025-2017/Testing # 73827
+                                                          DEA#: RB0572671                                                                                                                     1 of 9
+
+Off Hours: Awaken
+Sample ID: 2404BTL0022.0049                                                                       Client                                  Sample Collection Site: 300 Trade Court Rochester,
+Strain: N/A                                      Batch/Lot Size: 3200 units                       Nowave LLC                                                                       NY 14624
+                                                                                                  18444669283
+Matrix: Ingestible                               Batch#: OH-G-AW-004                              seth@nowave.com                                Date/Time Sampling Started: 04/22/24 10:55
+Type: Soft Chew                                  Units Sampled: 13                                Lic. # OCM-AUCP-22-000010                     Date/Time Sampling Finished: 04/22/24 11:15
+                                                                                                  300 Trade Court
+                                                                                                  Rochester, NY 14624                            Date/Time Sample Received: 04/22/24 12:20
+
+
+
+                                                                                                  Summary
+                                                                                                  Test                                                      Result
+                                                                                                  Batch                                                     Pass
+                                                                                                  Cannabinoids                                              Complete
+                                                                                                  Water Activity                                            Pass
+                                                                                                  Residual Solvents                                         Pass
+                                                                                                  Microbials                                                Pass
+                                                                                                  Mycotoxins                                                Pass
+                                                                                                  Pesticides                                                Pass
+                                                                                                  Heavy Metals                                              Pass
+
+
+
+                                                                                                  Report Notes: See Report for 15322 Terpenes, Heavy Metals, Residual Solvents,
+                                                                                                  Pesticides and Mycotoxins results.
+Cannabinoids                                                                                                                                                                         Complete
+
+
+                          11.340 mg/serving                                                                                                      ND
+                                       Total THC                                                                                           Total CBD
+Analyte                                              LOQ                           Result                        Result                       Result
+                                                     mg/g                           mg/g                             %                    mg/serving
+THCa                                           0.001 mg/g                          <LOQ                          <LOQ                         <LOQ
+Δ9-THC                                         0.001 mg/g                          1.832                          0.18                       11.340
+Δ8-THC                                         0.001 mg/g                          <LOQ                          <LOQ                         <LOQ
+THCV                                           0.001 mg/g                          0.276                          0.03                        1.708
+CBDa                                           0.001 mg/g                          <LOQ                          <LOQ                         <LOQ
+CBD                                            0.001 mg/g                          <LOQ                          <LOQ                         <LOQ
+CBDV                                           0.001 mg/g                          <LOQ                          <LOQ                         <LOQ
+CBN                                            0.001 mg/g                          <LOQ                          <LOQ                         <LOQ
+CBGa                                           0.001 mg/g                          <LOQ                          <LOQ                         <LOQ
+CBG                                            0.001 mg/g                          0.919                          0.09                        5.689
+CBC                                            0.001 mg/g                          <LOQ                          <LOQ                         <LOQ
+(6aR,9S)-d10-THC                               0.001 mg/g                          <LOQ                          <LOQ                         <LOQ
+(6aR,9R)-d10-THC                               0.001 mg/g                          <LOQ                          <LOQ                         <LOQ
+Total THC                                                                          1.832                          0.18                       11.340
+Total CBD                                                                            ND                            ND                            ND
+Total                                                                              3.027                          0.30                       18.737
+
+
+
+
+Date/Time Tested: 04/30/2024 9:59; 10 servings per container.; Method: SOP- H101 SOP-H102; Report Notes:
+
+
+                      Not Tested                                                              Pass                                                        Not Tested
+                                                                       Limit: 0.85aw, Date Tested: 4/23/2024, Time
+                                                                              Tested: 11:36, Method: SOP-059
+                 Moisture Content                                             Water Activity - 0.52 aw                                                  Foreign Matter
+
+                                                                                                                                                             Con dent LIMS
+                                                                                                                                                         All Rights Reserved
+                                                                                                                                              coa.support@con dentlims.com
+                                                                                            Steven Heine                                                     (866) 506-5866
+                                                                                        Quality Control Of cer                                       www.con dentlims.com
+                                                                                          05/02/2024 07:03
+ND=Not Detected, NR=Not Reported, LOD=Limit of Detection, LOQ=Limit of Quantitation. This product has been tested by Biotrax Testing Laboratory Inc, using valid testing methodologies
+and a quality system as required by New York state law. Values reported relate only to the product tested and batched under the batch number identi ed above. Biotrax Testing Laboratory Inc
+makes no claims as to the ef cacy, safety, or other risks associated with any results reported herein. This Certi cate must not be altered, and shall not be reproduced except in full, without the
+written approval of Biotrax Testing Laboratory Inc.
+                          Biotrax Testing Laboratory Inc. (716) 651-0146
+                          3580 Harlem Road                https://mybiotrax.com
+                                                                                                                                                   Regulatory Compliance Testing
+                          Cheektowaga, NY 14215           Lic# OCM-CPL # 00005                                                                                        Adult Use
+                                                          PJLA/ISO/IEC 17025-2017/Testing # 73827
+                                                          DEA#: RB0572671                                                                                                                     2 of 9
+
+Off Hours: Awaken
+Sample ID: 2404BTL0022.0049                                                                       Client                                  Sample Collection Site: 300 Trade Court Rochester,
+Strain: N/A                                      Batch/Lot Size: 3200 units                       Nowave LLC                                                                       NY 14624
+                                                                                                  18444669283
+Matrix: Ingestible                               Batch#: OH-G-AW-004                              seth@nowave.com                                Date/Time Sampling Started: 04/22/24 10:55
+Type: Soft Chew                                  Units Sampled: 13                                Lic. # OCM-AUCP-22-000010                     Date/Time Sampling Finished: 04/22/24 11:15
+                                                                                                  300 Trade Court
+                                                                                                  Rochester, NY 14624                            Date/Time Sample Received: 04/22/24 12:20
+
+
+
+Microbials                                                                                                                                                                                   Pass
+Analyte                                                                             LOQ                                Limit                             Result                             Status
+                                                                                   CFU/g                              CFU/g                              CFU/g
+Aerobic Bacteria                                                                     100                              10000                               <100                                 Pass
+Yeast & Mold                                                                         100                               1000                               <100                                 Pass
+
+
+
+
+Date/Time Tested (Yeast & Mold): 04/23/2024 16:07
+Date/Time Tested (Aerobic Bacteria): 04/23/2024 16:07
+Date/Time Tested (Quantitative):
+Method: SOP-100: Total Yeast/Mold Count, SOP-101: E. coli Count, SOP-102: Staphylococcus Count, SOP-103: Enterobacteriaceae Count, SOP-104: Aerobic Count, SOP-
+105: Coliform Count
+
+
+
+
+Analyte                                                                                             Limit                                     Result                                        Status
+Aspergillus avus                                                                             Not Detected                               Not Detected                                          Pass
+Aspergillus niger                                                                            Not Detected                               Not Detected                                          Pass
+Aspergillus fumigatus                                                                        Not Detected                               Not Detected                                          Pass
+Aspergillus terreus                                                                          Not Detected                               Not Detected                                          Pass
+Shiga Toxin E. Coli                                                                          Not Detected                               Not Detected                                          Pass
+Salmonella                                                                                   Not Detected                               Not Detected                                          Pass
+
+
+
+
+Date/Time Tested (Qualitative): 04/26/2024 13:15
+Method: SOP-065: Aspergillus, SOP-066: STEC/Salmonella
+
+
+
+
+                                                                                                                                                             Con dent LIMS
+                                                                                                                                                         All Rights Reserved
+                                                                                                                                              coa.support@con dentlims.com
+                                                                                          Steven Heine                                                       (866) 506-5866
+                                                                                        Quality Control Of cer                                       www.con dentlims.com
+                                                                                          05/02/2024 07:03
+ND=Not Detected, NR=Not Reported, LOD=Limit of Detection, LOQ=Limit of Quantitation. This product has been tested by Biotrax Testing Laboratory Inc, using valid testing methodologies
+and a quality system as required by New York state law. Values reported relate only to the product tested and batched under the batch number identi ed above. Biotrax Testing Laboratory Inc
+makes no claims as to the ef cacy, safety, or other risks associated with any results reported herein. This Certi cate must not be altered, and shall not be reproduced except in full, without the
+written approval of Biotrax Testing Laboratory Inc.
+

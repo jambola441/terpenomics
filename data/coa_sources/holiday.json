@@ -1,0 +1,19 @@
+{
+  "brand": "Holiday",
+  "site": "https://hbarholiday.com",
+  "source": {
+    "kind": "gdrive_folder",
+    "folder": "12q1EAoDI4sT8ZNTfRDvG1fknREjVi1q3",
+    "link": "drive\\.google\\.com/uc"
+  },
+  "learned": "2026-10-17: hbarholiday.com's menu item 'NY COAs' opens a public Google Drive folder of ~46 PDFs named by lot only (AQ-AM1010-J1625.pdf, GR0100.pdf).",
+  "notes": [
+    "Names carry no strain: it comes from the report."
+  ],
+  "name": [
+    {
+      "from": "text",
+      "match": "^(?P<lot>[A-Z0-9][A-Z0-9-]+?)(?:\\s*\\(\\d+\\))?\\.pdf$"
+    }
+  ]
+}

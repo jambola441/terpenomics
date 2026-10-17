@@ -96,16 +96,20 @@ def _get(url: str) -> bytes:
 
 
 class _Links(HTMLParser):
-    """(href, text) for every <a>, text being everything inside it."""
+    """(href, text) for every <a>, text being everything inside it. With `attr`, an
+    <a> carrying that attribute gives its value instead of the href (Off Hours keeps
+    reports in data-pdf-url on <a href="#">)."""
 
-    def __init__(self):
+    def __init__(self, attr: str | None = None):
         super().__init__(convert_charrefs=True)
+        self.attr = attr
         self.links: list[tuple[str, str]] = []
         self._open: list[list] = []
 
     def handle_starttag(self, tag, attrs):
         if tag == "a":
-            self._open.append([dict(attrs).get("href") or "", []])
+            a = dict(attrs)
+            self._open.append([(self.attr and a.get(self.attr)) or a.get("href") or "", []])
 
     def handle_data(self, data):
         for a in self._open:
@@ -119,7 +123,8 @@ class _Links(HTMLParser):
 
 # File hosts whose share links open a viewer page: rewritten to the file itself, for
 # every recipe (Grön links half its reports to Dropbox with dl=0).
-DIRECT = [[r"(dropbox\.com/.*[?&])dl=0", r"\1dl=1"]]
+DIRECT = [[r"(dropbox\.com/.*[?&])dl=0", r"\1dl=1"],
+          [r"https://drive\.google\.com/file/d/([\w-]+)/view.*", r"https://drive.google.com/uc?export=download&id=\1"]]
 
 
 def _upload(path: str, data: bytes) -> None:
@@ -146,12 +151,16 @@ def _candidates(src: dict) -> list[tuple[str, str]]:
     wp_media  `site`: a WordPress site's media library (/wp-json/wp/v2/media), which
               lists every uploaded PDF, including ones no page links to any more
     wp_posts  `url`: a WordPress post type of documents, filters in the URL; `file`
-              names the field holding each report's URL (default download_url)"""
+              names the field holding each report's URL (default download_url)
+    js_rows   `page`, `script`, `var`: rows a page's script defines; `url`, `text`:
+              templates over a row's cells ("{4}")
+    json      `url`, `items` (dot path, "*" fans out), `file` and `text` item fields
+    gdrive_folder  `folder`: a public Google Drive folder's id"""
     kind = src.get("kind", "links")
     out: list[tuple[str, str]] = []
     if kind == "links":
         for page in src["pages"]:
-            p = _Links()
+            p = _Links(src.get("link_attr"))
             p.feed(_get(page).decode("utf-8", "replace"))
             out += [(urllib.parse.urljoin(page, html.unescape(h)), t) for h, t in p.links]
     elif kind == "wp_media":
@@ -181,6 +190,49 @@ def _candidates(src: dict) -> list[tuple[str, str]]:
                 break
             out += [(r.get(src.get("file", "download_url")) or "",
                      html.unescape((r.get("title") or {}).get("rendered") or "")) for r in rows]
+    elif kind == "js_rows":
+        # Rows a page's script defines (Dank By Definition: window.DANK_COA_ROWS = [[...]]).
+        # `script`: regex for the script's src on `page` (its name changes per upload);
+        # `var`: the variable; `url` and `text`: templates over row cells, "{4}".
+        page = _get(src["page"]).decode("utf-8", "replace")
+        # The script's path, quoted anywhere on the page (a src attribute, or a list a
+        # loader tries). Dank's page also names stale paths in comments, so each is tried
+        # until one loads.
+        js = None
+        for path in dict.fromkeys(re.findall(r"""["']([^"'\s]*""" + src["script"] + r"""[^"'\s]*)["']""", page)):
+            try:
+                js = _get(urllib.parse.urljoin(src["page"], html.unescape(path))).decode("utf-8", "replace")
+                break
+            except urllib.error.HTTPError:
+                continue
+        if js is None:
+            raise SystemExit(f"no loadable script matching {src['script']!r} on {src['page']}")
+        m = re.search(re.escape(src["var"]) + r"\s*=\s*(\[.*?\])\s*;?\s*(?:\n|$)", js, re.S)
+        if not m:
+            raise SystemExit(f"{src['var']} not found in the script")
+        for row in json.loads(m.group(1)):
+            cells = {str(i): ("" if v is None else str(v)) for i, v in enumerate(row)}
+            fill = lambda t: re.sub(r"\{(\d+)\}", lambda m: cells.get(m.group(1), ""), t)  # noqa: E731
+            out.append((fill(src["url"]), fill(src.get("text", ""))))
+    elif kind == "json":
+        # A JSON listing: `url`; `items`, a dot path to the list ("data.directory.*.files",
+        # "*" fans out over a list; "" for a top-level list); `file` and `text`, the item
+        # fields holding the report's URL and its name.
+        node = [json.loads(_get(src["url"]))]
+        for part in [p for p in src.get("items", "").split(".") if p]:
+            node = [x for n in node for x in (n if part == "*" else [n.get(part) if isinstance(n, dict) else None])
+                    if x is not None]
+        rows = [r for n in node for r in (n if isinstance(n, list) else [n])]
+        out += [(str(r.get(src["file"]) or ""), str(r.get(src.get("text", ""), "") or "")) for r in rows
+                if isinstance(r, dict)]
+    elif kind == "gdrive_folder":
+        # A public Google Drive folder, read from its embedded view (no API key): each
+        # file's id and name; the file itself from the direct-download URL.
+        view = _get(f"https://drive.google.com/embeddedfolderview?id={src['folder']}").decode("utf-8", "replace")
+        for fid, name in re.findall(r'href="https://drive\.google\.com/file/d/([\w-]+)/view[^"]*".*?'
+                                    r'class="flip-entry-title">([^<]+)<', view, re.S):
+            out.append((f"https://drive.google.com/uc?export=download&id={fid}#{html.unescape(name)}",
+                        html.unescape(name)))
     else:
         raise SystemExit(f"unknown source kind {kind!r}")
     return out

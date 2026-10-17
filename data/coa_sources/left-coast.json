@@ -1,0 +1,16 @@
+{
+  "brand": "Left Coast",
+  "site": "https://www.leftcoastextracts.info",
+  "source": {
+    "kind": "links",
+    "pages": ["https://www.leftcoastextracts.info/pages/new-york-lab-results"],
+    "link": "cdn\\.shopify\\.com/s/files/.+\\.pdf"
+  },
+  "learned": "2026-10-17: Left Coast is a California brand; its Shopify site has a separate /pages/new-york-lab-results page (15 PDFs on cdn.shopify.com, Oct 2025-Mar 2026, 3.75g and 6.5g products). /pages/lab-results is California and is not used.",
+  "notes": [
+    "Filenames are Strain_-_Size_-_LAB_-_date.pdf (MCR / CTNY / CTND tags; sampled reports read as MCR Labs) or Strain_Size_C.O.A._date.pdf; no lot in the name."
+  ],
+  "name": [
+    {"from": "file", "match": "^(?P<strain>[A-Za-z][A-Za-z_]+?)_*-?_*\\d+(?:\\.\\d+)?[gG]?_"}
+  ]
+}

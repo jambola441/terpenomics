@@ -1,0 +1,61 @@
+{
+  "brand": "Ayrloom",
+  "site": "https://ayrloom.com",
+  "source": {
+    "kind": "links",
+    "pages": [
+      "https://ayrloom.com/apps/ayrloom_labtests/php/table.html"
+    ],
+    "link": "cdn\\.shopify\\.com/.+\\.pdf",
+    "skip": "(?i)sell-?sheet|menu|catalog|/H-[A-Z]|Trichome|Beak_Skiff|_Ayrloom_.*mgCBD"
+  },
+  "learned": "2026-10-17: ayrloom.com/pages/lab-tests loads a plain HTML table (apps/ayrloom_labtests/php/table.html) of ~1,900 reports (date, product, category, batch, link) on cdn.shopify.com; all ACT Laboratories (NY). Categories: vapes 518, edibles 496, beverages 342, pre-rolls 300, balms 146, tinctures 104.",
+  "notes": [
+    "Link text is just 'view'; filenames are <LOT>_<Product>_<size>_-_ACT_Labs_-_EXP_<MMDDYY>-<LOT>.pdf (V0528-0.5_Pineapple_Express_0.5g_..., PR0160-T_Cereal_Milk_0.6g_..., G1012_Pillow_Talk_10mg_..., BEV0264_Yuzu_Citrus_10mg_...). Some tinctures use hyphens (T0099-THC-Everyday-450-150mg-Tincture-ACT-Labs-EXP-062626.pdf).",
+    "Lot prefixes name the category: V vape, PR pre-roll, G gummy, BEV beverage, T / WST tincture.",
+    "Hemp products for other states (H- lots, Trichome Analytical and Beak Skiff reports, THC0## CBD drinks) are skipped. Older vape reports are from DRS Testing."
+  ],
+  "name": [
+    {
+      "from": "file",
+      "match": "^(?P<lot>[A-Z]+\\d+(?:-[0-9.]+|-T)?)_(?P<strain>.+?)(?:_[0-9.]+(?:g|mg)\\b.*?)?_-_[A-Za-z]"
+    },
+    {
+      "from": "file",
+      "match": "^(?P<lot>[A-Z]+\\d+)-(?P<strain>.+?)-ACT-Labs"
+    }
+  ],
+  "category": [
+    {
+      "when": {
+        "lot": "^V\\d"
+      },
+      "set": "vaporizers"
+    },
+    {
+      "when": {
+        "lot": "^PR\\d"
+      },
+      "set": "preroll"
+    },
+    {
+      "when": {
+        "lot": "^G\\d"
+      },
+      "set": "edible"
+    },
+    {
+      "when": {
+        "lot": "^BEV\\d"
+      },
+      "set": "edible",
+      "why": "the catalog files beverages under edible"
+    },
+    {
+      "when": {
+        "lot": "^(?:T|WST)\\d"
+      },
+      "set": "tinctures"
+    }
+  ]
+}
